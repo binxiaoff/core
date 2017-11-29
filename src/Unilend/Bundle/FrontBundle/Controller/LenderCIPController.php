@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 
 class LenderCIPController extends Controller
 {
@@ -318,28 +319,18 @@ class LenderCIPController extends Controller
      */
     private function sendAdviceEmail(Clients $client)
     {
-        /** @var \settings $settings */
-        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $fbLink = $settings->value;
-        $settings->get('Twitter', 'type');
-        $twLink = $settings->value;
         /** @var Wallet $wallet */
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-
-        $varMail = [
-            'surl'                 => $this->get('assets.packages')->getUrl(''),
-            'url'                  => $this->get('assets.packages')->getUrl(''),
-            'prenom'               => $client->getPrenom(),
-            'email_p'              => $client->getEmail(),
-            'advice'               => str_replace('h5', 'h3', $this->getFormatedAdvice($client)),
-            'advice_pdf_link'      => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
-            'motif_virement'       => $wallet->getWireTransferPattern(),
-            'lien_fb'              => $fbLink,
-            'lien_tw'              => $twLink
+        $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $keywords = [
+            'firstName'     => $client->getPrenom(),
+            'advice'        => str_replace('h5', 'p', $this->getFormatedAdvice($client)),
+            'advicePdfLink' => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
+            'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $varMail);
+        /** @var TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-conseil-cip', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');

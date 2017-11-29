@@ -96,7 +96,7 @@ class LenderSubscriptionController extends Controller
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
 
-        if ($request->isMethod('POST')) {
+        if ($request->isMethod(Request::METHOD_POST)) {
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm);
                 if ($isValid) {
@@ -384,27 +384,13 @@ class LenderSubscriptionController extends Controller
      */
     private function sendSubscriptionStartConfirmationEmail(Clients $client)
     {
-        $settingRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
-        /** @var Settings $facebookSetting */
-        $faceBookSetting = $settingRepository->findOneBy(['type' => 'Facebook']);
-        /** @var Settings $twitterSetting */
-        $twitterSetting = $settingRepository->findOneBy(['type' => 'Twitter']);
-        /** @var LenderManager $lenderManager */
-        $lenderManager = $this->get('unilend.service.lender_manager');
-
-        $varMail = [
-            'surl'           => $this->get('assets.packages')->getUrl(''),
-            'url'            => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->getPrenom(),
-            'email_p'        => $client->getEmail(),
-            'motif_virement' => $lenderManager->getLenderPattern($client),
-            'lien_fb'        => $faceBookSetting->getValue(),
-            'lien_tw'        => $twitterSetting->getValue(),
-            'annee'          => date('Y')
+        $keywords = [
+            'firstName' => $client->getPrenom()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');
@@ -1118,30 +1104,18 @@ class LenderSubscriptionController extends Controller
         return new Response('not an ajax request');
     }
 
+    /**
+     * @param Clients $client
+     */
     private function sendFinalizedSubscriptionConfirmationEmail(Clients $client)
     {
-        /** @var \settings $settings */
-        $settings =  $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
-
-        /** @var Wallet $wallet */
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-
-        $varMail = [
-            'surl'           => $this->get('assets.packages')->getUrl(''),
-            'url'            => $this->get('assets.packages')->getUrl(''),
-            'prenom'         => $client->getPrenom(),
-            'email_p'        => $client->getEmail(),
-            'motif_virement' => $wallet->getWireTransferPattern(),
-            'lien_fb'        => $lien_fb,
-            'lien_tw'        => $lien_tw
+        $keywords = [
+            'firstName' => $client->getPrenom(),
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');

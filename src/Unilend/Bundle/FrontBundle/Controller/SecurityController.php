@@ -15,6 +15,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\core\Loader;
 
@@ -113,44 +114,35 @@ class SecurityController extends Controller
     public function passwordForgottenAction(Request $request)
     {
         if ($request->isXmlHttpRequest()) {
-            $entityManager = $this->get('unilend.service.entity_manager');
-            /** @var \clients $clients */
-            $clients = $entityManager->getRepository('clients');
+            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+            /** @var \clients $client */
+            $client = $entityManagerSimulator->getRepository('clients');
             $email   = $request->request->get('client_email');
 
-            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $clients->get($email, 'status = ' . Clients::STATUS_ONLINE . ' AND email')) {
-                /** @var \settings $settings */
-                $settings = $entityManager->getRepository('settings');
-                $settings->get('Facebook', 'type');
-                $facebookLink = $settings->value;
-
-                $settings->get('Twitter', 'type');
-                $twitterLink = $settings->value;
-
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $client->get($email, 'status = ' . Clients::STATUS_ONLINE . ' AND email')) {
                 /** @var \temporary_links_login $temporaryLink */
-                $temporaryLink = $entityManager->getRepository('temporary_links_login');
-                $token         = $temporaryLink->generateTemporaryLink($clients->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
+                $temporaryLink = $entityManagerSimulator->getRepository('temporary_links_login');
+                $token         = $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
+                $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
 
-                $varMail = [
-                    'surl'          => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-                    'url'           => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-                    'prenom'        => $clients->prenom,
-                    'login'         => $clients->email,
-                    'link_password' => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'lien_fb'       => $facebookLink,
-                    'lien_tw'       => $twitterLink
+                $keywords = [
+                    'firstName'     => $client->prenom,
+                    'login'         => $client->email,
+                    'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+
                 try {
-                    $message->setTo($clients->email);
+                    $message->setTo($client->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
                 } catch (\Exception $exception) {
                     $this->get('logger')->warning(
                         'Could not send email : mot-de-passe-oublie - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
                     );
 
                     return new JsonResponse('nok');
@@ -277,25 +269,14 @@ class SecurityController extends Controller
 
     private function sendPasswordModificationEmail(\clients $client)
     {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $lien_fb = $settings->value;
-        $settings->get('Twitter', 'type');
-        $lien_tw = $settings->value;
-
-        $varMail = [
-            'surl'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'url'      => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'lien_fb'  => $lien_fb,
-            'lien_tw'  => $lien_tw,
-            'login'    => $client->email,
-            'prenom_p' => $client->prenom,
-            'mdp'      => ''
+        $keywords = [
+            'firstName'     => $client->prenom,
+            'password'      => '',
+            'lenderPattern' => $client->getLenderPattern($client->id_client)
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
         $message->setTo($client->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);

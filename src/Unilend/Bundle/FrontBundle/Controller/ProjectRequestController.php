@@ -1360,39 +1360,27 @@ class ProjectRequestController extends Controller
 
     private function sendSubscriptionConfirmationEmail()
     {
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
-
         if (false === empty($this->project->id_prescripteur)) {
+            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
             /** @var \prescripteurs $advisor */
             $advisor = $entityManagerSimulator->getRepository('prescripteurs');
-
             $advisor->get($this->project->id_prescripteur);
+
             $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->id_client);
         } else {
             $client = $this->client;
         }
 
-        $settings->get('Facebook', 'type');
-        $facebookLink = $settings->value;
-
-        $settings->get('Twitter', 'type');
-        $twitterLink = $settings->value;
-
         $keywords = [
-            'prenom'               => $client->getPrenom(),
-            'raison_sociale'       => $this->company->getName(),
-            'lien_reprise_dossier' => $this->generateUrl('project_request_recovery', ['hash' => $this->project->hash], UrlGeneratorInterface::ABSOLUTE_URL),
-            'lien_fb'              => $facebookLink,
-            'lien_tw'              => $twitterLink,
-            'surl'                 => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'url'                  => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
+            'firstName'           => $client->getPrenom(),
+            'companyName'         => $this->company->getName(),
+            'continueRequestLink' => $this->generateUrl('project_request_recovery', ['hash' => $this->project->hash], UrlGeneratorInterface::ABSOLUTE_URL),
         ];
 
         $sRecipient = $client->getEmail();
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
         $message    = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $keywords);
+
         try {
             $message->setTo($sRecipient);
             $mailer = $this->get('mailer');

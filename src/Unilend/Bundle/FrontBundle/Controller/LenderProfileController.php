@@ -1135,14 +1135,15 @@ class LenderProfileController extends Controller
      */
     private function sendPasswordModificationEmail(\clients $client)
     {
-        $varMail = array_merge($this->getCommonEmailVariables(), [
-            'login'    => $client->email,
-            'prenom_p' => $client->prenom,
-            'mdp'      => ''
-        ]);
+        $keywords = [
+            'firstName'     => $client->prenom,
+            'password'      => '',
+            'lenderPattern' => $client->getLenderPattern($client->id_client)
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $keywords);
+
         try {
             $message->setTo($client->email);
             $mailer = $this->get('mailer');
@@ -1160,12 +1161,16 @@ class LenderProfileController extends Controller
      */
     private function sendAccountModificationEmail(\clients $client)
     {
-        $varMail = array_merge($this->getCommonEmailVariables(), [
-            'prenom' => $client->prenom,
-        ]);
+        $keywords = [
+            'firstName'     => $client->prenom,
+            'lenderPattern' => $this->get('doctrine.orm.entity_manager')
+                ->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getWalletByType($client->id_client, WalletType::LENDER)->getWireTransferPattern()
+        ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $keywords);
+
         try {
             $message->setTo($client->email);
             $mailer = $this->get('mailer');
@@ -1176,25 +1181,6 @@ class LenderProfileController extends Controller
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
-    }
-
-    private function getCommonEmailVariables()
-    {
-        /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-        $settings->get('Facebook', 'type');
-        $fbLink = $settings->value;
-        $settings->get('Twitter', 'type');
-        $twLink = $settings->value;
-
-        $varMail = [
-            'surl'    => $this->get('assets.packages')->getUrl(''),
-            'url'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default'),
-            'lien_fb' => $fbLink,
-            'lien_tw' => $twLink
-        ];
-
-        return $varMail;
     }
 
     private function getClient()

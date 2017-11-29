@@ -49,6 +49,7 @@ EOF
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $varMail, false);
+
         try {
             $message->setTo($settings->value);
             $mailer = $this->getContainer()->get('mailer');

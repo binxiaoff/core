@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
@@ -29,8 +28,6 @@ class WelcomeOfferManager
     private $mailer;
     /** @var LoggerInterface */
     private $logger;
-    private $staticUrl;
-    private $frontUrl;
 
     public function __construct(
         OperationManager $operationManager,
@@ -38,10 +35,7 @@ class WelcomeOfferManager
         \NumberFormatter $numberFormatter,
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
-        LoggerInterface $logger,
-        Packages $assetsPackages,
-        $schema,
-        $frontHost
+        LoggerInterface $logger
     )
     {
         $this->operationManager = $operationManager;
@@ -50,8 +44,6 @@ class WelcomeOfferManager
         $this->messageProvider  = $messageProvider;
         $this->mailer           = $mailer;
         $this->logger           = $logger;
-        $this->staticUrl        = $assetsPackages->getUrl('');
-        $this->frontUrl         = $schema . '://' . $frontHost;
     }
 
     /**
@@ -222,18 +214,16 @@ class WelcomeOfferManager
      */
     public function sendWelcomeOfferEmail(Clients $client, OffresBienvenues $welcomeOffer)
     {
-        $varMail = [
-            'surl'            => $this->staticUrl,
-            'url'             => $this->frontUrl,
-            'prenom_p'        => $client->getPrenom(),
-            'projets'         => $this->frontUrl . '/projets-a-financer',
-            'offre_bienvenue' => $this->numberFormatter->format($welcomeOffer->getMontant() / 100),
-            'lien_fb'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'lien_tw'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $keyWords = [
+            'firstName'          => $client->getPrenom(),
+            'welcomeOfferAmount' => $this->numberFormatter->format($welcomeOffer->getMontant() / 100),
+            'validityInMonth'    => $this->getWelcomeOfferValidityInMonth(),
+            'lenderPattern'      => $wallet->getWireTransferPattern()
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $varMail);
+        $message = $this->messageProvider->newMessage('offre-de-bienvenue', $keyWords);
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
@@ -296,5 +286,15 @@ class WelcomeOfferManager
         }
 
         return $unusedAmount;
+    }
+
+    /**
+     * @return float
+     */
+    private function getWelcomeOfferValidityInMonth()
+    {
+        $validitySetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée validité Offre de bienvenue']);
+
+        return round($validitySetting->getValue() / 30, PHP_ROUND_HALF_DOWN);
     }
 }

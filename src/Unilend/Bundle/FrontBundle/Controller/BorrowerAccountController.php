@@ -341,25 +341,13 @@ class BorrowerAccountController extends Controller
                     $filePath = $file->getPathname();
                 }
 
-                /** @var \settings $oSettings */
-                $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
-                $settings->get('Facebook', 'type');
-                $facebookURL = $settings->value;
-
-                $settings->get('Twitter', 'type');
-                $twitterURL = $settings->value;
-
-                $aVariables = array(
-                    'surl'     => $this->get('assets.packages')->getUrl(''),
-                    'url'      => $request->getBaseUrl(),
-                    'prenom_c' => $formData['first_name'],
-                    'projets'  => $this->generateUrl('projects_list'),
-                    'lien_fb'  => $facebookURL,
-                    'lien_tw'  => $twitterURL
-                );
+                $keywords = [
+                    'firstName' => $formData['first_name']
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact-emprunteur', $keywords);
+
                 try {
                     $message->setTo($formData['email']);
                     $mailer = $this->get('mailer');
@@ -367,11 +355,14 @@ class BorrowerAccountController extends Controller
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('common-validator_email-address-invalid'));
 
-                    return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
+                    return [
+                        'contact_form'  => $contactForm->createView(),
+                        'company_siren' => $company->siren,
+                        'company_name'  => $company->name
+                    ];
                 }
-                $settings->get('Adresse emprunteur', 'type');
 
-                $aReplacements = array(
+                $keywords = [
                     '[siren]'     => $company->siren,
                     '[company]'   => $company->name,
                     '[prenom]'    => $formData['first_name'],
@@ -381,21 +372,24 @@ class BorrowerAccountController extends Controller
                     '[demande]'   => $translator->trans('borrower-contact_subject-option-' . $formData['subject']),
                     '[message]'   => $formData['message'],
                     '[SURL]'      => $this->get('assets.packages')->getUrl('')
-                );
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
+                $message   = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $keywords, false);
+                $recipient = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue();
+                $recipient = trim($recipient);
+
                 try {
-                    $message->setTo(trim($settings->value));
-                    if (empty($filePath) === false) {
+                    if (false === empty($filePath)) {
                         $message->attach(\Swift_Attachment::fromPath($filePath));
                     }
+                    $message->setTo($recipient);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
                 } catch (\Exception $exception) {
                     $this->get('logger')->error(
                         'Could not send email : notification-demande-de-contact-emprunteur - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'email address' => $settings->value, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        ['id_mail_template' => $message->getTemplateId(), 'email address' => $recipient, 'class' => __CLASS__, 'function' => __FUNCTION__]
                     );
                 }
 
@@ -404,7 +398,11 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return ['contact_form' => $contactForm->createView(), 'company_siren' => $company->siren, 'company_name' => $company->name];
+        return [
+            'contact_form'  => $contactForm->createView(),
+            'company_siren' => $company->siren,
+            'company_name'  => $company->name
+        ];
     }
 
     /**

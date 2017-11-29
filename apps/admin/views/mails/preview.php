@@ -14,23 +14,19 @@
             var regex = /\[EMV DYN\]([^\[]*)\[EMV \/DYN\]/g
             var content = $('#content').val()
             var form = ''
-            var keywords = {}
-            var defaultKeywords = {
+            var keywords = {
                 staticUrl: '<?= $this->surl ?>',
+                frontUrl: '<?= $this->furl ?>',
+                adminUrl: '<?= $this->aurl ?>',
                 facebookLink: '<?= $this->facebookUrl ?>',
                 twitterLink: '<?= $this->twitterUrl ?>',
-                year: '<?= date('Y') ?>',
-                annee: '<?= date('Y') ?>',
-                url: '<?= $this->furl ?>',
-                surl: '<?= $this->surl ?>',
-                lien_fb: '<?= $this->facebookUrl ?>',
-                lien_tw: '<?= $this->twitterUrl ?>'
+                year: '<?= date('Y') ?>'
             }
 
             do {
                 matched = regex.exec(content);
                 if (matched && !(matched[1] in keywords)) {
-                    keywords[matched[1]] = matched[1] in defaultKeywords ? defaultKeywords[matched[1]] : ''
+                    keywords[matched[1]] = ''
                 }
             } while (matched)
 

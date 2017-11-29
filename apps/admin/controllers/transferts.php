@@ -420,27 +420,17 @@ class transfertsController extends bootstrap
                         $this->clients_gestion_mails_notif->immediatement = 1;
                         $this->clients_gestion_mails_notif->update();
 
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $varMail = [
-                            'surl'            => $this->surl,
-                            'url'             => $this->furl,
-                            'prenom_p'        => html_entity_decode($preteurs->prenom, null, 'UTF-8'),
-                            'fonds_depot'     => $this->ficelle->formatNumber($reception->getMontant() / 100),
-                            'solde_p'         => $this->ficelle->formatNumber($wallet->getAvailableBalance()),
-                            'motif_virement'  => $wallet->getWireTransferPattern(),
-                            'projets'         => $this->furl . '/projets-a-financer',
-                            'gestion_alertes' => $this->furl . '/profile',
-                            'lien_fb'         => $lien_fb,
-                            'lien_tw'         => $lien_tw
+                        $keywords = [
+                            'firstName'        => $preteurs->prenom,
+                            'depositAmount'    => $this->ficelle->formatNumber($reception->getMontant() / 100),
+                            'availableBalance' => $this->ficelle->formatNumber($wallet->getAvailableBalance()),
+                            'lenderPattern'    => $wallet->getWireTransferPattern(),
+                            'projectsLink'     => $this->furl . '/projets-a-financer',
                         ];
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $varMail);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $keywords);
+
                         try {
                             $message->setTo($preteurs->email);
                             $mailer = $this->get('mailer');

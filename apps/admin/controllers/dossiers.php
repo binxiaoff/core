@@ -392,27 +392,20 @@ class dossiersController extends bootstrap
                 }
             } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
                 if ($this->projects->status < ProjectsStatus::PRET_REFUSE) {
-                    $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
-                    /** @var \echeanciers $echeanciers */
-                    $echeanciers = $this->loadData('echeanciers');
                     /** @var LoggerInterface $logger */
                     $logger = $this->get('logger');
-
-                    $this->settings->get('Facebook', 'type');
-                    $facebookLink = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $twitterLink = $this->settings->value;
-
-                    $lendersCount = $loanRepository->getLenderNumber($this->projects->id_project);
 
                     $entityManager->getConnection()->beginTransaction();
                     try {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PRET_REFUSE, $this->projects);
 
+                        /** @var \echeanciers $echeanciers */
+                        $echeanciers = $this->loadData('echeanciers');
                         $echeanciers->delete($this->projects->id_project, 'id_project');
 
-                        $loans = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
+                        $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+                        $lendersCount   = $loanRepository->getLenderNumber($this->projects->id_project);
+                        $loans          = $loanRepository->findBy(['idProject' => $this->projects->id_project, 'status' => Loans::STATUS_ACCEPTED]);
 
                         foreach ($loans as $loan) {
                             $loan->setStatus(Loans::STATUS_REJECTED);
@@ -420,21 +413,18 @@ class dossiersController extends bootstrap
 
                             $this->get('unilend.service.operation_manager')->refuseLoan($loan);
                             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                            $wallet  = $loan->getIdLender();
-                            $varMail = [
-                                'surl'              => $this->surl,
-                                'url'               => $this->furl,
-                                'prenom_p'          => $wallet->getIdClient()->getPrenom(),
-                                'valeur_bid'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
-                                'nom_entreprise'    => $this->companies->name,
-                                'nb_preteurMoinsUn' => $lendersCount - 1,
-                                'motif_virement'    => $wallet->getWireTransferPattern(),
-                                'lien_fb'           => $facebookLink,
-                                'lien_tw'           => $twitterLink
+                            $wallet   = $loan->getIdLender();
+                            $keywords = [
+                                'firstName'         => $wallet->getIdClient()->getPrenom(),
+                                'loanAmount'        => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
+                                'companyName'       => $this->companies->name,
+                                'otherLendersCount' => $lendersCount - 1,
+                                'lenderPattern'     => $wallet->getWireTransferPattern()
                             ];
 
                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $keywords);
+
                             try {
                                 $message->setTo($wallet->getIdClient()->getEmail());
                                 $mailer = $this->get('mailer');
@@ -965,7 +955,7 @@ class dossiersController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $errors               = [];
 
-        if (1 == $_POST['send_email_borrower']) {
+        if (false === empty($_POST['send_email_borrower'])) {
             try {
                 $projectStatusManager->sendProblemStatusEmailToBorrower($project);
             } catch (\Exception $exception) {
@@ -1962,43 +1952,50 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \projects $oProjects */
-        $oProjects = $this->loadData('projects');
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
 
-        if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
+        if (false === isset($this->params[0]) || false === $project->get($this->params[0])) {
             $this->error = 'no projects found';
             return;
         }
-        /** @var \companies $oCompanies */
-        $oCompanies = $this->loadData('companies');
-        if (false === $oCompanies->get($oProjects->id_company)) {
+
+        /** @var \companies $company */
+        $company = $this->loadData('companies');
+        if (false === $company->get($project->id_company)) {
             $this->error = 'no company found';
             return;
         }
 
-        $iClientId = null;
-        if ($oProjects->id_prescripteur) {
-            /** @var \prescripteurs $oPrescripteurs */
-            $oPrescripteurs = $this->loadData('prescripteurs');
-            if ($oPrescripteurs->get($oProjects->id_prescripteur)) {
-                $iClientId = $oPrescripteurs->id_client;
+        $clientId = null;
+        if ($project->id_prescripteur) {
+            /** @var \prescripteurs $advisor */
+            $advisor = $this->loadData('prescripteurs');
+            if ($advisor->get($project->id_prescripteur)) {
+                $clientId = $advisor->id_client;
             }
         } else {
-            $iClientId = $oCompanies->id_client_owner;
+            $clientId = $company->id_client_owner;
         }
 
-        if ($iClientId && $oClients->get($iClientId) && $oClients->email) {
-            $this->sRecipient = $oClients->email;
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+        if ($clientId && $client->get($clientId)) {
+            $this->sRecipient = $client->email;
         } else {
-            $this->error = 'no client email found';
+            $this->error = 'Emprunteur inconnu';
             return;
         }
-        $this->iClientId  = $iClientId;
-        $this->iProjectId = $oProjects->id_project;
 
-        $sTypeEmail = $this->selectEmailCompleteness($iClientId);
+        if (empty($client->email)) {
+            $this->error = 'Veuillez saisir l\'email de l\'emprunteur.';
+            return;
+        }
+
+        $this->iClientId  = $clientId;
+        $this->iProjectId = $project->id_project;
+
+        $sTypeEmail = $this->selectEmailCompleteness($clientId);
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
@@ -2092,6 +2089,7 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);
+
             try {
                 $message->setTo($sRecipientEmail);
                 $mailer = $this->get('mailer');
@@ -2537,25 +2535,13 @@ class dossiersController extends bootstrap
         $historyDetails->create();
 
         if (false === empty($client->email)) {
-            /** @var \settings $settings */
-            $settings = $this->loadData('settings');
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
-
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
-
             $keywords = [
-                'surl'                   => $this->surl,
-                'url'                    => $this->furl,
-                'prenom_e'               => $client->prenom,
-                'link_compte_emprunteur' => $this->furl,
-                'lien_fb'                => $facebookLink,
-                'lien_tw'                => $twitterLink
+                'firstName' => $client->prenom
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
             try {
                 $message->setTo($client->email);
                 $mailer = $this->get('mailer');
@@ -2589,7 +2575,9 @@ class dossiersController extends bootstrap
         $client = $this->loadData('clients');
         $client->get($company->id_client_owner);
 
-        $this->get('unilend.service.email_manager')->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+        $mailerManager = $this->get('unilend.service.email_manager');
+        $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
         die;
@@ -3254,9 +3242,9 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
+        if (
+            in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT, \users_types::TYPE_RISK])
             || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
         ) {
             return true;
         }
