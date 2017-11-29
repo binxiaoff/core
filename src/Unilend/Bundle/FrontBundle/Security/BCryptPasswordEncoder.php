@@ -9,6 +9,12 @@ class BCryptPasswordEncoder extends BaseEncoder
 {
     const PASSWORD_LENGTH_MIN = 8;
 
+    /**
+     * @param string $raw
+     * @param string $salt
+     *
+     * @return string
+     */
     public function encodePassword($raw, $salt)
     {
         if (false === $this->isPasswordSafe($raw)) {

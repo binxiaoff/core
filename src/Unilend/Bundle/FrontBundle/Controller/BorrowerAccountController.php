@@ -651,7 +651,7 @@ class BorrowerAccountController extends Controller
                     $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
                 } catch (\Exception $exception) {
                     $error = true;
-                    $this->addFlash('error', $translator->trans('common-validator_password-not-equal'));
+                    $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
                 }
                 if ($formData['password'] !== $formData['repeated_password']) {
                     $error = true;
