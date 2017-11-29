@@ -261,25 +261,13 @@ class emprunteursController extends bootstrap
             $logger = $this->get('logger');
 
             foreach ($companyProjects as $project) {
-                if (false === empty($_POST['send_email'])) {
-                    try {
-                        $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
-                    } catch (\Exception $exception) {
-                        $logger->warning(
-                            'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
-                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
-                        );
-                    }
-                }
-                if (false === empty($_POST['send_email_borrower']) && 1 == $_POST['send_email_borrower']) {
-                    try {
-                        $projectStatusManager->sendCollectiveProceedingStatusEmailToBorrower($project);
-                    } catch (\Exception $exception) {
-                        $logger->warning(
-                            'Collective proceeding email was not sent to borrower. Error : ' . $exception->getMessage(),
-                            ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
-                        );
-                    }
+                try {
+                    $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
+                } catch (\Exception $exception) {
+                    $logger->warning(
+                        'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
+                        ['id_project' => $project->getIdProject(), 'method' => __METHOD__]
+                    );
                 }
             }
         }

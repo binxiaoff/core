@@ -424,32 +424,22 @@ EOF
                                 $clients_gestion_mails_notif->immediatement = 1;
                                 $clients_gestion_mails_notif->update();
 
-                                $sUrl         = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-                                $sStaticUrl   = $this->getContainer()->get('assets.packages')->getUrl('');
-                                $facebookLink = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue();
-                                $twitterLink  = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue();
-
-                                $varMail = [
-                                    'surl'            => $sStaticUrl,
-                                    'url'             => $sUrl,
-                                    'prenom_p'        => $client->getPrenom(),
-                                    'fonds_depot'     => $numberFormatter->format(round(bcdiv($reception->getMontant(), 100, 4), 2)),
-                                    'solde_p'         => $numberFormatter->format((float) $wallet->getAvailableBalance()),
-                                    'motif_virement'  => $wallet->getWireTransferPattern(),
-                                    'projets'         => $sUrl . '/projets-a-financer',
-                                    'gestion_alertes' => $sUrl . '/profile',
-                                    'lien_fb'         => $facebookLink,
-                                    'lien_tw'         => $twitterLink
+                                $keywords = [
+                                    'firstName'        => $client->getPrenom(),
+                                    'depositAmount'    => $numberFormatter->format(round(bcdiv($reception->getMontant(), 100, 4), 2)),
+                                    'availableBalance' => $numberFormatter->format((float) $wallet->getAvailableBalance()),
+                                    'lenderPattern'    => $wallet->getWireTransferPattern(),
                                 ];
 
-                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
+                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-virement', $keywords);
+
                                 try {
                                     $message->setTo($client->getEmail());
                                     $mailer = $this->getContainer()->get('mailer');
                                     $mailer->send($message);
                                 } catch (\Exception $exception) {
                                     $this->getContainer()->get('monolog.logger.console')->warning(
-                                        'Could not send email: preteur-alimentation - Exception: ' . $exception->getMessage(),
+                                        'Could not send email: preteur-alimentation-virement - Exception: ' . $exception->getMessage(),
                                         ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                                     );
                                 }

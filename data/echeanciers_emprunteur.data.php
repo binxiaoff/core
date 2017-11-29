@@ -104,7 +104,12 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return $result;
     }
 
-    public function getInterestPaymentsOfHealthyProjectsByCohort()
+    /**
+     * @param bool $groupFirstYears
+     *
+     * @return array
+     */
+    public function getInterestPaymentsOfHealthyProjectsByCohort($groupFirstYears = true)
     {
         $query = '
                     SELECT

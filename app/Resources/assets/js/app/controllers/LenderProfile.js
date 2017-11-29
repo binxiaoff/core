@@ -250,4 +250,37 @@ $doc.on('ready', function () {
     }
 
     updateNotificationSettings()
+
+    $doc.on('change', '#form-lender-completeness select[name^="files["]', function () {
+        var ribDocumentId = $('#document-id-rib').val()
+        var $bankAccount   = $('#completeness-bank-account')
+
+        if (ribDocumentId === $(this).val()) {
+            $bankAccount.collapse('show')
+            $bankAccount.removeClass('disabled')
+        } else {
+            hideBankDetails(ribDocumentId, $bankAccount)
+        }
+    })
+
+    $doc.on('FileAttach:removed', '.file-upload-extra .ui-fileattach', function (event) {
+        var ribDocumentId = $('#document-id-rib').val()
+        var $bankAccount   = $('#completeness-bank-account')
+        hideBankDetails(ribDocumentId, $bankAccount)
+    })
+
+    function hideBankDetails(ribDocumentId, $bankAccount) {
+        var ribSelected = false
+        var $extraFiles  = $('.form-extrafiles-list');
+        $extraFiles.find('select[name^="files["]').each(function () {
+            if (ribDocumentId === $(this).find(':selected').val()) {
+                ribSelected = true
+                return
+            }
+        })
+        if (false === ribSelected) {
+            $bankAccount.collapse('hide')
+            $bankAccount.addClass('disabled')
+        }
+    }
 })

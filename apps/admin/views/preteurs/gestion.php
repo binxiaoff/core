@@ -23,7 +23,7 @@
                 <th>Prénom / Dirigeant</th>
                 <th>Email</th>
                 <th>Téléphone</th>
-                <th>Status</th>
+                <th>Statut</th>
                 <th>&nbsp;</th>
             </tr>
             </thead>

@@ -20,6 +20,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.mail_queue"/>
             <argument type="service" id="unilend.service.translation_manager"/>
+            <argument type="service" id="emogrifier"/>
             <argument>%kernel.default_locale%</argument>
         </service>
 
@@ -28,6 +29,10 @@
             <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
             <argument>%kernel.default_locale%</argument>
             <argument type="service" id="translator"/>
+            <argument type="service" id="assets.packages"/>
+            <argument>%router.request_context.scheme%</argument>
+            <argument>%url.host_default%</argument>
+            <argument>%url.host_admin%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -49,5 +54,7 @@
             <argument>%mailjet.api_key%</argument>
             <argument>%mailjet.api_secret%</argument>
         </service>
+
+        <service id="emogrifier" class="Pelago\Emogrifier"/>
     </services>
 </container>

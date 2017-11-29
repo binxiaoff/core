@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -29,9 +30,8 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
         /** @var \echeanciers $repayment */
         $repayment = $entityManager->getRepository('echeanciers');
         /** @var \projects $project */
-        $project    = $entityManager->getRepository('projects');
-        $date       = new \DateTime();
-        $repayments = $repayment->getRepaymentOfTheDay($date);
+        $project         = $entityManager->getRepository('projects');
+        $repayments      = $repayment->getRepaymentOfTheDay(new \DateTime());
         $repaymentsTable = '';
 
         foreach ($repayments as $repayment) {
@@ -46,11 +46,11 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
                     <td>' . ($repayment['nb_repayment'] === $repayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
                 </tr>';
         }
-        $url           = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $replacements = array(
-            '[#SURL#]'       => $url,
+
+        $replacements = [
+            '[#SURL#]'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default'),
             '[#REPAYMENTS#]' => $repaymentsTable
-        );
+        ];
 
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
@@ -59,7 +59,8 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $replacements, false);
-         try{
+
+         try {
              $message->setTo(explode(';', str_replace(' ', '', $recipient)));
              $mailer = $this->getContainer()->get('mailer');
              $mailer->send($message);

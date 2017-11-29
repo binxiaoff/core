@@ -110,7 +110,7 @@ class RiskDataMonitoringManager
             $this->stopMonitoringPeriod($currentMonitoring);
         }
 
-        /** @var RiskDataMonitoring $monitoring */
+        /** @var Companies $company */
         foreach ($this->getMonitoredCompanies($siren, $ratingType, false) as $company) {
             if (
                 CompanyRating::TYPE_EULER_HERMES_GRADE === $ratingType
@@ -118,6 +118,7 @@ class RiskDataMonitoringManager
             ) {
                 if ($this->eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
                     $this->startMonitoringPeriod($siren, $ratingType);
+                    break;
                 }
             }
         }

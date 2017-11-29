@@ -35,13 +35,20 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
         $company = $entityManger->getRepository('companies');
         /** @var \clients $client */
         $client = $entityManger->getRepository('clients');
-        /** @var \settings $settings */
-        $settings = $entityManger->getRepository('settings');
+        /** @var \loans $loans */
+        $loans = $entityManger->getRepository('loans');
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
         $upcomingRepayments = $directDebit->getUpcomingRepayments(7);
-        $logger = $this->getContainer()->get('monolog.logger.console');
+
+        /** @var \settings $settings */
+        $settings = $entityManger->getRepository('settings');
+        $settings->get('Téléphone emprunteur', 'type');
+        $borrowerServicePhoneNumber = $settings->value;
+
+        $settings->get('Adresse emprunteur', 'type');
+        $borrowerServiceEmail = $settings->value;
 
         foreach ($upcomingRepayments as $repayment) {
             $project->get($repayment['id_project']);
@@ -56,36 +63,26 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                 $clientEmail = $client->email;
             }
 
-            /** @var \loans $loans */
-            $loans = $entityManger->getRepository('loans');
-
-            $settings->get('Facebook', 'type');
-            $facebookLink = $settings->value;
-            $settings->get('Twitter', 'type');
-            $twitterLink = $settings->value;
-            $frontUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
-            $varMail = array(
-                'nb_emprunteurs'     => $loans->getNbPreteurs($repayment['id_project']),
-                'echeance'           => $ficelle->formatNumber($repayment['montant'] / 100),
-                'prochaine_echeance' => date('d/m/Y', strtotime($repayment['date_echeance_emprunteur'])),
-                'surl'               => $frontUrl,
-                'url'                => $frontUrl,
-                'nom_entreprise'     => $company->name,
-                'montant'            => $ficelle->formatNumber((float) $project->amount, 0),
-                'prenom_e'           => $firstName,
-                'lien_fb'            => $facebookLink,
-                'lien_tw'            => $twitterLink
-            );
+            $keywords = [
+                'firstName'                  => $firstName,
+                'companyName'                => $company->name,
+                'projectAmount'              => $ficelle->formatNumber($project->amount, 0),
+                'nextPaymentAmount'          => $ficelle->formatNumber($repayment['montant'] / 100),
+                'nextPaymentDate'            => date('d/m/Y', strtotime($repayment['date_echeance_emprunteur'])),
+                'lendersCount'               => $loans->getNbPreteurs($repayment['id_project']),
+                'borrowerServicePhoneNumber' => $borrowerServicePhoneNumber,
+                'borrowerServiceEmail'       => $borrowerServiceEmail
+            ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $varMail);
+            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $keywords);
+
             try {
                 $message->setTo($clientEmail);
                 $mailer = $this->getContainer()->get('mailer');
                 $mailer->send($message);
             } catch (\Exception $exception) {
-                $logger->warning(
+                $this->getContainer()->get('monolog.logger.console')->warning(
                     'Could not send email: mail-echeance-emprunteur - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->id_client_owner, 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );

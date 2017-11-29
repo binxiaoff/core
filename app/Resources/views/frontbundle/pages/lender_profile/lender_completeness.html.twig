@@ -65,6 +65,52 @@
                                                     </div><!-- /.file-upload-extra -->
                                                 </div><!-- /.ui-template-definition -->
 
+                                                {% if bankForm %}
+                                                    <div class="row row-multi-col margin-20-b collapse" id="completeness-bank-account">
+                                                        <div class="col-sm-4 col-md-6 col-lg-6">
+                                                            <div class="form-field">
+                                                                <input type="hidden" id="document-id-rib" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::RIB') }}">
+                                                                <label for="iban" class="form-field-label">
+                                                                    {% trans %} lender-profile_completeness-bank-info-section-iban {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                                </label>
+                                                                <div class="input-group">
+                                                                    <div class="custom-input-iban">
+                                                                        {{ form_widget(bankForm.bankAccount.iban, {
+                                                                            'id' : 'form-profile-completeness-iban',
+                                                                            'attr' : {
+                                                                                'class' : 'iban-input input-field',
+                                                                                'data-formvalidation-input data-formvalidation-type' : 'iban'
+                                                                            }
+                                                                        }) }}
+                                                                        {{ form_errors(bankForm.bankAccount.iban) }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-sm-4 col-md-6 col-lg-6">
+                                                            <div class="form-field">
+                                                                <label for="bic" class="form-field-label">
+                                                                    {% trans %} lender-profile_completeness-bank-info-section-bic {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                                </label>
+                                                                <div class="custom-input-bic">
+                                                                    <div class="custom-input-bic">
+                                                                        {{ form_widget(bankForm.bankAccount.bic, {
+                                                                            'id' : 'form-profile-completeness-bic',
+                                                                            'attr' :  {
+                                                                                'class' : 'bic-input input-field',
+                                                                                'data-formvalidation-input data-formvalidation-type' : 'bic'
+                                                                            }
+                                                                        }) }}
+                                                                        {{ form_errors(bankForm.bankAccount.bic) }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
                                                 <div class="form-extrafiles-list">
                                                     <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
                                                         <div class="col-lg-6 col-md-6" style="margin-bottom: 0">

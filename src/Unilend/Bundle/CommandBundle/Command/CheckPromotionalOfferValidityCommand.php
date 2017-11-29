@@ -118,8 +118,10 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
             $variables = [
                 'balance' => $currencyFormatter->formatCurrency($unilendWallet->getAvailableBalance(), 'EUR')
             ];
+
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-solde-promotion-faible', $variables);
+
             try {
                 $message->setTo(explode(';', trim($recipientSetting->getValue())));
                 $mailer = $this->getContainer()->get('mailer');

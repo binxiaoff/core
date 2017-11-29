@@ -185,42 +185,41 @@ class ProjectCloseOutNettingPaymentManager
     {
         $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
 
-        $project = $wireTransferIn->getIdProject();
-
+        $project                      = $wireTransferIn->getIdProject();
         $projectRepaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findOneBy([
                 'idProject'        => $project,
                 'idWireTransferIn' => $wireTransferIn,
-                'status'           => [
-                    ProjectRepaymentTask::STATUS_PENDING,
-                    ProjectRepaymentTask::STATUS_READY
-                ]
             ]);
 
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
+        if ($projectRepaymentTaskToCancel) {
+            $this->entityManager->getConnection()->beginTransaction();
+            try {
+                $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
 
-            $paidCapital    = round(bcsub($closeOutNettingPayment->getPaidCapital(), $projectRepaymentTaskToCancel->getCapital()), 2);
-            $paidInterest   = round(bcsub($closeOutNettingPayment->getPaidInterest(), $projectRepaymentTaskToCancel->getInterest()), 2);
-            $paidCommission = round(bcsub($closeOutNettingPayment->getPaidCommissionTaxIncl(), $projectRepaymentTaskToCancel->getCommissionUnilend()), 2);
+                $paidCapital    = round(bcsub($closeOutNettingPayment->getPaidCapital(), $projectRepaymentTaskToCancel->getCapital()), 2);
+                $paidInterest   = round(bcsub($closeOutNettingPayment->getPaidInterest(), $projectRepaymentTaskToCancel->getInterest()), 2);
+                $paidCommission = round(bcsub($closeOutNettingPayment->getPaidCommissionTaxIncl(), $projectRepaymentTaskToCancel->getCommissionUnilend()), 2);
 
-            $closeOutNettingPayment->setPaidCapital($paidCapital)
-                ->setPaidInterest($paidInterest)
-                ->setPaidCommissionTaxIncl($paidCommission);
+                $closeOutNettingPayment->setPaidCapital($paidCapital)
+                    ->setPaidInterest($paidInterest)
+                    ->setPaidCommissionTaxIncl($paidCommission);
 
-            $this->entityManager->flush($closeOutNettingPayment);
+                $this->entityManager->flush($closeOutNettingPayment);
 
-            $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
+                if (in_array($projectRepaymentTaskToCancel->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
+                    $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
+                }
 
-            $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
+                $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
 
-            $this->debtCollectionFeeManager->cancelFee($wireTransferIn);
+                $this->debtCollectionFeeManager->cancelFee($wireTransferIn);
 
-            $this->entityManager->getConnection()->commit();
-        } catch (\Exception $exception) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $exception;
+                $this->entityManager->getConnection()->commit();
+            } catch (\Exception $exception) {
+                $this->entityManager->getConnection()->rollBack();
+                throw $exception;
+            }
         }
     }
 }

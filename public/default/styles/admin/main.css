@@ -412,6 +412,34 @@ span[class^="vigilance-status-"], span[class*=" vigilance-status-"] { width: 84p
 .memo-editor .controls label input { margin-right: 5px; }
 .memo-editor .controls .btn-default, .memo-editor .controls .btn-primary { padding: 4px 12px; }
 
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:after {
+    top: 7px !important;
+}
+.dataTables_paginate ul.pagination {
+    margin: 12px 0;
+    white-space: nowrap;
+    float: right;
+}
+.dataTables_paginate ul.pagination > li {
+    display: block;
+    float: left;
+    margin: 0 0 5px 5px;
+}
+.pagination>.active>a, .pagination>.active>span, .pagination>.active>a:hover, .pagination>.active>span:hover, .pagination>.active>a:focus, .pagination>.active>span:focus {
+    color: #b20066;
+    -webkit-box-shadow: 0 2px #b20066;
+    box-shadow: 0 2px #b20066;
+}
+.table-action {
+    padding: 5px;
+}
+.table-action:hover {
+    color: #666;
+    cursor: pointer;
+}
+
 .e-change-warning {  display: inline-block;  width: 14px;  height: 14px;  background: #6d1f4f;  position: relative;  top: -1px;  margin-left: 1px; text-align: center; }
 .e-change-warning:before { content: '↑↓'; display: block; color: #fff; font-size: 10px; }
 
