@@ -6,7 +6,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Query\ResultSetMapping;
 use PDO;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -612,7 +614,7 @@ class ClientsRepository extends EntityRepository
         $queryBuilder
             ->select('c.idClient')
             ->addSelect('c.type')
-            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE c.nom END, \' \') AS name')
+            ->addSelect('IFNULL (CASE WHEN c.type IN (:companyType) THEN co.name ELSE CONCAT(c.nom, \', \', c.prenom) END, \' \') AS name')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType= wt.id AND wt.label = :lenderWalletType')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
@@ -726,5 +728,68 @@ class ClientsRepository extends EntityRepository
             ->getConnection()
             ->executeQuery($query, $parameters)
             ->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param string $hashSegment
+     *
+     * @return null|Clients
+     */
+    public function findClientByOldSponsorCode($hashSegment)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->where('c.hash LIKE :hashSegment')
+            ->setParameter('hashSegment', $hashSegment . '%');
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Method to be deleted once the query does not return any results
+     *
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function findClientsWithSponsorCodeToRepair($limit)
+    {
+        $resultSetMapping = new ResultSetMapping();
+        $resultSetMapping->addEntityResult('UnilendCoreBusinessBundle:Clients', 'c')
+            ->addFieldResult('c', 'id_client', 'idClient')
+            ->addFieldResult('c', 'sponsor_code', 'sponsorCode')
+            ->addFieldResult('c', 'nom', 'nom');
+
+        $query = $this->_em->createNativeQuery('SELECT id_client, sponsor_code, nom FROM clients WHERE sponsor_code REGEXP "[^a-zA-Z0-9]" LIMIT :limit ', $resultSetMapping);
+        $query->setParameter('limit', $limit);
+
+        return $query->getResult();
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return array
+     */
+    public function findBeneficialOwnerByName($name)
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('c.idClient,
+                               c.nom,
+                               c.prenom,
+                               c.naissance,
+                               c.villeNaissance,
+                               c.idPaysNaissance,
+                               ca.idPaysFiscal,
+                               a.id AS attachmentId,
+                               a.originalName AS attachmentOriginalName,
+                               a.path AS attachmentPath')
+            ->leftJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
+            ->where('c.nom LIKE :name')
+            ->andWhere('c.type NOT IN (:lenderTypes)')
+            ->setParameter('name', '%' . $name . '%')
+            ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

@@ -91,8 +91,6 @@ class RiskDataMonitoringController extends Controller
             $response->headers->set('Content-Type', 'application/problem+json');
         }
 
-        $this->get('monolog.logger.wsclient')->warning('Call from Euler Hermes. Result : ' . $type . ', message : ' . $message, ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
         return $response;
     }
 
@@ -142,7 +140,7 @@ class RiskDataMonitoringController extends Controller
     private function checkSiren($siren)
     {
         if (empty($siren)) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is missing', 404);
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren is missing', 404);
         }
 
         if (1 !== preg_match('/^[0-9]*$/', $siren)) {
@@ -150,13 +148,13 @@ class RiskDataMonitoringController extends Controller
         }
 
         if (null === $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['siren' => $siren])) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren  ' . $siren . ' is unknown to database', 404);
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is unknown to database', 404);
         }
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
 
         if (false === $riskDataMonitoringManager->isSirenMonitored($siren, CompanyRating::TYPE_EULER_HERMES_GRADE)) {
-            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren  ' . $siren . ' is not actively monitored', 404);
+            return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is not actively monitored', 404);
         }
 
         return true;

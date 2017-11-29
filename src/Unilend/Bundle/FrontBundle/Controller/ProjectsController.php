@@ -4,25 +4,25 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
@@ -276,8 +276,9 @@ class ProjectsController extends Controller
         $user                  = $this->getUser();
 
         $template = [
-            'project'  => $projectDisplayManager->getProjectData($project, $user),
-            'bidToken' => sha1('tokenBid-' . time() . '-' . uniqid())
+            'project'         => $projectDisplayManager->getProjectData($project, $user),
+            'bidToken'        => sha1('tokenBid-' . time() . '-' . uniqid()),
+            'suggestAutolend' => false
         ];
 
         if (isset($template['project']['bids'])) {
@@ -321,7 +322,7 @@ class ProjectsController extends Controller
                 'bids' => $lenderAccountDisplayManager->getBidsForProject($project->id_project, $client)
             ];
 
-            if ($project->status >= \projects_status::FUNDE) {
+            if ($project->status >= ProjectsStatus::FUNDE) {
                 $template['project']['lender']['loans'] = $lenderAccountDisplayManager->getLoansForProject($project->id_project, $client);
             }
 
@@ -343,6 +344,14 @@ class ProjectsController extends Controller
             $cipManager           = $this->get('unilend.service.cip_manager');
             $productContracts     = $productManager->getAvailableContracts($product);
             $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($client);
+
+            if (
+                in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])
+                && empty($template['project']['lender']['bids']['count'])
+                && ProjectsStatus::BID_TERMINATED <= $project->status
+            ) {
+                $template['suggestAutolend'] = true;
+            }
         }
 
         $projectEntity = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
@@ -411,13 +420,6 @@ class ProjectsController extends Controller
         $project = $entityManagerSimulator->getRepository('projects');
 
         if (false === $project->get($projectSlug, 'slug') || $project->slug !== $projectSlug) { // MySQL does not check collation (hôtellerie = hotellerie) so we strictly check in PHP
-            /** @var \redirections $redirection */
-            $redirection = $entityManagerSimulator->getRepository('redirections');
-
-            if ($redirection->get(['from_slug' => $projectSlug, 'status' => 1])) {
-                return new RedirectResponse($redirection->to_slug, $redirection->type);
-            }
-
             throw $this->createNotFoundException();
         }
 

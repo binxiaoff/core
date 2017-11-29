@@ -179,7 +179,8 @@ class BorrowerAccountController extends Controller
             BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
             BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
             BorrowerOperationsManager::OP_RECOVERY_PAYMENT,
-            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT
+            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT,
+            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT
         ];
 
         if ($request->isXmlHttpRequest()) {
@@ -529,9 +530,10 @@ class BorrowerAccountController extends Controller
      *     name="borrower_account_export_lender_details_csv"
      * )
      *
-     * @param $type
-     * @param $projectId
-     * @param $repaymentOrder
+     * @param string   $type
+     * @param int      $projectId
+     * @param int|null $repaymentOrder
+     *
      * @return StreamedResponse
      */
     public function exportCsvWithLenderDetailsAction($type, $projectId, $repaymentOrder)

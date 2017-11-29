@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -1296,30 +1297,66 @@ class ProjectManager
     }
 
     /**
-     * @todo This is a temporary method to be removed once the new table of closed out loans is created
-     * Calculate the remaining amount and payments count on a project depending on close out netting date if any
-     *
      * @param Projects $project
      *
-     * @return array [amount, paymentsCount]
+     * @return float
      */
-    public function getPendingAmountAndPaymentsCountOnProject(Projects $project)
+    public function getRemainingAmount(Projects $project)
     {
-        $paymentRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $closeOutNettingDate = $project->getCloseOutNettingDate();
-
-        if (null !== $closeOutNettingDate) {
-            $dayBefore              = $closeOutNettingDate->sub((new \DateInterval('P1D')));
-            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, $dayBefore);
-            $dueCapitalPayments     = $paymentRepository->getPendingCapitalAndPaymentsCountOnProjectFromDate($project, $project->getCloseOutNettingDate());
-            $remainingAmount        = round(bcadd($pastFullPayments['amount'], $dueCapitalPayments['amount'], 4), 2);
-            $remainingPaymentsCount = round(bcadd($pastFullPayments['paymentsCount'], $dueCapitalPayments['paymentsCount'], 2), 1);
+        $remainingAmount = 0;
+        if (null === $project->getCloseOutNettingDate()) {
+            $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
+            $remainingAmount  = round(bcadd($remainingAmounts['commission'], bcadd($remainingAmounts['capital'], $remainingAmounts['interest'], 4), 4), 2);
         } else {
-            $pastFullPayments       = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime('yesterday'));
-            $remainingAmount        = $pastFullPayments['amount'];
-            $remainingPaymentsCount = $pastFullPayments['paymentsCount'];
+            $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+            if ($closeOutNettingPayment) {
+
+
+            $totalAmount = round(bcadd(
+                $closeOutNettingPayment->getCommissionTaxIncl(),
+                bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
+                4
+            ), 2);
+            $paidAmount  = round(bcadd(
+                $closeOutNettingPayment->getPaidCommissionTaxIncl(),
+                bcadd($closeOutNettingPayment->getPaidCapital(), $closeOutNettingPayment->getPaidInterest(), 4),
+                4
+            ), 2);
+
+            $remainingAmount = round(bcsub($totalAmount, $paidAmount, 4), 2);
+            }
         }
 
-        return ['amount' => $remainingAmount, 'paymentsCount' => $remainingPaymentsCount];
+        return $remainingAmount;
+    }
+
+    public function getCreditorClaimAmounts(Loans $loan)
+    {
+        if ($loan->getProject()->getCloseOutNettingDate()) {
+            $closeOutNettingRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment')->findOneBy(['idLoan' => $loan]);
+            $remainingCapital         = round(bcsub($closeOutNettingRepayment->getCapital(), $closeOutNettingRepayment->getRepaidCapital(), 4), 2);
+            $remainingInterest        = round(bcsub($closeOutNettingRepayment->getInterest(), $closeOutNettingRepayment->getRepaidInterest(), 4), 2);
+            $expired                  = round(bcadd($remainingCapital, $remainingInterest, 4), 2);
+            $toExpire                 = 0;
+        } else {
+            $collectiveProceedingStatus = [
+                CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
+                CompanyStatus::STATUS_RECEIVERSHIP,
+                CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
+            ];
+            $companyStatusHistory       = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+                ->findFirstHistoryByCompanyAndStatus($loan->getProject()->getIdCompany(), $collectiveProceedingStatus);
+
+            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+            $expired                     = $repaymentScheduleRepository->getTotalOverdueAmountByLoan($loan, $companyStatusHistory->getChangedOn());
+            $toExpire                    = round(bcsub(
+                $repaymentScheduleRepository->getRemainingCapitalByLoan($loan),
+                $repaymentScheduleRepository->getOverdueCapitalByLoan($loan, $companyStatusHistory->getChangedOn()),
+                4
+            ), 2);
+        }
+
+        return ['expired' => $expired, 'to_expired' => $toExpire];
     }
 }

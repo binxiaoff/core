@@ -1,6 +1,6 @@
 <?php
 
-use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 
 ?>
 <script>
@@ -174,6 +174,10 @@ use \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </td>
         </tr>
     </table>
+    <br/><br/>
+
+    <h2>Bénéficiaires effectifs</h2>
+    <a role="button" class="btn btn-default" href="<?= $this->lurl ?>/beneficiaires_effectifs/<?= $this->companies->id_company ?>">Consulter les Bénéficiaires effectifs</a>
     <br/><br/>
 
     <?php $this->fireView('../bank_account/blocks/validated_bank_account'); ?>

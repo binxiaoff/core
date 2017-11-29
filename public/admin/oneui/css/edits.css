@@ -112,6 +112,19 @@
 .text-darker {
     color: #353847;
 }
+.box-shadow {
+    box-shadow: 0 0 5px #d3d3d3;
+}
+.img-responsive-vertical {
+    max-width: 120px;
+    max-height: 60px;
+    width: auto;
+}
+
+/* Buttons and Icons */
+.btn-sm .fa {
+    font-size: 10px;
+}
 
 /* Forms */
 .form-inline > .form-group > button[type=submit] {
@@ -133,6 +146,13 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 }
 .table-vertical-center tbody tr td {
     vertical-align: middle;
+}
+[data-table-actionscolumn], [data-table-editor] tbody tr td:last-child, .table-with-actions tbody tr td:last-child {
+    text-align: center;
+}
+[data-table-actionscolumn] {
+    padding-left: 15px!important;
+    padding-right: 15px!important;
 }
 .dataTable > tbody > tr.even.flash-bg {
     -webkit-animation-name: flash-bg-even;
@@ -181,8 +201,89 @@ table.dataTable thead .sorting:after, table.dataTable thead .sorting_asc:after, 
 }
 
 /* Modals */
+.modal-footer {
+    border-top: 0;
+    padding-top: 10px; padding-bottom: 10px;
+}
+
 .modal label + .optional {
     font-weight: normal;
     font-size: 12px;
     color: #999;
 }
+
+/* Extra UI Elements */
+.closable {
+    position: relative;
+}
+.closable-icon {
+    padding: 10px 15px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+.closable-icon-left {
+    right: auto;
+    left: 0;
+}
+
+/* Project Status UI */
+
+.ui-status-ko-text { color: #b6babe } /* same as .text-muted */
+.ui-status-ko-bg { background-color: #b6babe } /* same as .bg-muted */
+
+.ui-application-text { color: #d0f5d0 }
+.ui-application-bg { background-color: #d0f5d0 }
+
+.ui-application-complete-text { color: #aae3c9 }
+.ui-application-complete-bg { background-color: #aae3c9 }
+
+.ui-abandon-text { color: #eccd81 }
+.ui-abandon-bg { background-color: #eccd81 }
+
+.ui-commercial-text { color: #98d9d4 }
+.ui-commercial-bg { background-color: #98d9d4 }
+
+.ui-analyst-text { color: #91c8d9 }
+.ui-analyst-bg { background-color: #91c8d9 }
+
+.ui-comity-text { color: #80b5d9 }
+.ui-comity-bg { background-color: #80b5d9 }
+
+.ui-prep-funding-text { color: #6ea8dc }
+.ui-prep-funding-bg { background-color: #6ea8dc }
+
+.ui-conditions-text { color: #b995c7 }
+.ui-conditions-bg { background-color: #b995c7 }
+
+.ui-funding-text { color: #5293de }
+.ui-funding-bg { background-color: #5293de }
+
+.ui-project-status-80-text { color: #1b88db }
+.ui-project-status-80-bg { background-color: #1b88db }
+
+.ui-project-status-90-text, .ui-project-status-95-text { color: #4fa8b0 }
+.ui-project-status-90-bg, .ui-project-status-95-bg { background-color: #4fa8b0 }
+
+.ui-project-status-100-text { color: #ffca2c }
+.ui-project-status-100-bg { background-color: #ffca2c }
+
+.ui-debt-collection-text { color: #f2980c }
+.ui-debt-collection-bg { background-color: #f2980c }
+
+.ui-loss-text { color: #787679 }
+.ui-loss-bg { background-color: #787679 }
+
+/* These classes must stay after those defined above for project status */
+
+.ui-company-status-in_bonis-text {}
+.ui-company-status-in_bonis-bg {}
+
+.ui-company-status-precautionary_process-text { color: #f2980c }
+.ui-company-status-precautionary_process-bg { background-color: #f2980c }
+
+.ui-company-status-receivership-text { color: #f2610c }
+.ui-company-status-receivership-bg { background-color: #f2610c }
+
+.ui-company-status-compulsory_liquidation-text { color: #d208f8 }
+.ui-company-status-compulsory_liquidation-bg { background-color: #d208f8 }

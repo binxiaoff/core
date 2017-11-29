@@ -112,11 +112,16 @@ class companies extends companies_crud
         }
 
         return (float) $this->bdd->result($this->bdd->query('
-            SELECT IFNULL(SUM(ee.capital) / 100, 0)
+            SELECT CASE
+                   WHEN p.close_out_netting_date IS NOT NULL AND p.close_out_netting_date != \'0000-00-00\'
+                     THEN conp.capital - conp.paid_capital
+                   ELSE IFNULL(ROUND(SUM(ee.capital - ee.paid_capital) / 100, 2), 0)
+                   END
             FROM echeanciers_emprunteur ee
-            INNER JOIN projects p ON ee.id_project = p.id_project
-            INNER JOIN companies c ON p.id_company = c.id_company
-            WHERE ee.status_emprunteur = 0 AND c.siren = "' . $this->siren . '"'
+              INNER JOIN projects p ON ee.id_project = p.id_project
+              INNER JOIN companies c ON p.id_company = c.id_company
+              LEFT JOIN close_out_netting_payment conp ON p.id_project = conp.id_project
+            WHERE c.siren =  "' . $this->siren . '"'
         ));
     }
 

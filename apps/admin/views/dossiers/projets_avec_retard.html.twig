@@ -1,0 +1,129 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function(){
+            // Page helpers are initialised in app.js and can be called quickly using their name
+            App.initHelpers(['validation', 'datatables']);
+            {% if projectWithPaymentProblems|length > 0 %}
+                $('#late-payments-table').dataTable({
+                    columnDefs: [
+                        {targets: [3,4,5], type: 'formatted-num'}
+                    ]
+                })
+            {% endif %}
+        })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Retards
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block">
+            <div class="block-content block-content-full">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Retard emprunteurs</div>
+                        <a class="h2 font-w300 text-primary">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
+                        <a class="h2 font-w300 text-primary">{{ pendingWireTransferInAmount|localizedcurrency('EUR') }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Projets en retard</div>
+                        <a class="h2 font-w300 text-primary">{{ nbProjectsWithLateRepayments|localizednumber }}</a>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="font-s12 font-w600 text-uppercase">Projets en recouvrement</div>
+                        <a class="h2 font-w300 text-primary">{{ nbProjectsWithDeptCollection|localizednumber }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if projectWithPaymentProblems|length > 0 %}
+        <div class="block">
+            <div class="block-content block-content-full">
+                <table id="late-payments-table" class="table table-bordered table-header-bg table-hover">
+                    <thead>
+                    <tr>
+                        <th style="width: 20%">
+                            Projet
+                        </th>
+                        <th style="width: 15%">
+                            Statut
+                        </th>
+                        <th style="width: 15%">
+                            Déchéance du terme
+                        </th>
+                        <th style="width: 15%">
+                            Retard emprunteur
+                        </th>
+                        <th style="width: 15%">
+                            Confié au recouvreur
+                        </th>
+                        <th style="width: 15%">
+                            Réceptions à traiter
+                        </th>
+                        <th style="width: 5%">
+                            Action
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for projectId, project in projectWithPaymentProblems %}
+                        <tr>
+                            <td>
+                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}</a><br>
+                            </td>
+                            <td>
+                                <span class="label ui-project-status-{{ project.projectStatus }}-bg ui-company-status-{{ project.companyStatusLabel }}-bg">{{ project.projectStatusLabel }}</span>
+                            </td>
+                            <td class="text-right">
+                                {% if project.closeOutNettingDate is not empty %}
+                                    {{ project.closeOutNettingDate|localizeddate('short', 'none') }}
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                {{ project.remainingAmount|localizedcurrency('EUR') }}
+                            </td>
+                            <td class="text-right">
+                                {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
+                            </td>
+                            <td class="text-right">
+                                {{ project.pendingWireTransferInAmount > 0 ? project.pendingWireTransferInAmount|localizedcurrency('EUR') : '0 €' }}
+                            </td>
+                            <td class="text-center">
+                                <a href="/dossiers/details_impayes/{{ projectId }}" class="btn btn-xs btn-default">
+                                    Voir le détail<span  class="fa fa-chevron-right push-5-l"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <div class="row font-s12">
+                    <small class="label push-10-l ui-project-status-100-bg">&nbsp;</small> Retard
+                    <small class="label push-10-l ui-company-status-precautionary_process-bg">&nbsp;</small> Procédure de sauvegarde
+                    <small class="label push-10-l ui-company-status-receivership-bg">&nbsp;</small> Redressement judiciaire
+                    <small class="label push-10-l ui-company-status-compulsory_liquidation-bg">&nbsp;</small> Liquidation judiciaire
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

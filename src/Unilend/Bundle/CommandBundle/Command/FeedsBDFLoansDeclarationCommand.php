@@ -232,7 +232,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $data['repayment_frequency'];
         $projectLineInfo .= $roundedDueCapital;
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo .= $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date']);
+        $projectLineInfo .= $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
@@ -373,11 +373,15 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @param string $closeOutNettingDate
      * @param string $judgementDate
      * @param string $latePaymentDate
+     * @param string $unpaidAmount
      *
      * @return string
      */
-    private function checkUnpaidDate($closeOutNettingDate, $judgementDate, $latePaymentDate)
+    private function checkUnpaidDate($closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount)
     {
+        if (0 == $this->checkAmounts($unpaidAmount)) {
+            return '00000000';
+        }
         if (false === empty($closeOutNettingDate)) {
             return \DateTime::createFromFormat('Y-m-d', $closeOutNettingDate)->format('Ymd');
         } elseif (false === empty($judgementDate)) {
@@ -494,7 +498,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $data['repayment_frequency'];
         $projectLineInfo[] = $roundedDueCapital;
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo[] = $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date']);
+        $projectLineInfo[] = $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');

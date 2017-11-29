@@ -61,11 +61,11 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Campagnes',
-                    'uri'   => 'partenaires'
+                    'uri'   => 'campagnes'
                 ],
                 [
                     'title' => 'Types de campagnes',
-                    'uri'   => 'partenaires/types'
+                    'uri'   => 'campagnes/types'
                 ],
                 [
                     'title' => 'Grille de taux',
@@ -124,7 +124,7 @@ class bootstrap extends Controller
                     'uri'   => 'stats/requete_crs_dac'
                 ],
                 [
-                    'title' => 'Éligibilité des dossiers',
+                    'title' => 'Éligibilité des projets',
                     'uri'   => 'stats/projects_eligibility'
                 ],
                 [
@@ -197,16 +197,12 @@ class bootstrap extends Controller
                     'uri'   => 'prescripteurs/gestion'
                 ],
                 [
-                    'title' => 'Dossiers en funding',
+                    'title' => 'Projets en funding',
                     'uri'   => 'dossiers/funding '
                 ],
                 [
                     'title' => 'Remboursements',
                     'uri'   => 'dossiers/remboursements'
-                ],
-                [
-                    'title' => 'Projets avec retard',
-                    'uri'   => 'emprunteurs/projets_avec_retard'
                 ],
                 [
                     'title' => 'Erreurs remboursements',
@@ -226,7 +222,7 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Partenaires',
-                    'uri'   => 'partner'
+                    'uri'   => 'partenaires'
                 ],
                 [
                     'title' => 'Surveillance données risque',
@@ -241,26 +237,25 @@ class bootstrap extends Controller
         ],
         [
             'title' => 'Remboursements',
-            'uri'   => 'repayment/validation',
+            'uri'   => 'remboursement/validation',
             'zone'  => Zones::ZONE_LABEL_REPAYMENT,
             'children' => [
                 [
+                    'title' => 'Projets avec retard',
+                    'uri'   => 'dossiers/projets_avec_retard'
+                ],
+                [
                     'title' => 'Remboursements à valider',
-                    'uri'   => 'repayment/validation'
-                ]
-            ]
-        ],
-        [
-            'title'    => 'Recouvreurs',
-            'uri'      => 'recouvreur/liste',
-            'zone'     => Zones::ZONE_LABEL_DEBT_COLLECTOR,
-            'children' => [
+                    'uri'   => 'remboursement/validation'
+                ],
                 [
                     'title' => 'Recouvreurs',
                     'uri'   => 'recouvreur/liste',
+                    'zone'  => Zones::ZONE_LABEL_DEBT_COLLECTOR
                 ],
             ]
-        ],[
+        ],
+        [
             'title'    => 'Dépôt de fonds',
             'uri'      => 'transferts',
             'zone'     => Zones::ZONE_LABEL_TRANSFERS,
@@ -338,6 +333,10 @@ class bootstrap extends Controller
                 [
                     'title' => 'Transferts de fonds emprunteurs',
                     'uri'   => 'sfpmei/transferts/emprunteurs',
+                ],
+                [
+                    'title' => 'Opérations non attribuées',
+                    'uri'   => 'sfpmei/transferts/non_attribues',
                 ],
                 [
                     'title' => 'Exports',

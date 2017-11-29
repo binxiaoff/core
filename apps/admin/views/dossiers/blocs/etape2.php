@@ -27,22 +27,15 @@
             }
         });
 
-        $('#enterprise1_etape2').click(function () {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_etape2').hide('slow');
-                $('.identification_prescripteur').hide('slow');
-            }
-        });
-
-        $('#enterprise3_etape2').click(function () {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_etape2').show('slow');
-                $('.identification_prescripteur').show('slow');
-            }
-        });
+        $('.phone-call').on('click', function (e) {
+            e.preventDefault()
+            var $button = $(this)
+            var $field = $button.siblings('input[type=text]')
+            var number = $field.val().replace(/[ .\-]/g, '')
+            window.location = 'tel:' + number
+        })
 
         // STREETVIEW
-
         // Avoid re-initialisation
         var streetviewOpen = false;
 
@@ -236,13 +229,13 @@
     <form method="post" id="dossier_etape2" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" onsubmit="valid_etape2(<?= $this->projects->id_project ?>); return false;">
         <table class="form" style="width: 100%;">
             <tr>
-                <th><label for="raison_sociale_etape2">Raison sociale</label></th>
-                <td>
+                <th style="width: 10%;"><label for="raison_sociale_etape2">Raison sociale</label></th>
+                <td style="width: 45%;">
                     <input type="text" name="raison_sociale_etape2" id="raison_sociale_etape2" class="input_large" value="<?= $this->companies->name ?>">
                     <a class="btn-small btn_link" target="_blank" href="https://www.google.fr/#q=<?= urlencode($this->companies->name) ?>+site:bolden.fr+OR+site:credit.fr+OR+site:lendix.com+OR+site:lendopolis.com+OR+site:lookandfin.com+OR+site:pretstory.fr+OR+site:pretup.fr+OR+site:prexem.com+OR+site:raizers.com+OR+site:crowdlending.fr+OR+site:tributile.fr+OR+site:lesentrepreteurs.com" style="margin-left: 5px">Rechercher sur Google</a>
                 </td>
-                <th><label for="forme_juridique_etape2">Forme juridique</label></th>
-                <td><input type="text" name="forme_juridique_etape2" id="forme_juridique_etape2" class="input_large" value="<?= $this->companies->forme ?>"></td>
+                <th style="width: 15%;"><label for="forme_juridique_etape2">Forme juridique</label></th>
+                <td style="width: 30%;"><input type="text" name="forme_juridique_etape2" id="forme_juridique_etape2" class="input_large" value="<?= $this->companies->forme ?>"></td>
             </tr>
             <tr>
                 <th><label for="capital_social_etape2">Capital social</label></th>
@@ -273,7 +266,10 @@
                     <?php endif; ?>
                 </td>
                 <th><label for="phone_etape2">Téléphone</label></th>
-                <td><input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>"></td>
+                <td>
+                    <input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>">
+                    <a class="btn-small btn_link phone-call">Appeler</a>
+                </td>
             </tr>
             <tr>
                 <th><label for="postal_etape2">Code postal</label></th>
@@ -307,87 +303,104 @@
                 <th><label for="zip_correspondance_etape2">Code postal</label></th>
                 <td><input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= $this->clients_adresses->cp ?>"></td>
                 <th><label for="phone_correspondance_etape2">Téléphone</label></th>
-                <td><input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>"></td>
-            </tr>
-            <tr>
-                <th colspan="4" style="text-align:left;"><br>Vous êtes</th>
-            </tr>
-            <tr>
-                <td colspan="4" style="text-align:left;">
-                    <input<?= $this->bHasAdvisor ? '' : ' checked'?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"><label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
+                <td>
+                    <input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>">
+                    <a class="btn-small btn_link phone-call">Appeler</a>
                 </td>
             </tr>
             <tr>
-                <td colspan="4" style="text-align:left;">
-                    <input<?= $this->bHasAdvisor ? ' checked' : '' ?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
-                </td>
+                <td colspan="2" style="padding-top: 15px;"><h2>Identification du dirigeant</h2></td>
+                <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
+                    <td colspan="2" style="padding-top: 15px; background-color: #ececec;">
+                        <h2>Déposant</h2>
+                    </td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <td colspan="2" style="padding-top: 15px; background-color: #ececec;">
+                        <h2>Prescripteur</h2>
+                    </td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
             </tr>
             <tr>
-                <th colspan="4" style="text-align:left;"><br><h2>Identification du dirigeant</h2></th>
+                <th><label for="fonction_etape2">Fonction</label></th>
+                <td><input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"></td>
+                <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
+                    <th style="background-color: #ececec;">Nom</th>
+                    <td style="background-color: #ececec;"><?= $this->projectEntity->getIdClientSubmitter()->getPrenom() ?> <?= $this->projectEntity->getIdClientSubmitter()->getNom() ?></td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <th style="background-color: #ececec;">Nom</th>
+                    <td style="background-color: #ececec;"><?= $this->clients_prescripteurs->civilite ?> <?= $this->clients_prescripteurs->prenom ?> <?= $this->clients_prescripteurs->nom ?></td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
             </tr>
             <tr>
                 <th>Civilité</th>
-                <td colspan="3">
+                <td>
                     <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite1_etape2" value="Mme">
                     <label for="civilite1_etape2">Madame</label>
                     <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite2_etape2" value="M.">
                     <label for="civilite2_etape2">Monsieur</label>
                 </td>
+                <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
+                    <th style="background-color: #ececec;">Téléphone</th>
+                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdClientSubmitter()->getTelephone()) ?>"><?= $this->projectEntity->getIdClientSubmitter()->getTelephone() ?></a></td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <th style="background-color: #ececec;">Téléphone</th>
+                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->clients_prescripteurs->telephone) ?>"><?= $this->clients_prescripteurs->telephone ?></a></td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
+            </tr>
+            <tr>
+                <th><label for="prenom_etape2">Prénom</label></th>
+                <td><input type="text" name="prenom_etape2" id="prenom_etape2" class="input_large" value="<?= $this->clients->prenom ?>"></td>
+                <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
+                    <th style="background-color: #ececec;">Email</th>
+                    <td style="background-color: #ececec;"><a href="mailto:<?= $this->projectEntity->getIdClientSubmitter()->getEmail() ?>"><?= $this->projectEntity->getIdClientSubmitter()->getEmail() ?></a></td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <th style="background-color: #ececec;">Email</th>
+                    <td style="background-color: #ececec;"><a href="mailto:<?= $this->clients_prescripteurs->email ?>"><?= $this->clients_prescripteurs->email ?></a></td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
             </tr>
             <tr>
                 <th><label for="nom_etape2">Nom</label></th>
                 <td><input type="text" name="nom_etape2" id="nom_etape2" class="input_large" value="<?= $this->clients->nom ?>"></td>
-                <th><label for="prenom_etape2">Prénom</label></th>
-                <td><input type="text" name="prenom_etape2" id="prenom_etape2" class="input_large" value="<?= $this->clients->prenom ?>"></td>
-            </tr>
-            <tr>
-                <th><label for="fonction_etape2">Fonction</label></th>
-                <td><input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"></td>
-                <th><label for="email_etape2">Email</label></th>
-                <td><input type="email" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"></td>
+                <?php if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?>
+                    <th style="background-color: #ececec;">Agence</th>
+                    <td style="background-color: #ececec;"><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <th style="background-color: #ececec;">Raison sociale</th>
+                    <td style="background-color: #ececec;"><?= $this->companies_prescripteurs->name ?><?= empty($this->companies_prescripteurs->siren) ? '' : ' (' . $this->companies_prescripteurs->siren ?></td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
             </tr>
             <tr>
                 <th><label for="phone_new_etape2">Téléphone</label></th>
-                <td><input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>"></td>
+                <td>
+                    <input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>">
+                    <a class="btn-small btn_link phone-call">Appeler</a>
+                </td>
+                <?php if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?>
+                    <th style="background-color: #ececec;">Téléphone agence</th>
+                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdCompanySubmitter()->getPhone()) ?>"><?= $this->projectEntity->getIdCompanySubmitter()->getPhone() ?></a></td>
+                <?php elseif ($this->hasAdvisor) : ?>
+                    <td colspan="2" style="background-color: #ececec; color: #c84747;">Un prescripteur est une personne non enregistrée en tant que partenaire qui a fait un dépôt de dossier via le site.</td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
+            </tr>
+            <tr>
+                <th><label for="email_etape2">Email</label></th>
+                <td colspan="3"><input type="email" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"></td>
+            </tr>
+            <tr>
                 <th><label for="date_naissance_gerant">Date de naissance</label></th>
-                <td><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <th colspan="4" style="text-align:left;"><br>Prescripteur</th>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Civilité</th>
-                <td colspan="3" id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Nom</th>
-                <td id="nom_prescripteur"><?= $this->clients_prescripteurs->nom ?></td>
-                <th>Prénom</th>
-                <td id="prenom_prescripteur"><?= $this->clients_prescripteurs->prenom ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Téléphone</th>
-                <td id="telephone_prescripteur"><?= $this->clients_prescripteurs->telephone ?></td>
-                <th>Email</th>
-                <td id="email_prescripteur"><?= $this->clients_prescripteurs->email ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
-                <th>Raison sociale</th>
-                <td id="company_prescripteur"><?= $this->companies_prescripteurs->name ?></td>
-                <th>SIREN</th>
-                <td id="siren_prescripteur"><?= $this->companies_prescripteurs->siren ?></td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <td colspan="4">
-                    <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" >
-                    <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/<?= $this->projects->id_project ?>/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
-                </td>
-            </tr>
-            <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
-                <td colspan="4">
-                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>">
-                    <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
-                </td>
+                <td colspan="3"><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
             </tr>
         </table>
         <div id="valid_etape2" class="valid_etape">Données sauvegardées</div>

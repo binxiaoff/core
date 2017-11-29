@@ -381,6 +381,9 @@ class Projects
      * @var ClientsMandats[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats", mappedBy="idProject")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $mandates;
 
@@ -417,6 +420,9 @@ class Projects
      * @var Factures[]
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Factures", mappedBy="idProject")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $invoices;
 
@@ -1690,20 +1696,25 @@ class Projects
     }
 
     /**
-     * @param bool $includeArchived
+     * @param bool  $includeArchived
+     * @param array $sort
      *
      * @return ArrayCollection|DebtCollectionMission[]
      */
-    public function getDebtCollectionMissions($includeArchived = false)
+    public function getDebtCollectionMissions($includeArchived = false, $sort = [])
     {
+        $criteria = Criteria::create();
+
         if (false === $includeArchived) {
             $criteria = Criteria::create()
                 ->where(Criteria::expr()->isNull('archived'));
-
-            return $this->debtCollectionMissions->matching($criteria);
         }
 
-        return $this->debtCollectionMissions;
+        if ($sort) {
+            $criteria->orderBy($sort);
+        }
+
+        return $this->debtCollectionMissions->matching($criteria);
     }
 
     /**

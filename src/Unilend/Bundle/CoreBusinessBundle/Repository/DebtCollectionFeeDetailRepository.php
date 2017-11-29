@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
@@ -46,7 +47,7 @@ class DebtCollectionFeeDetailRepository extends EntityRepository
         if ($debtorWallet instanceof Wallet) {
             $debtorWallet = $debtorWallet->getId();
         }
-        $update = 'UPDATE debt_collection_fee_detail SET status = :status WHERE id_wire_transfer_in = :wireTransferIn AND id_wallet_debtor = :debtor';
+        $update = 'UPDATE debt_collection_fee_detail SET status = :status, updated = NOW() WHERE id_wire_transfer_in = :wireTransferIn AND id_wallet_debtor = :debtor';
 
         return $this->getEntityManager()->getConnection()->executeUpdate($update, ['wireTransferIn' => $wireTransferIn, 'status' => $status, 'debtor' => $debtorWallet]);
     }
@@ -85,5 +86,16 @@ class DebtCollectionFeeDetailRepository extends EntityRepository
             ->setParameter('type', $type);
 
         return $queryBuilder->getQuery()->getSingleResult();
+    }
+
+    public function deleteFeesByWireTransferIn($wireTransferIn)
+    {
+        if ($wireTransferIn instanceof Receptions) {
+            $wireTransferIn = $wireTransferIn->getIdReception();
+        }
+
+        $delete = 'DELETE FROM debt_collection_fee_detail WHERE id_wire_transfer_in = :wireTransferIn AND status = :pending';
+
+        return $this->getEntityManager()->getConnection()->executeUpdate($delete, ['wireTransferIn' => $wireTransferIn, 'pending' => DebtCollectionFeeDetail::STATUS_PENDING]);
     }
 }

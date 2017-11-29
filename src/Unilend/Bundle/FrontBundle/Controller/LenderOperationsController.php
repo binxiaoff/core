@@ -344,7 +344,7 @@ class LenderOperationsController extends Controller
 
         /** @var UserLender $user */
         $user               = $this->getUser();
-        $projectsInDept     = $project->getProjectsInDebt();
+        $projectsInDept     = $projectRepository->getProjectsInDebt();
         $filters            = $request->request->get('filter', []);
         $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
         $statusFilter       = isset($filters['status']) ? $filters['status'] : null;
@@ -452,11 +452,11 @@ class LenderOperationsController extends Controller
 
         $seriesData  = [];
         $chartColors = [
-            'late-repayment' => '#5FC4D0',
+            'late-repayment' => '#FFCA2C',
             'incidents'      => '#F2980C',
-            'repaid'         => '#1B88DB',
-            'repayment'      => '#428890',
-            'loss'           => '#787679'
+            'repaid'         => '#4FA8B0',
+            'repayment'      => '#1B88DB',
+            'loss'           => '#F76965'
         ];
 
         foreach ($loanStatus as $status => $count) {

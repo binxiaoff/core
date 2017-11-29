@@ -18,12 +18,13 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager                = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepaymentManager      = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
-        $projectEarlyRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_early_repayment_manager');
-        $slackManager                 = $this->getContainer()->get('unilend.service.slack_manager');
-        $logger                       = $this->getContainer()->get('monolog.logger.console');
-        $stopWatch                    = $this->getContainer()->get('debug.stopwatch');
+        $entityManager                          = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepaymentManager                = $this->getContainer()->get('unilend.service_repayment.project_repayment_manager');
+        $projectEarlyRepaymentManager           = $this->getContainer()->get('unilend.service_repayment.project_early_repayment_manager');
+        $projectCloseOutNettingRepaymentManager = $this->getContainer()->get('unilend.service_repayment.project_close_out_netting_repayment_manager');
+        $slackManager                           = $this->getContainer()->get('unilend.service.slack_manager');
+        $logger                                 = $this->getContainer()->get('monolog.logger.console');
+        $stopWatch                              = $this->getContainer()->get('debug.stopwatch');
 
         $repaymentDate = new \DateTime();
         /** @var ProjectRepaymentTask[] $projectRepaymentTask */
@@ -40,6 +41,9 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                         break;
                     case ProjectRepaymentTask::TYPE_EARLY:
                         $taskLog = $projectEarlyRepaymentManager->repay($task);
+                        break;
+                    case ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING:
+                        $taskLog = $projectCloseOutNettingRepaymentManager->repay($task);
                         break;
                     default:
                         continue 2;

@@ -5,7 +5,6 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -69,11 +68,12 @@ class OperationRepository extends EntityRepository
      * @param Wallet    $wallet
      * @param \DateTime $date
      *
-     * @return Operation[]
+     * @return integer
      */
     public function getWithdrawAndProvisionOperationByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
         $qb = $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
             ->where('o.idType IN (:walletType)')
             ->setParameter('walletType', [
                 $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_WITHDRAW])->getId(),
@@ -84,7 +84,7 @@ class OperationRepository extends EntityRepository
             ->andWhere('o.added >= :added')
             ->setParameter('added', $date);
 
-        return $qb->getQuery()->getResult(AbstractQuery::HYDRATE_SCALAR);
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -644,6 +644,8 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * Todo: it can be deleted after the release of "recouvrement"
+     *
      * @param Projects|integer $project
      * @param Clients[]        $clients
      *
@@ -651,31 +653,30 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalGrossDebtCollectionRepayment($project, array $clients)
     {
-        $qbRegularization = $this->createQueryBuilder('o_r');
-        $qbRegularization->select('IFNULL(SUM(o_r.amount), 0)')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost_r', Join::WITH, 'o_r.idSubType = ost_r.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w_r', Join::WITH, 'w_r.id = o_r.idWalletDebtor')
-            ->where('ost_r.label IN (:regularizationTypes)')
-            ->andWhere('w.idClient IN (:clients)')
-            ->andWhere('o.idProject = :project');
-        $regularization = $qbRegularization->getDQL();
-
         $qb = $this->createQueryBuilder('o');
-        $qb->select('IFNULL(SUM(o.amount), 0) as amount')
-            ->addSelect('(' . $regularization . ') as regularized_amount')
+        $qb->select('SUM(
+            CASE WHEN ost.label in (:normalDebtCollectionRepayment) THEN IFNULL(o.amount, 0)
+            ELSE IFNULL(- o.amount, 0) END
+        ) as amount')
             ->innerJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor')
-            ->where('ost.label = :operationSubType')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletCreditor OR w.id = o.idWalletDebtor')
+            ->where('ost.label IN (:allDebtCollectionRepayment)')
             ->andWhere('w.idClient IN (:clients)')
             ->andWhere('o.idProject = :project')
-            ->setParameter('operationSubType', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION)
-            ->setParameter('regularizationTypes', OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION)
+            ->setParameter('allDebtCollectionRepayment', [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION
+            ])
+            ->setParameter('normalDebtCollectionRepayment', [
+                OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION
+            ])
             ->setParameter('clients', $clients)
             ->setParameter('project', $project);
 
-        $result = $qb->getQuery()->getArrayResult();
-
-        return round(bcsub($result[0]['amount'], $result[0]['regularized_amount'], 4), 2);
+        return $qb->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -1295,5 +1296,29 @@ class OperationRepository extends EntityRepository
             ]);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Wallet|integer $wallet
+     *
+     * @return array
+     */
+    public function getFeesPaymentOperations($wallet)
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('SUM(o.amount) AS amount, DATE(o.added) AS added, IDENTITY(o.idWireTransferIn) AS idWireTransferIn')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
+            ->where('o.idWalletCreditor = :wallet')
+            ->andWhere('ot.label IN (:feePayment)')
+            ->groupBy('o.idWireTransferIn')
+            ->orderBy('o.added',  'DESC')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('feePayment', [
+                OperationType::COLLECTION_COMMISSION_LENDER,
+                OperationType::COLLECTION_COMMISSION_BORROWER,
+                OperationType::COLLECTION_COMMISSION_UNILEND,
+            ]);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

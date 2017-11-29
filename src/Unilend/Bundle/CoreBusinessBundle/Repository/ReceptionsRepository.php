@@ -8,7 +8,6 @@ use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class ReceptionsRepository extends EntityRepository
 {
@@ -33,23 +32,76 @@ class ReceptionsRepository extends EntityRepository
     /**
      * Get all assigned the direct debts or wire transfers to borrowers
      *
-     * @return Users[]
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $sorts
+     * @param array $search
+     *
+     * @return Receptions[]
      */
-    public function getBorrowerAttributions()
+    public function getBorrowerAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
     {
         $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->andWhere('r.idProject IS NOT NULL')
-            ->orderBy('r.idReception', 'DESC');
+        $queryBuilder->where('r.idProject IS NOT NULL');
+
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $offset) {
+            $queryBuilder->setFirstResult($offset);
+        }
+
+        if (false === empty($sorts)) {
+            foreach ($sorts as $sort => $order) {
+                $queryBuilder->addOrderBy('r.' . $sort, $order);
+            }
+        }
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
+     * @param array $search
+     *
+     * @return int
+     */
+    public function getBorrowerAttributionsCount(array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('count(r)')
+            ->andWhere('r.idProject IS NOT NULL');
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * Get all assigned the direct debts or wire transfers to lenders
      *
-     * @return Users[]
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $sorts
+     * @param array $search
+     *
+     * @return Receptions[]
      */
-    public function getLenderAttributions()
+    public function getLenderAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->andWhere('r.idClient IS NOT NULL')
@@ -58,8 +110,119 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
             ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
             ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED)
-            ->orderBy('r.idReception', 'DESC');
+            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
+
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $offset) {
+            $queryBuilder->setFirstResult($offset);
+        }
+
+        if (false === empty($sorts)) {
+            foreach ($sorts as $sort => $order) {
+                $queryBuilder->addOrderBy('r.' . $sort, $order);
+            }
+        }
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param array $search
+     *
+     * @return int
+     */
+    public function getLenderAttributionsCount(array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('count(r)')
+            ->andWhere('r.idClient IS NOT NULL')
+            ->andWhere('r.idProject IS NULL')
+            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
+            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
+            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
+            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
+            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param array $search
+     *
+     * @return int
+     */
+    public function getNonAttributionsCount(array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->select('count(r)')
+            ->andWhere('r.statusBo = :pending')
+            ->setParameter('pending', Receptions::STATUS_PENDING);
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int   $limit
+     * @param int   $offset
+     * @param array $sorts
+     * @param array $search
+     *
+     * @return Receptions[]
+     */
+    public function getNonAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
+    {
+        $queryBuilder = $this->createQueryBuilder('r');
+        $queryBuilder->andWhere('r.statusBo = :pending')
+            ->setParameter('pending', Receptions::STATUS_PENDING);
+
+        if (null !== $limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        if (null !== $offset) {
+            $queryBuilder->setFirstResult($offset);
+        }
+
+        if (false === empty($sorts)) {
+            foreach ($sorts as $sort => $order) {
+                $queryBuilder->addOrderBy('r.' . $sort, $order);
+            }
+        }
+
+        if (false === empty($search)) {
+            $orClause = [];
+            foreach ($search as $column => $value) {
+                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+            }
+            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -155,21 +318,48 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * Get al receipts that didn't have a repayment task yet
+     * Get all wire transfer in flux that didn't have a repayment task yet
      *
-     * @param Projects $project
+     * @param Projects|int $project
      *
-     * @return array
+     * @return Receptions[]
      */
-    public function getPendingReceipt(Projects $project)
+    public function findPendingWireTransferIn($project)
+    {
+        return $this->buildPendingWireTransferInQuery($project)->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return float
+     */
+    public function getTotalPendingWireTransferIn($project)
+    {
+        $queryBuilder = $this->buildPendingWireTransferInQuery($project);
+
+        $queryBuilder->select('ROUND(SUM(IFNULL(r.montant, 0))/100, 2)');
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return \Doctrine\ORM\QueryBuilder
+     */
+    private function buildPendingWireTransferInQuery($project)
     {
         $qbRejected = $this->createQueryBuilder('r_rejected')
             ->select('r_rejected.idReception')
             ->where('r_rejected.idReceptionRejected = r.idReception');
 
+        $qbTreatedReception = $this->createQueryBuilder('r_treated')
+            ->select('IDENTITY(prt.idWireTransferIn)')
+            ->from('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt')
+            ->where('prt.idProject = :projectId')
+            ->andWhere('prt.status != :cancelled');
+
         $queryBuilder = $this->createQueryBuilder('r')
-            ->select('r.idReception, r.montant AS amount, IDENTITY(r.idProject) AS idProejct, r.added as date')
-            ->leftJoin('UnilendCoreBusinessBundle:ProjectRepaymentTask', 'prt', Join::WITH, 'prt.idWireTransferIn = r.idReception')
             ->where('r.idProject = :projectId')
             ->setParameter('projectId', $project)
             ->andWhere('r.statusPrelevement != :directDebitRejected')
@@ -177,15 +367,16 @@ class ReceptionsRepository extends EntityRepository
             ->andWhere('r.statusVirement != :wireTransferRejected')
             ->setParameter('wireTransferRejected', Receptions::WIRE_TRANSFER_STATUS_REJECTED)
             ->andWhere('NOT EXISTS (' . $qbRejected->getDQL() . ')')
-            ->andWhere('prt.id IS NULL');
+            ->andWhere('r.idReception NOT IN (' . $qbTreatedReception->getDQL() . ')')
+            ->setParameter('cancelled', ProjectRepaymentTask::STATUS_CANCELLED);
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder;
     }
 
     /**
      * Get all receipts having a pending repayment task
      *
-     * @return array
+     * @return Receptions[]
      */
     public function findReceptionsWithPendingRepaymentTasks()
     {
