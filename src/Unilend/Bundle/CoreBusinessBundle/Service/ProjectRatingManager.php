@@ -31,20 +31,26 @@ class ProjectRatingManager
         return constant(Projects::class . '::RISK_' . $riskRating);
     }
 
+    /**
+     * @param Projects $project
+     *
+     * @return string
+     */
     public function calculateRiskRating(Projects $project)
     {
-        $committeeAverageNote = $this->calculateCommitteeAverageNote($project);
-        if ($committeeAverageNote >= 8.5 && $committeeAverageNote <= 10) {
+        $committeeAvgGrade = $this->calculateCommitteeAverageGrade($project);
+
+        if ($committeeAvgGrade >= 8.5) {
             $riskRating = 'A';
-        } elseif ($committeeAverageNote >= 7.1 && $committeeAverageNote < 8.5) {
+        } elseif ($committeeAvgGrade >= 7.1) {
             $riskRating = 'B';
-        } elseif ($committeeAverageNote >= 6.1 && $committeeAverageNote < 7.1) {
+        } elseif ($committeeAvgGrade >= 6.1) {
             $riskRating = 'C';
-        } elseif ($committeeAverageNote >= 5.1 && $committeeAverageNote < 6.1) {
+        } elseif ($committeeAvgGrade >= 5.1) {
             $riskRating = 'D';
-        } elseif ($committeeAverageNote >= 4 && $committeeAverageNote < 5.1) {
+        } elseif ($committeeAvgGrade >= 4) {
             $riskRating = 'E';
-        } elseif ($committeeAverageNote >= 2 && $committeeAverageNote < 4) {
+        } elseif ($committeeAvgGrade >= 2) {
             $riskRating = 'G';
         } else {
             $riskRating = 'I';
@@ -58,7 +64,7 @@ class ProjectRatingManager
      *
      * @return float
      */
-    public function calculateCommitteeAverageNote(Projects $project)
+    public function calculateCommitteeAverageGrade(Projects $project)
     {
         $projectRating = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 

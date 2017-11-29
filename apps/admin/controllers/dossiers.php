@@ -847,7 +847,7 @@ class dossiersController extends bootstrap
             /** @var \NumberFormatter $numberFormatter */
             $numberFormatter              = $this->get('number_formatter');
             $this->projectRating          = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
-            $this->projectcommiteeAvgNote = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageNote($this->projectEntity));
+            $this->projectCommiteeAvgGrade = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageGrade($this->projectEntity));
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;

@@ -39,7 +39,7 @@
                 <tr>
                     <th colspan="8" class="text-center">
                         Note :
-                        <span class="moyenneNote_comite"><?= $this->ficelle->formatNumber($this->projectcommiteeAvgNote, 1) ?> / 10 (soit <?= $this->projectRating ?>)</span>
+                        <span class="moyenneNote_comite"><?= $this->ficelle->formatNumber($this->projectCommiteeAvgGrade, 1) ?> / 10 (soit <?= $this->projectRating ?>)</span>
                     </th>
                 </tr>
                 </tfoot>

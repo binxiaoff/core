@@ -73,7 +73,7 @@
                     </td>
                 </tr>
                 <tr class="lanote">
-                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $this->projectcommiteeAvgNote ?> / 10 (soit <?= $this->projectRating ?>)</span></th>
+                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $this->projectCommiteeAvgGrade ?> / 10 (soit <?= $this->projectRating ?>)</span></th>
                 </tr>
                 <tr>
                     <td colspan="8">
