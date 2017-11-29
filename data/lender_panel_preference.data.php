@@ -2,9 +2,9 @@
 
 class lender_panel_preference extends lender_panel_preference_crud
 {
-    public function lender_panel_preference($bdd, $params='')
+    public function __construct($bdd, $params='')
     {
-        parent::lender_panel_preference($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     /**

@@ -29,9 +29,9 @@
 class login_log extends login_log_crud
 {
 
-    function login_log($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::login_log($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_log_login')

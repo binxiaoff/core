@@ -37,9 +37,9 @@ class users_types extends users_types_crud
     const TYPE_DIRECTION  = 7;
     const TYPE_EXTERNAL   = 8;
 
-    public function users_types($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::users_types($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

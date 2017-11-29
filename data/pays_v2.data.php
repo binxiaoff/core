@@ -31,7 +31,7 @@ class pays_v2 extends pays_v2_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::pays_v2($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

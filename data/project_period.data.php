@@ -39,7 +39,7 @@ class project_period extends project_period_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::project_period($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

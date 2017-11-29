@@ -30,7 +30,7 @@ class queries extends queries_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::queries($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function get($id, $field = 'id_query')

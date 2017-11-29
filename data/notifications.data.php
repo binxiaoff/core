@@ -30,7 +30,7 @@ class notifications extends notifications_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::notifications($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

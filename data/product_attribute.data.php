@@ -29,7 +29,7 @@ class product_attribute extends product_attribute_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::product_attribute($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

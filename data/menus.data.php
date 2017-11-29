@@ -29,9 +29,9 @@
 class menus extends menus_crud
 {
 
-    function menus($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::menus($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_menu')

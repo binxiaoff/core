@@ -8,7 +8,7 @@ class lender_evaluation_log extends lender_evaluation_log_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::lender_evaluation_log($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

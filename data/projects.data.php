@@ -40,7 +40,7 @@ class projects extends projects_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::projects($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function create($cs = '')

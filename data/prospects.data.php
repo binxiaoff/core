@@ -28,9 +28,9 @@
 
 class prospects extends prospects_crud
 {
-    function prospects($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::prospects($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_prospect')

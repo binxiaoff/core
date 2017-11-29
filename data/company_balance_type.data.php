@@ -4,7 +4,7 @@ class company_balance_type extends company_balance_type_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::company_balance_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -28,9 +28,9 @@
 
 class elements extends elements_crud
 {
-    public function elements($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::elements($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

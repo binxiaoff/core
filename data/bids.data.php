@@ -39,7 +39,7 @@ class bids extends bids_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::bids($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -29,7 +29,7 @@ class greenpoint_attachment_detail extends greenpoint_attachment_detail_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::greenpoint_attachment_detail($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -29,9 +29,9 @@
 class blocs extends blocs_crud
 {
 
-    function blocs($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::blocs($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_bloc')
