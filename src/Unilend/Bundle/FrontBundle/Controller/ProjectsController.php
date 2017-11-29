@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -99,7 +100,7 @@ class ProjectsController extends Controller
                 'url'         => $router->generate('project_detail', ['projectSlug' => $project['slug']]),
                 'city'        => $project['company']['city'],
                 'zip'         => $project['company']['zip'],
-                'rating'      => str_replace('.', '-', constant('\projects::RISK_' . $project['risk'])),
+                'rating'      => str_replace('.', '-', constant(Projects::class . '::RISK_' . $project['risk'])),
                 'amount'      => $ficelle->formatNumber($project['amount'], 0) . '&nbsp;€',
                 'interest'    => $ficelle->formatNumber($project['averageRate'], 1) . '&nbsp;%',
                 'status'      => $status,
