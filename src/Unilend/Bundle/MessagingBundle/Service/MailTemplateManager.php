@@ -17,6 +17,8 @@ class MailTemplateManager
     private $entityManager;
     /** @var TranslationManager */
     private $translationManager;
+    /** @var Emogrifier */
+    private $emogrifier;
     /** @var string */
     private $defaultLanguage;
 
@@ -24,18 +26,21 @@ class MailTemplateManager
      * @param EntityManager      $entityManager
      * @param MailQueueManager   $mailQueueManager
      * @param TranslationManager $translationManager
+     * @param Emogrifier         $emogrifier
      * @param string             $defaultLanguage
      */
     public function __construct(
         EntityManager $entityManager,
         MailQueueManager $mailQueueManager,
         TranslationManager $translationManager,
+        Emogrifier $emogrifier,
         $defaultLanguage
     )
     {
         $this->entityManager      = $entityManager;
         $this->mailQueueManager   = $mailQueueManager;
         $this->translationManager = $translationManager;
+        $this->emogrifier         = $emogrifier;
         $this->defaultLanguage    = $defaultLanguage;
     }
 
@@ -127,9 +132,20 @@ class MailTemplateManager
         $recipientType = null
     )
     {
+        $templatesWithHeader = [];
+        $templatesWithFooter = [];
+
+        if (MailTemplates::PART_TYPE_HEADER === $mailTemplate->getPart()) {
+            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $templatesWithHeader    = $mailTemplateRepository->findBy(['idHeader' => $mailTemplate]);
+        } elseif (MailTemplates::PART_TYPE_FOOTER === $mailTemplate->getPart()) {
+            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
+            $templatesWithFooter    = $mailTemplateRepository->findBy(['idFooter' => $mailTemplate]);
+        }
+
         if ($this->mailQueueManager->existsInMailQueue($mailTemplate->getIdMailTemplate())) {
             $this->archiveTemplate($mailTemplate);
-            $this->addTemplate(
+            $mailTemplate = $this->addTemplate(
                 $mailTemplate->getType(),
                 $sender,
                 $senderEmail,
@@ -160,42 +176,32 @@ class MailTemplateManager
             }
         }
 
-        if (MailTemplates::PART_TYPE_HEADER === $mailTemplate->getPart()) {
-            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
-            $templatesWithHeader    = $mailTemplateRepository->findBy(['idHeader' => $mailTemplate]);
-
-            foreach ($templatesWithHeader as $template) {
-                $this->modifyTemplate(
-                    $template,
-                    $template->getSenderName(),
-                    $template->getSenderEmail(),
-                    $template->getSubject(),
-                    null,
-                    $template->getContent(),
-                    $mailTemplate,
-                    $template->getIdFooter(),
-                    $template->getRecipientType()
-                );
-            }
+        foreach ($templatesWithHeader as $template) {
+            $this->modifyTemplate(
+                $template,
+                $template->getSenderName(),
+                $template->getSenderEmail(),
+                $template->getSubject(),
+                null,
+                $template->getContent(),
+                $mailTemplate,
+                $template->getIdFooter(),
+                $template->getRecipientType()
+            );
         }
 
-        if (MailTemplates::PART_TYPE_FOOTER === $mailTemplate->getPart()) {
-            $mailTemplateRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
-            $templatesWithFooter    = $mailTemplateRepository->findBy(['idFooter' => $mailTemplate]);
-
-            foreach ($templatesWithFooter as $template) {
-                $this->modifyTemplate(
-                    $template,
-                    $template->getSenderName(),
-                    $template->getSenderEmail(),
-                    $template->getSubject(),
-                    null,
-                    $template->getContent(),
-                    $template->getIdHeader(),
-                    $mailTemplate,
-                    $template->getRecipientType()
-                );
-            }
+        foreach ($templatesWithFooter as $template) {
+            $this->modifyTemplate(
+                $template,
+                $template->getSenderName(),
+                $template->getSenderEmail(),
+                $template->getSubject(),
+                null,
+                $template->getContent(),
+                $template->getIdHeader(),
+                $mailTemplate,
+                $template->getRecipientType()
+            );
         }
     }
 
@@ -227,7 +233,9 @@ class MailTemplateManager
             $content = $content . $mailTemplate->getIdFooter()->getContent();
         }
 
-        $content = (new Emogrifier($content))->emogrify();
+        $this->emogrifier->setHtml($content);
+
+        $content = $this->emogrifier->emogrify();
         $content = str_replace(
             ['%5BEMV%20DYN%5D', '%5BEMV%20/DYN%5D'],
             [TemplateMessageProvider::KEYWORDS_PREFIX, TemplateMessageProvider::KEYWORDS_SUFFIX],
