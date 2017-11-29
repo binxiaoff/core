@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class queriesController extends bootstrap
@@ -38,7 +39,7 @@ class queriesController extends bootstrap
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
 
-        if (isset($_POST['form_edit_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_edit_requete']) && $this->isUserTypeIT()) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -52,7 +53,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($_POST['form_add_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_add_requete']) && $this->isUserTypeIT()) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -65,7 +66,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete' && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($this->params[0]) && $this->params[0] == 'delete' && $this->isUserTypeIT()) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
@@ -221,5 +222,21 @@ class queriesController extends bootstrap
         }
 
         return $oDocument;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isUserTypeIT()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
+        if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT])) {
+            return true;
+        }
+
+        return false;
     }
 }

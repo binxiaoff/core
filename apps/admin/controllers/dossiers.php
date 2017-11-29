@@ -15,6 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -882,7 +883,7 @@ class dossiersController extends bootstrap
         return (
             $this->projects->status <= ProjectsStatus::FUNDE
             && false === empty($this->projects->id_product)
-            && in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_ADMIN, \users_types::TYPE_DIRECTION])
+            && in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_DIRECTION])
         );
     }
 
@@ -3254,9 +3255,10 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
-        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
+        if (
+            in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_RISK, UsersTypes::TYPE_ADMIN])
             || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
+            || isset($this->params[1]) && 'risk' == $this->params[1] && $user->getIdUserType()->getIdUserType() == UsersTypes::TYPE_IT
         ) {
             return true;
         }

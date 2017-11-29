@@ -4,6 +4,7 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class bootstrap extends Controller
@@ -580,7 +581,7 @@ class bootstrap extends Controller
             isset($_SESSION['user'])
             && 'Dashboard' === $navigation[0]['title']
             && (
-                in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL])
+                in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_RISK, UsersTypes::TYPE_COMMERCIAL])
                 || in_array($_SESSION['user']['id_user'], [Users::USER_ID_ALAIN_ELKAIM, Users::USER_ID_ARNAUD_SCHWARTZ])
             )
         ) {

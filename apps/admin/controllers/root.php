@@ -2,6 +2,8 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class rootController extends bootstrap
@@ -69,8 +71,8 @@ class rootController extends bootstrap
         $user->get($_SESSION['user']['id_user']);
 
         if (
-            in_array($user->id_user_type, [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
-            || in_array($user->id_user, [23, 28])
+            in_array($user->id_user_type, [UsersTypes::TYPE_COMMERCIAL, UsersTypes::TYPE_RISK])
+            || in_array($user->id_user, [Users::USER_ID_ALAIN_ELKAIM, Users::USER_ID_ARNAUD_SCHWARTZ])
         ) {
             header('Location: ' . $this->lurl . '/dashboard');
             die;

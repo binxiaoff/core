@@ -5,6 +5,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 
 ?>
@@ -866,7 +867,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
                                     <?php if (
-                                        in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
+                                        in_array($this->users->id_user_type, [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_RISK])
                                         && in_array($this->projects->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
                                     ) : ?>
                                         <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>

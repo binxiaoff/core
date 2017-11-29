@@ -4,6 +4,7 @@ use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
@@ -769,7 +770,7 @@ class ajaxController extends bootstrap
 
         if (
             $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
-            || $this->userEntity->getIdUserType()->getIdUserType() != \users_types::TYPE_DIRECTION
+            || $this->userEntity->getIdUserType()->getIdUserType() != UsersTypes::TYPE_DIRECTION
         ) {
             echo json_encode([
                 'success' => false,

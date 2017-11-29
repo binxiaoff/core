@@ -1,5 +1,14 @@
-<?php if ($this->projects->status >= \projects_status::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITY_REVIEW)) : ?>
-    <?php $isEditable = $this->projects->status == \projects_status::COMITY_REVIEW && $this->userEntity->getIdUserType()->getIdUserType() == \users_types::TYPE_DIRECTION; ?>
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
+
+?>
+
+<?php if ($this->projects->status >= ProjectsStatus::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::COMITY_REVIEW)) : ?>
+    <?php $isRiskUser = UsersTypes::TYPE_RISK == $this->userEntity->getIdUserType()->getIdUserType() || Users::USER_ID_ALAIN_ELKAIM == $this->userEntity->getIdUser(); ?>!
+    <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->userEntity->getIdUserType()->getIdUserType() == UsersTypes::TYPE_DIRECTION; ?>
     <div id="content_etape7">
         <?php
         $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
@@ -27,7 +36,7 @@
         }
         ?>
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
-        <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape7">
+        <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere_comite">Performance financière</label></th>

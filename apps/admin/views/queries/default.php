@@ -1,3 +1,9 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
+
+?>
+
 <script type="text/javascript">
     $(function() {
         $(".tablesorter").tablesorter({headers: {3: {sorter: false}}});
@@ -13,7 +19,7 @@
             <h1>Liste des requêtes</h1>
         </div>
         <div class="col-md-6">
-            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+            <?php if (in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN , UsersTypes::TYPE_IT])) : ?>
                 <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
             <?php endif; ?>
         </div>
@@ -52,7 +58,7 @@
                                 </a>
 
                             <?php endif; ?>
-                            <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+                            <?php if (in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN , UsersTypes::TYPE_IT])) : ?>
                                 <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
                                 </a>
