@@ -127,12 +127,3 @@
 .project-status-chart {
     padding: 0 15px;
 }
-.project-status-chart .col-left {
-    float: left;
-    width: calc(100% - 360px);
-}
-.project-status-chart .col-right {
-    float: left;
-    padding-left: 30px;
-    width: 360px;
-}
