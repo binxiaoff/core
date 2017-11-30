@@ -206,8 +206,8 @@ class debt_collection_missionController extends bootstrap
         $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
         if (
-            in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT, \users_types::TYPE_RISK])
-            || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
+            in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT, UsersTypes::TYPE_RISK])
+            || $user->getIdUser() == Users::USER_ID_ALAIN_ELKAIM
         ) {
             return true;
         }
