@@ -765,6 +765,11 @@ class dossiersController extends bootstrap
 
             if (false === $this->isUnilendPartner) {
                 $this->agencies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $this->projectEntity->getIdPartner()->getIdCompany()->getIdCompany()]);
+
+                /** @var Companies $headquarters */
+                $headquarters = clone $this->projectEntity->getIdPartner()->getIdCompany();
+                $headquarters->setName('Siège');
+                $this->agencies[] = $headquarters;
             }
             usort($this->agencies, function($first, $second) {
                 return strcasecmp($first->getName(), $second->getName());
