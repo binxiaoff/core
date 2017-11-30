@@ -291,7 +291,14 @@ class ProjectStatusManager
      */
     public function sendProblemStatusEmailToBorrower(Projects $project)
     {
-        $this->sendBorrowerEmail($project, 'emprunteur-projet-statut-probleme', []);
+        $paymentRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $pendingPayments    = $paymentRepository->getTotalOverdueAmounts($project, new \DateTime('yesterday'));
+        $totalOverdueAmount = round(bcadd(bcadd($pendingPayments['capital'], $pendingPayments['interest'], 4), $pendingPayments['commission'], 4), 2);
+        $keywords           = [
+            'latePaymentAmount' => $this->currencyFormatter->formatCurrency($totalOverdueAmount, 'EUR')
+        ];
+
+        $this->sendBorrowerEmail($project, 'emprunteur-projet-statut-probleme', $keywords);
     }
 
     /**
@@ -317,9 +324,6 @@ class ProjectStatusManager
         $fundingDate          = $projectStatusHistory->select('id_project = ' . $project->getIdProject() . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . ProjectsStatus::REMBOURSEMENT . ')', 'added ASC, id_project_status_history ASC', 0, 1);
         $fundingDate          = strtotime($fundingDate[0]['added']);
 
-        $paymentRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $pendingPayments     = $paymentRepository->getPendingAmountAndPaymentsCountOnProjectAtDate($project, new \DateTime('yesterday'));
-
         $settingsRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
         $bic                 = $settingsRepository->findOneBy(['type' => 'Virement - BIC'])->getValue();
         $iban                = $settingsRepository->findOneBy(['type' => 'Virement - IBAN'])->getValue();
@@ -331,7 +335,6 @@ class ProjectStatusManager
                 'directorName'               => (empty($clientOwner->getCivilite()) ? 'M.' : $clientOwner->getCivilite()) . ' ' . $clientOwner->getNom(),
                 'projectAmount'              => $this->numberFormatter->format($project->getAmount()),
                 'fundingDate'                => strftime('%B %G', $fundingDate),
-                'latePaymentAmount'          => $this->currencyFormatter->formatCurrency($pendingPayments['amount']+1, 'EUR'),
                 'lendersCount'               => $loans->getNbPreteurs($project->getIdProject()),
                 'projectId'                  => $project->getIdProject(),
                 'bic'                        => $bic,
