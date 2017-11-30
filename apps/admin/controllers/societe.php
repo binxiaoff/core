@@ -88,7 +88,7 @@ class societeController extends bootstrap
             if (
                 $index > 0
                 && $ratings[$previousIndex][CompanyRating::TYPE_EULER_HERMES_GRADE] === $ratings[$index][CompanyRating::TYPE_EULER_HERMES_GRADE]
-                && $ratings[$previousIndex][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT ] === $ratings[$index][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT]
+                && $ratings[$previousIndex][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT] === $ratings[$index][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT]
                 && $ratings[$previousIndex][CompanyRating::TYPE_ALTARES_SCORE_20] === $ratings[$index][CompanyRating::TYPE_ALTARES_SCORE_20]
                 && $ratings[$previousIndex][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100] === $ratings[$index][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100]
                 && $ratings[$previousIndex][CompanyRating::TYPE_INFOLEGALE_SCORE] === $ratings[$index][CompanyRating::TYPE_INFOLEGALE_SCORE]
@@ -226,7 +226,7 @@ class societeController extends bootstrap
      */
     private function changeTrafficLightColorToNumericValue($color)
     {
-        switch($color){
+        switch ($color) {
             case EulerCompanyRating::COLOR_GREEN:
                 return 1;
             case EulerCompanyRating::COLOR_YELLOW:
@@ -263,7 +263,7 @@ class societeController extends bootstrap
         ];
 
         /** @var Projects $project */
-        foreach($projects as $index => $project) {
+        foreach ($projects as $index => $project) {
             $projectStatusHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findBy(['idProject' => $project->getIdProject()]);
             $projectNeed                  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNeed')->find($project->getIdProjectNeed());
             $projectDetails[$index]['id'] = $project->getIdProject();
@@ -302,7 +302,7 @@ class societeController extends bootstrap
      */
     private function getColorForProjectStatus($projectStatus)
     {
-        switch($projectStatus){
+        switch ($projectStatus) {
             case ProjectsStatus::COMMERCIAL_REJECTION:
             case ProjectsStatus::ANALYSIS_REJECTION:
             case ProjectsStatus::COMITY_REJECTION:

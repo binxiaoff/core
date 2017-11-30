@@ -65,7 +65,7 @@
                                     color: "{{ status.color }}",
                                     status: "{{ status.label }}",
                                     type: "{{ status.type }}",
-                                    amount: "{{ status.amount|localizedcurrency('EUR') }}"
+                                    amount: "{{ status.amount|localizednumber }} €"
                                 },
                             {% endfor %}
                         ]
@@ -98,16 +98,15 @@
                     months: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
                     weekdays: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
                     shortMonths: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
-                },
+                }
             })
             // Initialise chart
             Highcharts.chart('project-status-highcharts', {
                 chart: {
                     type: 'xrange',
                     zoomType: 'x',
-                    height: {{ projects|length }} > 10 ? {{ projects|length * 40 }} : 400
+                    height: {{ projects|length > 10 ? projects|length * 40 : 400 }}
                 },
-
                 title: {
                     text: ''
                 },
@@ -126,10 +125,10 @@
                 },
                 legend: {
                     layout: 'horizontal',
-                    verticalAlign: 'top',
+                    verticalAlign: 'bottom',
                     backgroundColor: '#FFFFFF',
                     align: 'left',
-                    x: 40,
+                    x: 40
                 },
                 plotOptions: {
                     series: {
@@ -165,63 +164,65 @@
     </script>
 {% endblock %}
 
- {% block modals %}
- {% endblock %}
+{% block modals %}{% endblock %}
 
 {% block pageHeader %}
-    <div class="row push">
-        <div class="col-md-6">
-            <h1 class="page-heading">
-                {{ company.name }}
-            </h1>
-        </div>
-        <div class="col-md-6 text-right">
-            <a class="btn btn-default btn-sm" href="{{ app.adminUrl }}/emprunteurs/edit/{{ company.idClientOwner }}">Page emprunteur
-                <span class="fa fa-chevron-right push-5-l"></span></a>
-        </div>
-    </div>
+    <h1 class="page-heading push">
+        Évolution des notations
+        <small>{{ company.name }} ({{ company.siren }})</small>
+    </h1>
 {% endblock %}
 
 {% block content %}
     <div class="content">
-        <div id="block-kpi" class="block">
-            <div id="block-kpi" class="block-content">
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">Projets en cours</div>
-                            <a class="h2 font-w300 text-primary">{{ numberOngoingProjects }}</a>
-                        </div>
+        <div class="row text-uppercase">
+            <div class="col-md-6">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600 text-uppercase">Abandons</div>
+                        <a class="h2 font-w300 text-primary">{{ numberAbandonedProjects }}</a>
                     </div>
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">Remboursés</div>
-                            <a class="h2 font-w300 text-primary">{{ numberRepaidProjects }}</a>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600 text-uppercase">Rejets</div>
+                        <a class="h2 font-w300 text-primary">{{ numberRejectedProjects }}</a>
                     </div>
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">Abandons</div>
-                            <a class="h2 font-w300 text-primary">{{ numberAbandonedProjects }}</a>
-                        </div>
+                </div>
+            </div>
+        </div>
+        <div class="row text-uppercase">
+            <div class="col-md-3">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600">En cours</div>
+                        <a class="h2 font-w300 text-primary">{{ numberOngoingProjects }}</a>
                     </div>
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">Rejets</div>
-                            <a class="h2 font-w300 text-primary">{{ numberRejectedProjects }}</a>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600">En remboursement</div>
+                        <a class="h2 font-w300 text-primary">{{ numberProjectsInRepayment }}</a>
                     </div>
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">En remboursement</div>
-                            <a class="h2 font-w300 text-primary">{{ numberProjectsInRepayment }}</a>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600">Remboursés</div>
+                        <a class="h2 font-w300 text-primary">{{ numberRepaidProjects }}</a>
                     </div>
-                    <div class="col-md-2">
-                        <div class="content-mini content-mini-full push" style="background: #f5f5f5;">
-                            <div class="font-s12 font-w600 text-uppercase">Capital restant dû</div>
-                            <a class="h2 font-w300 text-primary">{{ remainingDueCapital|localizedcurrency('EUR') }}</a>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="block">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w600">Capital restant dû</div>
+                        <a class="h2 font-w300 text-primary">{{ remainingDueCapital|localizedcurrency('EUR') }}</a>
                     </div>
                 </div>
             </div>
@@ -276,14 +277,14 @@
                                 </tr>
                                 <tr>
                                     {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_EULER_HERMES_GRADE')] %}
-                                            <td {% if ratingInfo.change %}class="score-change"{% endif %} style="width: 130px;">
-                                                {% if ratingInfo.value is not empty %}
-                                                    {%  if ratingInfo.change %}
-                                                        <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
-                                                    {% endif %}
-                                                    {{ ratingInfo.value }}
+                                        <td {% if ratingInfo.change %}class="score-change"{% endif %} style="width: 130px;">
+                                            {% if ratingInfo.value is not empty %}
+                                                {%  if ratingInfo.change %}
+                                                    <span class="{{ 'fa fa-arrow-' ~ ratingInfo.direction }} {{'text-' ~ ratingInfo.class }}"></span>
                                                 {% endif %}
-                                            </td>
+                                                {{ ratingInfo.value }}
+                                            {% endif %}
+                                        </td>
                                     {% endfor %}
                                 </tr>
                                 <tr>
@@ -371,47 +372,50 @@
         </div>
         <div id="block-projects-offline" class="block block-bordered">
             <div class="block-header">
-                <h3 class="block-title">Projets en cours</h3>
+                <h3 class="block-title">Projets</h3>
             </div>
             <div class="block-content block-content-full">
                 <div class="project-status-chart">
                     <div class="row">
-                        <div class="col-left">
-                            <div id="project-status-highcharts" class="project-status-chart-chart"></div>
-                        </div>
-                        <div class="col-right">
-                            <div class="project-status-chart-legend">
-                                <h5 class="push-20 font-w400 text-center">Légende des statuts</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <ul>
-                                            <li><span class="ui-application-bg"></span> Demande en cours</li>
-                                            <li><span class="ui-application-complete-bg"></span> Demande complète</li>
-                                            <li><span class="ui-commercial-bg"></span> Commercial</li>
-                                            <li><span class="ui-analyst-bg"></span> Analyste</li>
-                                            <li><span class="ui-comity-bg"></span> Comité</li>
-                                            <li>&nbsp;</li>
-                                            <li><span class="ui-status-ko-bg"></span> Rejet</li>
-                                            <li><span class="ui-abandon-bg"></span> Abandon</li>
-                                            <li><span class="ui-conditions-bg"></span> Conditions suspensives</li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <ul>
-                                            <li><span class="ui-prep-funding-bg"></span>Funding process</li>
-                                            <li><span class="ui-inprogress-bg"></span> Remboursement</li>
-                                            <li><span class="ui-completed-bg"></span> Remboursé</li>
-                                            <li>&nbsp;</li>
-                                            <li>&nbsp;</li>
-                                            <li>&nbsp;</li>
-                                            <li><span class="ui-debt-collection-bg"></span> Funding KO/Prêt refusé</li>
-                                            <li><span class="ui-problem-bg"></span> Problème</li>
-                                            <li><span class="ui-loss-bg"></span> Défaut</li>
-                                        </ul>
-                                    </div>
+                        <div class="project-status-chart-legend">
+                            <h5 class="push-20 font-w400 text-center">Légende des statuts</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <ul>
+                                        <li><span class="ui-application-bg"></span> Demande en cours</li>
+                                        <li><span class="ui-application-complete-bg"></span> Demande complète</li>
+                                        <li><span class="ui-commercial-bg"></span> Traitement commercial</li>
+                                        <li><span class="ui-analyst-bg"></span> Analyse risque</li>
+                                        <li><span class="ui-comity-bg"></span> Comité risque</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-3">
+                                    <ul>
+                                        <li><span class="ui-prep-funding-bg"></span> Financement</li>
+                                        <li><span class="ui-project-status-80-bg"></span> Remboursement</li>
+                                        <li><span class="ui-project-status-90-bg"></span> Remboursé</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-3">
+                                    <ul>
+                                        <li><span class="ui-status-ko-bg"></span> Rejet</li>
+                                        <li><span class="ui-abandon-bg"></span> Abandon</li>
+                                        <li><span class="ui-conditions-bg"></span> Conditions suspensives</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-3">
+                                    <ul>
+                                        <li><span class="ui-status-ko-bg"></span> Financement non atteint</li>
+                                        <li><span class="ui-status-ko-bg"></span> Prêt refusé</li>
+                                        <li><span class="ui-project-status-100-bg"></span> Problème</li>
+                                        <li><span class="ui-loss-bg"></span> Défaut</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div id="project-status-highcharts" class="project-status-chart-chart"></div>
                     </div>
                 </div>
             </div>
