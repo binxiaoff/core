@@ -931,12 +931,13 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
         $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $project);
+
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->loadData('projects_status_history');
-
         $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
 
         /** @var \projects_status_history_details $projectStatusHistoryDetails */

@@ -365,7 +365,7 @@ class ProjectStatusManager
 
         /** @var \projects_status_history_details $projectStatusHistoryDetails */
         $projectStatusHistoryDetails = $this->entityManagerSimulator->getRepository('projects_status_history_details');
-        $projectStatusHistoryDetails->get($projectStatusHistory->id_project_status_history);
+        $projectStatusHistoryDetails->get($projectStatusHistory->id_project_status_history, 'id_project_status_history');
 
         $keywords = [
             'mailContent' => nl2br($projectStatusHistoryDetails->mail_content)
@@ -535,7 +535,7 @@ class ProjectStatusManager
 
                     $lenderKeywords = $keywords + [
                             'firstName'         => $wallet->getIdClient()->getPrenom(),
-                            'loansAmount'       => $this->currencyFormatter->formatCurrency($loansAmount, 'EUR'),
+                            'loansAmount'       => $this->numberFormatter->format($loansAmount),
                             'companyName'       => $project->getIdCompany()->getName(),
                             'repaidAmount'      => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
                             'owedCapitalAmount' => $this->currencyFormatter->formatCurrency(round(bcsub($loansAmount, $repaidCapital, 4), 2), 'EUR'),
