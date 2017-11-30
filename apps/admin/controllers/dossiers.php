@@ -2411,7 +2411,7 @@ class dossiersController extends bootstrap
             return;
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manage');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
