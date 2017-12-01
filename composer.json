@@ -15,45 +15,46 @@
     ]
   },
   "require": {
-    "php": ">=5.6.30",
+    "php": ">=7.1.11",
     "knplabs/knp-snappy-bundle": "^1.5",
-    "phpxmlrpc/phpxmlrpc": "4.0.*",
+    "phpxmlrpc/phpxmlrpc": "^4.3",
     "phpoffice/phpexcel": "1.8.*",
     "mailjet/mailjet-apiv3-php": "^1.1",
     "symfony/symfony": "^3.3",
-    "symfony/swiftmailer-bundle": "^2.3",
+    "symfony/swiftmailer-bundle": "^3.1",
     "symfony/monolog-bundle": "^3.1",
-    "doctrine/doctrine-bundle": "^1.6",
+    "doctrine/doctrine-bundle": "^1.8",
     "doctrine/orm": "^2.5",
     "cache/adapter-bundle": "^1.1",
     "cache/memcache-adapter": "^1.0",
     "sensio/distribution-bundle": "^5.0",
-    "sensio/framework-extra-bundle": "^3.0.2",
+    "sensio/framework-extra-bundle": "^5.1",
     "incenteev/composer-parameter-handler": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "symfony-cmf/routing-bundle": "^2.0",
-    "twig/extensions": "^1.3",
+    "twig/extensions": "^1.5",
     "xynnn/google-tag-manager-bundle": "^2.0",
     "sonata-project/seo-bundle": "^2.0",
-    "ekino/newrelic-bundle": "^1.3",
+    "ekino/newrelic-bundle": "^1.4",
     "sonata-project/cache-bundle": "^2.3",
     "knplabs/knp-mailjet-bundle": "^1.1",
     "cleentfaar/slack-bundle": "^0.20.1",
-    "ramsey/uuid": "^3.5",
+    "ramsey/uuid": "^3.7",
     "jbroadway/urlify": "^1.0",
-    "doctrine/mongodb-odm-bundle": "^3.2",
+    "doctrine/mongodb-odm-bundle": "^3.4",
     "beberlei/DoctrineExtensions": "^1.0",
-    "jms/serializer-bundle": "^1.1",
-    "eightpoints/guzzle-bundle": "^5.2",
+    "jms/serializer-bundle": "^2.2",
+    "eightpoints/guzzle-bundle": "^7.2",
     "box/spout": "^2.7",
     "hashids/hashids": "^2.0",
-    "pelago/emogrifier": "^1.2.0"
+    "pelago/emogrifier": "^1.2",
+    "alcaeus/mongo-php-adapter": "^1.1"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"
   },
   "scripts": {
-    "post-install-cmd": [
+    "symfony-scripts": [
       "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
@@ -61,13 +62,11 @@
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
       "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
     ],
+    "post-install-cmd": [
+      "@symfony-scripts"
+    ],
     "post-update-cmd": [
-      "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
-      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
+      "@symfony-scripts"
     ]
   },
   "extra": {

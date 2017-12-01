@@ -6,12 +6,9 @@ if (getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
     exit;
 }
 
-$loader = require __DIR__ . '/../../app/autoload.php';
+require __DIR__ . '/../../app/autoload.php';
 include '../../core/controller.class.php';
 include '../../core/command.class.php';
-require_once __DIR__ . '/../../app/AppKernel.php';
-
-ini_set('log_errors', 1);
 
 $kernel  = new AppKernel('preprod', false);
 $request = Request::createFromGlobals();

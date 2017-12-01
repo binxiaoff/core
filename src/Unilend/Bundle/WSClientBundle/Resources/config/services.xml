@@ -41,7 +41,7 @@
         </service>
 
         <service id="unilend.service.ws_client.euler_manager" class="Unilend\Bundle\WSClientBundle\Service\EulerHermesManager">
-            <argument type="service" id="guzzle.client.euler"/>
+            <argument type="service" id="eight_points_guzzle.client.euler"/>
             <argument>%euler.grading_key%</argument>
             <argument>%euler.account_key%</argument>
             <argument>%euler.password%</argument>
@@ -54,7 +54,7 @@
         </service>
 
         <service id="unilend.service.ws_client.codinf_manager" class="Unilend\Bundle\WSClientBundle\Service\CodinfManager">
-            <argument type="service" id="guzzle.client.codinf"/>
+            <argument type="service" id="eight_points_guzzle.client.codinf"/>
             <argument>%codinf.user%</argument>
             <argument>%codinf.password%</argument>
             <argument>%codinf.url%</argument>
@@ -65,7 +65,7 @@
         </service>
 
         <service id="unilend.service.ws_client.infolegale_manager" class="Unilend\Bundle\WSClientBundle\Service\InfolegaleManager">
-            <argument type="service" id="guzzle.client.infolegale"/>
+            <argument type="service" id="eight_points_guzzle.client.infolegale"/>
             <argument>%infolegale.token%</argument>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
@@ -97,7 +97,7 @@
 
         <service id="unilend.service.ws_client.ellisphere_manager" class="Unilend\Bundle\WSClientBundle\Service\EllisphereManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="guzzle.client.ellisphere"/>
+            <argument type="service" id="eight_points_guzzle.client.ellisphere"/>
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="logger"/>

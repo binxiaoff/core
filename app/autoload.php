@@ -1,17 +1,11 @@
 <?php
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver;
 use Composer\Autoload\ClassLoader;
-
 
 /**
  * @var ClassLoader $loader
  */
 $loader = require __DIR__ . '/../vendor/autoload.php';
-
-AnnotationRegistry::registerLoader([$loader, 'loadClass']);
-AnnotationDriver::registerAnnotationClasses();
 
 // Begin of code for the backward compatibility
 spl_autoload_register(function ($sClassName) {
