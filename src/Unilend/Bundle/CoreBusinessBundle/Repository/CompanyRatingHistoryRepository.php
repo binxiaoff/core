@@ -7,10 +7,11 @@ use Doctrine\ORM\EntityRepository;
 class CompanyRatingHistoryRepository extends EntityRepository
 {
     /**
-     * @param array  $ratingTypes
      * @param string $siren
+     * @param array  $ratingTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getRatingsSirenByDate($siren, array $ratingTypes)
     {
@@ -19,7 +20,7 @@ class CompanyRatingHistoryRepository extends EntityRepository
         foreach ($ratingTypes as $rating) {
             $alias             = 'cr_' . $rating;
             $ratingTypesJoin   .= 'LEFT JOIN company_rating ' . $alias . ' ON crh.id_company_rating_history = ' . $alias . '.id_company_rating_history AND ' . $alias . '.type = "' . $rating . '"';
-            $ratingTypesSelect .= 'IFNULL(null, ' . $alias . '.value) AS ' . $rating . ', ';
+            $ratingTypesSelect .= $alias . '.value AS ' . $rating . ', ';
         }
 
         $query =
@@ -38,5 +39,4 @@ class CompanyRatingHistoryRepository extends EntityRepository
 
         return $result;
     }
-
 }

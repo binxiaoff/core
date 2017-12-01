@@ -41,7 +41,7 @@
                 {% for project in projects %}
                     {% set projectIndex = loop.index - 1 %}
                     {
-                        name: 'Projet N°{{ project.id }}',
+                        name: '#{{ project.id }}',
                         dataLabels: {
                             enabled: true,
                             align: 'left',
@@ -65,6 +65,7 @@
                                     color: "{{ status.color }}",
                                     status: "{{ status.label }}",
                                     type: "{{ status.type }}",
+                                    motive: "{{ status.motive }}",
                                     amount: "{{ status.amount|localizednumber }} €"
                                 },
                             {% endfor %}
@@ -151,10 +152,11 @@
                             end = Highcharts.dateFormat('%e %b %y', this.x2, true),
                             status = this.point.status,
                             type = this.point.type,
+                            motive = this.point.motive,
                             amount = this.point.amount
 
                         var html = '<b>' + status + ' : ' + start + ' - ' + end + '</b><br>' +
-                                amount + ' | ' + type
+                                amount + '</b><br> Motif : ' + motive + ' | Besoin : ' + type
                         return html
                     }
                 },
@@ -239,16 +241,16 @@
                                 <td>&nbsp;</td>
                             </tr>
                             <tr>
-                                <th>Euler Hermes Grade</th>
+                                <th>Euler Hermes (grade)</th>
                             </tr>
                             <tr>
-                                <th>Euler Hermes (Traffic Light)</th>
+                                <th>Euler Hermes (traffic light)</th>
                             </tr>
                             <tr>
-                                <th>Score Altares</th>
+                                <th>Altares (société)</th>
                             </tr>
                             <tr>
-                                <th>Score Altares (Sectoriel)</th>
+                                <th>Altares (secteur)</th>
                             </tr>
                             <tr>
                                 <th>Infolegale</th>
@@ -386,11 +388,11 @@
                                         <li><span class="ui-application-complete-bg"></span> Demande complète</li>
                                         <li><span class="ui-commercial-bg"></span> Traitement commercial</li>
                                         <li><span class="ui-analyst-bg"></span> Analyse risque</li>
-                                        <li><span class="ui-comity-bg"></span> Comité risque</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-3">
                                     <ul>
+                                        <li><span class="ui-comity-bg"></span> Comité risque</li>
                                         <li><span class="ui-prep-funding-bg"></span> Financement</li>
                                         <li><span class="ui-project-status-80-bg"></span> Remboursement</li>
                                         <li><span class="ui-project-status-90-bg"></span> Remboursé</li>

@@ -130,30 +130,30 @@ class societeController extends bootstrap
      */
     private function checkRatingChangeClass($firstRating, $secondRating, $ratingType)
     {
-        if ($firstRating == $secondRating) {
-            $change = [
-                'change'    => false,
-                'class'     => '',
-                'direction' => ''
-            ];
-        } else {
+        if (CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT === $ratingType) {
+            $firstRating  = $this->convertTrafficLightColorToNumericValue($firstRating);
+            $secondRating = $this->convertTrafficLightColorToNumericValue($secondRating);
+        }
+
+        $change = [
+            'change'    => false,
+            'class'     => '',
+            'direction' => ''
+        ];
+
+        if (null !== $firstRating && null !== $secondRating) {
             switch ($ratingType) {
                 case CompanyRating::TYPE_ALTARES_SCORE_20:
                 case CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100:
                 case CompanyRating::TYPE_INFOLEGALE_SCORE:
-                    if (empty($firstRating) || empty($secondRating)) {
-                        $change = [
-                            'change'    => true,
-                            'class'     => 'warning',
-                            'direction' => 'up'
-                        ];
-                    } elseif ($firstRating > $secondRating) {
+                    if ($firstRating > $secondRating) {
                         $change = [
                             'change'    => true,
                             'class'     => 'error',
                             'direction' => 'down'
                         ];
-                    } else {
+                    }
+                    if ($firstRating < $secondRating){
                         $change = [
                             'change'    => true,
                             'class'     => 'success',
@@ -163,55 +163,23 @@ class societeController extends bootstrap
                     break;
                 case CompanyRating::TYPE_EULER_HERMES_GRADE:
                 case CompanyRating::TYPE_XERFI_RISK_SCORE:
-                    if (empty($firstRating) || empty($secondRating)) {
-                        $change = [
-                            'change'    => true,
-                            'class'     => 'warning',
-                            'direction' => 'down'
-                        ];
-                    } elseif ($firstRating > $secondRating) {
+                case CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT:
+                if ($firstRating > $secondRating) {
                         $change = [
                             'change'    => true,
                             'class'     => 'success',
                             'direction' => 'down'
-                        ];
-                    } else {
-                        $change = [
-                            'change'    => true,
-                            'class'     => 'error',
-                            'direction' => 'up'
                         ];
                     }
-                    break;
-                case CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT:
-                    $firstValue  = $this->changeTrafficLightColorToNumericValue($firstRating);
-                    $secondValue = $this->changeTrafficLightColorToNumericValue($secondRating);
-                    if (0 === $firstValue || 0 === $secondValue) {
-                        $change = [
-                            'change'    => true,
-                            'class'     => 'warning',
-                            'direction' => 'up'
-                        ];
-                    } elseif ($firstValue > $secondValue) {
+                    if ($firstRating < $secondRating){
                         $change = [
                             'change'    => true,
                             'class'     => 'error',
-                            'direction' => 'down'
-                        ];
-                    } else {
-                        $change = [
-                            'change'    => true,
-                            'class'     => 'success',
                             'direction' => 'up'
                         ];
                     }
                     break;
                 default:
-                    $change = [
-                        'change'    => true,
-                        'class'     => 'warning',
-                        'direction' => 'up'
-                    ];
                     break;
             }
         }
@@ -224,7 +192,7 @@ class societeController extends bootstrap
      *
      * @return int
      */
-    private function changeTrafficLightColorToNumericValue($color)
+    private function convertTrafficLightColorToNumericValue($color)
     {
         switch ($color) {
             case EulerCompanyRating::COLOR_GREEN:
@@ -236,7 +204,7 @@ class societeController extends bootstrap
             case EulerCompanyRating::COLOR_BLACK:
                 return 4;
             default:
-                return 0;
+                return null;
         }
     }
 
@@ -247,6 +215,8 @@ class societeController extends bootstrap
      */
     private function formatProjectData(array $projects)
     {
+        $translator = $this->get('translator');
+
         $projectDetails = [];
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -257,6 +227,8 @@ class societeController extends bootstrap
             ProjectsStatus::COMMERCIAL_REJECTION,
             ProjectsStatus::ANALYSIS_REJECTION,
             ProjectsStatus::COMITY_REJECTION,
+            ProjectsStatus::FUNDING_KO,
+            ProjectsStatus::PRET_REFUSE,
             ProjectsStatus::REMBOURSE,
             ProjectsStatus::REMBOURSEMENT_ANTICIPE,
             ProjectsStatus::LOSS
@@ -265,7 +237,7 @@ class societeController extends bootstrap
         /** @var Projects $project */
         foreach ($projects as $index => $project) {
             $projectStatusHistory         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findBy(['idProject' => $project->getIdProject()]);
-            $projectNeed                  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNeed')->find($project->getIdProjectNeed());
+            $projectNeed                  = empty($project->getIdProjectNeed()) ? null : $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNeed')->find($project->getIdProjectNeed());
             $projectDetails[$index]['id'] = $project->getIdProject();
 
             /** @var ProjectsStatusHistory $status */
@@ -280,15 +252,15 @@ class societeController extends bootstrap
                     $end = in_array($projectStatus->getStatus(), $finalProjectStatus) ? $status->getAdded() : new \DateTime('NOW');
                 }
 
-                $data                                 = [
+                $projectDetails[$index]['statuses'][] = [
                     'start'  => $status->getAdded(),
                     'end'    => $end,
                     'color'  => $color,
                     'label'  => $projectStatus->getLabel(),
-                    'type'   => null === $projectNeed ? 'NA' : $projectNeed->getLabel(),
+                    'type'   => null === $projectNeed ? 'non renseigné' : $projectNeed->getLabel(),
+                    'motive' => empty($project->getIdBorrowingMotive()) ? 'non renseigné' : $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()),
                     'amount' => $project->getAmount()
                 ];
-                $projectDetails[$index]['statuses'][] = $data;
             }
         }
 
