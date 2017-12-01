@@ -47,7 +47,7 @@
     "eightpoints/guzzle-bundle": "^5.2",
     "box/spout": "^2.7",
     "hashids/hashids": "^2.0",
-    "pelago/emogrifier": "^1.2.0"
+    "gushphp/to-inline-style-email-bundle": "1.4.0"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"
