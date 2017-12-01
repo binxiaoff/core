@@ -17,6 +17,10 @@ use Doctrine\ORM\EntityManager;
             <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateur</a>
         </div>
     </div>
+    <?php
+    /** @var EntityManager $entityManager */
+    $entityManager = $this->get('doctrine.orm.entity_manager');
+    ?>
     <?php foreach ($this->users as $userStatus => $users) : ?>
         <?php if ($userStatus == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE) : ?>
             <h2>Utilisateurs en ligne</h2>
@@ -40,16 +44,11 @@ use Doctrine\ORM\EntityManager;
                 <tbody>
                     <?php $i = 1; ?>
                     <?php foreach ($users as $user) : ?>
-                        <?php
-                        /** @var EntityManager $entityManager */
-                        $entityManager = $this->get('doctrine.orm.entity_manager');
-                        $userType      = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($user['id_user_type']);
-                        ?>
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td><?= $user['name'] ?></td>
                             <td><?= $user['firstname'] ?></td>
                             <td><?= $user['email'] ?></td>
-                            <td><?= $userType->getLabel() ?></td>
+                            <td><?= $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($user['id_user_type'])->getLabel() ?></td>
                             <td><?= $this->dates->formatDate($user['added'], 'd/m/Y') ?></td>
                             <td><?= $this->dates->formatDate($user['updated'], 'd/m/Y') ?></td>
                             <td><?= $this->dates->formatDate($user['lastlogin'], 'd/m/Y') ?></td>

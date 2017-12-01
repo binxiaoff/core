@@ -39,7 +39,7 @@ class dashboardController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
-            $userManager->isUserGroupRisk($this->userEntity)
+            $userManager->isGrantedRisk($this->userEntity)
             || isset($this->params[0]) && 'risk' == $this->params[0] && $userManager->isUserGroupIT($this->userEntity)
         ) {
             $this->template     = 'risk';

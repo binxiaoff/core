@@ -25,7 +25,7 @@ class debt_collection_missionController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupIT($this->userEntity)) {
+        if ($userManager->isGrantedRisk($this->userEntity) || $userManager->isUserGroupIT($this->userEntity)) {
             if (false === empty($this->params[0])) {
                 $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
                 if (null !== ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId))) {
@@ -63,7 +63,7 @@ class debt_collection_missionController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (false === empty($this->params[0]) && $userManager->isUserGroupRisk($this->userEntity)) {
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager      = $this->get('doctrine.orm.entity_manager');
             $projectId          = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -131,7 +131,7 @@ class debt_collection_missionController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (false === empty($this->params[0]) && $userManager->isUserGroupRisk($this->userEntity)) {
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager       = $this->get('doctrine.orm.entity_manager');
             $projectId           = filter_var($this->params[0], FILTER_VALIDATE_INT);

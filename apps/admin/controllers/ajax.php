@@ -736,7 +736,7 @@ class ajaxController extends bootstrap
 
         if (
             $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
-            || false === $userManager->isUserGroupManagement($this->userEntity)
+            || false === $userManager->isGrantedManagement($this->userEntity)
         ) {
             echo json_encode([
                 'success' => false,

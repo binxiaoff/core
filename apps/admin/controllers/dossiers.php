@@ -881,7 +881,7 @@ class dossiersController extends bootstrap
         return (
             $this->projects->status <= ProjectsStatus::FUNDE
             && false === empty($this->projects->id_product)
-            && $userManager->isUserGroupManagement($this->userEntity)
+            && $userManager->isGrantedManagement($this->userEntity)
         );
     }
 
@@ -3108,7 +3108,7 @@ class dossiersController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
-            $userManager->isUserGroupRisk($this->userEntity)
+            $userManager->isGrantedRisk($this->userEntity)
             || (isset($this->params[1]) && 'risk' === $this->params[1] && $userManager->isUserGroupIT($this->userEntity))
         ) {
             if (false === empty($this->params[0])) {
@@ -3233,7 +3233,7 @@ class dossiersController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if ($userManager->isUserGroupRisk($this->userEntity) && $projectId) {
+        if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
@@ -3261,7 +3261,7 @@ class dossiersController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
-            $userManager->isUserGroupRisk($this->userEntity)
+            $userManager->isGrantedRisk($this->userEntity)
             || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
         ) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
