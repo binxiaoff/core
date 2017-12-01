@@ -77,7 +77,7 @@
                             {% for operation in operationHistory %}
                                 <tr>
                                     <td>{{ operation.date|localizeddate('short', 'none') }}</td>
-                                    <td>{{ 'debt-collector-operation_' ~ operation.label|trans }}</td>
+                                    <td>{{ ('debt-collector-operation_' ~ operation.label)|trans }}</td>
                                     <td class="text-right text-primary">{{ operation.amount > 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
                                     <td class="text-right">{{ operation.amount < 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
                                 </tr>

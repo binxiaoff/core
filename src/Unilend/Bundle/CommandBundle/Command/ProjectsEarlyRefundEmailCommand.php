@@ -32,8 +32,6 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $project = $entityManagerSimulator->getRepository('projects');
         /** @var \echeanciers $lenderRepaymentSchedule */
         $lenderRepaymentSchedule = $entityManagerSimulator->getRepository('echeanciers');
-        /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
-        $borrowerRepaymentSchedule = $entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \receptions $sfpmeiFeedIncoming */
         $sfpmeiFeedIncoming = $entityManagerSimulator->getRepository('receptions');
         /** @var \clients_gestion_mails_notif $emailNotification */
@@ -50,23 +48,12 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $earlyRepaymentEmail = $entityManagerSimulator->getRepository('remboursement_anticipe_mail_a_envoyer');
         /** @var \clients $client */
         $client = $entityManagerSimulator->getRepository('clients');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
         $mailer = $this->getContainer()->get('mailer');
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $loanOperationType           = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::LENDER_LOAN]);
         $earlyRepaymentOperationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
-
-        $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-        $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
-        $settings->get('Facebook', 'type');
-        $facebookLink = $settings->value;
-
-        $settings->get('Twitter', 'type');
-        $twitterLink = $settings->value;
 
         $limit = $input->getOption('limit-project');
         $limit = $limit ? $limit : 1;
@@ -79,26 +66,22 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             $financeOperation = $operationRepository->findOneBy(['idProject' => $project->id_project, 'idType' => $loanOperationType]);
 
             $projectLenders           = $lenderRepaymentSchedule->get_liste_preteur_on_project($project->id_project);
-            $remainingRepaymentsCount = $borrowerRepaymentSchedule->counter('id_project = ' . $project->id_project . ' AND status_ra = 1');
 
             $keywords = [
-                'surl'               => $staticUrl,
-                'url'                => $frontUrl,
-                'prenom'             => $client->prenom,
-                'raison_sociale'     => $company->name,
-                'montant'            => $numberFormatter->format($project->amount),
-                'nb_preteurs'        => count($projectLenders),
-                'duree'              => $project->period,
-                'duree_financement'  => (new \DateTime($project->date_publication))->diff(new \DateTime($project->date_retrait))->d,
-                'date_financement'   => $financeOperation->getAdded()->format('d/m/Y'),
-                'date_remboursement' => \DateTime::createFromFormat('Y-m-d H:i:s', $sfpmeiFeedIncoming->added)->format('d/m/Y'),
-                'lien_fb'            => $facebookLink,
-                'lien_tw'            => $twitterLink,
-                'annee'              => date('Y')
+                'firstName'            => $client->prenom,
+                'fundingDate'          => $financeOperation->getAdded()->format('d/m/Y'),
+                'companyName'          => $company->name,
+                'projectAmount'        => $numberFormatter->format($project->amount),
+                'projectDuration'      => $project->period,
+                'fundingDuration'      => (new \DateTime($project->date_publication))->diff(new \DateTime($project->date_retrait))->d,
+                'lendersCount'         => count($projectLenders),
+                'earlyPaymentDate'     => \DateTime::createFromFormat('Y-m-d H:i:s', $sfpmeiFeedIncoming->added)->format('d/m/Y'),
+                'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-remboursement-anticipe', $keywords);
+
             try {
                 $message->setTo($client->email);
                 $mailer->send($message);
@@ -139,31 +122,23 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                         $loan->get($projectLender['id_loan'], 'id_loan');
 
-                        $accountBalance = $wallet->getAvailableBalance();
-                        $keywords       = [
-                            'surl'                 => $staticUrl,
-                            'url'                  => $frontUrl,
-                            'prenom_p'             => $wallet->getIdClient()->getPrenom(),
-                            'nomproject'           => $project->title,
-                            'nom_entreprise'       => $company->name,
-                            'taux_bid'             => $numberFormatter->format($loan->rate),
-                            'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $numberFormatter->format((float) $lenderRepaymentSchedule->getRepaidInterests([
+                        $keywords = [
+                            'firstName'        => $wallet->getIdClient()->getPrenom(),
+                            'repaymentAmount'  => $currencyFormatter->formatCurrency($lenderRemainingCapital, 'EUR'),
+                            'companyName'      => $company->name,
+                            'paidInterests'    => $numberFormatter->format((float) $lenderRepaymentSchedule->getRepaidInterests([
                                 'id_project' => $project->id_project,
                                 'id_loan'    => $projectLender['id_loan'],
                                 'id_lender'  => $projectLender['id_lender']
                             ])),
-                            'crdpreteur'           => $currencyFormatter->formatCurrency($lenderRemainingCapital, 'EUR'),
-                            'Datera'               => date('d/m/Y'),
-                            'solde_p'              => $currencyFormatter->formatCurrency($accountBalance, 'EUR'),
-                            'motif_virement'       => $wallet->getWireTransferPattern(),
-                            'lien_fb'              => $facebookLink,
-                            'lien_tw'              => $twitterLink,
-                            'annee'                => date('Y')
+                            'loanRate'         => $numberFormatter->format($loan->rate),
+                            'availableBalance' => $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR'),
+                            'lenderPattern'    => $wallet->getWireTransferPattern()
                         ];
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $keywords);
+
                         try {
                             $message->setTo($wallet->getIdClient()->getEmail());
                             $mailer->send($message);

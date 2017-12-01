@@ -19,7 +19,7 @@
             {% for wireTransferIn in pendingWireTransferIn %}
                 <tr>
                     <td>
-                        {{ wireTransferIn.date|localizeddate('short', 'none') }}
+                        {{ wireTransferIn.added|localizeddate('short', 'none') }}
                     </td>
                     <td class="text-right">
                         {{ (wireTransferIn.montant / 100)|localizedcurrency('EUR') }}

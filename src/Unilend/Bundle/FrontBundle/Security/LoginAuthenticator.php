@@ -198,7 +198,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             try {
                 $client->setPassword($this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']));
             } catch (BadCredentialsException $exeption) {
-
+                $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT)); // hack for the old password which cannot pass the security check in encodePassword()
             }
             $this->entityManager->flush($client);
         }

@@ -87,7 +87,7 @@ class ProjectRateSettingsManager
             $period = $this->entityManager->getRepository('project_period');
             $period->get($periodId);
 
-            $varMail = [
+            $keywords = [
                 'evaluation' => $evaluation,
                 'periodMin'  => $period->min,
                 'periodMax'  => $period->max,
@@ -98,7 +98,7 @@ class ProjectRateSettingsManager
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage(self::RATE_CHANGED_NOTIFICATION_MAIL, $varMail);
+            $message = $this->messageProvider->newMessage(self::RATE_CHANGED_NOTIFICATION_MAIL, $keywords);
             $message->setTo($recipient);
             $this->mailer->send($message);
         }

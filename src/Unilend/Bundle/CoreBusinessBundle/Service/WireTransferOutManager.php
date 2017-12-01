@@ -269,7 +269,7 @@ class WireTransferOutManager
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->logger->warning(
-                    'Could not send email : wire-transfer-out-borrower-notification - Exception: ' . $exception->getMessage(),
+                    'Could not send email : wire-transfer-out-to-validate-staff-notification - Exception: ' . $exception->getMessage(),
                     ['id_mail_template' => $message->getTemplateId(), 'email_address' => $settings->getValue(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
