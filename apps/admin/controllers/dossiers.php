@@ -15,8 +15,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -877,10 +875,13 @@ class dossiersController extends bootstrap
      */
     private function isFundsCommissionRateEditable()
     {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
         return (
             $this->projects->status <= ProjectsStatus::FUNDE
             && false === empty($this->projects->id_product)
-            && in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_DIRECTION])
+            && $userManager->isUserGroupManagement($this->userEntity)
         );
     }
 
@@ -3103,8 +3104,13 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if ($this->isUserTypeRisk()) {
+        if (
+            $userManager->isUserGroupRisk($this->userEntity)
+            || (isset($this->params[1]) && 'risk' === $this->params[1] && $userManager->isUserGroupIT($this->userEntity))
+        ) {
             if (false === empty($this->params[0])) {
                 $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
@@ -3224,7 +3230,10 @@ class dossiersController extends bootstrap
     public function _dechoir_terme()
     {
         $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
-        if ($this->isUserTypeRisk() && $projectId) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        if ($userManager->isUserGroupRisk($this->userEntity) && $projectId) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
@@ -3246,28 +3255,15 @@ class dossiersController extends bootstrap
         die;
     }
 
-    /**
-     * @return bool
-     */
-    private function isUserTypeRisk()
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-
-        if (
-            in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT, UsersTypes::TYPE_RISK])
-            || $user->getIdUser() == Users::USER_ID_ALAIN_ELKAIM
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
     public function _projets_avec_retard()
     {
-        if ($this->isUserTypeRisk()) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        if (
+            $userManager->isUserGroupRisk($this->userEntity)
+            || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
+        ) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */

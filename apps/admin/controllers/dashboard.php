@@ -1,7 +1,6 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
@@ -36,18 +35,19 @@ class dashboardController extends bootstrap
         $user = $this->loadData('users');
         $user->get($_SESSION['user']['id_user']);
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
         if (
-            UsersTypes::TYPE_RISK == $user->id_user_type
-            || $user->id_user == Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[0]) && 'risk' == $this->params[0] && in_array($user->id_user_type, [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT])
+            $userManager->isUserGroupRisk($this->userEntity)
+            || isset($this->params[0]) && 'risk' == $this->params[0] && $userManager->isUserGroupIT($this->userEntity)
         ) {
             $this->template     = 'risk';
             $this->userProjects = $this->getRiskUserProjects($user);
             $this->teamProjects = $this->getRiskTeamProjects($user);
         } elseif (
-            UsersTypes::TYPE_COMMERCIAL == $user->id_user_type
-            || $user->id_user == Users::USER_ID_ARNAUD_SCHWARTZ
-            || isset($this->params[0]) && 'sales' == $this->params[0] && in_array($user->id_user_type, [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_IT])
+            $userManager->isUserGroupSales($this->userEntity)
+            || isset($this->params[0]) && 'sales' == $this->params[0] && $userManager->isUserGroupIT($this->userEntity)
         ) {
             $this->template                     = 'sale';
             $this->userProjects                 = $this->getSaleUserProjects($user);

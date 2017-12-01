@@ -1,9 +1,3 @@
-<?php
-
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
-
-?>
 <div id="header">
     <div class="row">
         <div class="col-md-6">
@@ -39,6 +33,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 <div id="navigation">
     <ul id="menu_deroulant">
         <?php
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $menuHtml = '';
         foreach (static::MENU as $item) {
@@ -49,7 +45,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
             if (in_array($zone, $this->lZonesHeader)) {
                 // Check user and adjust title for Dashboard item
                 if ($title === 'Dashboard') {
-                    if (in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_RISK, UsersTypes::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [Users::USER_ID_ARNAUD_SCHWARTZ, Users::USER_ID_ALAIN_ELKAIM])) {
+                    if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupSales($this->userEntity)) {
                         $title = 'Mon flux';
                     }
                 }

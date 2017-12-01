@@ -1,18 +1,15 @@
-<?php
-
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
-
-?>
-
 <?php if (
     $this->projects->status >= \projects_status::ANALYSIS_REVIEW
     || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::ANALYSIS_REVIEW)
 ) : ?>
-    <?php $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $this->userEntity->getIdUser() == $this->projects->id_analyste; ?>
+    <?php
+        $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity);
+        $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $isRiskUser;
+    ?>
     <div id="content_etape6">
         <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
-        <div class="tab_content<?php if (UsersTypes::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape6">
+        <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere">Performance financière</label></th>

@@ -1,14 +1,12 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 
 ?>
 
 <?php if ($this->projects->status >= ProjectsStatus::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::COMITY_REVIEW)) : ?>
-    <?php $isRiskUser = UsersTypes::TYPE_RISK == $this->userEntity->getIdUserType()->getIdUserType() || Users::USER_ID_ALAIN_ELKAIM == $this->userEntity->getIdUser(); ?>!
-    <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->userEntity->getIdUserType()->getIdUserType() == UsersTypes::TYPE_DIRECTION; ?>
+    <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>!
+    <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->get('unilend.service.back_office_user_manager')->isUserGroupManagement($this->userEntity); ?>
     <div id="content_etape7">
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">

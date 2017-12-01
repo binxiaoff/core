@@ -1,9 +1,3 @@
-<?php
-
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
-
-?>
-
 <script type="text/javascript">
     $(function() {
         $(".tablesorter").tablesorter({headers: {3: {sorter: false}}});
@@ -13,13 +7,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
         <?php endif; ?>
     });
 </script>
+
+<?php $isAllowedToEdit = $this->get('unilend.service.back_office_user_manager')->isUserGroupIt($this->userEntity);?>
 <div id="contenu">
     <div class="row">
         <div class="col-md-6">
             <h1>Liste des requêtes</h1>
         </div>
         <div class="col-md-6">
-            <?php if (in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN , UsersTypes::TYPE_IT])) : ?>
+            <?php if ($isAllowedToEdit) : ?>
                 <a href="<?= $this->lurl ?>/queries/add" class="btn-primary pull-right thickbox">Ajouter une requête</a>
             <?php endif; ?>
         </div>
@@ -58,7 +54,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
                                 </a>
 
                             <?php endif; ?>
-                            <?php if (in_array($_SESSION['user']['id_user_type'], [UsersTypes::TYPE_ADMIN , UsersTypes::TYPE_IT])) : ?>
+                            <?php if ($isAllowedToEdit) : ?>
                                 <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
                                 </a>

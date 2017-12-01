@@ -37,8 +37,8 @@
                     <td>
                         <select name="id_user_type" id="id_user_type" class="select">
                             <option value="0">Choisir</option>
-                            <?php foreach ($this->lUsersTypes as $type) : ?>
-                                <option value="<?= $type['id_user_type'] ?>" <?= $this->users->id_user_type == $type['id_user_type'] ? 'selected="selected"' : '' ?>><?= $type['label'] ?></option>
+                            <?php foreach ($this->userTypes as $type) : ?>
+                                <option value="<?= $type->getIdUserType() ?>" <?= $this->users->id_user_type == $type->getIdUserType() ? 'selected="selected"' : '' ?>><?= $type->getLabel() ?></option>
                             <?php endforeach; ?>
                         </select>
                     </td>

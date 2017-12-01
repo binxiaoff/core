@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 
 class SlackController extends Controller
 {
@@ -64,6 +63,7 @@ class SlackController extends Controller
                 'text'          => 'Requête invalide'
             ]);
         }
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         /** @var EntityManager $entityManager */
         $entityManager  = $this->get('doctrine.orm.entity_manager');
@@ -73,7 +73,7 @@ class SlackController extends Controller
             'status' => Users::STATUS_ONLINE
         ]);
 
-        if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_ADMIN, UsersTypes::TYPE_DIRECTION, UsersTypes::TYPE_COMMERCIAL])) {
+        if (null === $user || (false === $userManager->isUserGroupSales($user) || false === $userManager->isUserGroupManagement($user))) {
             return new JsonResponse([
                 'response_type' => 'ephemeral',
                 'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'
