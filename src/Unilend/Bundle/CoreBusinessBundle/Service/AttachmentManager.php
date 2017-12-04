@@ -240,7 +240,7 @@ class AttachmentManager
      */
     public function getAllTypesForLender($includeOthers = true)
     {
-        $types = array(
+        $types = [
             AttachmentType::CNI_PASSPORTE,
             AttachmentType::CNI_PASSPORTE_VERSO,
             AttachmentType::JUSTIFICATIF_DOMICILE,
@@ -255,7 +255,7 @@ class AttachmentManager
             AttachmentType::DISPENSE_PRELEVEMENT_2015,
             AttachmentType::DISPENSE_PRELEVEMENT_2016,
             AttachmentType::DISPENSE_PRELEVEMENT_2017
-        );
+        ];
 
         if ($includeOthers) {
             $types = array_merge($types, [
@@ -279,5 +279,17 @@ class AttachmentManager
         $fileName = substr($fileName, 0, 255);
 
         return $fileName;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return bool
+     */
+    public function isModifiedAttachment(Attachment $attachment)
+    {
+        $previousAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findPreviousAttachment($attachment);
+
+        return null !== $previousAttachment;
     }
 }
