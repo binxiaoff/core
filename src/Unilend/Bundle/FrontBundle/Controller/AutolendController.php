@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
@@ -223,7 +224,7 @@ class AutolendController extends Controller
         foreach ($post['data'] as $setting) {
             if (isset($setting['interest'], $setting['period'], $setting['evaluation'], $setting['is-active'])) {
                 $projectPeriods->get($setting['period']);
-                $note              = constant('\projects::RISK_' . $setting['evaluation']);
+                $note              = constant(Projects::class . '::RISK_' . $setting['evaluation']);
                 $note              = is_float($note) ? $ficelle->formatNumber($note, 1) : $note;
                 $periodTranslation = $translator->trans(
                     'autolend_expert-settings-project-period-' . $projectPeriods->id_period,

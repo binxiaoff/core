@@ -303,23 +303,24 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
     </table>
     <br>
     <h2>Relevé des opérations (Solde: <?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?>)</h2>
+    <div style="float: right">
+        <form method="post" id="operation-date-form" action="" class="form-inline">
+            <div class="form-group">
+                <select name="operation-date-filter" class="select">
+                    <?php for ($i = date('Y'); $i >= substr($this->clients->added, 0, 4); $i--) : ?>
+                        <option value="<?= $i ?>"><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+                <input type="submit" value="Filtrer" name="filter" class="btn-primary" id="filter-button">
+            </div>
+        </form>
+    </div>
+
+    <div class="borrower-operation-table">
     <?php if (count($this->operations) > 0) : ?>
-        <div style="float: left">
-            <form method="post" id="operation-date-form" action="" class="form-inline">
-                <div class="form-group">
-                    <select name="operation-date-filter" class="select">
-                        <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
-                            <option value="<?= $i ?>"><?= $i ?></option>
-                        <?php endfor; ?>
-                    </select>
-                    <input type="submit" value="Filtrer" name="filter" class="btn-primary" id="filter-button">
-                </div>
-            </form>
-        </div>
-        <div class="borrower-operation-table">
-            <?php $this->fireView('operations'); ?>
-        </div>
+        <?php $this->fireView('operations'); ?>
     <?php else : ?>
-        <p>Aucune opération</p>
+        <p>Aucune opération pour l'année en cours</p>
     <?php endif; ?>
+    </div>
 </div>

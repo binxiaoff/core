@@ -80,6 +80,13 @@ class MailTemplates
     private $content;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="compiled_content", type="text", nullable=true)
+     */
+    private $compiledContent;
+
+    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates")
@@ -321,6 +328,30 @@ class MailTemplates
     public function getContent()
     {
         return $this->content;
+    }
+
+    /**
+     * Set compiled content
+     *
+     * @param string $compiledContent
+     *
+     * @return MailTemplates
+     */
+    public function setCompiledContent($compiledContent)
+    {
+        $this->compiledContent = $compiledContent;
+
+        return $this;
+    }
+
+    /**
+     * Get compiled content
+     *
+     * @return string
+     */
+    public function getCompiledContent()
+    {
+        return $this->compiledContent;
     }
 
     /**

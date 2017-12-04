@@ -8,6 +8,7 @@ use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -133,17 +134,14 @@ class LenderValidationManager
      */
     public function sendClientValidationEmail(Clients $client, $mailType)
     {
-        $keyWords = [
-            'surl'    => $this->staticUrl,
-            'url'     => $this->frontUrl,
-            'prenom'  => $client->getPrenom(),
-            'projets' => $this->frontUrl . '/projets-a-financer',
-            'lien_fb' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook'])->getValue(),
-            'lien_tw' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter'])->getValue(),
+        $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $keywords = [
+            'firstName'     => $client->getPrenom(),
+            'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($mailType, $keyWords);
+        $message = $this->messageProvider->newMessage($mailType, $keywords);
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);

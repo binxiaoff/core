@@ -63,8 +63,9 @@ class ContactController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-partenaire', $keywords, false);
+
                 try {
-                    $message->setTo(trim($settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue()));
+                    $message->setTo($settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue());
 
                     if ($file instanceof UploadedFile) {
                         $uploadDestination = $this->getParameter('path.protected') . 'contact/';

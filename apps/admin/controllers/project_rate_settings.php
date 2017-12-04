@@ -68,20 +68,12 @@ class project_rate_settingsController extends bootstrap
         $clientSettingType = $this->loadData('client_setting_type');
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->loadData('project_rate_settings');
-        /** @var settings $settings */
-        $settings = $this->loadData('settings');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $projectRates = $projectRateSettings->getSettings();
-
-        $settings->get('Facebook', 'type');
-        $facebook = $settings->value;
-
-        $settings->get('Twitter', 'type');
-        $twitter = $settings->value;
+        $projectRates           = $projectRateSettings->getSettings();
 
         $clientSettingType->get('autobid_switch', 'label');
         $offset = 0;
@@ -100,26 +92,24 @@ class project_rate_settingsController extends bootstrap
                 }
 
                 $badSettings = $autoBidSettingsManager->getBadAutoBidSettings($wallet->getIdClient(), $projectRates);
+
                 if (false === empty($badSettings)) {
-                    $varMail = [
-                        'first_name'     => $wallet->getIdClient()->getPrenom(),
-                        'autobid_link'   => $this->furl . '/profile/autolend#parametrage',
-                        'lien_tw'        => $facebook,
-                        'lien_fb'        => $twitter,
-                        'surl'           => $this->surl,
-                        'url'            => $this->furl,
-                        'motif_virement' => $wallet->getWireTransferPattern(),
-                        'annee'          => date('Y')
+                    $keywords = [
+                        'firstName'            => $wallet->getIdClient()->getPrenom(),
+                        'autolendSettingsLink' => $this->furl . '/profile/autolend#parametrage',
+                        'lenderPattern'        => $wallet->getWireTransferPattern()
                     ];
+
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-bad-autolend-settings', $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('bad-autolend-settings', $keywords);
+
                     try {
                         $message->setTo($wallet->getIdClient()->getEmail());
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
                     } catch (\Exception $exception) {
                         $this->get('logger')->warning(
-                            'Could not send email: notification-bad-autolend-settings - Exception: ' . $exception->getMessage(),
+                            'Could not send email: bad-autolend-settings - Exception: ' . $exception->getMessage(),
                             ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                         );
                     }

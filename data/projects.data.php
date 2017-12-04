@@ -15,17 +15,6 @@ class projects extends projects_crud
     const DISPLAY_PROJECT_ON  = 0;
     const DISPLAY_PROJECT_OFF = 1;
 
-    const RISK_A = 5;
-    const RISK_B = 4.5;
-    const RISK_C = 4;
-    const RISK_D = 3.5;
-    const RISK_E = 3;
-    const RISK_F = 2.5;
-    const RISK_G = 2;
-    const RISK_H = 1.5;
-    const RISK_I = 1;
-    const RISK_J = 0;
-
     const SORT_FIELD_SECTOR = 'sector';
     const SORT_FIELD_AMOUNT = 'amount';
     const SORT_FIELD_RATE   = 'rate';
@@ -1396,11 +1385,18 @@ class projects extends projects_crud
      */
     public function getUpcomingSaleProjects()
     {
-        $statement = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS)
-            ->andWhere('DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added')
-            ->execute();
+        $queryBuilder = $this->getSaleProjectsQuery(ProjectsStatus::SALES_TEAM_UPCOMING_STATUS);
+        $queryBuilder
+            ->andWhere(
+                $queryBuilder->expr()->orX(
+                    'p.status = :incompleteProjectStatus AND DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added',
+                    'p.status != :incompleteProjectStatus'
+                )
+            )
+            ->setParameter('incompleteProjectStatus', ProjectsStatus::INCOMPLETE_REQUEST);
 
-        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        $statement = $queryBuilder->execute();
+        $projects  = $statement->fetchAll(\PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
         return $projects;

@@ -42,7 +42,7 @@
     <?php foreach ($this->sections as $section) : ?>
         <div class="row">
             <div class="col-md-12">
-                <h2><?= $section['title'] ?></h2>
+                <h2><?= $section['title'] ?> (<?= count($section['emails']) ?>)</h2>
                 <?php if (count($section['emails']) > 0) : ?>
                     <table class="table table-bordered table-striped js-datatable-content">
                         <thead>

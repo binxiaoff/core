@@ -74,14 +74,14 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                         case ProjectRepaymentTask::TYPE_EARLY:
                             $message = $slackManager->getProjectName($project)
                                 . ' - Remboursement anticipé effectué en '
-                                . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts.';
+                                . round($stopWatchEvent->getDuration() / 1000, 1) . ' secondes (' . $taskLog->getRepaymentNb() . ' prêts).';
                             break;
                         default:
                             continue 2;
                     }
                 } else {
                     $message = $slackManager->getProjectName($project) .
-                        ' - Remboursement non effectué. Veuille contacter l\'équipe technique pour en savoir plus.';
+                        ' - *Remboursement non effectué.* Veuille contacter l\'équipe technique pour en savoir plus.';
                 }
                 $slackManager->sendMessage($message);
             } catch (\Exception $exception) {

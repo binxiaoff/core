@@ -22,8 +22,10 @@ class debt_collection_missionController extends bootstrap
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if ($this->isUserTypeRisk()) {
+        if ($userManager->isGrantedRisk($this->userEntity) || $userManager->isUserGroupIT($this->userEntity)) {
             if (false === empty($this->params[0])) {
                 $missionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
                 if (null !== ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($missionId))) {
@@ -58,8 +60,10 @@ class debt_collection_missionController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager      = $this->get('doctrine.orm.entity_manager');
             $projectId          = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -124,8 +128,10 @@ class debt_collection_missionController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (false === empty($this->params[0] && $this->isUserTypeRisk())) {
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager       = $this->get('doctrine.orm.entity_manager');
             $projectId           = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -192,24 +198,5 @@ class debt_collection_missionController extends bootstrap
 
         header('Location: ' . $this->url);
         die;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isUserTypeRisk()
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-
-        if (\users_types::TYPE_RISK == $user->getIdUserType()->getIdUserType()
-            || $user->getIdUser() == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_ALAIN_ELKAIM
-            || isset($this->params[1]) && 'risk' == $this->params[1] && in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_IT])
-        ) {
-            return true;
-        }
-
-        return false;
     }
 }

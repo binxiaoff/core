@@ -206,12 +206,12 @@ var PasswordCheck = function (input, options) {
       re: /[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-.\/:;<=>?@\[\]^_`{|}~]+/,
       amount: 1
     },{
-      re: /p[a4][s5]+(?:w[o0]+rd)?/i,
+      re: /p[a4][s5]+(?:w[o0]+rd)?|mot[s]?depasse/i,
       amount: -1,
       description: __.__('Variations on the word "password"', 'evaluationRuleWordPasswordDescription'),
       help: __.__('Avoid using the word "password" or any other variation, e.g. "P455w0rD"', 'evaluationRuleWordPasswordHelp')
     },{
-      re: /asdf|qwer|zxcv|ghjk|tyiu|jkl;|nm,.|uiop/i,
+      re: /azer|poiu|wxcv|nbvc|tyui|jklm|n,;:|uiop|,;:=/i,
       amount: -1,
       description: __.__('Combination matches common keyboard layouts', 'evaluationRuleCommonKeyboardDescription'),
       help: __.__('Avoid using common keyboard layout combinations', 'evaluationRuleCommonKeyboardHelp')

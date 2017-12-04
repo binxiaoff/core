@@ -50,11 +50,11 @@
                                     {% set isPartial = '(Partielle)' %}
                                 {% endif %}
                                 Échéance {{ paymentSchedule.getDateEcheanceEmprunteur()|localizeddate("medium", "none", null, null, "MMMM yyyy") }} {{ isPartial }}
-                                (Capital: {{ missionPaymentSchedule.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ missionPaymentSchedule.getInterest()|localizedcurrency('EUR') }} - Comission TTC: {{ missionPaymentSchedule.getCommissionVatIncl()|localizedcurrency('EUR') }})
+                                (Capital: {{ missionPaymentSchedule.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ missionPaymentSchedule.getInterest()|localizedcurrency('EUR') }} - Commission TTC: {{ missionPaymentSchedule.getCommissionVatIncl()|localizedcurrency('EUR') }})
                                 <br>
                             {% endfor %}
                         {% else %}
-                            Capital: {{ mission.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ mission.getInterest()|localizedcurrency('EUR') }} - Comission TTC: {{ mission.getCommissionVatIncl()|localizedcurrency('EUR') }}
+                            Capital: {{ mission.getCapital()|localizedcurrency('EUR') }} - Intérêts: {{ mission.getInterest()|localizedcurrency('EUR') }} - Commission TTC: {{ mission.getCommissionVatIncl()|localizedcurrency('EUR') }}
                             <br>
                         {% endif %}
                     </td>

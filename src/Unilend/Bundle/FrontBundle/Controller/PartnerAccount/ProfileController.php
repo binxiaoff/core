@@ -11,7 +11,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\core\Loader;
 
 class ProfileController extends Controller
 {
@@ -57,19 +56,19 @@ class ProfileController extends Controller
     {
         $securityPasswordEncoder = $this->get('security.password_encoder');
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
         if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $form->get('formerPassword')->getData())) {
             $form->get('formerPassword')->addError(new FormError($this->get('translator')->trans('lender-profile_security-password-section-error-wrong-former-password')));
         }
 
-        if (false === $ficelle->password_fo($form->get('password')->getData(), 6)) {
+        $password = '';
+        try {
+            $password = $securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData());
+        } catch (\Exception $exception) {
             $form->get('password')->addError(new FormError($this->get('translator')->trans('common-validator_password-invalid')));
         }
 
         if ($form->isValid()) {
-            $client->setPassword($securityPasswordEncoder->encodePassword($this->getUser(), $form->get('password')->getData()));
+            $client->setPassword($password);
             $this->get('doctrine.orm.entity_manager')->flush($client);
         }
     }

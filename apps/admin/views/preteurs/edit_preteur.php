@@ -767,14 +767,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                         <td colspan="2">
                             <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
                                        class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
                                        value="Hors ligne / Clôturé par Unilend">
                             <?php else: ?>
                                 <input type="button"
-                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
+                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au statut avant la mise hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
                                        class="btn-primary"
-                                       value="En ligne / Status avant mis hors ligne">
+                                       value="En ligne / Statut avant mise hors ligne">
                             <?php endif; ?>
                         </td>
                     </tr>
