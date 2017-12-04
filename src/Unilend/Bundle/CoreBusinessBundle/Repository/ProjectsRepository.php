@@ -560,12 +560,21 @@ class ProjectsRepository extends EntityRepository
         return $queryBuilder->getQuery()->getResult(AbstractQuery::HYDRATE_ARRAY);
     }
 
-    public function getCountProjectsByStatus($status)
+    /**
+     * @param array  $status
+     * @param string $siren
+     *
+     * @return mixed
+     */
+    public function getCountProjectsByStatusAndSiren(array $status, $siren)
     {
         $queryBuilder = $this->createQueryBuilder('p')
-            ->select('COUNT(p.idProject)')
-            ->where('p.status = :status')
-            ->setParameter('status', $status);
+            ->select('COUNT(DISTINCT p.idProject)')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->where('p.status IN (:status)')
+            ->andWhere('co.siren = :siren')
+            ->setParameter('status', $status)
+            ->setParameter('siren', $siren);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -1057,6 +1066,21 @@ class ProjectsRepository extends EntityRepository
         $statement->closeCursor();
 
         return $result;
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return mixed
+     */
+    public function findProjectsBySiren($siren)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
+            ->where('co.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
