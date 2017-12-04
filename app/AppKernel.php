@@ -33,6 +33,7 @@ class AppKernel extends Kernel
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle(),
             new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
+            new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

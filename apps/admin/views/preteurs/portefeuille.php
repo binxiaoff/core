@@ -80,7 +80,7 @@
                             <tr>
                                 <th scope="col" class="table-title"><?= $this->translator->trans('autobid_expert-settings-table-title-period') ?></th>
                                 <?php foreach (array_keys(array_values($this->aAutoBidSettings)[0]) as $evaluation) : ?>
-                                    <th><?=constant('\projects::RISK_' . $evaluation)?>*</th>
+                                    <th><?=constant('\Unilend\Bundle\CoreBusinessBundle\Entity\Projects::RISK_' . $evaluation)?>*</th>
                                 <?php endforeach; ?>
                             </tr>
                             <?php foreach ($this->aAutoBidSettings as $aPeriodSettings) : ?>

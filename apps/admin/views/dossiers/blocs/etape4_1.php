@@ -1,3 +1,9 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
+
+?>
 <script type="text/javascript">
     $(function() {
         $('#date_dernier_privilege, #date_tresorerie, #target_date_dernier_privilege, #target_date_tresorerie').datepicker({
@@ -78,8 +84,9 @@
         <?php endif; ?>
     });
 </script>
+<?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <a class="tab_title" id="section-external-ratings" href="#section-external-ratings">4.1. Notation externe</a>
-<div class="tab_content<?php if (in_array($this->projects->status, [\projects_status::ANALYSIS_REVIEW, \projects_status::COMITY_REVIEW]) && \users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape4_1">
+<div class="tab_content<?php if (in_array($this->projects->status, [ProjectsStatus::ANALYSIS_REVIEW, ProjectsStatus::COMITY_REVIEW]) && $isRiskUser) : ?> expand<?php endif; ?>" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
             <?php if ($this->bIsProblematicCompany) : ?>
@@ -87,6 +94,9 @@
                 <br>
             <?php endif; ?>
             <h1>Notes externes</h1>
+            <?php if ($this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)) : ?>
+                <a class="btn-primary pull-right" href="<?= $this->lurl ?>/societe/notation/<?= $this->companies->id_company ?>" target="_blank">Accèder au suivi <br>des notations pour ce SIREN</a>
+            <?php endif; ?>
             <table class="form" style="width: auto">
                 <?php if (isset($this->targetRatings)) : ?>
                     <thead>
@@ -188,7 +198,6 @@
                         </td>
                     <?php endif; ?>
                 </tr>
-                <?php use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager; ?>
                 <?php if (
                     isset($this->ratings['infogreffe_code']) && in_array($this->ratings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])
                     || isset($this->targetRatings['infogreffe_code']) && in_array($this->targetRatings['infogreffe_code']['value'], [InfogreffeManager::RETURN_CODE_UNKNOWN_SIREN, InfogreffeManager::RETURN_CODE_UNAVAILABLE_INDEBTEDNESS])

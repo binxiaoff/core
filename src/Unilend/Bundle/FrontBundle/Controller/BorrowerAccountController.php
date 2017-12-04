@@ -25,7 +25,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\core\Loader;
 
 class BorrowerAccountController extends Controller
 {
@@ -640,12 +639,16 @@ class BorrowerAccountController extends Controller
 
             if ($request->isMethod('POST')) {
                 $translator = $this->get('translator');
-                /** @var \ficelle $ficelle */
-                $ficelle  = Loader::loadLib('ficelle');
-                $formData = $request->request->get('borrower_security', []);
-                $error    = false;
+                $formData   = $request->request->get('borrower_security', []);
+                $error      = false;
+                $borrower   = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
 
-                if (empty($formData['password']) || false === $ficelle->password_fo($formData['password'], 6)) {
+                try {
+                    if (empty($formData['password'])) {
+                        throw new \Exception('password empty');
+                    }
+                    $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
+                } catch (\Exception $exception) {
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
                 }
@@ -663,16 +666,9 @@ class BorrowerAccountController extends Controller
                 }
 
                 if (false === $error) {
-                    $client->status = 1;
-                    $client->update();
-
-                    $formData['question'] = filter_var($formData['question'], FILTER_SANITIZE_STRING);
-
-                    $borrower = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
-                    $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
-
+                    $client->status           = 1;
                     $client->password         = $password;
-                    $client->secrete_question = $formData['question'];
+                    $client->secrete_question = filter_var($formData['question'], FILTER_SANITIZE_STRING);
                     $client->secrete_reponse  = md5($formData['answer']);
                     $client->update();
 
