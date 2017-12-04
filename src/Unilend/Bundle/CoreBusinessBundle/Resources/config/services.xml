@@ -449,5 +449,9 @@
         <service id="unilend.service.project_rating_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
+
+        <service id="unilend.service.back_office_user_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
     </services>
 </container>

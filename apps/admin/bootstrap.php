@@ -571,18 +571,17 @@ class bootstrap extends Controller
         if (false === empty($_SESSION['user'])) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+            $userManager = $this->get('unilend.service.back_office_user_manager');
         }
 
         $navigation = self::MENU;
 
         if (
-            isset($_SESSION['user'])
+            null !== $user
             && 'Dashboard' === $navigation[0]['title']
-            && (
-                in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL])
-                || in_array($_SESSION['user']['id_user'], [Users::USER_ID_ALAIN_ELKAIM, Users::USER_ID_ARNAUD_SCHWARTZ])
-            )
+            && ($userManager->isUserGroupRisk($user) || $userManager->isUserGroupSales($user))
         ) {
             $navigation[0]['title'] = 'Mon flux';
         }

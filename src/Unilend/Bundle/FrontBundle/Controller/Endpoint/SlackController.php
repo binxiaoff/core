@@ -2,13 +2,13 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
-use GuzzleHttp\Client;
 use Doctrine\ORM\EntityManager;
+use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class SlackController extends Controller
@@ -63,6 +63,7 @@ class SlackController extends Controller
                 'text'          => 'Requête invalide'
             ]);
         }
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         /** @var EntityManager $entityManager */
         $entityManager  = $this->get('doctrine.orm.entity_manager');
@@ -72,7 +73,7 @@ class SlackController extends Controller
             'status' => Users::STATUS_ONLINE
         ]);
 
-        if (null === $user || false === in_array($user->getIdUserType()->getIdUserType(), [\users_types::TYPE_ADMIN, \users_types::TYPE_DIRECTION, \users_types::TYPE_COMMERCIAL])) {
+        if (null === $user || false === ($userManager->isGrantedSales($user) || $userManager->isGrantedManagement($user))) {
             return new JsonResponse([
                 'response_type' => 'ephemeral',
                 'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'
