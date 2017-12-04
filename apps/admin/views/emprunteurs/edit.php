@@ -174,7 +174,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </td>
         </tr>
     </table>
-    <?php if ($this->userEntity->getIdUserType()->getIdUserType() == \users_types::TYPE_RISK) : ?>
+    <?php if ($this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)) : ?>
         <a class="btn-primary pull-right" href="<?= $this->lurl ?>/societe/notation/<?= $this->companyEntity->getIdCompany() ?>">Suivi des notations</a>
     <?php endif; ?>
     <br/><br/>
