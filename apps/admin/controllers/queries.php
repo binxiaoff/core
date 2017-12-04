@@ -37,8 +37,10 @@ class queriesController extends bootstrap
     {
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select('', 'executed DESC');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (isset($_POST['form_edit_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_edit_requete']) && $userManager->isGrantedIT($this->userEntity)) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -52,7 +54,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($_POST['form_add_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($_POST['form_add_requete']) && $userManager->isGrantedIT($this->userEntity)) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -65,7 +67,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        if (isset($this->params[0]) && $this->params[0] == 'delete' && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
+        if (isset($this->params[0]) && $this->params[0] == 'delete' && $userManager->isGrantedIT($this->userEntity)) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';

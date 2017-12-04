@@ -711,6 +711,8 @@ class ajaxController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
@@ -734,7 +736,7 @@ class ajaxController extends bootstrap
 
         if (
             $project->getStatus() !== ProjectsStatus::COMITY_REVIEW
-            || $this->userEntity->getIdUserType()->getIdUserType() != \users_types::TYPE_DIRECTION
+            || false === $userManager->isGrantedManagement($this->userEntity)
         ) {
             echo json_encode([
                 'success' => false,

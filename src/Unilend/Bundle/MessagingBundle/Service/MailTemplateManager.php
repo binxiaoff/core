@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Pelago\Emogrifier;
+use RobertoTru\ToInlineStyleEmailBundle\Converter\ToInlineStyleEmailConverter;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -17,31 +17,31 @@ class MailTemplateManager
     private $entityManager;
     /** @var TranslationManager */
     private $translationManager;
-    /** @var Emogrifier */
-    private $emogrifier;
+    /** @var ToInlineStyleEmailConverter */
+    private $cssToInlineConverter;
     /** @var string */
     private $defaultLanguage;
 
     /**
-     * @param EntityManager      $entityManager
-     * @param MailQueueManager   $mailQueueManager
-     * @param TranslationManager $translationManager
-     * @param Emogrifier         $emogrifier
-     * @param string             $defaultLanguage
+     * @param EntityManager               $entityManager
+     * @param MailQueueManager            $mailQueueManager
+     * @param TranslationManager          $translationManager
+     * @param ToInlineStyleEmailConverter $cssToInlineConverter
+     * @param string                      $defaultLanguage
      */
     public function __construct(
         EntityManager $entityManager,
         MailQueueManager $mailQueueManager,
         TranslationManager $translationManager,
-        Emogrifier $emogrifier,
+        ToInlineStyleEmailConverter $cssToInlineConverter,
         $defaultLanguage
     )
     {
-        $this->entityManager      = $entityManager;
-        $this->mailQueueManager   = $mailQueueManager;
-        $this->translationManager = $translationManager;
-        $this->emogrifier         = $emogrifier;
-        $this->defaultLanguage    = $defaultLanguage;
+        $this->entityManager        = $entityManager;
+        $this->mailQueueManager     = $mailQueueManager;
+        $this->translationManager   = $translationManager;
+        $this->cssToInlineConverter = $cssToInlineConverter;
+        $this->defaultLanguage      = $defaultLanguage;
     }
 
     /**
@@ -233,14 +233,12 @@ class MailTemplateManager
             $content = $content . $mailTemplate->getIdFooter()->getContent();
         }
 
-        $this->emogrifier->setHtml($content);
-
-        $content = $this->emogrifier->emogrify();
+        $content = $this->cssToInlineConverter->inlineCSS($content, null);
         $content = str_replace(
             ['%5BEMV%20DYN%5D', '%5BEMV%20/DYN%5D'],
             [TemplateMessageProvider::KEYWORDS_PREFIX, TemplateMessageProvider::KEYWORDS_SUFFIX],
             $content
-        ); // Emogrifier URL encode content of some attributes (src for instance)
+        ); // CSS to inline converter urlencode content of some attributes (src for instance)
         $mailTemplate->setCompiledContent($content);
     }
 

@@ -1,8 +1,15 @@
-<?php if ($this->projects->status >= \projects_status::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, \projects_status::COMITY_REVIEW)) : ?>
-    <?php $isEditable = $this->projects->status == \projects_status::COMITY_REVIEW && $this->userEntity->getIdUserType()->getIdUserType() == \users_types::TYPE_DIRECTION; ?>
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+
+?>
+
+<?php if ($this->projects->status >= ProjectsStatus::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::COMITY_REVIEW)) : ?>
+    <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>!
+    <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->get('unilend.service.back_office_user_manager')->isUserGroupManagement($this->userEntity); ?>
     <div id="content_etape7">
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>
-        <div class="tab_content<?php if (\users_types::TYPE_RISK == $_SESSION['user']['id_user_type']) : ?> expand<?php endif; ?>" id="etape7">
+        <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
                     <th><label for="performance_fianciere_comite">Performance financière</label></th>

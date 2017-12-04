@@ -174,8 +174,8 @@ class ProjectsListController extends Controller
                 'duration'   => $project->getPeriod(),
                 'status'     => $project->getStatus(),
                 'submitter'  => [
-                    'firstName' => $project->getIdClientSubmitter()->getPrenom(),
-                    'lastName'  => $project->getIdClientSubmitter()->getNom(),
+                    'firstName' => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getPrenom() : '',
+                    'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getNom() : '',
                     'entity'    => $project->getIdCompanySubmitter()->getName()
                 ],
                 'motive'     => $project->getIdBorrowingMotive() ? $translator->trans('borrowing-motive_motive-' . $project->getIdBorrowingMotive()) : '',

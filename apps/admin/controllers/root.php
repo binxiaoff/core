@@ -63,15 +63,10 @@ class rootController extends bootstrap
     public function _default()
     {
         $this->users->checkAccess(Zones::ZONE_LABEL_DASHBOARD);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        /** @var \users $user */
-        $user = $this->loadData('users');
-        $user->get($_SESSION['user']['id_user']);
-
-        if (
-            in_array($user->id_user_type, [\users_types::TYPE_COMMERCIAL, \users_types::TYPE_RISK])
-            || in_array($user->id_user, [23, 28])
-        ) {
+        if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupSales($this->userEntity)) {
             header('Location: ' . $this->lurl . '/dashboard');
             die;
         }

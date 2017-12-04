@@ -1,3 +1,8 @@
+<?php
+
+use Doctrine\ORM\EntityManager;
+
+?>
 <script type="text/javascript">
     $(function() {
         $(".tablesorter").tablesorter({headers: {7: {sorter: false}}});
@@ -12,6 +17,10 @@
             <a href="<?= $this->lurl ?>/users/add" class="btn-primary pull-right thickbox">Ajouter un utilisateur</a>
         </div>
     </div>
+    <?php
+    /** @var EntityManager $entityManager */
+    $entityManager = $this->get('doctrine.orm.entity_manager');
+    ?>
     <?php foreach ($this->users as $userStatus => $users) : ?>
         <?php if ($userStatus == \Unilend\Bundle\CoreBusinessBundle\Entity\Users::STATUS_ONLINE) : ?>
             <h2>Utilisateurs en ligne</h2>
@@ -35,16 +44,11 @@
                 <tbody>
                     <?php $i = 1; ?>
                     <?php foreach ($users as $user) : ?>
-                        <?php
-                            /** @var \users_types $userType */
-                            $userType = $this->loadData('users_types');
-                            $userType->get($user['id_user_type'], 'id_user_type');
-                        ?>
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td><?= $user['name'] ?></td>
                             <td><?= $user['firstname'] ?></td>
                             <td><?= $user['email'] ?></td>
-                            <td><?= $userType->label ?></td>
+                            <td><?= $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->find($user['id_user_type'])->getLabel() ?></td>
                             <td><?= $this->dates->formatDate($user['added'], 'd/m/Y') ?></td>
                             <td><?= $this->dates->formatDate($user['updated'], 'd/m/Y') ?></td>
                             <td><?= $this->dates->formatDate($user['lastlogin'], 'd/m/Y') ?></td>

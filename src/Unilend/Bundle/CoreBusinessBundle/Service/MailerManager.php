@@ -921,12 +921,13 @@ class MailerManager
 
         $keywords = [
             'wireTransferOutDate' => strftime('%d %B %G', $today->getTimestamp()),
-            'loanAmount'          => $this->oFicelle->formatNumber($project->getAmount()),
+            'projectAmount'       => $this->oFicelle->formatNumber($project->getAmount(), 0),
             'invoiceLink'         => $this->sFUrl . '/pdf/facture_EF/' . $client->getHash() . '/' . $project->getIdProject() . '/'
         ];
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur', $keywords);
+
         try {
             $message->setTo($project->getIdCompany()->getEmailFacture());
             $this->mailer->send($message);
