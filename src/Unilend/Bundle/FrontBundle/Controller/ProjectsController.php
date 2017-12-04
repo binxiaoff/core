@@ -1174,12 +1174,7 @@ class ProjectsController extends Controller
 
         $filename   = $project->slug . '.pdf';
         $options    = [
-            'footer-html'   => '',
-            'header-html'   => '',
-            'margin-top'    => 20,
-            'margin-right'  => 15,
-            'margin-bottom' => 10,
-            'margin-left'   => 15
+            'page-size' => 'A4'
         ];
 
         /** @var GeneratorInterface $snappy */
