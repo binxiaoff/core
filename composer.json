@@ -20,7 +20,7 @@
     "phpxmlrpc/phpxmlrpc": "^4.3",
     "phpoffice/phpexcel": "1.8.*",
     "mailjet/mailjet-apiv3-php": "^1.1",
-    "symfony/symfony": "^3.3",
+    "symfony/symfony": "3.3.*",
     "symfony/swiftmailer-bundle": "^3.1",
     "symfony/monolog-bundle": "^3.1",
     "doctrine/doctrine-bundle": "^1.8",
@@ -47,7 +47,7 @@
     "eightpoints/guzzle-bundle": "^7.2",
     "box/spout": "^2.7",
     "hashids/hashids": "^2.0",
-    "gushphp/to-inline-style-email-bundle": "1.4.0",
+    "gushphp/to-inline-style-email-bundle": "^1.4",
     "alcaeus/mongo-php-adapter": "^1.1"
   },
   "require-dev": {
