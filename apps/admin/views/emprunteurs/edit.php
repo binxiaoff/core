@@ -174,6 +174,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             </td>
         </tr>
     </table>
+    <?php if ($this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)) : ?>
+        <a class="btn-primary pull-right" href="<?= $this->lurl ?>/societe/notation/<?= $this->companyEntity->getIdCompany() ?>">Suivi des notations</a>
+    <?php endif; ?>
     <br/><br/>
 
     <h2>Bénéficiaires effectifs</h2>
