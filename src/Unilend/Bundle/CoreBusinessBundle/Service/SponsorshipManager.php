@@ -697,7 +697,7 @@ class SponsorshipManager
         $amountReward        = null !== $reward ? $reward->getAmount() : 0;
         $amountRewardCancel  = null !== $rewardCancel ? $rewardCancel->getAmount() : 0;
         $remainingReward     = bcsub($amountReward, $amountRewardCancel, 4);
-        $sumLoansSinceReward = $operationRepository->sumDebitOperationsByTypeSince($sponsorWallet, [OperationType::LENDER_LOAN], null, $reward->getAdded());
+        $sumLoansSinceReward = null !== $reward ? $operationRepository->sumDebitOperationsByTypeSince($sponsorWallet, [OperationType::LENDER_LOAN], null, $reward->getAdded()) : 0;
 
         $unusedAmount = round(bcsub($remainingReward, $sumLoansSinceReward, 4), 2);
         if ($unusedAmount <= 0 ) {
