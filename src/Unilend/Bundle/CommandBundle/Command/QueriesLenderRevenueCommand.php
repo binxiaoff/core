@@ -33,9 +33,9 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $year              = $input->getArgument('year');
-        $filePath          = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
+        $filePath          = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'requete_revenus' . date('Ymd') . '.csv';
         $yesterday         = new \DateTime('yesterday');
-        $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . $yesterday->format('Ymd') . '.csv';
+        $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'requete_revenus' . $yesterday->format('Ymd') . '.csv';
 
         if (file_exists($yesterdayFilePath)) {
             unlink($yesterdayFilePath);
