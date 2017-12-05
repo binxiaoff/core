@@ -164,6 +164,7 @@
             <argument type="service" id="unilend.service.ws_client.ellisphere_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">

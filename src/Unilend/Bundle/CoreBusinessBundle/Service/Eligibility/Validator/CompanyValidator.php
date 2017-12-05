@@ -8,6 +8,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule;
@@ -20,8 +21,8 @@ use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementEvent;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ContentiousParticipant;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
 
 class CompanyValidator
 {
@@ -29,6 +30,8 @@ class CompanyValidator
     private $entityManager;
     /** @var ExternalDataManager */
     private $externalDataManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     const CHECK_RULE_METHODS = [
         'TC-RISK-001' => 'checkSiren',
@@ -52,17 +55,21 @@ class CompanyValidator
     /**
      * @param EntityManager       $entityManager
      * @param ExternalDataManager $externalDataManager
+     * @param LoggerInterface     $logger
      */
-    public function __construct(EntityManager $entityManager, ExternalDataManager $externalDataManager)
+    public function __construct(EntityManager $entityManager, ExternalDataManager $externalDataManager, LoggerInterface $logger)
     {
         $this->entityManager       = $entityManager;
         $this->externalDataManager = $externalDataManager;
+        $this->logger              = $logger;
     }
 
     /**
      * @param string         $siren
      * @param Companies|null $company
      * @param Projects|null  $project
+     *
+     * @throws \Exception
      *
      * @return array
      */
@@ -142,11 +149,6 @@ class CompanyValidator
         $infolegaleScoreCheck = $this->checkRule('TC-RISK-013', $siren, $project);
         if (false === empty($infolegaleScoreCheck)) {
             return $infolegaleScoreCheck;
-        }
-
-        $companyPejorativeEventsCheck = $this->checkRule('TC-RISK-019', $siren, $project);
-        if (false === empty($companyPejorativeEventsCheck)) {
-            return $companyPejorativeEventsCheck;
         }
 
         $currentExecutivesHistory = $this->checkRule('TC-RISK-014', $siren, $project);
@@ -497,7 +499,12 @@ class CompanyValidator
     }
 
     /**
+     * For all CURRENT executives, get all mandates (without end date "this includes the depositor company" or having
+     * end date in the 5 last years). For each mandate get all events happened in the 3 last years, And then check if there are pejorative ones
+     *
      * @param string $siren
+     *
+     * @throws \Exception
      *
      * @return array
      */
@@ -505,17 +512,131 @@ class CompanyValidator
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $activeExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
-        foreach ($activeExecutives as $executiveId) {
-            if ($this->hasExecutiveIncidentAnnouncements($executiveId['idExecutive'], 5, 1)) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
-            }
+
+        if ($this->hasCurrentExecutiveWithPejorativeAnnouncements($siren, $activeExecutives, 5, 3)) {
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT];
         }
 
         return [];
     }
 
     /**
+     * @param string $depositorSiren
+     * @param array  $executiveIds
+     * @param int    $yearsSinceMandateEnd
+     * @param int    $eventYearsOld
+     *
+     * @return bool
+     */
+    private function hasCurrentExecutiveWithPejorativeAnnouncements($depositorSiren, array $executiveIds, $yearsSinceMandateEnd, $eventYearsOld)
+    {
+        $requestedEvents = 0;
+        $checkedSirens   = [];
+        $now             = new \DateTime();
+
+        $allMandates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findMandatesByExecutives($executiveIds);
+        foreach ($allMandates as $mandate) {
+            if (null !== $mandate->getEnded() && $mandate->getEnded()->diff($now)->days >= ($yearsSinceMandateEnd * 365)) {
+                continue;
+            }
+            if (isset($checkedSirens[$mandate->getSiren()])) {
+                continue;
+            }
+            $checkedSirens[$mandate->getSiren()] = $mandate->getSiren();
+
+            $incidentAnnouncements = $this->externalDataManager->getAnnouncements($mandate->getSiren());
+            if (empty($incidentAnnouncements)) {
+                return false;
+            }
+
+            foreach ($incidentAnnouncements as $announcement) {
+                foreach ($announcement->getAnnouncementEvents() as $event) {
+                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $announcement->getPublishedDate());
+
+                    if ($eventDate && $eventDate->diff($now)->days >= ($eventYearsOld * 365)) {
+                        continue;
+                    } elseif(false === $eventDate) {
+                        $this->logger->warning('Escaping check on TCK-RISK-14 : Both announcement publish date and event effective date are null',
+                            ['siren' => $depositorSiren, 'method' => __METHOD__, 'announcementID' => $announcement->getId()]);
+                        continue;
+                    }
+                    if ($mandate->getSiren() === $depositorSiren) {
+                        if (
+                            in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_LIMITED_DATE)
+                            && $eventDate->diff($now)->days <= 365
+                        ) {
+                            $this->logger->info(
+                                'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14',
+                                ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                            );
+                            return true;
+                        }
+                        if (in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_UNLIMITED_DATE)) {
+                            $this->logger->info(
+                                'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14',
+                                ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                            );
+                            return true;
+                        }
+
+                        if (in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE)) {
+
+                            if ($announcement->getContentiousParticipants()) {
+                                foreach ($announcement->getContentiousParticipants() as $participant) {
+                                    if ($depositorSiren === $participant->getSiren()) {
+                                        switch ($participant->getType()) {
+                                            case ContentiousParticipant::TYPE_TARGET:
+                                                $this->logger->info(
+                                                    'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14 (DEPOSITOR_WITH_ROLE)',
+                                                    ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                                                );
+                                                return true;
+                                            case ContentiousParticipant::TYPE_COMPLAINANT:
+                                                if ($eventDate->diff($now)->days <= 365) {
+                                                    $requestedEvents++;
+                                                }
+                                                if ($requestedEvents >= 3) {
+                                                    $this->logger->info(
+                                                        'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14 (DEPOSITOR_WITH_ROLE)',
+                                                        ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                                                    );
+                                                    return true;
+                                                }
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                $this->logger->info(
+                                    'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14 (DEPOSITOR_WITH_ROLE) Because no "contentious participants" found',
+                                    ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                                );
+                                return true;
+                            }
+                        }
+                    } elseif (in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_DIRECTOR_COMPANIES)) {
+                        $this->logger->info(
+                            'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14 (OTHER_DIRECTOR_COMPANIES)',
+                            ['siren' => $depositorSiren, 'method' => __METHOD__, 'line' => __LINE__]
+                        );
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * For all previous executives (last 3 years), get all mandates. For each mandate get all events happened between the
+     * mandate start date and 1 year after the mandate end date. And then check if there are pejorative ones
+     *
      * @param string $siren
+     *
+     * @throws \Exception
      *
      * @return array
      */
@@ -523,63 +644,78 @@ class CompanyValidator
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
         $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('3 years ago'));
-        foreach ($previousExecutives as $executiveId) {
-            if ($this->hasExecutiveIncidentAnnouncements($executiveId['idExecutive'], 3, 0)) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
-            }
+
+        if ($this->hasPreviousExecutiveWithPejorativeAnnouncements($previousExecutives, 3, 1)) {
+            return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
         }
 
         return [];
     }
 
     /**
-     * @param int $executiveId
-     * @param int $yearsSince
-     * @param int $extended
+     * @param array $executiveIds
+     * @param int   $yearsSince
+     * @param int   $extendedYears
      *
      * @return bool
      */
-    private function hasExecutiveIncidentAnnouncements($executiveId, $yearsSince, $extended)
+    private function hasPreviousExecutiveWithPejorativeAnnouncements(array $executiveIds, $yearsSince, $extendedYears)
     {
-        $now             = new \DateTime();
-        $executivePeriod = [];
-        $changes         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy(['idExecutive' => $executiveId]);
-        foreach ($changes as $change) {
-            if (null !== $change->getEnded() && $change->getEnded()->diff($now)->y >= $yearsSince) {
+        $checkedSirens = [];
+        $now           = new \DateTime();
+
+        $allMandates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findMandatesByExecutives($executiveIds);
+        foreach ($allMandates as $mandate) {
+            if (null !== $mandate->getEnded() && $mandate->getEnded()->diff($now)->days >= ($yearsSince * 365)) {
                 continue;
             }
-
-            $executivePeriod[$change->getSiren()] = $this->getPeriodForExecutiveInACompany($executiveId, $change->getSiren(), $extended);
-        }
-
-        $incidentAnnouncements = $this->externalDataManager->getExecutiveAnnouncements($executiveId);
-        if (empty($incidentAnnouncements)) {
-            return false;
-        }
-
-        foreach ($incidentAnnouncements as $announcement) {
-            if (
-                false === isset($executivePeriod[$announcement->getSiren()])
-            ) {
+            if (isset($checkedSirens[$mandate->getSiren()])) {
                 continue;
             }
+            $checkedSirens[$mandate->getSiren()] = $this->getPeriodForExecutiveInACompany($mandate->getIdExecutive(), $mandate->getSiren(), $extendedYears);;
 
-            $eventCodes = explode(',', $announcement->getEventCode());
-            foreach ($eventCodes as $eventCode) {
-                if (false === in_array(trim($eventCode), DirectorAnnouncement::PEJORATIVE_EVENT_CODE)) {
-                    continue 2;
+            $incidentAnnouncements = $this->externalDataManager->getAnnouncements($mandate->getSiren());
+            if (empty($incidentAnnouncements)) {
+                return false;
+            }
+
+            foreach ($incidentAnnouncements as $announcement) {
+                foreach ($announcement->getAnnouncementEvents() as $event) {
+                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $announcement->getPublishedDate());
+
+                    if (false === $eventDate) {
+                        $this->logger->warning('Escaping check on TCK-RISK-18 : Both announcement publish date and event effective date are null',
+                            ['method' => __METHOD__, 'Executive ID ' => $mandate->getIdExecutive(), 'announcementID' => $announcement->getId()]);
+                        continue;
+                    }
+                    if (
+                        in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_DIRECTOR_COMPANIES)
+                        && $checkedSirens[$mandate->getSiren()]['started'] <= $eventDate
+                        && $checkedSirens[$mandate->getSiren()]['ended'] >= $eventDate
+                    ) {
+                        $this->logger->info(
+                            'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-18',
+                            ['mandate_siren' => $mandate->getSiren(), 'method' => __METHOD__, 'line' => __LINE__]
+                        );
+                        return true;
+                    }
                 }
             }
 
-            if (
-                $executivePeriod[$announcement->getSiren()]['started'] <= $announcement->getPublishedDate()
-                && $executivePeriod[$announcement->getSiren()]['ended'] >= $announcement->getPublishedDate()
-            ) {
-                return true;
-            }
         }
 
         return false;
+    }
+
+    /**
+     * @param mixed $eventEffectiveDate
+     * @param mixed $announcementPublishDate
+     *
+     * @return \DateTime|boolean
+     */
+    private function getEventDateToUse($eventEffectiveDate, $announcementPublishDate)
+    {
+        return ($eventEffectiveDate instanceof \DateTime) ? $eventEffectiveDate : ($announcementPublishDate instanceof \DateTime) ? $announcementPublishDate : false;
     }
 
     /**
@@ -696,6 +832,8 @@ class CompanyValidator
      * @param string        $siren
      * @param Projects|null $project
      *
+     * @throws \Exception
+     *
      * @return array
      */
     private function checkNoActivityCompany($siren, Projects $project = null)
@@ -754,6 +892,8 @@ class CompanyValidator
 
     /**
      * @param Projects $project
+     *
+     * @throws \Exception
      */
     private function calculatePreScoring(Projects $project)
     {
@@ -801,6 +941,8 @@ class CompanyValidator
      * @param string        $siren
      * @param Projects|null $project
      *
+     * @throws \Exception
+     *
      * @return array
      */
     private function checkRule($ruleName, $siren, Projects $project = null)
@@ -818,6 +960,14 @@ class CompanyValidator
         return $result;
     }
 
+    /**
+     * @param Projects                  $project
+     * @param ProjectEligibilityRule    $rule
+     * @param ProjectEligibilityRuleSet $ruleSet
+     * @param                           $result
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     private function logCheck(Projects $project, ProjectEligibilityRule $rule, ProjectEligibilityRuleSet $ruleSet, $result)
     {
         $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment')->findOneBy([

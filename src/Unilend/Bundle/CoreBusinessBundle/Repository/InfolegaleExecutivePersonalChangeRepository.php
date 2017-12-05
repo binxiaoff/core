@@ -9,6 +9,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
 
 class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
 {
@@ -48,5 +49,19 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
             ->setParameter('date', $date);
 
         return $qb->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param array $executiveIds
+     *
+     * @return InfolegaleExecutivePersonalChange[]
+     */
+    public function findMandatesByExecutives(array $executiveIds)
+    {
+        $queryBuilder = $this->createQueryBuilder('iepc');
+        $queryBuilder->where('iepc.idExecutive IN (:executiveIds)')
+            ->setParameter('executiveIds', $executiveIds);
+
+        return$queryBuilder->getQuery()->getResult();
     }
 }

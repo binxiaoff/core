@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
@@ -49,6 +51,8 @@ class ExternalDataManager
     private $companyRatingHistory;
     /** @var RiskDataMonitoringManager */
     private $riskDataMonitoringManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * @param EntityManager              $entityManager
@@ -60,6 +64,7 @@ class ExternalDataManager
      * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param RiskDataMonitoringManager  $riskDataMonitoringManager
+     * @param LoggerInterface            $logger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -70,7 +75,8 @@ class ExternalDataManager
         InfogreffeManager $infogreffeManager,
         EllisphereManager $ellisphereManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
-        RiskDataMonitoringManager $riskDataMonitoringManager
+        RiskDataMonitoringManager $riskDataMonitoringManager,
+        LoggerInterface $logger
     )
     {
         $this->entityManager              = $entityManager;
@@ -82,6 +88,7 @@ class ExternalDataManager
         $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
         $this->riskDataMonitoringManager  = $riskDataMonitoringManager;
+        $this->logger                     = $logger;
     }
 
     /**
@@ -375,6 +382,8 @@ class ExternalDataManager
 
     /**
      * @param string $siren
+     *
+     * @throws \Exception
      */
     public function refreshExecutiveChanges($siren)
     {
@@ -398,7 +407,7 @@ class ExternalDataManager
                 if (isset($refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()])) {
                     continue;
                 }
-                $refreshedCompanyPosition[$mandate->getSiren()] = $mandate->getPosition()->getCode();
+                $refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()] = $mandate->getPosition()->getCode();
 
                 $change = $personalChangeRepository->findOneBy([
                     'idExecutive'  => $executive->getExecutiveId(),
@@ -499,21 +508,22 @@ class ExternalDataManager
 
     /**
      * @param string   $siren
-     * @param int|null $yearsSince
+     * @param int|null $publishedSinceYears Number of years since announcement was published
      *
      * @return AnnouncementDetails[]
      */
-    public function getAnnouncements($siren, $yearsSince = null)
+    public function getAnnouncements($siren, $publishedSinceYears = null)
     {
-        $id            = [];
-        $announcements = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
+        $id                  = [];
+        $announcementDetails = [];
+        $announcements       = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
 
-        if (null !== $yearsSince) {
-            $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $yearsSince . 'Y'))->setTime(0, 0, 0);
+        if (null !== $publishedSinceYears) {
+            $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $publishedSinceYears . 'Y'))->setTime(0, 0, 0);
         }
 
         foreach ($announcements as $announcement) {
-            if (null === $yearsSince || isset($dateLimit) && $announcement->getPublishedDate() >= $dateLimit) {
+            if (null === $publishedSinceYears || isset($dateLimit) && $announcement->getPublishedDate() >= $dateLimit) {
                 $id[] = $announcement->getId();
             }
         }
@@ -521,8 +531,19 @@ class ExternalDataManager
         if (empty($id)) {
             return [];
         }
+        /** The WS getAnnouncementsDetails accepts a maximum of 100 exec IDs in the parameter list */
+        foreach (array_chunk($id, 100) as $execIds) {
+            /** @var ArrayCollection $announcementPage */
+            $announcementPage = $this->infolegaleManager->getAnnouncementsDetails($execIds)->getAnnouncementDetails();
+            $this->logger->info('Execs IDs: ' . \GuzzleHttp\json_encode($execIds), ['siren' => $siren, 'method' => __METHOD__, 'line' => __LINE__]);
 
-        return $this->infolegaleManager->getAnnouncementsDetails($id)->getAnnouncementDetails();
+            if ($announcementPage->count()) {
+                $this->logger->info('Number of annoucements details found: ' . $announcementPage->count(), ['siren' => $siren, 'method' => __METHOD__, 'line' => __LINE__]);
+                $announcementDetails = array_merge($announcementDetails, $announcementPage->toArray());
+            }
+        }
+
+        return $announcementDetails;
     }
 
     /**
