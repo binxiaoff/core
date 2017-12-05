@@ -97,7 +97,6 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
             $clientEntity  = $wallet->getIdClient();
             $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $clientEntity->getIdClient()]);
 
-            var_dump($clientEntity->isNaturalPerson());
             if ($clientEntity->isNaturalPerson()) {
                 $fiscalAndLocationData = [
                     'address'    => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
@@ -151,7 +150,6 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
                 }
 
                 $fiscalAndLocationData['deductedAtSource'] = '';
-var_dump($wallet->getIdClient()->getIdClient());
                 $this->addPersonLineToBeneficiaryQueryData($data, $wallet, $fiscalAndLocationData);
             }
 
