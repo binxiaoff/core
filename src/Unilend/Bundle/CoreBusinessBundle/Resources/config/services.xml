@@ -170,6 +170,7 @@
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%mapbox.token%</argument>
             <argument type="service" id="memcache.default"/>
@@ -360,7 +361,6 @@
 
         <service id="unilend.service.ifu_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\IfuManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="memcache.default"/>
         </service>
 
         <service id="unilend.service.ws_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WsMonitoringManager">
