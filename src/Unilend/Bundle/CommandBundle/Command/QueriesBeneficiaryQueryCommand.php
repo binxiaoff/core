@@ -3,8 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -19,9 +19,9 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('queries:beneficiary')
-            ->setDescription('Extract all lenders qui received money in a given year')
-            ->addArgument('year', InputArgument::REQUIRED, 'year to export');
+        $this->setName('unilend:feeds_out:ifu_beneficiary:generate')
+            ->setDescription('Extract all lenders who received money in a given year')
+            ->addOption('year', null, InputOption::VALUE_REQUIRED, 'year to export');
     }
 
     /**
@@ -29,27 +29,36 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $year              = $input->getArgument('year');
-        $fileName          = 'requete_beneficiaires' . date('Ymd') . '.csv';
-        $filePath          = $this->getContainer()->getParameter('path.protected') . '/queries/' . $fileName;
-        $yesterday         = new \DateTime('yesterday');
-        $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'requete_beneficiaires' . $yesterday->format('Ymd') . '.csv';
+        $ifuManager = $this->getContainer()->get('unilend.service.ifu_manager');
 
-        if (file_exists($yesterdayFilePath)) {
-            unlink($yesterdayFilePath);
+        $year = $input->getOption('year');
+        if (empty($year)) {
+            $year = $ifuManager->getYear();
         }
-        if (file_exists($filePath)) {
-            unlink($filePath);
+
+        $yesterday = new \DateTime('yesterday');
+
+        $filePath          = $ifuManager->getStorageRootPath();
+        $filename          = 'requete_beneficiaires_' . date('Ymd') . '.csv';
+        $yesterdayFilename = 'requete_beneficiaires_' . $yesterday->format('Ymd') . '.csv';
+
+        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
+        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
+
+        if (file_exists($yesterdayFile)) {
+            unlink($yesterdayFile);
+        }
+        if (file_exists($file)) {
+            unlink($file);
         }
 
         $locationManager = $this->getContainer()->get('unilend.service.location_manager');
-        $ifuManager      = $this->getContainer()->get('unilend.service.ifu_manager');
         $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
         $numberFormatter = $this->getContainer()->get('number_formatter');
 
         $walletsWithMovements = $ifuManager->getWallets($year);
 
-        $data     = [];
+        $data = [];
         /*
          * Headers contain still Bank information, however as it is not mandatory information we leave the fields empty
          * when this file is modified the next time, check if the fields can not be simply deleted as well as other non mandatory fields
@@ -117,20 +126,20 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
                     $fiscalAndLocationData['city'] = $clientCountry->getFr();
-                    $inseeCountry = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
-                    $fiscalAndLocationData['zip'] = null !== $inseeCountry ? $inseeCountry->getCog() : '';
+                    $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
+                    $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
-                    $taxType = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
-                    $city = $cityRepository->findOneBy(['cp'    => $fiscalAndLocationData['zip'],'ville' => $fiscalAndLocationData['city']]);
+                    $city                                 = $cityRepository->findOneBy(['cp' => $fiscalAndLocationData['zip'], 'ville' => $fiscalAndLocationData['city']]);
                     $fiscalAndLocationData['inseeFiscal'] = null !== $city ? $city->getInsee() : '';
                     $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
 
                 $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
-                $birthCountry = $countryRepository->find($fiscalAndLocationData['birth_country']);
-                $fiscalAndLocationData['isoBirth'] = null !== $birthCountry ? $birthCountry->getIso() : '';
+                $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
+                $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
 
                 if (PaysV2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
                     $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
@@ -139,42 +148,47 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
 
                     if (empty($clientEntity->getInseeBirth())) {
-                        $cityList        = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
+                        $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
                         } else {
-                            $birthplace = $cityRepository->findOneBy(['ville' => $clientEntity->getVilleNaissance()]);
+                            $birthplace                          = $cityRepository->findOneBy(['ville' => $clientEntity->getVilleNaissance()]);
                             $fiscalAndLocationData['inseeBirth'] = null !== $birthplace && false === empty($birthplace->getInsee) ? $birthplace->getInsee : '00000';
                         }
                     }
                 }
 
                 $fiscalAndLocationData['deductedAtSource'] = '';
-                $this->addPersonLineToBeneficiaryQueryData($data, $wallet, $fiscalAndLocationData);
+                $data[]                                    = $this->addPersonLineToBeneficiaryQueryData($wallet, $fiscalAndLocationData);
             }
 
             if (
                 false === $clientEntity->isNaturalPerson()
                 && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()])
-            ){
-                $idPays = (0 == $company->getIdPays()) ? PaysV2::COUNTRY_FRANCE : $company->getIdPays();
+            ) {
+                $idPays         = (0 == $company->getIdPays()) ? PaysV2::COUNTRY_FRANCE : $company->getIdPays();
                 $companyCountry = $countryRepository->find($idPays);
 
                 $fiscalAndLocationData['isoFiscal']   = $companyCountry->getIso();
                 $fiscalAndLocationData['inseeFiscal'] = $locationManager->getInseeCode($company->getZip(), $company->getCity());
-                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $wallet, $fiscalAndLocationData);
+                $data[]                               = $this->addLegalEntityLineToBeneficiaryQueryData($company, $wallet, $fiscalAndLocationData);
             }
         }
 
-        $this->exportCSV($data, $filePath, $headers);
+        $this->exportCSV($data, $file, $headers);
     }
 
-
-    private function addPersonLineToBeneficiaryQueryData(&$data, Wallet $wallet, $fiscalAndLocationData)
+    /**
+     * @param Wallet $wallet
+     * @param array  $fiscalAndLocationData
+     *
+     * @return array
+     */
+    private function addPersonLineToBeneficiaryQueryData(Wallet $wallet, array $fiscalAndLocationData)
     {
         $client = $wallet->getIdClient();
 
-        $data[] = [
+        return [
             $client->getIdClient(),
             $wallet->getWireTransferPattern(),
             $client->getNom(),
@@ -208,11 +222,18 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
         ];
     }
 
-    private function addLegalEntityLineToBeneficiaryQueryData(&$data, Companies $company, Wallet $wallet, $fiscalAndLocationData)
+    /**
+     * @param Companies $company
+     * @param Wallet    $wallet
+     * @param array     $fiscalAndLocationData
+     *
+     * @return array
+     */
+    private function addLegalEntityLineToBeneficiaryQueryData(Companies $company, Wallet $wallet, array $fiscalAndLocationData)
     {
         $client = $wallet->getIdClient();
 
-        $data[] = [
+        return [
             $client->getIdClient(),
             $wallet->getWireTransferPattern(),
             $company->getName(),
@@ -246,7 +267,15 @@ class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
         ];
     }
 
-
+    /**
+     * @param       $data
+     * @param       $filePath
+     * @param array $headers
+     *
+     * @throws \PHPExcel_Exception
+     * @throws \PHPExcel_Reader_Exception
+     * @throws \PHPExcel_Writer_Exception
+     */
     private function exportCSV($data, $filePath, array $headers)
     {
 

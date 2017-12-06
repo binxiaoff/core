@@ -118,7 +118,7 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'wt.id = w.idType')
             ->where('wt.label = :lender')
             ->andWhere('ot.label IN (:operationTypes)')
-            ->andWhere('wbh.added BETWEEN :start AND :end')
+            ->andWhere('o.added BETWEEN :start AND :end')
             ->groupBy('w.id')
             ->setParameter('lender', WalletType::LENDER)
             ->setParameter('operationTypes', $operationTypes, Connection::PARAM_STR_ARRAY)

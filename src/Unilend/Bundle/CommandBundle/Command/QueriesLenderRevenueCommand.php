@@ -3,8 +3,8 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -18,13 +18,9 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('queries:lender_revenue')
+            ->setName('unilend:feeds_out:ifu_revenue:generate')
             ->setDescription('Extract revenue information for all lenders in a given year')
-            ->addArgument(
-                'year',
-                InputArgument::REQUIRED,
-                'year to export'
-            );
+            ->addOption('year', null, InputOption::VALUE_REQUIRED, 'year to export');
     }
 
     /**
@@ -32,16 +28,27 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $year              = $input->getArgument('year');
-        $filePath          = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . date('Ymd') . '.csv';
-        $yesterday         = new \DateTime('yesterday');
-        $yesterdayFilePath = $this->getContainer()->getParameter('path.protected') . '/' . 'requete_revenus' . $yesterday->format('Ymd') . '.csv';
+        $ifuManager = $this->getContainer()->get('unilend.service.ifu_manager');
 
-        if (file_exists($yesterdayFilePath)) {
-            unlink($yesterdayFilePath);
+        $year = $input->getOption('year');
+        if (empty($year)) {
+            $year = $ifuManager->getYear();
         }
-        if (file_exists($filePath)) {
-            unlink($filePath);
+
+        $yesterday = new \DateTime('yesterday');
+
+        $filePath          = $ifuManager->getStorageRootPath();
+        $filename          = 'requete_revenus_' . date('Ymd') . '.csv';
+        $yesterdayFilename = 'requete_revenus_' . $yesterday->format('Ymd') . '.csv';
+
+        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
+        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
+
+        if (file_exists($yesterdayFile)) {
+            unlink($yesterdayFile);
+        }
+        if (file_exists($file)) {
+            unlink($file);
         }
 
         /** @var \PHPExcel $csvFile */
@@ -149,7 +156,7 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
         $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
-        $writer->save(str_replace(__FILE__, $filePath, __FILE__));
+        $writer->save(str_replace(__FILE__, $file, __FILE__));
     }
 
     /**
