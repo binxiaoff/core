@@ -68,11 +68,15 @@ class ProjectRatingManager
     {
         $projectRating = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
 
-        return round(
-            $projectRating->getPerformanceFianciereComite() * 0.2
-            + $projectRating->getMarcheOpereComite() * 0.2
-            + $projectRating->getDirigeanceComite() * 0.2
-            + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4
-            , 1);
+        if ($projectRating) {
+            return round(
+                $projectRating->getPerformanceFianciereComite() * 0.2
+                + $projectRating->getMarcheOpereComite() * 0.2
+                + $projectRating->getDirigeanceComite() * 0.2
+                + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4
+                , 1);
+        }
+
+        return 0;
     }
 }

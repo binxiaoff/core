@@ -1353,6 +1353,16 @@ class Clients
     }
 
     /**
+     * Check whether client has a partner wallet or not. Since a client can have only one wallet today, it works so far.
+     *
+     * @return bool
+     */
+    public function isDebtCollector()
+    {
+        return false === empty($this->wallets[0]) && $this->wallets[0]->getIdType()->getLabel() === WalletType::DEBT_COLLECTOR;
+    }
+
+    /**
      * @return bool
      */
     public function isNaturalPerson()
