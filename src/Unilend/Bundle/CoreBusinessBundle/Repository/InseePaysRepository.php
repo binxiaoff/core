@@ -16,7 +16,7 @@ class InseePaysRepository extends EntityRepository
     public function findCountryWithCodeIsoLike($codeIso)
     {
         $queryBuilder = $this->createQueryBuilder('ip');
-        $queryBuilder->where('CODEISO2 LIKE :code')
+        $queryBuilder->where('ip.codeiso2 LIKE :code')
             ->setParameter('code', $codeIso);
 
         try {

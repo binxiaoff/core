@@ -1396,7 +1396,7 @@ class preteursController extends bootstrap
                 'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
                 'message' => 'Vigilance standard'
             ];
-            $this->userEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             return;
         }
         $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
@@ -1431,7 +1431,7 @@ class preteursController extends bootstrap
         }
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator                   = $this->get('translator');
-        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->userRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
         $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
