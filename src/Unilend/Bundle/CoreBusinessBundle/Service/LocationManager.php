@@ -1,8 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
  * Class LocationManager
@@ -11,6 +12,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class LocationManager
 {
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+
     /** @var EntityManager */
     private $entityManager;
 
@@ -20,11 +24,12 @@ class LocationManager
     /** @var CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, $mapboxToken, CacheItemPoolInterface $cachePool)
+    public function __construct(EntityManager $entityManager, EntityManagerSimulator $entityManagerSimulator, $mapboxToken, CacheItemPoolInterface $cachePool)
     {
-        $this->entityManager = $entityManager;
-        $this->mapboxToken   = $mapboxToken;
-        $this->cachePool     = $cachePool;
+        $this->entityManager          = $entityManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->mapboxToken            = $mapboxToken;
+        $this->cachePool              = $cachePool;
     }
 
     /**
@@ -49,7 +54,7 @@ class LocationManager
         }
 
         /** @var \pays_v2 $country */
-        $country = $this->entityManager->getRepository('pays_v2');
+        $country = $this->entityManagerSimulator->getRepository('pays_v2');
 
         if ($country->get($countryId)) {
             $curl = curl_init('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($city . ' ' . $postCode . ' ' . $country->fr) . '.json?access_token=' . $this->mapboxToken);
@@ -82,7 +87,7 @@ class LocationManager
     {
         $cityList = [];
         /** @var \villes $cities */
-        $cities = $this->entityManager->getRepository('villes');
+        $cities = $this->entityManagerSimulator->getRepository('villes');
 
         if ($lookUpBirthplace) {
             $results = $cities->lookupCities($city, ['ville', 'cp'], true);
@@ -115,7 +120,7 @@ class LocationManager
 
         if (false === $cachedItem->isHit()) {
             /** @var \pays_v2 $countries */
-            $countries = $this->entityManager->getRepository('pays_v2');
+            $countries = $this->entityManagerSimulator->getRepository('pays_v2');
             /** @var array $countyList */
             $countyList = [];
 
@@ -138,7 +143,7 @@ class LocationManager
         if (false === $cachedItem->isHit()) {
 
             /** @var \nationalites_v2 $nationalities */
-            $nationalities = $this->entityManager->getRepository('nationalites_v2');
+            $nationalities = $this->entityManagerSimulator->getRepository('nationalites_v2');
             /** @var array $nationalityList */
             $nationalityList = [];
 
@@ -208,7 +213,7 @@ class LocationManager
     public function getLendersByRegion()
     {
         /** @var \clients $clients */
-        $clients = $this->entityManager->getRepository('clients');
+        $clients = $this->entityManagerSimulator->getRepository('clients');
         $countByRegion = $clients->countClientsByRegion();
 
         return $this->getPercentageByRegion($countByRegion);
@@ -217,7 +222,7 @@ class LocationManager
     public function getProjectsByRegion()
     {
         /** @var \projects $projects */
-        $projects = $this->entityManager->getRepository('projects');
+        $projects = $this->entityManagerSimulator->getRepository('projects');
         $countByRegion = $projects->countProjectsByRegion();
 
         return $this->getPercentageByRegion($countByRegion);
@@ -226,7 +231,7 @@ class LocationManager
     public function checkFrenchCity($city, $zip = null)
     {
         /** @var \villes $cities */
-        $cities = $this->entityManager->getRepository('villes');
+        $cities = $this->entityManagerSimulator->getRepository('villes');
 
         if (is_null($zip)) {
             return $cities->exist(str_replace(array(' ', '-'), '', $city), 'REPLACE(REPLACE(ville, " ", ""), "-", "")');
@@ -238,8 +243,25 @@ class LocationManager
     public function checkFrenchCityInsee($inseeCode)
     {
         /** @var \villes $cities */
-        $cities = $this->entityManager->getRepository('villes');
+        $cities = $this->entityManagerSimulator->getRepository('villes');
 
         return $cities->exist($inseeCode, 'insee');
+    }
+
+    /**
+     * @param string $postCode
+     * @param string $city
+     *
+     * @return bool|string
+     */
+    public function getInseeCode($postCode, $city)
+    {
+        $cities = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $city]);
+
+        if (null !== $cities && false === empty($cities->getInsee())) {
+            return $cities->getInsee();
+        }
+
+        return false;
     }
 }
