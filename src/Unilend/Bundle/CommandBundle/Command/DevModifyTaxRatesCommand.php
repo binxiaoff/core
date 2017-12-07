@@ -44,6 +44,10 @@ class DevModifyTaxRatesCommand extends ContainerAwareCommand
         }
 
         $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-        $slackManager->sendMessage($csgMessage . $POMessage, '#itprivate');
+        $slackManager->sendMessage($csgMessage . "\n" . $POMessage, '#plateforme');
+        $slackManager->sendMessage($csgMessage . "\n" . $POMessage, '@david.raux');
+        $slackManager->sendMessage($csgMessage . "\n" . $POMessage, '@antoine.preveaux');
+        $slackManager->sendMessage($csgMessage . "\n" . $POMessage, '@bin');
+        $slackManager->sendMessage($csgMessage . "\n" . $POMessage, '@nicolas');
     }
 }
