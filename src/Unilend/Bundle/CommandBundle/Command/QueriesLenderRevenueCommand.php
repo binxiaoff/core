@@ -19,8 +19,14 @@ class QueriesLenderRevenueCommand extends ContainerAwareCommand
     {
         $this
             ->setName('unilend:feeds_out:ifu_revenue:generate')
-            ->setDescription('Extract revenue information for all lenders in a given year')
-            ->addOption('year', null, InputOption::VALUE_REQUIRED, 'year to export');
+            ->setDescription('Generate the lenders revenue information for those who are the beneficiaries in a given year')
+            ->addOption('year', null, InputOption::VALUE_REQUIRED, 'Optional. Define the year to export in format YYYY')
+            ->setHelp(<<<EOF
+The <info>unilend:feeds_out:ifu_revenue:generate</info> command generate a csv which contains the lenders revenue information for those who are the beneficiaries in a given year.
+Usage <info>bin/console unilend:feeds_out:ifu_revenue:generate [-year=2017]</info>
+The <info>year</info> is optional. By default, it generates the file of the last year if we are on January, February or March, otherwise it generates the file for the current year.
+EOF
+            );
     }
 
     /**
