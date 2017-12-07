@@ -21,12 +21,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-                - ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                - ROUND((o_withdraw.amount + o_commission.amount) * 100) AS amount,
                 o_withdraw.added AS date
             FROM operation o_withdraw
                 INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-                INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+                INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
+                INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
             GROUP BY o_withdraw.id
 
         UNION ALL
@@ -186,8 +186,8 @@ class UnilendStatsRepository extends EntityRepository
               o_recovery.added               AS date
             FROM operation o_recovery
               INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = "' . OperationType::BORROWER_PROVISION . '"
-              INNER JOIN operation o_comission ON o_recovery.id_wallet_creditor = o_comission.id_wallet_creditor AND o_recovery.id_project = o_comission.id_project AND DATE(o_recovery.added) = DATE(o_comission.added)
-              INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
+              INNER JOIN operation o_commission ON o_recovery.id_wallet_creditor = o_commission.id_wallet_creditor AND o_recovery.id_project = o_commission.id_project AND DATE(o_recovery.added) = DATE(o_commission.added)
+              INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
             GROUP BY o_recovery.id';
 
         $params = [
@@ -215,12 +215,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-                -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+                -ROUND((o_withdraw.amount + o_commission.amount) * 100) AS amount,
                 o_withdraw.added AS date
             FROM operation o_withdraw
                 INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-                INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-                INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND  ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+                INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
+                INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND  ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
             AND (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                   WHERE psh.id_project = o_withdraw.id_project
                   ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate
@@ -398,8 +398,8 @@ class UnilendStatsRepository extends EntityRepository
                   o_recovery.added               AS date
                 FROM operation o_recovery
                   INNER JOIN operation_type ot_recovery ON o_recovery.id_type = ot_recovery.id AND ot_recovery.label = "' . OperationType::BORROWER_PROVISION . '"
-                  INNER JOIN operation o_comission ON o_recovery.id_wallet_creditor = o_comission.id_wallet_creditor AND o_recovery.id_project = o_comission.id_project AND DATE(o_recovery.added) = DATE(o_comission.added)
-                  INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
+                  INNER JOIN operation o_commission ON o_recovery.id_wallet_creditor = o_commission.id_wallet_creditor AND o_recovery.id_project = o_commission.id_project AND DATE(o_recovery.added) = DATE(o_commission.added)
+                  INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
                   WHERE (SELECT DATE(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status AND ps.status = ' . ProjectsStatus::REMBOURSEMENT . '
                   WHERE psh.id_project = o_recovery.id_project
                   ORDER BY psh.id_project_status ASC LIMIT 1) BETWEEN :startDate AND :endDate 
@@ -455,12 +455,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-              -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+              -ROUND((o_withdraw.amount + o_commission.amount) * 100) AS amount,
               o_withdraw.added                                       AS date
             FROM operation o_withdraw
               INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-              INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-              INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+              INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
+              INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
                 AND (
                      SELECT psh.added
                      FROM projects_status_history psh
@@ -554,12 +554,12 @@ class UnilendStatsRepository extends EntityRepository
     {
         $query = '
             SELECT
-              -ROUND((o_withdraw.amount + o_comission.amount) * 100) AS amount,
+              -ROUND((o_withdraw.amount + o_commission.amount) * 100) AS amount,
               o_withdraw.added                                       AS date
             FROM operation o_withdraw
               INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-              INNER JOIN operation o_comission ON o_withdraw.id_wallet_debtor = o_comission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_comission.added)
-              INNER JOIN operation_type ot_comission ON o_comission.id_type = ot_comission.id AND ot_comission.label = "' . OperationType::BORROWER_COMMISSION . '"
+              INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
+              INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
             WHERE (
                    SELECT added
                    FROM projects_status_history psh

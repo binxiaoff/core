@@ -721,7 +721,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                 <select id="company-submitter-select" class="select" name="company_submitter">
                                     <option value="0"></option>
                                     <?php foreach ($this->agencies as $agency) : ?>
-                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency === $this->projectEntity->getIdCompanySubmitter()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
+                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency->getIdCompany() === $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>
@@ -866,7 +866,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
                                     <?php if (
-                                        in_array($this->users->id_user_type, [\users_types::TYPE_ADMIN, \users_types::TYPE_RISK])
+                                        $this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)
                                         && in_array($this->projects->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
                                     ) : ?>
                                         <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>

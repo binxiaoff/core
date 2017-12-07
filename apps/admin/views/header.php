@@ -33,6 +33,8 @@
 <div id="navigation">
     <ul id="menu_deroulant">
         <?php
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $menuHtml = '';
         foreach (static::MENU as $item) {
@@ -43,7 +45,7 @@
             if (in_array($zone, $this->lZonesHeader)) {
                 // Check user and adjust title for Dashboard item
                 if ($title === 'Dashboard') {
-                    if (in_array($_SESSION['user']['id_user_type'], [\users_types::TYPE_RISK, \users_types::TYPE_COMMERCIAL]) || in_array($_SESSION['user']['id_user'], [23, 26])) {
+                    if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupSales($this->userEntity)) {
                         $title = 'Mon flux';
                     }
                 }

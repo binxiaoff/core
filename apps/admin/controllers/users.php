@@ -12,7 +12,6 @@ class usersController extends bootstrap
 
         $this->menu_admin        = 'admin';
         $this->users_zones       = $this->loadData('users_zones');
-        $this->users_types       = $this->loadData('users_types');
         $this->users_types_zones = $this->loadData('users_types_zones');
     }
 
@@ -120,7 +119,10 @@ class usersController extends bootstrap
         $_SESSION['request_url'] = $this->url;
 
         $this->users->get($this->params[0], 'id_user');
-        $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
+
+        /** @var EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $this->userTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->findAll();
     }
 
     public function _edit_perso()
@@ -140,7 +142,9 @@ class usersController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
+        /** @var EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $this->userTypes = $entityManager->getRepository('UnilendCoreBusinessBundle:UsersTypes')->findAll();
     }
 
     public function _edit_password()
@@ -174,7 +178,7 @@ class usersController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendPasswordModificationEmail($this->users);
+                $mailerManager->sendAdminPasswordModificationEmail($this->users);
 
                 $previousPasswords->id_user  = $this->users->id_user;
                 $previousPasswords->password = $oldPassword;

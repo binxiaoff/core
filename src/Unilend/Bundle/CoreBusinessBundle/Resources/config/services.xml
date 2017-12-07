@@ -139,9 +139,6 @@
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="assets.packages"/>
-            <argument>%router.request_context.scheme%</argument>
-            <argument>%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
@@ -385,9 +382,6 @@
             <argument type="service" id="mailer"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="router"/>
-            <argument type="service" id="assets.packages"/>
-            <argument>%router.request_context.scheme%</argument>
-            <argument>%url.host_default%</argument>
         </service>
 
         <service id="unilend.service.lender_validation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager">
@@ -451,6 +445,14 @@
         <service id="unilend.service.project_close_out_netting_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
+        </service>
+
+        <service id="unilend.service.project_rating_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
+        <service id="unilend.service.back_office_user_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
     </services>
 </container>

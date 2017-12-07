@@ -5,10 +5,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -608,7 +608,7 @@ class statsController extends bootstrap
 
             $this->aProjectList = [];
             foreach ($aProjectList as $aProject) {
-                $fRisk                = constant('\projects::RISK_' . trim($aProject['risk']));
+                $fRisk                = constant(Projects::class . '::RISK_' . trim($aProject['risk']));
                 $this->aProjectList[] = [
                     'id_project'                => $aProject['id_project'],
                     'percentage'                => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',

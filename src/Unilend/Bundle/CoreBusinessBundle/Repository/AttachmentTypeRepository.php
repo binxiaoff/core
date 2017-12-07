@@ -21,8 +21,9 @@ class AttachmentTypeRepository extends EntityRepository
         $qb = $this->createQueryBuilder('at');
 
         return $qb->where($qb->expr()->in('at.id', ':types'))
-                  ->setParameter(':types', $attachmentTypes, Connection::PARAM_INT_ARRAY)
-                  ->getQuery()
-                  ->getResult();
+            ->setParameter(':types', $attachmentTypes, Connection::PARAM_INT_ARRAY)
+            ->orderBy('at.label', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

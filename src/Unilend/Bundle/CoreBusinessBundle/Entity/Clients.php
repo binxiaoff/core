@@ -320,12 +320,20 @@ class Clients
     private $sponsorCode;
 
     /**
+     * @var ClientsAdresses[];
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses", mappedBy="idClient")
+     */
+    private $clientsAddresses;
+
+    /**
      * Clients constructor.
      */
     public function __construct()
     {
-        $this->attachments = new ArrayCollection();
-        $this->wallets     = new ArrayCollection();
+        $this->attachments      = new ArrayCollection();
+        $this->wallets          = new ArrayCollection();
+        $this->clientsAddresses = new ArrayCollection();
     }
 
     /**
@@ -1411,4 +1419,25 @@ class Clients
 
         return null;
     }
+
+    /**
+     * @return ClientsAdresses[]
+     */
+    public function getClientsAddresses()
+    {
+        return $this->clientsAddresses;
+    }
+
+    /**
+     * @param ClientsAdresses[] $clientsAddresses
+     *
+     * @return Clients
+     */
+    public function setClientsAddresses($clientsAddresses)
+    {
+        $this->clientsAddresses = $clientsAddresses;
+
+        return $this;
+    }
+
 }

@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
@@ -471,7 +472,16 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($sponsee->getAdded());
+            $toBeCheckedStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->findOneBy(['status' => ClientsStatus::TO_BE_CHECKED]);
+            $firstToBeCheckedStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
+                ->findOneBy(['idClient'=> $sponsee->getIdClient(),'idClientStatus' => $toBeCheckedStatus->getIdClientStatus()], ['added' => 'ASC']);
+            if (null === $firstToBeCheckedStatus) {
+                $_SESSION['create_sponsorship']['errors'][] = 'L\'insciription du filleul n\'est pas terminée';
+                header('Location: ' . $this->lurl . '/parrainage');
+                die;
+            }
+
+            $campaign = $entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCampaignValidAtDate($firstToBeCheckedStatus->getAdded());
             if (null === $campaign) {
                 $_SESSION['create_sponsorship']['errors'][] = 'Il n\'y a pas de campagne active au moment de l\'inscription du filleul';
                 header('Location: ' . $this->lurl . '/parrainage');

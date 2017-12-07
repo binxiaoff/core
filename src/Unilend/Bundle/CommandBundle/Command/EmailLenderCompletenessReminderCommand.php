@@ -36,15 +36,8 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $this->oEntityManager->getRepository('clients_status');
         /** @var \clients_status_history $clients_status_history */
         $clients_status_history = $this->oEntityManager->getRepository('clients_status_history');
-        /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
         /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
-
-        $settings->get('Facebook', 'type');
-        $sFacebookLink = $settings->value;
-        $settings->get('Twitter', 'type');
-        $sTwitterLink = $settings->value;
 
         $iTimeMinus8D = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
         $aLenders     = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS, '', 'added_status DESC');
@@ -57,7 +50,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             if ($timestamp_date <= $iTimeMinus8D) {
                 $clients_status_history->get($aLender['id_client_status_history'], 'id_client_status_history');
                 try {
-                    $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $clients_status_history->content);
+                    $this->sendReminderEmail($clients, $aLender, $clients_status_history->content);
                     $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $clients_status_history->content);
                 } catch (\Exception $exception) {
                     $logger->warning(
@@ -94,7 +87,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
             if (true === $bSendReminder) {
                 try {
-                    $this->sendReminderEmail($aLender, $sTwitterLink, $sFacebookLink, $aClientLastStatus['content']);
+                    $this->sendReminderEmail($clients, $aLender, $aClientLastStatus['content']);
                     $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], $reminder);
                 } catch (\Exception $exception) {
                     $logger->warning(
@@ -107,31 +100,25 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param array $aLender
-     * @param string $sTwitterLink
-     * @param string $sFacebookLink
-     * @param string $sContent
+     * @param \clients $client
+     * @param array    $lender
+     * @param string   $content
      */
-    private function sendReminderEmail(array $aLender, $sTwitterLink, $sFacebookLink, $sContent)
+    private function sendReminderEmail(\clients $client, array $lender, $content)
     {
-        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
-        $timeCreate = strtotime($aLender['added_status']);
+        $timeCreate = strtotime($lender['added_status']);
         $month      = $this->oDate->tableauMois['fr'][date('n', $timeCreate)];
+        $keywords   = [
+            'firstName'        => $client->prenom,
+            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
+            'content'          => $content,
+            'uploadLink'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default') . '/profile/documents',
+            'lenderPattern'    => $client->getLenderPattern($client->id_client)
+        ];
 
-        $varMail = array(
-            'furl'          => $sUrl,
-            'surl'          => $sStaticUrl,
-            'url'           => $sUrl,
-            'prenom_p'      => $aLender['prenom'],
-            'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => $sContent,
-            'lien_fb'       => $sFacebookLink,
-            'lien_tw'       => $sTwitterLink
-        );
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
-        $message->setTo($aLender['email']);
+        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
+        $message->setTo($client->email);
         $mailer = $this->getContainer()->get('mailer');
         $mailer->send($message);
     }

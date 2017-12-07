@@ -57,6 +57,7 @@ class ProjectRepaymentTaskManager
      * @param DebtCollectionMission|null $debtCollectionMission
      *
      * @throws \Exception
+     * @return boolean
      */
     public function planRepaymentTask(
         Echeanciers $repaymentSchedule,
@@ -69,14 +70,39 @@ class ProjectRepaymentTaskManager
         DebtCollectionMission $debtCollectionMission = null
     )
     {
-        $project = $repaymentSchedule->getIdLoan()->getProject();
+        $project  = $repaymentSchedule->getIdLoan()->getProject();
+        $sequence = $repaymentSchedule->getOrdre();
+
+        // a repaid task or a already launched task
+        $repaidProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'sequence'  => $sequence,
+            'status'    => [ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR, ProjectRepaymentTask::STATUS_REPAID]
+        ]);
+
+        if ($repaidProjectRepaymentTask) {
+            /** @var Receptions $wireTransferIn */
+            $wireTransferIn = $repaidProjectRepaymentTask->getIdWireTransferIn();
+            if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findOneBy(['idReceptionRejected' => $wireTransferIn])
+                || $wireTransferIn->getStatusPrelevement() === Receptions::DIRECT_DEBIT_STATUS_REJECTED // for legacy compatibility
+                || $wireTransferIn->getStatusVirement() === Receptions::WIRE_TRANSFER_STATUS_REJECTED // for legacy compatibility
+            ) {
+                // Regularize "Unilend loss" (the direct debit is rejected after that we have repaid the lenders) by putting the regularization wire transfer on the repaid task if the old one has been rejected.
+                $repaidProjectRepaymentTask->setIdWireTransferIn($reception);
+                $this->entityManager->flush($repaidProjectRepaymentTask);
+
+                return true;
+            }
+
+            $this->logger->warning('Trying to create a new task on the already repaid schedule of the project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . '.');
+        }
 
         if (
             0 === bccomp($capitalToRepay, 0, 2)
             && 0 === bccomp($interestToRepay, 0, 2)
             && 0 === bccomp($commissionToPay, 0, 2)
         ) {
-            throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $repaymentSchedule->getOrdre() . ' is 0. Please check the data consistency.');
+            throw new \Exception('The repayment amount of project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . ' is 0. Please check the data consistency.');
         }
 
         if (null === $repayOn || $repayOn < $repaymentSchedule->getDateEcheance()) {
@@ -85,7 +111,7 @@ class ProjectRepaymentTaskManager
 
         $projectRepaymentTask = new ProjectRepaymentTask();
         $projectRepaymentTask->setIdProject($project)
-            ->setSequence($repaymentSchedule->getOrdre())
+            ->setSequence($sequence)
             ->setCapital($capitalToRepay)
             ->setInterest($interestToRepay)
             ->setCommissionUnilend($commissionToPay)
@@ -96,7 +122,7 @@ class ProjectRepaymentTaskManager
             ->setIdDebtCollectionMission($debtCollectionMission)
             ->setIdWireTransferIn($reception);
 
-        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $repaymentSchedule->getOrdre()]);
+        $paymentSchedule   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findOneBy(['idProject' => $project, 'ordre' => $sequence]);
         $totalCapital      = round(bcdiv($paymentSchedule->getCapital(), 100, 4), 2);
         $totalInterest     = round(bcdiv($paymentSchedule->getInterets(), 100, 4), 2);
         $monthlyCommission = round(bcdiv($paymentSchedule->getCommission() + $paymentSchedule->getTva(), 100, 4), 2);
@@ -115,7 +141,9 @@ class ProjectRepaymentTaskManager
         $this->entityManager->persist($projectRepaymentTask);
         $this->entityManager->flush($projectRepaymentTask);
 
-        $this->checkPlannedTaskAmount($project, $repaymentSchedule->getOrdre());
+        $this->checkPlannedTaskAmount($project, $sequence);
+
+        return true;
     }
 
     /**

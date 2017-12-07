@@ -582,6 +582,14 @@ class sfpmeiController extends bootstrap
             ]);
 
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
+            $projectRatingManager = $this->get('unilend.service.project_rating_manager');
+            /** @var \NumberFormatter $numberFormatter */
+            $numberFormatter              = $this->get('number_formatter');
+            $this->projectRating          = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
+            $this->projectCommiteeAvgGrade = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageGrade($this->projectEntity));
+
         } else {
             header('Location: ' . $this->lurl . '/sfpmei');
             die;
