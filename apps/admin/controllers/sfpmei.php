@@ -741,7 +741,7 @@ class sfpmeiController extends bootstrap
                 'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
                 'message' => 'Vigilance standard'
             ];
-            $this->userEntity      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $this->userEntity      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
             return;
         }
 
@@ -776,7 +776,7 @@ class sfpmeiController extends bootstrap
                 trigger_error('Unknown vigilance status :' . $this->vigilanceStatusHistory[0]->getVigilanceStatus(), E_USER_NOTICE);
         }
 
-        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
         $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 

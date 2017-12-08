@@ -51,7 +51,7 @@ class client_atypical_operationController extends bootstrap
 
         $this->showActions                  = true;
         $this->showUpdated                  = false;
-        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $this->userEntity                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
         $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
     }
 
