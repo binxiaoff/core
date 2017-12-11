@@ -721,7 +721,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                 <select id="company-submitter-select" class="select" name="company_submitter">
                                     <option value="0"></option>
                                     <?php foreach ($this->agencies as $agency) : ?>
-                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency === $this->projectEntity->getIdCompanySubmitter()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
+                                        <option value="<?= $agency->getIdCompany() ?>"<?php if ($agency->getIdCompany() === $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?> selected<?php endif; ?>><?= $agency->getName() ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </td>

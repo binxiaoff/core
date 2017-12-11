@@ -155,13 +155,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
                 if (moyenne >= 4) {
                     start = '3 étoiles';
                 }
-                if (moyenne >= 5.5) {
+                if (moyenne >= 5.1) {
                     start = '3,5 étoiles';
                 }
-                if (moyenne >= 6.5) {
+                if (moyenne >= 6.1) {
                     start = '4 étoiles';
                 }
-                if (moyenne >= 7.5) {
+                if (moyenne >= 7.1) {
                     start = '4,5 étoiles';
                 }
                 if (moyenne >= 8.5) {
