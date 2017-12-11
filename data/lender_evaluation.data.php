@@ -4,7 +4,7 @@ class lender_evaluation extends lender_evaluation_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::lender_evaluation($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

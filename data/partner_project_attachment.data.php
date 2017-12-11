@@ -32,7 +32,7 @@ class partner_project_attachment extends partner_project_attachment_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::partner_project_attachment($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

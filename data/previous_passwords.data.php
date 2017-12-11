@@ -4,7 +4,7 @@ class previous_passwords extends previous_passwords_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::previous_passwords($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

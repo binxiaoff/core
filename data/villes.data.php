@@ -28,9 +28,9 @@
 
 class villes extends villes_crud
 {
-    public function villes($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::villes($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

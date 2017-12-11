@@ -12,7 +12,7 @@ class users_zones extends users_zones_crud
      */
     public function __construct(Connection $bdd, $params = '')
     {
-        parent::users_zones($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     /**

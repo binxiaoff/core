@@ -10,7 +10,7 @@ class autobid extends autobid_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::autobid($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

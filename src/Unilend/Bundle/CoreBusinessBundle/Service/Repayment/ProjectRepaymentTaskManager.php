@@ -403,7 +403,7 @@ class ProjectRepaymentTaskManager
                     $this->entityManager->flush($projectRepaymentTask);
 
                     $this->logger->error(
-                        'The repayment task (id: ' . $projectRepaymentTask->getId() . ') has not enough money for an early repayment.',
+                        'The repayment task (id: ' . $projectRepaymentTask->getId() . ') has not the right amount for an early repayment.',
                         ['method' => __METHOD__]
                     );
 

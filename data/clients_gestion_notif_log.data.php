@@ -29,9 +29,9 @@
 class clients_gestion_notif_log extends clients_gestion_notif_log_crud
 {
 
-    function clients_gestion_notif_log($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::clients_gestion_notif_log($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_client_gestion_notif_log')

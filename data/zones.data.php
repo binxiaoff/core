@@ -29,9 +29,9 @@
 class zones extends zones_crud
 {
 
-    function zones($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::zones($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_zone')

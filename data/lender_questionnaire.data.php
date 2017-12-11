@@ -7,7 +7,7 @@ class lender_questionnaire extends lender_questionnaire_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::lender_questionnaire($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

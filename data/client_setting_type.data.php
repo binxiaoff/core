@@ -33,7 +33,7 @@ class client_setting_type extends client_setting_type_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::client_setting_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

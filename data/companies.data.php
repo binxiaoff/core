@@ -9,7 +9,7 @@ class companies extends companies_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::companies($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function create($cs = '')

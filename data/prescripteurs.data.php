@@ -30,7 +30,7 @@ class prescripteurs extends prescripteurs_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::prescripteurs($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function get($id, $field = 'id_prescripteur')

@@ -28,10 +28,9 @@
 
 class accept_cookies extends accept_cookies_crud
 {
-
-	function accept_cookies($bdd,$params='')
+    public function __construct($bdd,$params='')
     {
-        parent::accept_cookies($bdd,$params);
+        parent::__construct($bdd,$params);
     }
 
     function get($id,$field='id_accept_cookies')

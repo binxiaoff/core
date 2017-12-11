@@ -29,7 +29,7 @@ class partner_product extends partner_product_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::partner_product($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

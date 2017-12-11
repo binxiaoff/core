@@ -273,7 +273,7 @@ knp_mailjet:
     secret_key: "%mailjet.api_secret%"
     event_endpoint_token: yclrcchxk0p3lujy82
 
-guzzle:
+eight_points_guzzle:
     clients:
         euler:
             base_url: "%euler.url%"
@@ -294,9 +294,6 @@ guzzle:
             base_url: "%ellisphere.url%"
             options:
                 http_errors: false
-
-jms_serializer:
-    enable_short_alias: false
 
 cl_slack:
     api_token: "%slack.token%"
