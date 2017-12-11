@@ -22,8 +22,9 @@ class Clients
     const TYPE_PERSON_FOREIGNER       = 3;
     const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
-    const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE  = 1;
+    const STATUS_OFFLINE  = 0;
+    const STATUS_ONLINE   = 1;
+    const STATUS_INACTIVE = 2;
 
     const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;

@@ -74,12 +74,11 @@ class ProjectRequestController extends Controller
         $motive   = null;
         $duration = null;
         $siren    = null;
-        $email    = null;
 
         try {
             $formData = $request->request->get('simulator');
 
-            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren']) || empty($formData['email'])) {
+            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
@@ -113,12 +112,6 @@ class ProjectRequestController extends Controller
             }
 
             $siren = substr($siren, 0, 9);
-
-            if (false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            $email = $formData['email'];
         } catch (InvalidArgumentException $exception) {
             $this->addFlash('partnerProjectRequestErrors', $exception->getMessage());
 
@@ -126,7 +119,6 @@ class ProjectRequestController extends Controller
                 'values' => [
                     'amount'   => $amount,
                     'siren'    => $siren,
-                    'email'    => $email,
                     'motive'   => $motive,
                     'duration' => $duration
                 ]
@@ -137,27 +129,21 @@ class ProjectRequestController extends Controller
 
         $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email)) {
-            $email .= '-' . time();
-        }
-
         $client = new Clients();
         $client
-            ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_ONLINE)
+            ->setStatus(Clients::STATUS_INACTIVE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siret   = $sirenLength === 14 ? str_replace(' ', '', $formData['siren']) : '';
+        $siret   = $sirenLength === 14 ? str_replace(' ', '', $formData['siren']) : null;
         $company = new Companies();
-        $company->setSiren($siren)
+        $company
+            ->setSiren($siren)
             ->setSiret($siret)
-            ->setStatusAdresseCorrespondance(1)
-            ->setEmailDirigeant($email)
-            ->setEmailFacture($email);
+            ->setStatusAdresseCorrespondance(1);
 
         $entityManager->beginTransaction();
         try {
@@ -389,6 +375,7 @@ class ProjectRequestController extends Controller
                     'title'     => isset($values['contact']['title']) ? $values['contact']['title'] : $client->getCivilite(),
                     'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $client->getNom(),
                     'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $client->getPrenom(),
+                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($client->getEmail()),
                     'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $client->getTelephone(),
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $client->getFonction()
                 ],
@@ -435,6 +422,15 @@ class ProjectRequestController extends Controller
         }
         if ($checkEmpty && empty($request->request->get('contact')['firstname'])) {
             $errors['contact']['firstname'] = true;
+        }
+        if (
+            $checkEmpty
+            && (
+                empty($request->request->get('contact')['email'])
+                || false === filter_var($request->request->get('contact')['email'], FILTER_VALIDATE_EMAIL)
+            )
+        ) {
+            $errors['contact']['email'] = true;
         }
         if (
             $checkEmpty && empty($request->request->get('contact')['mobile'])
@@ -499,6 +495,26 @@ class ProjectRequestController extends Controller
         if (isset($request->request->get('contact')['firstname'])) {
             $client->setPrenom($request->request->get('contact')['firstname']);
         }
+        if (isset($request->request->get('contact')['email'])) {
+            $email = $request->request->get('contact')['email'];
+            if ($clientRepository->existEmail($email)) {
+                if ($this->removeEmailSuffix($client->getEmail()) === $email) {
+                    $email = $client->getEmail();
+                } else {
+                    $email = $email . '-' . time();
+                }
+            }
+
+            $client
+                ->setStatus(Clients::STATUS_ONLINE)
+                ->setEmail($email);
+
+            $project->getIdCompany()
+                ->setEmailDirigeant($email)
+                ->setEmailFacture($email);
+
+            $entityManager->flush($project->getIdCompany());
+        }
         if (isset($request->request->get('contact')['mobile'])) {
             $client->setTelephone($request->request->get('contact')['mobile']);
         }
@@ -506,13 +522,12 @@ class ProjectRequestController extends Controller
             $client->setFonction($request->request->get('contact')['function']);
         }
 
-        $entityManager->persist($client);
+        $entityManager->flush($client);
 
         if (isset($request->request->get('project')['description'])) {
             $project->setComments($request->request->get('project')['description']);
 
-            $entityManager->persist($project);
-            $entityManager->flush();
+            $entityManager->flush($project);
         }
 
         if ('save' === $action) {
@@ -697,5 +712,15 @@ class ProjectRequestController extends Controller
         }
 
         return $project;
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return string
+     */
+    private function removeEmailSuffix($email)
+    {
+        return preg_replace('/^(.*)-[0-9]+$/', '$1', $email);
     }
 }
