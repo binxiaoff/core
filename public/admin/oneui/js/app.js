@@ -81,7 +81,6 @@ var App = function() {
 
                 if (jQuery('[data-equal-height]').length) {
                     uiEqualHeights();
-                    console.log('ss')
                 }
             }, 150);
         });
@@ -979,7 +978,6 @@ var App = function() {
                 currencyColumns = {targets: columnIndexes, type: 'formatted-num'}
             }
             // Sortable date columns
-            var dateColumns = {}
             var datePattern = new RegExp('[0-9]{2}/[0-9]{2}/[0-9]{4}')
             columnIndexes = []
             $firstRow.children('td').each(function () {
@@ -987,7 +985,7 @@ var App = function() {
                     columnIndexes.push($(this).index())
                 }
             })
-            dateColumns = {targets: columnIndexes, type: 'date-fr'}
+            var dateColumns = {targets: columnIndexes, type: 'date-fr'}
 
             // Rows per page
             var pageLength = self.$elem.data('table-pagelength')
@@ -1056,15 +1054,20 @@ var App = function() {
         DT.prototype.buttons = function (state) {
             var self = this
             var html = '<div class="btn-group">'
-            if (~(self.actions.indexOf('edit')) || ~(self.actions.indexOf('modify')))
+            if (~(self.actions.indexOf('edit')) || ~(self.actions.indexOf('modify'))) {
                 html += '<a class="btn btn-xs btn-default edit-btn" title="Modifier"><i class="fa fa-pencil"></i></a>'
-            if (~(self.actions.indexOf('delete')))
+            }
+            if (~(self.actions.indexOf('delete'))) {
                 html += '<a class="btn btn-xs btn-default delete-btn" title="Supprimer"><i class="fa fa-times"></i></a>'
+            }
             if (~(self.actions.indexOf('toggle')) && state !== null) {
                 var btn = (state === 'inactive') ? 'activate-btn' : 'deactivate-btn'
                 var tooltip = (state === 'inactive') ? 'Activer' : 'Désactiver'
                 var icon = (state === 'inactive') ? 'off' : 'on'
                 html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
+            }
+            if (~(self.actions.indexOf('stats'))) {
+                html += '<a class="btn btn-xs btn-default stats-btn" title="Statistiques"><i class="fa fa-line-chart"></i></a>'
             }
             return html
         }
@@ -1080,7 +1083,7 @@ var App = function() {
                 var disabled = (typeof $th.data('editor-disabled') !== 'undefined')
                 var label = $th.text()
                 if (typeof name === 'undefined' || typeof type === 'undefined') {
-                    if (!$th.is('[data-table-actionscolumn]')) {
+                    if (!disabled && !$th.is('[data-table-actionscolumn]')) {
                         console.log('Missing data-editor attributes')
                         return false
                     }
@@ -1204,7 +1207,6 @@ var App = function() {
                 else {
                     if (type === 'file') {
                         value = value.replace(/"/g, '\'')
-                        console.log(value)
                     }
                     html += '<input type="hidden" name="' + name + '" value="' + value + '">'
                 }
@@ -1475,13 +1477,19 @@ var App = function() {
                 var id = $(this).closest('tr').data('id')
                 self.openModal('deactivate', id)
             })
+            self.$elem.on('click', '.stats-btn', function(){
+                var url = $(this).closest('tr').data('stats-url')
+                window.location.href = url
+            })
             self.$modal.on('shown.bs.modal', function() {
-                self.$modal.find('[data-date-format]').datepicker({
-                    weekStart: 1,
-                    autoclose: true,
-                    todayHighlight: false,
-                    language: 'fr'
-                })
+                if (self.$modal.find('[data-date-format]').length) {
+                    self.$modal.find('[data-date-format]').datepicker({
+                        weekStart: 1,
+                        autoclose: true,
+                        todayHighlight: false,
+                        language: 'fr'
+                    })
+                }
 
                 // MODAL OPEN CALLBACK
                 if (typeof self.options !== 'undefined') {

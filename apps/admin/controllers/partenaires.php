@@ -890,4 +890,14 @@ class partenairesController extends bootstrap
 
         $this->sendAjaxResponse(true, $users);
     }
+
+    public function _stats()
+    {
+        /** @var Doctrine\ORM\EntityManager $entityManager = */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+        $partner           = $partnerRepository->find(5);
+
+        $this->render(null, ['partner' => $partner]);
+    }
 }

@@ -1,0 +1,29 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+{% endblock %}
+
+{% block pluginsJS %}
+{% endblock %}
+
+{% block pageScripts %}
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="row items-push">
+        <div class="col-sm-7">
+            <h1 class="page-heading">
+                Statistiques partenaire <small>Agence Xyz</small>
+            </h1>
+        </div>
+        <div class="col-sm-5 text-right hidden-xs">
+            <ol class="breadcrumb push-10-t">
+                <li><a href="{{ app.adminUrl }}/partenaires">Partenaires</a></li>
+                <li><a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">{{ partner.idCompany.name }}</a></li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
