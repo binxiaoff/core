@@ -57,11 +57,11 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
     /**
      * Queues a message.
      *
-     * @param \Swift_Mime_Message $message The message to store
+     * @param \Swift_Mime_SimpleMessage $message The message to store
      *
      * @return boolean
      */
-    public function queueMessage(\Swift_Mime_Message $message)
+    public function queueMessage(\Swift_Mime_SimpleMessage $message)
     {
         return $this->mailQueueManager->queue($message);
     }
