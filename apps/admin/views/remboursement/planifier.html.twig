@@ -99,7 +99,7 @@
                                                 {{ charge.invoiceDate|localizeddate('short', 'none') }}
                                             </td>
                                             <td>
-                                                {{ ('project-charge-type_' ~ charge.idType.label|replace('_', '-')) | trans }}
+                                                {{ ('project-charge-type_' ~ charge.idType.label|replace({'_': '-'})) | trans }}
                                             </td>
                                             <td>
                                                 {{ charge.amountInclVat|localizedcurrency('EUR') }}

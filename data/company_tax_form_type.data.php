@@ -32,7 +32,7 @@ class company_tax_form_type extends company_tax_form_type_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::company_tax_form_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

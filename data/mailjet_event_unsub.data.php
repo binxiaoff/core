@@ -4,7 +4,7 @@ class mailjet_event_unsub extends mailjet_event_unsub_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::mailjet_event_unsub($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

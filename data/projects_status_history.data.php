@@ -6,7 +6,7 @@ class projects_status_history extends projects_status_history_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::projects_status_history($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -4,7 +4,7 @@ class mailjet_event_spam extends mailjet_event_spam_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::mailjet_event_spam($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

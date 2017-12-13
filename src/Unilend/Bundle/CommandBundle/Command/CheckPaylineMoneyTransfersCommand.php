@@ -34,8 +34,10 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
             foreach ($pendingPayline as $payline) {
                 if (false === empty($payline->getSerializeDoPayment())) {
                     $paymentDetails = unserialize($payline->getSerializeDoPayment());
-                    $token          = $paymentDetails['token'];
-                    $paylineManager->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
+                    if (false === empty($paymentDetails['token'])) {
+                        $token          = $paymentDetails['token'];
+                        $paylineManager->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
+                    }
                 }
             }
         }

@@ -30,7 +30,7 @@ class accepted_bids extends accepted_bids_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::accepted_bids($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -28,9 +28,9 @@
 
 class acceptations_legal_docs extends acceptations_legal_docs_crud
 {
-    function acceptations_legal_docs($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::acceptations_legal_docs($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_acceptation')

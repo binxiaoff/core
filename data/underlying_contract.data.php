@@ -33,7 +33,7 @@ class underlying_contract extends underlying_contract_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::underlying_contract($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
