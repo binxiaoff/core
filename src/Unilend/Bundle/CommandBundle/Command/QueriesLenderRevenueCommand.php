@@ -115,7 +115,7 @@ EOF
 
             $capitalRepayments               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::CAPITAL_REPAYMENT], null, $year);
             $capitalRepaymentsRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::CAPITAL_REPAYMENT_REGULARIZATION], null, $year);
-            $capitalRepayments               = round(bcsub($capitalRepayments, $capitalRepaymentsRegularization, 4), 2);
+            $capitalRepayments               = round(bcsub($capitalRepayments, $capitalRepaymentsRegularization, 4));
             if ($capitalRepayments > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
                 $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
