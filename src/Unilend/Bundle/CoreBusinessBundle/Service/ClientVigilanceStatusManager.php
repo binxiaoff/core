@@ -114,7 +114,7 @@ class ClientVigilanceStatusManager
             ->setAtypicalValue($atypicalValue)
             ->setOperationLog($operationLog)
             ->setUserComment($comment)
-            ->setIdUser(Users::USER_ID_CRON);
+            ->setIdUser($this->em->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON));
 
         $this->em->persist($atypicalOperation);
         $this->em->flush($atypicalOperation);

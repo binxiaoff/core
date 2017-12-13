@@ -88,11 +88,7 @@
         <br><br>
         <div>
             <label for="user_comment"><b>Commentaire</b></label><br>
-            <textarea id="user_comment" type="text" name="user_comment" rows="6" cols="80" required>
-                <?php if (false === empty($this->currentUserComment)) : ?>
-                    <?= $this->currentUserComment ?>
-                <?php endif; ?>
-            </textarea>
+            <textarea id="user_comment" type="text" name="user_comment" rows="6" cols="80" required><?php if (false === empty($this->currentUserComment)) : ?><?= $this->currentUserComment ?><?php endif; ?></textarea>
         </div>
         <br>
         <div style="text-align: center">
