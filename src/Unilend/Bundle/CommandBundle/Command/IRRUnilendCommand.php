@@ -29,7 +29,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
                 $iRRManager->addOptimisticUnilendIRR();
                 $iRRManager->addOptimisticUnilendIRRAllRiskPeriodCohort();
             } catch (\Exception $exception) {
-                $logger->error('Could not update Unilend IRR. Message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $logger->error('Could not update Unilend IRR. Message: ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
             }
         }
     }

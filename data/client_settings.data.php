@@ -36,7 +36,7 @@ class client_settings extends client_settings_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::client_settings($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

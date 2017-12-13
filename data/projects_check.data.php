@@ -29,9 +29,9 @@
 class projects_check extends projects_check_crud
 {
 
-    function projects_check($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::projects_check($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_project')

@@ -29,7 +29,7 @@ class lender_tax_exemption extends lender_tax_exemption_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::lender_tax_exemption($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

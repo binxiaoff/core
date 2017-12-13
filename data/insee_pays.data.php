@@ -30,7 +30,7 @@ class insee_pays extends insee_pays_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::insee_pays($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function get($id, $field = 'id_insee_pays')

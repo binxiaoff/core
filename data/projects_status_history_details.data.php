@@ -30,7 +30,7 @@ class projects_status_history_details extends projects_status_history_details_cr
 {
     public function __construct($bdd, $params = '')
     {
-        parent::projects_status_history_details($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = null, $order = null, $start = null, $nb = null, $sKey = 'id_project_status_history_details')

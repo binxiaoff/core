@@ -29,9 +29,9 @@
 class acceptations_legal_docs_relances extends acceptations_legal_docs_relances_crud
 {
 
-    function acceptations_legal_docs_relances($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::acceptations_legal_docs_relances($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_relance')

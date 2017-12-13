@@ -9,7 +9,7 @@ class project_need extends project_need_crud
 
     public function __construct($database, $parameters = '')
     {
-        parent::project_need($database, $parameters);
+        parent::__construct($database, $parameters);
     }
 
     public function select($where = null, $order = null)

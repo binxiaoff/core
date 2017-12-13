@@ -30,7 +30,7 @@ class lenders_imposition_history extends lenders_imposition_history_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::lenders_imposition_history($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -6,7 +6,7 @@ class project_rejection_reason extends project_rejection_reason_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::project_rejection_reason($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -11,7 +11,7 @@ class loans extends loans_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::loans($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

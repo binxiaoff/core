@@ -6,21 +6,16 @@ if (getenv('SYMFONY_ENV') && 'prod' === getenv('SYMFONY_ENV')) {
     exit;
 }
 
-$loader = require __DIR__ . '/../../app/autoload.php';
+require __DIR__ . '/../../app/autoload.php';
 include '../../core/controller.class.php';
 include '../../core/command.class.php';
-require_once __DIR__ . '/../../app/AppKernel.php';
-
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
-
-session_start();
-ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
 $kernel  = new AppKernel('preprod', false);
 $request = Request::createFromGlobals();
 $kernel->boot();
+
+// use symfony session handler to avoid session issue on PHP7.1 (https://github.com/websupport-sk/pecl-memcache/issues/23)
+$kernel->getContainer()->get('session')->start();
 
 $oDispatcher = new \Unilend\core\Dispatcher($kernel, 'admin', $request);
 
