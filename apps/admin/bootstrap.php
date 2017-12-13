@@ -232,6 +232,16 @@ class bootstrap extends Controller
                     'title' => 'Simulateur WS risque',
                     'uri'   => 'simulation/webservices_risque',
                     'zone'  => Zones::ZONE_LABEL_SIMULATOR
+                ],
+                [
+                    'title' => 'Test éligibilité',
+                    'uri'   => 'emprunteurs/test_eligibilite',
+                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
+                ],
+                [
+                    'title' => 'Dépôt liste dosiers',
+                    'uri'   => 'dossiers/depot_liste_dossiers',
+                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
                 ]
             ]
         ],

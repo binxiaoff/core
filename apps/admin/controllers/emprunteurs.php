@@ -275,4 +275,42 @@ class emprunteursController extends bootstrap
         header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner());
         die;
     }
+
+    public function _test_eligibilite()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
+
+        if (
+            $userManager->isGrantedRisk($this->userEntity)
+            || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
+        ) {
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
+            $uploadedFile = $this->request->files->get('siren_list');
+
+            if (empty($uploadedFile)) {
+                $this->render();
+            } else {
+                $success   = '';
+                $error     = '';
+                $uploadDir = $bulkCompanyCheckManager->getEligibilityInputPendingDir();
+                try {
+                    $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
+                    $success = 'Le fichier a été pris en compte. Une notification vous sera envoyé dès qu\'il sera traité';
+                } catch (\Exception $exception) {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error(
+                        'Could not upload the file into ' . $uploadDir . ' Error: ' . $exception->getMessage(),
+                        ['method', __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
+                    $error = 'Le fichier n\'a pas été pris en compte. Veuillez rééssayer ou contacter l\'équipe technique.';
+                }
+
+                $this->render(null, ['success' => $success, 'error' => $error]);
+            }
+        }
+    }
 }

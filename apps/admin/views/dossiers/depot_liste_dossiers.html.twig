@@ -1,0 +1,45 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+
+        })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Déposer une liste de dossiers
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block">
+            <div class="block-content block-content-full">
+                <div class="from-group">
+                    <form class="validate" enctype="multipart/form-data" action="/dossiers/depot_liste_dossiers" method="post">
+                        <label>Fichier Excel (SIREN)</label>
+                        <input class="form-control required" type="file" name="siren_list">
+                        <button type="submit" class="btn btn-primary push-10-t">Charger le fichier</button>
+                    </form>
+                </div>
+                {% if '' != success %}
+                    <div class="alert alert-success push-10-t">
+                        <p>{{ success }}</p>
+                    </div>
+                {% elseif '' != error %}
+                    <div class="alert alert-warning push-10-t">
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
