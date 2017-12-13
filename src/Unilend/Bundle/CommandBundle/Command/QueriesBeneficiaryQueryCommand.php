@@ -138,8 +138,8 @@ EOF
                     $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
-                    $city                                 = $cityRepository->findOneBy(['cp' => $fiscalAndLocationData['zip'], 'ville' => $fiscalAndLocationData['city']]);
-                    $fiscalAndLocationData['inseeFiscal'] = null !== $city ? $city->getInsee() : '';
+                    $inseeCode                            = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    $fiscalAndLocationData['inseeFiscal'] = false === $inseeCode ? '' : $inseeCode;
                     $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
 
