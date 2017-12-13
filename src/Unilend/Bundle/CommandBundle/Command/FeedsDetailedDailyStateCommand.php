@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DetailedDailyStateBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
@@ -20,48 +19,58 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const COLUMN_WIDTH   = 16;
     const DAY_HEADER_ROW = 2;
 
-    const DATE_COLUMN                           = 'A';
-    const LENDER_PROVISION_CARD_COLUMN          = 'B';
-    const LENDER_PROVISION_WIRE_TRANSFER_COLUMN = 'C';
-    const LENDER_PROVISION_DIRECT_DEBIT_COLUMN  = 'D';
-    const PROMOTION_OFFER_PROVISION_COLUMN      = 'E';
-    const BORROWER_PROVISION_COLUMN             = 'F';
-    const BORROWER_WITHDRAW_COLUMN              = 'G';
-    const PROJECT_COMMISSION_COLUMN             = 'H';
-    const REPAYMENT_COMMISSION_COLUMN           = 'I';
-    const STATUTORY_CONTRIBUTIONS_COLUMN        = 'J';
-    const INCOME_TAX_COLUMN                     = 'K';
-    const CSG_COLUMN                            = 'L';
-    const SOCIAL_DEDUCTIONS_COLUMN              = 'M';
-    const ADDITIONAL_CONTRIBUTIONS_COLUMN       = 'N';
-    const SOLIDARITY_DEDUCTIONS_COLUMN          = 'O';
-    const CRDS_COLUMN                           = 'P';
-    const LENDER_WITHDRAW_COLUMN                = 'Q';
-    const UNILEND_WITHDRAW_COLUMN               = 'R';
-    const DEBT_COLLECTOR_WITHDRAW_COLUMN        = 'S';
-    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN      = 'T';
-    const THEORETICAL_BALANCE_COLUMN            = 'U';
-    const BALANCE_COLUMN                        = 'V';
-    const BALANCE_DIFFERENCE_COLUMN             = 'W';
-    const LENDER_BALANCE_COLUMN                 = 'X';
-    const BORROWER_BALANCE_COLUMN               = 'Y';
-    const DEBT_COLLECTOR_BALANCE_COLUMN         = 'Z';
-    const UNILEND_PROMOTIONAL_BALANCE_COLUMN    = 'AA';
-    const UNILEND_BALANCE_COLUMN                = 'AB';
-    const TAX_BALANCE_COLUMN                    = 'AC';
-    const PROMOTION_OFFER_DISTRIBUTION_COLUMN   = 'AD';
-    const LENDER_LOAN_COLUMN                    = 'AE';
-    const CAPITAL_REPAYMENT_COLUMN              = 'AF';
-    const NET_INTEREST_COLUMN                   = 'AG';
-    const PAYMENT_ASSIGNMENT_COLUMN             = 'AH';
-    const FISCAL_DIFFERENCE_COLUMN              = 'AI';
-    const DEBT_COLLECTOR_COMMISSION_COLUMN      = 'AJ';
-    const BORROWER_CHARGE_REPAYMENT_COLUMN      = 'AK';
-    const WIRE_TRANSFER_OUT_COLUMN              = 'AL';
-    const UNILEND_WIRE_TRANSFER_OUT_COLUMN      = 'AM';
-    const TAX_WITHDRAW_COLUMN                   = 'AN';
-    const DIRECT_DEBIT_COLUMN                   = 'AO';
-    const LAST_COLUMN                           = self::DIRECT_DEBIT_COLUMN;
+    const DATE_COLUMN                             = 'A';
+
+    /** Incoming financial feeds columns */
+    const LENDER_PROVISION_CARD_COLUMN            = 'B';
+    const LENDER_PROVISION_WIRE_TRANSFER_COLUMN   = 'C';
+    const BORROWER_PROVISION_DIRECT_DEBIT_COLUMN  = 'D';
+    const BORROWER_PROVISION_WIRE_TRANSFER_COLUMN = 'E';
+    const PROMOTIONAL_OFFER_PROVISION_COLUMN      = 'F';
+    const TOTAL_INCOMING_COLUMN                   = 'G';
+
+    /** Outgooing financial feeds columns */
+    const TAX_WITHDRAW_COLUMN_NEW        = 'H';
+    const LENDER_WITHDRAW_COLUMN_NEW     = 'I';
+    const UNILEND_WITHDRAW_COLUMN_NEW    = 'J';
+    const DEBT_COLLECTOR_WITHDRAW_COLUMN = 'K';
+    const BORROWER_WITHDRAW_FUNDS_COLUMN = 'L';
+    const BORROWER_WITHDRAW_OTHER_COLUMN = 'M';
+    const TOTAL_OUTGOING_COLUMN          = 'N';
+
+    const TOTAL_FINANCIAL_MOVEMENTS_COLUMN = 'O';
+
+    /** Balance columns */
+    const THEORETICAL_BALANCE_COLUMN         = 'P';
+    const BALANCE_COLUMN                     = 'Q';
+    const BALANCE_DIFFERENCE_COLUMN          = 'R';
+    const LENDER_BALANCE_COLUMN              = 'S';
+    const BORROWER_BALANCE_COLUMN            = 'T';
+    const DEBT_COLLECTOR_BALANCE_COLUMN      = 'U';
+    const UNILEND_PROMOTIONAL_BALANCE_COLUMN = 'V';
+    const UNILEND_BALANCE_COLUMN             = 'W';
+    const TAX_BALANCE_COLUMN                 = 'X';
+
+    /** Internal mouvements */
+    const LENDER_LOAN_COLUMN                  = 'Y';
+    const UNILEND_COMMISSION_FUNDS_COLUMN     = 'Z';
+    const CAPITAL_REPAYMENT_COLUMN            = 'AA';
+    const GROSS_INTEREST_COLUMN               = 'AB';
+    const STATUTORY_CONTRIBUTIONS_COLUMN      = 'AC';
+    const INCOME_TAX_COLUMN                   = 'AD';
+    const CSG_COLUMN                          = 'AE';
+    const SOCIAL_DEDUCTIONS_COLUMN            = 'AF';
+    const ADDITIONAL_CONTRIBUTIONS_COLUMN     = 'AG';
+    const SOLIDARITY_DEDUCTIONS_COLUMN        = 'AH';
+    const CRDS_COLUMN                         = 'AI';
+    const UNILEND_COMMISSION_REPAYMENT        = 'AJ';
+    const PAYMENT_ASSIGNMENT_COLUMN           = 'AK';
+    const FISCAL_DIFFERENCE_COLUMN            = 'AL';
+    const DEBT_COLLECTOR_COMMISSION_COLUMN    = 'AM';
+    const BORROWER_CHARGE_REPAYMENT_COLUMN    = 'AN';
+    const PROMOTION_OFFER_DISTRIBUTION_COLUMN = 'AO';
+
+    const LAST_COLUMN = self::PROMOTION_OFFER_DISTRIBUTION_COLUMN;
 
     /**
      * @see Command
@@ -98,50 +107,55 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         $firstDay = new \DateTime('first day of ' . $requestedDate->format('F Y'));
 
-        /** @var \PHPExcel $document */
-        $document = new \PHPExcel();
-        $document->getDefaultStyle()->getFont()->setName('Arial');
-        $document->getDefaultStyle()->getFont()->setSize(11);
-        $activeSheet = $document->setActiveSheetIndex(0);
+        try {
+            /** @var \PHPExcel $document */
+            $document = new \PHPExcel();
+            $document->getDefaultStyle()->getFont()->setName('Arial');
+            $document->getDefaultStyle()->getFont()->setSize(11);
+            $activeSheet = $document->setActiveSheetIndex(0);
 
-        $specificRows['headerStartDay'] = 1;
-        $this->addHeaders($activeSheet, $requestedDate, $specificRows['headerStartDay']);
+            $specificRows['headerStartDay'] = 1;
+            $this->addHeaders($activeSheet, $requestedDate, $specificRows['headerStartDay']);
 
-        $maxCoordinates                 = $activeSheet->getHighestRowAndColumn();
-        $specificRows['previousMonth']  = $maxCoordinates['row'];
-        $specificRows['firstDay']       = $specificRows['previousMonth'] + 1;
-        $specificRows['coordinatesDay'] = $this->addDates($activeSheet, $firstDay, $requestedDate, $specificRows['firstDay']);
+            $maxCoordinates                 = $activeSheet->getHighestRowAndColumn();
+            $specificRows['previousMonth']  = $maxCoordinates['row'];
+            $specificRows['firstDay']       = $specificRows['previousMonth'] + 1;
+            $specificRows['coordinatesDay'] = $this->addDates($activeSheet, $firstDay, $requestedDate, $specificRows['firstDay']);
 
-        $maxCoordinates = $activeSheet->getHighestRowAndColumn();
-        $separationRow  = $maxCoordinates['row'] + 1;
-        $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
-        $specificRows['totalDay'] = $separationRow + 1;
-        $separationRow            = $specificRows['totalDay'] + 1;
-        $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
-        $specificRows['headerStartMonth'] = $separationRow + 1;
+            $maxCoordinates = $activeSheet->getHighestRowAndColumn();
+            $separationRow  = $maxCoordinates['row'] + 1;
+            $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
+            $specificRows['totalDay'] = $separationRow + 1;
+            $separationRow            = $specificRows['totalDay'] + 1;
+            $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
+            $specificRows['headerStartMonth'] = $separationRow + 1;
 
-        $this->addHeaders($activeSheet, $requestedDate, $specificRows['headerStartMonth']);
-        $maxCoordinates                   = $activeSheet->getHighestRowAndColumn();
-        $specificRows['previousYear']     = $maxCoordinates['row'];
-        $specificRows['firstMonth']       = $specificRows['previousYear'] + 1;
-        $specificRows['coordinatesMonth'] = $this->addMonths($activeSheet, $requestedDate, $specificRows['firstMonth']);
+            $this->addHeaders($activeSheet, $requestedDate, $specificRows['headerStartMonth']);
+            $maxCoordinates                   = $activeSheet->getHighestRowAndColumn();
+            $specificRows['previousYear']     = $maxCoordinates['row'];
+            $specificRows['firstMonth']       = $specificRows['previousYear'] + 1;
+            $specificRows['coordinatesMonth'] = $this->addMonths($activeSheet, $requestedDate, $specificRows['firstMonth']);
 
-        $separationRow = $specificRows['firstMonth'] + 12;
-        $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
-        $specificRows['totalMonth'] = $specificRows['firstMonth'] + 13;
-        $this->applyStyleToWorksheet($activeSheet, $specificRows);
+            $separationRow = $specificRows['firstMonth'] + 12;
+            $activeSheet->mergeCells(self::DATE_COLUMN . $separationRow . ':' . $maxCoordinates['column'] . $separationRow);
+            $specificRows['totalMonth'] = $specificRows['firstMonth'] + 13;
+            $this->applyStyleToWorksheet($activeSheet, $specificRows);
 
-        $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
-        $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
-        $this->addWireTransferData($activeSheet, $firstDay, $requestedDate, $specificRows);
+//            $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
+//            $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
+//            $this->addWireTransferData($activeSheet, $firstDay, $requestedDate, $specificRows);
 
-        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
-        /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
-        $writer->save(str_replace(__FILE__, $filePath, __FILE__));
+            $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
+            /** @var \PHPExcel_Writer_CSV $writer */
+            $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+            $writer->save(str_replace(__FILE__, $filePath, __FILE__));
 
-        if (false === $input->getOption('no-email')) {
-            $this->sendFileToInternalRecipients($filePath);
+//            if (false === $input->getOption('no-email')) {
+//                $this->sendFileToInternalRecipients($filePath);
+//            }
+
+        } catch (\Exception $exception) {
+            //TODO log error
         }
     }
 
@@ -156,35 +170,43 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $movements = array_merge([
-            OperationType::BORROWER_PROVISION,
-            OperationType::BORROWER_PROVISION_CANCEL,
-            OperationType::BORROWER_WITHDRAW,
-            OperationType::BORROWER_COMMISSION,
-            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT,
+        $incomingMovements = [
             OperationType::LENDER_PROVISION,
             OperationType::LENDER_PROVISION_CANCEL,
+            OperationType::BORROWER_PROVISION,
+            OperationType::BORROWER_PROVISION_CANCEL,
+            OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION,
+            OperationType::UNILEND_PROVISION,
+        ];
+
+        $outgoingMovements = array_merge([
             OperationType::LENDER_WITHDRAW,
+            OperationType::BORROWER_WITHDRAW,
+            OperationType::UNILEND_WITHDRAW,
+            OperationType::DEBT_COLLECTOR_WITHDRAW
+        ], OperationType::TAX_WITHDRAW_TYPES);
+
+        $internalMovements = array_merge([
             OperationType::LENDER_LOAN,
             OperationType::CAPITAL_REPAYMENT,
+            OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
             OperationType::GROSS_INTEREST_REPAYMENT,
-            OperationType::UNILEND_PROMOTIONAL_OPERATION_PROVISION,
+            OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
+            OperationType::BORROWER_COMMISSION,
+            OperationType::BORROWER_COMMISSION_REGULARIZATION,
+            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT,
             OperationType::UNILEND_PROMOTIONAL_OPERATION,
             OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
             OperationType::UNILEND_LENDER_REGULARIZATION,
-            OperationType::UNILEND_PROVISION,
             OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE,
-            OperationType::BORROWER_COMMISSION_REGULARIZATION,
-            OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
-            OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
             OperationType::COLLECTION_COMMISSION_PROVISION,
             OperationType::COLLECTION_COMMISSION_LENDER,
-            OperationType::COLLECTION_COMMISSION_BORROWER,
             OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION,
+            OperationType::COLLECTION_COMMISSION_BORROWER,
             OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION,
-            OperationType::UNILEND_WITHDRAW,
-            OperationType::DEBT_COLLECTOR_WITHDRAW
         ], OperationType::TAX_TYPES_FR, OperationType::TAX_TYPES_FR_REGULARIZATION);
+
+        $movements = array_merge($incomingMovements, $outgoingMovements, $internalMovements);
 
         $dailyMovements   = $operationRepository->sumMovementsForDailyStateByDay($firstDay, $requestedDate, $movements);
         $monthlyMovements = $operationRepository->sumMovementsForDailyStateByMonth($requestedDate, $movements);
@@ -199,9 +221,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param \DateTime $firstDay
-     * @param \DateTime $requestedDate
-     * @param array $specificRows
+     * @param \DateTime           $firstDay
+     * @param \DateTime           $requestedDate
+     * @param array               $specificRows
      */
     private function addWireTransferData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
     {
@@ -297,6 +319,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @param \DateTime $date
      *
      * @return DetailedDailyStateBalanceHistory
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function newDailyStateBalanceHistory(\DateTime $date)
     {
@@ -321,88 +344,104 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param \DateTime $date
-     * @param int $startRow
+     * @param \DateTime           $date
+     * @param int                 $startRow
+     *
+     * @throws \PHPExcel_Exception
      */
     private function addHeaders(\PHPExcel_Worksheet $activeSheet, \DateTime $date, $startRow)
     {
-        $mainSectionRow      = $startRow + 1;
-        $secondarySectionRow = $mainSectionRow + 1;
-        $previousBalanceRow  = $secondarySectionRow + 1;
+        $bigSectionsRow    = $startRow + 1;
+        $descriptionRow    = $bigSectionsRow + 1;
+        $additionalInfoRow = $descriptionRow + 1;
 
         $activeSheet->mergeCells(self::DATE_COLUMN . $startRow . ':' . self::LAST_COLUMN . $startRow)->setCellValue(self::DATE_COLUMN . $startRow, 'UNILEND');
 
-        if (2 == $mainSectionRow) {
-            $activeSheet->mergeCells(self::DATE_COLUMN . $mainSectionRow . ':' . self::DATE_COLUMN . $secondarySectionRow)->setCellValue(self::DATE_COLUMN . $mainSectionRow, $date->format('d/m/Y'));
-            $activeSheet->mergeCells(self::DATE_COLUMN . $previousBalanceRow . ':' . self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $previousBalanceRow)->setCellValue(self::DATE_COLUMN . $previousBalanceRow, 'Début du mois');
+        if (3 == $descriptionRow) {
+            $activeSheet->setCellValue(self::DATE_COLUMN . $descriptionRow, $date->format('d/m/Y'));
+            $activeSheet->setCellValue(self::DATE_COLUMN . $additionalInfoRow, 'Début du mois');
         } else {
-            $activeSheet->mergeCells(self::DATE_COLUMN . $mainSectionRow . ':' . self::DATE_COLUMN . $secondarySectionRow)->setCellValue(self::DATE_COLUMN . $mainSectionRow, $date->format('Y'));
-            $activeSheet->mergeCells(self::DATE_COLUMN . $previousBalanceRow . ':' . self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $previousBalanceRow)->setCellValue(self::DATE_COLUMN . $previousBalanceRow, 'Début d\'année');
+            $activeSheet->setCellValue(self::DATE_COLUMN . $descriptionRow, $date->format('Y'));
+            $activeSheet->setCellValue(self::DATE_COLUMN . $additionalInfoRow, 'Début d\'année');
         }
 
-        $activeSheet->mergeCells(self::LENDER_PROVISION_CARD_COLUMN . $mainSectionRow . ':' . self::LENDER_PROVISION_DIRECT_DEBIT_COLUMN . $mainSectionRow)->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $mainSectionRow, 'Chargements comptes prêteurs');
-        $activeSheet->setCellValue(self::PROMOTION_OFFER_PROVISION_COLUMN . $mainSectionRow, 'Chargement offres');
-        $activeSheet->setCellValue(self::BORROWER_PROVISION_COLUMN . $mainSectionRow, 'Echeances Emprunteur');
-        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_COLUMN . $mainSectionRow, 'Octroi prêt');
-        $activeSheet->setCellValue(self::PROJECT_COMMISSION_COLUMN . $mainSectionRow, 'Commission octroi prêt');
-        $activeSheet->setCellValue(self::REPAYMENT_COMMISSION_COLUMN . $mainSectionRow, 'Commission restant dû');
-        $activeSheet->mergeCells(self::STATUTORY_CONTRIBUTIONS_COLUMN . $mainSectionRow . ':' . self::CRDS_COLUMN . $mainSectionRow)->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $mainSectionRow, 'Retenues fiscales');
-        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $mainSectionRow, 'Remboursement aux prêteurs');
-        $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $mainSectionRow, '');
-        $activeSheet->mergeCells(self::THEORETICAL_BALANCE_COLUMN . $mainSectionRow . ':' . self::TAX_BALANCE_COLUMN . $mainSectionRow)->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $mainSectionRow, 'Soldes');
-        $activeSheet->mergeCells(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow . ':' . self::BORROWER_CHARGE_REPAYMENT_COLUMN . $mainSectionRow)->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $mainSectionRow, 'Mouvements internes');
-        $activeSheet->mergeCells(self::WIRE_TRANSFER_OUT_COLUMN . $mainSectionRow . ':' . self::TAX_WITHDRAW_COLUMN . $mainSectionRow)->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $mainSectionRow, 'Virements');
-        $activeSheet->setCellValue(self::DIRECT_DEBIT_COLUMN . $mainSectionRow, 'Prélèvements');
-        $activeSheet->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $secondarySectionRow, 'Carte bancaire');
-        $activeSheet->setCellValue(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::LENDER_PROVISION_DIRECT_DEBIT_COLUMN . $secondarySectionRow, 'Prélèvement');
-        $activeSheet->setCellValue(self::PROMOTION_OFFER_PROVISION_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::BORROWER_PROVISION_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_COLUMN . $secondarySectionRow, 'Prélèvement');
-        $activeSheet->setCellValue(self::PROJECT_COMMISSION_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::REPAYMENT_COMMISSION_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $secondarySectionRow, 'Prélèvements obligatoires');
-        $activeSheet->setCellValue(self::INCOME_TAX_COLUMN . $secondarySectionRow, 'Retenues à la source');
-        $activeSheet->setCellValue(self::CSG_COLUMN . $secondarySectionRow, 'CSG');
-        $activeSheet->setCellValue(self::SOCIAL_DEDUCTIONS_COLUMN . $secondarySectionRow, 'Prélèvements sociaux');
-        $activeSheet->setCellValue(self::ADDITIONAL_CONTRIBUTIONS_COLUMN . $secondarySectionRow, 'Contributions additionnelles');
-        $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $secondarySectionRow, 'Prélèvements solidarité');
-        $activeSheet->setCellValue(self::CRDS_COLUMN . $secondarySectionRow, 'CRDS');
-        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $secondarySectionRow, 'Virement');
-        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $secondarySectionRow, 'Retrait Unilend');
-        $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $secondarySectionRow, 'Retrait Recouvreurs');
-        $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $secondarySectionRow, 'Total mouvements');
-        $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $secondarySectionRow, 'Solde théorique');
-        $activeSheet->setCellValue(self::BALANCE_COLUMN . $secondarySectionRow, 'Solde réel');
-        $activeSheet->setCellValue(self::BALANCE_DIFFERENCE_COLUMN . $secondarySectionRow, 'Ecart global');
-        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $secondarySectionRow, 'Solde Preteurs');
-        $activeSheet->setCellValue(self::BORROWER_BALANCE_COLUMN . $secondarySectionRow, 'Solde Emprunteurs');
-        $activeSheet->setCellValue(self::DEBT_COLLECTOR_BALANCE_COLUMN . $secondarySectionRow, 'Solde Recouvreurs');
-        $activeSheet->setCellValue(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $secondarySectionRow, 'Solde Promotions');
-        $activeSheet->setCellValue(self::UNILEND_BALANCE_COLUMN . $secondarySectionRow, 'Solde Unilend');
-        $activeSheet->setCellValue(self::TAX_BALANCE_COLUMN . $secondarySectionRow, 'Solde Admin. Fiscale');
-        $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $secondarySectionRow, 'Offre promo');
-        $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $secondarySectionRow, 'Octroi prêt');
-        $activeSheet->setCellValue(self::CAPITAL_REPAYMENT_COLUMN . $secondarySectionRow, 'Retour prêteur (Capital)');
-        $activeSheet->setCellValue(self::NET_INTEREST_COLUMN . $secondarySectionRow, 'Retour prêteur (Intêréts nets)');
-        $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $secondarySectionRow, 'Affectation Ech. Empr.');
-        $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $secondarySectionRow, 'Ecart fiscal');
-        $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $secondarySectionRow, 'Commission Recouvreur');
-        $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $secondarySectionRow, 'Frais remboursés à Unilend');
-        $activeSheet->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Fichier virements');
-        $activeSheet->setCellValue(self::UNILEND_WIRE_TRANSFER_OUT_COLUMN . $secondarySectionRow, 'Dont SFF PME');
-        $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN . $secondarySectionRow, 'Administration Fiscale');
-        $activeSheet->setCellValue(self::DIRECT_DEBIT_COLUMN . $secondarySectionRow, 'Fichier prélèvements');
-        $activeSheet->mergeCells(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $previousBalanceRow . ':' . self::LAST_COLUMN . $previousBalanceRow);
+        /** incoming feeds section */
+        $activeSheet->mergeCells(self::LENDER_PROVISION_CARD_COLUMN . $bigSectionsRow . ':' . self::TOTAL_INCOMING_COLUMN . $bigSectionsRow)
+            ->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $bigSectionsRow, 'FLUX ENTRANTS');
+        $activeSheet->mergeCells(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow . ':' . self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $descriptionRow)
+            ->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow, 'Chargements comptes prêteurs');
+        $activeSheet->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $additionalInfoRow, 'Carte bancaire');
+        $activeSheet->setCellValue(self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->mergeCells(self::BORROWER_PROVISION_DIRECT_DEBIT_COLUMN . $descriptionRow . ':' . self::BORROWER_PROVISION_WIRE_TRANSFER_COLUMN . $descriptionRow)
+            ->setCellValue(self::BORROWER_PROVISION_DIRECT_DEBIT_COLUMN . $descriptionRow, 'Chargement comptes emprunteurs');
+        $activeSheet->setCellValue(self::BORROWER_PROVISION_DIRECT_DEBIT_COLUMN . $additionalInfoRow, 'Prélèvement');
+        $activeSheet->setCellValue(self::BORROWER_PROVISION_WIRE_TRANSFER_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::PROMOTIONAL_OFFER_PROVISION_COLUMN . $descriptionRow, 'Chargement promotion Unilend');
+        $activeSheet->setCellValue(self::PROMOTIONAL_OFFER_PROVISION_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::TOTAL_INCOMING_COLUMN . $descriptionRow, 'Somme des flux entrants');
+
+        /** outgoing feeds section */
+        $activeSheet->mergeCells(self::TAX_WITHDRAW_COLUMN_NEW . $bigSectionsRow . ':' . self::TOTAL_OUTGOING_COLUMN . $bigSectionsRow)
+            ->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $bigSectionsRow, 'FLUX SORTANTS');
+        $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Administration fiscale');
+        $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Retrait prêteurs');
+        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Retrait Unilend');
+        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $descriptionRow, 'Retrait Recouvreurs');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $descriptionRow, 'Octroi prêt');
+        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_OTHER_COLUMN . $descriptionRow, 'Retrait Emprunteur');
+        $activeSheet->setCellValue(self::BORROWER_WITHDRAW_OTHER_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::TOTAL_OUTGOING_COLUMN . $descriptionRow, 'Somme des flux sortants');
+
+        $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $descriptionRow, 'Total mouvements');
+
+        /** balance section */
+        $activeSheet->mergeCells(self::THEORETICAL_BALANCE_COLUMN . $bigSectionsRow . ':' . self::TAX_BALANCE_COLUMN . $bigSectionsRow)
+            ->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $bigSectionsRow, 'SOLDES');
+        $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $descriptionRow, 'Solde théorique');
+        $activeSheet->setCellValue(self::BALANCE_COLUMN . $descriptionRow, 'Solde réel');
+        $activeSheet->setCellValue(self::BALANCE_DIFFERENCE_COLUMN . $descriptionRow, 'Ecart global');
+        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $descriptionRow, 'Solde Preteurs');
+        $activeSheet->setCellValue(self::BORROWER_BALANCE_COLUMN . $descriptionRow, 'Solde Emprunteurs');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_BALANCE_COLUMN . $descriptionRow, 'Solde Recouvreurs');
+        $activeSheet->setCellValue(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $descriptionRow, 'Solde Promotions');
+        $activeSheet->setCellValue(self::UNILEND_BALANCE_COLUMN . $descriptionRow, 'Solde Unilend');
+        $activeSheet->setCellValue(self::TAX_BALANCE_COLUMN . $descriptionRow, 'Solde Admin. Fiscale');
+
+        /** internal movements section */
+        $activeSheet->mergeCells(self::LENDER_LOAN_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
+            ->setCellValue(self::LENDER_LOAN_COLUMN . $descriptionRow, 'MOUVEMENTS INTERNES');
+        $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $descriptionRow, 'Octroi prêt');
+        $activeSheet->setCellValue(self::UNILEND_COMMISSION_FUNDS_COLUMN . $descriptionRow, 'Commission octroi prêt');
+        $activeSheet->setCellValue(self::CAPITAL_REPAYMENT_COLUMN . $descriptionRow, 'Retour prêteur (Capital)');
+        $activeSheet->setCellValue(self::GROSS_INTEREST_COLUMN . $descriptionRow, 'Retour prêteur (Intêréts bruts)');
+        $activeSheet->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $descriptionRow, 'Prélèvements obligatoires');
+        $activeSheet->setCellValue(self::INCOME_TAX_COLUMN . $descriptionRow, 'Retenues à la source');
+        $activeSheet->setCellValue(self::CSG_COLUMN . $descriptionRow, 'CSG');
+        $activeSheet->setCellValue(self::SOCIAL_DEDUCTIONS_COLUMN . $descriptionRow, 'Prélèvements sociaux');
+        $activeSheet->setCellValue(self::ADDITIONAL_CONTRIBUTIONS_COLUMN . $descriptionRow, 'Contributions additionnelles');
+        $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $descriptionRow, 'Prélèvements solidarité');
+        $activeSheet->setCellValue(self::CRDS_COLUMN . $descriptionRow, 'CRDS');
+        $activeSheet->setCellValue(self::UNILEND_COMMISSION_REPAYMENT . $descriptionRow, 'Commission sur echéance');
+        $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $descriptionRow, 'Affectation Ech. Empr.');
+        $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $descriptionRow, 'Ecart fiscal');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $descriptionRow, 'Commission Recouvreur');
+        $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $descriptionRow, 'Frais remboursés à Unilend');
+        $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $descriptionRow, 'Offre promo');
     }
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
      * @param \DateTime           $firstDay
      * @param \DateTime           $requestedDate
-     * @param int                 $row
+     * @param                     $row
      *
      * @return array
+     * @throws \PHPExcel_Exception
      */
     private function addDates(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, $row)
     {
@@ -429,6 +468,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @param int                 $row
      *
      * @return array
+     * @throws \PHPExcel_Exception
      */
     private function addMonths(\PHPExcel_Worksheet $activeSheet, \DateTime $requestedDate, $row)
     {
@@ -450,6 +490,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     /**
      * @param \PHPExcel_Worksheet $activeSheet
      * @param array               $specificRows
+     *
+     * @throws \PHPExcel_Exception
      */
     private function applyStyleToWorksheet(\PHPExcel_Worksheet $activeSheet, array $specificRows)
     {
@@ -467,14 +509,22 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->getRowDimension($i)->setRowHeight(self::ROW_HEIGHT);
         }
         $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->applyFromArray($style);
-        $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . 2 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->getAlignment()->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER);
+        $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . 2 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
+            ->getNumberFormat()
+            ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+        $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
+            ->getAlignment()
+            ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
         $this->formatHeader($activeSheet, $specificRows['headerStartDay']);
         $this->formatHeader($activeSheet, $specificRows['headerStartMonth']);
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->getFont()->setBold(true);
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'])->getFont()->setBold(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
+            ->getFont()
+            ->setBold(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'])
+            ->getFont()
+            ->setBold(true);
 
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalDay'], 'Total mois');
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalMonth'], 'Total année');
@@ -483,21 +533,72 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     /**
      * @param \PHPExcel_Worksheet $activeSheet
      * @param int                 $headerStartRow
+     *
+     * @throws \PHPExcel_Exception
      */
     private function formatHeader(\PHPExcel_Worksheet $activeSheet, $headerStartRow)
     {
-        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow . ':' . self::LAST_COLUMN . $headerStartRow)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow)->getFont()->setBold(true)->setSize(18)->setItalic(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow . ':' . self::LAST_COLUMN . $headerStartRow)
+            ->getAlignment()
+            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
-        $mainSectionRow      = $headerStartRow + 1;
-        $secondarySectionRow = $mainSectionRow + 1;
+        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow)
+            ->getFont()
+            ->setBold(true)
+            ->setSize(18)
+            ->setItalic(true);
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $mainSectionRow . ':' . self::LAST_COLUMN . $mainSectionRow)->getFont()->setBold(true);
-        $activeSheet->getStyle(self::DATE_COLUMN . $mainSectionRow . ':' . self::LAST_COLUMN . $mainSectionRow)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
-        $activeSheet->getRowDimension($mainSectionRow)->setRowHeight(self::ROW_HEIGHT * 2);
-        $activeSheet->getRowDimension($secondarySectionRow)->setRowHeight(self::ROW_HEIGHT * 2);
+        $bigSectionsRow    = $headerStartRow + 1;
+        $descriptionRow    = $bigSectionsRow + 1;
+        $additionalInfoRow = $descriptionRow + 1;
 
-        $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . $mainSectionRow . ':' . self::LAST_COLUMN . $secondarySectionRow)->getAlignment()->setWrapText(true);
+        $activeSheet->getStyle(self::DATE_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
+            ->getFont()
+            ->setBold(true);
+
+        $activeSheet->getStyle(self::DATE_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
+            ->getAlignment()
+            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+
+        $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+            ->getFont()
+            ->setBold(true);
+
+        $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+            ->getAlignment()
+            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+
+        $activeSheet->getRowDimension($bigSectionsRow)
+            ->setRowHeight(self::ROW_HEIGHT * 1.25);
+
+        $activeSheet->getRowDimension($descriptionRow)
+            ->setRowHeight(self::ROW_HEIGHT * 2.5);
+
+        $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $additionalInfoRow)
+            ->getAlignment()
+            ->setWrapText(true);
+
+        $this->groupColumns($activeSheet, self::LENDER_PROVISION_CARD_COLUMN, self::PROMOTIONAL_OFFER_PROVISION_COLUMN);
+        $this->groupColumns($activeSheet, self::TAX_WITHDRAW_COLUMN_NEW, self::BORROWER_WITHDRAW_OTHER_COLUMN);
+    }
+
+
+    /**
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param string              $firstColumn
+     * @param string              $lastColumn
+     *
+     * @throws \PHPExcel_Exception
+     */
+    private function groupColumns(\PHPExcel_Worksheet $activeSheet, $firstColumn, $lastColumn)
+    {
+        for ($column = $firstColumn; $column <= $lastColumn; ++$column) {
+            $activeSheet->getColumnDimension($column)
+                ->setOutlineLevel(1)
+                ->setVisible(false)
+                ->setCollapsed(true)
+                ->setWidth(self::COLUMN_WIDTH);
+        }
     }
 
     /**
@@ -729,7 +830,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param string $filePath
+     * @param $filePath
+     *
+     * @throws \Swift_RfcComplianceException
      */
     private function sendFileToInternalRecipients($filePath)
     {
@@ -739,7 +842,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
-        $message->setSubject('Etat Quotidien avec soldes détaillés')->setTo(explode(';', trim($recipientSetting->getValue())))->attach(\Swift_Attachment::fromPath($filePath));
+        $message->setSubject('Etat Quotidien avec soldes détaillés')
+            ->setTo(explode(';', trim($recipientSetting->getValue())))
+            ->attach(\Swift_Attachment::fromPath($filePath));
 
         /** @var \Swift_Mailer $mailer */
         $mailer = $this->getContainer()->get('mailer');
