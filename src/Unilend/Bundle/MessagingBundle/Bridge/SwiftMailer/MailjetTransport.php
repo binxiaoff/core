@@ -37,6 +37,10 @@ class MailjetTransport implements \Swift_Transport
         return true;
     }
 
+    public function ping()
+    {
+    }
+
     /**
      * Starts this Transport mechanism.
      */
@@ -58,14 +62,14 @@ class MailjetTransport implements \Swift_Transport
     }
 
     /**
-     * @param Swift_Mime_Message $message
+     * @param \Swift_Mime_SimpleMessage $message
      * @param string[]           $failedRecipients
      *
      * @return int
      *
      * @throws \Exception
      */
-    public function send(Swift_Mime_Message $message, &$failedRecipients = null)
+    public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
         $count = (
             count((array) $message->getTo())
