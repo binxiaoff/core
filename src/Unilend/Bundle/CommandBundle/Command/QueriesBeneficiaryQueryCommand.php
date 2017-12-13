@@ -88,7 +88,7 @@ EOF
             'CodeCommune',
             'Commune',
             'CodePostal',
-            'Ville / nom pays',
+            'Ville',
             'IdFiscal',
             'PaysISO',
             'Entité',
