@@ -75,7 +75,7 @@ class ficelle
     }
 
     // Enleve les accents
-    public function speCharNoAccent($string)
+    public static function speCharNoAccent($string)
     {
         return strtr($string, self::$normalizeChars);
     }
