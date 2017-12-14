@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
 {
@@ -43,7 +44,7 @@ EOF
         }
 
         $filePath = $ifuManager->getStorageRootPath();
-        $filename = 'BENEFICI.xls';
+        $filename = IfuManager::FILE_NAME_BENEFICIARY;
         $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
         if (file_exists($file)) {
