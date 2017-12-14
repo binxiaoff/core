@@ -41,18 +41,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = 'REVENUS.xls';
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_revenus_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_revenus_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -158,9 +150,7 @@ EOF
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
-        $writer->setUseBOM(true);
-        $writer->setDelimiter(';');
+        $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'Excel5');
         $writer->save(str_replace(__FILE__, $file, __FILE__));
     }
 
