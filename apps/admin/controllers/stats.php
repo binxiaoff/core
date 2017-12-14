@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class statsController extends bootstrap
 {
@@ -414,16 +415,14 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    private function downloadIfufile($name)
+    private function downloadIfufile($fileName)
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
         $ifuManager = $this->get('unilend.service.ifu_manager');
-
-        $fileName = $name . '_' . date('Ymd') . '.csv';
-        $filePath = $ifuManager->getStorageRootPath() . DIRECTORY_SEPARATOR . $fileName;
+        $filePath   = $ifuManager->getStorageRootPath() . DIRECTORY_SEPARATOR . $fileName;
 
         if (file_exists($filePath)) {
             header('Content-Description: File Transfer');
@@ -445,12 +444,12 @@ class statsController extends bootstrap
 
     public function _requete_infosben_download()
     {
-        $this->downloadIfufile('requete_infosben');
+        $this->downloadIfufile(IfuManager::FILE_NAME_INFOSBEN);
     }
 
     public function _requete_beneficiaires_download()
     {
-        $this->downloadIfufile('requete_beneficiaires');
+        $this->downloadIfufile(IfuManager::FILE_NAME_BENEFICIARY);
     }
 
     /**
@@ -459,7 +458,7 @@ class statsController extends bootstrap
      */
     public function _requete_revenus_download()
     {
-        $this->downloadIfufile('requete_revenus');
+        $this->downloadIfufile(IfuManager::FILE_NAME_INCOME);
     }
 
     public function _requete_encheres()

@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesInfosbenQueryCommand extends ContainerAwareCommand
 {
@@ -38,18 +39,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = IfuManager::FILE_NAME_INFOSBEN;
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_infosben_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_infosben_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -117,9 +110,7 @@ EOF
         }
 
         /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
-        $writer->setUseBOM(true);
-        $writer->setDelimiter(';');
+        $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel5');
         $writer->save(str_replace(__FILE__, $filePath, __FILE__));
     }
 }
