@@ -29,9 +29,9 @@
 class pays extends pays_crud
 {
 
-    function pays($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::pays($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_pays')

@@ -29,9 +29,9 @@
 class newsletters extends newsletters_crud
 {
 
-    function newsletters($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::newsletters($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_newsletter')

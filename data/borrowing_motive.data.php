@@ -31,7 +31,7 @@ class borrowing_motive extends borrowing_motive_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::borrowing_motive($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

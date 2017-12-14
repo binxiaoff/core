@@ -31,9 +31,9 @@ class users_history extends users_history_crud
     const FORM_ID_LENDER = 3;
     const FORM_NAME_TAX_EXEMPTION = 'modification exoneration fiscale';
 
-    function users_history($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::users_history($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_user_history')

@@ -4,7 +4,7 @@ class projects_notes extends projects_notes_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::projects_notes($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $offset = '', $limit = '')

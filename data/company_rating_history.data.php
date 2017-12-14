@@ -8,7 +8,7 @@ class company_rating_history extends company_rating_history_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::company_rating_history($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

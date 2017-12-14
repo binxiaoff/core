@@ -29,7 +29,7 @@ class transmission_sequence extends transmission_sequence_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::transmission_sequence($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

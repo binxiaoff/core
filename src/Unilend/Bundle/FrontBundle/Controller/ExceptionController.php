@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Debug\Exception\FlattenException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -46,7 +47,11 @@ class ExceptionController extends Controller
         $currentContent = $this->getAndCleanOutputBuffering($request->headers->get('X-Php-Ob-Level', -1));
         $showException  = $request->attributes->get('showException', $this->getParameter('kernel.debug'));
 
-        $code = $exception->getStatusCode();
+        if ($exception instanceof HttpExceptionInterface) {
+            $code = $exception->getStatusCode();
+        } else {
+            $code = 500;
+        }
 
         $translator = $this->get('translator');
         $pageTitle  = $translator->trans('error-page_general-page-title');

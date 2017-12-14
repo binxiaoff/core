@@ -7,7 +7,7 @@ class --classe--
 
     --declaration--
 
-    public function --table--($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         $this->bdd = $bdd;
         if ($params == '') {

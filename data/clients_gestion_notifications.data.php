@@ -36,7 +36,7 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::clients_gestion_notifications($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function create($list_field_value = array())

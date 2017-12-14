@@ -28,7 +28,7 @@
                 <?php else : ?>
                     <?php
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-                    $user = $this->userEntity->find($vigilanceStatus->getIdUser())
+                    $user = $this->userRepository->find($vigilanceStatus->getIdUser())
                     ?>
                     <?= $user->getName() . ' ' . $user->getFirstname() ?>
                 <? endif; ?>

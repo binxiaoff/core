@@ -29,9 +29,9 @@
 class partenaires_types extends partenaires_types_crud
 {
 
-    function partenaires_types($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::partenaires_types($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_type')
