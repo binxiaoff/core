@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesInfosbenQueryCommand extends ContainerAwareCommand
 {
@@ -39,7 +40,7 @@ EOF
         }
 
         $filePath = $ifuManager->getStorageRootPath();
-        $filename = 'INFOSBEN.xls';
+        $filename = IfuManager::FILE_NAME_INFOSBEN;
         $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
         if (file_exists($file)) {

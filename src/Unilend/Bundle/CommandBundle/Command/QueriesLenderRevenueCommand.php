@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
@@ -42,7 +43,7 @@ EOF
         }
 
         $filePath = $ifuManager->getStorageRootPath();
-        $filename = 'REVENUS.xls';
+        $filename = IfuManager::FILE_NAME_INCOME;
         $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
         if (file_exists($file)) {
