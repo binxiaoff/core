@@ -98,6 +98,16 @@ class PaylineManager
         $this->logger = $logger;
     }
 
+    /**
+     * @param int    $amount
+     * @param Wallet $wallet
+     * @param string $redirectUrl
+     * @param string $cancelUrl
+     *
+     * @return bool
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     public function pay($amount, Wallet $wallet, $redirectUrl, $cancelUrl)
     {
         $amountInCent = number_format($amount, 2, '.', '') * 100;
@@ -137,6 +147,11 @@ class PaylineManager
         $this->logger->debug('Payline doWebPayment response : ' . json_encode($result));
 
         $backPayline->setSerializeDoPayment(serialize($result));
+        if (isset($result['token'])) {
+            $backPayline->setToken($result['token']);
+        } else {
+            $this->logger->warning('No token returned in the response of Payline::doWebPayment()', ['method' => __METHOD__, 'payline_response' => $result]);
+        }
 
         $this->entityManager->flush($backPayline);
 
@@ -149,20 +164,22 @@ class PaylineManager
     }
 
     /**
-     * @param $token
-     * @param $version
+     * @param string $token
+     * @param string $version
      *
      * @return bool
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function handlePaylineReturn($token, $version)
     {
         $payline = new \paylineSDK($this->merchantId, $this->accessKey, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, $this->isProduction);
 
-        $this->logger->debug('Calling Payline::getWebPaymentDetails: return token=' . $token . ' version: ' . $version);
+        $this->logger->info('Calling Payline::getWebPaymentDetails: using token= ' . $token . ' - version: ' . $version, ['method' => __METHOD__]);
 
         $response = $payline->getWebPaymentDetails(['token' => $token, 'version' => $version]);
 
-        $this->logger->debug('Payline getWebPaymentDetails response : ' . json_encode($response));
+        $this->logger->info('Payline getWebPaymentDetails response : ' . json_encode($response), ['method' => __METHOD__]);
 
         if (empty($response)) {
             return false;
@@ -186,7 +203,7 @@ class PaylineManager
                 $errorMsg = 'Payline amount for wallet id : '
                     . $backPayline->getWallet()->getId()
                     . ' is not the same between the response (' . $response['payment']['amount'] . ') and database (' . $backPayline->getAmount() . ') ';
-                $this->logger->error($errorMsg, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+                $this->logger->error($errorMsg, ['method' => __METHOD__, 'wallet' => $backPayline->getWallet()->getId()]);
 
                 return false;
             }
@@ -194,15 +211,16 @@ class PaylineManager
             if ($response['result']['code'] === Backpayline::CODE_TRANSACTION_APPROVED) {
                 $this->operationManager->provisionLenderWallet($backPayline->getWallet(), $backPayline);
                 $this->notifyClientAboutMoneyTransfer($backPayline);
-            // See codes https://support.payline.com/hc/fr/article_attachments/206064778/PAYLINE-GUIDE-Descriptif_des_appels_webservices-FR-v3.A.pdf
+                // See codes https://support.payline.com/hc/fr/article_attachments/206064778/PAYLINE-GUIDE-Descriptif_des_appels_webservices-FR-v3.A.pdf
             } elseif (in_array($response['result']['code'], ['01109', '01110', '01114', '01115', '01122', '01123', '01181', '01182', '01197', '01198', '01199', '01207', '01904', '01907', '01909', '01912', '01913', '01914', '01940', '01941', '01942', '01943', '02101', '02102', '02103', '02109', '02201', '02202', '02301', '02303', '02304', '02305', '02307', '02308', '02309', '02310', '02311', '02312', '02313', '02314', '02315', '02316', '02317', '02318', '02320', '02321', '02322'])) {
-                $this->logger->error('Lender provision error (wallet id : ' . $backPayline->getWallet()->getId() . ') : ' . serialize($response));
+                $this->logger->error(
+                    'Lender provision error (wallet id : ' . $backPayline->getWallet()->getId() . ')', ['method' => __METHOD__, 'response' => $response]
+                );
 
                 return false;
             }
         } else {
-            $errorMsg = 'Payline order : ' . $response['order']['ref'] . ' cannot be found';
-            $this->logger->error($errorMsg);
+            $this->logger->error('Payline order cannot be found', ['method' => __METHOD__, 'response' => $response]);
 
             return false;
         }
