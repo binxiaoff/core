@@ -705,10 +705,25 @@ class OperationRepository extends EntityRepository
                           )
                         WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
                         WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                        WHEN "' . OperationType::BORROWER_PROVISION . '" THEN
+                          IF(r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ',
+                          "borrower_provision_direct_debit",
+                            IF(r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ',
+                            "borrower_provision_wire_transfer_in",
+                            "borrower_provision_other")
+                          )
+                        WHEN "' . OperationType::BORROWER_PROVISION_CANCEL . '" THEN
+                          IF(r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ',
+                          "borrower_provision_cancel_direct_debit",
+                            IF(r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ',
+                            "borrower_provision_cancel_wire_transfer_in",
+                            "borrower_provision_cancel_other")
+                          )
                      ELSE ot.label END AS movement
                 FROM operation o USE INDEX (idx_operation_added)
                 INNER JOIN operation_type ot ON o.id_type = ot.id
-                LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id';
+                LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
+                LEFT JOIN receptions r ON o.id_wire_transfer_in = r.id_reception';
     }
 
     /**
@@ -717,6 +732,7 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes)
     {
@@ -746,6 +762,7 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
     {
@@ -777,6 +794,7 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
     {
@@ -830,6 +848,7 @@ class OperationRepository extends EntityRepository
      * @param bool $groupFirstYears
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getTotalRepaymentByCohort($repaymentType, $groupFirstYears = true)
     {
