@@ -120,7 +120,7 @@ class MailQueueManager
         $attachments = json_decode($email->getAttachments(), true);
         if (is_array($attachments)) {
             foreach ($attachments as $attachment) {
-                $swiftAttachment = \Swift_Attachment::newInstance(file_get_contents($this->sharedTemporaryPath . $attachment['tmp_file']));
+                $swiftAttachment = new \Swift_Attachment(file_get_contents($this->sharedTemporaryPath . $attachment['tmp_file']));
                 $swiftAttachment->setContentType($attachment['content-type']);
                 $swiftAttachment->setDisposition($attachment['content-disposition']);
 
