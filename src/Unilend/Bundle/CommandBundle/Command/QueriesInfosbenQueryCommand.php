@@ -99,13 +99,13 @@ EOF
         $activeSheet = $document->setActiveSheetIndex(0);
 
         foreach ($headers as $index => $columnName) {
-            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+            $activeSheet->setCellValueExplicitByColumnAndRow($index, 1, $columnName);
         }
 
         foreach ($data as $rowIndex => $row) {
             $colIndex = 0;
             foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
             }
         }
 
