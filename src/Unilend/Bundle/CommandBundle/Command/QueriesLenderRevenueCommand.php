@@ -55,12 +55,12 @@ EOF
         $activeSheet = $csvFile->setActiveSheetIndex(0);
         $row         = 1;
 
-        $activeSheet->setCellValueByColumnAndRow(0, $row, 'Code Entreprise');
-        $activeSheet->setCellValueByColumnAndRow(1, $row, 'CodeBénéficiaire');
-        $activeSheet->setCellValueByColumnAndRow(2, $row, 'CodeV');
-        $activeSheet->setCellValueByColumnAndRow(3, $row, 'Date');
-        $activeSheet->setCellValueByColumnAndRow(4, $row, 'Montant');
-        $activeSheet->setCellValueByColumnAndRow(5, $row, 'Monnaie');
+        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, 'Code Entreprise');
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, 'CodeBénéficiaire');
+        $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, 'CodeV');
+        $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, 'Date');
+        $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, 'Montant');
+        $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, 'Monnaie');
         $row++;
 
         $operationRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -71,8 +71,8 @@ EOF
             $sumLoans = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_LOAN], null, $year);
             if ($sumLoans > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '117');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, round($sumLoans));
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '117');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, round($sumLoans));
                 $row += 1;
             }
 
@@ -81,8 +81,8 @@ EOF
             $grossInterest               = round(bcsub($grossInterest, $grossInterestRegularization, 4));
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $grossInterest);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $grossInterest);
                 $row += 1;
             }
 
@@ -91,8 +91,8 @@ EOF
             $deductedAtSource               = round(bcsub($deductedAtSource, $deductedAtSourceRegularization, 4));
             if ($deductedAtSource > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '2');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $deductedAtSource);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '2');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $deductedAtSource);
                 $row += 1;
             }
 
@@ -101,8 +101,8 @@ EOF
             $statutoryContributions               = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4));
             if ($statutoryContributions > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $statutoryContributions);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '54');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $statutoryContributions);
                 $row += 1;
             }
 
@@ -111,8 +111,8 @@ EOF
             $capitalRepayments               = round(bcsub($capitalRepayments, $capitalRepaymentsRegularization, 4));
             if ($capitalRepayments > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $capitalRepayments);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '118');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $capitalRepayments);
                 $row += 1;
             }
 
@@ -121,8 +121,8 @@ EOF
             $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
             if ($interestWhileInFrance > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '66');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $interestWhileInFrance);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
                 $row += 1;
             }
 
@@ -132,8 +132,8 @@ EOF
                 $netInterestWhileInEEA            = round(bcsub($netInterestWhileInEEA, $regularizedNetInterestWhileInEEA, 4));
                 if ($netInterestWhileInEEA > 0) {
                     $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                    $activeSheet->setCellValueByColumnAndRow(2, $row, '81');
-                    $activeSheet->setCellValueByColumnAndRow(4, $row, $netInterestWhileInEEA);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '81');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $netInterestWhileInEEA);
                     $row += 1;
                 }
             }
@@ -144,8 +144,8 @@ EOF
                 $capitalWhileInEEA            = round(bcsub($capitalWhileInEEA, $regularizedCapitalWhileInEEA, 4));
                 if ($capitalWhileInEEA > 0) {
                     $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                    $activeSheet->setCellValueByColumnAndRow(2, $row, '82');
-                    $activeSheet->setCellValueByColumnAndRow(4, $row, $capitalWhileInEEA);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '82');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $capitalWhileInEEA);
                     $row += 1;
                 }
             }
@@ -169,9 +169,9 @@ EOF
             'Monnaie'        => 'EUR',
         ];
 
-        $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
-        $activeSheet->setCellValueByColumnAndRow(1, $row, $wallet->getWireTransferPattern());
-        $activeSheet->setCellValueByColumnAndRow(3, $row, $commonValues['Date']);
-        $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, $wallet->getWireTransferPattern());
+        $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, $commonValues['Date']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $commonValues['Monnaie']);
     }
 }
