@@ -1205,24 +1205,23 @@ class dossiersController extends bootstrap
                 $slackManager      = $this->get('unilend.service.slack_manager');
                 $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
                         ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
-                $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                 if (
-                    $projectEntity->getIdCommercial() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdCommercial()
+                    && $projectEntity->getIdCommercial()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdCommercial()
+                    && false === empty($projectEntity->getIdCommercial()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdCommercial()->getSlack());
                 }
 
                 if (
-                    $projectEntity->getIdAnalyste() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdAnalyste()
+                    && $projectEntity->getIdAnalyste()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdAnalyste()
+                    && false === empty($projectEntity->getIdAnalyste()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdAnalyste()->getSlack());
                 }
             }
 
