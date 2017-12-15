@@ -333,11 +333,11 @@ class BorrowerAccountController extends Controller
 
             if (false === $error) {
                 $filePath = '';
-                $file = $request->files->get('attachment');
+                $file     = $request->files->get('attachment');
                 if ($file instanceof UploadedFile) {
                     $uploadDestination = $this->getParameter('path.protected') . 'contact/';
-                    $file = $file->move($uploadDestination, $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension());
-                    $filePath = $file->getPathname();
+                    $file              = $file->move($uploadDestination, $file->getClientOriginalName());
+                    $filePath          = $file->getPathname();
                 }
 
                 $keywords = [

@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
 {
@@ -42,18 +43,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = IfuManager::FILE_NAME_BENEFICIARY;
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_beneficiaires_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_beneficiaires_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -284,7 +277,6 @@ EOF
      */
     private function exportCSV($data, $filePath, array $headers)
     {
-
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
             ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
@@ -294,13 +286,13 @@ EOF
         $activeSheet = $document->setActiveSheetIndex(0);
 
         foreach ($headers as $index => $columnName) {
-            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+            $activeSheet->setCellValueExplicitByColumnAndRow($index, 1, $columnName);
         }
 
         foreach ($data as $rowIndex => $row) {
             $colIndex = 0;
             foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
             }
         }
 

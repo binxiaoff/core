@@ -264,20 +264,31 @@ class LocationManager
         if (1 === count($citiesInsee)) {
             return $citiesInsee[0]->getInsee();
         } else {
-            $cityInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $city]);
+            $cityInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $this->cleanLookupCityName($city)]);
 
             if ($cityInsee) {
                 return $cityInsee->getInsee();
-            } else {
-                $city   = str_replace(' ', '-', $city);
-                $cityInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $city]);
-
-                if ($cityInsee) {
-                    return $cityInsee->getInsee();
-                }
             }
         }
 
         return false;
+    }
+
+    /**
+     * @param $city
+     *
+     * @return string
+     */
+    public function cleanLookupCityName($city)
+    {
+        $city = str_replace(['\' ',' D ', ' '], ['\'', ' D\'', '-'], strtoupper(\ficelle::speCharNoAccent($city)));
+        // Replace ST, SNT with SAINT
+        $city = preg_replace('/(^|.+-)((ST)|(SNT))(-)(.+)/', '$1SAINT$5$6', $city);
+        // Replace STE with SAINTE
+        $city = preg_replace('/(^|.+-)(STE)(-)(.+)/', '$1SAINTE$3$4', $city);
+        // Remove le la les l' from the beginning of the term
+        $city = preg_replace('/^(LE-|LA-|LES-|L\')(.+)/', '$2', $city);
+
+        return $city;
     }
 }
