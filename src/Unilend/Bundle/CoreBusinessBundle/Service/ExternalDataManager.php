@@ -424,6 +424,7 @@ class ExternalDataManager
                         ->setPosition($mandate->getPosition()->getLabel())
                         ->setCodePosition($mandate->getPosition()->getCode());
                     $this->entityManager->persist($change);
+                    $this->entityManager->flush($change);
                 }
 
                 if (null === $change->getNominated()) {
@@ -432,7 +433,6 @@ class ExternalDataManager
                 if (null === $change->getEnded()) {
                     $change->setEnded($this->getExecutiveEnded($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
                 }
-
                 $this->entityManager->flush($change);
             }
         }

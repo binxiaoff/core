@@ -551,13 +551,15 @@ class CompanyValidator
 
             foreach ($incidentAnnouncements as $announcement) {
                 foreach ($announcement->getAnnouncementEvents() as $event) {
-                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $announcement->getPublishedDate());
+                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $event->getResolutionDate(), $announcement->getPublishedDate());
 
                     if ($eventDate && $eventDate->diff($now)->days >= ($eventYearsOld * 365)) {
                         continue;
                     } elseif(false === $eventDate) {
-                        $this->logger->warning('Escaping check on TCK-RISK-14 : Both announcement publish date and event effective date are null',
-                            ['siren' => $depositorSiren, 'method' => __METHOD__, 'announcementID' => $announcement->getId()]);
+                        $this->logger->warning('Escaping check TCK-RISK-14 on announcement ID: ' . $announcement->getId() .
+                            '. All dates from event effective date, event resolution date and announcement publish date are null',
+                            ['siren' => $depositorSiren, 'method' => __METHOD__, 'announcementID' => $announcement->getId()]
+                        );
                         continue;
                     }
                     if ($mandate->getSiren() === $depositorSiren) {
@@ -681,11 +683,13 @@ class CompanyValidator
 
             foreach ($incidentAnnouncements as $announcement) {
                 foreach ($announcement->getAnnouncementEvents() as $event) {
-                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $announcement->getPublishedDate());
+                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $event->getResolutionDate(), $announcement->getPublishedDate());
 
                     if (false === $eventDate) {
-                        $this->logger->warning('Escaping check on TCK-RISK-18 : Both announcement publish date and event effective date are null',
-                            ['method' => __METHOD__, 'Executive ID ' => $mandate->getIdExecutive(), 'announcementID' => $announcement->getId()]);
+                        $this->logger->warning('Escaping check TCK-RISK-18 on announcement ID: ' . $announcement->getId() .
+                            'All dates from event effective date, event resolution date and announcement publish date are null',
+                            ['method' => __METHOD__, 'Executive ID ' => $mandate->getIdExecutive(), 'announcementID' => $announcement->getId()]
+                        );
                         continue;
                     }
                     if (
@@ -709,13 +713,22 @@ class CompanyValidator
 
     /**
      * @param mixed $eventEffectiveDate
+     * @param mixed $eventResolutionDate
      * @param mixed $announcementPublishDate
      *
      * @return \DateTime|boolean
      */
-    private function getEventDateToUse($eventEffectiveDate, $announcementPublishDate)
+    private function getEventDateToUse($eventEffectiveDate, $eventResolutionDate, $announcementPublishDate)
     {
-        return ($eventEffectiveDate instanceof \DateTime) ? $eventEffectiveDate : ($announcementPublishDate instanceof \DateTime) ? $announcementPublishDate : false;
+        if ($eventEffectiveDate instanceof \DateTime) {
+            return $eventEffectiveDate;
+        } elseif ($eventResolutionDate instanceof \DateTime) {
+            return $eventResolutionDate;
+        } elseif ($announcementPublishDate instanceof \DateTime) {
+            return $announcementPublishDate;
+        }
+
+        return false;
     }
 
     /**
