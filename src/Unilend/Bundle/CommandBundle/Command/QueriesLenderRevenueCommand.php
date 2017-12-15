@@ -55,8 +55,8 @@ EOF
         $activeSheet = $csvFile->setActiveSheetIndex(0);
         $row         = 1;
 
-        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, 'Code Entreprise');
-        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, 'CodeBénéficiaire');
+        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, 'Cdos');
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, 'Cbéné');
         $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, 'CodeV');
         $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, 'Date');
         $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, 'Montant');
@@ -151,7 +151,9 @@ EOF
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'Excel5');
+        $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
         $writer->save(str_replace(__FILE__, $file, __FILE__));
     }
 

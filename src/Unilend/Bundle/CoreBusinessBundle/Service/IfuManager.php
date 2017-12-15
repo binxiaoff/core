@@ -7,9 +7,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 
 class IfuManager
 {
-    const FILE_NAME_BENEFICIARY = 'BENEFICI.xls';
-    const FILE_NAME_INFOSBEN    = 'INFOSBEN.xls';
-    const FILE_NAME_INCOME      = 'REVENUS.xls';
+    const FILE_NAME_BENEFICIARY = 'BENEFICI.csv';
+    const FILE_NAME_INFOSBEN    = 'INFOSBEN.csv';
+    const FILE_NAME_INCOME      = 'REVENUS.csv';
 
     /** @var EntityManager */
     private $entityManager;
