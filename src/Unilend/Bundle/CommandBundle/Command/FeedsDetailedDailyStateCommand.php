@@ -15,7 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 {
-    const ROW_HEIGHT     = 20;
+    const ROW_HEIGHT     = 16;
     const COLUMN_WIDTH   = 14;
     const DAY_HEADER_ROW = 2;
 
@@ -30,8 +30,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
     /** Outgoing financial feeds columns */
     const TAX_WITHDRAW_COLUMN_NEW        = 'I';
-    const LENDER_WITHDRAW_COLUMN_NEW     = 'J';
-    const UNILEND_WITHDRAW_COLUMN_NEW    = 'K';
+    const LENDER_WITHDRAW_COLUMN         = 'J';
+    const UNILEND_WITHDRAW_COLUMN        = 'K';
     const DEBT_COLLECTOR_WITHDRAW_COLUMN = 'L';
     const BORROWER_WITHDRAW_FUNDS_COLUMN = 'M';
     const BORROWER_WITHDRAW_OTHER_COLUMN = 'N';
@@ -111,7 +111,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         try {
             /** @var \PHPExcel $document */
             $document = new \PHPExcel();
-            $document->getDefaultStyle()->getFont()->setName('Arial');
+            $document->getDefaultStyle()->getFont()->setName('Calibri');
             $document->getDefaultStyle()->getFont()->setSize(11);
             $activeSheet = $document->setActiveSheetIndex(0);
 
@@ -142,8 +142,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $specificRows['totalMonth'] = $specificRows['firstMonth'] + 13;
             $this->applyStyleToWorksheet($activeSheet, $specificRows);
 
-            $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
-            $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
+//            $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
+//            $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
 
             $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
             /** @var \PHPExcel_Writer_CSV $writer */
@@ -155,7 +155,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 //            }
 
         } catch (\Exception $exception) {
-            $this->getContainer()->get('monolog.logger.console')->warning('Detailed daily state could not be generated', [$exception->getMessage()]);
+            $this->getContainer()->get('monolog.logger.console')->warning('Detailed daily state could not be generated', [$exception->getMessage(), $exception->getTraceAsString(), $exception->getFile(), $exception->getLine()]);
         }
     }
 
@@ -327,24 +327,22 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      */
     private function addHeaders(\PHPExcel_Worksheet $activeSheet, \DateTime $date, $startRow)
     {
-        $bigSectionsRow     = $startRow + 1;
-        $descriptionRow     = $bigSectionsRow + 1;
+        $descriptionRow     = $startRow + 1;
         $additionalInfoRow  = $descriptionRow + 1;
         $previousBalanceRow = $additionalInfoRow + 1;
 
         $activeSheet->mergeCells(self::DATE_COLUMN . $startRow . ':' . self::LAST_COLUMN . $startRow)->setCellValue(self::DATE_COLUMN . $startRow, 'UNILEND');
+        $activeSheet->mergeCells(self::DATE_COLUMN . $descriptionRow . ':' . self::DATE_COLUMN . $additionalInfoRow);
 
-        if (3 == $descriptionRow) {
+        if (2 == $descriptionRow) {
             $activeSheet->setCellValue(self::DATE_COLUMN . $descriptionRow, $date->format('d/m/Y'));
-            $activeSheet->setCellValue(self::DATE_COLUMN . $additionalInfoRow, 'Début du mois');
+            $activeSheet->setCellValue(self::DATE_COLUMN . $previousBalanceRow, 'Début du mois');
         } else {
             $activeSheet->setCellValue(self::DATE_COLUMN . $descriptionRow, $date->format('Y'));
-            $activeSheet->setCellValue(self::DATE_COLUMN . $additionalInfoRow, 'Début d\'année');
+            $activeSheet->setCellValue(self::DATE_COLUMN . $previousBalanceRow, 'Début d\'année');
         }
 
         /** incoming feeds section */
-        $activeSheet->mergeCells(self::LENDER_PROVISION_CARD_COLUMN . $bigSectionsRow . ':' . self::TOTAL_INCOMING_COLUMN . $bigSectionsRow)
-            ->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $bigSectionsRow, 'FLUX ENTRANTS');
         $activeSheet->mergeCells(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow . ':' . self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $descriptionRow)
             ->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow, 'Chargements comptes prêteurs');
         $activeSheet->setCellValue(self::LENDER_PROVISION_CARD_COLUMN . $additionalInfoRow, 'Carte bancaire');
@@ -356,61 +354,59 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::BORROWER_PROVISION_OTHER_COLUMN . $additionalInfoRow, 'Autres');
         $activeSheet->setCellValue(self::PROMOTIONAL_OFFER_PROVISION_COLUMN . $descriptionRow, 'Chargement promotion Unilend');
         $activeSheet->setCellValue(self::PROMOTIONAL_OFFER_PROVISION_COLUMN . $additionalInfoRow, 'Virement');
-        $activeSheet->setCellValue(self::TOTAL_INCOMING_COLUMN . $descriptionRow, 'Total flux entrants');
+        $activeSheet->setCellValue(self::TOTAL_INCOMING_COLUMN . $additionalInfoRow, 'Total flux entrants');
 
         /** outgoing feeds section */
-        $activeSheet->mergeCells(self::TAX_WITHDRAW_COLUMN_NEW . $bigSectionsRow . ':' . self::TOTAL_OUTGOING_COLUMN . $bigSectionsRow)
-            ->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $bigSectionsRow, 'FLUX SORTANTS');
         $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Retrait administration fiscale');
         $activeSheet->setCellValue(self::TAX_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
-        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Retrait prêteurs');
-        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
-        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN_NEW . $descriptionRow, 'Retrait Unilend');
-        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN_NEW . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $descriptionRow, 'Retrait prêteurs');
+        $activeSheet->setCellValue(self::LENDER_WITHDRAW_COLUMN . $additionalInfoRow, 'Virement');
+        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $descriptionRow, 'Retrait Unilend');
+        $activeSheet->setCellValue(self::UNILEND_WITHDRAW_COLUMN . $additionalInfoRow, 'Virement');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $descriptionRow, 'Retrait Recouvreurs');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $additionalInfoRow, 'Virement');
         $activeSheet->setCellValue(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $descriptionRow, 'Octroi prêt');
         $activeSheet->setCellValue(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $additionalInfoRow, 'Virement');
         $activeSheet->setCellValue(self::BORROWER_WITHDRAW_OTHER_COLUMN . $descriptionRow, 'Retrait Emprunteur');
         $activeSheet->setCellValue(self::BORROWER_WITHDRAW_OTHER_COLUMN . $additionalInfoRow, 'Virement');
-        $activeSheet->setCellValue(self::TOTAL_OUTGOING_COLUMN . $descriptionRow, 'Total flux sortants');
+        $activeSheet->setCellValue(self::TOTAL_OUTGOING_COLUMN . $additionalInfoRow, 'Total flux sortants');
 
-        $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $descriptionRow, 'Total mouvements');
+        $activeSheet->setCellValue(self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $additionalInfoRow, 'Total mouvements');
 
         /** balance section */
-        $activeSheet->mergeCells(self::THEORETICAL_BALANCE_COLUMN . $bigSectionsRow . ':' . self::TAX_BALANCE_COLUMN . $bigSectionsRow)
-            ->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $bigSectionsRow, 'SOLDES');
-        $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $descriptionRow, 'Solde théorique');
-        $activeSheet->setCellValue(self::BALANCE_COLUMN . $descriptionRow, 'Solde réel');
-        $activeSheet->setCellValue(self::BALANCE_DIFFERENCE_COLUMN . $descriptionRow, 'Ecart global');
-        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $descriptionRow, 'Solde Preteurs');
-        $activeSheet->setCellValue(self::BORROWER_BALANCE_COLUMN . $descriptionRow, 'Solde Emprunteurs');
-        $activeSheet->setCellValue(self::DEBT_COLLECTOR_BALANCE_COLUMN . $descriptionRow, 'Solde Recouvreurs');
-        $activeSheet->setCellValue(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $descriptionRow, 'Solde Promotions');
-        $activeSheet->setCellValue(self::UNILEND_BALANCE_COLUMN . $descriptionRow, 'Solde Unilend');
-        $activeSheet->setCellValue(self::TAX_BALANCE_COLUMN . $descriptionRow, 'Solde Admin. Fiscale');
+        $activeSheet->mergeCells(self::THEORETICAL_BALANCE_COLUMN . $descriptionRow . ':' . self::TAX_BALANCE_COLUMN . $descriptionRow)
+            ->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $descriptionRow, 'SOLDES');
+        $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $additionalInfoRow, 'Solde théorique');
+        $activeSheet->setCellValue(self::BALANCE_COLUMN . $additionalInfoRow, 'Solde réel');
+        $activeSheet->setCellValue(self::BALANCE_DIFFERENCE_COLUMN . $additionalInfoRow, 'Ecart global');
+        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $additionalInfoRow, 'Solde Preteurs');
+        $activeSheet->setCellValue(self::BORROWER_BALANCE_COLUMN . $additionalInfoRow, 'Solde Emprunteurs');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_BALANCE_COLUMN . $additionalInfoRow, 'Solde Recouvreurs');
+        $activeSheet->setCellValue(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $additionalInfoRow, 'Solde Promotions');
+        $activeSheet->setCellValue(self::UNILEND_BALANCE_COLUMN . $additionalInfoRow, 'Solde Unilend');
+        $activeSheet->setCellValue(self::TAX_BALANCE_COLUMN . $additionalInfoRow, 'Solde Admin. Fiscale');
 
         /** internal movements section */
-        $activeSheet->mergeCells(self::LENDER_LOAN_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
-            ->setCellValue(self::LENDER_LOAN_COLUMN . $bigSectionsRow, 'MOUVEMENTS INTERNES');
-        $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $descriptionRow, 'Octroi prêt');
-        $activeSheet->setCellValue(self::UNILEND_COMMISSION_FUNDS_COLUMN . $descriptionRow, 'Commission octroi prêt');
-        $activeSheet->setCellValue(self::CAPITAL_REPAYMENT_COLUMN . $descriptionRow, 'Retour prêteur (Capital)');
-        $activeSheet->setCellValue(self::GROSS_INTEREST_COLUMN . $descriptionRow, 'Retour prêteur (Intêréts bruts)');
-        $activeSheet->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $descriptionRow, 'Prélèvements obligatoires');
-        $activeSheet->setCellValue(self::INCOME_TAX_COLUMN . $descriptionRow, 'Retenues à la source');
-        $activeSheet->setCellValue(self::CSG_COLUMN . $descriptionRow, 'CSG');
-        $activeSheet->setCellValue(self::SOCIAL_DEDUCTIONS_COLUMN . $descriptionRow, 'Prélèvements sociaux');
-        $activeSheet->setCellValue(self::ADDITIONAL_CONTRIBUTIONS_COLUMN . $descriptionRow, 'Contributions additionnelles');
-        $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $descriptionRow, 'Prélèvements solidarité');
-        $activeSheet->setCellValue(self::CRDS_COLUMN . $descriptionRow, 'CRDS');
-        $activeSheet->setCellValue(self::TOTAL_TAX_COLUMN . $descriptionRow, 'Total retenues fiscales');
-        $activeSheet->setCellValue(self::UNILEND_COMMISSION_REPAYMENT . $descriptionRow, 'Commission sur echéance');
-        $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $descriptionRow, 'Affectation Ech. Empr.');
-        $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $descriptionRow, 'Ecart fiscal');
-        $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $descriptionRow, 'Commission Recouvreur');
-        $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $descriptionRow, 'Frais remboursés à Unilend');
-        $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $descriptionRow, 'Offre promo');
+        $activeSheet->mergeCells(self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+            ->setCellValue(self::LENDER_LOAN_COLUMN . $descriptionRow, 'MOUVEMENTS INTERNES');
+        $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $additionalInfoRow, 'Octroi prêt');
+        $activeSheet->setCellValue(self::UNILEND_COMMISSION_FUNDS_COLUMN . $additionalInfoRow, 'Commission octroi prêt');
+        $activeSheet->setCellValue(self::CAPITAL_REPAYMENT_COLUMN . $additionalInfoRow, 'Retour prêteur (Capital)');
+        $activeSheet->setCellValue(self::GROSS_INTEREST_COLUMN . $additionalInfoRow, 'Retour prêteur (Intêréts bruts)');
+        $activeSheet->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $additionalInfoRow, 'Prélèvements obligatoires');
+        $activeSheet->setCellValue(self::INCOME_TAX_COLUMN . $additionalInfoRow, 'Retenues à la source');
+        $activeSheet->setCellValue(self::CSG_COLUMN . $additionalInfoRow, 'CSG');
+        $activeSheet->setCellValue(self::SOCIAL_DEDUCTIONS_COLUMN . $additionalInfoRow, 'Prélèvements sociaux');
+        $activeSheet->setCellValue(self::ADDITIONAL_CONTRIBUTIONS_COLUMN . $additionalInfoRow, 'Contributions additionnelles');
+        $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $additionalInfoRow, 'Prélèvements solidarité');
+        $activeSheet->setCellValue(self::CRDS_COLUMN . $additionalInfoRow, 'CRDS');
+        $activeSheet->setCellValue(self::TOTAL_TAX_COLUMN . $additionalInfoRow, 'Total retenues fiscales');
+        $activeSheet->setCellValue(self::UNILEND_COMMISSION_REPAYMENT . $additionalInfoRow, 'Commission sur echéance');
+        $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $additionalInfoRow, 'Affectation Ech. Empr.');
+        $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, 'Ecart fiscal');
+        $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $additionalInfoRow, 'Commission Recouvreur');
+        $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $additionalInfoRow, 'Frais remboursés à Unilend');
+        $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $additionalInfoRow, 'Offre promo');
     }
 
     /**
@@ -434,6 +430,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         foreach ($month as $day) {
             $activeSheet->setCellValueExplicit(self::DATE_COLUMN . $row, \PHPExcel_Shared_Date::PHPToExcel($day), \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getStyle(self::DATE_COLUMN . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_DATE_DDMMYYYY);
+            $this->fillCellsWithColor($activeSheet, self::DATE_COLUMN . $row, 'E5DFEC');
             $coordinatesDay[$day->format('Y-m-d')] = $row;
             $row++;
         }
@@ -458,7 +455,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         /** @var \DateTime $month */
         foreach ($year as $month) {
             $activeSheet->setCellValue(self::DATE_COLUMN . $row, strftime('%B', $month->getTimestamp()));
-            $activeSheet->getStyle(self::DATE_COLUMN . $row)->getFont()->setBold(true);
+            $this->fillCellsWithColor($activeSheet, self::DATE_COLUMN . $row, 'E5DFEC');
             $coordinatesMonth[$month->format('n')] = $row;
             $row++;
         }
@@ -477,7 +474,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $style = [
             'borders' => [
                 'allborders' => [
-                    'style' => \PHPExcel_Style_Border::BORDER_MEDIUM,
+                    'style' => \PHPExcel_Style_Border::BORDER_THIN,
                     'color' => ['argb' => \PHPExcel_Style_Color::COLOR_BLACK]
                 ]
             ]
@@ -487,71 +484,122 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         for ($i = 1; $i <= $specificRows['totalMonth']; $i++) {
             $activeSheet->getRowDimension($i)->setRowHeight(self::ROW_HEIGHT);
         }
-        $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])->applyFromArray($style);
+
+        $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
+            ->applyFromArray($style);
+
         $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . 2 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
             ->getNumberFormat()
             ->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-        $activeSheet->getStyle(self::DATE_COLUMN . 1 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
+
+        $activeSheet->getStyle(self::DATE_COLUMN . 2 . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
             ->getAlignment()
             ->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER);
 
         $this->formatHeader($activeSheet, $specificRows['headerStartDay']);
         $this->formatHeader($activeSheet, $specificRows['headerStartMonth']);
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'])
-            ->getFont()
-            ->setBold(true);
-        $activeSheet->getStyle(self::DATE_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'])
-            ->getFont()
-            ->setBold(true);
+
+        $totalMonthRowCoordinates = self::DATE_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'];
+        $activeSheet->getStyle($totalMonthRowCoordinates)->getFont()->setBold(true);
+        $activeSheet->getStyle($totalMonthRowCoordinates)->getBorders()->applyFromArray(['allborders' => ['style' => \PHPExcel_Style_Border::BORDER_MEDIUM], 'color' => ['argb' => \PHPExcel_Style_Color::COLOR_BLACK]]);
+
+        $totalDayRowCoordinates = self::DATE_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'];
+        $activeSheet->getStyle($totalDayRowCoordinates)->getFont()->setBold(true);
+        $activeSheet->getStyle($totalDayRowCoordinates)->getBorders()->applyFromArray(['allborders' => ['style' => \PHPExcel_Style_Border::BORDER_MEDIUM], 'color' => ['argb' => \PHPExcel_Style_Color::COLOR_BLACK]]);
 
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalDay'], 'Total mois');
         $activeSheet->setCellValue(self::DATE_COLUMN . $specificRows['totalMonth'], 'Total année');
+
+        $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_CARD_COLUMN . $specificRows['totalDay'] . ':' . self::LAST_COLUMN . $specificRows['totalDay'], 'E6B9B8');
+        $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $specificRows['totalDay'] . ':' . self::TAX_BALANCE_COLUMN . $specificRows['totalDay'], 'C4BD97');
+        $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_CARD_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'], 'E6B9B8');
+        $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $specificRows['totalMonth'] . ':' . self::TAX_BALANCE_COLUMN . $specificRows['totalMonth'], 'C4BD97');
     }
 
     /**
      * @param \PHPExcel_Worksheet $activeSheet
-     * @param int                 $headerStartRow
+     * @param int                 $startRow
      *
      * @throws \PHPExcel_Exception
      */
-    private function formatHeader(\PHPExcel_Worksheet $activeSheet, $headerStartRow)
+    private function formatHeader(\PHPExcel_Worksheet $activeSheet, $startRow)
     {
-        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow . ':' . self::LAST_COLUMN . $headerStartRow)
-            ->getAlignment()
-            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        $startRowCoordinates = self::DATE_COLUMN . $startRow . ':' . self::LAST_COLUMN . $startRow;
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $headerStartRow)
+        $activeSheet->getStyle($startRowCoordinates)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_LEFT);
+        $activeSheet->getRowDimension($startRow)->setRowHeight(self::ROW_HEIGHT * 2.5);
+        $activeSheet->getStyle($startRowCoordinates)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
+        $activeSheet->getStyle($startRowCoordinates)->getFill()->getStartColor()->setARGB('707070');
+        $activeSheet->getStyle(self::DATE_COLUMN . $startRow)
             ->getFont()
             ->setBold(true)
             ->setSize(18)
-            ->setItalic(true);
+            ->setItalic(true)
+            ->getColor()->setARGB(\PHPExcel_Style_Color::COLOR_WHITE);
 
-        $bigSectionsRow    = $headerStartRow + 1;
-        $descriptionRow    = $bigSectionsRow + 1;
-        $additionalInfoRow = $descriptionRow + 1;
+        $descriptionRow     = $startRow + 1;
+        $additionalInfoRow  = $descriptionRow + 1;
+        $previousBalanceRow = $additionalInfoRow + 1;
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
-            ->getFont()
-            ->setBold(true);
+        $incomingColor             = 'D8E4BC';
+        $outgoingColor             = 'F79646';
+        $totalMovementsColor       = '00B0F0';
+        $balanceColor              = 'CCC0DA';
+        $creditCardColor           = '8DB4E2';
+        $wireTransferColor         = 'B6DDE8';
+        $directDebitColor          = 'E5DFEC';
+        $differenceColor           = 'FFC000';
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $bigSectionsRow . ':' . self::LAST_COLUMN . $bigSectionsRow)
-            ->getAlignment()
-            ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        /** incoming */
+        $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow . ':' . self::TOTAL_INCOMING_COLUMN . $descriptionRow, $incomingColor);
+        $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_CARD_COLUMN . $additionalInfoRow, $creditCardColor);
+        $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_WIRE_TRANSFER_COLUMN . $additionalInfoRow . ':' . self::BORROWER_PROVISION_WIRE_TRANSFER_COLUMN . $additionalInfoRow, $wireTransferColor);
+        $this->fillCellsWithColor($activeSheet, self::BORROWER_PROVISION_DIRECT_DEBIT_COLUMN . $additionalInfoRow, $directDebitColor);
+        $this->fillCellsWithColor($activeSheet, self::PROMOTIONAL_OFFER_PROVISION_COLUMN . $additionalInfoRow, $wireTransferColor);
+        $this->fillCellsWithColor($activeSheet, self::TOTAL_INCOMING_COLUMN . $additionalInfoRow, $incomingColor);
+
+        /** outgoing */
+        $this->fillCellsWithColor($activeSheet, self::TAX_WITHDRAW_COLUMN_NEW . $descriptionRow . ':' . self::TOTAL_OUTGOING_COLUMN . $descriptionRow, $outgoingColor);
+        $this->fillCellsWithColor($activeSheet, self::TAX_WITHDRAW_COLUMN_NEW . $additionalInfoRow . ':' . self::BORROWER_WITHDRAW_OTHER_COLUMN . $additionalInfoRow, $wireTransferColor);
+        $this->fillCellsWithColor($activeSheet, self::TOTAL_OUTGOING_COLUMN . $additionalInfoRow . ':' . self::TOTAL_OUTGOING_COLUMN . $additionalInfoRow, $outgoingColor);
+
+        /** total */
+        $this->fillCellsWithColor($activeSheet, self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $descriptionRow . ':' . self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $additionalInfoRow, $totalMovementsColor);
+
+        /** balance */
+        $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $descriptionRow . ':' . self::TAX_BALANCE_COLUMN . $descriptionRow, $balanceColor);
+        $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $additionalInfoRow, '81F781');
+        $this->fillCellsWithColor($activeSheet, self::BALANCE_COLUMN . $additionalInfoRow, '8DB4E2');
+        $this->fillCellsWithColor($activeSheet, self::BALANCE_DIFFERENCE_COLUMN . $additionalInfoRow, $differenceColor);
+        $this->fillCellsWithColor($activeSheet, self::LENDER_BALANCE_COLUMN . $additionalInfoRow . ':' . self::UNILEND_BALANCE_COLUMN . $additionalInfoRow, 'FABF8F');
+        $this->fillCellsWithColor($activeSheet, self::TAX_BALANCE_COLUMN . $additionalInfoRow, 'E6B8B7');
+        $this->fillCellsWithColor($activeSheet, self::DATE_COLUMN . $previousBalanceRow . ':' . self::LAST_COLUMN . $previousBalanceRow, 'BFBFBF');
+
+        /** internal movements */
+        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow, '8dbad8');
+        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $additionalInfoRow . ':' . self::LAST_COLUMN . $additionalInfoRow, 'D6D6D6');
+        $this->fillCellsWithColor($activeSheet, self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, $differenceColor);
+
+        /**  */
 
         $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
             ->getFont()
             ->setBold(true);
 
-        $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+        $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $additionalInfoRow)
             ->getAlignment()
             ->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
-        $activeSheet->getRowDimension($bigSectionsRow)
-            ->setRowHeight(self::ROW_HEIGHT * 1.25);
+        $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $additionalInfoRow)
+            ->getFont()
+            ->setBold(true);
 
         $activeSheet->getRowDimension($descriptionRow)
-            ->setRowHeight(self::ROW_HEIGHT * 2.5);
+            ->setRowHeight(self::ROW_HEIGHT * 2.75);
+
+        $activeSheet->getRowDimension($additionalInfoRow)
+            ->setRowHeight(self::ROW_HEIGHT * 2.75);
 
         $activeSheet->getStyle(self::LENDER_PROVISION_CARD_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $additionalInfoRow)
             ->getAlignment()
@@ -560,6 +608,10 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->getStyle(self::DATE_COLUMN . $additionalInfoRow. ':' . self::TOTAL_FINANCIAL_MOVEMENTS_COLUMN . $additionalInfoRow)
             ->getAlignment()
             ->setHorizontal(\PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+        $activeSheet->getStyle(self::DATE_COLUMN . $previousBalanceRow . ':' . self::LAST_COLUMN . $previousBalanceRow)
+            ->getFont()
+            ->setItalic(true);
 
         $this->groupColumns($activeSheet, self::LENDER_PROVISION_CARD_COLUMN, self::PROMOTIONAL_OFFER_PROVISION_COLUMN);
         $this->groupColumns($activeSheet, self::TAX_WITHDRAW_COLUMN_NEW, self::BORROWER_WITHDRAW_OTHER_COLUMN);
@@ -583,6 +635,19 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
                 ->setCollapsed(true)
                 ->setWidth(self::COLUMN_WIDTH);
         }
+    }
+
+    /**
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param string              $coordinates
+     * @param string              $color
+     *
+     * @throws \PHPExcel_Exception
+     */
+    private function fillCellsWithColor(\PHPExcel_Worksheet $activeSheet, $coordinates, $color)
+    {
+        $activeSheet->getStyle($coordinates)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
+        $activeSheet->getStyle($coordinates)->getFill()->getStartColor()->setARGB($color);
     }
 
     /**
@@ -639,8 +704,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $borrowerWithdraw                = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
             $totalWithdraw                   = round(bcadd(bcadd(bcadd(bcadd($totalTaxWithdraw, $lenderWithdraw, 4), $unilendWithdraw, 4), $debtCollectorWithdraw, 4), $borrowerWithdraw, 4), 2);
             $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN_NEW . $row, $totalTaxWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN_NEW . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN_NEW . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $row, $debtCollectorWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $row, $borrowerWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_OTHER_COLUMN . $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -702,7 +767,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit(self::UNILEND_COMMISSION_REPAYMENT . $row, $totalPaymentCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $repaymentAssignment   = round(bcadd(bcadd(bcadd($totalCapitalRepayment, $totalGrossInterest, 4), $totalPaymentCommission, 4), $totalTax, 4), 2);
-            $fiscalDifference      = round(bcsub($repaymentAssignment, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, 4), 4), 4), 2);
+            $fiscalDifference      = round(bcsub($repaymentAssignment, bcadd($totalTax, bcadd($totalGrossInterest, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, 4), 4), 4), 4), 4), 2);
             $activeSheet->setCellValueExplicit(self::PAYMENT_ASSIGNMENT_COLUMN . $row, $repaymentAssignment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::FISCAL_DIFFERENCE_COLUMN . $row, $fiscalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
