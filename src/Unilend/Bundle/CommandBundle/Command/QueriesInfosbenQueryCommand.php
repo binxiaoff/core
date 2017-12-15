@@ -110,7 +110,9 @@ EOF
         }
 
         /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel5');
+        $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setUseBOM(true);
+        $writer->setDelimiter(';');
         $writer->save(str_replace(__FILE__, $filePath, __FILE__));
     }
 }
