@@ -615,7 +615,7 @@ class ajaxController extends bootstrap
 
         if (
             $project->getStatus() !== ProjectsStatus::ANALYSIS_REVIEW
-            || $this->userEntity->getIdUser() !== $project->getIdAnalyste()
+            || $this->userEntity !== $project->getIdAnalyste()
         ) {
             echo json_encode([
                 'success' => false,
@@ -676,7 +676,7 @@ class ajaxController extends bootstrap
             $historyDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $client = $project->getIdCompany()->getIdClientOwner();
 
             if ($client instanceof Clients && false === empty($client->getEmail())) {
                 $keywords = [
@@ -772,7 +772,7 @@ class ajaxController extends bootstrap
 
         /** @var \clients $client */
         $client = $this->loadData('clients');
-        $client->get($project->getIdCompany()->getIdClientOwner());
+        $client->get($project->getIdCompany()->getIdClientOwner()->getIdClient());
 
         if ($_POST['status'] == 1) {
             /** @var \projects_status_history $projectStatusHistory */

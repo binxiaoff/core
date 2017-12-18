@@ -193,8 +193,10 @@ class emprunteursController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $projectId     = filter_var($this->params[1], FILTER_VALIDATE_INT);
             $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
             if ($project) {
-                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+                $client = $project->getIdCompany()->getIdClientOwner();
+
                 switch ($this->params[0]) {
                     case 'pouvoir' :
                         $this->link = $this->furl . '/pdf/pouvoir/' . $client->getHash() . '/' . $projectId;
@@ -272,7 +274,7 @@ class emprunteursController extends bootstrap
             }
         }
 
-        header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner());
+        header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner()->getIdClient());
         die;
     }
 }

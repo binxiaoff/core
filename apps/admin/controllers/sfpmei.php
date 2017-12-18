@@ -393,7 +393,7 @@ class sfpmeiController extends bootstrap
                         $this->factures($this->params[2]);
                     }
                     break;
-                default :
+                default:
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
                     $clientAddress->get($this->clients->id_client, 'id_client');
                     $this->clientAddress = '';
@@ -645,7 +645,6 @@ class sfpmeiController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $invoiceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Factures');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
         $project = $projectRepository->find($projectId);
@@ -654,9 +653,7 @@ class sfpmeiController extends bootstrap
 
         if (false === empty($project)) {
             $invoiceList = $invoiceRepository->findBy(['idProject' => $project->getIdProject()], ['date' => 'DESC']);
-
-            /** @var Clients $client */
-            $client = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
+            $client      = $project->getIdCompany()->getIdClientOwner();
 
             foreach ($invoiceList as $invoice) {
                 $projectInvoice['num_facture']     = $invoice->getNumFacture();

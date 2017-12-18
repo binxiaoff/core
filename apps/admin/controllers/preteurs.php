@@ -417,7 +417,6 @@ class preteursController extends bootstrap
                 $taxManager = $this->get('unilend.service.tax_manager');
 
                 if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-
                     if (false === empty($_POST['meme-adresse'])) {
                         $this->clients_adresses->meme_adresse_fiscal = ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL;
                     } else {
@@ -639,8 +638,15 @@ class preteursController extends bootstrap
                     if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
                         $this->companies->update();
                     } else {
-                        $this->companies->id_client_owner = $this->clients->id_client;
-                        $this->companies->create();
+                        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
+
+                        $company = new Companies();
+                        $company->setIdClientOwner($client);
+
+                        $entityManager->persist($company);
+                        $entityManager->flush($company);
+
+                        $this->companies->get($company->getIdCompany());
                     }
 
                     $this->clients->funds_origin        = $_POST['origine_des_fonds'];
@@ -963,7 +969,7 @@ class preteursController extends bootstrap
         $this->welcomeOffer = $entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenues')->findOneBy(['type' => $welcomeOfferType]);
 
         if (false === $this->client->isNaturalPerson()) {
-            $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client->getIdClient()]);
+            $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->client]);
         }
     }
 

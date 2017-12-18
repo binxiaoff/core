@@ -1245,9 +1245,7 @@ class dossiersController extends bootstrap
             $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
             /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-            // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
@@ -1260,7 +1258,7 @@ class dossiersController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                     $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
                     if ($attachmentType) {
-                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                        $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile);
                     }
                     if ($attachment) {
                         $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
@@ -1334,7 +1332,7 @@ class dossiersController extends bootstrap
                 /** @var Clients $clientEntity */
                 $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
                 } else {
                     $_SESSION['freeow']['title']   = 'Erreur';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
@@ -1400,7 +1398,8 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $entityManager->getConnection()->beginTransaction();
         try {
-            $clientEntity->setIdLangue('fr')
+            $clientEntity
+                ->setIdLangue('fr')
                 ->setStatus(Clients::STATUS_ONLINE);
 
             $entityManager->persist($clientEntity);
@@ -1409,8 +1408,9 @@ class dossiersController extends bootstrap
             $clientAddressEntity->setIdClient($clientEntity);
             $entityManager->persist($clientAddressEntity);
 
-            $companyEntity->setSiren($siren)
-                ->setIdClientOwner($clientEntity->getIdClient())
+            $companyEntity
+                ->setSiren($siren)
+                ->setIdClientOwner($clientEntity)
                 ->setStatusAdresseCorrespondance(1);
             $entityManager->persist($companyEntity);
             $entityManager->flush($companyEntity);

@@ -494,7 +494,7 @@ class BorrowerAccountController extends Controller
         $entityManager       = $this->get('doctrine.orm.entity_manager');
         $client              = $this->getClient();
         $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
-        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
+        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
 
         $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
         $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');

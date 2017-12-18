@@ -113,12 +113,8 @@ class companyController extends bootstrap
             header('Location: ' . $this->url . '/company');
             die;
         }
-        $this->client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
 
-        if (null === $this->client) {
-            header('Location: ' . $this->url . '/company');
-            die;
-        }
+        $this->client               = $this->company->getIdClientOwner();
         $this->siren                = $this->company->getSiren();
         $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->client);
         $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
@@ -173,28 +169,30 @@ class companyController extends bootstrap
 
         $entityManager->beginTransaction();
         try {
-            $this->client->setEmail($email)
-                         ->setIdLangue('fr')
-                         ->setStatus(Clients::STATUS_ONLINE)
-                         ->setCivilite($title)
-                         ->setNom($name)
-                         ->setPrenom($firstName);
+            $this->client
+                ->setEmail($email)
+                ->setIdLangue('fr')
+                ->setStatus(Clients::STATUS_ONLINE)
+                ->setCivilite($title)
+                ->setNom($name)
+                ->setPrenom($firstName);
 
             if (false === $entityManager->contains($this->client)) {
                 $entityManager->persist($this->client);
             }
             $entityManager->flush($this->client);
 
-            $this->company->setSiren($siren)
-                          ->setName($corporateName)
-                          ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
-                          ->setEmailDirigeant($email)
-                          ->setEmailFacture($invoiceEmail)
-                          ->setIdClientOwner($this->client->getIdClient())
-                          ->setAdresse1($address)
-                          ->setZip($postCode)
-                          ->setCity($city)
-                          ->setPhone($phone);
+            $this->company
+                ->setSiren($siren)
+                ->setName($corporateName)
+                ->setStatusAdresseCorrespondance(Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL)
+                ->setEmailDirigeant($email)
+                ->setEmailFacture($invoiceEmail)
+                ->setIdClientOwner($this->client)
+                ->setAdresse1($address)
+                ->setZip($postCode)
+                ->setCity($city)
+                ->setPhone($phone);
 
             if (false === $entityManager->contains($this->company)) {
                 $entityManager->persist($this->company);

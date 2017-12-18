@@ -31,9 +31,12 @@ class Companies
     const CLIENT_STATUS_EXTERNAL_COUNSEL_BANKER        = 4;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client_owner", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
+     * })
      */
     private $idClientOwner;
 
@@ -330,11 +333,11 @@ class Companies
     /**
      * Set idClientOwner
      *
-     * @param integer $idClientOwner
+     * @param Clients $idClientOwner
      *
      * @return Companies
      */
-    public function setIdClientOwner($idClientOwner)
+    public function setIdClientOwner(Clients $idClientOwner)
     {
         $this->idClientOwner = $idClientOwner;
 
@@ -344,7 +347,7 @@ class Companies
     /**
      * Get idClientOwner
      *
-     * @return integer
+     * @return Clients
      */
     public function getIdClientOwner()
     {

@@ -14,7 +14,7 @@
                         <input type="radio" name="id_company" value="<?= $company->getIdCompany() ?>" required>
                         <?= $company->getName() ?>
                     </label>
-                    (<a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $company->getIdClientOwner() ?>" target="_blank"><?= $company->getIdClientOwner() ?></a>)
+                    (<a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $company->getIdClientOwner()->getIdClient() ?>" target="_blank"><?= $company->getIdClientOwner()->getIdClient() ?></a>)
                     <br>
                 <?php endforeach; ?>
             </fieldset>
