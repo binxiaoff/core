@@ -8,11 +8,14 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
+    const LOST_PROJECT_IDS = [32108, 28957];
+
     /**
      * @see Command
      */
@@ -63,8 +66,16 @@ EOF
         $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, 'Monnaie');
         $row++;
 
-        $operationRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $operationRepository                = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
+        $loanRepository                     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
+        $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+
+        $walletsWithMovements    = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => self::LOST_PROJECT_IDS]);
+        $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
+            'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
+        ]);
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
@@ -136,9 +147,7 @@ EOF
                     $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $netInterestWhileInEEA);
                     $row += 1;
                 }
-            }
 
-            if (in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $capitalWhileInEEA            = $operationRepository->sumRegularizedCapitalRepaymentsInEeaExceptFrance($wallet, $year);
                 $regularizedCapitalWhileInEEA = $operationRepository->sumCapitalRepaymentsInEeaExceptFrance($wallet, $year);
                 $capitalWhileInEEA            = round(bcsub($capitalWhileInEEA, $regularizedCapitalWhileInEEA, 4));
@@ -148,6 +157,31 @@ EOF
                     $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $capitalWhileInEEA);
                     $row += 1;
                 }
+
+                $lostCapital = 0;
+                foreach ($lostProjects as $lostProject) {
+                    $loans      = $loanRepository->findBy([
+                        'idLender'       => $wallet,
+                        'idProject'      => $lostProject,
+                        'idTypeContract' => $eligibleContractsTolost
+                    ]);
+                    $repository = null;
+                    if ($lostProject->getCloseOutNettingDate()) {
+                        $repository = $closeOutNettingRepaymentRepository;
+                    } else {
+                        $repository = $repaymentScheduleRepository;
+                    }
+
+                    $lostCapital = round(bcadd($lostCapital, $repository->getRemainingCapitalByLoan($loans), 4), 2);
+                }
+                $lostCapital = round($lostCapital);
+                if ($lostCapital > 0) {
+                    $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '162');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $lostCapital);
+                    $row += 1;
+                }
+
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
