@@ -115,7 +115,7 @@ class DirectorAnnouncement
      */
     public function getPublishedDate()
     {
-        return $this->publishedDate->setTime(0, 0, 0);
+        return $this->publishedDate;
     }
 
     /**
