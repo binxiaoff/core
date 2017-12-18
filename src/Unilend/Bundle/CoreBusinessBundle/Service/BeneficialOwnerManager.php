@@ -118,9 +118,9 @@ class BeneficialOwnerManager
      */
     public function getBeneficialOwnerDeclarationFileName(ProjectBeneficialOwnerUniversign $projectDeclaration)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($projectDeclaration->getIdProject()->getIdCompany()->getIdClientOwner());
+        $project = $projectDeclaration->getIdProject();
 
-        return $client->getHash() . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $projectDeclaration->getIdProject()->getIdProject() . '.pdf';
+        return $project->getIdCompany()->getIdClientOwner()->getHash() . '-' . ProjectBeneficialOwnerUniversign::DOCUMENT_NAME . '-' . $project->getIdProject() . '.pdf';
     }
 
     /**
@@ -142,7 +142,7 @@ class BeneficialOwnerManager
         if (
             null === $project
             || null === $client
-            || $project->getIdCompany()->getIdClientOwner() != $client->getIdClient()
+            || $project->getIdCompany()->getIdClientOwner() != $client
         ) {
             return [
                 'action' => 'redirect',
@@ -458,13 +458,13 @@ class BeneficialOwnerManager
                     case UniversignEntityInterface::STATUS_PENDING:
                         $universign->setStatus(UniversignEntityInterface::STATUS_CANCELED);
                         $this->entityManager->flush($universign);
-                        $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $this->getProjectOwner($universign->getIdProject()));
+                        $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
                         break;
                     case UniversignEntityInterface::STATUS_SIGNED:
                         if (ProjectsStatus::REMBOURSEMENT > $universign->getIdProject()->getStatus()) {
                             $universign->setStatus(UniversignEntityInterface::STATUS_ARCHIVED);
                             $this->entityManager->flush($universign);
-                            $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $this->getProjectOwner($universign->getIdProject()));
+                            $this->createProjectBeneficialOwnerDeclaration($universign->getIdProject(), $universign->getIdProject()->getIdCompany()->getIdClientOwner());
                         }
                         break;
                     default:
@@ -473,16 +473,6 @@ class BeneficialOwnerManager
                 }
             }
         }
-    }
-
-    /**
-     * @param Projects $project
-     *
-     * @return null|Clients
-     */
-    private function getProjectOwner(Projects $project)
-    {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
     }
 
     /**
@@ -545,7 +535,7 @@ class BeneficialOwnerManager
         $currentDeclaration         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
             ->findCurrentDeclarationByCompany($company);
         $companyOwnerBeneficialOwner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')
-            ->findOneBy(['idDeclaration' => $currentDeclaration,'idClient' => $company->getIdClientOwner()]);
+            ->findOneBy(['idDeclaration' => $currentDeclaration, 'idClient' => $company->getIdClientOwner()]);
 
         return null !== $companyOwnerBeneficialOwner;
     }

@@ -288,9 +288,9 @@ EOF
                 $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
 
                 if ($project instanceof Projects) {
-                    $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-                    $reception->setIdProject($project)
-                        ->setIdClient($client)
+                    $reception
+                        ->setIdProject($project)
+                        ->setIdClient($project->getIdCompany()->getIdClientOwner())
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                         ->setAssignmentDate(new \DateTime())
                         ->setRemb(1);
@@ -317,10 +317,9 @@ EOF
         $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
         $projectRepaymentTaskManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_task_manager');
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-
-        $reception->setIdProject($project)
-            ->setIdClient($client)
+        $reception
+            ->setIdProject($project)
+            ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
             ->setAssignmentDate(new \DateTime())
@@ -342,10 +341,9 @@ EOF
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
         $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-
-        $reception->setIdProject($project)
-            ->setIdClient($client)
+        $reception
+            ->setIdProject($project)
+            ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
             ->setRemb(1)

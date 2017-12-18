@@ -174,7 +174,8 @@ class ProjectRequestManager
         $siret             = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
 
         $company = new Companies();
-        $company->setSiren($siren)
+        $company
+            ->setSiren($siren)
             ->setSiret($siret)
             ->setStatusAdresseCorrespondance(1)
             ->setEmailDirigeant($email)
@@ -183,13 +184,18 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
         try {
             $this->entityManager->persist($client);
+
             $clientAddress = new ClientsAdresses();
             $clientAddress->setIdClient($client);
+
             $this->entityManager->persist($clientAddress);
             $this->entityManager->flush($clientAddress);
-            $company->setIdClientOwner($client->getIdClient());
+
+            $company->setIdClientOwner($client);
+
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
+
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')

@@ -163,7 +163,7 @@ EOF
 
             if (
                 false === $clientEntity->isNaturalPerson()
-                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()])
+                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity])
             ) {
                 $idPays         = (0 == $company->getIdPays()) ? PaysV2::COUNTRY_FRANCE : $company->getIdPays();
                 $companyCountry = $countryRepository->find($idPays);

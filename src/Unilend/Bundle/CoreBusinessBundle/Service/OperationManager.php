@@ -434,10 +434,10 @@ class OperationManager
      */
     public function repayment($amountCapital, $amountInterestGross, Echeanciers $repaymentSchedule, ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
-        $loan             = $repaymentSchedule->getIdLoan();
-        $lenderWallet     = $loan->getIdLender();
-        $borrowerClientId = $loan->getProject()->getIdCompany()->getIdClientOwner();
-        $borrowerWallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClientId, WalletType::BORROWER);
+        $loan           = $repaymentSchedule->getIdLoan();
+        $lenderWallet   = $loan->getIdLender();
+        $borrowerClient = $loan->getProject()->getIdCompany()->getIdClientOwner();
+        $borrowerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($borrowerClient, WalletType::BORROWER);
 
         $this->repaymentGeneric($borrowerWallet, $lenderWallet, $amountCapital, $amountInterestGross, null, null, [$repaymentSchedule, $projectRepaymentTaskLog]);
     }

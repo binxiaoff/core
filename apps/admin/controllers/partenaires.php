@@ -132,7 +132,6 @@ class partenairesController extends bootstrap
 
                 if (empty($agencyErrors)) {
                     $agency->setIdParentCompany($partner->getIdCompany());
-                    $agency->setIdClientOwner(0); // @todo remove once id_client_owner is nullable
 
                     $entityManager->persist($agency);
                     $entityManager->flush($agency);
