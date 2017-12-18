@@ -53,7 +53,6 @@ class OperationType
     // General regularization
     const UNILEND_BORROWER_COMMERCIAL_GESTURE              = 'unilend_borrower_commercial_gesture';
     const UNILEND_LENDER_REGULARIZATION                    = 'unilend_lender_regularization';
-    const UNILEND_BORROWER_REGULARIZATION                  = 'unilend_borrower_regularization';
     const UNILEND_DEBT_COLLECTOR_COMMERCIAL_GESTURE_CANCEL = 'unilend_debt_collector_commercial_gesture_cancel';
 
     // Specific regularization

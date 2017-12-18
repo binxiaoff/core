@@ -142,17 +142,17 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $specificRows['totalMonth'] = $specificRows['firstMonth'] + 13;
             $this->applyStyleToWorksheet($activeSheet, $specificRows);
 
-//            $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
-//            $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
+            $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
+            $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
 
             $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
             /** @var \PHPExcel_Writer_CSV $writer */
             $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
             $writer->save(str_replace(__FILE__, $filePath, __FILE__));
 
-//            if (false === $input->getOption('no-email')) {
-//                $this->sendFileToInternalRecipients($filePath);
-//            }
+            if (false === $input->getOption('no-email')) {
+                $this->sendFileToInternalRecipients($filePath);
+            }
 
         } catch (\Exception $exception) {
             $this->getContainer()->get('monolog.logger.console')->warning('Detailed daily state could not be generated', [$exception->getMessage(), $exception->getTraceAsString(), $exception->getFile(), $exception->getLine()]);
@@ -201,6 +201,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL,
             OperationType::UNILEND_LENDER_REGULARIZATION,
             OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE,
+            OperationType::UNILEND_DEBT_COLLECTOR_COMMERCIAL_GESTURE_CANCEL,
             OperationType::COLLECTION_COMMISSION_PROVISION,
             OperationType::COLLECTION_COMMISSION_LENDER,
             OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION,
@@ -379,7 +380,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::THEORETICAL_BALANCE_COLUMN . $additionalInfoRow, 'Solde théorique');
         $activeSheet->setCellValue(self::BALANCE_COLUMN . $additionalInfoRow, 'Solde réel');
         $activeSheet->setCellValue(self::BALANCE_DIFFERENCE_COLUMN . $additionalInfoRow, 'Ecart global');
-        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $additionalInfoRow, 'Solde Preteurs');
+        $activeSheet->setCellValue(self::LENDER_BALANCE_COLUMN . $additionalInfoRow, 'Solde Prêteurs');
         $activeSheet->setCellValue(self::BORROWER_BALANCE_COLUMN . $additionalInfoRow, 'Solde Emprunteurs');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_BALANCE_COLUMN . $additionalInfoRow, 'Solde Recouvreurs');
         $activeSheet->setCellValue(self::UNILEND_PROMOTIONAL_BALANCE_COLUMN . $additionalInfoRow, 'Solde Promotions');
@@ -392,7 +393,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $additionalInfoRow, 'Octroi prêt');
         $activeSheet->setCellValue(self::UNILEND_COMMISSION_FUNDS_COLUMN . $additionalInfoRow, 'Commission octroi prêt');
         $activeSheet->setCellValue(self::CAPITAL_REPAYMENT_COLUMN . $additionalInfoRow, 'Retour prêteur (Capital)');
-        $activeSheet->setCellValue(self::GROSS_INTEREST_COLUMN . $additionalInfoRow, 'Retour prêteur (Intêréts bruts)');
+        $activeSheet->setCellValue(self::GROSS_INTEREST_COLUMN . $additionalInfoRow, 'Retour prêteur (Intérêts bruts)');
         $activeSheet->setCellValue(self::STATUTORY_CONTRIBUTIONS_COLUMN . $additionalInfoRow, 'Prélèvements obligatoires');
         $activeSheet->setCellValue(self::INCOME_TAX_COLUMN . $additionalInfoRow, 'Retenues à la source');
         $activeSheet->setCellValue(self::CSG_COLUMN . $additionalInfoRow, 'CSG');
@@ -401,7 +402,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::SOLIDARITY_DEDUCTIONS_COLUMN . $additionalInfoRow, 'Prélèvements solidarité');
         $activeSheet->setCellValue(self::CRDS_COLUMN . $additionalInfoRow, 'CRDS');
         $activeSheet->setCellValue(self::TOTAL_TAX_COLUMN . $additionalInfoRow, 'Total retenues fiscales');
-        $activeSheet->setCellValue(self::UNILEND_COMMISSION_REPAYMENT . $additionalInfoRow, 'Commission sur echéance');
+        $activeSheet->setCellValue(self::UNILEND_COMMISSION_REPAYMENT . $additionalInfoRow, 'Commission sur échéance');
         $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $additionalInfoRow, 'Affectation Ech. Empr.');
         $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, 'Ecart fiscal');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $additionalInfoRow, 'Commission Recouvreur');
@@ -515,6 +516,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $specificRows['totalDay'] . ':' . self::TAX_BALANCE_COLUMN . $specificRows['totalDay'], 'C4BD97');
         $this->fillCellsWithColor($activeSheet, self::LENDER_PROVISION_CARD_COLUMN . $specificRows['totalMonth'] . ':' . self::LAST_COLUMN . $specificRows['totalMonth'], 'E6B9B8');
         $this->fillCellsWithColor($activeSheet, self::THEORETICAL_BALANCE_COLUMN . $specificRows['totalMonth'] . ':' . self::TAX_BALANCE_COLUMN . $specificRows['totalMonth'], 'C4BD97');
+
+        $activeSheet->freezePane('B2');
     }
 
     /**
@@ -697,12 +700,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $additionalContributionsWithdraw = empty($line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW]) ? 0 : $line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW];
             $solidarityDeductionsWithdraw    = empty($line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_WITHDRAW];
             $crdsWithdraw                    = empty($line[OperationType::TAX_FR_CRDS_WITHDRAW]) ? 0 : $line[OperationType::TAX_FR_CRDS_WITHDRAW];
-            $totalTaxWithdraw                = round(bcadd(bcadd(bcadd(bcadd(bcadd(bcadd($statutoryContributionsWithdraw, $incomeTaxWithdraw, 4), $csgWithdraw, 4), $socialDeductionsWithdraw, 4), $additionalContributionsWithdraw, 4), $solidarityDeductionsWithdraw, 4), $crdsWithdraw, 4), 2);
+            $totalTaxWithdraw                = round(bcadd(bcadd(bcadd(bcadd(bcadd(bcadd($statutoryContributionsWithdraw, $incomeTaxWithdraw, 8), $csgWithdraw, 8), $socialDeductionsWithdraw, 8), $additionalContributionsWithdraw, 8), $solidarityDeductionsWithdraw, 8), $crdsWithdraw, 8), 2);
             $lenderWithdraw                  = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
             $unilendWithdraw                 = empty($line[OperationType::UNILEND_WITHDRAW]) ? 0 : $line[OperationType::UNILEND_WITHDRAW];
             $debtCollectorWithdraw           = empty($line[OperationType::DEBT_COLLECTOR_WITHDRAW]) ? 0 : $line[OperationType::DEBT_COLLECTOR_WITHDRAW];
             $borrowerWithdraw                = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
-            $totalWithdraw                   = round(bcadd(bcadd(bcadd(bcadd($totalTaxWithdraw, $lenderWithdraw, 4), $unilendWithdraw, 4), $debtCollectorWithdraw, 4), $borrowerWithdraw, 4), 2);
+            $totalWithdraw                   = round(bcadd(bcadd(bcadd(bcadd($totalTaxWithdraw, $lenderWithdraw, 7), $unilendWithdraw, 7), $debtCollectorWithdraw, 7), $borrowerWithdraw, 7), 2);
             $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN_NEW . $row, $totalTaxWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -723,33 +726,33 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
             $capitalRepayment               = empty($line[OperationType::CAPITAL_REPAYMENT]) ? 0 : $line[OperationType::CAPITAL_REPAYMENT];
             $capitalRepaymentRegularization = empty($line[OperationType::CAPITAL_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationType::CAPITAL_REPAYMENT_REGULARIZATION];
+            $totalCapitalRepayment          = round(bcsub($capitalRepayment, $capitalRepaymentRegularization, 4), 2);
             $grossInterest                  = empty($line[OperationType::GROSS_INTEREST_REPAYMENT]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT];
             $grossInterestRegularization    = empty($line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION]) ? 0 : $line[OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION];
-            $totalCapitalRepayment          = round(bcsub($capitalRepayment, $capitalRepaymentRegularization, 4), 2);
             $totalGrossInterest             = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
             $activeSheet->setCellValueExplicit(self::CAPITAL_REPAYMENT_COLUMN . $row, $totalCapitalRepayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::GROSS_INTEREST_COLUMN . $row, $totalGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $statutoryContributions                = empty($line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES];
             $statutoryContributionsRegularization  = empty($line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION];
+            $totalStatutoryContributions           = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
             $incomeTax                             = empty($line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE]) ? 0 : $line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE];
             $incomeTaxRegularization               = empty($line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION];
+            $totalIncomeTax                        = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
             $csg                                   = empty($line[OperationType::TAX_FR_CSG]) ? 0 : $line[OperationType::TAX_FR_CSG];
             $csgRegularization                     = empty($line[OperationType::TAX_FR_CSG_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CSG_REGULARIZATION];
+            $totalCsg                              = round(bcsub($csg, $csgRegularization, 4), 2);
             $socialDeductions                      = empty($line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX];
             $socialDeductionsRegularization        = empty($line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION];
+            $totalSocialDeductions                 = round(bcsub($socialDeductions, $socialDeductionsRegularization, 4), 2);
             $additionalContributions               = empty($line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES]) ? 0 : $line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES];
             $additionalContributionsRegularization = empty($line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION];
+            $totalAdditionalContributions          = round(bcsub($additionalContributions, $additionalContributionsRegularization, 4), 2);
             $solidarityDeductions                  = empty($line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE];
             $solidarityDeductionsRegularization    = empty($line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION];
+            $totalSolidarityDeductions             = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 4), 2);
             $crds                                  = empty($line[OperationType::TAX_FR_CRDS]) ? 0 : $line[OperationType::TAX_FR_CRDS];
             $crdsRegularization                    = empty($line[OperationType::TAX_FR_CRDS_REGULARIZATION]) ? 0 : $line[OperationType::TAX_FR_CRDS_REGULARIZATION];
-            $totalStatutoryContributions           = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4), 2);
-            $totalIncomeTax                        = round(bcsub($incomeTax, $incomeTaxRegularization, 4), 2);
-            $totalCsg                              = round(bcsub($csg, $csgRegularization, 4), 2);
-            $totalSocialDeductions                 = round(bcsub($socialDeductions, $socialDeductionsRegularization, 4), 2);
-            $totalAdditionalContributions          = round(bcsub($additionalContributions, $additionalContributionsRegularization, 4), 2);
-            $totalSolidarityDeductions             = round(bcsub($solidarityDeductions, $solidarityDeductionsRegularization, 4), 2);
             $totalCrds                             = round(bcsub($crds, $crdsRegularization, 4), 2);
             $totalTax                              = round(bcadd($totalCrds, bcadd($totalSolidarityDeductions, bcadd($totalAdditionalContributions, bcadd($totalSocialDeductions, bcadd($totalCsg, bcadd($totalStatutoryContributions, $totalIncomeTax, 4), 4), 4), 4), 4), 4), 2);
             $activeSheet->setCellValueExplicit(self::STATUTORY_CONTRIBUTIONS_COLUMN . $row, $totalStatutoryContributions, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
@@ -766,8 +769,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $totalPaymentCommission                  = round(bcsub($borrowerCommissionPayment, $borrowerCommissionPaymentRegularization, 4), 2);
             $activeSheet->setCellValueExplicit(self::UNILEND_COMMISSION_REPAYMENT . $row, $totalPaymentCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $repaymentAssignment   = round(bcadd(bcadd(bcadd($totalCapitalRepayment, $totalGrossInterest, 4), $totalPaymentCommission, 4), $totalTax, 4), 2);
-            $fiscalDifference      = round(bcsub($repaymentAssignment, bcadd($totalTax, bcadd($totalGrossInterest, bcadd($totalPaymentCommission, bcadd($totalCapitalRepayment, 4), 4), 4), 4), 4), 2);
+            $repaymentAssignment = round(bcsub(bcadd(bcadd($totalCapitalRepayment, $totalGrossInterest, 4), $totalPaymentCommission, 4), $totalTax, 4), 2);
+            $fiscalDifference    = round(bcsub(bcadd(bcsub(bcsub($repaymentAssignment, $totalCapitalRepayment, 4), $totalGrossInterest, 4), $totalTax, 4), $totalPaymentCommission, 4), 2);
             $activeSheet->setCellValueExplicit(self::PAYMENT_ASSIGNMENT_COLUMN . $row, $repaymentAssignment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::FISCAL_DIFFERENCE_COLUMN . $row, $fiscalDifference, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
@@ -784,8 +787,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $promotionalOffers       = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION];
             $promotionalOffersCancel = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION_CANCEL];
             $commercialGestures      = empty($line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE]) ? 0 : $line[OperationType::UNILEND_BORROWER_COMMERCIAL_GESTURE];
+            $commercialGestureCancel = empty($line[OperationType::UNILEND_DEBT_COLLECTOR_COMMERCIAL_GESTURE_CANCEL]) ? 0 : $line[OperationType::UNILEND_DEBT_COLLECTOR_COMMERCIAL_GESTURE_CANCEL];
             $lenderRegularization    = empty($line[OperationType::UNILEND_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::UNILEND_LENDER_REGULARIZATION];
-            $totalPromotionOffer     = round(bcadd($lenderRegularization, bcadd($commercialGestures, bcsub($promotionalOffers, $promotionalOffersCancel, 4), 4), 4), 2);
+            $totalPromotionOffer     = round(bcadd($lenderRegularization, bcadd(bcsub($commercialGestures, $commercialGestureCancel, 4), bcsub($promotionalOffers, $promotionalOffersCancel, 4), 4), 4), 2);
             $activeSheet->setCellValueExplicit(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $row, $totalPromotionOffer, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row++;
