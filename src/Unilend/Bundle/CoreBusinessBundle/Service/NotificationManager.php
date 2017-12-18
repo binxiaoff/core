@@ -44,6 +44,8 @@ class NotificationManager
      * @param null|int                  $bidId
      * @param null|WalletBalanceHistory $walletBalanceHistory
      * @param null|int                  $loanId
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function create(
         $notificationType,
@@ -58,26 +60,20 @@ class NotificationManager
     ) {
         /** @var \clients_gestion_notifications $notificationSettings */
         $notificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $mailNotification */
-        $mailNotification = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
-
-        $notification = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
+        $notification         = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
 
         if ($notificationSettings->getNotif($clientId, $mailType, 'uniquement_notif') == false) {
-            if (
-                (
-                    $notificationSettings->getNotif($clientId, $mailType, 'immediatement') == true
-                    || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType])
-                )
+            if (($notificationSettings->getNotif($clientId, $mailType, 'immediatement') == true
+                 || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType]))
                 && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
             ) {
                 $this->mailerManager->$mailFunction($notification);
-                $mailNotification->immediatement = 1;
+                $sent = true;
             } else {
-                $mailNotification->immediatement = 0;
+                $sent = false;;
             }
 
-            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $walletBalanceHistory, $projectId, $loanId);
+            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $walletBalanceHistory, $projectId, $loanId, $sent);
         }
     }
 
@@ -115,13 +111,17 @@ class NotificationManager
      * @param int                       $mailType
      * @param int                       $clientId
      * @param WalletBalanceHistory|null $walletBalanceHistory
-     * @param int|null                  $projectId
-     * @param int|null                  $loanId
+     * @param null                      $projectId
+     * @param null                      $loanId
+     * @param bool                      $sent
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null)
+    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null, $sent = false)
     {
         $emailNotification = new ClientsGestionMailsNotif();
-        $emailNotification->setIdClient($clientId)
+        $emailNotification
+            ->setIdClient($clientId)
             ->setIdNotif($mailType)
             ->setDateNotif(new \DateTime('NOW'))
             ->setIdNotification($notificationId)
@@ -130,6 +130,10 @@ class NotificationManager
 
         if (null !== $walletBalanceHistory) {
             $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
+        }
+
+        if ($sent) {
+            $emailNotification->setImmediatement(1);
         }
 
         $this->entityManager->persist($emailNotification);
