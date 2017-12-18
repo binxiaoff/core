@@ -98,7 +98,6 @@ EOF
 
         $fiscalAndLocationData = [];
         $countryRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
-        $cityRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes');
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
@@ -107,10 +106,10 @@ EOF
 
             if ($clientEntity->isNaturalPerson()) {
                 $fiscalAndLocationData = [
-                    'address'    => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
-                    'zip'        => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getCpFiscal()) ? trim($clientAddress->getCp()) : trim($clientAddress->getCpFiscal()),
-                    'city'       => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getVilleFiscal()) ? trim($clientAddress->getVille) : trim($clientAddress->getVilleFiscal()),
-                    'id_country' => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getIdPaysFiscal()) ? $clientAddress->getIdPays() : $clientAddress->getIdPaysFiscal()
+                    'address'    => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
+                    'zip'        => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getCpFiscal()) ? trim($clientAddress->getCp()) : trim($clientAddress->getCpFiscal()),
+                    'city'       => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getVilleFiscal()) ? trim($clientAddress->getVille) : trim($clientAddress->getVilleFiscal()),
+                    'id_country' => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getIdPaysFiscal()) ? $clientAddress->getIdPays() : $clientAddress->getIdPaysFiscal()
                 ];
 
                 if (0 == $fiscalAndLocationData['id_country']) {
@@ -131,7 +130,10 @@ EOF
                     $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
-                    $inseeCode                            = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    if (false === $inseeCode && true === $clientAddress->getMemeAdresseFiscal()) {
+                        $inseeCode = $locationManager->getInseeCode(trim($clientAddress->getCp()), trim($clientAddress->getVille()));
+                    }
                     $fiscalAndLocationData['inseeFiscal'] = false === $inseeCode ? '' : $inseeCode;
                     $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
@@ -140,19 +142,19 @@ EOF
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
 
-                if (PaysV2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
+                if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country']) {
                     $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
                     $fiscalAndLocationData['inseeBirth'] = '00000';
                 } else {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
-
                     if (empty($clientEntity->getInseeBirth())) {
                         $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
+                        } elseif (1 === count($cityList)) {
+                            $fiscalAndLocationData['inseeBirth'] = $cityList[0]['value'];
                         } else {
-                            $birthplace                          = $cityRepository->findOneBy(['ville' => $clientEntity->getVilleNaissance()]);
-                            $fiscalAndLocationData['inseeBirth'] = null !== $birthplace && false === empty($birthplace->getInsee) ? $birthplace->getInsee : '00000';
+                            $fiscalAndLocationData['inseeBirth'] = '00000';
                         }
                     }
                 }

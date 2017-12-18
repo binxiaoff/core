@@ -151,7 +151,7 @@ EOF
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
-        $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer = \PHPExcel_IOFactory::createWriter($csvFile, 'CSV');
         $writer->setUseBOM(true);
         $writer->setDelimiter(';');
         $writer->save(str_replace(__FILE__, $file, __FILE__));
