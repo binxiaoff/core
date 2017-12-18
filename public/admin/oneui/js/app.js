@@ -978,7 +978,7 @@ var App = function() {
                 currencyColumns = {targets: columnIndexes, type: 'formatted-num'}
             }
             // Sortable date columns
-            var datePattern = new RegExp('[0-9]{2}/[0-9]{2}/[0-9]{4}')
+            var datePattern = new RegExp('^[0-9]{2}/[0-9]{2}/[0-9]{4}$')
             columnIndexes = []
             $firstRow.children('td').each(function () {
                 if (datePattern.test($(this).text())) {
@@ -1053,7 +1053,7 @@ var App = function() {
         }
         DT.prototype.buttons = function (state) {
             var self = this
-            var html = '<div class="btn-group">'
+            var html = '<div class="text-nowrap">'
             if (~(self.actions.indexOf('edit')) || ~(self.actions.indexOf('modify'))) {
                 html += '<a class="btn btn-xs btn-default edit-btn" title="Modifier"><i class="fa fa-pencil"></i></a>'
             }
@@ -1622,6 +1622,38 @@ var App = function() {
                 .closest('tr')
                 .removeClass('active');
         }
+    };
+
+
+    /*
+     * jQuery Appear + jQuery countTo, for more examples you can check out https://github.com/bas2k/jquery.appear and https://github.com/mhuggins/jquery-countTo
+     *
+     * App.initHelper('appear-countTo');
+     *
+     */
+    var uiHelperAppearCountTo = function(){
+        // Init counter functionality
+        jQuery('[data-toggle="countTo"]').each(function(){
+            var $this       = jQuery(this);
+            var $after      = $this.data('after');
+            var $before     = $this.data('before');
+            var $speed      = $this.data('speed') ? $this.data('speed') : 1500;
+            var $interval   = $this.data('interval') ? $this.data('interval') : 15;
+
+            $this.appear(function() {
+                $this.countTo({
+                    speed: $speed,
+                    refreshInterval: $interval,
+                    onComplete: function() {
+                        if($after) {
+                            $this.html($this.html() + $after);
+                        } else if ($before) {
+                            $this.html($before + $this.html());
+                        }
+                    }
+                });
+            });
+        });
     };
 
     /*
@@ -2262,6 +2294,9 @@ var App = function() {
                 case 'table-tools':
                     uiHelperTableToolsSections();
                     uiHelperTableToolsCheckable();
+                    break;
+                case 'appear-countTo':
+                    uiHelperAppearCountTo();
                     break;
                 case 'datatables':
                     uiHelperDataTables()

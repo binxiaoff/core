@@ -184,8 +184,11 @@ abstract class Controller implements ContainerAwareInterface
     /**
      * @param string $template
      * @param array  $context
+     * @param bool   $return
+     *
+     * @return string
      */
-    public function render($template = null, array $context = [])
+    public function render($template = null, array $context = [], $return = false)
     {
         $this->initializeTwig();
 
@@ -195,7 +198,7 @@ abstract class Controller implements ContainerAwareInterface
 
         try {
             $this->twigEnvironment->loadTemplate($template);
-        } catch (\Twig_Error_Loader $exception) {
+        } catch (\Twig_Error $exception) {
             $template = '404.html.twig';
         }
 
@@ -207,7 +210,13 @@ abstract class Controller implements ContainerAwareInterface
             'parameters'  => $this->Command->getParameters()
         ];
 
-        echo $this->twigEnvironment->render($template, $context);
+        $content = $this->twigEnvironment->render($template, $context);
+
+        if ($return) {
+            return $content;
+        }
+
+        echo $content;
         exit;
     }
 

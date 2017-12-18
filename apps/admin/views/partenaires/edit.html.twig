@@ -27,7 +27,7 @@
                 before: function() {
                     $usersTable.find('tbody tr').each(function(){
                         var $tr = $(this)
-                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                        $tr.find('td:last-child .text-nowrap').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
                     })
                 },
                 updated: function(id) {
@@ -312,11 +312,20 @@
 {% endblock %}
 
 {% block pageHeader %}
-    <div class="push-15 clearfix">
-        <div class="push-15-r v-align">
-            <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="push-15 clearfix">
+                <div class="push-15-r v-align">
+                    <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
+                </div>
+                <h1 class="h2 v-align">{{ partner.idCompany.name }}</h1>
+            </div>
         </div>
-        <h1 class="h2 v-align">{{ partner.idCompany.name }}</h1>
+        <div class="col-sm-5 text-right hidden-xs">
+            <a href="{{ app.adminUrl }}/partenaires/stats/partenaire/{{ partner.id }}" class="btn btn-default">
+                <i class="fa fa-line-chart"></i>
+            </a>
+        </div>
     </div>
 {% endblock %}
 
@@ -381,7 +390,7 @@
                     </thead>
                     <tbody>
                     {% for user in users %}
-                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}" data-stats-url="{{ app.adminUrl }}/partenaires/stats/utilisateur/{{ user.id }}">
+                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}" data-stats-url="{{ app.adminUrl }}/partenaires/stats/utilisateur/{{ user.idClient.idClient }}">
                             <td>{{ user.idClient.nom }}</td>
                             <td>{{ user.idClient.prenom }}</td>
                             <td>{{ user.idClient.email }}</td>

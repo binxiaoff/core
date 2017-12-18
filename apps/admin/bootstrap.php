@@ -564,8 +564,11 @@ class bootstrap extends Controller
     /**
      * @param string $template
      * @param array  $context
+     * @param bool   $return
+     *
+     * @return string
      */
-    public function render($template = null, array $context = [])
+    public function render($template = null, array $context = [], $return = false)
     {
         $user = null;
         if (false === empty($_SESSION['user'])) {
@@ -594,6 +597,6 @@ class bootstrap extends Controller
             'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : []
         ];
 
-        parent::render($template, $context);
+        return parent::render($template, $context, $return);
     }
 }
