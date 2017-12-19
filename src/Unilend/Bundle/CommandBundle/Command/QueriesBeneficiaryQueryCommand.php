@@ -119,7 +119,7 @@ EOF
                 $clientCountry                      = $countryRepository->find($fiscalAndLocationData['id_country']);
                 $fiscalAndLocationData['isoFiscal'] = $clientCountry->getIso();
 
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE) {
+                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE  && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
@@ -141,7 +141,8 @@ EOF
                 $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
-                if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country']) {
+
+                if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country'] && false === in_array($fiscalAndLocationData['birth_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
                     if (empty($clientEntity->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
                         $inseeBirthCountry                   = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
