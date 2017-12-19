@@ -114,7 +114,13 @@ class companyController extends bootstrap
             die;
         }
 
-        $this->client               = $this->company->getIdClientOwner();
+        $this->client = $this->company->getIdClientOwner();
+
+        if (null === $this->client || empty($this->client->getIdClient())) {
+            header('Location: ' . $this->url . '/company');
+            die;
+        }
+
         $this->siren                = $this->company->getSiren();
         $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->client);
         $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([

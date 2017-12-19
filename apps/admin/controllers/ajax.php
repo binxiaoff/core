@@ -770,6 +770,14 @@ class ajaxController extends bootstrap
         $project->setRisk($riskRating);
         $entityManager->flush($project);
 
+        if (null === $project->getIdCompany()->getIdClientOwner() || empty($project->getIdCompany()->getIdClientOwner()->getIdClient())) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Impossible de récupérer le dirigeant de la société'
+            ]);
+            return;
+        }
+
         /** @var \clients $client */
         $client = $this->loadData('clients');
         $client->get($project->getIdCompany()->getIdClientOwner()->getIdClient());
