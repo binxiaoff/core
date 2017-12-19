@@ -35,7 +35,7 @@ class Companies
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client")
+     *   @ORM\JoinColumn(name="id_client_owner", referencedColumnName="id_client", nullable=true)
      * })
      */
     private $idClientOwner;
@@ -333,11 +333,11 @@ class Companies
     /**
      * Set idClientOwner
      *
-     * @param Clients $idClientOwner
+     * @param Clients|null $idClientOwner
      *
      * @return Companies
      */
-    public function setIdClientOwner(Clients $idClientOwner)
+    public function setIdClientOwner(Clients $idClientOwner = null)
     {
         $this->idClientOwner = $idClientOwner;
 
@@ -347,7 +347,7 @@ class Companies
     /**
      * Get idClientOwner
      *
-     * @return Clients
+     * @return Clients|null
      */
     public function getIdClientOwner()
     {
