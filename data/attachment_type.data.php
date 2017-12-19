@@ -79,7 +79,7 @@ class attachment_type extends attachment_type_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::attachment_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function get($id, $field = 'id')

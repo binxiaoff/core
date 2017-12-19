@@ -29,9 +29,9 @@
 class redirections extends redirections_crud
 {
 
-    function redirections($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::redirections($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($list_field_value)

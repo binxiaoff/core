@@ -216,7 +216,7 @@
                             <select class="form-control required" name="fee-type">
                                 <option value="0">Sélectionner</option>
                                 {% for chargeType in projectChargeTypes %}
-                                    <option value="{{ chargeType.id }}">{{ ('project-charge-type_' ~ chargeType.label|replace('_', '-')) | trans }}</option>
+                                    <option value="{{ chargeType.id }}">{{ ('project-charge-type_' ~ chargeType.label|replace({'_': '-'})) | trans }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -290,7 +290,7 @@
                             <a class="h2 font-w300 text-primary">{{ pendingWireTransferIn|length|localizednumber }}</a>
                         </div>
                         {% if projectData.collectiveProceeding.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                            {% set companyStatusName = 'company-status_label-' ~ projectData.collectiveProceeding.idStatus.label|replace('_', '-') %}
+                            {% set companyStatusName = 'company-status_label-' ~ projectData.collectiveProceeding.idStatus.label|replace({'_': '-'}) %}
                             <div class="col-md-2">
                                 <div class="font-s12 font-w600 text-uppercase">{{ companyStatusName|trans }}</div>
                                 <a class="h2 font-w300 text-primary">{{ projectData.collectiveProceeding.changedOn|localizeddate('short', 'none') }}</a>

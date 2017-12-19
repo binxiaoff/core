@@ -97,11 +97,11 @@ class bootstrap extends Controller
                 ],
                 [
                     'title' => 'Bénéficiaires',
-                    'uri'   => 'stats/requete_beneficiaires_csv'
+                    'uri'   => 'stats/requete_beneficiaires_download'
                 ],
                 [
                     'title' => 'Infosben',
-                    'uri'   => 'stats/requete_infosben'
+                    'uri'   => 'stats/requete_infosben_download'
                 ],
                 [
                     'title' => 'Toutes les enchères',

@@ -29,9 +29,9 @@
 class convert_api_compteur extends convert_api_compteur_crud
 {
 
-    function convert_api_compteur($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::convert_api_compteur($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_convert_api_compteur')

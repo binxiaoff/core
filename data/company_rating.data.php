@@ -4,7 +4,7 @@ class company_rating extends company_rating_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::company_rating($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $offset = '', $limit = '')

@@ -28,9 +28,9 @@
 
 class tree_menu extends tree_menu_crud
 {
-    public function tree_menu($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::tree_menu($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

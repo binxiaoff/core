@@ -29,9 +29,9 @@
 class users_types_zones extends users_types_zones_crud
 {
 
-    function users_types_zones($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::users_types_zones($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_user_type_zone')

@@ -39,15 +39,15 @@ class dashboardController extends bootstrap
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (
-            $userManager->isGrantedRisk($this->userEntity)
-            || isset($this->params[0]) && 'risk' == $this->params[0] && $userManager->isUserGroupIT($this->userEntity)
+            $userManager->isUserGroupRisk($this->userEntity)
+            || isset($this->params[0]) && 'risk' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
         ) {
             $this->template     = 'risk';
             $this->userProjects = $this->getRiskUserProjects($user);
             $this->teamProjects = $this->getRiskTeamProjects($user);
         } elseif (
             $userManager->isUserGroupSales($this->userEntity)
-            || isset($this->params[0]) && 'sales' == $this->params[0] && $userManager->isUserGroupIT($this->userEntity)
+            || isset($this->params[0]) && 'sales' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
         ) {
             $this->template                     = 'sale';
             $this->userProjects                 = $this->getSaleUserProjects($user);

@@ -32,9 +32,9 @@ class settings extends settings_crud
     const STATUS_ACTIVE   = 1;
     const STATUS_BLOCKED  = 2;
 
-    public function settings($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::settings($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

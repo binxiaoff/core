@@ -24,19 +24,20 @@ class CheckPaylineMoneyTransfersCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $em             = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger         = $this->getContainer()->get('monolog.logger.console');
+        $entityManager  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $paylineManager = $this->getContainer()->get('unilend.service.payline_manager');
-
         /** @var Backpayline[] $pendingPayline */
-        $pendingPayline = $em->getRepository('UnilendCoreBusinessBundle:Backpayline')->findBy(['code' => null]);
+        $pendingPayline = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findPaylineTransactionsToApprove();
 
-        if ($pendingPayline) {
-            foreach ($pendingPayline as $payline) {
-                if (false === empty($payline->getSerializeDoPayment())) {
-                    $paymentDetails = unserialize($payline->getSerializeDoPayment());
-                    $token          = $paymentDetails['token'];
-                    $paylineManager->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
-                }
+        foreach ($pendingPayline as $payline) {
+            try {
+                $paylineManager->handlePaylineReturn($payline->getToken(), Backpayline::WS_DEFAULT_VERSION);
+            } catch (\Exception $exception) {
+                $logger->error(
+                    'Exception while processing payline order : id_backpayline: ' . $payline->getIdBackpayline() . ' Error: ' . $exception->getMessage(),
+                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
             }
         }
     }

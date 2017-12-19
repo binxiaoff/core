@@ -16,7 +16,7 @@ class tree extends tree_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::tree($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function create($list_field_value = array())

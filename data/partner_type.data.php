@@ -29,7 +29,7 @@ class partner_type extends partner_type_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::partner_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

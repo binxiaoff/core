@@ -32,7 +32,7 @@ class repayment_type extends repayment_type_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::repayment_type($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

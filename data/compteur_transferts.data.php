@@ -29,9 +29,9 @@
 class compteur_transferts extends compteur_transferts_crud
 {
 
-    function compteur_transferts($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::compteur_transferts($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_compteur')

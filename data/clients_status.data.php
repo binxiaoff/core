@@ -40,7 +40,7 @@ class clients_status extends clients_status_crud
 
     public function __construct($bdd,$params='')
     {
-        parent::clients_status($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

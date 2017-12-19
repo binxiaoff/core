@@ -43,7 +43,7 @@
                 <?php else : ?>
                     <?php
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-                    $user = $this->userEntity->find($atypicalOperation->getIdUser())
+                    $user = $this->userRepository->find($atypicalOperation->getIdUser())
                     ?>
                     <?= $user->getName() . ' ' . $user->getFirstname() ?>
                 <? endif; ?>

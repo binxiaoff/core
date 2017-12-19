@@ -29,9 +29,9 @@
 class templates extends templates_crud
 {
 
-    function templates($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::templates($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_template')

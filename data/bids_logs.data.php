@@ -29,9 +29,9 @@
 class bids_logs extends bids_logs_crud
 {
 
-    function bids_logs($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::bids_logs($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_bid_log')

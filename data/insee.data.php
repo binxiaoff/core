@@ -29,9 +29,9 @@
 class insee extends insee_crud
 {
 
-    function insee($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::insee($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_insee')

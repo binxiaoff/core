@@ -4,7 +4,7 @@ class xerfi extends xerfi_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::xerfi($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

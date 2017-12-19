@@ -32,7 +32,7 @@ class dates
         ]
     ];
 
-    public function dates($today = '')
+    public function __construct($today = '')
     {
         if ($today == '') {
             $this->today = date('Y-m-d');
