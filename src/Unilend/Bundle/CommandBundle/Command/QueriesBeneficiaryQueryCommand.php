@@ -141,12 +141,16 @@ EOF
                 $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
-
                 if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country']) {
-                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
-                    $fiscalAndLocationData['inseeBirth'] = '00000';
-                } else {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
+                    if (empty($clientEntity->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
+                        $inseeBirthCountry                   = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
+                        $fiscalAndLocationData['inseeBirth'] = $inseeBirthCountry ? $inseeBirthCountry->getCog() : '00000';
+                    } else {
+                        $fiscalAndLocationData['inseeBirth'] = '00000';
+                    }
+                } else {
+                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
                     if (empty($clientEntity->getInseeBirth())) {
                         $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
