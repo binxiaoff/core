@@ -29,7 +29,7 @@ class InvoiceController extends Controller
             throw new \Exception('The project ' . $idProject . ' does not exist');
         }
 
-        if ($project->getIdCompany()->getIdClientOwner() != $client->getIdClient()) {
+        if ($project->getIdCompany()->getIdClientOwner() != $client) {
             throw new \Exception('Project owner and client do not match.');
         }
 
@@ -68,7 +68,7 @@ class InvoiceController extends Controller
             throw new  \Exception('The project ' . $idProject . ' does not exist');
         }
 
-        if ($project->getIdCompany()->getIdClientOwner() != $client->getIdClient()) {
+        if ($project->getIdCompany()->getIdClientOwner() != $client) {
             throw new \Exception('Project owner and client do not match.');
         }
 

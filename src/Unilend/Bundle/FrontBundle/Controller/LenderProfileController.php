@@ -66,7 +66,7 @@ class LenderProfileController extends Controller
         $phoneForm         = $this->createForm(PersonPhoneType::class, $client);
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $unattachedCompany = clone $company;
 
             $identityFb = $this->createFormBuilder()

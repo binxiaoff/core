@@ -3,9 +3,8 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 ?>
-
 <?php if ($this->projects->status >= ProjectsStatus::COMITY_REVIEW || $this->projects_status_history->projectHasHadStatus($this->projects->id_project, ProjectsStatus::COMITY_REVIEW)) : ?>
-    <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>!
+    <?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
     <?php $isEditable = $this->projects->status == ProjectsStatus::COMITY_REVIEW && $this->get('unilend.service.back_office_user_manager')->isUserGroupManagement($this->userEntity); ?>
     <div id="content_etape7">
         <a class="tab_title" id="section-risk-comity" href="#section-risk-comity">7. Comité risque</a>

@@ -942,21 +942,21 @@ class ProjectManager
             }
 
             if (
-                $project->getIdCommercial() > 0
-                && $userId != $project->getIdCommercial()
-                && ($user = $userRepository->find($project->getIdCommercial()))
-                && false === empty($user->getSlack())
+                $project->getIdCommercial()
+                && $project->getIdCommercial()->getIdUser() > 0
+                && $userId != $project->getIdCommercial()->getIdUser()
+                && false === empty($project->getIdCommercial()->getSlack())
             ) {
-                $this->slackManager->sendMessage($message, '@' . $user->getSlack());
+                $this->slackManager->sendMessage($message, '@' . $project->getIdCommercial()->getSlack());
             }
 
             if (
-                $project->getIdAnalyste() > 0
-                && $userId != $project->getIdAnalyste()
-                && ($user = $userRepository->find($project->getIdAnalyste()))
-                && false === empty($user->getSlack())
+                $project->getIdAnalyste()
+                && $project->getIdAnalyste()->getIdUser() > 0
+                && $userId != $project->getIdAnalyste()->getIdUser()
+                && false === empty($project->getIdAnalyste()->getSlack())
             ) {
-                $this->slackManager->sendMessage($message, '@' . $user->getSlack());
+                $this->slackManager->sendMessage($message, '@' . $project->getIdAnalyste()->getSlack());
             }
 
             $this->slackManager->sendMessage($message, '#statuts-projets');

@@ -47,7 +47,7 @@ class TermsOfSaleManager
     {
         /** @var \ficelle $stringManager */
         $stringManager = Loader::loadLib('ficelle');
-        $client        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $client        = $project->getIdCompany()->getIdClientOwner();
 
         if (empty($client->getEmail())) {
             throw new \Exception('Invalid client email', self::EXCEPTION_CODE_INVALID_EMAIL);

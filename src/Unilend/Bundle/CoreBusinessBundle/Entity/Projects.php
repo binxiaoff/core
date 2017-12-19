@@ -168,16 +168,22 @@ class Projects
     private $standBy;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_analyste", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_analyste", referencedColumnName="id_user")
+     * })
      */
     private $idAnalyste;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_commercial", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_commercial", referencedColumnName="id_user")
+     * })
      */
     private $idCommercial;
 
@@ -923,11 +929,11 @@ class Projects
     /**
      * Set idAnalyste
      *
-     * @param integer $idAnalyste
+     * @param Users $idAnalyste
      *
      * @return Projects
      */
-    public function setIdAnalyste($idAnalyste)
+    public function setIdAnalyste(Users $idAnalyste)
     {
         $this->idAnalyste = $idAnalyste;
 
@@ -937,7 +943,7 @@ class Projects
     /**
      * Get idAnalyste
      *
-     * @return integer
+     * @return Users
      */
     public function getIdAnalyste()
     {
@@ -947,11 +953,11 @@ class Projects
     /**
      * Set idCommercial
      *
-     * @param integer $idCommercial
+     * @param Users $idCommercial
      *
      * @return Projects
      */
-    public function setIdCommercial($idCommercial)
+    public function setIdCommercial(Users $idCommercial)
     {
         $this->idCommercial = $idCommercial;
 
@@ -961,7 +967,7 @@ class Projects
     /**
      * Get idCommercial
      *
-     * @return integer
+     * @return Users
      */
     public function getIdCommercial()
     {
