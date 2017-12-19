@@ -63,14 +63,15 @@ class NotificationManager
         $notification         = $this->createNotification($notificationType, $clientId, $projectId, $amount, $bidId);
 
         if ($notificationSettings->getNotif($clientId, $mailType, 'uniquement_notif') == false) {
-            if (($notificationSettings->getNotif($clientId, $mailType, 'immediatement') == true
-                 || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType]))
+            if (
+                $notificationSettings->getNotif($clientId, $mailType, 'immediatement')
+                || false === $notificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $mailType])
                 && null !== $mailFunction && method_exists($this->mailerManager, $mailFunction)
             ) {
                 $this->mailerManager->$mailFunction($notification);
                 $sent = true;
             } else {
-                $sent = false;;
+                $sent = false;
             }
 
             $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $walletBalanceHistory, $projectId, $loanId, $sent);
@@ -111,8 +112,8 @@ class NotificationManager
      * @param int                       $mailType
      * @param int                       $clientId
      * @param WalletBalanceHistory|null $walletBalanceHistory
-     * @param null|int                  $projectId
-     * @param null|int                  $loanId
+     * @param int|null                  $projectId
+     * @param int|null                  $loanId
      * @param bool                      $sent
      *
      * @throws \Doctrine\ORM\OptimisticLockException
