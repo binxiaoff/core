@@ -111,8 +111,8 @@ class NotificationManager
      * @param int                       $mailType
      * @param int                       $clientId
      * @param WalletBalanceHistory|null $walletBalanceHistory
-     * @param null                      $projectId
-     * @param null                      $loanId
+     * @param null|int                  $projectId
+     * @param null|int                  $loanId
      * @param bool                      $sent
      *
      * @throws \Doctrine\ORM\OptimisticLockException
