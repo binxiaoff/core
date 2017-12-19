@@ -139,6 +139,8 @@ class ClientsAdresses
     private $commentaire;
 
     /**
+     * If "true", postal address and fiscal address are the same
+     *
      * @var bool
      *
      * @ORM\Column(name="meme_adresse_fiscal", type="boolean", nullable=true)

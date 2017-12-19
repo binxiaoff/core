@@ -620,17 +620,21 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Loans|int $loan
+     * @param Loans|int|array $loans
      *
      * @return float
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getRemainingCapitalByLoan($loan)
+    public function getRemainingCapitalByLoan($loans)
     {
+        if (false === is_array($loans)) {
+            $loans[] = $loans;
+        }
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2)')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->where('e.idLoan = :loan')
-            ->setParameter('loan', $loan);
+            ->where('e.idLoan in (:loan)')
+            ->setParameter('loan', $loans);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -713,7 +717,7 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idLoan')
             ->addGroupBy('e.ordre');
 
-        $remainingAmounts = $queryBuilder->getQuery()->getArrayResult();
+        $remainingAmounts                  = $queryBuilder->getQuery()->getArrayResult();
         $remainingAmountsByLoanAndSequence = [];
 
         foreach ($remainingAmounts as $remainingAmount) {
