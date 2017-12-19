@@ -58,12 +58,6 @@
                     })
                 }
             })
-
-            $(document).on('click', '[data-project] :not(a)', function (event) {
-                event.preventDefault()
-                var projectId = $(this).data('project')
-                window.location.href = '{{ app.adminUrl }}/dossiers/edit/' + projectId
-            })
         })
     </script>
 {% endblock %}

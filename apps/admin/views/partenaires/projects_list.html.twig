@@ -20,8 +20,8 @@
         </thead>
         <tbody>
         {% for project in projects %}
-            <tr data-project="{{ project.idProject }}">
-                <td>{{ project.idCompany.name }}</td>
+            <tr>
+                <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.idCompany.name }}</a></td>
                 <td class="text-right">{{ project.amount|localizednumber }}&nbsp;€</td>
                 <td>{{ project.period }} mois</td>
                 <td>{{ project.idCompany.idClientOwner.prenom }} {{ project.idCompany.idClientOwner.nom }}</td>
