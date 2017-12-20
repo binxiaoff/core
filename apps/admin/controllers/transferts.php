@@ -187,14 +187,14 @@ class transfertsController extends bootstrap
 
             $project   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']);
             $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            $client    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
             $user      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (null !== $project && null !== $reception) {
                 $entityManager->getConnection()->beginTransaction();
                 try {
-                    $reception->setIdProject($project)
-                        ->setIdClient($client)
+                    $reception
+                        ->setIdProject($project)
+                        ->setIdClient($project->getIdCompany()->getIdClientOwner())
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
                         ->setRemb(1)
                         ->setIdUser($user)
@@ -639,7 +639,7 @@ class transfertsController extends bootstrap
                     $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
                     $result      = mktime(0, 0, 0, date('m', $dateEcheEmp), date('d', $dateEcheEmp) - 15, date('Y', $dateEcheEmp));
 
-                    $prelevements->id_client                          = $project->getIdCompany()->getIdClientOwner();
+                    $prelevements->id_client                          = $project->getIdCompany()->getIdClientOwner()->getIdClient();
                     $prelevements->id_project                         = $project->getIdProject();
                     $prelevements->motif                              = $borrowerManager->getBorrowerBankTransferLabel($project);
                     $prelevements->montant                            = bcadd(bcadd($e['montant'], $e['commission'], 2), $e['tva'], 2);

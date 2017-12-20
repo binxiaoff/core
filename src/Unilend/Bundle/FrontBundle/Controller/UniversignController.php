@@ -95,7 +95,7 @@ class UniversignController extends Controller
         }
 
         foreach ($documents as $document) {
-            $documentClientId = null;
+            $documentClient = null;
 
             switch (get_class($document)) {
                 case ProjectsPouvoir::class:
@@ -105,13 +105,13 @@ class UniversignController extends Controller
                         $document->getIdProject() instanceof Projects
                         && $document->getIdProject()->getIdCompany() instanceof Companies
                     ) {
-                        $documentClientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
+                        $documentClient = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                     }
                     break;
                 case ClientsMandats::class:
                     /** @var ClientsMandats $document */
                     if ($document->getIdClient() instanceof Clients) {
-                        $documentClientId = $document->getIdClient()->getIdClient();
+                        $documentClient = $document->getIdClient();
                     }
                     break;
                 case WireTransferOutUniversign::class:
@@ -120,7 +120,7 @@ class UniversignController extends Controller
                         $document->getIdWireTransferOut() instanceof Virements
                         && $document->getIdWireTransferOut()->getClient() instanceof Clients
                     ) {
-                        $documentClientId = $document->getIdWireTransferOut()->getClient()->getIdClient();
+                        $documentClient = $document->getIdWireTransferOut()->getClient();
                     }
                     break;
                 case ProjectBeneficialOwnerUniversign::class:
@@ -129,12 +129,12 @@ class UniversignController extends Controller
                         $document->getIdProject() instanceof Projects
                         && $document->getIdProject()->getIdCompany() instanceof Companies
                     ) {
-                        $documentClientId = $document->getIdProject()->getIdCompany()->getIdClientOwner();
+                        $documentClient = $document->getIdProject()->getIdCompany()->getIdClientOwner();
                     }
                     break;
             }
 
-            if (null === $documentClientId || $documentClientId !== $client->getIdClient()) {
+            if (null === $documentClient || empty($documentClient->getIdClient()) || $documentClient !== $client) {
                 return $this->redirectToRoute('home');
             }
         }

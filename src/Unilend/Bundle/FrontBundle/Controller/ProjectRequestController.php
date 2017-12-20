@@ -200,10 +200,12 @@ class ProjectRequestController extends Controller
 
             $clientAddress = new ClientsAdresses();
             $clientAddress->setIdClient($this->client);
+
             $entityManager->persist($clientAddress);
             $entityManager->flush($clientAddress);
 
-            $this->company->setIdClientOwner($this->client->getIdClient());
+            $this->company->setIdClientOwner($this->client);
+
             $entityManager->persist($this->company);
             $entityManager->flush($this->company);
 
@@ -532,12 +534,14 @@ class ProjectRequestController extends Controller
                 $advisorAddress->telephone = $request->request->get('advisor')['mobile'];
                 $advisorAddress->create();
 
-                /** @var \companies $advisorCompany */
-                $advisorCompany = $entityManagerSimulator->getRepository('companies');
-                $advisorCompany->create();
+                $entityManager  = $this->get('doctrine.orm.entity_manager');
+                $advisorCompany = new Companies();
+
+                $entityManager->persist($advisorCompany);
+                $entityManager->flush($advisorCompany);
 
                 $advisor->id_client = $advisorClient->id_client;
-                $advisor->id_entite = $advisorCompany->id_company;
+                $advisor->id_entite = $advisorCompany->getIdCompany();
                 $advisor->create();
 
                 $this->project->id_prescripteur = $advisor->id_prescripteur;
@@ -1450,7 +1454,7 @@ class ProjectRequestController extends Controller
         }
 
         $this->company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->project->id_company);
-        $this->client  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->company->getIdClientOwner());
+        $this->client  = $this->company->getIdClientOwner();
 
         if (self::PAGE_ROUTE_EMAILS === $route) {
             return null;
