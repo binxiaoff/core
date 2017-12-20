@@ -103,7 +103,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if (in_array('ROLE_PARTNER', $user->getRoles())) {
-            return $this->router->generate('partner_project_request');
+            return $this->router->generate('partner_home');
         }
 
         return $this->router->generate('home');
