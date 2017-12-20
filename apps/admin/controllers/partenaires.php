@@ -2,15 +2,9 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProduct;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerThirdParty;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+     Clients, Companies, CompanyClient, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Product, ProjectsStatus, WalletType, Zones
+};
 
 class partenairesController extends bootstrap
 {
@@ -888,5 +882,123 @@ class partenairesController extends bootstrap
         });
 
         $this->sendAjaxResponse(true, $users);
+    }
+
+    public function _stats()
+    {
+        if (false === isset($this->params[0], $this->params[1]) || false === filter_var($this->params[1], FILTER_VALIDATE_INT)) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        /** @var Doctrine\ORM\EntityManager $entityManager */
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+
+        switch ($this->params[0]) {
+            case 'partenaire':
+                $partner   = $partnerRepository->find($this->params[1]);
+                $submitter = $partner;
+                $name      = $partner->getIdCompany()->getName();
+                break;
+            case 'agence':
+                $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $submitter         = $companyRepository->find($this->params[1]);
+                $partner           = $partnerRepository->findOneBy(['idCompany' => $submitter->getIdParentCompany()]);
+                $name              = 'Agence ' . $submitter->getName();
+                break;
+            case 'utilisateur':
+                $clientRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                $submitter               = $clientRepository->find($this->params[1]);
+                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+                $companyClient           = $companyClientRepository->findOneBy(['idClient' => $submitter]);
+                $partner                 = $partnerRepository->findOneBy(['idCompany' => $companyClient->getIdCompany()->getIdParentCompany()]);
+                $name                    = $submitter->getPrenom() . ' ' . $submitter->getNom();
+                break;
+            default:
+                header('Location: ' . $this->lurl . '/partenaires');
+                return;
+        }
+
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+        try {
+            $kpi = $projectRepository->getSubmitterKPI($submitter);
+        } catch (\Exception $exception) {
+            $kpi = [
+                'sentCount'       => 0,
+                'sentAmount'      => 0,
+                'repaymentCount'  => 0,
+                'repaymentAmount' => 0,
+                'problemRate'     => 0.0,
+                'rejectionRate'   => 0.0,
+            ];
+        }
+
+        try {
+            $projectsCountSortedByStatus = $projectRepository->getSubmitterProjectsCountSortedByStatus($submitter);
+        } catch (\Exception $exception) {
+            $projectsCountSortedByStatus = [];
+        }
+
+        try {
+            $projects = $projectRepository->findSubmitterProjectsByStatus($submitter, ProjectsStatus::COMMERCIAL_REVIEW);
+        } catch (\Exception $exception) {
+            $projects = [];
+        }
+
+        $this->render(null, [
+            'type'                        => $this->params[0],
+            'id'                          => $this->params[1],
+            'name'                        => $name,
+            'partner'                     => $partner,
+            'kpi'                         => $kpi,
+            'projectsCountSortedByStatus' => $projectsCountSortedByStatus,
+            'projects'                    => $projects
+        ]);
+    }
+
+    public function _projets()
+    {
+        if (
+            false === isset($this->params[0], $this->params[1])
+            || false === filter_var($this->params[1], FILTER_VALIDATE_INT)
+            || false === $this->request->isXmlHttpRequest()
+            || false === $this->request->isMethod(Request::METHOD_POST)
+            || empty($this->request->request->getInt('projectStatus'))
+        ) {
+            header('Location: ' . $this->lurl . '/partenaires');
+            return;
+        }
+
+        /** @var Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        switch ($this->params[0]) {
+            case 'partenaire':
+                $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
+                $submitter         = $partnerRepository->find($this->params[1]);
+                break;
+            case 'agence':
+                $companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+                $submitter         = $companyRepository->find($this->params[1]);
+                break;
+            case 'utilisateur':
+                $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                $submitter        = $clientRepository->find($this->params[1]);
+                break;
+            default:
+                header('Location: ' . $this->lurl . '/partenaires');
+                return;
+        }
+
+        try {
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $projects          = $projectRepository->findSubmitterProjectsByStatus($submitter, $this->request->request->getInt('projectStatus'));
+
+            $this->sendAjaxResponse(true, $this->render('partenaires/projects_list.html.twig', ['type' => $this->params[0], 'projects' => $projects], true));
+        } catch (\Exception $exception) {
+            $this->sendAjaxResponse(false, null, [$exception->getMessage()]);
+        }
     }
 }
