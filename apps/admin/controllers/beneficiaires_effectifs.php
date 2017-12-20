@@ -79,7 +79,7 @@ class beneficiaires_effectifsController extends bootstrap
         $passport     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
 
         $this->render(null, [
-            'companyOwner'         => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner()),
+            'companyOwner'         => $company->getIdClientOwner(),
             'companyOwnerAddress'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findBy(['idClient' => $company->getIdClientOwner()]),
             'companyOwnerPassport' => null === $passport ? '' : '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>',
             'beneficial_owners'    => $currentOwners,

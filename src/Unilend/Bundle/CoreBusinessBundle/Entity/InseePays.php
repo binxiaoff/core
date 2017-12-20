@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * InseePays
  *
  * @ORM\Table(name="insee_pays", indexes={@ORM\Index(name="COG", columns={"COG"}), @ORM\Index(name="LIBCOG", columns={"LIBCOG"}), @ORM\Index(name="codeiso2", columns={"CODEISO2"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\InseePaysRepository")
  */
 class InseePays
 {

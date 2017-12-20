@@ -251,7 +251,7 @@ class MailerManager
 
         /** @var \clients $borrower */
         $borrower = $this->entityManagerSimulator->getRepository('clients');
-        $borrower->get($project->getIdCompany()->getIdClientOwner(), 'id_client');
+        $borrower->get($project->getIdCompany()->getIdClientOwner()->getIdClient(), 'id_client');
 
         /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
         $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
@@ -734,7 +734,7 @@ class MailerManager
                 $firstName  = $company->getPrenomDirigeant();
                 $mailClient = $company->getEmailDirigeant();
             } else {
-                $client     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+                $client     = $company->getIdClientOwner();
                 $firstName  = $client->getPrenom();
                 $mailClient = $client->getEmail();
             }
@@ -764,7 +764,7 @@ class MailerManager
             } catch (\Exception $exception){
                 $this->oLogger->warning(
                     'Could not send email: annonce-mise-en-ligne-emprunteur - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }
@@ -916,7 +916,7 @@ class MailerManager
      */
     public function sendBorrowerBill(Projects $project)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $client = $project->getIdCompany()->getIdClientOwner();
         $today  = new \DateTime('NOW');
 
         $keywords = [
@@ -1899,7 +1899,7 @@ class MailerManager
      */
     public function sendProjectTermsOfSale(ProjectCgv $termsOfSale)
     {
-        $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner());
+        $client   = $termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner();
         $keywords = [
             'firstName'                  => $client->getPrenom(),
             'universignTosLink'          => $this->sFUrl . $termsOfSale->getUrlPath(),

@@ -10,7 +10,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::echeanciers_emprunteur($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

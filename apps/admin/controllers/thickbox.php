@@ -112,9 +112,10 @@ class thickboxController extends bootstrap
         $companyStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->find($this->companyStatusId);
         $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($companyId);
 
-        if (null === $companyStatus || null === $company || $company->getIdClientOwner() != $this->clientId) {
+        if (null === $companyStatus || null === $company || $company->getIdClientOwner()->getIdClient() != $this->clientId) {
             return;
         }
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
         $this->companyManager = $this->get('unilend.service.company_manager');
         $this->statusLabel    = $this->companyManager->getCompanyStatusNameByLabel($companyStatus->getLabel());

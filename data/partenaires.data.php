@@ -28,9 +28,9 @@
 
 class partenaires extends partenaires_crud
 {
-    public function partenaires($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::partenaires($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -40,7 +40,7 @@
                     <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
                     <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
                     <td><?= $project['client_name'] ?></td>
-                    <td><a href="tel:<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
+                    <td><a href="tel:0<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
                     <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
                     <?php if ($this->templateProjects['assignee']) : ?>
                         <td><?= $project['assignee'] ?></td>

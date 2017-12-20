@@ -29,9 +29,9 @@
 class favoris extends favoris_crud
 {
 
-    function favoris($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::favoris($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_favori')

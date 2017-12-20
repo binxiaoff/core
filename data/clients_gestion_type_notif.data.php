@@ -44,7 +44,7 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::clients_gestion_type_notif($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

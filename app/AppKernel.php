@@ -31,7 +31,7 @@ class AppKernel extends Kernel
             new Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle(),
             new Unilend\Bundle\StoreBundle\UnilendStoreBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
-            new EightPoints\Bundle\GuzzleBundle\GuzzleBundle(),
+            new EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle(),
             new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
             new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
         ];

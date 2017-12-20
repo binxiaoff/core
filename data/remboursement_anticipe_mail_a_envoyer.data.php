@@ -29,9 +29,9 @@
 class remboursement_anticipe_mail_a_envoyer extends remboursement_anticipe_mail_a_envoyer_crud
 {
 
-    function remboursement_anticipe_mail_a_envoyer($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::remboursement_anticipe_mail_a_envoyer($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_remboursement_anticipe_mail_a_envoyer')

@@ -29,7 +29,7 @@ class contact_request_subjects extends contact_request_subjects_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::contact_request_subjects($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

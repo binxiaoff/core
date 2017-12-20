@@ -30,7 +30,7 @@ class compteur_factures extends compteur_factures_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::compteur_factures($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

@@ -29,9 +29,9 @@
 class backpayline extends backpayline_crud
 {
 
-    function backpayline($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::backpayline($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_backpayline')

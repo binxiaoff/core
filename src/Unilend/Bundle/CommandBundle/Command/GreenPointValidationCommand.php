@@ -168,7 +168,7 @@ EOF
                     $data['ville']       = $clientAddress->getVilleFiscal();
                     $countryId           = $clientAddress->getIdPaysFiscal();
                 } else {
-                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
                     $data['adresse']     = $company->getAdresse1() . ' ' . $company->getAdresse2();
                     $data['code_postal'] = $company->getZip();
                     $data['ville']       = $company->getCity();

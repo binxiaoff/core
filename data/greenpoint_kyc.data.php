@@ -29,7 +29,7 @@ class greenpoint_kyc extends greenpoint_kyc_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::greenpoint_kyc($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

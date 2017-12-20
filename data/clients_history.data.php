@@ -36,9 +36,9 @@ class clients_history extends clients_history_crud
     const TYPE_CLIENT_LENDER_BORROWER      = 3;
     const TYPE_CLIENT_PARTNER              = 4;
 
-    function clients_history($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::clients_history($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_history')

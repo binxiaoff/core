@@ -32,7 +32,7 @@ class nationalites_v2 extends nationalites_v2_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::nationalites_v2($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

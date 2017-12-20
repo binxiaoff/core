@@ -29,9 +29,9 @@
 class partenaires_clics extends partenaires_clics_crud
 {
 
-    function partenaires_clics($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::partenaires_clics($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($list_field_value)

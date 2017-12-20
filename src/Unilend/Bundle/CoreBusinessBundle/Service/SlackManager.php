@@ -85,6 +85,8 @@ class SlackManager
             $payload->setText($message);
 
             if ('prod' !== $this->environment) {
+                $message = '[' . $channel . '] ' . $message;
+                $payload->setText($message);
                 $payload->setChannel($this->defaultChannel);
             }
 

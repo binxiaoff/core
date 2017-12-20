@@ -28,9 +28,9 @@
 
 class projects_pouvoir extends projects_pouvoir_crud
 {
-    public function projects_pouvoir($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::projects_pouvoir($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

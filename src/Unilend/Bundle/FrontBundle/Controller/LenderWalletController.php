@@ -23,7 +23,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -163,16 +162,13 @@ class LenderWalletController extends Controller
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
-        /** @var OperationRepository $operationRepository */
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
-        $client = $this->getClient();
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-        $wallet = $this->getWallet();
+        $client        = $this->getClient();
+        $wallet        = $this->getWallet();
 
         if ($client) {
-            $serialize = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
             $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
             /** @var ClientsStatus $lastStatus */
@@ -192,7 +188,7 @@ class LenderWalletController extends Controller
             } else {
                 if (false === is_numeric($amount)) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-                } elseif (empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
+                } elseif (null === $bankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } elseif ($amount <= 0 || $amount > $this->getUser()->getBalance()) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));

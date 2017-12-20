@@ -8,7 +8,7 @@ class temporary_links_login extends temporary_links_login_crud
 
     public function __construct($bdd, $params = '')
     {
-        parent::temporary_links_login($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

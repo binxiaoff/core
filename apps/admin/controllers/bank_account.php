@@ -120,7 +120,8 @@ class bank_accountController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $companies     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client->getIdClient()]);
+        $companies     = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $client]);
+
         foreach ($companies as $company) {
             $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
             foreach ($projects as $project) {

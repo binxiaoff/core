@@ -115,7 +115,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
 
             if (false === $client->isNaturalPerson()) {
                 /** @var Companies $company */
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             }
 
             $activeSheet->setCellValue('A' . $row, $client->getIdClient());

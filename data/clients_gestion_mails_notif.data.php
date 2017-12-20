@@ -29,9 +29,9 @@
 class clients_gestion_mails_notif extends clients_gestion_mails_notif_crud
 {
 
-    function clients_gestion_mails_notif($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::clients_gestion_mails_notif($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_clients_gestion_mails_notif')

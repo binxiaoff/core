@@ -29,9 +29,9 @@
 class ifu extends ifu_crud
 {
 
-    function ifu($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::ifu($bdd, $params);
+        parent::__construct($bdd, $params);
     }
 
     function get($id, $field = 'id_ifu')

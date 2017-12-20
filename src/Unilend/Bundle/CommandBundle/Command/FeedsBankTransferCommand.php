@@ -64,6 +64,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
         $counter->ordre = $counterId;
         $counter->create();
 
+        /** @var Virements $pendingBankTransfer */
         foreach ($pendingBankTransfers as $pendingBankTransfer) {
             $withDrawalOperation = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $pendingBankTransfer]);
 
@@ -90,7 +91,11 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     $recipientIban = $bankAccount->getIban();
                     $recipientBic  = $bankAccount->getBic();
                     $recipientName = $company->getName();
-                } else {
+                } elseif ($client->isDebtCollector()) {
+                    $recipientIban = $bankAccount->getIban();
+                    $recipientBic  = $bankAccount->getBic();
+                    $recipientName = $client->getNom();
+                } elseif ($client->isLender()) {
                     $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
                     $balance = $wallet->getAvailableBalance();
                     if ($balance < 0) {
@@ -105,6 +110,13 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
                     } else {
                         $recipientName = $client->getNom() . ' ' . $client->getPrenom();
                     }
+                } else {
+                    $logger->warning(
+                        'Wire transfer out could not be processed. Continue feed generation without problematic transfer: ' . $pendingBankTransfer->getIdVirement(),
+                        ['id_virement' => $pendingBankTransfer->getIdVirement(), 'id_client' => $pendingBankTransfer->getClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+
+                    continue;
                 }
 
                 $totalAmount = bcadd($pendingBankTransfer->getMontant(), $totalAmount);

@@ -24,6 +24,7 @@ class Zones
     const ZONE_LABEL_TRANSFERS      = 'transferts';
     const ZONE_LABEL_REPAYMENT      = 'remboursement';
     const ZONE_LABEL_DEBT_COLLECTOR = 'recouvreur';
+    const ZONE_LABEL_RISK           = 'risque';
 
     /**
      * @var string

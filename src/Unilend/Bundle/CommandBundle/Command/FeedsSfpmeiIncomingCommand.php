@@ -288,9 +288,9 @@ EOF
                 $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
 
                 if ($project instanceof Projects) {
-                    $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-                    $reception->setIdProject($project)
-                        ->setIdClient($client)
+                    $reception
+                        ->setIdProject($project)
+                        ->setIdClient($project->getIdCompany()->getIdClientOwner())
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                         ->setAssignmentDate(new \DateTime())
                         ->setRemb(1);
@@ -317,10 +317,9 @@ EOF
         $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
         $projectRepaymentTaskManager = $this->getContainer()->get('unilend.service_repayment.project_repayment_task_manager');
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-
-        $reception->setIdProject($project)
-            ->setIdClient($client)
+        $reception
+            ->setIdProject($project)
+            ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
             ->setAssignmentDate(new \DateTime())
@@ -342,10 +341,9 @@ EOF
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
         $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
-
-        $reception->setIdProject($project)
-            ->setIdClient($client)
+        $reception
+            ->setIdProject($project)
+            ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
             ->setRemb(1)
@@ -459,7 +457,6 @@ EOF
     {
         $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
-        $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
         if (1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $aRow['libelleOpe3'], $matches)) {
             /** @var Projects $project */
@@ -488,6 +485,12 @@ EOF
 
                         $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
                         $operationManager->cancelProvisionBorrowerWallet($wallet, $amount, $reception);
+
+                        if (null === $project->getCloseOutNettingDate()) {
+                            $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
+                        } else {
+                            $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_close_out_netting_payment_manager');
+                        }
 
                         $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
                         $projectPaymentManager->rejectPayment($originalRejectedDirectDebit, $user);
