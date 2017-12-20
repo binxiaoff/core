@@ -1098,7 +1098,6 @@ class ProjectsRepository extends EntityRepository
      * @param Clients|Companies|Partner $submitter
      *
      * @return array
-     *
      * @throws InvalidArgumentException
      * @throws \Doctrine\DBAL\DBALException
      */
@@ -1136,16 +1135,16 @@ class ProjectsRepository extends EntityRepository
             throw new InvalidArgumentException('One and only one of the parameters must be set');
         }
 
-        return $this->getEntityManager()->getConnection()->executeQuery(
-            $query,
-            [
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery(
+                $query, [
                 'sentStatus'      => ProjectsStatus::COMPLETE_REQUEST,
                 'repaymentStatus' => ProjectsStatus::REMBOURSEMENT,
                 'rejectionStatus' => [ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION],
                 'problemStatus'   => [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS],
                 'submitterId'     => $submitterId
-            ],
-            [
+            ], [
                 'sentStatus'      => PDO::PARAM_INT,
                 'repaymentStatus' => PDO::PARAM_INT,
                 'rejectionStatus' => Connection::PARAM_INT_ARRAY,
@@ -1158,7 +1157,6 @@ class ProjectsRepository extends EntityRepository
      * @param Clients|Companies|Partner $submitter
      *
      * @return array
-     *
      * @throws InvalidArgumentException
      * @throws \Doctrine\DBAL\DBALException
      */
@@ -1181,18 +1179,20 @@ class ProjectsRepository extends EntityRepository
             $query       .= '
                 WHERE p.id_company_submitter = :submitterId';
         } elseif ($submitter instanceof Partner) {
-            $submitterId = $submitter->getIdCompany()->getIdCompany();
+            $submitterId = $submitter->getId();
             $query .= '
-                WHERE p.id_company_submitter = :submitterId OR p.id_company_submitter IN (SELECT id_company FROM companies WHERE id_parent_company = :submitterId)';
+                WHERE p.id_partner = :submitterId';
         } else {
-            throw new InvalidArgumentException('One and only one of the parameters must be set');
+            throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
         }
 
         $query .= '
             GROUP BY p.status
             ORDER BY p.status ASC';
 
-        $result = $this->getEntityManager()->getConnection()
+        $result = $this
+            ->getEntityManager()
+            ->getConnection()
             ->executeQuery($query, ['submitterId' => $submitterId])
             ->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1210,33 +1210,30 @@ class ProjectsRepository extends EntityRepository
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
         $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
 
-        $sql = '
+        $query = '
             SELECT * 
             FROM projects p
             WHERE p.status = :status';
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $sql .= '
-                AND p.id_client_submitter = :submitter';
+            $query .= ' AND p.id_client_submitter = :submitter';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
-            $sql .= '
-                AND p.id_company_submitter = :submitter';
+            $query .= ' AND p.id_company_submitter = :submitter';
         } elseif ($submitter instanceof Partner) {
-            $submitterId = $submitter->getIdCompany();
-            $sql .= '
-                AND p.id_company_submitter = :submitter OR p.id_company_submitter IN (SELECT id_company FROM companies WHERE id_parent_company = :submitter)';
+            $submitterId = $submitter->getId();
+            $query .= ' AND p.id_partner = :submitter';
         } else {
-            throw new InvalidArgumentException('One and only one of the parameters must be set');
+            throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
         }
 
-        $query = $this->_em->createNativeQuery($sql, $rsm);
-        $query->setParameters([
+        $nativeQuery = $this->_em->createNativeQuery($query, $rsm);
+        $nativeQuery->setParameters([
             'status'    => $status,
             'submitter' => $submitterId
         ]);
 
-        return $query->getResult();
+        return $nativeQuery->getResult();
     }
 }

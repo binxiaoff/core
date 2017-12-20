@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyClient, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Product, WalletType, Zones
+     Clients, Companies, CompanyClient, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Product, ProjectsStatus, WalletType, Zones
 };
 
 class partenairesController extends bootstrap
@@ -942,7 +942,7 @@ class partenairesController extends bootstrap
         }
 
         try {
-            $projects = $projectRepository->findSubmitterProjectsByStatus($submitter, \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REVIEW);
+            $projects = $projectRepository->findSubmitterProjectsByStatus($submitter, ProjectsStatus::COMMERCIAL_REVIEW);
         } catch (\Exception $exception) {
             $projects = [];
         }
