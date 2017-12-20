@@ -80,6 +80,13 @@
                     </nav>
                 </div><!-- /.col-menu -->
                 <div class="col-content dashboard-content">
+                    {% if ('partner-header_message-' ~ app.user.partner.label)|trans|trim is not empty %}
+                        <div class="dashboard-messages">
+                            <div class="message-info">
+                                <p>{{ ('partner-header_message-' ~ app.user.partner.label)|trans }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
                     {% block dashboardContent %} {% endblock %}
                 </div><!-- /.col-content -->
             </div><!-- /.site-wrap -->
