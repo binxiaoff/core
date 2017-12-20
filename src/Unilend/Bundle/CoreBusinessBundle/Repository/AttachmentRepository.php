@@ -16,6 +16,7 @@ class AttachmentRepository extends EntityRepository
      * @param AttachmentType|int $attachmentType
      *
      * @return Attachment|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getProjectAttachmentByType($project, $attachmentType)
     {
@@ -32,7 +33,7 @@ class AttachmentRepository extends EntityRepository
      * @param Clients|int        $client
      * @param AttachmentType|int $attachmentType
      *
-     * @return null|Attachment
+     * @return Attachment|null
      */
     public function findOneClientAttachmentByType($client, $attachmentType)
     {
@@ -44,18 +45,23 @@ class AttachmentRepository extends EntityRepository
     }
 
     /**
-     * @param Attachment|int $attachment
+     * @param Attachment $attachment
      *
-     * @return mixed
+     * @return Attachment|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findPreviousAttachment($attachment)
+    public function findPreviousNotArchivedAttachment(Attachment $attachment)
     {
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder->where('a.idClient = :idClient')
             ->andWhere('a.idType = :idType')
             ->andWhere('a.archived IS NOT NULL')
+            ->andWhere('a.id != :idAttachment')
+            ->andWhere('a.added < :added')
             ->setParameter('idClient', $attachment->getClient())
             ->setParameter('idType', $attachment->getType())
+            ->setParameter('idAttachment', $attachment->getId())
+            ->setParameter('added', $attachment->getAdded())
             ->orderBy('a.added', 'DESC')
             ->setMaxResults(1);
 
