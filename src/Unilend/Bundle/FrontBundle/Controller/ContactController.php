@@ -61,7 +61,7 @@ class ContactController extends Controller
             }
         }
 
-        return $this->render('pages/static_pages/contact.html.twig', $template);
+        return $this->render('static_pages/contact.html.twig', $template);
     }
 
     /**

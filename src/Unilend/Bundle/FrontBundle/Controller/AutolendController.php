@@ -121,7 +121,7 @@ class AutolendController extends Controller
         $template['validation_date'] = strftime('%d %B %G', $validateTime->format('U'));
         $template['autolend_amount'] = $autoBidSettingsManager->getAmount($client);
 
-        return $this->render('pages/autolend.html.twig', $template);
+        return $this->render('autolend.html.twig', $template);
     }
 
     private function handleSimpleSettings($post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)

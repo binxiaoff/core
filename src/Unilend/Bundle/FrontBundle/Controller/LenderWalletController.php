@@ -50,7 +50,7 @@ class LenderWalletController extends Controller
             'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
-        return $this->render('pages/lender_wallet/deposit.html.twig', $template);
+        return $this->render('lender_wallet/deposit.html.twig', $template);
     }
 
     /**
@@ -68,7 +68,7 @@ class LenderWalletController extends Controller
         if ($user) {
             $wallet = $this->getWallet();
             if ($wallet && $backPayline && $backPayline->getWallet() === $wallet) {
-                return $this->render('pages/lender_wallet/deposit_result.html.twig', [
+                return $this->render('lender_wallet/deposit_result.html.twig', [
                     'depositAmount'  => round(bcdiv($backPayline->getAmount(), 100, 4), 2),
                     'depositCode'    => $backPayline->getCode(),
                     'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
@@ -87,7 +87,7 @@ class LenderWalletController extends Controller
      */
     public function walletDepositResultErrorAction()
     {
-        return $this->render('pages/lender_wallet/deposit_result.html.twig', [
+        return $this->render('lender_wallet/deposit_result.html.twig', [
             'depositCode'    => 'X',
             'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ]);
@@ -139,7 +139,7 @@ class LenderWalletController extends Controller
             return $this->redirectToRoute('lender_wallet_withdrawal');
         }
 
-        return $this->render('pages/lender_wallet/withdrawal.html.twig', $template);
+        return $this->render('lender_wallet/withdrawal.html.twig', $template);
     }
 
     /**

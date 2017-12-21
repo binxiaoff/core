@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -388,7 +388,7 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('projectRequest');
 
-        return $this->render('pages/project_request/contact.html.twig', $template);
+        return $this->render('project_request/contact.html.twig', $template);
     }
 
     /**
@@ -690,7 +690,7 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('projectRequest');
 
-        return $this->render('pages/project_request/finance.html.twig', $template);
+        return $this->render('project_request/finance.html.twig', $template);
     }
 
     /**
@@ -925,7 +925,7 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('projectRequest');
 
-        return $this->render('pages/project_request/partner.html.twig', $template);
+        return $this->render('project_request/partner.html.twig', $template);
     }
 
     /**
@@ -1079,7 +1079,7 @@ class ProjectRequestController extends Controller
 
         $request->getSession()->remove('projectRequest');
 
-        return $this->render('pages/project_request/prospect.html.twig', $template);
+        return $this->render('project_request/prospect.html.twig', $template);
     }
 
     /**
@@ -1198,7 +1198,7 @@ class ProjectRequestController extends Controller
             }
         }
 
-        return $this->render('pages/project_request/files.html.twig', $template);
+        return $this->render('project_request/files.html.twig', $template);
     }
 
     /**
@@ -1336,7 +1336,7 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        return $this->render('pages/project_request/end.html.twig', $template);
+        return $this->render('project_request/end.html.twig', $template);
     }
 
     /**
@@ -1359,7 +1359,7 @@ class ProjectRequestController extends Controller
         $projectManager = $this->get('unilend.service.project_manager');
         $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
-        return $this->render('pages/project_request/emails.html.twig');
+        return $this->render('project_request/emails.html.twig');
     }
 
     private function sendSubscriptionConfirmationEmail()

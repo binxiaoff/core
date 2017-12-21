@@ -1,7 +1,7 @@
 {% extends 'layouts/_layout.html.twig' %}
 
 {% block siteHeader %}
-    {% include 'partials/site/connected_header_lender.html.twig' %}
+    {% include 'lender_account/connected_header.html.twig' %}
 {% endblock %}
 
 {% block siteContent %}
@@ -12,7 +12,7 @@
                     {{ render(controller('UnilendFrontBundle:LenderAccount:lenderMenu', {'route': app.request.attributes.get('_route')})) }}
 
                     {% block dashboardNotifications %}
-                        {% include 'partials/components/dashboard-panel-notifications.twig' %}
+                        {% include 'lender_account/dashboard_panel_notifications.twig' %}
                     {% endblock %}
                 </div><!-- /.col-menu -->
 

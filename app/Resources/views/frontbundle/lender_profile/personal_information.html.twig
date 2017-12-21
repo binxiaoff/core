@@ -1,0 +1,148 @@
+{% extends 'layouts/_layout_lender.html.twig' %}
+
+{% set page = {
+id: 'user-preter-profile',
+classNames: 'user-preter-profile'
+} %}
+
+{% form_theme forms.identity '/frontbundle/forms/fields.html.twig' %}
+{% if forms.identity.vars.valid == false %}
+    {% set identityFormCollapse = 'in' %}
+    {% set identityViewCollapse = '' %}
+{% else %}
+    {% set identityFormCollapse = '' %}
+    {% set identityViewCollapse = 'in' %}
+{% endif %}
+
+{% form_theme forms.fiscalAddress '/frontbundle/forms/fields.html.twig' %}
+{% if forms.fiscalAddress.vars.valid == false %}
+    {% set fiscalAddressFormCollapse = 'in' %}
+    {% set fiscalAddressViewCollapse = '' %}
+{% else %}
+    {% set fiscalAddressFormCollapse = '' %}
+    {% set fiscalAddressViewCollapse = 'in' %}
+{% endif %}
+
+{% form_theme forms.phone '/frontbundle/forms/fields.html.twig' %}
+{% if forms.phone.vars.valid == false %}
+    {% set phoneFormCollapse = 'in' %}
+    {% set phoneViewCollapse = '' %}
+{% else %}
+    {% set phoneFormCollapse = '' %}
+    {% set phoneViewCollapse = 'in' %}
+{% endif %}
+
+
+{% block dashboardContent %}
+<div class="dashboard-tabs tabs">
+
+    {% include('lender_profile/partials/tab_navigation.html.twig') %}
+
+    <div class="dashboard-tabs-content tab-content">
+        <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+            <article id="panel-info" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-identity-section-title {% endtrans %}</h3>
+                    <div id="form-profile-info-notifications">
+                        {{ form_errors(forms.identity) }}
+                        {% if app.session.flashBag.has('identitySuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('identitySuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                        {% include('lender_profile/partials/person_identity.html.twig') %}
+                        {% include('lender_profile/partials/person_identity_form.html.twig') %}
+                    {% else %}
+                        {% include('lender_profile/partials/legal_entity_identity.html.twig') %}
+                        {% include('lender_profile/partials/legal_entity_identity_form.html.twig') %}
+                    {% endif %}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+            {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                <article id="panel-phone" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-profile_information-tab-phone-section-title {% endtrans %}</h3>
+                        <div id="form-profile-phone-notifications">
+                            {{ form_errors(forms.phone) }}
+                            {% if app.session.flashBag.has('phoneSuccess') %}
+                                <div class="message-success">
+                                    {% for message in app.session.flashBag.get('phoneSuccess') %}
+                                        <span>{{ message }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </header>
+                    <section id="profile-phone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% include('lender_profile/partials/phone_details.html.twig') %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+            {% endif %}
+
+            <article id="panel-address" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-fiscal-address-section-title {% endtrans %}</h3>
+                    <div id="form-profile-address-notifications">
+                        {{ form_errors(forms.fiscalAddress) }}
+                        {% if app.session.flashBag.has('fiscalAddressSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('fiscalAddressSuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                        {% include('lender_profile/partials/person_fiscal_address.html.twig') %}
+                    {% else %}
+                        {% include('lender_profile/partials/legal_entity_fiscal_address.html.twig') %}
+                    {% endif %}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+            {# Address Correspondence #}
+            <article id="panel-correspondence" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-postal-address-section-title {% endtrans %}</h3>
+                    <div id="form-profile-correspondence-notifications">
+                        {% if app.session.flashBag.has('postalAddressSuccess') %}
+                            <div class="message-success">
+                                {% for message in app.session.flashBag.get('postalAddressSuccess') %}
+                                    <span>{{ message }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </header>
+                <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    {% include('lender_profile/partials/postal_address.html.twig') %}
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+
+
+            <article id="panel-terms-of-use" class="panel">
+                <header class="panel-header">
+                    <h3>{% trans %} lender-profile_information-tab-terms-of-use-section-title {% endtrans %}</h3>
+                </header>
+                <section id="profile-terms-of-use-section">
+                    <div class="list-files">
+                        <div class="file file-type-pdf">
+                            <a target="_blank" href="{{ '/pdf_cgv_preteurs'|baseUrl }}">
+                                {% trans %} lender-profile_information-tab-terms-of-use-section-link-label {% endtrans %}</a>
+                        </div>
+                    </div><!-- /.list-files -->
+                </section><!-- /.ui-toggle-group -->
+            </article><!-- /.panel -->
+        </div><!-- /#profile-info.dashboard-tab-pane -->
+    </div><!-- /.dashboard-tabs-content -->
+</div><!-- /.dashboard-tabs -->
+{% endblock %}

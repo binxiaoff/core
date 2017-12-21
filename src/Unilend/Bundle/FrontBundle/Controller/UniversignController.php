@@ -171,7 +171,7 @@ class UniversignController extends Controller
             ];
         }
 
-        return $this->render('pages/universign.html.twig', $template);
+        return $this->render('universign.html.twig', $template);
     }
 
     /**

@@ -1,0 +1,107 @@
+{% set loansChartData = {
+    charts: {
+        lenderOperations: {
+            type: 'preterOperations',
+            background: 'none',
+            highcharts: {
+                chart: {
+                    type: 'pie',
+                    width: 300,
+                    height: 300,
+                    marginTop: 0,
+                    marginBottom: 0,
+                    marginLeft: 0,
+                    marginRight: 10,
+                    spacingTop: 0,
+                    spacingBottom: 0,
+                    spacingLeft: 0,
+                    spacingRight: 0
+                },
+                title: {
+                    text: ''
+                },
+                legend: {
+                    enabled: false,
+                    layout: 'vertical',
+                    symbolRadius: 10,
+                    align: 'right',
+                    verticalAlign: 'middle'
+                },
+                tooltip: {
+                    pointFormat: ' '
+                },
+                plotOptions: {
+                    pie: {
+                        cursor: 'pointer',
+                        innerSize: '50%',
+                        showInLegend: true,
+                        dataLabels: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [{
+                    data: seriesData
+                }],
+            }
+        }
+    }
+    }
+%}
+
+<div class="panel panel-operations-loans">
+    <header class="panel-header">
+        <h3 class="panel-title">{% transchoice lenderLoans|length with { '%count%' : lenderLoans|length } %} lender-operations_loans-table-title {% endtranschoice %}</h3>
+        {% if lenderLoans|length > 0 %}
+        <div class="panel-controls">
+            <a href="/pdf/loans/{{ hash }}" class="btn-default">
+                <span class="icon fa-file-pdf-o"></span>
+                <span class="label"> {% trans %} lender-operations_print {% endtrans %} </span>
+            </a>
+            <a href="{{ path('lender_loans_excel') }}" class="btn-default">
+                <span class="icon fa-excel-u32"></span>
+                <span class="label"> {% trans %} lender-operations_csv-export-button {% endtrans %} </span>
+            </a>
+        </div><!-- /.panel-controls -->
+        {% endif %}
+    </header><!-- /.panel-header -->
+
+    <div class="panel-content">
+        {% if lenderLoans|length > 0 %}
+            <div class="panel-before-table">
+                <div class="chart" data-chartview='{{ loansChartData.charts.lenderOperations|json_encode|escape('html_attr') }}'></div>
+                {# Responsive issues, so I am rendering the legend in the page itself, rather than in the chart above #}
+                <div class="chart-legend">
+                    {% for series in loansChartData.charts.lenderOperations.highcharts.series %}
+                        {% for dataItem in series.data if dataItem.showInLegend is defined > 0 %}
+                            <div class="chart-key" data-filter-val="{{ dataItem.status }}">
+                                <div class="icon" style="background-color: {{ dataItem.color }}"></div>
+                                <div class="label">{{ dataItem.name }}</div>
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                <form id="form-filters-loans" action="{{ path('filter_loans') }}" method="post" class="form-filters" data-ajax>
+                    <input class="id_last_action" type="hidden" name="filter[id_last_action]" value="">
+                    <select id="filter-status" name="filter[status]" class="input-field">
+                        <option value="">{% trans %} lender-operations_loans-table-by-status-filter {% endtrans %}</option>
+                        {% for filterName, statusList in loansStatusFilter %}
+                            <option value="{{ filterName }}">{{ "lender-operations_project-status-label-filter-#{ filterName }"|trans }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="filter-next" name="filter[date]" class="input-field">
+                        <option value="">{% trans %} lender-operations_loans-table-by-date-filter {% endtrans %}</option>
+                        {% for year in firstLoanYear..date()|date('Y') %}
+                            <option value="{{ year }}"{% if currentFilters.date is defined and currentFilters.date == year %} selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </form><!-- /.form-filters -->
+            </div><!-- /.panel-before-table -->
+            <div class="panel-table">
+                {% include('lender_operations/my_loans_table.html.twig') %}
+            </div><!-- /.panel-table -->
+        {% else %}
+            <div class="message-info after">{{ 'lender-operations_no-loan'|trans }}</div>
+        {% endif %}
+    </div><!-- /.panel-content -->
+</div><!-- /.panel -->

@@ -133,7 +133,7 @@ class LenderDashboardController extends Controller
         $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
-            '/pages/lender_dashboard/lender_dashboard.html.twig',
+            'lender_dashboard/lender_dashboard.html.twig',
             [
                 'dashboardPanels'   => $this->getDashboardPreferences(),
                 'lenderDetails' => [
