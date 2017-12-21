@@ -314,8 +314,8 @@ class ProjectStatusManager
         $loans   = $this->entityManagerSimulator->getRepository('loans');
         $company = $project->getIdCompany();
 
-        $clientOwner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
-        if (null === $clientOwner) {
+        $clientOwner = $company->getIdClientOwner();
+        if (null === $clientOwner || empty($clientOwner->getIdClient())) {
             throw new \Exception('Client owner not found for company ' . $project->getIdProject());
         }
 

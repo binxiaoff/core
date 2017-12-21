@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
@@ -9,7 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  * Class LocationManager
  * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
-
 class LocationManager
 {
     /** @var EntityManagerSimulator */
@@ -34,6 +34,7 @@ class LocationManager
 
     /**
      * @param \companies $company
+     *
      * @return float[]|null [Latitude, Longitude]
      */
     public function getCompanyCoordinates(\companies $company)
@@ -45,6 +46,7 @@ class LocationManager
      * @param string $city
      * @param string $postCode
      * @param int    $countryId
+     *
      * @return float[]|null [Latitude, Longitude]
      */
     private function getMapboxGeocoding($city, $postCode, $countryId)
@@ -80,7 +82,8 @@ class LocationManager
 
     /**
      * @param string $city
-     * @param bool $lookUpBirthplace
+     * @param bool   $lookUpBirthplace
+     *
      * @return array
      */
     public function getCities($city, $lookUpBirthplace = false)
@@ -213,7 +216,7 @@ class LocationManager
     public function getLendersByRegion()
     {
         /** @var \clients $clients */
-        $clients = $this->entityManagerSimulator->getRepository('clients');
+        $clients       = $this->entityManagerSimulator->getRepository('clients');
         $countByRegion = $clients->countClientsByRegion();
 
         return $this->getPercentageByRegion($countByRegion);
@@ -222,7 +225,7 @@ class LocationManager
     public function getProjectsByRegion()
     {
         /** @var \projects $projects */
-        $projects = $this->entityManagerSimulator->getRepository('projects');
+        $projects      = $this->entityManagerSimulator->getRepository('projects');
         $countByRegion = $projects->countProjectsByRegion();
 
         return $this->getPercentageByRegion($countByRegion);
@@ -256,12 +259,36 @@ class LocationManager
      */
     public function getInseeCode($postCode, $city)
     {
-        $cities = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $city]);
+        $citiesInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findBy(['cp' => $postCode]);
 
-        if (null !== $cities && false === empty($cities->getInsee())) {
-            return $cities->getInsee();
+        if (1 === count($citiesInsee)) {
+            return $citiesInsee[0]->getInsee();
+        } else {
+            $cityInsee = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $postCode, 'ville' => $this->cleanLookupCityName($city)]);
+
+            if ($cityInsee) {
+                return $cityInsee->getInsee();
+            }
         }
 
         return false;
+    }
+
+    /**
+     * @param $city
+     *
+     * @return string
+     */
+    public function cleanLookupCityName($city)
+    {
+        $city = str_replace(['\' ',' D ', ' '], ['\'', ' D\'', '-'], strtoupper(\ficelle::speCharNoAccent($city)));
+        // Replace ST, SNT with SAINT
+        $city = preg_replace('/(^|.+-)((ST)|(SNT))(-)(.+)/', '$1SAINT$5$6', $city);
+        // Replace STE with SAINTE
+        $city = preg_replace('/(^|.+-)(STE)(-)(.+)/', '$1SAINTE$3$4', $city);
+        // Remove le la les l' from the beginning of the term
+        $city = preg_replace('/^(LE-|LA-|LES-|L\')(.+)/', '$2', $city);
+
+        return $city;
     }
 }

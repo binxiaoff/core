@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesInfosbenQueryCommand extends ContainerAwareCommand
 {
@@ -38,18 +39,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = IfuManager::FILE_NAME_INFOSBEN;
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_infosben_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_infosben_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -106,13 +99,13 @@ EOF
         $activeSheet = $document->setActiveSheetIndex(0);
 
         foreach ($headers as $index => $columnName) {
-            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+            $activeSheet->setCellValueExplicitByColumnAndRow($index, 1, $columnName);
         }
 
         foreach ($data as $rowIndex => $row) {
             $colIndex = 0;
             foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
             }
         }
 

@@ -12,27 +12,28 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 class AttachmentRepository extends EntityRepository
 {
     /**
-     * @param Projects|integer       $project
-     * @param AttachmentType|integer $attachmentType
+     * @param Projects|int       $project
+     * @param AttachmentType|int $attachmentType
      *
      * @return Attachment|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getProjectAttachmentByType($project, $attachmentType)
     {
-        $qb = $this->createQueryBuilder('a');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, 'a.id = pa.idAttachment')
+        $queryBuilder = $this->createQueryBuilder('a');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, 'a.id = pa.idAttachment')
            ->where('pa.idProject = :project')
            ->andWhere('a.idType = :attachmentType')
            ->setParameters(['project' => $project, 'attachmentType' => $attachmentType]);
 
-        return $qb->getQuery()->getOneOrNullResult();
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 
     /**
-     * @param Clients|integer        $client
-     * @param AttachmentType|integer $attachmentType
+     * @param Clients|int        $client
+     * @param AttachmentType|int $attachmentType
      *
-     * @return null|Attachment
+     * @return Attachment|null
      */
     public function findOneClientAttachmentByType($client, $attachmentType)
     {
@@ -41,5 +42,29 @@ class AttachmentRepository extends EntityRepository
             'idType'   => $attachmentType,
             'archived' => null
         ]);
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return Attachment|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findPreviousNotArchivedAttachment(Attachment $attachment)
+    {
+        $queryBuilder = $this->createQueryBuilder('a');
+        $queryBuilder->where('a.idClient = :idClient')
+            ->andWhere('a.idType = :idType')
+            ->andWhere('a.archived IS NOT NULL')
+            ->andWhere('a.id != :idAttachment')
+            ->andWhere('a.added < :added')
+            ->setParameter('idClient', $attachment->getClient())
+            ->setParameter('idType', $attachment->getType())
+            ->setParameter('idAttachment', $attachment->getId())
+            ->setParameter('added', $attachment->getAdded())
+            ->orderBy('a.added', 'DESC')
+            ->setMaxResults(1);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

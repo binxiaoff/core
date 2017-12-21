@@ -357,13 +357,19 @@ class LenderSubscriptionController extends Controller
             $entityManager->beginTransaction();
             try {
                 $entityManager->persist($client);
+
                 $clientAddress->setIdClient($client);
+
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
-                $company->setIdClientOwner($client->getIdClient());
+
+                $company->setIdClientOwner($client);
+
                 $entityManager->persist($company);
                 $entityManager->flush($company);
+
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
+
                 $entityManager->commit();
             } catch (Exception $exception) {
                 $entityManager->getConnection()->rollBack();
@@ -484,7 +490,7 @@ class LenderSubscriptionController extends Controller
         ];
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
+            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
         return $this->render('pages/lender_subscription/documents.html.twig', $template);
@@ -531,7 +537,7 @@ class LenderSubscriptionController extends Controller
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             $this->validateAttachmentsPerson($form, $client, $clientAddress, $fileBag);
         } else {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
         }
 

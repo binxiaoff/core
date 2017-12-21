@@ -1,0 +1,171 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            App.initHelpers(['datatables'])
+
+            var projectsLoadingError = function ($projectsContainer) {
+                var $message = $('<div></div>')
+                    .addClass('alert')
+                    .addClass('alert-info')
+                    .text('Impossible de charger la liste des projets')
+                $projectsContainer.html($message)
+            }
+
+            $('.nav a').bind('click', function (e) {
+                var $link = $(this)
+                var $tab = $($link.attr('href'))
+
+                if (!$tab.hasClass('loaded')) {
+                    var $blockContainer = $tab.closest('.block')
+                    $blockContainer.addClass('block-opt-refresh')
+
+                    var $projectsContainer = $tab.find('.projects-list')
+                    $projectsContainer.html('')
+
+                    $.ajax({
+                        method: 'POST',
+                        url: '{{ app.adminUrl }}/partenaires/projets/{{ type }}/{{ id }}',
+                        dataType: 'json',
+                        data: {
+                            projectStatus: $link.data('project-status')
+                        },
+                        complete: function () {
+                            $blockContainer.removeClass('block-opt-refresh')
+                        },
+                        success: function (response) {
+                            if (response && response.success && response.data) {
+                                $projectsContainer.html(response.data)
+                                $tab.addClass('loaded')
+
+                                App.initHelpers(['datatables'])
+                            } else {
+                                projectsLoadingError($projectsContainer)
+                            }
+                        },
+                        error: function () {
+                            projectsLoadingError($projectsContainer)
+                        }
+                    })
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="row items-push">
+        <div class="col-sm-7">
+            <h1 class="page-heading">
+                Statistiques <small>{{ name }}</small>
+            </h1>
+        </div>
+        <div class="col-sm-5 text-right hidden-xs">
+            <ol class="breadcrumb push-10-t">
+                <li><a href="{{ app.adminUrl }}/partenaires">Partenaires</a></li>
+                <li><a href="{{ app.adminUrl }}/partenaires/edit/{{ partner.id }}">{{ partner.idCompany.name }}</a></li>
+            </ol>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="row text-uppercase">
+            <div class="col-xs-6 col-sm-3">
+                <div class="block block-rounded">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w700">
+                            Envoyés
+                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets en statut &quot;Demande complète&quot; ou plus"></span>
+                        </div>
+                        <div class="h2 font-w300 text-primary">
+                            <div class="pull-right">{{ kpi.sentAmount|localizednumber }}&nbsp;€</div>
+                            <div>{{ kpi.sentCount|localizednumber }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block block-rounded">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w700">Fonds débloqués</div>
+                        <div class="h2 font-w300 text-primary">
+                            <div class="pull-right">{{ kpi.repaymentAmount|localizednumber }}&nbsp;€</div>
+                            <div>{{ kpi.repaymentCount|localizednumber }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block block-rounded">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w700">
+                            Problèmes
+                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets déjà passés en statut &quot;Problème&quot; ou &quot;Défaut&quot;"></span>
+                        </div>
+                        <span class="h2 font-w300 text-primary">{{ kpi.problemRate|localizednumber }}&nbsp;%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block block-rounded">
+                    <div class="block-content block-content-full">
+                        <div class="font-s12 font-w700">
+                            Rejets
+                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets non éligibles ou rejetés. Ne contient pas les abandons."></span>
+                        </div>
+                        <span class="h2 font-w300 text-primary">{{ kpi.rejectionRate|localizednumber }}&nbsp;%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if projectsCountSortedByStatus is not empty %}
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="block">
+                        <div class="block-content">
+                            <ul class="nav nav-pills nav-stacked push" data-toggle="tabs">
+                                {% for projectStatus in projectsCountSortedByStatus %}
+                                    <li{% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %} class="active"{% endif %}>
+                                        <a href="#project-status-{{ projectStatus.status }}" data-project-status="{{ projectStatus.status }}"><span class="badge pull-right">{{ projectStatus.statusCount }}</span> {{ projectStatus.statusLabel }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-9">
+                    <div class="block">
+                        <div class="block-content tab-content">
+                            {% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is not defined %}
+                                <div role="tabpanel" class="tab-pane active">
+                                    <div class="font-w300 push-15">Cliquez sur un statut pour voir la liste des projets correspondant</div>
+                                </div>
+                            {% endif %}
+                            {% for projectStatus in projectsCountSortedByStatus %}
+                                <div role="tabpanel" class="tab-pane{% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %} loaded active{% endif %}" id="project-status-{{ projectStatus.status }}">
+                                    <h4 class="font-w300 push-15">{{ projectStatus.statusLabel }}</h4>
+                                    <div class="projects-list">
+                                        {% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %}
+                                            {% include 'partenaires/projects_list.html.twig' %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

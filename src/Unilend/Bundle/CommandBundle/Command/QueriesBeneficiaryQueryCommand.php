@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
 {
@@ -42,18 +43,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = IfuManager::FILE_NAME_BENEFICIARY;
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_beneficiaires_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_beneficiaires_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -88,7 +81,7 @@ EOF
             'CodeCommune',
             'Commune',
             'CodePostal',
-            'Ville / nom pays',
+            'Ville',
             'IdFiscal',
             'PaysISO',
             'Entité',
@@ -105,7 +98,6 @@ EOF
 
         $fiscalAndLocationData = [];
         $countryRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
-        $cityRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes');
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
@@ -114,10 +106,10 @@ EOF
 
             if ($clientEntity->isNaturalPerson()) {
                 $fiscalAndLocationData = [
-                    'address'    => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
-                    'zip'        => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getCpFiscal()) ? trim($clientAddress->getCp()) : trim($clientAddress->getCpFiscal()),
-                    'city'       => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getVilleFiscal()) ? trim($clientAddress->getVille) : trim($clientAddress->getVilleFiscal()),
-                    'id_country' => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getIdPaysFiscal()) ? $clientAddress->getIdPays() : $clientAddress->getIdPaysFiscal()
+                    'address'    => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
+                    'zip'        => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getCpFiscal()) ? trim($clientAddress->getCp()) : trim($clientAddress->getCpFiscal()),
+                    'city'       => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getVilleFiscal()) ? trim($clientAddress->getVille) : trim($clientAddress->getVilleFiscal()),
+                    'id_country' => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getIdPaysFiscal()) ? $clientAddress->getIdPays() : $clientAddress->getIdPaysFiscal()
                 ];
 
                 if (0 == $fiscalAndLocationData['id_country']) {
@@ -127,7 +119,7 @@ EOF
                 $clientCountry                      = $countryRepository->find($fiscalAndLocationData['id_country']);
                 $fiscalAndLocationData['isoFiscal'] = $clientCountry->getIso();
 
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE) {
+                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE  && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
@@ -138,8 +130,11 @@ EOF
                     $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
-                    $city                                 = $cityRepository->findOneBy(['cp' => $fiscalAndLocationData['zip'], 'ville' => $fiscalAndLocationData['city']]);
-                    $fiscalAndLocationData['inseeFiscal'] = null !== $city ? $city->getInsee() : '';
+                    $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                    if (false === $inseeCode && true === $clientAddress->getMemeAdresseFiscal()) {
+                        $inseeCode = $locationManager->getInseeCode(trim($clientAddress->getCp()), trim($clientAddress->getVille()));
+                    }
+                    $fiscalAndLocationData['inseeFiscal'] = false === $inseeCode ? '' : $inseeCode;
                     $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
 
@@ -147,19 +142,24 @@ EOF
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
 
-                if (PaysV2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
-                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
-                    $fiscalAndLocationData['inseeBirth'] = '00000';
-                } else {
+                if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country'] && false === in_array($fiscalAndLocationData['birth_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
-
+                    if (empty($clientEntity->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
+                        $inseeBirthCountry                   = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
+                        $fiscalAndLocationData['inseeBirth'] = $inseeBirthCountry ? $inseeBirthCountry->getCog() : '00000';
+                    } else {
+                        $fiscalAndLocationData['inseeBirth'] = '00000';
+                    }
+                } else {
+                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
                     if (empty($clientEntity->getInseeBirth())) {
                         $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
+                        } elseif (1 === count($cityList)) {
+                            $fiscalAndLocationData['inseeBirth'] = $cityList[0]['value'];
                         } else {
-                            $birthplace                          = $cityRepository->findOneBy(['ville' => $clientEntity->getVilleNaissance()]);
-                            $fiscalAndLocationData['inseeBirth'] = null !== $birthplace && false === empty($birthplace->getInsee) ? $birthplace->getInsee : '00000';
+                            $fiscalAndLocationData['inseeBirth'] = '00000';
                         }
                     }
                 }
@@ -170,7 +170,7 @@ EOF
 
             if (
                 false === $clientEntity->isNaturalPerson()
-                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()])
+                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity])
             ) {
                 $idPays         = (0 == $company->getIdPays()) ? PaysV2::COUNTRY_FRANCE : $company->getIdPays();
                 $companyCountry = $countryRepository->find($idPays);
@@ -284,7 +284,6 @@ EOF
      */
     private function exportCSV($data, $filePath, array $headers)
     {
-
         \PHPExcel_Settings::setCacheStorageMethod(
             \PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
             ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
@@ -294,13 +293,13 @@ EOF
         $activeSheet = $document->setActiveSheetIndex(0);
 
         foreach ($headers as $index => $columnName) {
-            $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+            $activeSheet->setCellValueExplicitByColumnAndRow($index, 1, $columnName);
         }
 
         foreach ($data as $rowIndex => $row) {
             $colIndex = 0;
             foreach ($row as $cellValue) {
-                $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
             }
         }
 

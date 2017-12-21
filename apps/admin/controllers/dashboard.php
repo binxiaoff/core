@@ -234,8 +234,6 @@ class dashboardController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \projects $project */
         $project = $this->loadData('projects');
-        /** @var \clients $client */
-        $client = $this->loadData('clients');
         /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
         /** @var ProjectRequestManager $projectRequestManager */
@@ -246,8 +244,7 @@ class dashboardController extends bootstrap
             $project->get($projectEntity->getIdProject());
 
             if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
-                $client->get($projectEntity->getIdCompany()->getIdClientOwner());
-                $status = empty($client->telephone) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
+                $status = empty($projectEntity->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
                 $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
             }

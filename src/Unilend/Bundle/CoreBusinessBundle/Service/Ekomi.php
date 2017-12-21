@@ -57,8 +57,8 @@ class Ekomi
             return false;
         }
 
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
-        if (null === $client) {
+        $client = $company->getIdClientOwner();
+        if (null === $client || empty($client->getIdClient())) {
             $this->logProjectAlert($project, 'Unable to find company owner');
             return false;
         }

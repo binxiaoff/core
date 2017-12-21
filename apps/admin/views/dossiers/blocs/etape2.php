@@ -32,7 +32,7 @@
             var $button = $(this)
             var $field = $button.siblings('input[type=text]')
             var number = $field.val().replace(/[ .\-]/g, '')
-            window.location = 'tel:' + number
+            window.location = 'tel:' + 0 + number
         })
 
         // STREETVIEW
@@ -345,10 +345,10 @@
                 </td>
                 <?php if ($this->projectEntity->getIdClientSubmitter() && $this->projectEntity->getIdClientSubmitter()->getIdClient()) : ?>
                     <th style="background-color: #ececec;">Téléphone</th>
-                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdClientSubmitter()->getTelephone()) ?>"><?= $this->projectEntity->getIdClientSubmitter()->getTelephone() ?></a></td>
+                    <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdClientSubmitter()->getTelephone()) ?>"><?= $this->projectEntity->getIdClientSubmitter()->getTelephone() ?></a></td>
                 <?php elseif ($this->hasAdvisor) : ?>
                     <th style="background-color: #ececec;">Téléphone</th>
-                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->clients_prescripteurs->telephone) ?>"><?= $this->clients_prescripteurs->telephone ?></a></td>
+                    <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->clients_prescripteurs->telephone) ?>"><?= $this->clients_prescripteurs->telephone ?></a></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
@@ -387,7 +387,7 @@
                 </td>
                 <?php if ($this->projectEntity->getIdCompanySubmitter() && $this->projectEntity->getIdCompanySubmitter()->getIdCompany()) : ?>
                     <th style="background-color: #ececec;">Téléphone agence</th>
-                    <td style="background-color: #ececec;"><a href="tel:<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdCompanySubmitter()->getPhone()) ?>"><?= $this->projectEntity->getIdCompanySubmitter()->getPhone() ?></a></td>
+                    <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdCompanySubmitter()->getPhone()) ?>"><?= $this->projectEntity->getIdCompanySubmitter()->getPhone() ?></a></td>
                 <?php elseif ($this->hasAdvisor) : ?>
                     <td colspan="2" style="background-color: #ececec; color: #c84747;">Un prescripteur est une personne non enregistrée en tant que partenaire qui a fait un dépôt de dossier via le site.</td>
                 <?php else : ?>

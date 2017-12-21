@@ -1204,24 +1204,23 @@ class dossiersController extends bootstrap
                 $slackManager      = $this->get('unilend.service.slack_manager');
                 $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
                         ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
-                $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                 if (
-                    $projectEntity->getIdCommercial() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdCommercial()
+                    && $projectEntity->getIdCommercial()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdCommercial()
+                    && false === empty($projectEntity->getIdCommercial()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdCommercial()->getSlack());
                 }
 
                 if (
-                    $projectEntity->getIdAnalyste() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdAnalyste()
+                    && $projectEntity->getIdAnalyste()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdAnalyste()
+                    && false === empty($projectEntity->getIdAnalyste()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdAnalyste()->getSlack());
                 }
             }
 
@@ -1245,9 +1244,7 @@ class dossiersController extends bootstrap
             $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
             /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-            // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
@@ -1260,7 +1257,7 @@ class dossiersController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                     $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
                     if ($attachmentType) {
-                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                        $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile);
                     }
                     if ($attachment) {
                         $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
@@ -1336,7 +1333,7 @@ class dossiersController extends bootstrap
                 /** @var Clients $clientEntity */
                 $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
                 } else {
                     $_SESSION['freeow']['title']   = 'Erreur';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';

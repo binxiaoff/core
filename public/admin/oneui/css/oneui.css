@@ -1,5 +1,5 @@
 /*!
-* OneUI - v3.1.0 - Auto-compiled on 2017-06-22 - Copyright 2017 
+* OneUI - v3.1.0 - Auto-compiled on 2017-06-22 - Copyright 2017
 * @author pixelcave
 */
 html,
@@ -7390,6 +7390,11 @@ a.block.block-link-hover3:active {
 }
 .mheight-200 {
   min-height: 200px;
+}
+.v-align {
+  display: inline-block;
+  vertical-align: middle;
+  float: none;
 }
 .align-v {
   position: absolute;
