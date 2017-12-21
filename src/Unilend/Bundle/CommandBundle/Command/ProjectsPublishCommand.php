@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,11 +10,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\librairies\CacheKeys;
-use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\librairies\CacheKeys;
 
 class ProjectsPublishCommand extends ContainerAwareCommand
 {
@@ -205,64 +204,66 @@ EOF
         $clients = $entityManagerSimulator->getRepository('clients');
         /** @var \notifications $notifications */
         $notifications = $entityManagerSimulator->getRepository('notifications');
-        /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $entityManagerSimulator->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
+        /** @var \clients_gestion_notifications $clientsGestionNotifications */
+        $clientsGestionNotifications = $entityManagerSimulator->getRepository('clients_gestion_notifications');
+        /** @var \clients_gestion_mails_notif $clientsGestionMailsNotif */
+        $clientsGestionMailsNotif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
         $companies = $entityManagerSimulator->getRepository('companies');
-        $companies->get($project->id_company, 'id_company');
-
-        $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
-        $translator              = $this->getContainer()->get('translator');
-        $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
-        $mailer                  = $this->getContainer()->get('mailer');
-        $productManager          = $this->getContainer()->get('unilend.service_product.product_manager');
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-
-
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
-        $insufficientBalance = $translator->trans('email-nouveau-projet_solde-insuffisant-nouveau-projet');
-        $sUrl                = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
-        /** @var LoggerInterface $oLogger */
-        $oLogger = $this->getContainer()->get('monolog.logger.console');
-        $oLogger->info('Send publication emails for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-
-        $keywords = [
-            'companyName'     => $companies->name,
-            'projectAmount'   => $ficelle->formatNumber($project->amount, 0),
-            'projectDuration' => $project->period,
-            'projetLink'      => $sUrl . '/projects/detail/' . $project->slug,
-        ];
-
+        /** @var \autobid $oAutobid */
+        $oAutobid = $entityManagerSimulator->getRepository('autobid');
+        /** @var \bids $bidsData */
+        $bidsData = $entityManagerSimulator->getRepository('bids');
         /** @var \project_period $oProjectPeriods */
         $oProjectPeriods = $entityManagerSimulator->getRepository('project_period');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var NotificationsRepository $notificationsRepository */
+        $notificationsRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Notifications');
+
+        $companies->get($project->id_company, 'id_company');
         $oProjectPeriods->getPeriod($project->period);
 
-        /** @var \autobid $oAutobid */
-        $oAutobid    = $entityManagerSimulator->getRepository('autobid');
-        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $oProjectPeriods->id_period, [\autobid::STATUS_ACTIVE]), 'amount', 'id_lender');
+        $autobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
+        $translator             = $this->getContainer()->get('translator');
+        $messageProvider        = $this->getContainer()->get('unilend.swiftmailer.message_provider');
+        $mailer                 = $this->getContainer()->get('mailer');
+        $productManager         = $this->getContainer()->get('unilend.service_product.product_manager');
+        $router                 = $this->getContainer()->get('router');
+        $numberFormatter        = $this->getContainer()->get('number_formatter');
+        $currencyFormatter      = $this->getContainer()->get('currency_formatter');
+        $logger                 = $this->getContainer()->get('monolog.logger.console');
 
-        /** @var \bids $oBids */
-        $oBids            = $entityManagerSimulator->getRepository('bids');
-        $aBids            = $oBids->getLenders($project->id_project);
-        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
+        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $commonKeywords = [
+            'companyName'     => $companies->name,
+            'projectAmount'   => $numberFormatter->format($project->amount),
+            'projectDuration' => $project->period,
+            'projectLink'     => $hostUrl . $router->generate('project_detail', ['projectSlug' => $project->slug])
+        ];
 
-        $iOffset = 0;
-        $iLimit  = 100;
+        $autoBidSettings  = $oAutobid->getSettings(null, $project->risk, $oProjectPeriods->id_period, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+        $autoBidsAmount   = array_column($autoBidSettings, 'amount', 'id_lender');
+        $autoBidsMinRate  = array_column($autoBidSettings, 'rate_min', 'id_lender');
+        $autoBidsStatus   = array_column($autoBidSettings, 'status', 'id_lender');
+        $projectRateRange = $this->getContainer()->get('unilend.service.bid_manager')->getProjectRateRange($project);
+        $bids             = $bidsData->getLenders($project->id_project);
+        $noAutobidPlaced  = array_diff(array_keys($autoBidsAmount), array_column($bids, 'id_lender_account'));
 
-        while ($aLenders = $clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1', 'c.id_client ASC', $iOffset, $iLimit)) {
-            $iEmails = 0;
-            $iOffset += $iLimit;
+        $offset = 0;
+        $limit  = 100;
+        $logger->info('Send publication emails for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
-            $oLogger->info('Lenders retrieved: ' . count($aLenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+        while ($lenders = $clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1', 'c.id_client ASC', $offset, $limit)) {
+            $emailsSent = 0;
+            $offset     += $limit;
+            $logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
-            foreach ($aLenders as $aLender) {
+            foreach ($lenders as $aLender) {
                 $wallet = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
+                $keywords = [];
 
                 if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
                     $notifications->type       = Notifications::TYPE_NEW_PROJECT;
@@ -270,54 +271,124 @@ EOF
                     $notifications->id_project = $project->id_project;
                     $notifications->create();
 
-                    if (false === $clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1',
+                    if (false === $clientsGestionMailsNotif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1',
                             'id_notif')) {
-                        $clients_gestion_mails_notif->id_client       = $wallet->getIdClient()->getIdClient();
-                        $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_project      = $project->id_project;
-                        $clients_gestion_mails_notif->date_notif      = $project->date_publication;
+                        $clientsGestionMailsNotif->id_client       = $wallet->getIdClient()->getIdClient();
+                        $clientsGestionMailsNotif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+                        $clientsGestionMailsNotif->id_notification = $notifications->id_notification;
+                        $clientsGestionMailsNotif->id_project      = $project->id_project;
+                        $clientsGestionMailsNotif->date_notif      = $project->date_publication;
 
-                        if ($clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                            $clients_gestion_mails_notif->immediatement = 1;
+                        $notifyNewProject = $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement');
+                        $notifyBidPlaced  = $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement');
 
-                            $insufficientBalanceAutolend = '';
-                            if (
-                                in_array($wallet->getId(), $aNoAutobidPlaced)
-                                && $oAutobidSettingsManager->isOn($wallet->getIdClient())
-                                && $wallet->getAvailableBalance() < $aAutobiders[$wallet->getId()]
-                            ) {
-                                $insufficientBalanceAutolend = '
-                                    <table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="d8b5ce" bordercolor="b20066">
-                                        <tr>
-                                            <td class="text-primary text-center">' . $insufficientBalance . '</td>
-                                        </tr>
-                                    </table>';
+                        if ($notifyNewProject || $notifyBidPlaced) {
+                            $clientsGestionMailsNotif->immediatement = 1;
+
+                            try {
+                                $hasAutolendOn = $autobidSettingsManager->isOn($wallet->getIdClient());
+                            } catch (\Exception $exception) {
+                                $logger->warning(
+                                    'Could not check Autolend activation state for lender: ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
+                                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                                );
+                                /** Do not include any advises about autolend in the email */
+                                $hasAutolendOn = null;
                             }
+                            $autolendSettingsAdvises = '';
+                            /** @var Notifications $bidPlacedNotification */
+                            $bidPlacedNotification = $notificationsRepository->findOneBy(['idLender' => $wallet->getId(), 'idProject' => $project->id_project, 'type' => Notifications::TYPE_BID_PLACED]);
 
-                            $keywords['firstName']                   = $wallet->getIdClient()->getPrenom();
-                            $keywords['insufficientBalanceAutolend'] = $insufficientBalanceAutolend;
-                            $keywords['lenderPattern']               = $wallet->getWireTransferPattern();
+                            if (
+                                null !== $bidPlacedNotification
+                                && $bidsData->get($bidPlacedNotification->getIdBid())
+                                && false === empty($bidsData->id_autobid)
+                            ) {
+                                $mailType = 'nouveau-projet-autobid';
 
-                            $message = $messageProvider->newMessage('nouveau-projet', $keywords);
+                                $bidsData->get($bidPlacedNotification->getIdBid());
+                                $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidsData->amount, 100, 4), 2), 'EUR');
+                                $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
 
+                                $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 1);
+                                $keywords['autoBidRate']     = $numberFormatter->format($bidsData->rate);
+                                $keywords['autoLendMinRate'] = $numberFormatter->format($autolendMinRate);
+                                $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+
+                                $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
+                            } else {
+                                $mailType    = 'nouveau-projet';
+                                $autolendUrl = $hostUrl . $router->generate('autolend');
+
+                                if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
+                                    $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
+
+                                    if (isset($autoBidsStatus[$wallet->getId()])) {
+                                        switch ($autoBidsStatus[$wallet->getId()]) {
+                                            case \autobid::STATUS_INACTIVE :
+                                                $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%', $autolendUrl]);
+                                                break;
+                                            case \autobid::STATUS_ACTIVE :
+                                                if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
+                                                    $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
+                                                }
+                                                if (bccomp($autoBidsMinRate[$wallet->getId()], $projectRateRange['rate_max'], 2) > 0) {
+                                                    $autolendMinRateTooHigh  = $translator->trans('email-nouveau-projet_autobid-min-rate-too-high', ['%autolendUrl%' => $autolendUrl]);
+                                                    $autolendSettingsAdvises .= empty($autolendSettingsAdvises) ? $autolendMinRateTooHigh : '<br>' . $autolendMinRateTooHigh;
+                                                }
+                                                break;
+                                            default :
+                                                break;
+                                        }
+                                    }
+                                    $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($autolendSettingsAdvises);
+                                } elseif (false === $hasAutolendOn) {
+                                    $suggestAutolendActivation         = $translator->trans('email-nouveau-projet_suggest-autolend-activation', ['%autolendUrl%', $autolendUrl]);
+                                    $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($suggestAutolendActivation);
+                                } else {
+                                    $keywords['customAutolendContent'] = '';
+                                }
+                            }
+                            $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
+                            $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
+
+                            $message                   = $messageProvider->newMessage($mailType, $commonKeywords + $keywords);
                             try {
                                 $message->setTo($aLender['email']);
                                 $mailer->send($message);
                             } catch (\Exception $exception) {
-                                $oLogger->warning(
-                                    'Could not send email : nouveau-projet - Exception: ' . $exception->getMessage(),
-                                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                $logger->warning(
+                                    'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
+                                    ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $aLender['id_client'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                                 );
                             }
-                            ++$iEmails;
+                            ++$emailsSent;
                         }
-                        $clients_gestion_mails_notif->create();
+                        $clientsGestionMailsNotif->create();
                     }
                 }
             }
-
-            $oLogger->info('Emails sent: ' . $iEmails, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+            $logger->info('Emails sent: ' . $emailsSent, ['method' => __METHOD__, 'id_project' => $project->id_project]);
         }
+    }
+
+    /**
+     * @param string $content
+     *
+     * @return string
+     */
+    private function getAutolendCustomMessage($content)
+    {
+        if (empty($content)) {
+            return $content;
+        }
+        $customAutolendContent = '
+            <table width="100%" border="1" cellspacing="0" cellpadding="5" bgcolor="d8b5ce" bordercolor="b20066">
+                <tr>
+                    <td class="text-primary text-center">' . $content . '</td>
+                </tr>
+            </table>';
+
+        return $customAutolendContent;
     }
 }

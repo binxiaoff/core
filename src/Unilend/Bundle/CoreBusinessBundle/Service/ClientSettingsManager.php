@@ -35,6 +35,7 @@ class ClientSettingsManager
      * @param string  $value
      *
      * @return bool
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function saveClientSetting(Clients $client, $settingType, $value)
     {
@@ -68,6 +69,7 @@ class ClientSettingsManager
      * @param int     $settingType
      *
      * @return string
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getSetting(Clients $client, $settingType)
     {
@@ -89,7 +91,9 @@ class ClientSettingsManager
 
     /**
      * @param Clients $client
-     * @param int     $settingType
+     * @param         $settingType
+     *
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     private function flushSettingCache(Clients $client, $settingType)
     {
