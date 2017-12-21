@@ -10,9 +10,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
 {
+    const DEFAULT_PROJECT_AMOUNT = 10000;
+
     protected function configure()
     {
         $this->setName('projects:create')
@@ -46,11 +50,11 @@ class CreateProjectsCommand extends ContainerAwareCommand
                 $excel       = new \PHPExcel();
                 $activeSheet = $excel->setActiveSheetIndex(0);
 
-                $activeSheet->setCellValueExplicitByColumnAndRow(0, 1, 'SIREN');
-                $activeSheet->setCellValueExplicitByColumnAndRow(1, 1, 'ID Projet');
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, 1, 'Statut Projet');
-                $activeSheet->setCellValueExplicitByColumnAndRow(3, 1, 'ID Client emprunteur');
-                $activeSheet->setCellValueExplicitByColumnAndRow(4, 1, 'ID Société');
+                $activeSheet->setCellValue('A1', 'SIREN');
+                $activeSheet->setCellValue('B1', 'ID Projet');
+                $activeSheet->setCellValue('C1', 'Statut Projet');
+                $activeSheet->setCellValue('D1', 'ID Client emprunteur');
+                $activeSheet->setCellValue('E1', 'ID Société');
                 $rowIndex = 2;
 
                 foreach ($sirenList as $inputRow) {
@@ -60,12 +64,11 @@ class CreateProjectsCommand extends ContainerAwareCommand
                         continue;
                     }
                     $company = $companyManager->createBorrowerBlankCompany($siren, $user->getIdUser());
-                    if (false === empty($inputRow[1])) {
+                    $amount  = self::DEFAULT_PROJECT_AMOUNT;
+                    if (isset($inputRow[1]) && filter_var(FILTER_VALIDATE_INT, $inputRow[1])) {
                         $amount = filter_var(FILTER_VALIDATE_INT, $inputRow[1]);
-                    } else {
-                        $amount = 10000;
                     }
-                    if (false === empty($inputRow[2])) {
+                    if (isset($inputRow[2]) && filter_var(FILTER_VALIDATE_INT, $inputRow[2])) {
                         $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find(filter_var(FILTER_VALIDATE_INT, $inputRow[2]));
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
@@ -102,7 +105,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                 $serialize = serialize(['created_projects' => $createdProjects]);
                 /** @var \users_history $userHistoryData */
                 $userHistoryData = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('users_history');
-                $userHistoryData->histo(13, 'depot_dossier_en_masse', $user->getIdUser(), $serialize);
+                $userHistoryData->histo(UsersHistory::FORM_ID_BULK_PROJECT_CREATION, UsersHistory::FROM_NAME_BULK_PROJECT_CREATION, $user->getIdUser(), $serialize);
             } catch (\Exception $exception) {
                 $this->getContainer()->get(
                     'monolog.logger.console')->warning('Error while processing siren list of file : ' . $fileName . ' Error: ' . $exception->getMessage(),
@@ -157,9 +160,9 @@ class CreateProjectsCommand extends ContainerAwareCommand
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
-        $oProjectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        /** @var ProjectManager $projectManager */
+        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
+        $projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }

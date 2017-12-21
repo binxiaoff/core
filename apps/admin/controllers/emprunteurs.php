@@ -283,18 +283,13 @@ class emprunteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
         $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
 
-        if (
-            $userManager->isGrantedRisk($this->userEntity)
-            || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
-        ) {
+        if ($userManager->isGrantedRisk($this->userEntity)) {
+            $success = '';
+            $error   = '';
             /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
             $uploadedFile = $this->request->files->get('siren_list');
 
-            if (empty($uploadedFile)) {
-                $this->render();
-            } else {
-                $success   = '';
-                $error     = '';
+            if (false === empty($uploadedFile)) {
                 $uploadDir = $bulkCompanyCheckManager->getEligibilityInputPendingDir();
                 try {
                     $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
@@ -308,9 +303,11 @@ class emprunteursController extends bootstrap
                     );
                     $error = 'Le fichier n\'a pas été pris en compte. Veuillez rééssayer ou contacter l\'équipe technique.';
                 }
-
-                $this->render(null, ['success' => $success, 'error' => $error]);
             }
+            $this->render(null, ['success' => $success, 'error' => $error]);
+        } else {
+            header('Location: ' . $this->lurl);
+            die;
         }
     }
 }

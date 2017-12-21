@@ -5,14 +5,6 @@
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 {% endblock %}
 
-{% block pageScripts %}
-    <script>
-        $(function () {
-
-        })
-    </script>
-{% endblock %}
-
 {% block pageHeader %}
     <h1 class="page-heading push">
         Testeur d'éligibilité
@@ -30,11 +22,11 @@
                         <button type="submit" class="btn btn-primary push-10-t">Charger le fichier</button>
                     </form>
                 </div>
-                {% if '' != success %}
+                {% if success is not empty %}
                     <div class="alert alert-success push-10-t">
                         <p>{{ success }}</p>
                     </div>
-                {% elseif '' != error %}
+                {% elseif error is not empty %}
                     <div class="alert alert-warning push-10-t">
                         <p>{{ error }}</p>
                     </div>

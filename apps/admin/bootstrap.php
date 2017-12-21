@@ -236,12 +236,12 @@ class bootstrap extends Controller
                 [
                     'title' => 'Test éligibilité',
                     'uri'   => 'emprunteurs/test_eligibilite',
-                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
+                    'zone'  => Zones::ZONE_LABEL_RISK
                 ],
                 [
-                    'title' => 'Dépôt liste dosiers',
-                    'uri'   => 'dossiers/depot_liste_dossiers',
-                    'zone'  => Zones::ZONE_LABEL_SIMULATOR
+                    'title' => 'Dépôt liste projets',
+                    'uri'   => 'projets/depot_liste',
+                    'zone'  => Zones::ZONE_LABEL_RISK
                 ]
             ]
         ],

@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -35,8 +34,7 @@ class BulkCompanyCheckManager
     private $slackManager;
 
     /**
-     * BulkCompanyCheckManager constructor.
-     * @param                 $baseDir
+     * @param string          $baseDir
      * @param Filesystem      $filesystem
      * @param EntityManager   $entityManager
      * @param LoggerInterface $logger
@@ -116,13 +114,12 @@ class BulkCompanyCheckManager
     }
 
     /**
-     * @param              $path
+     * @param string       $path
      * @param UploadedFile $file
      * @param Users        $user
      *
-     * @throws FileException
-     *
      * @return File
+     * @throws FileException
      */
     public function uploadFile($path, UploadedFile $file, Users $user)
     {
@@ -142,7 +139,7 @@ class BulkCompanyCheckManager
     /**
      * @param string $fileName
      *
-     * @return null|object|Users
+     * @return null|Users
      */
     public function getUploadUser($fileName)
     {

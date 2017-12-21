@@ -38,7 +38,8 @@ class CompanyManager
         RiskDataMonitoringManager $riskDataMonitoringManager,
         WalletCreationManager $walletCreationManager,
         LoggerInterface $logger
-    ){
+    )
+    {
         $this->entityManager            = $entityManager;
         $this->translator               = $translator;
         $this->projectManager           = $projectManager;
@@ -88,7 +89,7 @@ class CompanyManager
      * @param null|string    $siteContent
      * @param null|string    $mailContent
      *
-     * @throws \Exception
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function addCompanyStatus(Companies $company, CompanyStatus $newStatus, Users $user, \DateTime $changedOn = null, $receiver = null, $siteContent = null, $mailContent = null)
     {
@@ -134,7 +135,7 @@ class CompanyManager
 
     /**
      * @param null|string $siren
-     * @param int $userId
+     * @param int         $userId
      *
      * @return Companies
      */
@@ -146,7 +147,8 @@ class CompanyManager
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $clientEntity->setIdLangue('fr')
+            $clientEntity
+                ->setIdLangue('fr')
                 ->setStatus(Clients::STATUS_ONLINE);
 
             $this->entityManager->persist($clientEntity);
@@ -155,7 +157,8 @@ class CompanyManager
             $clientAddressEntity->setIdClient($clientEntity);
             $this->entityManager->persist($clientAddressEntity);
 
-            $companyEntity->setSiren($siren)
+            $companyEntity
+                ->setSiren($siren)
                 ->setIdClientOwner($clientEntity->getIdClient())
                 ->setStatusAdresseCorrespondance(1);
             $this->entityManager->persist($companyEntity);

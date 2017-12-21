@@ -1344,7 +1344,7 @@ class dossiersController extends bootstrap
                     die;
                 }
             } else {
-                $companyEntity = $companyManager->createBorrowerBlankCompany(null, $_SESSION['user']['id_user']);
+                $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
             }
 
             $this->createProject($companyEntity, $defaultPartner->getId());
@@ -1352,7 +1352,7 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
-            $companyEntity = $companyManager->createBorrowerBlankCompany($this->params[1], $_SESSION['user']['id_user']);
+            $companyEntity = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
@@ -2582,7 +2582,7 @@ class dossiersController extends bootstrap
                 case 'create':
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
-                    $company        = $companyManager->createBorrowerBlankCompany(filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT), $_SESSION['user']['id_user']);
+                    $company        = $companyManager->createBorrowerBlankCompany($this->request->request->get('siren'), $this->userEntity->getIdUser());
 
                     $this->projects->id_target_company = $company->getIdCompany();
                     $this->projects->update();

@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,6 +29,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
         $bulkCompanyCheckManager = $this->getContainer()->get('unilend.service.eligibility.bulk_company_check_manager');
         $slackManager            = $this->getContainer()->get('unilend.service.slack_manager');
         $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
+        $logger                  = $this->getContainer()->get('monolog.logger.console');
 
         $currentRiskPolicy = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')
             ->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
@@ -142,8 +142,8 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 $writer->save($outputFilePath . $outputFileName);
                 $message = 'Le fichier: *' . $fileName . '* a bien été traité. Vous trouverez le détail dans le fichier de sortie: *' . $outputFileName . '*';
             } catch (\Exception $exception) {
-                $this->getContainer()->get(
-                    'monolog.logger.console')->warning('Error while processing siren list of file : ' . $fileName . ' Error: ' . $exception->getMessage(),
+                $logger->warning(
+                    'Error while processing siren list of file : ' . $fileName . ' Error: ' . $exception->getMessage(),
                     ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
                 $message = 'Une erreur s\'est produite lors du traitement du fichier : *' . $fileName . '*. Le fichier résultat n\'a pas été créé. Vous pouvez le déposer à nouveau pour le réévaluer';
@@ -161,9 +161,9 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     $mailer = $this->getContainer()->get('mailer');
                     $mailer->send($templateMessage);
                 } catch (\Exception $exception) {
-                    $this->getContainer()->get('monolog.logger.console')->warning(
+                    $logger->warning(
                         'Could not send email : resultat-test-eligibilite-liste - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $templateMessage->getTemplateId(), 'email address' => $user->getEmail(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        ['method' => __METHOD__, 'email address' => $user->getEmail(), 'user_email' => $user->getEmail(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                     );
                 }
             }
