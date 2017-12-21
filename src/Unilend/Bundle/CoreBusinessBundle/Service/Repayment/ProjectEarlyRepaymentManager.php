@@ -10,42 +10,34 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 
 class ProjectEarlyRepaymentManager
 {
     /** @var EntityManager */
     private $entityManager;
-
     /** @var OperationManager */
     private $operationManager;
-
     /** @var LoggerInterface */
     private $logger;
-
-    /** @var ProjectManager */
-    private $projectManager;
-
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
-
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
      * @param EntityManager                      $entityManager
      * @param OperationManager                   $operationManager
-     * @param ProjectManager                     $projectManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param LoggerInterface                    $logger
+     *
      */
     public function __construct(
         EntityManager $entityManager,
         OperationManager $operationManager,
-        ProjectManager $projectManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
         LoggerInterface $logger
@@ -54,7 +46,6 @@ class ProjectEarlyRepaymentManager
         $this->entityManager                      = $entityManager;
         $this->operationManager                   = $operationManager;
         $this->logger                             = $logger;
-        $this->projectManager                     = $projectManager;
         $this->projectRepaymentTaskManager        = $projectRepaymentTaskManager;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
     }
@@ -90,7 +81,7 @@ class ProjectEarlyRepaymentManager
         $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
         $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
-        $this->projectManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
+        $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
 
         $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 

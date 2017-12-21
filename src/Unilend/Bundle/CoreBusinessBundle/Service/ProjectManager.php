@@ -3,9 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use PhpXmlRpc\Client as soapClient;
-use PhpXmlRpc\Request as soapRequest;
-use PhpXmlRpc\Value as documentId;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
@@ -13,16 +10,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\core\Loader;
 
@@ -46,12 +40,6 @@ class ProjectManager
     private $productManager;
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
-    /** @var SlackManager */
-    private $slackManager;
-    /** @var RiskDataMonitoringManager */
-    private $riskDataMonitoringManger;
-    /** @var string */
-    private $universignUrl;
     /** @var \dates */
     private $datesManager;
     /** @var \jours_ouvres */
@@ -60,8 +48,8 @@ class ProjectManager
     private $logger;
     /** @var SponsorshipManager */
     private $sponsorshipManager;
-    /** @var ProjectRepaymentTaskManager */
-    private $projectRepaymentTaskManager;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -73,11 +61,8 @@ class ProjectManager
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
-        SlackManager $slackManager,
-        RiskDataMonitoringManager $riskDataMonitoringManager,
         SponsorshipManager $sponsorshipManager,
-        $universignUrl,
-        ProjectRepaymentTaskManager $projectRepaymentTaskManager
+        ProjectStatusManager $projectStatusManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -89,11 +74,8 @@ class ProjectManager
         $this->projectRateSettingsManager = $projectRateSettingsManager;
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
-        $this->slackManager               = $slackManager;
-        $this->riskDataMonitoringManger   = $riskDataMonitoringManager;
         $this->sponsorshipManager         = $sponsorshipManager;
-        $this->universignUrl              = $universignUrl;
-        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
+        $this->projectStatusManager       = $projectStatusManager;
 
         $this->datesManager = Loader::loadLib('dates');
         $this->workingDay   = Loader::loadLib('jours_ouvres');
@@ -116,7 +98,7 @@ class ProjectManager
         }
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
-        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
     }
 
     /**
@@ -164,7 +146,7 @@ class ProjectManager
             $offset += $limit;
         }
 
-        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::EN_FUNDING, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::EN_FUNDING, $project);
     }
 
     public function checkBids(\projects $oProject, $bSendNotification)
@@ -310,9 +292,9 @@ class ProjectManager
     {
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::BID_TERMINATED, $oProject);
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->logger instanceof LoggerInterface) {
             $this->logger->info('Project ' . $oProject->id_project . ' is now changed to status funded', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project]);
@@ -570,7 +552,7 @@ class ProjectManager
     {
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
 
         $criteria      = ['idProject' => $oProject->id_project];
         $bids          = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
@@ -878,130 +860,6 @@ class ProjectManager
         return $project->date_fin != '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
     }
 
-    /**
-     * @param int                $userId
-     * @param int                $projectStatus
-     * @param \projects|Projects $project
-     * @param int                $reminderNumber
-     * @param string             $content
-     */
-    public function addProjectStatus($userId, $projectStatus, $project, $reminderNumber = 0, $content = '')
-    {
-        if ($project instanceof \projects) {
-            $projectEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
-        } else {
-            $projectEntity = $project;
-        }
-
-        if (
-            $projectStatus === ProjectsStatus::REMBOURSEMENT
-            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
-        ) {
-            return;
-        }
-
-        $originStatus = $projectEntity->getStatus();
-        /** @var \projects_status_history $projectsStatusHistory */
-        $projectsStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
-        /** @var \projects_status $projectStatusEntity */
-        $projectStatusEntity = $this->entityManagerSimulator->getRepository('projects_status');
-        $projectStatusEntity->get($projectStatus, 'status');
-
-        $projectsStatusHistory->id_project        = $projectEntity->getIdProject();
-        $projectsStatusHistory->id_project_status = $projectStatusEntity->id_project_status;
-        $projectsStatusHistory->id_user           = $userId;
-        $projectsStatusHistory->numero_relance    = $reminderNumber;
-        $projectsStatusHistory->content           = $content;
-        $projectsStatusHistory->create();
-
-        $projectEntity->setStatus($projectStatus);
-        $this->entityManager->flush($projectEntity);
-
-        if ($project instanceof \projects) {
-            $project->status = $projectStatus;
-        }
-
-        if ($originStatus != $projectStatus) {
-            $this->projectStatusUpdateTrigger($projectStatusEntity, $projectEntity, $userId);
-        }
-    }
-
-    /**
-     * @param \projects_status $projectStatus
-     * @param Projects         $project
-     * @param int              $userId
-     */
-    private function projectStatusUpdateTrigger(\projects_status $projectStatus, Projects $project, $userId)
-    {
-        if ($project->getStatus() >= ProjectsStatus::COMPLETE_REQUEST) {
-            $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-            $message        = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
-
-            if ($userId > 0 && ($user = $userRepository->find($userId))) {
-                $message .= ' par ' . $user->getFirstname() . ' ' . $user->getName();
-            }
-
-            if (
-                $project->getIdCommercial()
-                && $project->getIdCommercial()->getIdUser() > 0
-                && $userId != $project->getIdCommercial()->getIdUser()
-                && false === empty($project->getIdCommercial()->getSlack())
-            ) {
-                $this->slackManager->sendMessage($message, '@' . $project->getIdCommercial()->getSlack());
-            }
-
-            if (
-                $project->getIdAnalyste()
-                && $project->getIdAnalyste()->getIdUser() > 0
-                && $userId != $project->getIdAnalyste()->getIdUser()
-                && false === empty($project->getIdAnalyste()->getSlack())
-            ) {
-                $this->slackManager->sendMessage($message, '@' . $project->getIdAnalyste()->getSlack());
-            }
-
-            $this->slackManager->sendMessage($message, '#statuts-projets');
-        }
-
-        switch ($project->getStatus()) {
-            case \projects_status::COMMERCIAL_REJECTION:
-            case \projects_status::ANALYSIS_REJECTION:
-            case \projects_status::COMITY_REJECTION:
-                $this->abandonOlderProjects($project, $userId);
-                break;
-            case \projects_status::A_FUNDER:
-                $this->mailerManager->sendProjectOnlineToBorrower($project);
-                break;
-            case \projects_status::PRET_REFUSE:
-                $this->cancelProxyAndMandate($project);
-                break;
-            case ProjectsStatus::REMBOURSE:
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-                $this->riskDataMonitoringManger->stopMonitoringForSiren($project->getIdCompany()->getSiren());
-                break;
-            case ProjectsStatus::PROBLEME:
-                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
-                break;
-        }
-    }
-
-    /**
-     * @param Projects $project
-     * @param int      $userId
-     */
-    private function abandonOlderProjects(Projects $project, $userId)
-    {
-        /** @var \projects $projectData */
-        $projectData      = $this->entityManagerSimulator->getRepository('projects');
-        $previousProjects = $projectData->getPreviousProjectsWithSameSiren($project->getIdCompany()->getSiren(), $project->getAdded()->format('Y-m-d H:i:s'));
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        foreach ($previousProjects as $previousProject) {
-            $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
-            if (in_array($previousProjectEntity->getStatus(), [\projects_status::IMPOSSIBLE_AUTO_EVALUATION, \projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
-                $this->addProjectStatus($userId, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'same_company_project_rejected');
-            }
-        }
-    }
-
     public function isFunded(\projects $oProject)
     {
         /** @var \bids $oBid */
@@ -1165,51 +1023,6 @@ class ProjectManager
         $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], array(\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED));
 
         return $totalBidRateMin >= $project->amount;
-    }
-
-    /**
-     * @param Projects $project
-     */
-    public function cancelProxyAndMandate(Projects $project)
-    {
-        /** @var \projects_pouvoir $mandate */
-        $mandate = $this->entityManagerSimulator->getRepository('clients_mandats');
-        /** @var \projects_pouvoir $proxy */
-        $proxy = $this->entityManagerSimulator->getRepository('projects_pouvoir');
-
-        $client = new soapClient($this->universignUrl);
-
-        if ($mandate->get($project->getIdProject(), 'id_project')) {
-            $mandate->status = UniversignEntityInterface::STATUS_CANCELED;
-            $mandate->update();
-
-            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($mandate->id_universign, "string")));
-            $universignReturn = $client->send($request);
-
-            if ($universignReturn->faultCode()) {
-                $this->logger->error('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
-            } else {
-                $this->logger->info('Mandate canceled (project ' . $mandate->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project));
-            }
-        } else {
-            $this->logger->info('Cannot get Mandate', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]);
-        }
-
-        if ($proxy->get($project->getIdProject(), 'id_project')) {
-            $proxy->status = UniversignEntityInterface::STATUS_CANCELED;
-            $proxy->update();
-
-            $request          = new soapRequest('requester.cancelTransaction', array(new documentId($proxy->id_universign, "string")));
-            $universignReturn = $client->send($request);
-
-            if ($universignReturn->faultCode()) {
-                $this->logger->error('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
-            } else {
-                $this->logger->info('Proxy canceled (project ' . $proxy->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project));
-            }
-        } else {
-            $this->logger->info('Cannot get Proxy', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->getIdProject()]);
-        }
     }
 
     /**

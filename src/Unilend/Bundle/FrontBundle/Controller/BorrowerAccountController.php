@@ -22,6 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -137,7 +138,9 @@ class BorrowerAccountController extends Controller
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
-                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
+                /** @var ProjectStatusManager $projectStatusManager */
+                $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 

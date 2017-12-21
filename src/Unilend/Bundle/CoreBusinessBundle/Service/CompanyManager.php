@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -16,22 +15,30 @@ class CompanyManager
 {
     /** @var EntityManager */
     private $entityManager;
-
     /** @var TranslatorInterface */
     private $translator;
-
-    /** @var ProjectManager $projectManager */
-    private $projectManager;
-
     /** @var  RiskDataMonitoringManager */
     private $riskDataMonitoringManger;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
 
-    public function __construct(EntityManager $entityManager, TranslatorInterface $translator, ProjectManager $projectManager, RiskDataMonitoringManager $riskDataMonitoringManager)
+    /**
+     * @param EntityManager             $entityManager
+     * @param TranslatorInterface       $translator
+     * @param RiskDataMonitoringManager $riskDataMonitoringManager
+     * @param ProjectStatusManager      $projectStatusManager
+     */
+    public function __construct(
+        EntityManager $entityManager,
+        TranslatorInterface $translator,
+        RiskDataMonitoringManager $riskDataMonitoringManager,
+        ProjectStatusManager $projectStatusManager
+    )
     {
         $this->entityManager            = $entityManager;
         $this->translator               = $translator;
-        $this->projectManager           = $projectManager;
         $this->riskDataMonitoringManger = $riskDataMonitoringManager;
+        $this->projectStatusManager = $projectStatusManager;
     }
 
     /**
@@ -101,7 +108,7 @@ class CompanyManager
 
                 foreach ($companyProjects as $project) {
                     if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
-                        $this->projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::PROBLEME, $project);
+                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::PROBLEME, $project);
                     }
 
                     $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');

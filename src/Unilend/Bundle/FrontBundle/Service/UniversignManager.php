@@ -690,4 +690,43 @@ class UniversignManager
             ['class' => __CLASS__, 'function' => __FUNCTION__]
         );
     }
+
+    /**
+     * @param Projects $project
+     */
+    public function cancelProxyAndMandate(Projects $project)
+    {
+        try {
+            $mandate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsMandats')->findOneBy(['idProject' => $project]);
+            $proxy   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')->findOneBy(['idProject' => $project]);
+            $client  = new Client($this->universignURL);
+
+            if (null !== $mandate) {
+                $mandate->setStatus(UniversignEntityInterface::STATUS_CANCELED);
+                $this->entityManager->flush($mandate);
+
+                $request          = new Request('requester.cancelTransaction', [new Value($mandate->id_universign, "string")]);
+                $universignReturn = $client->send($request);
+
+                if ($universignReturn->faultCode()) {
+                    $this->logger->error('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                }
+            }
+
+            if (null !== $proxy) {
+                $proxy->setStatus(UniversignEntityInterface::STATUS_CANCELED);
+                $this->entityManager->flush($proxy);
+
+                $request          = new Request('requester.cancelTransaction', [new Value($proxy->id_universign, "string")]);
+                $universignReturn = $client->send($request);
+
+                if ($universignReturn->faultCode()) {
+                    $this->logger->error('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                }
+            }
+        } catch (\Exception $exception) {
+            $this->logger->critical('An exception occurred while cancelling mandate and proxy for project: ' . $project->getIdProject() .
+                ' - Exception: ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+        }
+    }
 }

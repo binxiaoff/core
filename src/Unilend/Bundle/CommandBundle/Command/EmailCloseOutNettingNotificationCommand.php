@@ -24,15 +24,15 @@ class EmailCloseOutNettingNotificationCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
+        $entityManager                   = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectStatusNotificationSender = $this->getContainer()->get('unilend.service.project_status_notification_sender');
         /** @var CloseOutNettingPayment[] $closeOutNettingPayments */
         $closeOutNettingPayments = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')
             ->findBy(['notified' => false]);
 
         foreach ($closeOutNettingPayments as $closeOutNettingPayment) {
-            $projectStatusManager->sendCloseOutNettingEmailToBorrower($closeOutNettingPayment->getIdProject());
-            $projectStatusManager->sendCloseOutNettingNotificationsToLenders($closeOutNettingPayment->getIdProject());
+            $projectStatusNotificationSender->sendCloseOutNettingEmailToBorrower($closeOutNettingPayment->getIdProject());
+            $projectStatusNotificationSender->sendCloseOutNettingNotificationsToLenders($closeOutNettingPayment->getIdProject());
 
             $closeOutNettingPayment->setNotified(true);
             $entityManager->flush($closeOutNettingPayment);
