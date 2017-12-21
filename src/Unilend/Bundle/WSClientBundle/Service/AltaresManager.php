@@ -9,9 +9,9 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetList;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
@@ -24,6 +24,9 @@ class AltaresManager
     const RESOURCE_ESTABLISHMENT_IDENTITY = 'get_establishment_identity_altares';
     const RESOURCE_FINANCIAL_SUMMARY      = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE        = 'get_balance_management_line_altares';
+
+    const RESOURCE_START_MONITORING = 'start_altares_monitoring';
+    const RESOURCE_END_MONITORING   = 'end_altares_monitoring';
 
     const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109, 106];
     const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
@@ -367,5 +370,37 @@ class AltaresManager
         }
 
         return false;
+    }
+
+
+    public function startMonitoring(string $siren) : bool
+    {
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_START_MONITORING);
+        /** @var \SoapClient $soapClient */
+        $soapClient = $this->{'AlertClient'}; //TODO To be confirmed which client should be called
+        $response   = $soapClient->__soapCall(
+            $wsResource->getResourceName(), [
+            ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + ['siren' => $siren]
+        ]);
+
+        if (null !== $response) {
+            //TODO do things according to possible feedback
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public function stopMonitoring(string $siren) : bool
+    {
+
+
+        return false;
+    }
+
+    public function getMonitoringEvents(string $siren)
+    {
+
     }
 }
