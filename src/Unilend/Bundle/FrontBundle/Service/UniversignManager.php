@@ -705,11 +705,15 @@ class UniversignManager
                 $mandate->setStatus(UniversignEntityInterface::STATUS_CANCELED);
                 $this->entityManager->flush($mandate);
 
-                $request          = new Request('requester.cancelTransaction', [new Value($mandate->id_universign, "string")]);
+                $request          = new Request('requester.cancelTransaction', [new Value($mandate->getIdUniversign(), "string")]);
                 $universignReturn = $client->send($request);
 
                 if ($universignReturn->faultCode()) {
-                    $this->logger->error('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $mandate->id_project]);
+                    $this->logger->error('Mandate cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $mandate->getIdProject()->getIdProject() . ')', [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_project' => $mandate->getIdProject()->getIdProject()
+                    ]);
                 }
             }
 
@@ -717,11 +721,15 @@ class UniversignManager
                 $proxy->setStatus(UniversignEntityInterface::STATUS_CANCELED);
                 $this->entityManager->flush($proxy);
 
-                $request          = new Request('requester.cancelTransaction', [new Value($proxy->id_universign, "string")]);
+                $request          = new Request('requester.cancelTransaction', [new Value($proxy->getIdUniversign(), "string")]);
                 $universignReturn = $client->send($request);
 
                 if ($universignReturn->faultCode()) {
-                    $this->logger->error('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $proxy->id_project]);
+                    $this->logger->error('Proxy cancellation failed. Reason : ' . $universignReturn->faultString() . ' (project ' . $proxy->getIdProject()->getIdProject() . ')', [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_project' => $proxy->getIdProject()->getIdProject()
+                    ]);
                 }
             }
         } catch (\Exception $exception) {

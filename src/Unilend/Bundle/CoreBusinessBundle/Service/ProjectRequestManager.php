@@ -222,7 +222,7 @@ class ProjectRequestManager
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }

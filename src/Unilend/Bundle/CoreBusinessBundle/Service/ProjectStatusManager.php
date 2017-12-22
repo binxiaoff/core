@@ -56,14 +56,15 @@ class ProjectStatusManager
         MailerManager $mailerManager
     )
     {
-        $this->entityManagerSimulator          = $entityManagerSimulator;
-        $this->entityManager                   = $entityManager;
-        $this->translator                      = $translator;
-        $this->logger                          = $logger;
-        $this->slackManager                    = $slackManager;
-        $this->universignManager               = $universignManager;
-        $this->riskDataMonitoringManager       = $riskDataMonitoringManager;
-        $this->projectRepaymentTaskManager     = $projectRepaymentTaskManager;
+        $this->entityManagerSimulator      = $entityManagerSimulator;
+        $this->entityManager               = $entityManager;
+        $this->translator                  = $translator;
+        $this->logger                      = $logger;
+        $this->slackManager                = $slackManager;
+        $this->universignManager           = $universignManager;
+        $this->riskDataMonitoringManager   = $riskDataMonitoringManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
+        $this->mailerManager               = $mailerManager;
     }
 
     /**
@@ -250,7 +251,7 @@ class ProjectStatusManager
             $projectEntity = $project;
         }
 
-        if (is_int($user)) {
+        if (is_numeric($user)) {
             $user = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($user);
         }
 
@@ -295,7 +296,7 @@ class ProjectStatusManager
     /**
      * @param \projects_status $projectStatus
      * @param Projects         $project
-     * @param Users            $userId
+     * @param Users            $user
      */
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, Projects $project, Users $user)
     {

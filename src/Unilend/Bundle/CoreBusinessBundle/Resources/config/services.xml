@@ -79,6 +79,12 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.bid_manager"/>
+        </service>
+
+        <service id="unilend.service.project_lifecycle_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectLifecycleManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.bid_manager"/>
             <argument type="service" id="unilend.service.loan_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.email_manager"/>
@@ -87,6 +93,7 @@
             <argument type="service" id="unilend.service_product_contract.contract_attribute_manager"/>
             <argument type="service" id="unilend.service.sponsorship_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
