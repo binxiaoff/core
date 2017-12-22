@@ -159,7 +159,7 @@ class CompanyManager
 
             $companyEntity
                 ->setSiren($siren)
-                ->setIdClientOwner($clientEntity->getIdClient())
+                ->setIdClientOwner($clientEntity)
                 ->setStatusAdresseCorrespondance(1);
             $this->entityManager->persist($companyEntity);
             $this->entityManager->flush($companyEntity);

@@ -2579,7 +2579,8 @@ class dossiersController extends bootstrap
                 case 'create':
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
-                    $company        = $companyManager->createBorrowerBlankCompany($this->request->request->get('siren'), $this->userEntity->getIdUser());
+                    $siren          = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_NUMBER_INT);
+                    $company        = $companyManager->createBorrowerBlankCompany($siren, $this->userEntity->getIdUser());
 
                     $this->projects->id_target_company = $company->getIdCompany();
                     $this->projects->update();
