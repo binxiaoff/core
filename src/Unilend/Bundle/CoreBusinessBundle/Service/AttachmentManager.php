@@ -5,13 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Transfer;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment
+};
 
 class AttachmentManager
 {
@@ -45,6 +41,7 @@ class AttachmentManager
      * @param null|string    $name
      *
      * @return Attachment
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
     {
@@ -102,6 +99,7 @@ class AttachmentManager
      * @param Projects   $project
      *
      * @return ProjectAttachment
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function attachToProject(Attachment $attachment, Projects $project)
     {
@@ -130,6 +128,7 @@ class AttachmentManager
      * @param Transfer   $transfer
      *
      * @return TransferAttachment
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function attachToTransfer(Attachment $attachment, Transfer $transfer)
     {
@@ -240,7 +239,7 @@ class AttachmentManager
      */
     public function getAllTypesForLender($includeOthers = true)
     {
-        $types = array(
+        $types = [
             AttachmentType::CNI_PASSPORTE,
             AttachmentType::CNI_PASSPORTE_VERSO,
             AttachmentType::JUSTIFICATIF_DOMICILE,
@@ -255,7 +254,7 @@ class AttachmentManager
             AttachmentType::DISPENSE_PRELEVEMENT_2015,
             AttachmentType::DISPENSE_PRELEVEMENT_2016,
             AttachmentType::DISPENSE_PRELEVEMENT_2017
-        );
+        ];
 
         if ($includeOthers) {
             $types = array_merge($types, [
@@ -279,5 +278,22 @@ class AttachmentManager
         $fileName = substr($fileName, 0, 255);
 
         return $fileName;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return bool
+     */
+    public function isModifiedAttachment(Attachment $attachment)
+    {
+        try {
+            $previousAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+                ->findPreviousNotArchivedAttachment($attachment);
+        } catch (\Exception $exception) {
+            $previousAttachment = null;
+        }
+
+        return null !== $previousAttachment;
     }
 }

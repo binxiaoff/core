@@ -1,0 +1,21 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-contact',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{{ ('partner-home_title-' ~ app.user.partner.label)|trans }}</h3>
+                    </header>
+                    <section>{{ ('partner-home_content-' ~ app.user.partner.label)|trans|raw }}</section>
+                </div>
+            </article><!-- /.panel -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}

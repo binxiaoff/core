@@ -36,16 +36,12 @@
             <td><?= $this->translator->trans('client-vigilance_status-' . $atypicalOperation->getRule()->getVigilanceStatus()) ?></td>
             <td><?= $atypicalOperation->getAtypicalValue() ?></td>
             <td>
-                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $atypicalOperation->getIdUser()) : ?>
+                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $atypicalOperation->getIdUser()->getIdUser()) : ?>
                     Cron
-                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $atypicalOperation->getIdUser()) : ?>
+                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $atypicalOperation->getIdUser()->getIdUser()) : ?>
                     Front
                 <?php else : ?>
-                    <?php
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-                    $user = $this->userRepository->find($atypicalOperation->getIdUser())
-                    ?>
-                    <?= $user->getName() . ' ' . $user->getFirstname() ?>
+                    <?= $atypicalOperation->getIdUser()->getFirstname() . ' ' . $atypicalOperation->getIdUser()->getName() ?>
                 <? endif; ?>
             </td>
             <td><?= $atypicalOperation->getAdded()->format('d/m/Y H:i') ?></td>
