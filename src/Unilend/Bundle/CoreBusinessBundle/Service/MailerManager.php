@@ -7,19 +7,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsMandats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, ClientsMandats, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -1895,13 +1885,17 @@ class MailerManager
     }
 
     /**
-     * @param ProjectCgv $termsOfSale
+     * @param ProjectCgv     $termsOfSale
+     * @param Companies|null $companySubmitter
      */
-    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale)
+    public function sendProjectTermsOfSale(ProjectCgv $termsOfSale, Companies $companySubmitter = null)
     {
+        $mailType = 'signature-universign-de-cgv';
         $client   = $termsOfSale->getIdProject()->getIdCompany()->getIdClientOwner();
         $keywords = [
             'firstName'                  => $client->getPrenom(),
+            'amount'                     => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getAmount(), 0),
+            'companyName'                => $termsOfSale->getIdProject()->getIdCompany()->getName(),
             'universignTosLink'          => $this->sFUrl . $termsOfSale->getUrlPath(),
             'fundsCommissionRate'        => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateFunds(), 1),
             'repaymentCommissionRate'    => $this->oFicelle->formatNumber($termsOfSale->getIdProject()->getCommissionRateRepayment(), 1),
@@ -1909,8 +1903,13 @@ class MailerManager
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
         ];
 
+        if (null !== $companySubmitter) {
+            $mailType               = 'cgv-emprunteurs-depot-partenaire';
+            $keywords['agencyName'] = $companySubmitter->getName();
+        }
+
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('signature-universign-de-cgv', $keywords);
+        $message = $this->messageProvider->newMessage($mailType, $keywords);
 
         try {
             $message->setTo($client->getEmail());

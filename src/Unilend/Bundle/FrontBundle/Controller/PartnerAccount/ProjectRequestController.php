@@ -155,7 +155,7 @@ class ProjectRequestController extends Controller
             $entityManager->persist($clientAddress);
             $entityManager->flush($clientAddress);
 
-            $company->setIdClientOwner($client->getIdClient());
+            $company->setIdClientOwner($client);
 
             $entityManager->persist($company);
             $entityManager->flush($company);
@@ -533,6 +533,16 @@ class ProjectRequestController extends Controller
         if ('save' === $action) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
         } elseif (false === in_array($project->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::COMPLETE_REQUEST])) {
+            try {
+                $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
+                $termsOfSaleManager->sendBorrowerEmail($project, $project->getIdCompanySubmitter());
+            } catch (\Exception $exception) {
+                $this->get('logger')->error(
+                    'Error while sending terms of sale to partner borrower for project ' . $project->getIdProject(),
+                    ['id_project' => $project->getIdProject(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
+
             /** @var \projects $projectData */
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
