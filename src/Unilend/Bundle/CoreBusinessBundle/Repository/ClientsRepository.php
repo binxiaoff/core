@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -796,20 +797,23 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param Companies $company
+     * @param CompanyClient $companyClient
      *
      * @return int
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function countDuplicatesByNameAndParent(Companies $company) : int
+    public function countDuplicatesByFullName(CompanyClient $companyClient) : int
     {
-        return $this->createQueryBuilder('co')
-            ->select('COUNT(co.idCompany)')
-            ->where('LOWER(co.name) LIKE LOWER(:name)')
-            ->andWhere('co.idParentCompany = :parent')
-            ->setParameter('name', $company->getName().'%')
-            ->setParameter('parent', $company->getIdParentCompany())
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.idClient)')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->where('LOWER(c.nom) LIKE LOWER(:lastname)')
+            ->andWhere('LOWER(c.prenom) LIKE LOWER(:firstname)')
+            ->andWhere('cc.idCompany = :company')
+            ->setParameter('lastname', $companyClient->getIdClient()->getNom())
+            ->setParameter('firstname', $companyClient->getIdClient()->getPrenom())
+            ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
             ->getQuery()
             ->getSingleScalarResult();
     }

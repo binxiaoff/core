@@ -141,7 +141,7 @@ class CompaniesRepository extends EntityRepository
             ->select('COUNT(co.idCompany)')
             ->where('LOWER(co.name) LIKE LOWER(:name)')
             ->andWhere('co.idParentCompany = :parent')
-            ->setParameter('name', $company->getName().'%')
+            ->setParameter('name', $company->getName())
             ->setParameter('parent', $company->getIdParentCompany())
             ->getQuery()
             ->getSingleScalarResult();

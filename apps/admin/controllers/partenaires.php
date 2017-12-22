@@ -443,11 +443,13 @@ class partenairesController extends bootstrap
         $errors        = $this->setCompanyClientData($request, $companyClient);
 
         if (empty($errors)) {
+            $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
             try {
-                $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->countDuplicatesByNameAndParent($agency);
+                $duplicates = $clientRepository->countDuplicatesByFullName($companyClient);
 
                 if ($duplicates > 0) {
-                    $errors[] = 'Doublon : cette agence a déjà été créée.';
+                    $errors[] = 'Doublon : cet utilisateur existe déjà.';
                     return null;
                 }
             } catch (UnexpectedResultException $exception) {
@@ -669,12 +671,12 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $errors        = [];
-        $lastName      = $request->request->filter('lastname', FILTER_SANITIZE_STRING);
-        $firstName     = $request->request->filter('firstname', FILTER_SANITIZE_STRING);
-        $email         = $request->request->filter('email', FILTER_VALIDATE_EMAIL);
-        $agency        = $request->request->getInt('agency');
-        $phone         = $request->request->filter('phone', FILTER_SANITIZE_STRING);
-        $role          = $request->request->filter('role', FILTER_SANITIZE_STRING);
+        $lastName      = trim($request->request->filter('lastname', FILTER_SANITIZE_STRING));
+        $firstName     = trim($request->request->filter('firstname', FILTER_SANITIZE_STRING));
+        $email         = trim($request->request->filter('email', FILTER_VALIDATE_EMAIL));
+        $agency        = trim($request->request->getInt('agency'));
+        $phone         = trim($request->request->filter('phone', FILTER_SANITIZE_STRING));
+        $role          = trim($request->request->filter('role', FILTER_SANITIZE_STRING));
 
         if (empty($lastName)) {
             $errors[] = 'Vous devez renseigner un nom';
@@ -688,11 +690,13 @@ class partenairesController extends bootstrap
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
-        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        if (
-            (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)
-            && $clientsRepository->existEmail($email, Clients::STATUS_ONLINE)
-        ) {
+        try {
+            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $existingEmail     = $clientsRepository->existEmail($email, Clients::STATUS_ONLINE);
+        } catch (UnexpectedResultException $exception) {
+            $existingEmail = true;
+        }
+        if ($existingEmail && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
             $errors[] = 'Il existe déjà un compte avec cette adresse email';
         }
         if (empty($agency)) {
