@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UsersHistory
 {
+    const FORM_ID_BULK_PROJECT_CREATION   = 13;
+    const FROM_NAME_BULK_PROJECT_CREATION = 'depot_dossier_en_masse';
+
     /**
      * @var integer
      *
