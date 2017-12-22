@@ -829,7 +829,7 @@ class LenderSubscriptionController extends Controller
             $template['sponsorCode']      = $request->query->get('sponsor');
         }
 
-        return $this->render('lender_subscription/landing_page_sponsorship.html.twig', $template);
+        return $this->render('lender_subscription/sponsorship_landing_page.html.twig', $template);
     }
 
 
@@ -840,7 +840,7 @@ class LenderSubscriptionController extends Controller
      */
     public function figaroLandingPageAction()
     {
-        return $this->render('lender_subscription/partners/figaro.html.twig', [
+        return $this->render('lender_subscription/partners/figaro.html.twig_landing_page', [
             'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
             'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
         ]);

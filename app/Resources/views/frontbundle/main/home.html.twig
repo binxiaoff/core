@@ -1,4 +1,4 @@
-{% extends 'layouts/_layout.html.twig' %}
+{% extends '../layouts/_layout.html.twig' %}
 
 {% block siteContent %}
     <article id="homeacq" class="page">
@@ -43,7 +43,7 @@
                     <h3>{% trans %} site-general_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include 'partials/list_socialmedia.html.twig' %}
+                {% include '../partials/list_socialmedia.html.twig' %}
 
                 <div class="btn-toolbar row">
                     <div class="col-lg-6 col-md-6">
@@ -291,7 +291,7 @@
 
         {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
-        {% include 'partials/scroll_more.html.twig' %}
+        {% include '../partials/scroll_more.html.twig' %}
 
     </article><!-- /.page -->
 {% endblock %}

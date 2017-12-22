@@ -21,7 +21,7 @@ class LenderAutoEvaluationSurveyController extends Controller
      */
     public function indexAction()
     {
-        return $this->render('lender_auto_evaluation_survey.html.twig');
+        return $this->render('lender_auto_evaluation_survey/survey.html.twig');
     }
 
     /**
@@ -55,7 +55,7 @@ class LenderAutoEvaluationSurveyController extends Controller
             $amount = filter_var($request->request->get('savings-answer'), \FILTER_VALIDATE_INT);
 
             if ($amount < self::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
-                return $this->render('lender_auto_evaluation_survey.html.twig', [
+                return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
                     'advices' => [$this->get('translator')->trans('lender-auto-evaluation_rejection-message')]
                 ]);
             }
@@ -77,7 +77,7 @@ class LenderAutoEvaluationSurveyController extends Controller
 
         $this->get('session')->set('answers', $answers);
 
-        return $this->render('lender_auto_evaluation_survey.html.twig', [
+        return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
             'question'    => $questionsRepository->findOneBy(['type' => $nextQuestionType]),
             'currentStep' => $currentStep,
             'answers'     => $answers
@@ -98,7 +98,7 @@ class LenderAutoEvaluationSurveyController extends Controller
             return $this->redirectToRoute('lender_auto_evaluation');
         }
 
-        return $this->render('lender_auto_evaluation_survey.html.twig', [
+        return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
             'advices' => $this->getAdvices($answers)
         ]);
     }

@@ -39,7 +39,7 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function walletDepositAction()
+    public function depositAction()
     {
         $template = [
             'balance'          => $this->getUser()->getBalance(),
@@ -59,7 +59,7 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function walletDepositResultAction($token)
+    public function depositResultAction($token)
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $token]);
@@ -85,7 +85,7 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function walletDepositResultErrorAction()
+    public function depositResultErrorAction()
     {
         return $this->render('lender_wallet/deposit_result.html.twig', [
             'depositCode'    => 'X',
@@ -100,7 +100,7 @@ class LenderWalletController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function walletWithdrawalAction(Request $request)
+    public function withdrawalAction(Request $request)
     {
         if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
             return $this->redirectToRoute('lender_completeness');

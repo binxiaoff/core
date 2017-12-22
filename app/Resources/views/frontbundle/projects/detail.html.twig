@@ -191,7 +191,7 @@
             {% include 'partials/list_socialmedia.html.twig' %}
         </header><!-- /.project-single-header-wrap -->
 
-        {% include 'project/detail/side_panel.html.twig' %}
+        {% include 'projects/detail/side_panel.html.twig' %}
 
         <div class="project-single-menu">
             <div class="project-single-menu-inner">
@@ -242,10 +242,10 @@
                         {% if conditions.bids %}
                             <div id="offers" data-watchscroll-nav>
                                 {% if conditions.myBids %}
-                                    {% include 'project/project/my_bids.html.twig' %}
+                                    {% include 'projects/project/my_bids.html.twig' %}
                                 {% endif %}
 
-                                {% include 'project/project/bids_list.html.twig' %}
+                                {% include 'projects/project/bids_list.html.twig' %}
                             </div>
                         {% endif %}
 
@@ -273,7 +273,7 @@
                             </section><!-- /.page-section -->
                         </div>
 
-                        {% include 'project/detail/finance.html.twig' %}
+                        {% include 'projects/detail/finance.html.twig' %}
 
                         <section id="project-section-help" class="page-section">
                             <h3 class="h3">{% trans %} project-detail_project-presentation-repayment-reason-title {% endtrans %}</h3>
@@ -316,9 +316,9 @@
 
 {% block modals %}
     {% if project.lender is defined %}
-        {% include 'project/detail/modal_bid_confirmation.html.twig' %}
-        {% include 'project/detail/modal_bid_error.html.twig' %}
-        {% include 'project/detail/modal_cip_advices.html.twig' %}
-        {% include 'project/detail/modal_cip_questionnaire.html.twig' %}
+        {% include 'projects/detail/modal_bid_confirmation.html.twig' %}
+        {% include 'projects/detail/modal_bid_error.html.twig' %}
+        {% include 'projects/detail/modal_cip_advices.html.twig' %}
+        {% include 'projects/detail/modal_cip_questionnaire.html.twig' %}
     {% endif %}
 {% endblock %}

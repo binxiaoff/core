@@ -133,7 +133,7 @@ class LenderDashboardController extends Controller
         $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
-            'lender_dashboard/lender_dashboard.html.twig',
+            'lender_dashboard/index.html.twig',
             [
                 'dashboardPanels'   => $this->getDashboardPreferences(),
                 'lenderDetails' => [
@@ -313,6 +313,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getPaddingData(array $repaymentDateRange)
@@ -340,6 +341,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getMonthAxis(array $repaymentDateRange)
@@ -364,6 +366,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $lenderRepaymentsData
+     *
      * @return array
      */
     private function getQuarterAxis(array $lenderRepaymentsData)
@@ -395,6 +398,7 @@ class LenderDashboardController extends Controller
 
     /**
      * Returns the full and short month names
+     *
      * @return array
      */
     private function getMonthNames()
@@ -414,6 +418,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getYearAxis(array $repaymentDateRange)
@@ -433,6 +438,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $lenderRepaymentsData
+     *
      * @return array
      */
     private function getQuarterAndYearSum(array $lenderRepaymentsData)

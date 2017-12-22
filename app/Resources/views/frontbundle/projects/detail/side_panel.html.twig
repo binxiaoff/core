@@ -45,7 +45,7 @@
                         } %} project-detail_project-repaid-user-message {% endtranschoice %}
                     </p>
                 {% endif %}
-                {% include('project/detail/login_form.html.twig') %}
+                {% include('projects/detail/login_form.html.twig') %}
             {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
                 <p>
                     {% trans with {
@@ -54,17 +54,17 @@
                         '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
-                {{ include('project/detail/login_form.html.twig') %}
+                {{ include('projects/detail/login_form.html.twig') %}
             {% elseif project.status == constant('\\projects_status::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
-                {% include 'project/detail/login_form.html.twig' %}
+                {% include 'projects/detail/login_form.html.twig' %}
             {% elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
-                {% include('project/detail/login_form.html.twig') %}
+                {% include('projects/detail/login_form.html.twig') %}
             {% elseif project.projectPending is defined and project.projectPending == true %}
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
-                {% include('project/detail/login_form.html.twig') %}
+                {% include('projects/detail/login_form.html.twig') %}
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
                 {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
@@ -161,7 +161,7 @@
                 <div class="form-notice">
                     {% trans %} project-detail_side-bar-login {% endtrans %}
                 </div><!-- /.form-notice -->
-                {% include('project/detail/login_form.html.twig') %}
+                {% include('projects/detail/login_form.html.twig') %}
             {% endif %}
         </div><!-- /.project-single-info -->
     </div><!-- /.project-single-info-position -->

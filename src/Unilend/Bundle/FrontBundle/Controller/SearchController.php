@@ -61,6 +61,6 @@ class SearchController extends Controller
             'results' => $results
         ];
 
-        return $this->render('search.html.twig', $template);
+        return $this->render('search/result.html.twig', $template);
     }
 }

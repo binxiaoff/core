@@ -73,7 +73,7 @@ class MainController extends Controller
             return $this->redirectToRoute('home_borrower');
         }
 
-        return $this->render('homepage_acquisition.html.twig', $template);
+        return $this->render('main/home.html.twig', $template);
     }
 
     /**
@@ -118,7 +118,7 @@ class MainController extends Controller
             }
         });
 
-        return $this->render('homepage_lender.html.twig', $template);
+        return $this->render('main/home_lender.html.twig', $template);
     }
 
     /**
@@ -146,7 +146,7 @@ class MainController extends Controller
 
         $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();
 
-        return $this->render('homepage_borrower.html.twig', $template);
+        return $this->render('main/home_borrower.html.twig', $template);
     }
 
     /**
@@ -551,7 +551,7 @@ class MainController extends Controller
             'right_content' => $template
         ];
 
-        return $this->render('static_pages/template_cgv.html.twig', ['cms' => $cms]);
+        return $this->render('cms_templates/template_cgv.html.twig', ['cms' => $cms]);
     }
 
     private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -1006,10 +1006,15 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
-    private function getProjectCountForCategoryTreeMap($countByCategory)
+    /**
+     * @param array $countByCategory
+     *
+     * @return array
+     */
+    private function getProjectCountForCategoryTreeMap(array $countByCategory)
     {
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        $translator     = $this->get('translator');
         $dataForTreeMap = [];
 
         foreach ($countByCategory as $category => $count) {
@@ -1022,6 +1027,9 @@ class MainController extends Controller
         return $dataForTreeMap;
     }
 
+    /**
+     * @param \tree $tree
+     */
     private function setCmsSeoData(\tree $tree)
     {
         /** @var SeoPage $seoPage */
