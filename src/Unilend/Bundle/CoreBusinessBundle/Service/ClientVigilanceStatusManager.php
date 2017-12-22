@@ -35,7 +35,7 @@ class ClientVigilanceStatusManager
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
      * @param null|string                  $comment
      *
-     * @return null|object|ClientVigilanceStatusHistory
+     * @return null|ClientVigilanceStatusHistory
      */
     public function upgradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
     {
@@ -66,7 +66,7 @@ class ClientVigilanceStatusManager
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
      * @param null|string                  $comment
      *
-     * @return null|object|ClientVigilanceStatusHistory
+     * @return null|ClientVigilanceStatusHistory
      */
     public function retrogradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
     {
