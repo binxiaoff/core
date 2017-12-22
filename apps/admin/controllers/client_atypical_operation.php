@@ -202,7 +202,7 @@ class client_atypical_operationController extends bootstrap
                 $clientAtypicalOperation->setClient($client)
                     ->setDetectionStatus($status)
                     ->setRule($rule)
-                    ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']))
+                    ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->userEntity->getIdUser()))
                     ->setUserComment($_POST['user_comment']);
                 $entityManager->persist($clientAtypicalOperation);
                 $entityManager->flush($clientAtypicalOperation);
