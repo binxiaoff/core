@@ -46,6 +46,8 @@ class ClientsRepository extends EntityRepository
      * @param int|null $status
      *
      * @return bool
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function existEmail($email, $status = null)
     {
@@ -791,5 +793,24 @@ class ClientsRepository extends EntityRepository
             ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function countDuplicatesByNameAndParent(Companies $company) : int
+    {
+        return $this->createQueryBuilder('co')
+            ->select('COUNT(co.idCompany)')
+            ->where('LOWER(co.name) LIKE LOWER(:name)')
+            ->andWhere('co.idParentCompany = :parent')
+            ->setParameter('name', $company->getName().'%')
+            ->setParameter('parent', $company->getIdParentCompany())
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

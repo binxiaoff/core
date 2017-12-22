@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -64,6 +65,7 @@ class CompaniesRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getCountCompaniesInCollectiveProceedingBetweenDates(\DateTime $start, \DateTime $end)
     {
@@ -102,7 +104,10 @@ class CompaniesRepository extends EntityRepository
 
     /**
      * @param string $siren
+     *
      * @return bool
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function isProblematicCompany($siren)
     {
@@ -121,5 +126,24 @@ class CompaniesRepository extends EntityRepository
             ->setParameter('projectStatus', [ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
 
         return $queryBuilder->getQuery()->getSingleScalarResult() > 0;
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function countDuplicatesByNameAndParent(Companies $company) : int
+    {
+        return $this->createQueryBuilder('co')
+            ->select('COUNT(co.idCompany)')
+            ->where('LOWER(co.name) LIKE LOWER(:name)')
+            ->andWhere('co.idParentCompany = :parent')
+            ->setParameter('name', $company->getName().'%')
+            ->setParameter('parent', $company->getIdParentCompany())
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }
