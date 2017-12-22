@@ -52,15 +52,18 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
     }
 
     /**
-     * @param array $executiveIds
+     * @param array     $executiveIds
+     * @param \DateTime $mandateEndDate
      *
      * @return InfolegaleExecutivePersonalChange[]
      */
-    public function findMandatesByExecutives(array $executiveIds)
+    public function findMandatesByExecutivesSince(array $executiveIds, \DateTime $mandateEndDate)
     {
         $queryBuilder = $this->createQueryBuilder('iepc');
         $queryBuilder->where('iepc.idExecutive IN (:executiveIds)')
-            ->setParameter('executiveIds', $executiveIds);
+            ->setParameter('executiveIds', $executiveIds)
+            ->andWhere('iepc.ended IS NULL OR iepc.ended >= :mandateEndDate')
+            ->setParameter('mandateEndDate', $mandateEndDate->format('Y-m-d'));
 
         return$queryBuilder->getQuery()->getResult();
     }

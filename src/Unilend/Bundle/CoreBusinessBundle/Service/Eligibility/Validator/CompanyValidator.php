@@ -534,11 +534,9 @@ class CompanyValidator
         $checkedSirens   = [];
         $now             = new \DateTime();
 
-        $allMandates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findMandatesByExecutives($executiveIds);
+        $allMandates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->findMandatesByExecutivesSince($executiveIds, new \DateTime($yearsSinceMandateEnd . ' years ago'));
         foreach ($allMandates as $mandate) {
-            if (null !== $mandate->getEnded() && $mandate->getEnded()->diff($now)->days >= ($yearsSinceMandateEnd * 365)) {
-                continue;
-            }
             if (isset($checkedSirens[$mandate->getSiren()])) {
                 continue;
             }
@@ -551,21 +549,22 @@ class CompanyValidator
 
             foreach ($incidentAnnouncements as $announcement) {
                 foreach ($announcement->getAnnouncementEvents() as $event) {
-                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $event->getResolutionDate(), $announcement->getPublishedDate());
+                    $eventDate = $this->getEventDateToUse($event, $announcement);
 
-                    if ($eventDate && $eventDate->diff($now)->days >= ($eventYearsOld * 365)) {
-                        continue;
-                    } elseif(false === $eventDate) {
+                    if (false === $eventDate) {
                         $this->logger->warning('Escaping check TCK-RISK-14 on announcement ID: ' . $announcement->getId() .
                             '. All dates from event effective date, event resolution date and announcement publish date are null',
                             ['siren' => $depositorSiren, 'method' => __METHOD__, 'announcementID' => $announcement->getId()]
                         );
                         continue;
                     }
+                    if ($this->isOlderThan($eventDate->diff($now), $eventYearsOld)) {
+                        continue;
+                    }
                     if ($mandate->getSiren() === $depositorSiren) {
                         if (
                             in_array($event->getCode(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_LIMITED_DATE)
-                            && $eventDate->diff($now)->days <= 365
+                            && false === $this->isOlderThan($eventDate->diff($now), 1)
                         ) {
                             $this->logger->info(
                                 'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched TCK-RISK-14',
@@ -594,7 +593,7 @@ class CompanyValidator
                                                 );
                                                 return true;
                                             case ContentiousParticipant::TYPE_COMPLAINANT:
-                                                if ($eventDate->diff($now)->days <= 365) {
+                                                if (false === $this->isOlderThan($eventDate->diff($now), 1)) {
                                                     $requestedEvents++;
                                                 }
                                                 if ($requestedEvents >= 3) {
@@ -664,17 +663,13 @@ class CompanyValidator
     private function hasPreviousExecutiveWithPejorativeAnnouncements(array $executiveIds, $yearsSince, $extendedYears)
     {
         $checkedSirens = [];
-        $now           = new \DateTime();
-
-        $allMandates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findMandatesByExecutives($executiveIds);
+        $allMandates   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->findMandatesByExecutivesSince($executiveIds, new \DateTime($yearsSince . ' years ago'));
         foreach ($allMandates as $mandate) {
-            if (null !== $mandate->getEnded() && $mandate->getEnded()->diff($now)->days >= ($yearsSince * 365)) {
-                continue;
-            }
             if (isset($checkedSirens[$mandate->getSiren()])) {
                 continue;
             }
-            $checkedSirens[$mandate->getSiren()] = $this->getPeriodForExecutiveInACompany($mandate->getIdExecutive(), $mandate->getSiren(), $extendedYears);;
+            $checkedSirens[$mandate->getSiren()] = $this->getPeriodForExecutiveInACompany($mandate->getIdExecutive(), $mandate->getSiren(), $extendedYears);
 
             $incidentAnnouncements = $this->externalDataManager->getAnnouncements($mandate->getSiren());
             if (empty($incidentAnnouncements)) {
@@ -683,7 +678,7 @@ class CompanyValidator
 
             foreach ($incidentAnnouncements as $announcement) {
                 foreach ($announcement->getAnnouncementEvents() as $event) {
-                    $eventDate = $this->getEventDateToUse($event->getEffectiveDate(), $event->getResolutionDate(), $announcement->getPublishedDate());
+                    $eventDate = $this->getEventDateToUse($event, $announcement);
 
                     if (false === $eventDate) {
                         $this->logger->warning('Escaping check TCK-RISK-18 on announcement ID: ' . $announcement->getId() .
@@ -712,23 +707,39 @@ class CompanyValidator
     }
 
     /**
-     * @param mixed $eventEffectiveDate
-     * @param mixed $eventResolutionDate
-     * @param mixed $announcementPublishDate
+     * @param AnnouncementEvent   $event
+     * @param AnnouncementDetails $announcement
      *
-     * @return \DateTime|boolean
+     * @return bool|\DateTime
      */
-    private function getEventDateToUse($eventEffectiveDate, $eventResolutionDate, $announcementPublishDate)
+    private function getEventDateToUse(AnnouncementEvent $event, AnnouncementDetails $announcement)
     {
-        if ($eventEffectiveDate instanceof \DateTime) {
-            return $eventEffectiveDate;
-        } elseif ($eventResolutionDate instanceof \DateTime) {
-            return $eventResolutionDate;
-        } elseif ($announcementPublishDate instanceof \DateTime) {
-            return $announcementPublishDate;
+        if ($event->getEffectiveDate() instanceof \DateTime) {
+            return $event->getEffectiveDate();
+        } elseif ($event->getResolutionDate() instanceof \DateTime) {
+            return $event->getResolutionDate();
+        } elseif ($announcement->getPublishedDate() instanceof \DateTime) {
+            return $announcement->getPublishedDate();
         }
 
         return false;
+    }
+
+    /**
+     * Returns true if the elapsed time (Y, m, d) is greater than specified years.
+     *
+     * @param \DateInterval $interval
+     * @param int           $numberOfYears
+     *
+     * @return bool
+     */
+    private function isOlderThan(\DateInterval $interval, $numberOfYears)
+    {
+        if ($numberOfYears === $interval->y) {
+            return ($interval->m + $interval->d) > 0;
+        }
+
+        return $interval->y > $numberOfYears;
     }
 
     /**
