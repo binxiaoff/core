@@ -7,6 +7,7 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\UnexpectedResultException;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -68,9 +69,15 @@ class ClientsRepository extends EntityRepository
                 ->setParameter('status', $status, \PDO::PARAM_INT);
         }
 
-        $query = $queryBuilder->getQuery();
+        $query  = $queryBuilder->getQuery();
 
-        return $query->getSingleScalarResult() > 0;
+        try {
+            $result = $query->getSingleScalarResult();
+        } catch (UnexpectedResultException $exception) {
+            return false;
+        }
+
+        return $result > 0;
     }
 
     /**
