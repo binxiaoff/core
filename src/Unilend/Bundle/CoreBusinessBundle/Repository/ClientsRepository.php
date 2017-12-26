@@ -13,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -47,6 +48,8 @@ class ClientsRepository extends EntityRepository
      * @param int|null $status
      *
      * @return bool
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function existEmail($email, $status = null)
     {
@@ -798,5 +801,27 @@ class ClientsRepository extends EntityRepository
             ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param CompanyClient $companyClient
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function countDuplicatesByFullName(CompanyClient $companyClient) : int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.idClient)')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->where('LOWER(c.nom) LIKE LOWER(:lastname)')
+            ->andWhere('LOWER(c.prenom) LIKE LOWER(:firstname)')
+            ->andWhere('cc.idCompany = :company')
+            ->setParameter('lastname', $companyClient->getIdClient()->getNom())
+            ->setParameter('firstname', $companyClient->getIdClient()->getPrenom())
+            ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

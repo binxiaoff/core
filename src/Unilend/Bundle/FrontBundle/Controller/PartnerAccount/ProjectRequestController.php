@@ -397,7 +397,6 @@ class ProjectRequestController extends Controller
      * @param Request $request
      *
      * @return Response
-     *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function projectRequestDetailsFormAction($hash, Request $request)

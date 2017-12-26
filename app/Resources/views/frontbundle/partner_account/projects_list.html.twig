@@ -55,12 +55,12 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in prospects %}
-                                            <tr id="prospect-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
+                                            <tr id="prospect-{{ project.id }}" class="table-projects-item{% if loop.index is divisible by(2) %} even{% else %} odd{% endif %}"
                                                 data-hash="{{ project.hash }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                                    {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
-                                                        data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
-                                                    {% endif %}
+                                                {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                                    data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
+                                                {% endif %}
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
                                                 data-sortable-duration="{{ project.duration }}">
@@ -135,7 +135,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in incompleteProjects %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
+                                            <tr id="project-{{ project.id }}" class="table-projects-item{% if loop.index is divisible by(2) %} even{% else %} odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                                 data-hash="{{ project.hash }}"
                                                 data-sortable-borrower="{{ project.name|e('html_attr') }}"
                                                     {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
@@ -215,7 +215,7 @@
                                         </thead>
                                         <tbody data-sortable-content>
                                         {% for project in completeProjects %}
-                                            <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
+                                            <tr id="project-{{ project.id }}" class="table-projects-item{% if loop.index is divisible by(2) %} even{% else %} odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                                 data-hash="{{ project.hash }}"
                                                 data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                                 data-details-tos="{{ project.tos|json_encode|escape('html_attr') }}"
