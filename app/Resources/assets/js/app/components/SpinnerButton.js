@@ -37,7 +37,7 @@
  <form id="spinnerbutton-target" action="/" method="get">
  <input type="text" name="example" value="ABC!" />
  <span id="spinnerbutton-spinner" class="ui-is-spinner">Loading...</span>
- <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-target="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
+ <button type="submit" data-spinnerbutton data-spinnerbutton-spinnerelem="#spinnerbutton-spinner" data-spinnerbutton-targetelem="#spinnerbutton-target" data-spinnerbutton-targetstartevent="submit" data-spinnerbutton-targetstopevent="FormValidation:error">Submit the form</button>
  </form>
  ```
 
@@ -245,9 +245,17 @@ SpinnerButton.prototype.stopLoading = function (disableSpinner) {
 SpinnerButton.prototype.destroy = function () {
   var self = this
 
+  if (self.$elem[0].hasAttribute('data-has-spinner')) {
+    self.$elem[0].removeAttribute('data-has-spinner')
+  }
+
+  if (self.$elem[0].className.indexOf('ui-spinnerbutton')) {
+    self.$elem[0].className = self.$elem[0].className.replace(/(?:^|\s)ui-spinnerbutton(?!\S)/g , '')
+  }
+
   // Do other necessary teardown things here, like destroying other related plugin instances, etc. Most often used to reduce memory leak
 
-  self.$elem[0].SpinnerButton = null
+  delete self.$elem[0].SpinnerButton
   delete self
 }
 

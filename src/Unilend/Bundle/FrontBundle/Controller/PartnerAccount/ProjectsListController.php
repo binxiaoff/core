@@ -38,12 +38,25 @@ class ProjectsListController extends Controller
         $abandoned         = $projectRepository->getPartnerAbandoned($companies);
         $rejected          = $projectRepository->getPartnerRejected($companies);
 
+        $incompleteProjects = [];
+        $completeProjects   = [];
+
+        foreach ($borrowers as $project) {
+            if (ProjectsStatus::INCOMPLETE_REQUEST === $project->getStatus()) {
+                $incompleteProjects[] = $project;
+            } else {
+                $completeProjects[] = $project;
+            }
+        }
+        unset($borrowers);
+
         return $this->render('/partner_account/projects_list.html.twig', [
-            'prospects'      => $this->formatProject($prospects, false),
-            'borrowers'      => $this->formatProject($borrowers, true),
-            'abandoned'      => $this->formatProject($abandoned, true, true),
-            'rejected'       => $this->formatProject($rejected, true),
-            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
+            'prospects'          => $this->formatProject($prospects, false),
+            'incompleteProjects' => $this->formatProject($incompleteProjects, false),
+            'completeProjects'   => $this->formatProject($completeProjects, true),
+            'abandoned'          => $this->formatProject($abandoned, true, true),
+            'rejected'           => $this->formatProject($rejected, true),
+            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
         ]);
     }
 
