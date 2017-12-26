@@ -1916,7 +1916,7 @@ class MailerManager
             $this->mailer->send($message);
         } catch (\Exception $exception){
             $this->oLogger->warning(
-                'Could not send email: signature-universign-de-cgv - Exception: ' . $exception->getMessage(),
+                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
