@@ -37,6 +37,7 @@ class CompanyManager
      * @param RiskDataMonitoringManager $riskDataMonitoringManager
      * @param WalletCreationManager     $walletCreationManager
      * @param LoggerInterface           $logger
+     * @param ProjectStatusManager      $projectStatusManager
      */
     public function __construct(
         EntityManager $entityManager,

@@ -45,6 +45,20 @@ class ProjectLifecycleManager
     /** @var ProjectManager */
     private $projectManager;
 
+    /**
+     * @param EntityManagerSimulator     $entityManagerSimulator
+     * @param EntityManager              $entityManager
+     * @param BidManager                 $bidManager
+     * @param LoanManager                $loanManager
+     * @param NotificationManager        $notificationManager
+     * @param MailerManager              $mailerManager
+     * @param ProjectRateSettingsManager $projectRateSettingsManager
+     * @param ProductManager             $productManager
+     * @param ContractAttributeManager   $contractAttributeManager
+     * @param SponsorshipManager         $sponsorshipManager
+     * @param ProjectStatusManager       $projectStatusManager
+     * @param ProjectManager             $projectManager
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
