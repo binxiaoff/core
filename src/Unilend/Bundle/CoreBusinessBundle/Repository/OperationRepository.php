@@ -680,7 +680,7 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param string $typeGroupBy
+     * @param string|null $typeGroupBy
      *
      * @return string
      */
