@@ -21,6 +21,7 @@ class ProjectsRepository extends EntityRepository
      * @param int $lenderId
      *
      * @return int
+     * @throws \Doctrine\DBAL\Cache\CacheException
      */
     public function countCompaniesLenderInvestedIn($lenderId)
     {
@@ -127,7 +128,8 @@ class ProjectsRepository extends EntityRepository
                 ),
                 $queryBuilder->expr()->andX(
                     $queryBuilder->expr()->eq('p.status', ':noAutoEvaluationStatus'),
-                    $queryBuilder->expr()->notLike('c.telephone', $queryBuilder->expr()->literal(''))
+                    $queryBuilder->expr()->notLike('c.telephone', $queryBuilder->expr()->literal('')),
+                    $queryBuilder->expr()->isNotNull('c.telephone')
                 )
             ))
             ->setParameter('userCompanies', $companies)
@@ -182,6 +184,7 @@ class ProjectsRepository extends EntityRepository
      * @param int|null    $client
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getMonthlyStatistics($projectStatus, \DatePeriod $datePeriod, array $companies = null, $client = null)
     {
@@ -266,6 +269,8 @@ class ProjectsRepository extends EntityRepository
      * @param array  $companyStatusLabel
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCountProjectsBySirenAndNotInStatus($siren, array $projectStatus, array $companyStatusLabel)
     {
@@ -312,6 +317,7 @@ class ProjectsRepository extends EntityRepository
      * @param int       $projectStatus
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getIndicatorBetweenDates($select, \DateTime $start, \DateTime $end, $projectStatus)
     {
@@ -342,6 +348,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsHavingHadStatusBetweenDates(array $status, \DateTime $start, \DateTime $end)
     {
@@ -379,6 +386,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsWithDebtCollectionMissionBetweenDates(\DateTime $start, \DateTime $end)
     {
@@ -415,6 +423,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsHavingHadCompanyStatusInCollectiveProceeding(\DateTime $start, \DateTime $end)
     {
@@ -453,6 +462,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsInRepaymentAtDate(\DateTime $end)
     {
@@ -561,6 +571,8 @@ class ProjectsRepository extends EntityRepository
      * @param string $siren
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCountProjectsByStatusAndSiren(array $status, $siren)
     {
@@ -580,6 +592,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAverageInterestRateByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -620,6 +633,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAverageInterestRateUntil(\DateTime $date = null)
     {
@@ -659,6 +673,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAverageInterestRateByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -704,6 +719,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAveragePeriodByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -743,6 +759,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAveragePeriodUntil(\DateTime $date = null)
     {
@@ -781,6 +798,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAveragePeriodByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -825,6 +843,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAveragePeriodUntil(\DateTime $date = null)
     {
@@ -893,6 +912,7 @@ class ProjectsRepository extends EntityRepository
      * @param bool $healthy
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getCountProjectsWithLateRepayments($healthy = true, $groupFirstYears = true)
     {
@@ -950,6 +970,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null  $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getAverageLoanAgeByCohortUntil($weighted, $groupFirstYears, \DateTime $date = null)
     {
@@ -1009,10 +1030,11 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param bool            $weighted
-     * @param \DateTime|null  $date
+     * @param bool           $weighted
+     * @param \DateTime|null $date
      *
      * @return bool|string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getAverageLoanAgeUntil($weighted, \DateTime $date = null)
     {

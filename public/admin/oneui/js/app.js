@@ -1066,9 +1066,6 @@ var App = function() {
                 var icon = (state === 'inactive') ? 'off' : 'on'
                 html += '<a class="btn btn-xs btn-default ' + btn + '" title="' + tooltip + '"><i class="fa fa-toggle-' + icon + '"></i></a>'
             }
-            if (~(self.actions.indexOf('stats'))) {
-                html += '<a class="btn btn-xs btn-default stats-btn" title="Statistiques"><i class="fa fa-line-chart"></i></a>'
-            }
             return html
         }
         DT.prototype.fields = function() {
@@ -1476,10 +1473,6 @@ var App = function() {
             self.$elem.on('click', '.deactivate-btn', function(){
                 var id = $(this).closest('tr').data('id')
                 self.openModal('deactivate', id)
-            })
-            self.$elem.on('click', '.stats-btn', function(){
-                var url = $(this).closest('tr').data('stats-url')
-                window.location.href = url
             })
             self.$modal.on('shown.bs.modal', function() {
                 if (self.$modal.find('[data-date-format]').length) {

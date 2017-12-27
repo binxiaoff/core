@@ -7,19 +7,19 @@ var $ = require('jquery')
 var Utility = require('Utility')
 var Templating = require('Templating')
 
-// Partner Prospects Table
+// Partner Project Details
+// @todo probably needing to be reviewed by a frontend dev
 $doc
-    .on(Utility.clickEvent, '.table-prospects [data-action]', function () {
-        var $prospect = $(this).closest('tr')
-        var action = $(this).data('action')
-        var $modal = $('#modal-partner-prospect-' + action)
-        var $form = $modal.find('form')
-
-        $form.find('[name="hash"]').val($prospect.data('hash'))
-
-        // Insert the company name inside the modal text and Show the popup
-        $modal.find('.ui-modal-output-company').html($prospect.data('sortable-borrower'))
-        $modal.uiModal('open')
+    .on(Utility.clickEvent, '#form-project-details .btn-save', function (event) {
+        // We only want to save data, do not check required fields
+        var $form = $(this).closest('form')
+        $form.find('[data-formvalidation-required]').each(function () {
+            var $input = $(this)
+            $input.removeAttr('data-formvalidation-required')
+        })
+        $('[data-spinnerbutton]').uiSpinnerButton('destroy')
+        $form.find('[name=action]').val('save')
+        $form.submit()
     })
 
 // Partner Projects Table
@@ -52,6 +52,8 @@ $doc
         if ($modal.is('.ui-ajax-feedback')) {
             $modal.removeClass('ui-ajax-feedback').removeClass('success').removeClass('error')
         }
+        // Insert the company name inside the modal text and Show the popup
+        $modal.find('.ui-modal-output-company').html($project.data('sortable-borrower'))
         $modal.uiModal('open')
     })
 

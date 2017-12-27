@@ -804,7 +804,7 @@ class CompanyValidator
      *
      * @return array
      */
-    private function checkRule($ruleName, $siren, Projects $project = null)
+    public function checkRule($ruleName, $siren, Projects $project = null)
     {
         $method = new \ReflectionMethod($this, self::CHECK_RULE_METHODS[$ruleName]);
         $method->setAccessible(true);

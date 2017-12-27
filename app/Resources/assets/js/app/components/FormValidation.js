@@ -887,6 +887,9 @@ FormValidation.prototype.rules = {
 
   // Input Type
   inputType: function (inputValidation, inputType) {
+    // Non empty values should be check using required form validation attribute
+    if (inputValidation.value.length === 0) return
+
     // FormValidation
     var self = this
 

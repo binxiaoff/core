@@ -31,6 +31,8 @@ var Memo = function($trigger) {
                     '<div class="existing">' + existingHmtl + '</div>' +
                     '<textarea id="' + self.textarea + '" name="comment"></textarea>' +
                     '<input type="hidden" name="projectId" value="' + self.track.projectId + '">' +
+                    '<label><input type="radio" name="public" value="0" checked> Privé </label> ' +
+                    '<label><input type="radio" name="public" value="1"> Public</label>' +
                     '<div class="controls text-right">' +
                         '<button type="button" data-memo-close class="btn-default">Annuler</button>' +
                         '<button type="submit" data-memo-submit class="btn-primary">Valider</button>' +
@@ -39,12 +41,7 @@ var Memo = function($trigger) {
 
     self.$elem.append(html)
 
-    if (self.track.submitUrl === 'add')
-        self.$elem.find('.controls').prepend('<label><input type="radio" name="public" value="0" checked>Privé</label>' +
-        '<label><input type="radio" name="public" value="1"> Public</label>')
-
     self.$textarea = $('#' + self.textarea)
-
 
     self.$elem[0].Memo = self
 }
@@ -63,8 +60,8 @@ Memo.prototype.open = function () {
     }
 
     // By default, memos are private
-    self.$elem.find('.controls input[name="public"]').each(function(){
-        if ($(this).val() == 1)
+    self.$elem.find('.controls input[name="public"]').each(function() {
+        if ($(this).val() === '0')
             $(this).attr('checked', true).prop('checked', true)
     })
     // Open the memo textarea

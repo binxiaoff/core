@@ -80,7 +80,8 @@
                                                                             'id' : 'form-profile-completeness-iban',
                                                                             'attr' : {
                                                                                 'class' : 'iban-input input-field',
-                                                                                'data-formvalidation-input data-formvalidation-type' : 'iban'
+                                                                                'data-formvalidation-input data-formvalidation-required' : 'true',
+                                                                                'data-formvalidation-type' : 'iban'
                                                                             }
                                                                         }) }}
                                                                         {{ form_errors(bankForm.bankAccount.iban) }}
@@ -100,7 +101,8 @@
                                                                             'id' : 'form-profile-completeness-bic',
                                                                             'attr' :  {
                                                                                 'class' : 'bic-input input-field',
-                                                                                'data-formvalidation-input data-formvalidation-type' : 'bic'
+                                                                                'data-formvalidation-input data-formvalidation-required' : 'true',
+                                                                                'data-formvalidation-type' : 'bic'
                                                                             }
                                                                         }) }}
                                                                         {{ form_errors(bankForm.bankAccount.bic) }}
