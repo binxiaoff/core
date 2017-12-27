@@ -87,7 +87,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $client->get($company->id_client_owner, 'id_client');
                             }
 
-                            if (filter_var($client->email, FILTER_VALIDATE_EMAIL)) {
+                            $email = preg_replace('/^(.*)-[0-9]+$/', '$1', $client->email);
+
+                            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                                 $projectStatusHistory->loadLastProjectHistory($project->id_project);
 
                                 $oSubmissionDate = new \DateTime($project->added);
@@ -119,13 +121,11 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
-                                $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($client->email));
-
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $keywords);
 
                                 try {
-                                    $message->setTo($sRecipientEmail);
+                                    $message->setTo($email);
                                     $mailer = $this->getContainer()->get('mailer');
                                     $mailer->send($message);
                                 } catch (\Exception $exception) {

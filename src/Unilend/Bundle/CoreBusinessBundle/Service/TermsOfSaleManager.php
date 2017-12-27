@@ -3,10 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface
+};
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
@@ -39,11 +38,12 @@ class TermsOfSaleManager
     }
 
     /**
-     * @param Projects $project
+     * @param Projects       $project
+     * @param Companies|null $companySubmitter
      *
      * @throws \Exception
      */
-    public function sendBorrowerEmail(Projects $project)
+    public function sendBorrowerEmail(Projects $project, Companies $companySubmitter = null)
     {
         /** @var \ficelle $stringManager */
         $stringManager = Loader::loadLib('ficelle');
@@ -102,6 +102,6 @@ class TermsOfSaleManager
             copy($pdfPath, $this->rootDirectory . '/../' . ProjectCgv::BASE_PATH . $termsOfSale->getName());
         }
 
-        $this->mailerManager->sendProjectTermsOfSale($termsOfSale);
+        $this->mailerManager->sendProjectTermsOfSale($termsOfSale, $companySubmitter);
     }
 }

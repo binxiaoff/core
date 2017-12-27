@@ -410,7 +410,9 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
-            <argument type="service" id="unilend.service.project_status_manager"/>
+            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.project_manager"/>
         </service>
 
         <service id="unilend.service.debt_collection_mission_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager">
@@ -469,6 +471,14 @@
             <argument type="service" id="logger"/>
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
             <argument type="service" id="router"/>
+        </service>
+
+        <service id="unilend.service.eligibility.bulk_company_check_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager">
+            <argument>%path.protected%</argument>
+            <argument type="service" id="filesystem"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="unilend.service.slack_manager"/>
         </service>
     </services>
 </container>
