@@ -217,8 +217,9 @@ class loans extends loans_crud
      * @param int|null    $year
      *
      * @return array
+     * @throws Exception
      */
-    public function getSumLoansByProject($idLender, $order = null, $year = null)
+    public function getSumLoansByProject(int $idLender, $order = null, $year = null) : array
     {
         $query = '
             SELECT
@@ -242,7 +243,7 @@ class loans extends loans_crud
                 DATE((SELECT MAX(date_echeance) FROM echeanciers WHERE id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(date_echeance) FROM echeanciers WHERE id_loan = l.id_loan AND status = 0)) AS next_echeance,
                 ROUND(SUM(first_repayment.montant) / 100, 2) AS monthly_repayment_amount,
-                (SELECT ROUND(SUM(capital - capital_rembourse) / 100, 2) FROM echeanciers WHERE id_loan = l.id_loan) AS remaining_capital
+                (SELECT ROUND(SUM(capital - capital_rembourse) / 100, 2) FROM echeanciers WHERE id_project = p.id_project AND id_lender = l.id_lender) AS remaining_capital
             FROM loans l
             INNER JOIN projects p ON l.id_project = p.id_project
             INNER JOIN companies c ON p.id_company = c.id_company
