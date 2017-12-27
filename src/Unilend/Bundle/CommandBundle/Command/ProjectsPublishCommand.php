@@ -298,6 +298,7 @@ EOF
                             $autolendSettingsAdvises = '';
                             /** @var Notifications $bidPlacedNotification */
                             $bidPlacedNotification = $notificationsRepository->findOneBy(['idLender' => $wallet->getId(), 'idProject' => $project->id_project, 'type' => Notifications::TYPE_BID_PLACED]);
+                            $autolendUrl           = $hostUrl . $router->generate('autolend');
 
                             if (
                                 null !== $bidPlacedNotification
@@ -316,9 +317,9 @@ EOF
                                 $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
 
                                 $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
+                                $keywords['autolendUrl']      = $autolendUrl;
                             } else {
                                 $mailType    = 'nouveau-projet';
-                                $autolendUrl = $hostUrl . $router->generate('autolend');
 
                                 if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
                                     $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
