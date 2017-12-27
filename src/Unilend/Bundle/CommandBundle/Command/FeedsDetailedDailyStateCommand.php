@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\DetailedDailyStateBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
@@ -70,8 +71,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const BORROWER_CHARGE_REPAYMENT_COLUMN    = 'AP';
     const PROMOTION_OFFER_DISTRIBUTION_COLUMN = 'AQ';
 
+    /** Bank account movements */
+    const WIRE_TRANSFER_OUT_COLUMN = 'AR';
+    const DIRECT_DEBIT_COLUMN      = 'AS';
+
     const DATE_COLUMN = 'A';
-    const LAST_COLUMN = self::PROMOTION_OFFER_DISTRIBUTION_COLUMN;
+    const LAST_COLUMN = self::DIRECT_DEBIT_COLUMN;
 
     /**
      * @see Command
@@ -85,6 +90,9 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             ->addOption('no-email', null, InputOption::VALUE_OPTIONAL, 'Do not send email with daily state', false);
     }
 
+    /**
+     * @see Command
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $date = $input->getArgument('day');
@@ -144,6 +152,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
             $this->addMovementData($activeSheet, $firstDay, $requestedDate, $specificRows);
             $this->addBalanceData($activeSheet, $firstDay, $requestedDate, $specificRows);
+            $this->addBankAccountData($activeSheet, $firstDay, $requestedDate, $specificRows);
+
 
             $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_detaille_' . $requestedDate->format('Ymd') . '.xlsx';
             /** @var \PHPExcel_Writer_CSV $writer */
@@ -155,7 +165,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             }
 
         } catch (\Exception $exception) {
-            $this->getContainer()->get('monolog.logger.console')->warning('Detailed daily state could not be generated', [$exception->getMessage(), $exception->getTraceAsString(), $exception->getFile(), $exception->getLine()]);
+            $this->getContainer()->get('monolog.logger.console')
+                ->error('Detailed daily state could not be generated', [$exception->getMessage(), $exception->getTraceAsString(), $exception->getFile(), $exception->getLine()]);
         }
     }
 
@@ -298,7 +309,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @return DetailedDailyStateBalanceHistory
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function newDailyStateBalanceHistory(\DateTime $date)
+    private function newDailyStateBalanceHistory(\DateTime $date) : DetailedDailyStateBalanceHistory
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
@@ -326,7 +337,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      *
      * @throws \PHPExcel_Exception
      */
-    private function addHeaders(\PHPExcel_Worksheet $activeSheet, \DateTime $date, $startRow)
+    private function addHeaders(\PHPExcel_Worksheet $activeSheet, \DateTime $date, int $startRow)
     {
         $descriptionRow     = $startRow + 1;
         $additionalInfoRow  = $descriptionRow + 1;
@@ -388,7 +399,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::TAX_BALANCE_COLUMN . $additionalInfoRow, 'Solde Admin. Fiscale');
 
         /** internal movements section */
-        $activeSheet->mergeCells(self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+        $activeSheet->mergeCells(self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $descriptionRow)
             ->setCellValue(self::LENDER_LOAN_COLUMN . $descriptionRow, 'MOUVEMENTS INTERNES');
         $activeSheet->setCellValue(self::LENDER_LOAN_COLUMN . $additionalInfoRow, 'Octroi prêt');
         $activeSheet->setCellValue(self::UNILEND_COMMISSION_FUNDS_COLUMN . $additionalInfoRow, 'Commission octroi prêt');
@@ -408,6 +419,12 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $additionalInfoRow, 'Commission Recouvreur');
         $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $additionalInfoRow, 'Frais remboursés à Unilend');
         $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $additionalInfoRow, 'Offre promo');
+
+        /** bank account section  */
+        $activeSheet->mergeCells(self::WIRE_TRANSFER_OUT_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
+            ->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $descriptionRow, 'FICHIERS');
+        $activeSheet->setCellValue(self::WIRE_TRANSFER_OUT_COLUMN . $additionalInfoRow, 'Virements');
+        $activeSheet->setCellValue(self::DIRECT_DEBIT_COLUMN . $additionalInfoRow, 'Prélèvements');
     }
 
     /**
@@ -419,7 +436,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @return array
      * @throws \PHPExcel_Exception
      */
-    private function addDates(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, $row)
+    private function addDates(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, int $row) : array
     {
         $lastDay = new \DateTime('last day of ' . $requestedDate->format('Y-m'));
         $lastDay->add(new \DateInterval('P1D')); // first day of the next month for the interval
@@ -447,7 +464,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @return array
      * @throws \PHPExcel_Exception
      */
-    private function addMonths(\PHPExcel_Worksheet $activeSheet, \DateTime $requestedDate, $row)
+    private function addMonths(\PHPExcel_Worksheet $activeSheet, \DateTime $requestedDate, int $row) : array
     {
         $monthInterval    = \DateInterval::createFromDateString('1 month');
         $year             = new \DatePeriod(new \Datetime('First day of January ' . $requestedDate->format('Y')), $monthInterval, new \DateTime('Last day of december ' . $requestedDate->format('Y')));
@@ -526,7 +543,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      *
      * @throws \PHPExcel_Exception
      */
-    private function formatHeader(\PHPExcel_Worksheet $activeSheet, $startRow)
+    private function formatHeader(\PHPExcel_Worksheet $activeSheet, int $startRow)
     {
         $startRowCoordinates = self::DATE_COLUMN . $startRow . ':' . self::LAST_COLUMN . $startRow;
 
@@ -580,11 +597,13 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $this->fillCellsWithColor($activeSheet, self::DATE_COLUMN . $previousBalanceRow . ':' . self::LAST_COLUMN . $previousBalanceRow, 'BFBFBF');
 
         /** internal movements */
-        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow, '8dbad8');
-        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $additionalInfoRow . ':' . self::LAST_COLUMN . $additionalInfoRow, 'D6D6D6');
+        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $descriptionRow, '8DBAD8');
+        $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $additionalInfoRow . ':' . self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $additionalInfoRow, 'D6D6D6');
         $this->fillCellsWithColor($activeSheet, self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, $differenceColor);
 
-        /**  */
+        /** bank account movements */
+        $this->fillCellsWithColor($activeSheet, self::WIRE_TRANSFER_OUT_COLUMN . $descriptionRow . ':' . self::DIRECT_DEBIT_COLUMN . $descriptionRow, 'BFBFBF');
+        $this->fillCellsWithColor($activeSheet, self::WIRE_TRANSFER_OUT_COLUMN . $additionalInfoRow . ':' . self::DIRECT_DEBIT_COLUMN . $additionalInfoRow, 'DDD9C4');
 
         $activeSheet->getStyle(self::DATE_COLUMN . $descriptionRow . ':' . self::LAST_COLUMN . $descriptionRow)
             ->getFont()
@@ -621,7 +640,6 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $this->groupColumns($activeSheet, self::STATUTORY_CONTRIBUTIONS_COLUMN, self::CRDS_COLUMN);
     }
 
-
     /**
      * @param \PHPExcel_Worksheet $activeSheet
      * @param string              $firstColumn
@@ -629,7 +647,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      *
      * @throws \PHPExcel_Exception
      */
-    private function groupColumns(\PHPExcel_Worksheet $activeSheet, $firstColumn, $lastColumn)
+    private function groupColumns(\PHPExcel_Worksheet $activeSheet, string $firstColumn, string $lastColumn)
     {
         for ($column = $firstColumn; $column <= $lastColumn; ++$column) {
             $activeSheet->getColumnDimension($column)
@@ -647,7 +665,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      *
      * @throws \PHPExcel_Exception
      */
-    private function fillCellsWithColor(\PHPExcel_Worksheet $activeSheet, $coordinates, $color)
+    private function fillCellsWithColor(\PHPExcel_Worksheet $activeSheet, string $coordinates, string $color)
     {
         $activeSheet->getStyle($coordinates)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID);
         $activeSheet->getStyle($coordinates)->getFill()->getStartColor()->setARGB($color);
@@ -658,7 +676,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
      * @param array               $movements
      * @param int                 $row
      */
-    private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, $row)
+    private function addMovementLines(\PHPExcel_Worksheet $activeSheet, array $movements, int $row)
     {
         foreach ($movements as $line) {
             $lenderProvisionCreditCard         = empty($line['lender_provision_credit_card']) ? 0 : $line['lender_provision_credit_card'];
@@ -799,13 +817,13 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     /**
      * @param \PHPExcel_Worksheet              $activeSheet
      * @param DetailedDailyStateBalanceHistory $dailyBalances
-     * @param                                  $row
+     * @param int                              $row
      * @param array                            $specificRows
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \PHPExcel_Exception
      */
-    private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DetailedDailyStateBalanceHistory $dailyBalances, $row, array $specificRows)
+    private function addBalanceLine(\PHPExcel_Worksheet $activeSheet, DetailedDailyStateBalanceHistory $dailyBalances, int $row, array $specificRows)
     {
         $isPreviousLine        = in_array($row, [$specificRows['previousMonth'], $specificRows['previousYear']]);
         $isTotal               = in_array($row, [$specificRows['totalDay'], $specificRows['totalMonth']]);
@@ -881,11 +899,62 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param $filePath
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param \DateTime           $firstDay
+     * @param \DateTime           $requestedDate
+     * @param array               $specificRows
+     */
+    private function addBankAccountData(\PHPExcel_Worksheet $activeSheet, \DateTime $firstDay, \DateTime $requestedDate, array $specificRows)
+    {
+        $entityManager             = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $wireTransferOutRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements');
+        $directDebitRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+
+        $wireTransfersDay = [
+            'out'         => $wireTransferOutRepository->sumWireTransferOutByDay($firstDay, $requestedDate, Virements::STATUS_SENT),
+            'directDebit' => $directDebitRepository->sumDirectDebitByDay($firstDay, $requestedDate)
+        ];
+        $this->addBankaccountLines($activeSheet, $wireTransfersDay, $specificRows['totalDay'], $specificRows['coordinatesDay']);
+
+        $wireTransfersMonth = [
+            'out'         => $wireTransferOutRepository->sumWireTransferOutByMonth($requestedDate->format('Y'), Virements::STATUS_SENT),
+            'directDebit' => $directDebitRepository->sumDirectDebitByMonth($requestedDate->format('Y'))
+        ];
+        $this->addBankaccountLines($activeSheet, $wireTransfersMonth, $specificRows['totalMonth'], $specificRows['coordinatesMonth']);
+    }
+
+    /**
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param array               $wireTransfers
+     * @param                     $totalRow
+     * @param array               $coordinates
+     */
+    private function addBankAccountLines(\PHPExcel_Worksheet $activeSheet, array $wireTransfers, $totalRow, array $coordinates)
+    {
+        $totalWireTransferOut = 0;
+        $totalDirectDebit     = 0;
+
+        foreach ($coordinates as $date => $row) {
+            $wireTransferOut = empty($wireTransfers['out'][$date]) ? 0 : $wireTransfers['out'][$date];
+            $directDebit     = empty($wireTransfers['directDebit'][$date]) ? 0 : $wireTransfers['directDebit'][$date];
+
+            $totalWireTransferOut = round(bcadd($totalWireTransferOut, $wireTransferOut, 4), 2);
+            $totalDirectDebit     = round(bcadd($totalDirectDebit, $directDebit, 4), 2);
+
+            $activeSheet->setCellValueExplicit(self::WIRE_TRANSFER_OUT_COLUMN . $row, $wireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::DIRECT_DEBIT_COLUMN . $row, $directDebit, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        }
+
+        $activeSheet->setCellValueExplicit(self::WIRE_TRANSFER_OUT_COLUMN . $totalRow, $totalWireTransferOut, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit(self::DIRECT_DEBIT_COLUMN . $totalRow, $totalDirectDebit, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    }
+
+    /**
+     * @param string $filePath
      *
      * @throws \Swift_RfcComplianceException
      */
-    private function sendFileToInternalRecipients($filePath)
+    private function sendFileToInternalRecipients(string $filePath)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         /** @var Settings $recipientSetting */
