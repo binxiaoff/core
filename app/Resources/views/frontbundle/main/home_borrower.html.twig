@@ -1,4 +1,4 @@
-{% extends '../layouts/_layout.html.twig' %}
+{% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
     <article id="homeemp" class="page">
@@ -23,7 +23,7 @@
                     <h3>{{ featureBorrower.video_caption }}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include '../partials/list_socialmedia.html.twig' %}
+                {% include 'partials/list_socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="#homeemp-section-esim" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> {{ 'home-borrower_link-below-video-text'|trans }}</a>
@@ -356,7 +356,7 @@
 
         {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
-        {% include '../partials/scroll_more.html.twig' %}
+        {% include 'partials/scroll_more.html.twig' %}
 
     </article><!-- /.page -->
 {% endblock %}

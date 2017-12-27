@@ -54,7 +54,7 @@
                         '%fundingDuration%' : ('project-detail_funding-duration-' ~ project.fundingDuration.translation)|transchoice(project.fundingDuration.choice, project.fundingDuration.values)
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
-                {{ include('projects/detail/login_form.html.twig') %}
+                {% include('projects/detail/login_form.html.twig') %}
             {% elseif project.status == constant('\\projects_status::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}

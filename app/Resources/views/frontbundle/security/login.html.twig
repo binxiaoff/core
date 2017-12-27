@@ -1,5 +1,5 @@
 {# Inscription / Connexion Page #}
-{% extends '../layouts/_layout.html.twig' %}
+{% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
     <article id="connexion-inscription" class="page">
@@ -117,12 +117,12 @@
                     </div>
                 </div><!-- /.site-wrap -->
 
-                {% include '../partials/list_socialmedia.html.twig' %}
+                {% include 'partials/list_socialmedia.html.twig' %}
             </div><!-- /.hero-wrap -->
         </section><!-- /.page-content -->
     </article><!-- /.page -->
 {% endblock %}
 
 {% block modals %}
-    {% include '../partials/popup_password_forgotten.html.twig' %}
+    {% include 'partials/popup_password_forgotten.html.twig' %}
 {% endblock %}

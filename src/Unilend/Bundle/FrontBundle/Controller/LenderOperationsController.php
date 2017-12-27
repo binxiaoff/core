@@ -77,7 +77,7 @@ class LenderOperationsController extends Controller
         $loans = $this->commonLoans($request, $wallet);
 
         return $this->render(
-            'lender_operations/layout.html.twig',
+            'lender_operations/index.html.twig',
             [
                 'clientId'               => $wallet->getIdClient()->getIdClient(),
                 'hash'                   => $this->getUser()->getHash(),

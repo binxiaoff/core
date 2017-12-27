@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\core\Loader;
 
-class LenderAutoEvaluationSurveyController extends Controller
+class LenderAutoEvaluationController extends Controller
 {
     const VALUE_TOTAL_ESTATE_THRESHOLD    = 20000;
     const VALUE_MONTHLY_SAVINGS_THRESHOLD = 100;
@@ -21,7 +21,7 @@ class LenderAutoEvaluationSurveyController extends Controller
      */
     public function indexAction()
     {
-        return $this->render('lender_auto_evaluation_survey/survey.html.twig');
+        return $this->render('lender_auto_evaluation/survey.html.twig');
     }
 
     /**
@@ -77,7 +77,7 @@ class LenderAutoEvaluationSurveyController extends Controller
 
         $this->get('session')->set('answers', $answers);
 
-        return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
+        return $this->render('lender_auto_evaluation/survey.html.twig', [
             'question'    => $questionsRepository->findOneBy(['type' => $nextQuestionType]),
             'currentStep' => $currentStep,
             'answers'     => $answers
@@ -98,7 +98,7 @@ class LenderAutoEvaluationSurveyController extends Controller
             return $this->redirectToRoute('lender_auto_evaluation');
         }
 
-        return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
+        return $this->render('lender_auto_evaluation/survey.html.twig', [
             'advices' => $this->getAdvices($answers)
         ]);
     }

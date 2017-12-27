@@ -398,7 +398,7 @@ class MainController extends Controller
             'next'        => $nextPage
         ];
 
-        return $this->render('cms_templates/template-nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
+        return $this->render('cms_templates/template_nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
     }
 
     /**

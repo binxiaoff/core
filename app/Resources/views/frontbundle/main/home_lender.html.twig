@@ -1,5 +1,5 @@
 {# Homepage Preter #}
-{% extends '../layouts/_layout.html.twig' %}
+{% extends 'layouts/_layout.html.twig' %}
 
 {% block siteContent %}
     <article id="homepre" class="page">
@@ -21,7 +21,7 @@
                     <h3>{{ featureLender.video_caption }}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include '../partials/list_socialmedia.html.twig' %}
+                {% include 'partials/list_socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="{{ path('lender_subscription_personal_information') }}" class="btn-cta btn-color-primary">
@@ -86,7 +86,7 @@
             <div class="site-wrap">
                 <h2 class="h2"> {% trans %} home-lender_ongoing-projects-table-title {% endtrans %}</h2>
 
-                {% include 'projects/project-list' %}
+                {% include 'projects/list/project_list.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="{{ path('projects_list') }}" class="btn-primary">{% trans %} home-lender_all-projects-button {% endtrans %}</a>
@@ -152,7 +152,7 @@
 
         {{ render(controller('UnilendFrontBundle:Main:footerReviews')) }}
 
-        {% include '../partials/scroll_more.html.twig' %}
+        {% include 'partials/scroll_more.html.twig' %}
 
     </article>
 {% endblock %}

@@ -115,7 +115,7 @@
 } %}
 
 {# Panel - My Account #}
-{% embed 'lender_account/partials/dashboard_panel.html.twig' %}
+{% embed 'lender_account/dashboard_panel.html.twig' %}
     {% block panelAttributes %} id="account" {% endblock %}
     {% block panelClassNames %} dashboard-panel dashboard-myaccount ui-draggable {% if panelInfo.hidden == true %} ui-dashboard-panel-hidden {% endif %} col-lg-6 col-md-6 col-sm-8 col-xs-4 {% endblock %}
     {% block panelTitle %}{{ 'lender-dashboard-account_title'|trans }}{% endblock %}
