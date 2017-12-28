@@ -46,17 +46,18 @@ class MailQueueManager
      *
      * @return bool
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Exception
+     * @throws \Swift_RfcComplianceException
      */
-    public function queue(TemplateMessage $message)
+    public function queue(TemplateMessage $message) : bool
     {
-        $count = (
-            count((array) $message->getTo())
-            + count((array) $message->getCc())
-            + count((array) $message->getBcc())
-        );
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
 
-        if (0 === $count) {
+        if (false == $this->checkRecipients($message)) {
+            $this->logger->warning('Email not inserted into queue due to badly formatted recipient(s) : ', [
+                'templateType ' => $mailTemplate->getType(),
+                'function'      => __METHOD__
+            ]);
+
             return false;
         }
 
@@ -71,21 +72,15 @@ class MailQueueManager
             chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
         }
 
-        $clientId     = null;
         $recipients   = TemplateMessage::emailAddressToString($message->getTo());
         $replyTo      = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
+        $clientId     = null;
 
         if (1 === count($message->getTo())) {
             $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $recipients]);
 
             if (1 === count($clients)) {
-                $client   = $clients[0];
-                $clientId = $client->getIdClient();
-
-                if (1 !== preg_match('/^[a-zA-Z0-9{1}]+[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/', $client->getEmail())) {
-                    throw new \Exception('Email is badly formatted. Email : ' . $client->getEmail() . ' clientId : ' . $clientId);
-                }
+                $clientId = $clients[0]->getIdClient();
             }
         }
 
@@ -102,6 +97,72 @@ class MailQueueManager
 
         $this->entityManager->persist($mailQueue);
         $this->entityManager->flush($mailQueue);
+
+        return true;
+    }
+
+    /**
+     * @param TemplateMessage $message
+     *
+     * @return bool
+     * @throws \Swift_RfcComplianceException
+     */
+    private function checkRecipients(TemplateMessage $message) : bool
+    {
+        $toCount  = count((array) $message->getTo());
+        $ccCount  = count((array) $message->getCc());
+        $bccCount = count((array) $message->getBcc());
+
+        if (0 === $toCount + $ccCount + $bccCount) {
+            return false;
+        }
+
+        $cleanTo = [];
+        foreach($message->getTo() as $email => $name) {
+            if ($this->checkEmailAddress($email)) {
+                $cleanTo[$email] = $name;
+            }
+        }
+        $message->setTo($cleanTo);
+
+        $cleanCc = [];
+        if (0 !== $ccCount) {
+            foreach($message->getCc() as $email => $name) {
+                if ($this->checkEmailAddress($email)) {
+                    $cleanCc[$email] = $name;
+                }
+            }
+            $message->setCc($cleanCc);
+        }
+
+        $cleanBcc = [];
+        if (0 !== $bccCount) {
+            foreach($message->getBcc() as $email => $name) {
+                if ($this->checkEmailAddress($email)) {
+                    $cleanBcc[$email] = $name;
+                }
+            }
+            $message->setBcc($cleanBcc);
+        }
+
+        if (0 === count(array_merge($cleanTo, $cleanBcc, $cleanCc))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return bool
+     */
+    private function checkEmailAddress(string $email) : bool
+    {
+        if (1 !== preg_match('/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/', $email)) {
+            $this->logger->warning('Email is badly formatted. Email : ' . $email, []);
+            return false;
+        }
 
         return true;
     }
