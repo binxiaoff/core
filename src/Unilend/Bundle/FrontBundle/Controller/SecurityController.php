@@ -27,6 +27,7 @@ class SecurityController extends Controller
     {
         if ($this->getUser()) {
             $tokenStorage = $this->get('security.token_storage');
+
             return $this->get('unilend.frontbundle.security.login_authenticator')->onAuthenticationSuccess($request, $tokenStorage->getToken(), 'default');
         }
 
