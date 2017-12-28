@@ -45,6 +45,8 @@ class MailQueueManager
      * @param TemplateMessage $message
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function queue(TemplateMessage $message)
     {
@@ -78,19 +80,25 @@ class MailQueueManager
             $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $recipients]);
 
             if (1 === count($clients)) {
-                $clientId = $clients[0]->getIdClient();
+                $client   = $clients[0];
+                $clientId = $client->getIdClient();
+
+                if (1 !== preg_match('/^[a-zA-Z0-9{1}]+[A-Z0-9._%-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/', $client->getEmail())) {
+                    throw new \Exception('Email is badly formatted. Email : ' . $client->getEmail() . ' clientId : ' . $clientId);
+                }
             }
         }
 
         $mailQueue = new MailQueue();
-        $mailQueue->setIdMailTemplate($mailTemplate);
-        $mailQueue->setSerializedVariables(json_encode($message->getVariables()));
-        $mailQueue->setAttachments(json_encode($attachments));
-        $mailQueue->setRecipient($recipients);
-        $mailQueue->setIdClient($clientId);
-        $mailQueue->setReplyTo($replyTo);
-        $mailQueue->setStatus(MailQueue::STATUS_PENDING);
-        $mailQueue->setToSendAt($message->getToSendAt());
+        $mailQueue
+            ->setIdMailTemplate($mailTemplate)
+            ->setSerializedVariables(json_encode($message->getVariables()))
+            ->setAttachments(json_encode($attachments))
+            ->setRecipient($recipients)
+            ->setIdClient($clientId)
+            ->setReplyTo($replyTo)
+            ->setStatus(MailQueue::STATUS_PENDING)
+            ->setToSendAt($message->getToSendAt());
 
         $this->entityManager->persist($mailQueue);
         $this->entityManager->flush($mailQueue);
