@@ -30,7 +30,7 @@ class InvoiceController extends Controller
                 ':frontbundle/exception:error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_project-not-found-error-title'),
-                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['contactUrl' => $this->generateUrl('borrower_account_contact')])
+                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
                 ]
             )->setStatusCode(Response::HTTP_NOT_FOUND);
         }
@@ -40,7 +40,7 @@ class InvoiceController extends Controller
                 ':frontbundle/exception:error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_client-not-found-error-title'),
-                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['contactUrl' => $this->generateUrl('borrower_account_contact')])
+                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
                 ]
             )->setStatusCode(Response::HTTP_NOT_FOUND);
         }
@@ -91,7 +91,7 @@ class InvoiceController extends Controller
                 ':frontbundle/exception:error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_project-not-found-error-title'),
-                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['contactUrl' => $this->generateUrl('borrower_account_contact')])
+                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
                 ]
             )->setStatusCode(Response::HTTP_NOT_FOUND);
         }
@@ -101,7 +101,7 @@ class InvoiceController extends Controller
                 ':frontbundle/exception:error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_client-not-found-error-title'),
-                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['contactUrl' => $this->generateUrl('borrower_account_contact')])
+                    'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
                 ]
             )->setStatusCode(Response::HTTP_NOT_FOUND);
         }
