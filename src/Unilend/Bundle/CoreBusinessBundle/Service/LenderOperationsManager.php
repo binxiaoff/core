@@ -123,17 +123,16 @@ class LenderOperationsManager
     }
 
     /**
-     * @param Wallet     $wallet
-     * @param \DateTime  $start
-     * @param \DateTime  $end
-     * @param int| null  $idProject
-     * @param array|null $operations
+     * @param Wallet    $wallet
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param int| null $idProject
+     * @param array     $operations
      *
      * @return array
-     *
      * @throws \Exception
      */
-    public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = null)
+    public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = [])
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
             throw new \Exception('Wallet is not a Lender wallet');
@@ -202,7 +201,7 @@ class LenderOperationsManager
             $previousHistoryLineIndex = $index;
         }
 
-        if (null !== $idProject || null !== $operations) {
+        if (null !== $idProject || false === empty($operations)) {
             return $this->filterLenderOperations($lenderOperations, $idProject, $operations);
         }
 
