@@ -42,7 +42,9 @@ class remboursementController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $session       = $this->get('session');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        $session     = $this->get('session');
 
         $projectChargeRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge');
         $debtCollectionMissionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission');
@@ -115,7 +117,10 @@ class remboursementController extends bootstrap
             }
 
             $repayOn = DateTime::createFromFormat('d/m/Y', $this->request->request->get('repay_on'));
-            if (false === $repayOn) {
+            if (
+                false === $repayOn
+                || ($repayOn->format('Y-m-d') < $this->getRepaymentMinDate($reception)->format('Y-m-d') && false === $userManager->isGrantedRisk($this->userEntity))
+            ) {
                 $errors[] = 'La date de remboursement n\'est pas valide';
             }
 
@@ -148,12 +153,32 @@ class remboursementController extends bootstrap
         }
 
         $projectCharges = $projectChargeRepository->findBy(['idProject' => $reception->getIdProject(), 'idWireTransferIn' => null]);
+        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]);
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionMissionManager */
         $debtCollectionMissionManager = $this->get('unilend.service.debt_collection_mission_manager');
 
-        $projectStatus    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $reception->getIdProject()->getStatus()]);
+        $this->render(null, [
+            'isDebtCollectionFeeDueToBorrower' => $debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($reception->getIdProject()),
+            'reception'                        => $reception,
+            'charges'                          => $projectCharges,
+            'missions'                         => $debtCollectionMissions,
+            'projectStatus'                    => $projectStatus->getLabel(),
+            'repaymentMinDate'                 => $this->getRepaymentMinDate($reception),
+            'canBypassDateRestriction'         => $this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity),
+            'session'                          => $session,
+        ]);
+    }
+
+    /**
+     * @param Receptions $reception
+     *
+     * @return DateTime
+     */
+    private function getRepaymentMinDate(Receptions $reception) : DateTime
+    {
         $repaymentMinDate = new DateTime();
+
         if (Receptions::TYPE_DIRECT_DEBIT === $reception->getType()) {
             $repaymentMinDate = clone $reception->getAdded();
             $repaymentMinDate->modify('+8 weeks');
@@ -163,15 +188,7 @@ class remboursementController extends bootstrap
             }
         }
 
-        $this->render(null, [
-            'isDebtCollectionFeeDueToBorrower' => $debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($reception->getIdProject()),
-            'reception'                        => $reception,
-            'charges'                          => $projectCharges,
-            'missions'                         => $debtCollectionMissions,
-            'projectStatus'                    => $projectStatus->getLabel(),
-            'repaymentMinDate'                 => $repaymentMinDate,
-            'session'                          => $session,
-        ]);
+        return $repaymentMinDate;
     }
 
     public function _confirmation()
