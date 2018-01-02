@@ -20,15 +20,11 @@ class ProjectManager
     /** @var BidManager */
     private $bidManager;
 
-    public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
-        EntityManager $entityManager,
-        BidManager $bidManager
-    )
+    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager, BidManager $bidManager)
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
-        $this->entityManager              = $entityManager;
-        $this->bidManager                 = $bidManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->bidManager             = $bidManager;
     }
 
     /**

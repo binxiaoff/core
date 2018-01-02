@@ -18,26 +18,27 @@ class ProjectEarlyRepaymentManager
     private $entityManager;
     /** @var OperationManager */
     private $operationManager;
-    /** @var LoggerInterface */
-    private $logger;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
-    /** @var ProjectStatusManager */
-    private $projectStatusManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * @param EntityManager                      $entityManager
      * @param OperationManager                   $operationManager
+     * @param ProjectStatusManager               $projectStatusManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param LoggerInterface                    $logger
-     *
      */
     public function __construct(
         EntityManager $entityManager,
         OperationManager $operationManager,
+        ProjectStatusManager $projectStatusManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
         LoggerInterface $logger
@@ -45,9 +46,10 @@ class ProjectEarlyRepaymentManager
     {
         $this->entityManager                      = $entityManager;
         $this->operationManager                   = $operationManager;
-        $this->logger                             = $logger;
+        $this->projectStatusManager               = $projectStatusManager;
         $this->projectRepaymentTaskManager        = $projectRepaymentTaskManager;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
+        $this->logger                             = $logger;
     }
 
     /**

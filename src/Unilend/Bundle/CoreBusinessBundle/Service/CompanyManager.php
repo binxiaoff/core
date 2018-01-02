@@ -19,41 +19,39 @@ class CompanyManager
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var  RiskDataMonitoringManager */
-    private $riskDataMonitoringManger;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
+    /** @var  RiskDataMonitoringManager */
+    private $riskDataMonitoringManger;
     /** @var WalletCreationManager */
     private $walletCreationManager;
+    /** @var TranslatorInterface */
+    private $translator;
     /** @var LoggerInterface */
     private $logger;
 
     /**
      * @param EntityManager             $entityManager
-     * @param TranslatorInterface       $translator
-     * @param ProjectManager            $projectManager
+     * @param ProjectStatusManager      $projectStatusManager
      * @param RiskDataMonitoringManager $riskDataMonitoringManager
      * @param WalletCreationManager     $walletCreationManager
+     * @param TranslatorInterface       $translator
      * @param LoggerInterface           $logger
-     * @param ProjectStatusManager      $projectStatusManager
      */
     public function __construct(
         EntityManager $entityManager,
-        TranslatorInterface $translator,
-        ProjectManager $projectManager,
+        ProjectStatusManager $projectStatusManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
         WalletCreationManager $walletCreationManager,
-        LoggerInterface $logger,
-        ProjectStatusManager $projectStatusManager
+        TranslatorInterface $translator,
+        LoggerInterface $logger
     )
     {
         $this->entityManager            = $entityManager;
-        $this->translator               = $translator;
-        $this->riskDataMonitoringManger = $riskDataMonitoringManager;
         $this->projectStatusManager     = $projectStatusManager;
+        $this->riskDataMonitoringManger = $riskDataMonitoringManager;
         $this->walletCreationManager    = $walletCreationManager;
+        $this->translator               = $translator;
         $this->logger                   = $logger;
     }
 
