@@ -54,15 +54,17 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @Route("/alimentation/resultat/{token}", name="lender_wallet_deposit_result")
+     * @Route("/alimentation/resultat/{paymentToken}", name="lender_wallet_deposit_result")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param string $paymentToken
      *
      * @return Response
      */
-    public function depositResultAction($token)
+    public function depositResultAction(string $paymentToken) : Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $token]);
+        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $paymentToken]);
         /** @var UserLender $user */
         $user = $this->getUser();
         if ($user) {
@@ -322,7 +324,7 @@ class LenderWalletController extends Controller
         $paylineManager = $this->get('unilend.service.payline_manager');
         $paylineManager->handlePaylineReturn($token, $version);
 
-        return $this->redirectToRoute('lender_wallet_deposit_result', ['token' => $token]);
+        return $this->redirectToRoute('lender_wallet_deposit_result', ['paymentToken' => $token]);
     }
 
     /**

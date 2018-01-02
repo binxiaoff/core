@@ -34,7 +34,7 @@
                                                     {% endfor %}
                                                 </div>
                                             {% endif %}
-                                            <form action="{{ path('partner_security', {'token': token}) }}" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
+                                            <form action="{{ path('partner_security', {'securityToken': token}) }}" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
                                                 <div class="row row-multi-col">
                                                     <div class="col-lg-6 col-md-6 col-sm-4">
                                                         <div class="form-field">
