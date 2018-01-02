@@ -29,7 +29,7 @@
 
     <section class="dashboard-panels-content" data-dashboardpanels data-dashboardpanels-ajaxurl="{{ path('save_panel_preferences') }}" data-has-spinner="#dashboard-panels-saving" data-movable-content>
         {% for panelId, panelInfo in dashboardPanels %}
-            {% include('lender_dashboard/panels/' ~ panelId ~ '.html.twig') %}
+            {% include 'lender_dashboard/panels/' ~ panelId ~ '.html.twig' %}
         {% endfor %}
     </section>
 {% endblock %}
