@@ -127,8 +127,7 @@ class remboursementController extends bootstrap
             if (empty($errors)) {
                 /** @var Projects $project */
                 $project = $reception->getIdProject();
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-                $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+
                 if ($project->getCloseOutNettingDate()) {
                     /** @var ProjectCloseOutNettingPaymentManager $paymentManager */
                     $paymentManager = $this->get('unilend.service_repayment.project_close_out_netting_payment_manager');
@@ -136,7 +135,7 @@ class remboursementController extends bootstrap
                     /** @var ProjectPaymentManager $paymentManager */
                     $paymentManager = $this->get('unilend.service_repayment.project_payment_manager');
                 }
-                $paymentManager->pay($reception, $user, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectChargesToApply);
+                $paymentManager->pay($reception, $this->userEntity, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectChargesToApply);
 
                 $session->getFlashBag()->add('repayment_task_info', 'Le remboursement est créé, il est en attente de validation.');
 
@@ -222,8 +221,6 @@ class remboursementController extends bootstrap
             die;
         }
 
-        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-
         if ($this->request->request->get('cancel')) {
             if ($reception->getIdProject()->getCloseOutNettingDate()) {
                 /** @var ProjectCloseOutNettingPaymentManager $paymentManager */
@@ -232,7 +229,7 @@ class remboursementController extends bootstrap
                 /** @var ProjectPaymentManager $paymentManager */
                 $paymentManager = $this->get('unilend.service_repayment.project_payment_manager');
             }
-            $paymentManager->rejectPayment($reception, $user);
+            $paymentManager->rejectPayment($reception, $this->userEntity);
 
             header('Location: ' . $this->url . '/dossiers/details_impayes/' . $reception->getIdProject()->getIdProject());
         }
@@ -240,7 +237,7 @@ class remboursementController extends bootstrap
         if ($this->request->request->get('validate')) {
             foreach ($projectRepaymentTasks as $projectRepaymentTask) {
                 $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_READY)
-                    ->setIdUserValidation($user);
+                    ->setIdUserValidation($this->userEntity);
 
                 $entityManager->flush($projectRepaymentTask);
 

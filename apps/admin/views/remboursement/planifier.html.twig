@@ -15,22 +15,19 @@
             App.initHelpers(['datepicker', 'validation']);
 
             // Repayment date
-            var repaymentDatePicker = $('#repayment-date')
-            var repaymentMinDate = new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') }} -1, {{ repaymentMinDate|date('d') }})
-            repaymentDatePicker.datepicker({
+            var $repaymentDatePicker = $('#repayment-date')
+            var repaymentMinDate = new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') - 1 }}, {{ repaymentMinDate|date('d') }})
+            $repaymentDatePicker.datepicker({
                 startDate: repaymentMinDate,
                 autoclose: true
             })
             var $bypassCheck = $('#bypass-date-restriction')
             if ($bypassCheck.length) {
-                $bypassCheck.change(function () {
-                    if (this.checked) {
-                        console.log('checked')
-                        repaymentDatePicker.datepicker("option", "minDate", {{ "now"|date('d/m/Y') }})
-                    } else {
-                        repaymentDatePicker.datepicker("option", "minDate", {{ repaymentMinDate|date('d/m/Y') }})
-                        console.log('unchecked')
-                    }
+                $bypassCheck.on('change', function () {
+                    var startDate = this.checked ? new Date() : repaymentMinDate
+                    $repaymentDatePicker.datepicker('destroy')
+                    $repaymentDatePicker.datepicker({startDate: startDate})
+                    $repaymentDatePicker.datepicker('refresh')
                 })
             }
 
