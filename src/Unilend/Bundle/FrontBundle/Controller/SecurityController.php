@@ -162,12 +162,12 @@ class SecurityController extends Controller
      * @param string $token
      * @return Response
      */
-    public function PasswordForgottenAction($token)
+    public function passwordForgottenAction($token)
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
-            return $this->render('password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $token]);
         }
 
         /** @var \temporary_links_login $temporaryLink */
@@ -175,7 +175,7 @@ class SecurityController extends Controller
 
         if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
-            return $this->render('password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $token]);
         }
 
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
