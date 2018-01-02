@@ -58,7 +58,7 @@ class LenderSponsorshipController extends Controller
             }
         }
 
-        return $this->render('/pages/lender_sponsorship.html.twig', [
+        return $this->render('lender_sponsorship/sponsorship.html.twig', [
             'sponsorLink'     => $sponsorLink,
             'currentCampaign' => $currentSponsorshipCampaign,
             'client'          => $client

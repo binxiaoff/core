@@ -1,0 +1,37 @@
+<header class="site-header">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            {% block siteHeaderMobileMenuOpen %}
+                <a href="javascript:;" tabindex="-1" class="site-mobile-menu-open" role="button">
+                    <span role="presentation" class="icon menu">
+                        <div class="menu-1"></div>
+                        <div class="menu-2"></div>
+                        <div class="menu-3"></div>
+                    </span><span class="sr-only">{% trans %} header_mobile-header-menu {% endtrans %}</span>
+                </a><!-- /.site-mobile-menu-open -->
+            {% endblock %}
+
+            <h1 class="site-title">
+                <a href="{{ path('home') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a>
+            </h1>
+
+            {% block siteHeaderNav %}
+                {% include 'partials/header_nav.html.twig' %}
+            {% endblock siteHeaderNav %}
+
+            <div class="site-controls">
+                {% block siteHeaderControls %}
+                    {% include 'partials/site_search.html.twig' %}
+
+                    <div class="site-user">
+                        <a href="{{ path('login') }}" class="btn-site-login" tabindex="3">
+                            <span class="label">{% trans %} header_site-user-register {% endtrans %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; {% trans %} header_site-user-login {% endtrans %}</span>
+                        </a>
+                    </div><!-- /.site-user -->
+                {% endblock %}
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

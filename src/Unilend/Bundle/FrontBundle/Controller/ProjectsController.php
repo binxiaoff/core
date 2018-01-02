@@ -37,7 +37,7 @@ class ProjectsController extends Controller
 {
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
-     * @Template("pages/projects.html.twig")
+     * @Template("projects/list.html.twig")
      *
      * @Method("GET")
      *
@@ -54,7 +54,7 @@ class ProjectsController extends Controller
 
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
-     * @Template("partials/components/project-list/map-item-template.html.twig")
+     * @Template("projects/list/map_item_template.html.twig")
      *
      * @Method("POST")
      * @return Response
@@ -263,7 +263,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function projectDetailAction($projectSlug, Request $request)
+    public function detailAction($projectSlug, Request $request)
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
@@ -406,7 +406,7 @@ class ProjectsController extends Controller
 
         $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
-        return $this->render('pages/project_detail.html.twig', $template);
+        return $this->render('projects/detail.html.twig', $template);
     }
 
     /**
@@ -654,7 +654,7 @@ class ProjectsController extends Controller
             });
         }
 
-        return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
+        return $this->render('projects/detail/bids_list_detail.html.twig', $template);
     }
 
     /**
