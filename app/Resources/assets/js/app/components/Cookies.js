@@ -1,43 +1,55 @@
 // Lib Dependencies
 var $ = require('jquery')
 
-var setCookie = function() {
+var COOKIE_BAR = {
+    itemName: 'unilend.cookie-law-accepted',
+    itemValue: 'accepted',
 
-    $.ajax({
-        type: 'POST',
-        url: '/accept-cookies',
-        global: false,
-        success: function(response) {
-            var CookieWrap = $('[data-cookies]')
-            $(CookieWrap).hide()
+    showCookieBar: function () {
+        this.cookieBarDiv.show()
+    },
+
+    hideCookieBar: function () {
+        this.cookieBarDiv.hide()
+    },
+
+    shouldShowCookieBar: function () {
+        return window.localStorage.getItem(this.itemName) !== this.itemValue
+    },
+
+    processCookieBar: function () {
+        if (this.shouldShowCookieBar()) {
+            this.showCookieBar()
         }
-    })
+    },
 
+    processCookieAccept: function () {
+        var _this = this
+        $.ajax({
+            type: 'POST',
+            url: '/accept-cookies',
+            global: false,
+            success: function (response) {
+                window.localStorage.setItem(_this.itemName, _this.itemValue)
+                _this.hideCookieBar()
+            }
+        })
+    },
+
+    init: function () {
+        var _this = this
+
+        this.cookieBarDiv = $('[data-cookies]')
+        this.cookieAcceptButton = $('[data-cookies-accept]')
+
+        this.processCookieBar()
+        this.cookieAcceptButton.click(function () {
+            _this.processCookieAccept()
+        })
+    }
 }
 
-function readCookie(name) {
-  var nameEQ = encodeURIComponent(name) + "=";
-  var ca = document.cookie.split(';');
-  for (var i = 0; i < ca.length; i++) {
-    var c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
-  }
-  return null;
-}
-
-var displayCookieBox = function() {
-  var accepted = readCookie('acceptCookies');
-  if (! accepted) {
-    var CookieWrap = $('[data-cookies]')
-    $(CookieWrap).show()
-  }
-}
-
-$(document).on('click', '[data-cookies-accept]', function() {
-    setCookie()
+document.addEventListener("DOMContentLoaded", function () {
+    COOKIE_BAR.init()
 })
 
-$(document).on('ready', function () {
-  displayCookieBox()
-})
