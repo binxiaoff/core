@@ -832,20 +832,6 @@ class LenderSubscriptionController extends Controller
         return $this->render('lender_subscription/sponsorship_landing_page.html.twig', $template);
     }
 
-
-    /**
-     * @Route("/figaro/", name="figaro_landing_page")
-     * @Method("GET")
-     * @return Response
-     */
-    public function figaroLandingPageAction()
-    {
-        return $this->render('lender_subscription/partners/figaro.html.twig_landing_page', [
-            'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
-            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
-        ]);
-    }
-
     /**
      * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
      * @Method("GET")
