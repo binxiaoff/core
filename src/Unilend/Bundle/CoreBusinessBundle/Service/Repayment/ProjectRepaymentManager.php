@@ -64,7 +64,7 @@ class ProjectRepaymentManager
         $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->operationManager                   = $operationManager;
         $this->logger                             = $logger;
-        $this->projectStatusManager                     = $projectStatusManager;
+        $this->projectStatusManager               = $projectStatusManager;
         $this->projectRepaymentTaskManager        = $projectRepaymentTaskManager;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
         $this->projectChargeManager               = $projectChargeManager;
