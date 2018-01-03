@@ -19,6 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Service\DataLayerCollector;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
@@ -251,8 +252,9 @@ class ProjectRequestController extends Controller
         $this->project->id_partner                           = $partnerId;
         $this->project->create();
 
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $this->project);
+        /** @var ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $this->project);
 
         return $this->start();
     }
@@ -1356,8 +1358,9 @@ class ProjectRequestController extends Controller
             return $response;
         }
 
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $this->project, 0, 'Désinscription relance email');
+        /** @var ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $this->project, 0, 'Désinscription relance email');
 
         return $this->render('project_request/emails.html.twig');
     }
@@ -1514,11 +1517,11 @@ class ProjectRequestController extends Controller
      */
     private function redirectStatus($route, $projectStatus, $message = '')
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->get('unilend.service.project_manager');
+        /** @var ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($this->project->status != $projectStatus) {
-            $oProjectManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $this->project, 0, $message);
         }
 
         return $this->redirectToRoute($route, ['hash' => $this->project->hash]);

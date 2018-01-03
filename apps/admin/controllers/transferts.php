@@ -591,6 +591,8 @@ class transfertsController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
@@ -625,7 +627,7 @@ class transfertsController extends bootstrap
                 $commission = $projectManager->getCommissionFunds($project, true);
                 $operationManager->projectCommission($project, $commission);
 
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::REMBOURSEMENT, $project);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
                 $borrowerManager = $this->get('unilend.service.borrower_manager');

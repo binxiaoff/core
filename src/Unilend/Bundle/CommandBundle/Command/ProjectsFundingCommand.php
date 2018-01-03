@@ -1,15 +1,16 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Unilend\librairies\CacheKeys;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\librairies\CacheKeys;
 
 class ProjectsFundingCommand extends ContainerAwareCommand
 {
@@ -32,7 +33,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var ProjectManager $projectManager */
         $projectManager = $this->getContainer()->get('unilend.service.project_manager');
-        $projectManager->setLogger($logger);
+        $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
 
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
@@ -46,48 +47,53 @@ class ProjectsFundingCommand extends ContainerAwareCommand
             if ($project->get($projectTable['id_project'])) {
                 $output->writeln('Project : ' . $project->title);
 
-                $currentDate = new \DateTime();
-                $endDate     = $projectManager->getProjectEndDate($project);
-                $isFunded    = $projectManager->isFunded($project);
-
-                if ($isFunded) {
-                    $projectManager->markAsFunded($project);
-                }
-
-                if ($endDate > $currentDate && false === $projectManager->isRateMinReached($project)) {
-                    $projectManager->checkBids($project, true);
-                    $projectManager->autoBid($project);
-                } else {
-                    $project->date_fin = $currentDate->format('Y-m-d H:i:s');
-                    $project->update();
-
-                    $hasProjectFinished = true;
+                try {
+                    $currentDate = new \DateTime();
+                    $endDate     = $projectManager->getProjectEndDate($project);
+                    $isFunded    = $projectManager->isFunded($project);
 
                     if ($isFunded) {
-                        $projectManager->buildLoans($project);
-                        $projectManager->createRepaymentSchedule($project);
-                        $projectManager->createPaymentSchedule($project);
-                        $projectManager->saveInterestRate($project);
-
-                        $mailerManager->sendFundedAndFinishedToBorrower($project);
-                        $mailerManager->sendBidAccepted($project);
-                    } else {
-                        $projectManager->treatFundFailed($project);
-                        $projectManager->saveInterestRate($project);
-
-                        $mailerManager->sendFundFailedToBorrower($project);
-                        $mailerManager->sendFundFailedToLender($project);
+                        $projectLifecycleManager->markAsFunded($project);
                     }
 
-                    $now          = new \DateTime();
-                    $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-                    $messsage     = $slackManager->getProjectName($project) .
-                        ' - Cloturé le ' . $now->format('d/m/Y à H:i') . ' (' .
-                        $loan->getNbPreteurs($project->id_project) . ' prêteurs - ' .
-                        str_replace('.', ',', round($project->getAverageInterestRate(), 2)) . '%)';
-                    $slackManager->sendMessage($messsage);
+                    if ($endDate > $currentDate && false === $projectManager->isRateMinReached($project)) {
+                        $projectLifecycleManager->checkBids($project, true);
+                        $projectLifecycleManager->autoBid($project);
+                    } else {
+                        $project->date_fin = $currentDate->format('Y-m-d H:i:s');
+                        $project->update();
 
-                    $mailerManager->sendProjectFinishedToStaff($project);
+                        $hasProjectFinished = true;
+
+                        if ($isFunded) {
+                            $projectLifecycleManager->buildLoans($project);
+                            $projectLifecycleManager->createRepaymentSchedule($project);
+                            $projectLifecycleManager->createPaymentSchedule($project);
+                            $projectLifecycleManager->saveInterestRate($project);
+
+                            $mailerManager->sendFundedAndFinishedToBorrower($project);
+                            $mailerManager->sendBidAccepted($project);
+                        } else {
+                            $projectLifecycleManager->treatFundFailed($project);
+                            $projectLifecycleManager->saveInterestRate($project);
+
+                            $mailerManager->sendFundFailedToBorrower($project);
+                            $mailerManager->sendFundFailedToLender($project);
+                        }
+
+                        $now = new \DateTime();
+                        $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+                        $message = $slackManager->getProjectName($project) . ' - Cloturé le ' . $now->format('d/m/Y à H:i') . ' (' . $loan->getNbPreteurs($project->id_project) . ' prêteurs - ' . str_replace('.', ',', round($project->getAverageInterestRate(), 2)) . '%)';
+                        $slackManager->sendMessage($message);
+
+                        $mailerManager->sendProjectFinishedToStaff($project);
+                    }
+                } catch (\Exception $exception) {
+                    $logger->critical('An exception occurred during publishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
+                            'method' => __METHOD__,
+                            'file'   => $exception->getFile(),
+                            'line'   => $exception->getLine()
+                        ]);
                 }
             }
         }

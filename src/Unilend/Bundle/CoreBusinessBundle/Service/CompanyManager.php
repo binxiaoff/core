@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -20,31 +19,39 @@ class CompanyManager
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var TranslatorInterface */
-    private $translator;
-    /** @var ProjectManager $projectManager */
-    private $projectManager;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
     /** @var  RiskDataMonitoringManager */
     private $riskDataMonitoringManger;
     /** @var WalletCreationManager */
     private $walletCreationManager;
+    /** @var TranslatorInterface */
+    private $translator;
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param EntityManager             $entityManager
+     * @param ProjectStatusManager      $projectStatusManager
+     * @param RiskDataMonitoringManager $riskDataMonitoringManager
+     * @param WalletCreationManager     $walletCreationManager
+     * @param TranslatorInterface       $translator
+     * @param LoggerInterface           $logger
+     */
     public function __construct(
         EntityManager $entityManager,
-        TranslatorInterface $translator,
-        ProjectManager $projectManager,
+        ProjectStatusManager $projectStatusManager,
         RiskDataMonitoringManager $riskDataMonitoringManager,
         WalletCreationManager $walletCreationManager,
+        TranslatorInterface $translator,
         LoggerInterface $logger
     )
     {
         $this->entityManager            = $entityManager;
-        $this->translator               = $translator;
-        $this->projectManager           = $projectManager;
+        $this->projectStatusManager     = $projectStatusManager;
         $this->riskDataMonitoringManger = $riskDataMonitoringManager;
         $this->walletCreationManager    = $walletCreationManager;
+        $this->translator               = $translator;
         $this->logger                   = $logger;
     }
 
@@ -117,7 +124,7 @@ class CompanyManager
 
                 foreach ($companyProjects as $project) {
                     if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
-                        $this->projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::PROBLEME, $project);
+                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::PROBLEME, $project);
                     }
 
                     $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
