@@ -127,7 +127,7 @@ class SecurityController extends Controller
                 $keywords = [
                     'firstName'     => $client->prenom,
                     'login'         => $client->email,
-                    'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
                     'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
 
@@ -157,25 +157,26 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/{token}", name="define_new_password", requirements={"token": "[a-z0-9]{32}"})
+     * @Route("/nouveau-mot-de-passe/{securityToken}", name="define_new_password", requirements={"securityToken": "[a-z0-9]{32}"})
      *
-     * @param string $token
+     * @param string $securityToken
+     *
      * @return Response
      */
-    public function passwordForgottenAction($token)
+    public function passwordForgottenAction(string $securityToken) : Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
-            return $this->render('security/password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
         /** @var \temporary_links_login $temporaryLink */
         $temporaryLink = $entityManager->getRepository('temporary_links_login');
 
-        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
-            return $this->render('security/password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
@@ -185,27 +186,28 @@ class SecurityController extends Controller
         $client = $entityManager->getRepository('clients');
         $client->get($temporaryLink->id_client, 'id_client');
 
-        return $this->render('security/password_forgotten.html.twig', ['token' => $token, 'secretQuestion' => $client->secrete_question]);
+        return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken, 'secretQuestion' => $client->secrete_question]);
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{token}", name="save_new_password", requirements={"token": "[a-z0-9]{32}"})
+     * @Route("/nouveau-mot-de-passe/submit/{securityToken}", name="save_new_password", requirements={"securityToken": "[a-z0-9]{32}"})
      * @Method("POST")
      *
-     * @param string  $token
+     * @param string  $securityToken
      * @param Request $request
+     *
      * @return Response
      */
-    public function changePasswordFormAction($token, Request $request)
+    public function changePasswordFormAction(string $securityToken, Request $request) : Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
         /** @var \temporary_links_login $temporaryLink */
         $temporaryLink = $entityManager->getRepository('temporary_links_login');
 
-        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
-            return $this->redirectToRoute('define_new_password', ['token' => $token]);
+            return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
         }
 
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
@@ -260,7 +262,7 @@ class SecurityController extends Controller
             $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
         }
 
-        return $this->redirectToRoute('define_new_password', ['token' => $token]);
+        return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
     }
 
     /**
