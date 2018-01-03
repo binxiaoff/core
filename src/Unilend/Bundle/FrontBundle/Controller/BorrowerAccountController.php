@@ -607,20 +607,21 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/securite/{token}", name="borrower_account_security", requirements={"token": "[0-9a-f]+"})
+     * @Route("/espace-emprunteur/securite/{securityToken}", name="borrower_account_security", requirements={"securityToken": "[0-9a-f]+"})
      * @Template("borrower_account/security.html.twig")
      *
+     * @param string  $securityToken
      * @param Request $request
-     * @param $token
+     *
      * @return Response
      */
-    public function securityAction($token, Request $request)
+    public function securityAction(string $securityToken, Request $request) : Response
     {
         /** @var \temporary_links_login $temporaryLinks */
         $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
         $isLinkExpired  = false;
 
-        if (false === $temporaryLinks->get($token, 'token')) {
+        if (false === $temporaryLinks->get($securityToken, 'token')) {
             return $this->redirectToRoute('home');
         }
 
@@ -637,7 +638,7 @@ class BorrowerAccountController extends Controller
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             $client->get($temporaryLinks->id_client);
 
-            if ($request->isMethod('POST')) {
+            if ($request->isMethod(Request::METHOD_POST)) {
                 $translator = $this->get('translator');
                 $formData   = $request->request->get('borrower_security', []);
                 $error      = false;
@@ -674,7 +675,7 @@ class BorrowerAccountController extends Controller
 
                     return $this->redirectToRoute('login');
                 } else {
-                    return $this->redirectToRoute('borrower_account_security', ['token' => $token]);
+                    return $this->redirectToRoute('borrower_account_security', ['securityToken' => $securityToken]);
                 }
             }
         }
