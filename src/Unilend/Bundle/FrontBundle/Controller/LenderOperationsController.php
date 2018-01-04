@@ -4,17 +4,16 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
-use PHPExcel_IOFactory;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\Translation\TranslatorInterface;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
@@ -24,10 +23,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
@@ -78,7 +77,7 @@ class LenderOperationsController extends Controller
         $loans = $this->commonLoans($request, $wallet);
 
         return $this->render(
-            '/pages/lender_operations/layout.html.twig',
+            'lender_operations/index.html.twig',
             [
                 'clientId'               => $wallet->getIdClient()->getIdClient(),
                 'hash'                   => $this->getUser()->getHash(),
@@ -111,7 +110,7 @@ class LenderOperationsController extends Controller
         return $this->json([
             'target'   => 'loans .panel-table',
             'template' => $this->render(
-                '/pages/lender_operations/my_loans_table.html.twig',
+                'lender_operations/my_loans_table.html.twig',
                 ['lenderLoans' => $loans['lenderLoans']]
             )->getContent()
         ]);
@@ -141,7 +140,7 @@ class LenderOperationsController extends Controller
         return $this->json(
             [
                 'target'   => 'operations',
-                'template' => $this->render('/pages/lender_operations/my_operations.html.twig',
+                'template' => $this->render('lender_operations/my_operations.html.twig',
                     [
                         'clientId'               => $this->getUser()->getClientId(),
                         'hash'                   => $this->getUser()->getHash(),
@@ -606,7 +605,7 @@ class LenderOperationsController extends Controller
 
         return new JsonResponse(
             [
-                'tpl' => $this->renderView(':frontbundle/pages/lender_operations:my_loans_details_activity.html.twig', ['projectNotifications' => $data, 'code' => $code]),
+                'tpl' => $this->renderView('lender_operations/my_loans_details_activity.html.twig', ['projectNotifications' => $data, 'code' => $code]),
             ],
             $code
         );
