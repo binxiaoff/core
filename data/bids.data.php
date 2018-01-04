@@ -183,8 +183,7 @@ class bids extends bids_crud
         $sQuery = '
             SELECT id_lender_account,
                 COUNT(*) AS bid_nb,
-                SUM(amount) AS amount_sum,
-                id_autobid
+                SUM(amount) AS amount_sum
             FROM  bids
             WHERE id_project = ' . $iProjectId;
 
