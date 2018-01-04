@@ -5,12 +5,14 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PreScoring;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSetMember;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
+use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
 
 class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
 {
@@ -66,29 +68,33 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 $excel       = new \PHPExcel();
                 $activeSheet = $excel->setActiveSheetIndex(0);
 
-                $columnIndex = 0;
-                $rowIndex    = 1;
-                $activeSheet->setCellValueExplicitByColumnAndRow($columnIndex, $rowIndex, 'SIREN');
-                $columnIndex++;
+                $sirenColumn         = 'A';
+                $preScoreColumn      = 'B';
+                $riskRuleStartColumn = 'C';
+                $rowIndex            = 1;
+
+                $activeSheet->setCellValue($sirenColumn . $rowIndex, 'SIREN');
+                $activeSheet->setCellValue($preScoreColumn . $rowIndex, 'Pre-Score');
+
                 foreach ($ruleSet as $rule) {
-                    $activeSheet->setCellValueExplicitByColumnAndRow($columnIndex, $rowIndex, 'Règle ' . $rule->getIdRule()->getLabel());
-                    $columnIndex++;
+                    $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, 'Règle ' . $rule->getIdRule()->getLabel());
+                    $riskRuleStartColumn++;
                 }
-                $activeSheet->setCellValueExplicitByColumnAndRow($columnIndex, $rowIndex, 'Résultat d\'éligibilité');
+                $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, 'Résultat d\'éligibilité');
                 $rowIndex++;
 
                 foreach ($sirenList as $inputRow) {
                     $notEligibleRuleCount = 0;
                     $unavailableProvider  = 0;
                     $siren                = isset($inputRow[0]) ? $inputRow[0] : null;
+
                     if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
                         continue;
                     }
-
-                    $columnIndex = 'A';
-                    $activeSheet->setCellValue($columnIndex . $rowIndex, $siren);
-                    $columnIndex++;
+                    $activeSheet->setCellValue($sirenColumn . $rowIndex, $siren);
                     /** @var  $rule ProjectEligibilityRuleSetMember */
+                    $riskRuleStartColumn = 'C';
+
                     foreach ($ruleSet as $rule) {
                         try {
                             $output->writeln('Checking rule ' . $rule->getIdRule()->getLabel() . ' on SIREN ' . $siren);
@@ -97,25 +103,25 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                             if (empty($result)) {
                                 $style = $validStyle;
                                 $value = $this->getCellValue($externalDataManager, $rule->getIdRule()->getLabel(), $siren);
-                                $value = empty($value) ? 'OK' : $value;
+                                $value = '' === $value ? 'OK' : $value;
                             } elseif (strstr(ProjectsStatus::UNEXPECTED_RESPONSE, $result[0])) {
                                 $unavailableProvider++;
                                 $style = $warningStyle;
-                                $value = empty($value) ? 'Service indisponible' : $value;
+                                $value = 'Service indisponible';
                             } else {
                                 $notEligibleRuleCount++;
                                 $style = $errorStyle;
                                 $value = $this->getCellValue($externalDataManager, $rule->getIdRule()->getLabel(), $siren);
-                                $value = empty($value) ? 'KO' : $value;
+                                $value = '' === $value ? 'KO' : $value;
                             }
-                            $activeSheet->setCellValue($columnIndex . $rowIndex, $value);
-                            $activeSheet->getStyle($columnIndex . $rowIndex)->applyFromArray($style);
+                            $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, $value);
+                            $activeSheet->getStyle($riskRuleStartColumn . $rowIndex)->applyFromArray($style);
 
-                            $columnIndex++;
+                            $riskRuleStartColumn++;
                         } catch (\Exception $exception) {
-                            $activeSheet->setCellValue($columnIndex . $rowIndex, 'Erreur technique: ' . $exception->getMessage());
+                            $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, 'Erreur technique: ' . $exception->getMessage());
                             $activeSheet->getStyle($activeSheet->getActiveCell())->applyFromArray($errorStyle);
-                            $columnIndex++;
+                            $riskRuleStartColumn++;
                         }
                     }
                     if ($notEligibleRuleCount > 0) {
@@ -125,8 +131,8 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     } else {
                         $eligibilityResult = 'OUI';
                     }
-
-                    $activeSheet->setCellValue($columnIndex . $rowIndex, $eligibilityResult);
+                    $activeSheet->setCellValue($preScoreColumn . $rowIndex, $this->getPreScoreValue($siren));
+                    $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, $eligibilityResult);
                     $rowIndex++;
                 }
 
@@ -195,5 +201,41 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
             default:
                 return '';
         }
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return int|null
+     */
+    private function getPreScoreValue(string $siren)
+    {
+        $externalDataManager = $this->getContainer()->get('unilend.service.external_data_manager');
+        $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
+
+        $preScoring       = null;
+        $altaresScore     = $externalDataManager->getAltaresScore($siren);
+        $infolegaleScore  = $externalDataManager->getInfolegaleScore($siren);
+        $eulerHermesGrade = $externalDataManager->getEulerHermesGrade($siren);
+
+        if (null === $eulerHermesGrade && EulerHermesCompanyRating::COLOR_WHITE === $externalDataManager->getEulerHermesTrafficLight($siren)) {
+            $eulerHermesGrade = new EulerHermesCompanyRating();
+            $eulerHermesGrade->setGrade(EulerHermesCompanyRating::GRADE_UNKNOWN);
+        }
+
+        if (false === in_array(null, [$altaresScore, $infolegaleScore, $eulerHermesGrade], true)) {
+            /** @var PreScoring $preScoringEntity */
+            $preScoringEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:PreScoring')->findOneBy([
+                'altares'          => $altaresScore->getScore20(),
+                'infolegale'       => $infolegaleScore->getScore(),
+                'eulerHermesGrade' => $eulerHermesGrade->getGrade()
+            ]);
+
+            if (null !== $preScoringEntity) {
+                $preScoring = $preScoringEntity->getNote();
+            }
+        }
+
+        return $preScoring;
     }
 }
