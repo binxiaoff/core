@@ -1,5 +1,7 @@
 // Lib Dependencies
 var $ = require('jquery')
+var Utility = require('Utility')
+var $doc = $(document)
 
 var COOKIE_BAR = {
     itemName: 'unilend.cookie-law-accepted',
@@ -39,17 +41,17 @@ var COOKIE_BAR = {
     init: function () {
         var _this = this
 
-        this.cookieBarDiv = $('[data-cookies]')
-        this.cookieAcceptButton = $('[data-cookies-accept]')
+        this.cookieBarDiv = $('[data-cookies-law]')
+        this.cookieAcceptButton = $('[data-cookies-law-accept]')
 
         this.processCookieBar()
-        this.cookieAcceptButton.click(function () {
+        $doc.on(Utility.clickEvent, '[data-cookies-law-accept]', function () {
             _this.processCookieAccept()
         })
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+$doc.on('ready', function () {
     COOKIE_BAR.init()
 })
 
