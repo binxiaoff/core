@@ -80,7 +80,7 @@ class InvoiceManager
     }
 
     /**
-     * @param Factures $invoice*
+     * @param Factures $invoice
      */
     public function generateProjectRepaymentCommissionInvoice(Factures $invoice)
     {

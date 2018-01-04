@@ -12,8 +12,8 @@ class InvoiceController extends Controller
     /**
      * @Route("/pdf/facture_EF/{clientHash}/{idProject}", name="borrower_invoice_funds_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}"})
      *
-     * @param string  $clientHash
-     * @param int     $idProject
+     * @param string $clientHash
+     * @param int    $idProject
      *
      * @return Response
      */
@@ -27,7 +27,7 @@ class InvoiceController extends Controller
 
         if (null === $project) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_project-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
@@ -37,7 +37,7 @@ class InvoiceController extends Controller
 
         if ($project->getIdCompany()->getIdClientOwner() != $client) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_client-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
@@ -46,10 +46,10 @@ class InvoiceController extends Controller
         }
 
         try {
-            $invoice       = $invoiceManager->getBorrowerInvoice($project);
+            $invoice = $invoiceManager->getBorrowerInvoice($project);
         } catch (\Exception $exception) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_invoice-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
@@ -72,9 +72,9 @@ class InvoiceController extends Controller
     /**
      * @Route("/pdf/facture_ER/{clientHash}/{idProject}/{order}", name="borrower_invoice_payment_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}", "order":"\d+"})
      *
-     * @param string  $clientHash
-     * @param int     $idProject
-     * @param int     $order
+     * @param string $clientHash
+     * @param int    $idProject
+     * @param int    $order
      *
      * @return Response
      */
@@ -88,7 +88,7 @@ class InvoiceController extends Controller
 
         if (null === $project) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_project-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
@@ -98,7 +98,7 @@ class InvoiceController extends Controller
 
         if ($project->getIdCompany()->getIdClientOwner() != $client) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_client-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
@@ -110,7 +110,7 @@ class InvoiceController extends Controller
             $invoice = $invoiceManager->getBorrowerInvoice($project, $order);
         } catch (\Exception $exception) {
             return $this->render(
-                ':frontbundle/exception:error.html.twig',
+                'frontbundle/exception/error.html.twig',
                 [
                     'errorTitle'   => $translator->trans('borrower-invoice-download_invoice-not-found-error-title'),
                     'errorDetails' => $translator->trans('borrower-invoice-download_error-details-contact-link', ['%contactUrl%' => $this->generateUrl('borrower_account_contact')])
