@@ -107,12 +107,13 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Factures', 'f', Join::WITH, 'ee.idProject = f.idProject AND f.ordre = ee.ordre')
             ->where('DATE(ee.dateEcheanceEmprunteur) <= :today')
             ->andWhere('p.status in (:status)')
-            ->andWhere('p.closeOutNettingDate IS NULL')
+            ->andWhere('p.closeOutNettingDate IS NULL OR p.closeOutNettingDate = :emptyDate')
             ->andWhere('cs.label = :inBonis')
             ->andWhere('f.idFacture IS NULL')
             ->setParameter('today', (new \DateTime())->format('Y-m-d'))
             ->setParameter('status', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME])
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
+            ->setParameter('emptyDate', '0000-00-00')
             ->setMaxResults($limit);
 
         return $queryBuilder->getQuery()->getResult();

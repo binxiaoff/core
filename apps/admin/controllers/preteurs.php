@@ -1214,32 +1214,6 @@ class preteursController extends bootstrap
         $this->aLenders = $clientRepository->getLendersToMatchBirthCity(200);
     }
 
-    public function _email_history_preview()
-    {
-        $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
-        $mailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
-        $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
-        $email = $mailQueueManager->getMessage($mailQueue);
-        /** @var \DateTime $sentAt */
-        $sentAt = $mailQueue->getSentAt();
-
-        $from = $email->getFrom();
-        $to   = $email->getTo();
-
-        $this->email = [
-            'date'    => $sentAt->format('d/m/Y H:i'),
-            'from'    => array_shift($from),
-            'to'      => array_shift($to),
-            'subject' => $email->getSubject(),
-            'body'    => $email->getBody()
-        ];
-    }
-
     /**
      * @param Clients|\clients $client
      * @param int              $status

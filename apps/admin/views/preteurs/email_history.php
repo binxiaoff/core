@@ -107,7 +107,7 @@
                         <td><?= $aEmail['senderName'] ?></td>
                         <td><?= $aEmail['subject'] ?></td>
                         <td style="text-align: center">
-                            <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['idQueue'] ?>" class="thickbox">
+                            <a href="<?= $this->lurl ?>/mails/email_history_preview/<?= $aEmail['idQueue'] ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px">
                             </a>
                         </td>

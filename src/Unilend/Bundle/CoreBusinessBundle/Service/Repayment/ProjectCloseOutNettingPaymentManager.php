@@ -183,16 +183,23 @@ class ProjectCloseOutNettingPaymentManager
      */
     public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
-        $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
-
         $project                      = $wireTransferIn->getIdProject();
         $projectRepaymentTaskToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findOneBy([
                 'idProject'        => $project,
                 'idWireTransferIn' => $wireTransferIn,
+                'type'             => ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING,
+                'status'           => [
+                    ProjectRepaymentTask::STATUS_ERROR,
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY,
+                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                    ProjectRepaymentTask::STATUS_REPAID
+                ]
             ]);
 
         if ($projectRepaymentTaskToCancel) {
+            $closeOutNettingPaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment');
             $this->entityManager->getConnection()->beginTransaction();
             try {
                 $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);

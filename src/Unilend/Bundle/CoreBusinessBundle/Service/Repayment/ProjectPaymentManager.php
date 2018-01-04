@@ -232,19 +232,30 @@ class ProjectPaymentManager
      */
     public function rejectPayment(Receptions $wireTransferIn, Users $user)
     {
-        $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        /** @var \echeanciers $repaymentScheduleData */
-        $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
-
         $project                       = $wireTransferIn->getIdProject();
         $projectRepaymentTasksToCancel = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
             ->findBy([
                 'idProject'        => $project,
-                'idWireTransferIn' => $wireTransferIn
+                'idWireTransferIn' => $wireTransferIn,
+                'type'             => [
+                    ProjectRepaymentTask::TYPE_REGULAR,
+                    ProjectRepaymentTask::TYPE_LATE,
+                ],
+                'status'           => [
+                    ProjectRepaymentTask::STATUS_ERROR,
+                    ProjectRepaymentTask::STATUS_PENDING,
+                    ProjectRepaymentTask::STATUS_READY,
+                    ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                    ProjectRepaymentTask::STATUS_REPAID
+                ]
             ]);
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
+            $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+            /** @var \echeanciers $repaymentScheduleData */
+            $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
+
             foreach ($projectRepaymentTasksToCancel as $task) {
                 $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
 

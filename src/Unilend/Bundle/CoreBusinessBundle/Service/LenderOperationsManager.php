@@ -130,7 +130,6 @@ class LenderOperationsManager
      * @param array|null $operations
      *
      * @return array
-     *
      * @throws \Exception
      */
     public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = null)
