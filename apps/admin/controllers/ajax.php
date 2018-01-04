@@ -2,6 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -241,7 +242,7 @@ class ajaxController extends bootstrap
                 }
 
                 if (null === $result) {
-                    $projectRequestManager->assignEligiblePartnerProduct($project);
+                    $projectRequestManager->assignEligiblePartnerProduct($project, $this->userEntity->getIdUser());
                 }
 
                 echo json_encode([
@@ -536,6 +537,7 @@ class ajaxController extends bootstrap
 
         if (
             false === isset($_POST['status'], $_POST['id_project'])
+            || ProjectsStatus::COMMERCIAL_REJECTION == $_POST['status'] && false === isset($_POST['comment'], $_POST['public'])
             || false === $project->get($_POST['id_project'], 'id_project')
             || false === $company->get($project->id_company, 'id_company')
             || false === $client->get($company->id_client_owner, 'id_client')
@@ -546,9 +548,9 @@ class ajaxController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $project);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $project);
 
         if ($project->status == ProjectsStatus::COMMERCIAL_REJECTION) {
             /** @var \projects_status_history $projectStatusHistory */
@@ -560,6 +562,19 @@ class ajaxController extends bootstrap
             $historyDetails->id_project_status_history   = $projectStatusHistory->id_project_status_history;
             $historyDetails->commercial_rejection_reason = $_POST['rejection_reason'];
             $historyDetails->create();
+
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+
+            $projectCommentEntity = new ProjectsComments();
+            $projectCommentEntity->setIdProject($projectEntity);
+            $projectCommentEntity->setIdUser($this->userEntity);
+            $projectCommentEntity->setContent('<p><u>Rejet commercial</u><p>' . $_POST['comment'] . '</p>');
+            $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
+
+            $entityManager->persist($projectCommentEntity);
+            $entityManager->flush($projectCommentEntity);
 
             if (false === empty($client->email)) {
                 $keywords = [
@@ -615,7 +630,7 @@ class ajaxController extends bootstrap
 
         if (
             $project->getStatus() !== ProjectsStatus::ANALYSIS_REVIEW
-            || $this->userEntity->getIdUser() !== $project->getIdAnalyste()
+            || $this->userEntity !== $project->getIdAnalyste()
         ) {
             echo json_encode([
                 'success' => false,
@@ -658,13 +673,13 @@ class ajaxController extends bootstrap
 
         $entityManager->flush($projectRating);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($_POST['status'] == 1) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REVIEW, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ANALYSIS_REJECTION, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ANALYSIS_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -676,7 +691,7 @@ class ajaxController extends bootstrap
             $historyDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+            $client = $project->getIdCompany()->getIdClientOwner();
 
             if ($client instanceof Clients && false === empty($client->getEmail())) {
                 $keywords = [
@@ -765,14 +780,24 @@ class ajaxController extends bootstrap
         $projectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
         $projectRatingManager = $this->get('unilend.service.project_rating_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         $riskRating = $projectRatingManager->calculateRiskRating($project);
         $project->setRisk($riskRating);
         $entityManager->flush($project);
 
+        if (null === $project->getIdCompany()->getIdClientOwner() || empty($project->getIdCompany()->getIdClientOwner()->getIdClient())) {
+            echo json_encode([
+                'success' => false,
+                'error'   => 'Impossible de récupérer le dirigeant de la société'
+            ]);
+            return;
+        }
+
         /** @var \clients $client */
         $client = $this->loadData('clients');
-        $client->get($project->getIdCompany()->getIdClientOwner());
+        $client->get($project->getIdCompany()->getIdClientOwner()->getIdClient());
 
         if ($_POST['status'] == 1) {
             /** @var \projects_status_history $projectStatusHistory */
@@ -794,9 +819,9 @@ class ajaxController extends bootstrap
                 $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REJECTION, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -839,7 +864,7 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
         }
 
         if (

@@ -2,10 +2,10 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
@@ -65,6 +65,9 @@ EOF
                 $attachments = $client->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
+                        continue;
+                    }
+                    if (false === $attachmentManager->isModifiedAttachment($attachment)) {
                         continue;
                     }
                     if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {
@@ -165,7 +168,7 @@ EOF
                     $data['ville']       = $clientAddress->getVilleFiscal();
                     $countryId           = $clientAddress->getIdPaysFiscal();
                 } else {
-                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
                     $data['adresse']     = $company->getAdresse1() . ' ' . $company->getAdresse2();
                     $data['code_postal'] = $company->getZip();
                     $data['ville']       = $company->getCity();

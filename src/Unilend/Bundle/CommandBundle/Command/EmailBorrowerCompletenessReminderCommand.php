@@ -7,8 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\core\Loader;
 
 class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
 {
@@ -62,8 +62,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $settings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $settings->value;
 
-        $sUrl            = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
+        $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
 
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
             if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
@@ -86,7 +87,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $client->get($company->id_client_owner, 'id_client');
                             }
 
-                            if (filter_var($client->email, FILTER_VALIDATE_EMAIL)) {
+                            $email = preg_replace('/^(.*)-[0-9]+$/', '$1', $client->email);
+
+                            if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                                 $projectStatusHistory->loadLastProjectHistory($project->id_project);
 
                                 $oSubmissionDate = new \DateTime($project->added);
@@ -118,13 +121,11 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
-                                $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($client->email));
-
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $keywords);
 
                                 try {
-                                    $message->setTo($sRecipientEmail);
+                                    $message->setTo($email);
                                     $mailer = $this->getContainer()->get('mailer');
                                     $mailer->send($message);
                                 } catch (\Exception $exception) {
@@ -139,9 +140,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
                             if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::COMMERCIAL_REVIEW) {
-                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDONED, $project, $iReminderIndex, $projectStatusHistory->content);
+                                $projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDONED, $project, $iReminderIndex, $projectStatusHistory->content);
                             } else {
-                                $oProjectManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
+                                $projectStatusManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
                         } catch (\Exception $oException) {
                             $logger->error('Cannot send reminder (project ' . $project->id_project . ') - Message: "' . $oException->getMessage() . '"', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));

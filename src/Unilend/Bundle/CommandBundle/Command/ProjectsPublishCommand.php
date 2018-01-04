@@ -39,6 +39,8 @@ EOF
         $oProject = $entityManagerSimulator->getRepository('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectLifecycleManager $projectLifecycleManager */
+        $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
@@ -50,19 +52,27 @@ EOF
             if ($oProject->get($aProject['id_project'])) {
                 $oLogger->info('Publishing the project ' . $aProject['id_project'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']]);
 
-                $bHasProjectPublished = true;
-                $oProjectManager->publish($oProject);
+                try {
+                    $bHasProjectPublished = true;
+                    $projectLifecycleManager->publish($oProject);
 
-                if ($oProjectManager->isFunded($oProject)) {
-                    /** @var MailerManager $mailerManager */
-                    $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-                    $mailerManager->sendFundedToBorrower($oProject);
-                }
+                    if ($oProjectManager->isFunded($oProject)) {
+                        /** @var MailerManager $mailerManager */
+                        $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
+                        $mailerManager->sendFundedToBorrower($oProject);
+                    }
 
-                $this->zipProjectAttachments($oProject, $entityManagerSimulator);
+                    $this->zipProjectAttachments($oProject, $entityManagerSimulator);
 
-                if (false === $oProjectManager->isRateMinReached($oProject)) {
-                    $this->sendNewProjectEmail($oProject, $entityManagerSimulator);
+                    if (false === $oProjectManager->isRateMinReached($oProject)) {
+                        $this->sendNewProjectEmail($oProject, $entityManagerSimulator);
+                    }
+                } catch (\Exception $exception) {
+                    $oLogger->critical('An exception occurred during publishing of project ' . $oProject->id_project . ' with message: ' . $exception->getMessage(), [
+                            'method' => __METHOD__,
+                            'file'   => $exception->getFile(),
+                            'line'   => $exception->getLine()
+                        ]);
                 }
             }
         }

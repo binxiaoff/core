@@ -8,11 +8,13 @@
         <div class="col-md-6">
             <div class="bloc_info_header">
                 <div>
-                    <a href="<?= $this->lurl ?>/users/edit_perso/<?= $_SESSION['user']['id_user'] ?>" class="thickbox">
-                        <?= $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] ?>
-                    </a>
-                    &nbsp;&nbsp;|&nbsp;&nbsp;
-                    <a href="<?= $this->lurl ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
+                    <?php if (false === empty($this->userEntity)) : ?>
+                        <a href="<?= $this->lurl ?>/users/edit_perso/<?= $this->userEntity->getIdUser() ?>" class="thickbox">
+                            <?= $this->userEntity->getFirstName() . ' ' . $this->userEntity->getName() ?>
+                        </a>
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <a href="<?= $this->lurl ?>/logout" title="Se déconnecter"><strong>Se déconnecter</strong></a>
+                    <?php endif; ?>
                 </div>
                 <form id="quick_search" method="post">
                     <?php if (in_array('emprunteurs', $this->lZonesHeader)) : ?>

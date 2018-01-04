@@ -326,10 +326,18 @@ function check_status_dossier(status, id_project) {
     }
 
     if (confirm('Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
+        var comment = $('#rejection-comment').val()
+
+        if (CKEDITOR.instances['rejection-comment']) {
+            comment = CKEDITOR.instances['rejection-comment'].getData()
+        }
+
         $.post(add_url + '/ajax/check_status_dossier', {
             status: status,
             id_project: id_project,
-            rejection_reason: $('#rejection_reason option:selected').val()
+            rejection_reason: $('#rejection_reason option:selected').val(),
+            comment: comment,
+            public: $('[name=rejection_public]:checked').val()
         }).done(function (data) {
             if (data != 'nok') {
                 location.reload()
@@ -441,21 +449,25 @@ function valid_rejete_etape6(status, id_project) {
 }
 
 function valid_rejete_etape7(status, id_project) {
-    var validation_message = '',
-        rate_message       = '';
+    var message            = '';
+    var validation_message = '';
+    var rate_message       = '';
+
     if (status == 1) {
         if ($('#min_rate').val() != '' && $('#max_rate').val() != '' && typeof $('#min_rate').val() != "undefined" && typeof $('#max_rate').val() != "undefined") {
-            var min_rate     = $('#min_rate').val(),
-                max_rate     = $('#max_rate').val(),
-                rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
+            var min_rate     = $('#min_rate').val();
+            var max_rate     = $('#max_rate').val();
+
+            rate_message = '\nTaux (min / max) indicatif : ' + min_rate + ' % / ' + max_rate + ' %';
         }
-        var message            = 'valider',
-            note_comite        = $('span.moyenneNote_comite').text(),
-            validation_message = 'Note comité : ' + note_comite + ' \nMontant du projet : ' + $('#montant').val() + ' euros \nDurée du projet : ' + $('#duree').val() + ' mois' + rate_message + '\n';
+        var note_comite = $('span.moyenneNote_comite').text()
+
+        message           = 'valider'
+        validation_message = 'Note comité : ' + note_comite + ' \nMontant du projet : ' + $('#montant').val() + ' euros \nDurée du projet : ' + $('#duree').val() + ' mois' + rate_message + '\n';
     }
-    else if (status == 2) var message = 'rejeter';
-    else if (status == 3) var message = 'sauvegarder';
-    else if (status == 4) var message = 'valider avec des conditions suspensives de mise en ligne';
+    else if (status == 2) message = 'rejeter';
+    else if (status == 3) message = 'sauvegarder';
+    else if (status == 4) message = 'valider avec des conditions suspensives de mise en ligne';
 
     if (confirm(validation_message + 'Êtes-vous sûr de ' + message + ' le dossier ?') == true) {
         var structure                     = parseFloat($('#structure_comite').val().replace(',', '.')),

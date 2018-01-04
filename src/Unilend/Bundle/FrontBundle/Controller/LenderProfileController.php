@@ -66,7 +66,7 @@ class LenderProfileController extends Controller
         $phoneForm         = $this->createForm(PersonPhoneType::class, $client);
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $unattachedCompany = clone $company;
 
             $identityFb = $this->createFormBuilder()
@@ -179,7 +179,7 @@ class LenderProfileController extends Controller
             $templateData['residenceAttachments'][AttachmentType::JUSTIFICATIF_FISCAL]           = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_FISCAL);
         }
 
-        return $this->render('pages/lender_profile/personal_information.html.twig', $templateData);
+        return $this->render('lender_profile/personal_information.html.twig', $templateData);
     }
 
     /**
@@ -538,7 +538,7 @@ class LenderProfileController extends Controller
             $templateData['declarationIsPossible']        = $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible);
         }
 
-        return $this->render('pages/lender_profile/fiscal_information.html.twig', $templateData);
+        return $this->render('lender_profile/fiscal_information.html.twig', $templateData);
     }
 
     /**
@@ -608,7 +608,7 @@ class LenderProfileController extends Controller
             ]
         ];
 
-        return $this->render('pages/lender_profile/security.html.twig', $templateData);
+        return $this->render('lender_profile/security.html.twig', $templateData);
     }
 
     /**
@@ -627,7 +627,7 @@ class LenderProfileController extends Controller
 
         $this->addNotificationSettingsTemplate($templateData, $client);
 
-        return $this->render('pages/lender_profile/notifications.html.twig', $templateData);
+        return $this->render('lender_profile/notifications.html.twig', $templateData);
     }
 
     /**
@@ -809,7 +809,7 @@ class LenderProfileController extends Controller
             $template['attachmentsList'] = '<ul><li>' . $ribAttachment->getType()->getLabel() . '</li></ul>';
         }
 
-        return $this->render('pages/lender_profile/lender_completeness.html.twig', $template);
+        return $this->render('lender_profile/lender_completeness.html.twig', $template);
     }
 
     /**

@@ -2,7 +2,6 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
@@ -397,7 +396,7 @@ class dossiersController extends bootstrap
 
                     $entityManager->getConnection()->beginTransaction();
                     try {
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PRET_REFUSE, $this->projects);
+                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PRET_REFUSE, $this->projects);
 
                         /** @var \echeanciers $echeanciers */
                         $echeanciers = $this->loadData('echeanciers');
@@ -657,7 +656,7 @@ class dossiersController extends bootstrap
                 $this->projects->update();
 
                 if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                    $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $this->projects);
                 }
 
                 $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
@@ -939,10 +938,11 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $project);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
+        $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, $_POST['problematic_status'], $project);
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->loadData('projects_status_history');
@@ -972,7 +972,7 @@ class dossiersController extends bootstrap
 
         if (false === empty($_POST['send_email_borrower'])) {
             try {
-                $projectStatusManager->sendProblemStatusEmailToBorrower($project);
+                $projectStatusNotificationSender->sendProblemStatusEmailToBorrower($project);
             } catch (\Exception $exception) {
                 $this->get('logger')->warning(
                     'Problem status email was not sent to borrower. Error : ' . $exception->getMessage(),
@@ -984,7 +984,7 @@ class dossiersController extends bootstrap
 
         if (false === empty($_POST['send_email']) || ProjectsStatus::LOSS == $_POST['problematic_status']) {
             try {
-                $projectStatusManager->sendProblemStatusNotificationsToLenders($project);
+                $projectStatusNotificationSender->sendProblemStatusNotificationsToLenders($project);
             } catch (\Exception $exception) {
                 $this->get('logger')->warning(
                     'Problem status email was not sent to lenders. Error : ' . $exception->getMessage(),
@@ -1205,24 +1205,23 @@ class dossiersController extends bootstrap
                 $slackManager      = $this->get('unilend.service.slack_manager');
                 $slackNotification = 'Mémo ajouté par *' . $projectCommentEntity->getIdUser()->getFirstname() . ' ' . $projectCommentEntity->getIdUser()
                         ->getName() . '* sur le projet ' . $slackManager->getProjectName($projectEntity);
-                $userRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
                 if (
-                    $projectEntity->getIdCommercial() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdCommercial()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdCommercial()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdCommercial()
+                    && $projectEntity->getIdCommercial()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdCommercial()
+                    && false === empty($projectEntity->getIdCommercial()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdCommercial()->getSlack());
                 }
 
                 if (
-                    $projectEntity->getIdAnalyste() > 0
-                    && $_SESSION['user']['id_user'] != $projectEntity->getIdAnalyste()
-                    && ($userEntity = $userRepository->find($projectEntity->getIdAnalyste()))
-                    && false === empty($userEntity->getSlack())
+                    $projectEntity->getIdAnalyste()
+                    && $projectEntity->getIdAnalyste()->getIdUser() > 0
+                    && $this->userEntity !== $projectEntity->getIdAnalyste()
+                    && false === empty($projectEntity->getIdAnalyste()->getSlack())
                 ) {
-                    $slackManager->sendMessage($slackNotification, '@' . $userEntity->getSlack());
+                    $slackManager->sendMessage($slackNotification, '@' . $projectEntity->getIdAnalyste()->getSlack());
                 }
             }
 
@@ -1246,9 +1245,7 @@ class dossiersController extends bootstrap
             $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
             /** @var Projects $project */
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-            $client  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
 
-            // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
@@ -1261,7 +1258,7 @@ class dossiersController extends bootstrap
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
                     $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
                     if ($attachmentType) {
-                        $attachment = $attachmentManager->upload($client, $attachmentType, $uploadedFile);
+                        $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile);
                     }
                     if ($attachment) {
                         $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
@@ -1329,13 +1326,15 @@ class dossiersController extends bootstrap
                 die;
             }
         }
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+        $companyManager = $this->get('unilend.service.company_manager');
 
         if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
             if (isset($this->params[1]) && is_numeric($this->params[1])) {
                 /** @var Clients $clientEntity */
                 $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
                 if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity->getIdClient()]);
+                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
                 } else {
                     $_SESSION['freeow']['title']   = 'Erreur';
                     $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
@@ -1343,7 +1342,7 @@ class dossiersController extends bootstrap
                     die;
                 }
             } else {
-                $companyEntity = $this->createBlankCompany();
+                $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
             }
 
             $this->createProject($companyEntity, $defaultPartner->getId());
@@ -1351,7 +1350,7 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
-            $companyEntity = $this->createBlankCompany($this->params[1]);
+            $companyEntity = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
@@ -1387,58 +1386,6 @@ class dossiersController extends bootstrap
     }
 
     /**
-     * @param null|string $siren
-     *
-     * @return Companies
-     */
-    private function createBlankCompany($siren = null)
-    {
-        $clientEntity        = new Clients();
-        $companyEntity       = new Companies();
-        $clientAddressEntity = new ClientsAdresses();
-
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $entityManager->getConnection()->beginTransaction();
-        try {
-            $clientEntity->setIdLangue('fr')
-                ->setStatus(Clients::STATUS_ONLINE);
-
-            $entityManager->persist($clientEntity);
-            $entityManager->flush($clientEntity);
-
-            $clientAddressEntity->setIdClient($clientEntity);
-            $entityManager->persist($clientAddressEntity);
-
-            $companyEntity->setSiren($siren)
-                ->setIdClientOwner($clientEntity->getIdClient())
-                ->setStatusAdresseCorrespondance(1);
-            $entityManager->persist($companyEntity);
-            $entityManager->flush($companyEntity);
-
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($clientEntity, WalletType::BORROWER);
-
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
-            $companyManager = $this->get('unilend.service.company_manager');
-            $statusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-                ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]);
-
-            $companyManager->addCompanyStatus(
-                $companyEntity,
-                $statusInBonis,
-                $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user'])
-            );
-
-            $entityManager->getConnection()->commit();
-        } catch (Exception $exception) {
-            $entityManager->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
-        }
-
-        return $companyEntity;
-    }
-
-    /**
      * @param Companies $companyEntity
      * @param int       $partnerId
      */
@@ -1452,9 +1399,9 @@ class dossiersController extends bootstrap
         $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $this->projects->create();
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->get('unilend.service.project_manager');
-        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::INCOMPLETE_REQUEST, $this->projects);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::INCOMPLETE_REQUEST, $this->projects);
 
         $serialize = serialize(['id_project' => $this->projects->id_project]);
         $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
@@ -1609,9 +1556,12 @@ class dossiersController extends bootstrap
 
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                     $projectManager = $this->get('unilend.service.project_manager');
+
                     if ($projectManager->isHealthy($project)) {
                         $projectRepaymentTaskManager->enableAutomaticRepayment($project);
-                        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::REMBOURSEMENT, $project);
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+                        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::REMBOURSEMENT, $project);
                     }
 
                     $_SESSION['freeow']['title']   = 'Remboursement prêteur';
@@ -2110,9 +2060,9 @@ class dossiersController extends bootstrap
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('unilend.service.project_manager');
-                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+                $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMMERCIAL_REVIEW, $oProjects, 1, $varMail['liste_pieces']);
 
                 unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
                 echo 'Votre email a été envoyé';
@@ -2332,10 +2282,11 @@ class dossiersController extends bootstrap
             return;
         }
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+
         if (isset($this->params[1]) && 'resume' === $this->params[1] && ProjectsStatus::POSTPONED == $this->projects->status) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMMERCIAL_REVIEW, $this->projects);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMMERCIAL_REVIEW, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2346,14 +2297,13 @@ class dossiersController extends bootstrap
             $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
             $projectCommentEntity->setIdUser($this->userEntity);
             $projectCommentEntity->setContent('<p><u>Report projet</u></p>' . $_POST['comment']);
+            $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
 
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
             if ($this->projects->status != ProjectsStatus::POSTPONED) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                $projectManager = $this->get('unilend.service.project_manager');
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::POSTPONED, $this->projects);
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::POSTPONED, $this->projects);
             }
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -2385,6 +2335,7 @@ class dossiersController extends bootstrap
                 $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
                 $projectCommentEntity->setIdUser($this->userEntity);
                 $projectCommentEntity->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment']);
+                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
 
                 $entityManager->persist($projectCommentEntity);
                 $entityManager->flush($projectCommentEntity);
@@ -2394,9 +2345,9 @@ class dossiersController extends bootstrap
             $abandonReason = $this->loadData('project_abandon_reason');
             $abandonReason->get($_POST['reason']);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ABANDONED, $this->projects, 0, $abandonReason->label);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ABANDONED, $this->projects, 0, $abandonReason->label);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2453,11 +2404,11 @@ class dossiersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Mise en ligne';
             $_SESSION['freeow']['message'] = 'Mise en ligne programmée avec succès';
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::A_FUNDER, $this->projects);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::A_FUNDER, $this->projects);
 
             $slackManager    = $this->container->get('unilend.service.slack_manager');
             $publicationDate = new \DateTime($this->projects->date_publication);
@@ -2500,9 +2451,9 @@ class dossiersController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ANALYSIS_REVIEW, $this->projects);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ANALYSIS_REVIEW, $this->projects);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             die;
@@ -2540,9 +2491,9 @@ class dossiersController extends bootstrap
         $client = $this->loadData('clients');
         $client->get($company->id_client_owner, 'id_client');
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REJECTION, $project);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REJECTION, $project);
 
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->loadData('projects_status_history');
@@ -2583,9 +2534,9 @@ class dossiersController extends bootstrap
         $this->projects = $this->loadData('projects');
         $this->projects->get($this->params[0]);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $this->projects);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $this->projects);
 
         /** @var \companies $company */
         $company = $this->loadData('companies');
@@ -2631,22 +2582,10 @@ class dossiersController extends bootstrap
                     }
                     break;
                 case 'create':
-                    /** @var \Doctrine\ORM\EntityManager $entityManager */
-                    $entityManager = $this->get('doctrine.orm.entity_manager');
-                    $company       = $this->createBlankCompany(filter_var($_POST['siren'], FILTER_SANITIZE_NUMBER_INT));
-
-                    $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-                        ->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS]);
-
-                    $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
-
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
                     $companyManager = $this->get('unilend.service.company_manager');
-                    $companyManager->addCompanyStatus(
-                        $company,
-                        $companyStatusInBonis,
-                        $userRepository->find($_SESSION['user']['id_user'])
-                    );
+                    $siren          = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_NUMBER_INT);
+                    $company        = $companyManager->createBorrowerBlankCompany($siren, $this->userEntity->getIdUser());
 
                     $this->projects->id_target_company = $company->getIdCompany();
                     $this->projects->update();

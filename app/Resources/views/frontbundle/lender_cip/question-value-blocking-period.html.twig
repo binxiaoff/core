@@ -1,4 +1,4 @@
-{% extends 'layouts/_layout_lender.html.twig' %}
+{% extends 'lender_account/_layout_lender.html.twig' %}
 
 {% set page = {
     id: 'user-preter-profile',
@@ -8,7 +8,7 @@
 
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
-        {% include('pages/lender_profile/partials/tab_navigation.html.twig') %}
+        {% include 'lender_profile/partials/tab_navigation.html.twig' %}
 
         <article id="dashboard-cip" class="dashboard-tabs-content tab-content">
             <div id="cip-step-{{ current_step }}">

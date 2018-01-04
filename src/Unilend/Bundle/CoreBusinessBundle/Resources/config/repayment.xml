@@ -8,7 +8,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service.project_status_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
             <argument type="service" id="unilend.service.project_charge_manager"/>
@@ -19,7 +19,7 @@
         <service id="unilend.service_repayment.project_early_repayment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectEarlyRepaymentManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
-            <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="unilend.service.project_status_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
             <argument type="service" id="logger"/>

@@ -136,6 +136,20 @@
         }
       }
     }
+
+    &.help {
+      background-color: $c-bg1;
+      margin-top: 40px;
+
+      li {
+        border-bottom: solid 1px $c-grey-l3;
+        padding-left: 10px;
+      }
+
+      > :last-child {
+        border-bottom: 0;
+      }
+    }
   }
 }
 

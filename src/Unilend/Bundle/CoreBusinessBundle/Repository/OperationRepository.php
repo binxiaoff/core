@@ -680,35 +680,64 @@ class OperationRepository extends EntityRepository
     }
 
     /**
+     * @param string|null $typeGroupBy
+     *
      * @return string
      */
-    private function getDailyStateQuery()
+    private function getDailyStateQuery(string $typeGroupBy = null) : string
     {
-        return 'SELECT
-                  LEFT(o.added, 10) AS day,
-                  MONTH(o.added) AS month,
-                  SUM(o.amount) AS amount,
-                     CASE ot.label
-                        WHEN "' . OperationType::LENDER_PROVISION . '" THEN
-                          IF(o.id_backpayline IS NOT NULL,
-                             "lender_provision_credit_card",
-                             IF(o.id_wire_transfer_in IS NOT NULL,
-                                "lender_provision_wire_transfer_in",
-                                NULL)
-                          )
-                        WHEN "' . OperationType::LENDER_PROVISION_CANCEL . '" THEN
-                          IF(o.id_backpayline IS NOT NULL,
-                             "lender_provision_cancel_credit_card",
-                             IF(o.id_wire_transfer_in IS NOT NULL,
-                                "lender_provision_cancel_wire_transfer_in",
-                                NULL)
-                          )
-                        WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
-                        WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
-                     ELSE ot.label END AS movement
-                FROM operation o USE INDEX (idx_operation_added)
-                INNER JOIN operation_type ot ON o.id_type = ot.id
-                LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id';
+        if ('day' === $typeGroupBy) {
+            $select =
+                'SELECT
+                  LEFT(o.added, 10) AS day,';
+        } elseif ('month' === $typeGroupBy) {
+            $select = '
+                SELECT
+                  MONTH(o.added) AS month,';
+        } else {
+            $select = 'SELECT ';
+        }
+
+        $select .=
+              'SUM(o.amount) AS amount,
+                 CASE ot.label
+                    WHEN "' . OperationType::LENDER_PROVISION . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                         "lender_provision_credit_card",
+                         IF(o.id_wire_transfer_in IS NOT NULL,
+                            "lender_provision_wire_transfer_in",
+                            NULL)
+                      )
+                    WHEN "' . OperationType::LENDER_PROVISION_CANCEL . '" THEN
+                      IF(o.id_backpayline IS NOT NULL,
+                         "lender_provision_cancel_credit_card",
+                         IF(o.id_wire_transfer_in IS NOT NULL,
+                            "lender_provision_cancel_wire_transfer_in",
+                            NULL)
+                      )
+                    WHEN "' . OperationType::BORROWER_COMMISSION . '" THEN ost.label
+                    WHEN "' . OperationType::BORROWER_COMMISSION_REGULARIZATION . '" THEN ost.label
+                    WHEN "' . OperationType::BORROWER_PROVISION . '" THEN
+                      IF(r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ',
+                      "borrower_provision_direct_debit",
+                        IF(r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ',
+                        "borrower_provision_wire_transfer_in",
+                        "borrower_provision_other")
+                      )
+                    WHEN "' . OperationType::BORROWER_PROVISION_CANCEL . '" THEN
+                      IF(r.type = ' . Receptions::TYPE_DIRECT_DEBIT . ',
+                      "borrower_provision_cancel_direct_debit",
+                        IF(r.type = ' . Receptions::TYPE_WIRE_TRANSFER . ',
+                        "borrower_provision_cancel_wire_transfer_in",
+                        "borrower_provision_cancel_other")
+                      )
+                 ELSE ot.label END AS movement
+            FROM operation o USE INDEX (idx_operation_added)
+            INNER JOIN operation_type ot ON o.id_type = ot.id
+            LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
+            LEFT JOIN receptions r ON o.id_wire_transfer_in = r.id_reception';
+
+        return $select;
     }
 
     /**
@@ -717,17 +746,18 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes)
+    public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes) : array
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() . ' 
+        $query = $this->getDailyStateQuery('day') . ' 
                     WHERE o.added BETWEEN :start AND :end
                     AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY day, movement
-                    ORDER BY o.added ASC';
+                    ORDER BY day ASC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
@@ -746,18 +776,19 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes)
+    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes) : array
     {
         $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
         $start->setTime(0, 0, 0);
         $requestedDate->setTime(23, 59, 59);
 
-        $query = $this->getDailyStateQuery() . ' 
+        $query = $this->getDailyStateQuery('month') . ' 
                     WHERE o.added BETWEEN :start AND :end
                       AND ot.label IN ("' . implode('","', $operationTypes) . '")
                     GROUP BY month, movement
-                    ORDER BY o.added ASC';
+                    ORDER BY month ASC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $requestedDate->format('Y-m-d H:i:s')])
@@ -777,6 +808,7 @@ class OperationRepository extends EntityRepository
      * @param array     $operationTypes
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function sumMovementsForDailyState(\DateTime $start, \DateTime $end, array $operationTypes)
     {
@@ -786,8 +818,7 @@ class OperationRepository extends EntityRepository
         $query = $this->getDailyStateQuery() . ' 
                     WHERE o.added BETWEEN :start AND :end
                     AND ot.label IN ("' . implode('","', $operationTypes) . '")
-                    GROUP BY movement
-                    ORDER BY o.added ASC';
+                    GROUP BY movement';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
@@ -830,6 +861,7 @@ class OperationRepository extends EntityRepository
      * @param bool $groupFirstYears
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getTotalRepaymentByCohort($repaymentType, $groupFirstYears = true)
     {

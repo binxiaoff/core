@@ -1,0 +1,40 @@
+{% if projects is empty %}
+    <div class="push-15">Aucun projet</div>
+{% else %}
+    <table class="table table-bordered table-header-bg table-striped" data-table data-table-search="true">
+        <thead>
+            <tr>
+                <th>Raison sociale</th>
+                <th>Montant</th>
+                <th>Durée</th>
+                <th>Nom dirigeant</th>
+                <th>Téléphone</th>
+                <th>Création</th>
+                {% if type in ['partenaire', 'agence'] %}
+                    <th>Déposant</th>
+                {% endif %}
+                {% if type in ['partenaire'] %}
+                    <th>Agence</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+                <tr>
+                    <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.idCompany.name }}</a></td>
+                    <td class="text-right">{{ project.amount|localizednumber }}&nbsp;€</td>
+                    <td>{{ project.period }} mois</td>
+                    <td>{{ project.idCompany.idClientOwner.prenom }} {{ project.idCompany.idClientOwner.nom }}</td>
+                    <td>{{ project.idCompany.idClientOwner.telephone }}</td>
+                    <td data-order="{{ project.added|date('U') }}">{{ project.added|localizeddate('short') }}</td>
+                    {% if type in ['partenaire', 'agence'] %}
+                        <td>{% if project.idClientSubmitter and project.idClientSubmitter.idClient > 0 %}{{ project.idClientSubmitter.prenom }} {{ project.idClientSubmitter.nom }}{% endif %}</td>
+                    {% endif %}
+                    {% if type in ['partenaire'] %}
+                        <td>{% if project.idCompanySubmitter and project.idCompanySubmitter.idCompany > 0 %}{{ project.idCompanySubmitter.name }}{% endif %}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

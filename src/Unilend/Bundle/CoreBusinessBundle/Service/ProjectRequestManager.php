@@ -30,8 +30,6 @@ class ProjectRequestManager
     private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
-    /** @var ProjectManager */
-    private $projectManager;
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var SourceManager */
@@ -46,11 +44,12 @@ class ProjectRequestManager
     private $partnerProductManager;
     /** @var CompanyManager */
     private $companyManager;
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
-     * @param ProjectManager         $projectManager
      * @param WalletCreationManager  $walletCreationManager
      * @param SourceManager          $sourceManager
      * @param PartnerManager         $partnerManager
@@ -58,23 +57,23 @@ class ProjectRequestManager
      * @param LoggerInterface        $logger
      * @param PartnerProductManager  $partnerProductManager
      * @param CompanyManager         $companyManager
+     * @param ProjectStatusManager   $projectStatusManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
-        ProjectManager $projectManager,
         WalletCreationManager $walletCreationManager,
         SourceManager $sourceManager,
         PartnerManager $partnerManager,
         EligibilityManager $eligibilityManager,
         LoggerInterface $logger,
         PartnerProductManager $partnerProductManager,
-        CompanyManager $companyManager
+        CompanyManager $companyManager,
+        ProjectStatusManager $projectStatusManager
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
-        $this->projectManager         = $projectManager;
         $this->walletCreationManager  = $walletCreationManager;
         $this->sourceManager          = $sourceManager;
         $this->partnerManager         = $partnerManager;
@@ -82,6 +81,7 @@ class ProjectRequestManager
         $this->logger                 = $logger;
         $this->partnerProductManager  = $partnerProductManager;
         $this->companyManager         = $companyManager;
+        $this->projectStatusManager   = $projectStatusManager;
     }
 
     /**
@@ -174,7 +174,8 @@ class ProjectRequestManager
         $siret             = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
 
         $company = new Companies();
-        $company->setSiren($siren)
+        $company
+            ->setSiren($siren)
             ->setSiret($siret)
             ->setStatusAdresseCorrespondance(1)
             ->setEmailDirigeant($email)
@@ -183,13 +184,18 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
         try {
             $this->entityManager->persist($client);
+
             $clientAddress = new ClientsAdresses();
             $clientAddress->setIdClient($client);
+
             $this->entityManager->persist($clientAddress);
             $this->entityManager->flush($clientAddress);
-            $company->setIdClientOwner($client->getIdClient());
+
+            $company->setIdClientOwner($client);
+
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
+
             $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
@@ -216,7 +222,7 @@ class ProjectRequestManager
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        $this->projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }
@@ -312,19 +318,19 @@ class ProjectRequestManager
             ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
             : ProjectsStatus::NOT_ELIGIBLE;
 
-        $this->projectManager->addProjectStatus($userId, $status, $project, 0, $motive);
+        $this->projectStatusManager->addProjectStatus($userId, $status, $project, 0, $motive);
 
         return ['motive' => $motive, 'status' => $status];
     }
 
     /**
      * @param \projects $project
-     * @param null|int  $userId
+     * @param int       $userId
      * @param boolean   $addProjectStatus
      *
      * @return int
      */
-    public function assignEligiblePartnerProduct(\projects $project, $userId = null, $addProjectStatus = false)
+    public function assignEligiblePartnerProduct(\projects $project, $userId, $addProjectStatus = false)
     {
         try {
             if (false === empty($project->id_partner)) {
@@ -345,7 +351,7 @@ class ProjectRequestManager
                 }
 
                 if (empty($products) && $addProjectStatus) {
-                    $this->projectManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                    $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
                 }
 
                 return count($products);
