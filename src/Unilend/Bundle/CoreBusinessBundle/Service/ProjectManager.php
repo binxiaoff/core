@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
@@ -202,8 +203,8 @@ class ProjectManager
     {
         $rateRange = $this->bidManager->getProjectRateRange($project);
         /** @var \bids $bid */
-        $bid = $this->entityManagerSimulator->getRepository('bids');
-        $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], array(\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED));
+        $bid             = $this->entityManagerSimulator->getRepository('bids');
+        $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]);
 
         return $totalBidRateMin >= $project->amount;
     }

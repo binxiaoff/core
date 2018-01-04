@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
@@ -54,7 +55,7 @@ class dashboardController extends bootstrap
             $this->upcomingProjects             = $this->getSaleUpcomingProjects();
             $this->impossibleEvaluationProjects = $this->getImpossibleEvaluationProjects();
             $this->collapsedStatus              = self::$saleCollapsedStatus;
-            $this->salesPeople                  = $user->select('status = 1 AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+            $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
         } else {
             header('Location: ' . $this->lurl);
             die;

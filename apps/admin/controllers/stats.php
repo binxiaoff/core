@@ -56,24 +56,25 @@ class statsController extends bootstrap
 
         }
 
-        $sql = 'SELECT
-                        c.id_client,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.telephone,
-                        c.mobile,
-                        c.added,
-                        c.etape_inscription_preteur,
-                        c.source,
-                        c.source2
-                    FROM clients c
-                      INNER JOIN wallet w ON c.id_client = w.id_client
-                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
-                    WHERE c.etape_inscription_preteur > 0 
-                        AND c.status = 1 
-                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
-                        AND c.added <= "' . $date2 . ' 23:59:59"';
+        $sql = '
+            SELECT
+                c.id_client,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.telephone,
+                c.mobile,
+                c.added,
+                c.etape_inscription_preteur,
+                c.source,
+                c.source2
+            FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+            WHERE c.etape_inscription_preteur > 0 
+                AND c.status = ' . Clients::STATUS_ONLINE . '
+                AND c.added >= "' . $date1 . ' 00:00:00"
+                AND c.added <= "' . $date2 . ' 23:59:59"';
 
         $result = $this->bdd->query($sql);
 
@@ -86,8 +87,8 @@ class statsController extends bootstrap
             $this->autoFireView = false;
             $this->hideDecoration();
 
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"Export_etape_inscription.csv\"");
+            header('Content-type: application/vnd.ms-excel');
+            header('Content-disposition: attachment; filename="Export_etape_inscription.csv"');
 
             if ($_POST['spy_date1'] != '') {
                 $d1    = explode('/', $_POST['spy_date1']);
@@ -103,24 +104,25 @@ class statsController extends bootstrap
                 $date2 = date('Y-m-d', strtotime('last day of this month'));
             }
 
-            $sql = 'SELECT
-                        c.id_client,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.telephone,
-                        c.mobile,
-                        c.added,
-                        c.etape_inscription_preteur,
-                        c.source,
-                        c.source2
-                    FROM clients c
-                      INNER JOIN wallet w ON c.id_client = w.id_client
-                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
-                    WHERE c.etape_inscription_preteur > 0 
-                        AND c.status = 1 
-                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
-                        AND c.added <= "' . $date2 . ' 23:59:59"';
+            $sql = '
+                SELECT
+                    c.id_client,
+                    c.nom,
+                    c.prenom,
+                    c.email,
+                    c.telephone,
+                    c.mobile,
+                    c.added,
+                    c.etape_inscription_preteur,
+                    c.source,
+                    c.source2
+                FROM clients c
+                INNER JOIN wallet w ON c.id_client = w.id_client
+                INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+                WHERE c.etape_inscription_preteur > 0 
+                    AND c.status = ' . Clients::STATUS_ONLINE . ' 
+                    AND c.added >= "' . $date1 . ' 00:00:00"
+                    AND c.added <= "' . $date2 . ' 23:59:59"';
 
             $result = $this->bdd->query($sql);
 
@@ -477,7 +479,7 @@ class statsController extends bootstrap
                   id_bid, 
                   (SELECT id_client FROM wallet w WHERE w.id = b.id_lender_account) AS id_client, 
                   added, 
-                  (CASE status WHEN ' . Bids::STATUS_BID_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_BID_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_BID_REJECTED . ' THEN "KO" END) AS Statut, 
+                  (CASE status WHEN ' . Bids::STATUS_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_REJECTED . ' THEN "KO" END) AS Statut, 
                   ROUND((amount/100),0), REPLACE(rate,".",",") as rate 
                 FROM bids b';
 

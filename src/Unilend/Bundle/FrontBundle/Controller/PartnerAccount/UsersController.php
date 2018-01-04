@@ -300,7 +300,7 @@ class UsersController extends Controller
                     $client->setPassword($password);
                     $client->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING));
                     $client->setSecreteReponse(md5($formData['answer']));
-                    $client->setStatus(1);
+                    $client->setStatus(Clients::STATUS_ONLINE);
 
                     $entityManager->persist($client);
 

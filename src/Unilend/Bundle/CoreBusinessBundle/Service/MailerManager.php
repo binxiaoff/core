@@ -186,7 +186,7 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
-        if ($oBorrower->status == 1) {
+        if ($oBorrower->status == Clients::STATUS_ONLINE) {
             $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait);
 
             if ($inter['mois'] > 0) {

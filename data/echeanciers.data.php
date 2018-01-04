@@ -1,46 +1,11 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers as EcheanciersEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 
 class echeanciers extends echeanciers_crud
 {
-    const STATUS_PENDING                  = 0;
-    const STATUS_REPAID                   = 1;
-    const STATUS_PARTIALLY_REPAID         = 2;
-    const IS_NOT_EARLY_REFUND             = 0;
-    const IS_EARLY_REFUND                 = 1;
-    const STATUS_REPAYMENT_EMAIL_NOT_SENT = 0;
-    const STATUS_REPAYMENT_EMAIL_SENT     = 1;
-
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -51,7 +16,7 @@ class echeanciers extends echeanciers_crud
         }
         $sql      = 'SELECT * FROM echeanciers' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -76,6 +41,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getTotalAmount(array $selector)
@@ -85,6 +51,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getTotalInterests(array $selector)
@@ -94,33 +61,36 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getOwedCapital(array $selector)
     {
-        return $this->getPartialSum('capital - capital_rembourse', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
+        return $this->getPartialSum('capital - capital_rembourse', $selector, [EcheanciersEntity::STATUS_PENDING, EcheanciersEntity::STATUS_PARTIALLY_REPAID]);
     }
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getOwedInterests(array $selector)
     {
-        return $this->getPartialSum('interets - interets_rembourses', $selector, array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID));
+        return $this->getPartialSum('interets - interets_rembourses', $selector, [EcheanciersEntity::STATUS_PENDING, EcheanciersEntity::STATUS_PARTIALLY_REPAID]);
     }
 
     /**
      * @param int       $projectId
      * @param \DateTime $endDate
+     *
      * @return string
      */
     public function getUnpaidAmountAtDate($projectId, \DateTime $endDate)
     {
         $bind     = [
             'id_project'       => $projectId,
-            'loan_status'      => \loans::STATUS_ACCEPTED,
-            'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
+            'loan_status'      => Loans::STATUS_ACCEPTED,
+            'repayment_status' => [EcheanciersEntity::STATUS_PENDING, EcheanciersEntity::STATUS_PARTIALLY_REPAID],
             'date_echeance'    => $endDate->format('Y-m-d 23:59:59')
         ];
         $bindType = [
@@ -144,6 +114,7 @@ class echeanciers extends echeanciers_crud
     /**
      * @param int $projectId
      * @param int $due
+     *
      * @return string
      * @throws Exception
      */
@@ -151,8 +122,8 @@ class echeanciers extends echeanciers_crud
     {
         $bind     = [
             'id_project'       => $projectId,
-            'loan_status'      => \loans::STATUS_ACCEPTED,
-            'repayment_status' => array(self::STATUS_PENDING, self::STATUS_PARTIALLY_REPAID),
+            'loan_status'      => Loans::STATUS_ACCEPTED,
+            'repayment_status' => [EcheanciersEntity::STATUS_PENDING, EcheanciersEntity::STATUS_PARTIALLY_REPAID],
             'ordre'            => $due
         ];
         $bindType = [
@@ -175,6 +146,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getRepaidAmount(array $selector)
@@ -184,39 +156,42 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getRepaidCapital(array $selector)
     {
-        return $this->getPartialSum('capital_rembourse', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID));
+        return $this->getPartialSum('capital_rembourse', $selector, [EcheanciersEntity::STATUS_REPAID, EcheanciersEntity::STATUS_PARTIALLY_REPAID]);
     }
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     public function getRepaidInterests(array $selector)
     {
-        return $this->getPartialSum('interets_rembourses', $selector, array(self::STATUS_REPAID, self::STATUS_PARTIALLY_REPAID), 0);
+        return $this->getPartialSum('interets_rembourses', $selector, [EcheanciersEntity::STATUS_REPAID, EcheanciersEntity::STATUS_PARTIALLY_REPAID], EcheanciersEntity::IS_NOT_EARLY_REPAID);
     }
 
     /**
-     * @param string $amountType
-     * @param array $selector
-     * @param array $status
+     * @param string   $amountType
+     * @param array    $selector
+     * @param array    $status
      * @param int|null $earlyRepaymentStatus
+     *
      * @return string
      */
-    private function getPartialSum($amountType, array $selector, array $status = array(), $earlyRepaymentStatus = null)
+    private function getPartialSum($amountType, array $selector, array $status = [], $earlyRepaymentStatus = null)
     {
         $query = '
             SELECT SUM(' . $amountType . ')
             FROM echeanciers e
             INNER JOIN loans l ON e.id_loan = l.id_loan
-            WHERE l.status = ' . \loans::STATUS_ACCEPTED;
+            WHERE l.status = ' . Loans::STATUS_ACCEPTED;
 
         if (false === empty($selector)) {
-            $query .=  ' AND e.' . $this->implodeSelector($selector);
+            $query .= ' AND e.' . $this->implodeSelector($selector);
         }
 
         if (false === empty($status)) {
@@ -233,11 +208,12 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return array
      */
     public function getYearlySchedule(array $selector)
     {
-        $result      = array();
+        $result      = [];
         $queryResult = $this->bdd->query('
             SELECT YEAR(date_echeance) AS annee,
                 SUM(capital) AS capital,
@@ -255,6 +231,7 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param array $selector
+     *
      * @return string
      */
     private function implodeSelector(array $selector)
@@ -269,19 +246,22 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * @param int $lenderId
+     * @param int    $lenderId
      * @param string $startDate
      * @param string $endDate
-     * @return string
+     *
+     * @return int|string
+     * @throws Exception
      */
     public function getNextRepaymentAmountInDateRange($lenderId, $startDate, $endDate)
     {
-        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', [self::STATUS_PENDING]);
+        return $this->getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, 'e.capital + e.interets', [EcheanciersEntity::STATUS_PENDING]);
     }
 
     /**
-     * @param int $projectId
+     * @param int      $projectId
      * @param DateTime $startDate
+     *
      * @return string
      * @throws Exception
      */
@@ -291,9 +271,9 @@ class echeanciers extends echeanciers_crud
             $startDate = new DateTime();
         }
         $bind     = [
-            'id_project'        => $projectId,
-            'loan_status'      => \loans::STATUS_ACCEPTED,
-            'repayment_status' => self::STATUS_PENDING,
+            'id_project'       => $projectId,
+            'loan_status'      => Loans::STATUS_ACCEPTED,
+            'repayment_status' => EcheanciersEntity::STATUS_PENDING,
             'date_echeance'    => $startDate->format('Y-m-d')
         ];
         $bindType = [
@@ -315,20 +295,19 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * @param int $lenderId
-     * @param int $startDate
-     * @param string $endDate
-     * @param string $amountType
-     * @param array $repaymentStatus
-     * @param int|null $earlyRepayment
-     * @param int|null $loanId
-     * @return string
+     * @param int      $lenderId
+     * @param int      $startDate
+     * @param string   $endDate
+     * @param string   $amountType
+     * @param array    $repaymentStatus
+     *
+     * @return int|string
      * @throws Exception
      */
-    private function getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, $amountType, $repaymentStatus, $earlyRepayment = null, $loanId = null)
+    private function getRepaymentAmountInDateRange($lenderId, $startDate, $endDate, $amountType, $repaymentStatus)
     {
-        $bind     = [
-            'loan_status'      => \loans::STATUS_ACCEPTED,
+        $bind = [
+            'loan_status'      => Loans::STATUS_ACCEPTED,
             'start_date'       => $startDate,
             'end_date'         => $endDate,
             'repayment_status' => $repaymentStatus
@@ -341,7 +320,7 @@ class echeanciers extends echeanciers_crud
             'repayment_status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY
         ];
 
-        if (in_array(self::STATUS_PENDING, $repaymentStatus)) {
+        if (in_array(EcheanciersEntity::STATUS_PENDING, $repaymentStatus)) {
             $date = 'date_echeance';
         } else {
             $date = 'date_echeance_reel';
@@ -355,21 +334,12 @@ class echeanciers extends echeanciers_crud
               AND e.' . $date . ' BETWEEN :start_date AND :end_date
               AND e.status IN (:repayment_status) ';
 
-        if (false === is_null($earlyRepayment)) {
-            $bind['status_ra']     = $earlyRepayment;
-            $bindType['status_ra'] = \PDO::PARAM_INT;
-            $query .= ' AND e.status_ra = :status_ra ';
-        }
-        if (false === is_null($loanId)) {
-            $bind['id_loan']     = $loanId;
-            $bindType['id_loan'] = \PDO::PARAM_INT;
-            $query .= ' AND l.id_loan = :id_loan ';
-        }
         if (false === is_null($lenderId)) {
             $bind['id_lender']     = $lenderId;
             $bindType['id_lender'] = \PDO::PARAM_INT;
-            $query .= ' AND e.id_lender = :id_lender ';
+            $query                 .= ' AND e.id_lender = :id_lender ';
         }
+
         $statement = $this->bdd->executeQuery($query, $bind, $bindType, new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::MEDIUM_TIME, md5(__METHOD__)));
         $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
         $statement->closeCursor();
@@ -435,31 +405,41 @@ class echeanciers extends echeanciers_crud
               IFNULL(ROUND(SUM(e.interets - e.interets_rembourses) / 100, 2), 0) AS interests,
               COUNT(DISTINCT(e.id_project)) AS projects
             FROM echeanciers e
-            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . self::STATUS_PENDING . ' 
+            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = ' . EcheanciersEntity::STATUS_PENDING . ' 
               AND DATEDIFF(NOW(), unpaid.date_echeance) > ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
             INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
             INNER JOIN projects p ON p.id_project = e.id_project
             INNER JOIN companies c ON c.id_company = p.id_company
             INNER JOIN company_status cs ON cs.id = c.id_status
-            WHERE e.status IN(' . self::STATUS_PENDING . ', ' . self::STATUS_PARTIALLY_REPAID . ')
-                AND l.status = 0
-                AND (cs.label != \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS . '\' OR unpaid.date_echeance IS NOT NULL)
+            WHERE e.status IN(' . EcheanciersEntity::STATUS_PENDING . ', ' . EcheanciersEntity::STATUS_PARTIALLY_REPAID . ')
+                AND l.status = ' . Loans::STATUS_ACCEPTED . '
+                AND (cs.label != "' . CompanyStatus::STATUS_IN_BONIS . '" OR unpaid.date_echeance IS NOT NULL)
                 AND e.id_lender = :id_lender';
 
         return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId])->fetch(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * @param int $projectId
-     * @param int $ordre
+     * @param int    $projectId
+     * @param int    $ordre
      * @param string $annuler
      */
     public function updateStatusEmprunteur($projectId, $ordre, $annuler = '')
     {
         if ($annuler != '') {
-            $sql = 'UPDATE echeanciers SET status_emprunteur = 0, date_echeance_emprunteur_reel = "0000-00-00 00:00:00", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
+            $sql = '
+                UPDATE echeanciers 
+                SET status_emprunteur = ' . EcheanciersEntity::STATUS_PENDING . ', 
+                    date_echeance_emprunteur_reel = "0000-00-00 00:00:00", 
+                    updated = "' . date('Y-m-d H:i:s') . '" 
+                WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
         } else {
-            $sql = 'UPDATE echeanciers SET status_emprunteur = 1, date_echeance_emprunteur_reel = "' . date('Y-m-d H:i:s') . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
+            $sql = '
+                UPDATE echeanciers 
+                SET status_emprunteur = ' . EcheanciersEntity::IS_EARLY_REPAID . ',
+                    date_echeance_emprunteur_reel = "' . date('Y-m-d H:i:s') . '",
+                    updated = "' . date('Y-m-d H:i:s') . '"
+                WHERE id_project = ' . $projectId . ' AND ordre = ' . $ordre;
         }
 
         $this->bdd->query($sql);
@@ -497,7 +477,14 @@ class echeanciers extends echeanciers_crud
 
     public function onMetAjourLesDatesEcheances($projectId, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
-        $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $projectId . ' AND status_emprunteur = 0 AND ordre = "' . $ordre . '" ';
+        $sql = '
+            UPDATE echeanciers 
+            SET date_echeance = "' . $date_echeance . '", 
+                date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", 
+                updated = "' . date('Y-m-d H:i:s') . '" 
+            WHERE id_project = ' . $projectId . ' 
+                AND status_emprunteur = ' . EcheanciersEntity::STATUS_PENDING . ' 
+                AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 
@@ -514,11 +501,11 @@ class echeanciers extends echeanciers_crud
                 status_emprunteur
             FROM echeanciers
             WHERE DATE(date_echeance) = "' . date('Y-m-d') . '"
-                AND status = ' . self::STATUS_PENDING . '
+                AND status = ' . EcheanciersEntity::STATUS_PENDING . '
             GROUP BY id_project, ordre';
 
         $resultat = $this->bdd->query($sql);
-        $result   = array();
+        $result   = [];
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -534,9 +521,9 @@ class echeanciers extends echeanciers_crud
             SELECT id_project,
               ordre,
               COUNT(*) AS nb_repayment,
-              COUNT(CASE status WHEN '. self::STATUS_REPAID .' THEN 1 ELSE NULL END) AS nb_repayment_paid
+              COUNT(CASE status WHEN ' . EcheanciersEntity::STATUS_REPAID . ' THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
-            WHERE DATE(date_echeance) = :formatedDate AND status_ra = '. self::IS_NOT_EARLY_REFUND .'
+            WHERE DATE(date_echeance) = :formatedDate AND status_ra = ' . EcheanciersEntity::IS_NOT_EARLY_REPAID. '
             GROUP BY id_project, ordre';
 
         $statement = $this->bdd->executeQuery($sql, $bind, $type);
@@ -567,7 +554,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers
             WHERE id_project = ' . $iProjectID . '
                 AND DATE_ADD(date_echeance, INTERVAL ' . $sInterval . ' DAY) > ' . $sDate . '
-                AND id_lender = (SELECT id_lender FROM echeanciers where id_project = ' . $iProjectID . ' LIMIT 1)
+                AND id_lender = (SELECT id_lender FROM echeanciers WHERE id_project = ' . $iProjectID . ' LIMIT 1)
             GROUP BY id_project
             ORDER BY ordre ASC
             LIMIT 1'
@@ -577,10 +564,10 @@ class echeanciers extends echeanciers_crud
     }
 
 
-
     /**
-     * @param int $lenderId
+     * @param int      $lenderId
      * @param int|null $projectId
+     *
      * @return mixed
      */
     public function getFirstAndLastRepaymentDates($lenderId, $projectId = null)
@@ -595,7 +582,7 @@ class echeanciers extends echeanciers_crud
             WHERE e.id_lender = :id_lender';
 
         if (false === empty($iProjectId)) {
-            $sql .= ' AND e.id_project = :id_project';
+            $sql                  .= ' AND e.id_project = :id_project';
             $params['id_project'] = $projectId;
             $binds['id_project']  = \PDO::PARAM_INT;
         }
@@ -629,12 +616,12 @@ class echeanciers extends echeanciers_crud
                         SELECT ' . $cohortSelect . ' AS date_range
                         FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = '. \projects_status::REMBOURSEMENT .'
+                        WHERE  projects_status.status = ' . \projects_status::REMBOURSEMENT . '
                           AND echeanciers.id_project = projects_status_history.id_project
                         ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1
                       ) AS cohort
                     FROM echeanciers
-                        WHERE echeanciers.status IN (' . self::STATUS_REPAID . ', ' . self::STATUS_PARTIALLY_REPAID . ')
+                        WHERE echeanciers.status IN (' . EcheanciersEntity::STATUS_REPAID . ', ' . EcheanciersEntity::STATUS_PARTIALLY_REPAID . ')
                     GROUP BY cohort';
 
         $statement = $this->bdd->executeQuery($query);
@@ -650,13 +637,13 @@ class echeanciers extends echeanciers_crud
      */
     public function getProblematicOwedCapitalByProjects($contractType, $delay)
     {
-        $query = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount
+        $query     = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount
                     FROM echeanciers e
                       INNER JOIN loans l ON l.id_loan = e.id_loan
                       INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
                     WHERE c.label = :contractType
                       AND e.status != :repaid
-                      AND l.id_project in
+                      AND l.id_project IN
                         (
                           SELECT p.id_project
                           FROM projects p
@@ -673,7 +660,7 @@ class echeanciers extends echeanciers_crud
                     GROUP BY l.id_project';
         $statement = $this->bdd->executeQuery(
             $query,
-            ['problem' => projects_status::PROBLEME, 'contractType' => $contractType, 'repaid' => echeanciers::STATUS_REPAID, 'delay' => $delay, 'accepted' => loans::STATUS_ACCEPTED]
+            ['problem' => projects_status::PROBLEME, 'contractType' => $contractType, 'repaid' => EcheanciersEntity::STATUS_REPAID, 'delay' => $delay, 'accepted' => Loans::STATUS_ACCEPTED]
         );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -691,7 +678,7 @@ class echeanciers extends echeanciers_crud
 
         $statement = $this->bdd->executeQuery(
             $query,
-            ['contractType' => $contractType, 'repaid' => echeanciers::STATUS_REPAID, 'accepted' => loans::STATUS_ACCEPTED]
+            ['contractType' => $contractType, 'repaid' => EcheanciersEntity::STATUS_REPAID, 'accepted' => Loans::STATUS_ACCEPTED]
         );
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }

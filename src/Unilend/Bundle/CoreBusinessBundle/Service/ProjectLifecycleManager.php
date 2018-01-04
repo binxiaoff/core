@@ -134,7 +134,7 @@ class ProjectLifecycleManager
                 $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
 
                 if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-                    if ($bid['min_status'] == \bids::STATUS_BID_PENDING) {
+                    if ($bid['min_status'] == Bids::STATUS_PENDING) {
                         $notificationType = Notifications::TYPE_BID_PLACED;
                         $mailType         = \clients_gestion_type_notif::TYPE_BID_PLACED;
                         $mailFunction     = 'sendBidConfirmation';
@@ -190,7 +190,7 @@ class ProjectLifecycleManager
         $oBidLog->debut = date('Y-m-d H:i:s');
 
         if ($iBidTotal >= $iBorrowAmount) {
-            $bids = $bidRepository->findBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_BID_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
+            $bids = $bidRepository->findBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
             foreach ($bids as $bid) {
                 if ($iBidsAccumulated < $iBorrowAmount) {
                     $iBidsAccumulated = bcadd($iBidsAccumulated, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
@@ -200,7 +200,7 @@ class ProjectLifecycleManager
                         $this->bidManager->reject($bid, $sendNotification);
                     } else {
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
-                        $bid->setStatus(Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY);
+                        $bid->setStatus(Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID);
                         $this->entityManager->flush($bid);
                     }
 
@@ -215,10 +215,10 @@ class ProjectLifecycleManager
 
         if ($bBidsLogs == true) {
             $oBidLog->id_project      = $project->id_project;
-            $oBidLog->nb_bids_encours = $bidRepository->countBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_BID_PENDING]);
+            $oBidLog->nb_bids_encours = $bidRepository->countBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_PENDING]);
             $oBidLog->nb_bids_ko      = $iRejectedBids;
             $oBidLog->total_bids      = $bidRepository->countBy(['idProject' => $project->id_project]);
-            $oBidLog->total_bids_ko   = $bidRepository->countBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_BID_REJECTED]);
+            $oBidLog->total_bids_ko   = $bidRepository->countBy(['idProject' => $project->id_project, 'status' => Bids::STATUS_REJECTED]);
             $oBidLog->rate_max        = $legacyBid->getProjectMaxRate($project);
             $oBidLog->fin             = date('Y-m-d H:i:s');
             $oBidLog->create();
@@ -297,7 +297,7 @@ class ProjectLifecycleManager
         $fStep       = (float) $oSettings->value;
         $currentRate = bcsub($legacyBid->getProjectMaxRate($project), $fStep, 1);
 
-        while ($aAutoBidList = $legacyBid->getAutoBids($project->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
+        while ($aAutoBidList = $legacyBid->getAutoBids($project->id_project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($aAutoBidList as $aAutobid) {
                 $bid = $bidRepository->find($aAutobid['id_bid']);
                 if ($bid) {
@@ -319,7 +319,7 @@ class ProjectLifecycleManager
         /** @var \bids $oBid */
         $oBid = $this->entityManagerSimulator->getRepository('bids');
         $this->checkBids($project, $sendNotification);
-        $aRefusedAutoBid = $oBid->getAutoBids($project->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
+        $aRefusedAutoBid = $oBid->getAutoBids($project->id_project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID, 1);
         if (false === empty($aRefusedAutoBid)) {
             $this->reBidAutoBid($project, $mode, $sendNotification);
             $this->reBidAutoBidDeeply($project, $mode, $sendNotification);
@@ -343,7 +343,7 @@ class ProjectLifecycleManager
             $this->logger->info('Project ' . $project->id_project . ' is now changed to status funded', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
         }
 
-        $criteria     = ['idProject' => $project->id_project, 'status' => Bids::STATUS_BID_PENDING];
+        $criteria     = ['idProject' => $project->id_project, 'status' => Bids::STATUS_PENDING];
         $bids         = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
         $iBidNbTotal  = $bidRepository->countBy($criteria);
         $iBidBalance  = 0;
@@ -361,7 +361,7 @@ class ProjectLifecycleManager
                         $fAmountToCredit = $iBidBalance - $project->amount;
                         $this->bidManager->rejectPartially($bid, $fAmountToCredit);
                     } else {
-                        $bid->setStatus(Bids::STATUS_BID_ACCEPTED);
+                        $bid->setStatus(Bids::STATUS_ACCEPTED);
                         $this->entityManager->flush($bid);
 
                         if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
@@ -429,7 +429,7 @@ class ProjectLifecycleManager
         $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $aLenderList = $legacyBid->getLenders($project->id_project, [\bids::STATUS_BID_ACCEPTED]);
+        $aLenderList = $legacyBid->getLenders($project->id_project, [Bids::STATUS_ACCEPTED]);
 
         if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
@@ -450,7 +450,7 @@ class ProjectLifecycleManager
 
         foreach ($aLenderList as $aLender) {
             $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($aLender['id_lender_account']);
-            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet, 'idProject' => $project->id_project, 'status' => Bids::STATUS_BID_ACCEPTED], ['rate' => 'DESC']);
+            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet, 'idProject' => $project->id_project, 'status' => Bids::STATUS_ACCEPTED], ['rate' => 'DESC']);
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
                 $fLoansLenderSum = 0;
@@ -533,7 +533,7 @@ class ProjectLifecycleManager
         $contract      = $this->entityManagerSimulator->getRepository('underlying_contract');
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $aLenderList = $legacyBid->getLenders($project->id_project, [\bids::STATUS_BID_ACCEPTED]);
+        $aLenderList = $legacyBid->getLenders($project->id_project, [Bids::STATUS_ACCEPTED]);
 
         if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
@@ -549,7 +549,7 @@ class ProjectLifecycleManager
 
         foreach ($aLenderList as $aLender) {
             $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($aLender['id_lender_account']);
-            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet->getId(), 'idProject' => $project->id_project, 'status' => Bids::STATUS_BID_ACCEPTED], ['rate' => 'DESC']);
+            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet->getId(), 'idProject' => $project->id_project, 'status' => Bids::STATUS_ACCEPTED], ['rate' => 'DESC']);
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
                 $fLoansLenderSum = 0;
