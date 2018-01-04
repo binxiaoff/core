@@ -102,18 +102,13 @@ class MailQueueManager
      * Build a TemplateMessage object from a MailQueue object, so that we Swift Mailer can handle it.
      *
      * @param MailQueue $email
-     * @param bool      $forPreview
      *
      * @return bool|TemplateMessage
      * @throws \Exception
      */
-    public function getMessage(MailQueue $email, $forPreview = false)
+    public function getMessage(MailQueue $email)
     {
-        if (true === $forPreview) {
-            $message = $this->templateMessage->newMessageForMailPreview($email->getIdMailTemplate(), json_decode($email->getSerializedVariables(), true), false);
-        } else {
-            $message = $this->templateMessage->newMessage($email->getIdMailTemplate()->getType(), json_decode($email->getSerializedVariables(), true), false);
-        }
+        $message = $this->templateMessage->newMessageByTemplateId($email->getIdMailTemplate(), json_decode($email->getSerializedVariables(), true), false);
         $message
             ->setTo($email->getRecipient())
             ->setQueueId($email->getIdQueue());

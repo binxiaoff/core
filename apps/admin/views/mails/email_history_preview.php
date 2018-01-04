@@ -20,7 +20,7 @@
                 </div>
             </div>
         </div>
-    <?php else: ?>
+    <?php elseif (false === empty($this->errorMessage)) : ?>
         <div style="text-align: center">
             <p><?= $this->errorMessage ?></p>
         </div>

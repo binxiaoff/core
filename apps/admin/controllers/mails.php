@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -267,34 +266,39 @@ class mailsController extends bootstrap
         $_SESSION['request_url'] = $this->lurl;
     }
 
-    public function _emailpreview()
+    public function _email_history_preview()
     {
-        $this->users->checkAccess(Zones::ZONE_LABEL_CONFIGURATION);
-        $this->menu_admin = 'configuration';
+        $this->users->checkAccess();
+        $this->menu_admin = isset($this->lZonesHeader) && in_array(Zones::ZONE_LABEL_CONFIGURATION, $this->lZonesHeader) ? 'configuration' : 'preteurs';
 
         $this->hideDecoration();
-        $_SESSION['request_url'] = $this->lurl;
+        $_SESSION['request_url'] = $this->url;
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
+        $mailQueueManager = $this->get('unilend.service.mail_queue');
 
-        if (false === empty($this->params[0])) {
-            $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
-            if ($mailQueue instanceof MailQueue) {
-                /** @var MailQueueManager $oMailQueueManager */
-                $oMailQueueManager = $this->get('unilend.service.mail_queue');
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
-                $oEmail = $oMailQueueManager->getMessage($mailQueue);
-
-                $iDate = $oEmail->getDate();
-                $aFrom = $oEmail->getFrom();
-                $aTo   = $oEmail->getTo();
-
-                $this->aEmail = [
-                    'date'    => date('d/m/Y H:i', $iDate),
-                    'from'    => array_shift($aFrom),
-                    'to'      => array_shift($aTo),
-                    'subject' => $oEmail->getSubject(),
-                    'body'    => $oEmail->getBody()
-                ];
+        try {
+            $mailQueueId = filter_var($this->params[0], FILTER_SANITIZE_NUMBER_INT);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
+            $mailQueue = $this->get('doctrine.orm.entity_manager')
+                ->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($mailQueueId);
+            if (null === $mailQueue) {
+                $this->errorMessage = 'L\'email que vous avez demandé n\'existe pas.';
+                return;
             }
+            $email     = $mailQueueManager->getMessage($mailQueue);
+            $sentAt    = $mailQueue->getSentAt();
+            $from      = $email->getFrom();
+            $to        = $email->getTo();
+
+            $this->email = [
+                'date'    => $sentAt->format('d/m/Y H:i'),
+                'from'    => array_shift($from),
+                'to'      => array_shift($to),
+                'subject' => $email->getSubject(),
+                'body'    => $email->getBody()
+            ];
+        } catch (\Exception $exception) {
+            $this->errorMessage = 'Impossible d\'afficher le mail';
         }
     }
 }

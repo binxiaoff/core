@@ -79,7 +79,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    public function newMessage($templateName, array $keywords = [], $wrapKeywords = true)
+    public function newMessage($templateName, array $keywords = [], bool $wrapKeywords = true)
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $templateName,
@@ -102,7 +102,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    public function newMessageForMailPreview(MailTemplates $mailTemplate, array $keywords = [], $wrapKeywords = true) : TemplateMessage
+    public function newMessageByTemplateId(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
     {
         return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
     }
@@ -114,7 +114,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], $wrapKeywords = true) : TemplateMessage
+    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
     {
         $commonKeywords      = $this->getCommonKeywords();
         $overwrittenKeywords = array_intersect_key($keywords, $commonKeywords);
