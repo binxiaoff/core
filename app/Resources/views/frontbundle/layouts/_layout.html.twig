@@ -12,7 +12,7 @@
         {% endblock %}
 
         {% block cssFiles %}
-            {% include 'partials/site/fonts_inline.html.twig' %}
+            {% include 'partials/fonts_inline.html.twig' %}
             <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400" media="all">
 
             {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
@@ -33,23 +33,23 @@
         <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
-        {% include 'partials/site/vwo_script.html.twig' %}
+        {% include 'partials/vwo_script.html.twig' %}
     </head>
     <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_DEFAULT')) %} ui-user-type-partner{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %} ui-user-type-partner-admin{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_USER')) %} ui-user-type-partner-user{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
         {{ google_tag_manager_body() }}
         <div id="top" class="site">
             {% block siteCookie %}
-                {% include 'partials/site/cookie-box.html.twig' %}
+                {% include 'partials/cookie_box.html.twig' %}
             {% endblock %}
             {% block siteHeader %}
                 {% if app.user is defined and is_granted('ROLE_LENDER') %}
-                    {% include 'partials/site/connected_header_lender.html.twig' %}
+                    {% include 'lender_account/connected_header.html.twig' %}
                 {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
-                    {% include 'borrower_account/connected_header_borrower.html.twig' %}
+                    {% include 'borrower_account/connected_header.html.twig' %}
                 {% elseif app.user is defined and is_granted('ROLE_PARTNER') %}
                     {% include 'partner_account/_connected_header.html.twig' %}
                 {% else %}
-                    {% include 'partials/site/header.html.twig' %}
+                    {% include 'partials/header.html.twig' %}
                 {%  endif %}
             {% endblock %}
 
@@ -66,13 +66,13 @@
         {# Debug tools #}
         {% if app.environment == 'dev' %}
             {% block debug %}
-                {% include 'partials/site/debug.html.twig' %}
+                {% include 'partials/debug.html.twig' %}
             {% endblock %}
         {% endif %}
 
         {# As long as lender menu is rendered using LenderAccount:lenderMenu, we need this trick before refactoring menu here and there #}
         {% if app.user is defined and app.user is not empty %}
-            {% include 'partials/site/user-mobile-menu.html.twig' %}
+            {% include 'partials/user_mobile_menu.html.twig' %}
         {% endif %}
 
         <div class="modal-spinner">

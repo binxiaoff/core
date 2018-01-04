@@ -75,7 +75,7 @@ class UsersController extends Controller
                     $keywords      = [
                         'firstName'    => $client->getPrenom(),
                         'login'        => $client->getEmail(),
-                        'passwordLink' => $this->generateUrl('partner_security', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL)
+                        'passwordLink' => $this->generateUrl('partner_security', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL)
                     ];
 
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie-partenaire', $keywords);
@@ -229,19 +229,19 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("/partenaire/securite/{token}", name="partner_security", requirements={"token": "[0-9a-f]+"})
+     * @Route("/partenaire/securite/{securityToken}", name="partner_security", requirements={"securityToken": "[0-9a-f]+"})
      *
-     * @param string  $token
+     * @param string  $securityToken
      * @param Request $request
      *
      * @return Response
      */
-    public function securityAction($token, Request $request)
+    public function securityAction(string $securityToken, Request $request) : Response
     {
         $isLinkExpired = false;
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TemporaryLinksLogin $temporaryLinks */
-        $temporaryLinks = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->findOneBy(['token' => $token]);
+        $temporaryLinks = $entityManager->getRepository('UnilendCoreBusinessBundle:TemporaryLinksLogin')->findOneBy(['token' => $securityToken]);
 
         if (null === $temporaryLinks) {
             return $this->redirectToRoute('home');
@@ -314,7 +314,7 @@ class UsersController extends Controller
             }
         }
 
-        return $this->render('partner_account/security.html.twig', ['expired' => $isLinkExpired, 'token' => $token]);
+        return $this->render('partner_account/security.html.twig', ['expired' => $isLinkExpired, 'token' => $securityToken]);
     }
 
     /**

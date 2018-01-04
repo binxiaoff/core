@@ -257,14 +257,14 @@ class emprunteursController extends bootstrap
         if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
             $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
+            $projectStatusNotificationSender = $this->get('unilend.service.project_status_manager');
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
 
             foreach ($companyProjects as $project) {
                 try {
-                    $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
+                    $projectStatusNotificationSender->sendCollectiveProceedingStatusNotificationsToLenders($project);
                 } catch (\Exception $exception) {
                     $logger->warning(
                         'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),

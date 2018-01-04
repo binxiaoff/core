@@ -1865,7 +1865,7 @@ class MailerManager
         $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
         $variables = [
             'firstName'                  => $client->getPrenom(),
-            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
+            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['securityToken' => $token]),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];

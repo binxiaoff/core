@@ -39,7 +39,7 @@ class UniversignController extends Controller
      *
      * @return Response
      */
-    public function universignStatusAction($signatureType, $signatureId, $clientHash)
+    public function universignStatusAction(string $signatureType, int $signatureId, string $clientHash)
     {
         $documents     = [];
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -171,7 +171,7 @@ class UniversignController extends Controller
             ];
         }
 
-        return $this->render('pages/universign.html.twig', $template);
+        return $this->render('universign/universign_status.html.twig', $template);
     }
 
     /**

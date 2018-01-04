@@ -22,6 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
 use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
@@ -137,7 +138,9 @@ class BorrowerAccountController extends Controller
                 $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
                 $project->create();
 
-                $projectManager->addProjectStatus(Users::USER_ID_FRONT, \projects_status::COMPLETE_REQUEST, $project);
+                /** @var ProjectStatusManager $projectStatusManager */
+                $projectStatusManager = $this->get('unilend.service.project_status_manager');
+                $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $project);
 
                 $this->addFlash('success', $translator->trans('borrower-demand_success'));
 
@@ -607,20 +610,21 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/securite/{token}", name="borrower_account_security", requirements={"token": "[0-9a-f]+"})
+     * @Route("/espace-emprunteur/securite/{securityToken}", name="borrower_account_security", requirements={"securityToken": "[0-9a-f]+"})
      * @Template("borrower_account/security.html.twig")
      *
+     * @param string  $securityToken
      * @param Request $request
-     * @param $token
+     *
      * @return Response
      */
-    public function securityAction($token, Request $request)
+    public function securityAction(string $securityToken, Request $request) : Response
     {
         /** @var \temporary_links_login $temporaryLinks */
         $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
         $isLinkExpired  = false;
 
-        if (false === $temporaryLinks->get($token, 'token')) {
+        if (false === $temporaryLinks->get($securityToken, 'token')) {
             return $this->redirectToRoute('home');
         }
 
@@ -637,7 +641,7 @@ class BorrowerAccountController extends Controller
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             $client->get($temporaryLinks->id_client);
 
-            if ($request->isMethod('POST')) {
+            if ($request->isMethod(Request::METHOD_POST)) {
                 $translator = $this->get('translator');
                 $formData   = $request->request->get('borrower_security', []);
                 $error      = false;
@@ -674,7 +678,7 @@ class BorrowerAccountController extends Controller
 
                     return $this->redirectToRoute('login');
                 } else {
-                    return $this->redirectToRoute('borrower_account_security', ['token' => $token]);
+                    return $this->redirectToRoute('borrower_account_security', ['securityToken' => $securityToken]);
                 }
             }
         }
