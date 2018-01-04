@@ -108,7 +108,7 @@ class MailQueueManager
      */
     public function getMessage(MailQueue $email)
     {
-        $message = $this->templateMessage->newMessageByTemplateId($email->getIdMailTemplate(), json_decode($email->getSerializedVariables(), true), false);
+        $message = $this->templateMessage->newMessageByTemplate($email->getIdMailTemplate(), json_decode($email->getSerializedVariables(), true), false);
         $message
             ->setTo($email->getRecipient())
             ->setQueueId($email->getIdQueue());

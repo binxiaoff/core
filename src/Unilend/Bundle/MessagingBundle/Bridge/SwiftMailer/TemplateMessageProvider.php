@@ -102,7 +102,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    public function newMessageByTemplateId(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
+    public function newMessageByTemplate(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
     {
         return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
     }
