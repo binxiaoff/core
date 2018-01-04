@@ -195,13 +195,6 @@ class bootstrap extends Controller
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
-
-
-        $this->create_cookies = true;
-        if (isset($_COOKIE['acceptCookies'])) {
-            $this->create_cookies = false;
-        }
-
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
             if (
                 $this->Command->Name == 'root' && $this->Command->Function == 'capital'

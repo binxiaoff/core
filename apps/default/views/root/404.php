@@ -194,13 +194,13 @@
             </div>
         </article>
     </div>
-    <div class="cookie-box hide-mobile" data-cookies>
+    <div class="cookie-box hide-mobile" data-cookies-law>
         <div class="fleft">
             <p>En visitant ce site, vous acceptez l'utilisation de cookies pour améliorer la qualité de votre visite et vous proposer des services et offres adaptés. <a
                         href="donnees-personnelles-cookies">En savoir plus</a></p>
         </div>
         <div class="fright">
-            <p><a href="javascript:;" data-cookies-accept class="btn-primary btn-shape-sm">J'accepte</a></p>
+            <p><a href="javascript:;" data-cookies-law-accept class="btn-primary btn-shape-sm">J'accepte</a></p>
         </div>
     </div>
     <footer>

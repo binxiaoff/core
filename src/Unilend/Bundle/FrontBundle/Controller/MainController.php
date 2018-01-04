@@ -699,12 +699,7 @@ class MainController extends Controller
             $acceptCookies->id_client = $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') ? $this->getUser()->getClientId() : 0;
             $acceptCookies->create();
 
-            $response = new JsonResponse(true);
-            // Remove the httpOnly version. This line can be remove after 31/01/2018, when the last httpOnly cookie will be expired.
-            $response->headers->removeCookie('acceptCookies');
-            $response->headers->setCookie(new Cookie("acceptCookies", $acceptCookies->id_accept_cookies, time() + (365 * 24 * 3600), '/', null, false, false));
-
-            return $response;
+            return new JsonResponse(true);
         }
 
         return new Response('not an ajax request');
