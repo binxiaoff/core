@@ -7,6 +7,7 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -140,8 +141,8 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'w.id = e.idLender')
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'e.idProject = p.idProject')
             ->where('e.dateEcheance < :now')
-            ->andWhere('e.status = 0')
-            ->andWhere('p.status IN (:status)');
+            ->andWhere('e.status = ' . Echeanciers::STATUS_PENDING)
+            ->andWhere('p.status = ' . ProjectsStatus::PROBLEME);
 
         $subQuery = $this->getEntityManager()->createQueryBuilder()
             ->add('select', 'MAX(ls.added)')
@@ -150,9 +151,6 @@ class WalletRepository extends EntityRepository
 
         $qb->andWhere('(' . $subQuery->getDQL() . ') < e.dateEcheance')
             ->setParameter(':now', $now)
-            ->setParameter(':status', [
-                ProjectsStatus::PROBLEME
-            ], Connection::PARAM_INT_ARRAY)
             ->groupBy('w.id');
 
         $query = $qb->getQuery();
@@ -264,7 +262,7 @@ class WalletRepository extends EntityRepository
             ->andwhere('w.id NOT IN (SELECT IDENTITY(b.idLenderAccount) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.status = :accepted AND b.added BETWEEN :start AND :end)')
             ->groupBy('w.id')
             ->setParameter('lenderProvision', OperationType::LENDER_PROVISION)
-            ->setParameter('accepted', Bids::STATUS_BID_ACCEPTED)
+            ->setParameter('accepted', Bids::STATUS_ACCEPTED)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 

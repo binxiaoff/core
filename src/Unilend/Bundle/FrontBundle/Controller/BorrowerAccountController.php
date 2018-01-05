@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -670,7 +672,7 @@ class BorrowerAccountController extends Controller
                 }
 
                 if (false === $error) {
-                    $client->status           = 1;
+                    $client->status           = Clients::STATUS_ONLINE;
                     $client->password         = $password;
                     $client->secrete_question = filter_var($formData['question'], FILTER_SANITIZE_STRING);
                     $client->secrete_reponse  = md5($formData['answer']);
@@ -779,7 +781,7 @@ class BorrowerAccountController extends Controller
 
             if (false === in_array($project['status'], [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
                $repayment = $repaymentSchedule->select(
-                   'id_project = ' . $project['id_project'] . ' AND status_emprunteur = 0',
+                   'id_project = ' . $project['id_project'] . ' AND status_emprunteur = ' . EcheanciersEmprunteur::STATUS_PENDING,
                    'date_echeance_emprunteur ASC',
                    '',
                    1

@@ -3,6 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
@@ -866,7 +867,7 @@ class transfertsController extends bootstrap
             /** @var \bids $bids */
             $bids           = $this->loadData('bids');
             $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
-            if ($bids->exist($originalWallet->getId(), 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
+            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_lender_account ')) {
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 

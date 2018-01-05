@@ -1,30 +1,6 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class clients_gestion_notifications extends clients_gestion_notifications_crud
 {
@@ -33,11 +9,6 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
     const TYPE_NOTIFICATION_WEEKLY    = 'hebdomadaire';
     const TYPE_NOTIFICATION_MONTHLY   = 'mensuelle';
     const TYPE_NOTIFICATION_NO_MAIL   = 'uniquement_notif';
-
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
 
     public function create($list_field_value = array())
     {
@@ -167,7 +138,7 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
             INNER JOIN clients_gestion_notifications cgn ON (cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif)
             INNER JOIN clients c ON c.id_client = cgn.id_client
             WHERE ' . $where . '
-                AND c.status = 1
+                AND c.status = ' . Clients::STATUS_ONLINE . '
                 AND cgn.' . $sFrequency . ' = 1
                 AND (cgmn.' . $sFrequency . ' = 0 OR cgmn.' . $sFrequency . ' IS NULL)
                 AND (cgmn.status_check_' . $sFrequency . ' = 0 OR cgmn.status_check_' . $sFrequency . ' IS NULL)

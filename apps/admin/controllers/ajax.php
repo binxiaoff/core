@@ -1,12 +1,9 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -495,7 +492,7 @@ class ajaxController extends bootstrap
             $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
             $bidManger->reject($bid, false);
 
-            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = 0', 'added DESC');
+            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
         }
     }
 

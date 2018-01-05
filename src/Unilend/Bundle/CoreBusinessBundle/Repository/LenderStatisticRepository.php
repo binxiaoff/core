@@ -35,7 +35,7 @@ class LenderStatisticRepository extends EntityRepository
 
             SELECT
               e.date_echeance_reel AS date,
-              CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS amount
+              CASE WHEN e.status_ra = ' . Echeanciers::IS_EARLY_REPAID . ' THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS amount
             FROM
               echeanciers e
               INNER JOIN loans l ON e.id_loan = l.id_loan
