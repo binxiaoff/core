@@ -3,11 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionTypeNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
@@ -69,10 +71,10 @@ EOF
                     }
                 } catch (\Exception $exception) {
                     $oLogger->critical('An exception occurred during publishing of project ' . $oProject->id_project . ' with message: ' . $exception->getMessage(), [
-                            'method' => __METHOD__,
-                            'file'   => $exception->getFile(),
-                            'line'   => $exception->getLine()
-                        ]);
+                        'method' => __METHOD__,
+                        'file'   => $exception->getFile(),
+                        'line'   => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -214,28 +216,26 @@ EOF
         $clients = $entityManagerSimulator->getRepository('clients');
         /** @var \notifications $notifications */
         $notifications = $entityManagerSimulator->getRepository('notifications');
-        /** @var \clients_gestion_notifications $clientsGestionNotifications */
-        $clientsGestionNotifications = $entityManagerSimulator->getRepository('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $clientsGestionMailsNotif */
-        $clientsGestionMailsNotif = $entityManagerSimulator->getRepository('clients_gestion_mails_notif');
-        /** @var \companies $companies */
-        $companies = $entityManagerSimulator->getRepository('companies');
         /** @var \autobid $oAutobid */
         $oAutobid = $entityManagerSimulator->getRepository('autobid');
         /** @var \bids $bidsData */
         $bidsData = $entityManagerSimulator->getRepository('bids');
         /** @var \project_period $oProjectPeriods */
         $oProjectPeriods = $entityManagerSimulator->getRepository('project_period');
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var NotificationsRepository $notificationsRepository */
-        $notificationsRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Notifications');
 
-        $companies->get($project->id_company, 'id_company');
+        $entityManager                         = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $clientsGestionNotificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
+        $clientsGestionMailsNotifRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionMailsNotif');
+        $bidsRepository                        = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var NotificationsRepository $notificationsRepository */
+        $notificationsRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Notifications');
+
+        $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
         $oProjectPeriods->getPeriod($project->period);
 
+        $notificationManager    = $this->getContainer()->get('unilend.service.notification_manager');
         $autobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
         $translator             = $this->getContainer()->get('translator');
         $messageProvider        = $this->getContainer()->get('unilend.swiftmailer.message_provider');
@@ -246,9 +246,9 @@ EOF
         $currencyFormatter      = $this->getContainer()->get('currency_formatter');
         $logger                 = $this->getContainer()->get('monolog.logger.console');
 
-        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $hostUrl        = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $commonKeywords = [
-            'companyName'     => $companies->name,
+            'companyName'     => $companyEntity->getName(),
             'projectAmount'   => $numberFormatter->format($project->amount),
             'projectDuration' => $project->period,
             'projectLink'     => $hostUrl . $router->generate('project_detail', ['projectSlug' => $project->slug])
@@ -261,6 +261,7 @@ EOF
         $projectRateRange = $this->getContainer()->get('unilend.service.bid_manager')->getProjectRateRange($project);
         $bids             = $bidsData->getLenders($project->id_project);
         $noAutobidPlaced  = array_diff(array_keys($autoBidsAmount), array_column($bids, 'id_lender_account'));
+        $autolendUrl      = $hostUrl . $router->generate('autolend');
 
         $offset = 0;
         $limit  = 100;
@@ -272,7 +273,7 @@ EOF
             $logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
             foreach ($lenders as $aLender) {
-                $wallet = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
+                $wallet   = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
                 $keywords = [];
 
                 if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
@@ -281,24 +282,31 @@ EOF
                     $notifications->id_project = $project->id_project;
                     $notifications->create();
 
-                    if (false === $clientsGestionMailsNotif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1',
-                            'id_notif')) {
-                        $clientsGestionMailsNotif->id_client       = $wallet->getIdClient()->getIdClient();
-                        $clientsGestionMailsNotif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                        $clientsGestionMailsNotif->id_notification = $notifications->id_notification;
-                        $clientsGestionMailsNotif->id_project      = $project->id_project;
-                        $clientsGestionMailsNotif->date_notif      = $project->date_publication;
+                    $autobidNotification = $clientsGestionMailsNotifRepository->findOneBy(
+                        [
+                            'idNotif'       => ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
+                            'idProject'     => $project->id_project,
+                            'idClient'      => $wallet->getIdClient()->getIdClient(),
+                            'immediatement' => 1
+                        ]
+                    );
+                    if (null === $autobidNotification) {
+                        $immediateNotification = false;
+                        $notificationSettings  = $clientsGestionNotificationsRepository->findOneBy(
+                            [
+                                'idClient'      => $wallet->getIdClient()->getIdClient(),
+                                'idNotif'       => [ClientsGestionTypeNotif::TYPE_NEW_PROJECT, ClientsGestionTypeNotif::TYPE_BID_PLACED],
+                                'immediatement' => 1
+                            ]
+                        );
 
-                        $notifyNewProject = $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement');
-                        $notifyBidPlaced  = $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement');
-
-                        if ($notifyNewProject || $notifyBidPlaced) {
-                            $clientsGestionMailsNotif->immediatement = 1;
+                        if (null !== $notificationSettings) {
+                            $immediateNotification = true;
 
                             try {
                                 $hasAutolendOn = $autobidSettingsManager->isOn($wallet->getIdClient());
                             } catch (\Exception $exception) {
-                                $logger->warning(
+                                $logger->error(
                                     'Could not check Autolend activation state for lender: ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
                                     ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                                 );
@@ -308,28 +316,26 @@ EOF
                             $autolendSettingsAdvises = '';
                             /** @var Notifications $bidPlacedNotification */
                             $bidPlacedNotification = $notificationsRepository->findOneBy(['idLender' => $wallet->getId(), 'idProject' => $project->id_project, 'type' => Notifications::TYPE_BID_PLACED]);
-                            $autolendUrl           = $hostUrl . $router->generate('autolend');
 
                             if (
                                 null !== $bidPlacedNotification
-                                && $bidsData->get($bidPlacedNotification->getIdBid())
-                                && false === empty($bidsData->id_autobid)
+                                && null !== ($bidEntity = $bidsRepository->find($bidPlacedNotification->getIdBid()))
+                                && null !== $bidEntity->getAutobid()
                             ) {
                                 $mailType = 'nouveau-projet-autobid';
 
-                                $bidsData->get($bidPlacedNotification->getIdBid());
-                                $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidsData->amount, 100, 4), 2), 'EUR');
+                                $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidEntity->getAmount(), 100, 4), 2), 'EUR');
                                 $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
 
                                 $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 1);
-                                $keywords['autoBidRate']     = $numberFormatter->format($bidsData->rate);
+                                $keywords['autoBidRate']     = $numberFormatter->format($bidEntity->getRate());
                                 $keywords['autoLendMinRate'] = $numberFormatter->format($autolendMinRate);
                                 $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
 
                                 $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
                                 $keywords['autolendUrl']      = $autolendUrl;
                             } else {
-                                $mailType    = 'nouveau-projet';
+                                $mailType = 'nouveau-projet';
 
                                 if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
                                     $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
@@ -363,7 +369,7 @@ EOF
                             $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
                             $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
 
-                            $message                   = $messageProvider->newMessage($mailType, $commonKeywords + $keywords);
+                            $message = $messageProvider->newMessage($mailType, $commonKeywords + $keywords);
                             try {
                                 $message->setTo($aLender['email']);
                                 $mailer->send($message);
@@ -375,7 +381,22 @@ EOF
                             }
                             ++$emailsSent;
                         }
-                        $clientsGestionMailsNotif->create();
+                        try {
+                            $notificationManager->createEmailNotification(
+                                $notifications->id_notification,
+                                ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+                                $wallet->getIdClient()->getIdClient(),
+                                null,
+                                $project->id_project,
+                                null,
+                                $immediateNotification
+                            );
+                        } catch (OptimisticLockException $exception) {
+                            $logger->warning(
+                                'Could not insert the new project notification for client: ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
+                                ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                            );
+                        }
                     }
                 }
             }

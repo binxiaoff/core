@@ -12,6 +12,17 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsGestionTypeNotif
 {
+    const TYPE_NEW_PROJECT                   = 1;
+    const TYPE_BID_PLACED                    = 2;
+    const TYPE_BID_REJECTED                  = 3;
+    const TYPE_LOAN_ACCEPTED                 = 4;
+    const TYPE_REPAYMENT                     = 5;
+    const TYPE_BANK_TRANSFER_CREDIT          = 6;
+    const TYPE_CREDIT_CARD_CREDIT            = 7;
+    const TYPE_DEBIT                         = 8;
+    const TYPE_PROJECT_PROBLEM               = 9;
+    const TYPE_AUTOBID_BALANCE_LOW           = 10;
+    const TYPE_AUTOBID_ACCEPTED_REJECTED_BID = 13;
     /**
      * @var string
      *

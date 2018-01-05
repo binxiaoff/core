@@ -100,9 +100,9 @@ class MailerManager
     public function sendBidConfirmation(\notifications $notification)
     {
         /** @var Bids $bid */
-        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
+        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idBid' => $notification->id_bid, 'idAutobid' => null]);
 
-        if (null !== $bid && empty($bid->getAutobid())) {
+        if (null !== $bid) {
             $keywords     = [
                 'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
