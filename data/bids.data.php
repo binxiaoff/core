@@ -184,7 +184,7 @@ class bids extends bids_crud
             SELECT id_lender_account,
                 COUNT(*) AS bid_nb,
                 SUM(amount) AS amount_sum
-            FROM bids
+            FROM  bids
             WHERE id_project = ' . $iProjectId;
 
         if ('' !== $sStatus) {
