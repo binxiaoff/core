@@ -214,8 +214,6 @@ EOF
     {
         /** @var \clients $clients */
         $clients = $entityManagerSimulator->getRepository('clients');
-        /** @var \notifications $notifications */
-        $notifications = $entityManagerSimulator->getRepository('notifications');
         /** @var \autobid $oAutobid */
         $oAutobid = $entityManagerSimulator->getRepository('autobid');
         /** @var \bids $bidsData */
@@ -277,11 +275,7 @@ EOF
                 $keywords = [];
 
                 if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
-                    $notifications->type       = Notifications::TYPE_NEW_PROJECT;
-                    $notifications->id_lender  = $wallet->getId();
-                    $notifications->id_project = $project->id_project;
-                    $notifications->create();
-
+                    $notifications       = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
                     $autobidNotification = $clientsGestionMailsNotifRepository->findOneBy(
                         [
                             'idNotif'       => ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
