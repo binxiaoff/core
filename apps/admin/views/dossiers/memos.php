@@ -12,8 +12,10 @@
         <?php $i = 1; ?>
         <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments $comment */ ?>
         <?php foreach ($this->projectComments as $comment) : ?>
-            <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
-                <td><?php if (false == $comment->getPublic()) : ?><img src="<?= $this->surl ?>/images/admin/lock.png" alt="Privé" style="margin: 0"><?php endif; ?></td>
+            <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?> data-comment-id="<?= $comment->getIdProjectComment() ?>">
+                <td>
+                    <a href="#" class="memo-privacy-switch <?php if ($comment->getPublic()) : ?>public<?php else : ?>private<?php endif; ?>"></a>
+                </td>
                 <td>
                     <?= $comment->getAdded()->format('d/m/Y H:i') ?>
                     <?php if ($comment->getUpdated()) : ?>
