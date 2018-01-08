@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -9,6 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -232,7 +234,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $data['repayment_frequency'];
         $projectLineInfo .= $roundedDueCapital;
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo .= $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
+        $projectLineInfo .= $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
@@ -370,6 +372,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
+     * @param int    $projectId
      * @param string $closeOutNettingDate
      * @param string $judgementDate
      * @param string $latePaymentDate
@@ -377,7 +380,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      *
      * @return string
      */
-    private function checkUnpaidDate($closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount)
+    private function checkUnpaidDate($projectId, $closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount)
     {
         if (0 == $this->checkAmounts($unpaidAmount)) {
             return '00000000';
@@ -389,6 +392,21 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         } elseif (false === empty($latePaymentDate)) {
             return \DateTime::createFromFormat('Y-m-d H:i:s', $latePaymentDate)->format('Ymd');
         } else {
+            try {
+                /** @var Echeanciers $repayment */
+                $repayment = $this->getContainer()->get('doctrine.orm.entity_manager')
+                    ->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findFirstOverdueScheduleByProject($projectId);
+
+                if (null !== $repayment) {
+                    return $repayment->getDateEcheance()->format('Ymd');
+                }
+            } catch (NonUniqueResultException $exception) {
+                $this->getContainer()->get('monolog.logger.console')
+                    ->error(
+                        'Could not get the first overdue schedule for project ' . $projectId . '. Please check the output file. Exception: ' . $exception->getMessage(),
+                        ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
+            }
             return '00000000';
         }
     }
@@ -498,7 +516,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $data['repayment_frequency'];
         $projectLineInfo[] = $roundedDueCapital;
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
-        $projectLineInfo[] = $this->checkUnpaidDate($data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
+        $projectLineInfo[] = $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
         $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
