@@ -65,7 +65,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="mailer"/>
             <argument>%kernel.default_locale%</argument>
             <argument type="service" id="assets.packages"/>
             <argument>%router.request_context.scheme%</argument>
@@ -117,7 +117,7 @@
         <service id="unilend.service.project_rate_settings_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRateSettingsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="mailer"/>
         </service>
 
         <service id="unilend.service.salesforce" class="Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager">
@@ -141,7 +141,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="number_formatter"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="mailer"/>
             <argument type="service" id="logger"/>
         </service>
 
@@ -266,7 +266,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
-            <argument type="service" id="swiftmailer.mailer.default"/>
+            <argument type="service" id="mailer"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.service.operation_manager"/>
             <argument type="service" id="router"/>
