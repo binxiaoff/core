@@ -74,7 +74,7 @@ class UnilendMailer extends \Swift_Mailer
         }
 
         $cleanTo = [];
-        foreach($message->getTo() as $email => $name) {
+        foreach ($message->getTo() as $email => $name) {
             if ($this->checkEmailAddress($email)) {
                 $cleanTo[$email] = $name;
             } else {
@@ -85,7 +85,7 @@ class UnilendMailer extends \Swift_Mailer
 
         $cleanCc = [];
         if (0 !== $ccCount) {
-            foreach($message->getCc() as $email => $name) {
+            foreach ($message->getCc() as $email => $name) {
                 if ($this->checkEmailAddress($email)) {
                     $cleanCc[$email] = $name;
                 } else {
@@ -97,7 +97,7 @@ class UnilendMailer extends \Swift_Mailer
 
         $cleanBcc = [];
         if (0 !== $bccCount) {
-            foreach($message->getBcc() as $email => $name) {
+            foreach ($message->getBcc() as $email => $name) {
                 if ($this->checkEmailAddress($email)) {
                     $cleanBcc[$email] = $name;
                 } else {
@@ -122,7 +122,6 @@ class UnilendMailer extends \Swift_Mailer
     private function checkEmailAddress(string $email) : bool
     {
         if (1 !== preg_match('/^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i', $email)) {
-
             return false;
         }
 
