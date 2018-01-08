@@ -85,7 +85,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     $projectRequestManager->checkProjectRisk($project, $user->getIdUser());
                     $activeSheet->setCellValue($columnIndex . $rowIndex, $projectStatusRepository->findOneBy(['status' => $project->status])->getLabel());
                     $columnIndex++;
-                    $activeSheet->setCellValue($columnIndex . $rowIndex, $company->getIdClientOwner());
+                    $activeSheet->setCellValue($columnIndex . $rowIndex, $company->getIdClientOwner()->getIdClient());
                     $columnIndex++;
                     $activeSheet->setCellValue($columnIndex . $rowIndex, $company->getIdCompany());
                     $rowIndex++;
