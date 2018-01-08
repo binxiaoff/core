@@ -105,12 +105,7 @@ class ReceptionsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->andWhere('r.idClient IS NOT NULL')
-            ->andWhere('r.idProject IS NULL')
-            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
-            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
-            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
-            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
+            ->andWhere('r.idProject IS NULL');
 
         if (null !== $limit) {
             $queryBuilder->setMaxResults($limit);
