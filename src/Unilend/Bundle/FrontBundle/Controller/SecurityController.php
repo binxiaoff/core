@@ -110,7 +110,7 @@ class SecurityController extends Controller
      * @Route("/pwd", name="pwd_forgotten")
      * @Method("POST")
      */
-    public function passwordForgottenAction(Request $request) : Response
+    public function handlePasswordForgottenAction(Request $request) : Response
     {
         if ($request->isXmlHttpRequest()) {
             $entityManagerSimulator = $this->get('unilend.service.entity_manager');
