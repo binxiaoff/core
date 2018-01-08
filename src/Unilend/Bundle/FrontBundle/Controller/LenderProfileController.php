@@ -1180,7 +1180,7 @@ class LenderProfileController extends Controller
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
                 'Could not send email: preteur-modification-compte - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
     }

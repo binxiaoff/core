@@ -45,18 +45,12 @@ class MailQueueManager
      * @param TemplateMessage $message
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Swift_RfcComplianceException
      */
-    public function queue(TemplateMessage $message)
+    public function queue(TemplateMessage $message) : bool
     {
-        $count = (
-            count((array) $message->getTo())
-            + count((array) $message->getCc())
-            + count((array) $message->getBcc())
-        );
-
-        if (0 === $count) {
-            return false;
-        }
+        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
 
         $attachments = [];
         foreach ($message->getChildren() as $index => $child) {
@@ -69,10 +63,9 @@ class MailQueueManager
             chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
         }
 
-        $clientId     = null;
         $recipients   = TemplateMessage::emailAddressToString($message->getTo());
         $replyTo      = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
-        $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->find($message->getTemplateId());
+        $clientId     = null;
 
         if (1 === count($message->getTo())) {
             $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $recipients]);
@@ -83,14 +76,15 @@ class MailQueueManager
         }
 
         $mailQueue = new MailQueue();
-        $mailQueue->setIdMailTemplate($mailTemplate);
-        $mailQueue->setSerializedVariables(json_encode($message->getVariables()));
-        $mailQueue->setAttachments(json_encode($attachments));
-        $mailQueue->setRecipient($recipients);
-        $mailQueue->setIdClient($clientId);
-        $mailQueue->setReplyTo($replyTo);
-        $mailQueue->setStatus(MailQueue::STATUS_PENDING);
-        $mailQueue->setToSendAt($message->getToSendAt());
+        $mailQueue
+            ->setIdMailTemplate($mailTemplate)
+            ->setSerializedVariables(json_encode($message->getVariables()))
+            ->setAttachments(json_encode($attachments))
+            ->setRecipient($recipients)
+            ->setIdClient($clientId)
+            ->setReplyTo($replyTo)
+            ->setStatus(MailQueue::STATUS_PENDING)
+            ->setToSendAt($message->getToSendAt());
 
         $this->entityManager->persist($mailQueue);
         $this->entityManager->flush($mailQueue);
