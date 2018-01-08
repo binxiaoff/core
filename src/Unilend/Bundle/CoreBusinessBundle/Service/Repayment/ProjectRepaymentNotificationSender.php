@@ -173,9 +173,9 @@ class ProjectRepaymentNotificationSender
      */
     public function sendPaymentScheduleInvoiceToBorrower(EcheanciersEmprunteur $paymentSchedule)
     {
-        $borrower          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($paymentSchedule->getIdProject()->getIdCompany()->getIdClientOwner());
         $project           = $paymentSchedule->getIdProject();
-        $company           = $paymentSchedule->getIdProject()->getIdCompany();
+        $company           = $project->getIdCompany();
+        $borrower          = $company->getIdClientOwner();
         $lastProjectStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy(
             ['idProject' => $project->getIdProject()],
             ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']
@@ -277,7 +277,7 @@ class ProjectRepaymentNotificationSender
     public function sendClientNotificationEndOfRepayment(Projects $project)
     {
         $company                = $project->getIdCompany();
-        $client                 = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $client                 = $project->getIdCompany()->getIdClientOwner();
         $borrowerWithdrawalType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::BORROWER_WITHDRAW]);
         $borrowerWithdrawal     = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Operation')

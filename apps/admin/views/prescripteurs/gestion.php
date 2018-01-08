@@ -27,18 +27,11 @@
     }
 </style>
 <div id="contenu">
-    <div class="row">
-        <div class="col-md-6">
-            <?php if (isset($_POST['form_search_prescripteur'])) : ?>
-                <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
-            <?php elseif (isset($this->aPrescripteurs)) : ?>
-                <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
-            <?php endif; ?>
-        </div>
-        <div class="col-md-6">
-            <a href="<?= $this->lurl ?>/prescripteurs/add_client" class="btn-primary pull-right thickbox">Ajouter un prescripteur</a>
-        </div>
-    </div>
+    <?php if (isset($_POST['form_search_prescripteur'])) : ?>
+        <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
+    <?php elseif (isset($this->aPrescripteurs)) : ?>
+        <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
+    <?php endif; ?>
     <div class="search-form-container">
         <form method="post" name="search_prescripteurs" id="search_prescripteurs" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/gestion" target="_parent">
             <fieldset>

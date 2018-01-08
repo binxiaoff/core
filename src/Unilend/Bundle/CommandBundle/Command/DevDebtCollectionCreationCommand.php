@@ -63,7 +63,6 @@ EOF
         $commission       = filter_var($input->getOption('commission'), FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
         $isNetAmount      = $input->getOption('net-amount');
         $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $reception        = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($receptionId);
         if (null === $reception) {
@@ -75,14 +74,14 @@ EOF
             $output->writeln('Project id: ' . $projectId . ' not found.');
             return;
         }
-        $client = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
-        if (null === $client) {
-            $output->writeln('Client id: ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
+        $client = $project->getIdCompany()->getIdClientOwner();
+        if (null === $client || empty($client->getIdClient())) {
+            $output->writeln('Client not found for company ' . $project->getIdCompany()->getIdCompany());
             return;
         }
-        $borrower = $walletRepository->getWalletByType($client->getIdClient(), WalletType::BORROWER);
+        $borrower = $walletRepository->getWalletByType($client, WalletType::BORROWER);
         if (null === $borrower) {
-            $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
+            $output->writeln('Borrower with client id : ' . $client->getIdClient() . ' not found.');
             return;
         }
         $clientCollector = $this->getCollector($input, $output);
@@ -102,7 +101,8 @@ EOF
 
         $entityManager->getConnection()->beginTransaction();
         try {
-            $reception->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
+            $reception
+                ->setTypeRemb(Receptions::REPAYMENT_TYPE_RECOVERY)
                 ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
                 ->setIdClient($client)
                 ->setIdProject($project)
@@ -116,7 +116,8 @@ EOF
             }
             $user                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
             $projectRepaymentTask = new ProjectRepaymentTask();
-            $projectRepaymentTask->setIdProject($project)
+            $projectRepaymentTask
+                ->setIdProject($project)
                 ->setCapital($amount)
                 ->setInterest(0)
                 ->setCommissionUnilend(0)
@@ -152,7 +153,7 @@ EOF
         }
         $borrower = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
         if (null === $borrower) {
-            $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner() . ' not found.');
+            $output->writeln('Borrower with client id : ' . $project->getIdCompany()->getIdClientOwner()->getIdClient() . ' not found.');
             return;
         }
         $clientCollector = $this->getCollector($input, $output);

@@ -14,87 +14,85 @@
                         <h3>{% trans %} partner-profile_title {% endtrans %}</h3>
                     </header>
                     <div class="row">
-                        <div class="col-md-8 col-lg-8">
-                            {{ form_start(form, {
-                                'id': 'form-partner-profile-password',
-                                'action': path('partner_profile'),
-                                'attr': {
-                                    'data-formvalidation data-formvalidation-notificationselem': '#form-partner-profile-password-notifications'
-                                }
-                            }) }}
-                                <div id="form-partner-profile-password-notifications" class="ui-formvalidation-notifications"></div>
-                                {% if app.session.flashBag.has('error') %}
-                                    <div class="message-error">
-                                        {% for error in app.session.flashBag.get('error') %}
-                                            <p>{{ error }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% elseif app.session.flashBag.has('success') %}
-                                    <div class="message-success">
-                                        {% for success in app.session.flashBag.get('success') %}
-                                            <p>{{ success }}</p>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                                <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6">
-                                        <label for="partner-profile-password-former">
-                                            {% trans %} partner-profile_password-former-field-label {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                        </label>
-                                        <div class="input-group">
-                                            {{ form_widget(form.formerPassword, {
-                                                'id': 'partner-profile-password-former',
-                                                'required': false,
-                                                'attr': {
-                                                    'class': 'input-field',
-                                                    'data-formvalidation-input data-formvalidation-required': 'true'
-                                                }
-                                            }) }}
-                                        </div><!-- /.input-group -->
-                                        <ul class="ui-formvalidation-messages"></ul>
-                                    </div><!-- /.form-field -->
+                        {{ form_start(form, {
+                            'id': 'form-partner-profile-password',
+                            'action': path('partner_profile'),
+                            'attr': {
+                                'data-formvalidation data-formvalidation-notificationselem': '#form-partner-profile-password-notifications'
+                            }
+                        }) }}
+                            <div id="form-partner-profile-password-notifications" class="ui-formvalidation-notifications"></div>
+                            {% if app.session.flashBag.has('error') %}
+                                <div class="message-error">
+                                    {% for error in app.session.flashBag.get('error') %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
                                 </div>
-                                <div class="row row-multi-col-computer">
-                                    <div class="form-field col-lg-6 col-md-6">
-                                        <label for="partner-profile-password-new">
-                                            {% trans %} partner-profile_password-new-field-label {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                        </label>
-                                        {{ form_widget(form.password.first, {
-                                            'id': 'partner-profile-password-new',
+                            {% elseif app.session.flashBag.has('success') %}
+                                <div class="message-success">
+                                    {% for success in app.session.flashBag.get('success') %}
+                                        <p>{{ success }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="partner-profile-password-former">
+                                        {% trans %} partner-profile_password-former-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form_widget(form.formerPassword, {
+                                            'id': 'partner-profile-password-former',
                                             'required': false,
                                             'attr': {
                                                 'class': 'input-field',
-                                                'data-passwordcheck data-formvalidation-input data-formvalidation-required': 'true',
-                                                'data-formvalidation-type': 'password'
+                                                'data-formvalidation-input data-formvalidation-required': 'true'
                                             }
                                         }) }}
-                                    </div><!-- /.form-field -->
-                                    <div class="form-field col-lg-6 col-md-6">
-                                        <label for="partner-profile-password-confirm">
-                                            {% trans %} partner-profile_password-confirm-field-label {% endtrans %}
-                                            <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
-                                        </label>
-                                        <div class="input-group">
-                                            {{ form_widget(form.password.second, {
-                                                'id': 'partner-profile-password-confirm',
-                                                'required': false,
-                                                'attr': {
-                                                    'class': 'input-field',
-                                                    'data-formvalidation-input data-formvalidation-required': 'true',
-                                                    'data-formvalidation-samevalueas': '#partner-profile-password-new'
-                                                }
-                                            }) }}
-                                        </div>
-                                    </div><!-- /.form-field -->
-                                </div>
+                                    </div><!-- /.input-group -->
+                                    <ul class="ui-formvalidation-messages"></ul>
+                                </div><!-- /.form-field -->
+                            </div>
+                            <div class="row row-multi-col-computer">
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="partner-profile-password-new">
+                                        {% trans %} partner-profile_password-new-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    {{ form_widget(form.password.first, {
+                                        'id': 'partner-profile-password-new',
+                                        'required': false,
+                                        'attr': {
+                                            'class': 'input-field',
+                                            'data-passwordcheck data-formvalidation-input data-formvalidation-required': 'true',
+                                            'data-formvalidation-type': 'password'
+                                        }
+                                    }) }}
+                                </div><!-- /.form-field -->
+                                <div class="form-field col-lg-6 col-md-6">
+                                    <label for="partner-profile-password-confirm">
+                                        {% trans %} partner-profile_password-confirm-field-label {% endtrans %}
+                                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                    </label>
+                                    <div class="input-group">
+                                        {{ form_widget(form.password.second, {
+                                            'id': 'partner-profile-password-confirm',
+                                            'required': false,
+                                            'attr': {
+                                                'class': 'input-field',
+                                                'data-formvalidation-input data-formvalidation-required': 'true',
+                                                'data-formvalidation-samevalueas': '#partner-profile-password-new'
+                                            }
+                                        }) }}
+                                    </div>
+                                </div><!-- /.form-field -->
+                            </div>
 
-                                <div class="row btn-controls">
-                                    <button type="submit" class="btn-primary btn-shape-medium">{% trans %} partner-profile_password-button-submit {% endtrans %}</button>
-                                </div>
-                            {{ form_end(form) }}<!-- /#form-partner-profile-password -->
-                        </div>
+                            <div class="row btn-controls">
+                                <button type="submit" class="btn-primary btn-shape-medium">{% trans %} partner-profile_password-button-submit {% endtrans %}</button>
+                            </div>
+                        {{ form_end(form) }}<!-- /#form-partner-profile-password -->
                     </div>
                 </div><!-- /.panel -->
             </article><!-- /.dashboard-tab-pane -->

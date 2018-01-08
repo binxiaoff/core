@@ -11,7 +11,10 @@ class BackpaylineRepository extends EntityRepository
      * @param \DateTime $date
      * @param int       $maxTransactionFails
      * @param int       $maxCreditCards
+     *
      * @return array
+     *
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getTransactionsToVerify(\DateTime $date, $maxTransactionFails = 3, $maxCreditCards = 3)
     {
@@ -51,6 +54,9 @@ class BackpaylineRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return mixed
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCountFailedTransactionsBetweenDates(\DateTime $start, \DateTime $end)
     {
@@ -67,5 +73,17 @@ class BackpaylineRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @return Backpayline[]
+     */
+    public function findPaylineTransactionsToApprove()
+    {
+        $queryBuilder = $this->createQueryBuilder('bp');
+        $queryBuilder->where('bp.code IS NULL')
+            ->andWhere('bp.token IS NOT NULL');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

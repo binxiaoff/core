@@ -169,8 +169,8 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
             WHERE ' . $where . '
                 AND c.status = 1
                 AND cgn.' . $sFrequency . ' = 1
-                AND cgmn.' . $sFrequency . ' = 0
-                AND cgmn.status_check_' . $sFrequency . ' = 0
+                AND (cgmn.' . $sFrequency . ' = 0 OR cgmn.' . $sFrequency . ' IS NULL)
+                AND (cgmn.status_check_' . $sFrequency . ' = 0 OR cgmn.status_check_' . $sFrequency . ' IS NULL)
                 AND cgmn.id_notif = ' . $iNotificationType;
     }
 
