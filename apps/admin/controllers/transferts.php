@@ -98,16 +98,18 @@ class transfertsController extends bootstrap
                     } else {
                         $attribution = $this->statusOperations[$reception->getStatusBo()];
                     }
+
                     $affectedReceptions[] = [
                         $reception->getIdReception(),
                         $reception->getMotif(),
                         $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
                         $attribution,
-                        $reception->getIdClient()->getIdClient(),
+                        $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
                         $reception->getAdded()->format('d/m/Y'),
                         '',
                         $reception->getComment(),
-                        $reception->getLigne()
+                        $reception->getLigne(),
+                        Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
                     ];
                 }
             } catch (Exception $exception) {
@@ -256,10 +258,11 @@ class transfertsController extends bootstrap
                     $reception->getMotif(),
                     $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
                     $reception->getAdded()->format('d/m/Y'),
-                    substr($reception->getLigne(), 32, 2),
+                    substr($reception->getLigne(), 32, 2) . ' / ' . substr($reception->getLigne(), 7, 4),
                     '',
                     $reception->getLigne(),
-                    $reception->getComment()
+                    $reception->getComment(),
+                    Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
                 ];
             }
         } catch (Exception $exception) {
