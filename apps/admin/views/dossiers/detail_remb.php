@@ -137,8 +137,8 @@
     <div style="border: 1px solid #b20066; height: 60px; padding: 5px; width: 280px;">
         <form action="" method="post">
             <b>Remboursement automatique : </b>
-            <input type="radio" name="remb_auto" value="0"<?= ($this->projects->remb_auto == 0 ? ' checked' : '') ?>>Oui
-            <input type="radio" name="remb_auto" value="1"<?= ($this->projects->remb_auto == 1 ? ' checked' : '') ?>>Non
+            <input type="radio" name="remb_auto" value="0"<?= ($this->projects->remb_auto == \Unilend\Bundle\CoreBusinessBundle\Entity\Projects::AUTO_REPAYMENT_ON ? ' checked' : '') ?>>Oui
+            <input type="radio" name="remb_auto" value="1"<?= ($this->projects->remb_auto == \Unilend\Bundle\CoreBusinessBundle\Entity\Projects::AUTO_REPAYMENT_OFF ? ' checked' : '') ?>>Non
             <br/>
             <input type="hidden" name="send_remb_auto"/>
             <input style="margin-top:5px;" type="submit" value="Valider" name="valider_remb_auto" class="btn"/>

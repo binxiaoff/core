@@ -146,7 +146,7 @@ class treeController extends bootstrap
                                 $this->redirections->from_slug = '/' . $this->tree->slug;
                                 $this->redirections->to_slug   = '/' . $slug_temp;
                                 $this->redirections->type      = 301;
-                                $this->redirections->status    = 1;
+                                $this->redirections->status    = \Unilend\Bundle\CoreBusinessBundle\Entity\Redirections::STATUS_ENABLED;
 
                                 if ($createRedir) {
                                     $this->redirections->create(['from_slug' => '/' . $this->tree->slug, 'id_langue' => $key]);

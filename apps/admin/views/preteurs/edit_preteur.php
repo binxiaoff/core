@@ -310,21 +310,21 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
                 </tr>
                 <tr class="societe">
-                    <td colspan="4"><input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise1" value="1"/>
+                    <td colspan="4"><input <?= ($this->companies->status_client == Companies::CLIENT_STATUS_MANAGER ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise1" value="1"/>
                         <label for="enterprise1"> Je suis le dirigeant de l'entreprise </label>
                     </td>
                 </tr>
                 <tr class="societe">
-                    <td colspan="4"><input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
+                    <td colspan="4"><input <?= ($this->companies->status_client == Companies::CLIENT_STATUS_DELEGATION_OF_POWER ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
                         <label for="enterprise2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
                     </td>
                 </tr>
                 <tr class="societe">
-                    <td colspan="4"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
+                    <td colspan="4"><input <?= ($this->companies->status_client == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
                         <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
                     </td>
                 </tr>
-                <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
+                <tr <?= ($this->companies->status_client == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
                     <th><label for="status_conseil_externe_entreprise">Expert comptable :</label></th>
                     <td>
                         <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="select">
@@ -889,13 +889,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         $('.meme-adresse').show();
     <?php endif; ?>
 
-    <?php if ($this->companies->status_client == 1) : ?>
+    <?php if ($this->companies->status_client == Companies::CLIENT_STATUS_MANAGER) : ?>
         $('.statut_dirigeant_e').hide('slow');
         $('.statut_dirigeant_e3').hide('slow');
-    <?php elseif($this->companies->status_client == 2) : ?>
+    <?php elseif($this->companies->status_client == Companies::CLIENT_STATUS_DELEGATION_OF_POWER) : ?>
         $('.statut_dirigeant_e').show('slow');
         $('.statut_dirigeant_e3').hide('slow');
-    <?php elseif($this->companies->status_client == 3) : ?>
+    <?php elseif($this->companies->status_client == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) : ?>
         $('.statut_dirigeant_e').show('slow');
         $('.statut_dirigeant_e3').show('slow');
     <?php endif; ?>

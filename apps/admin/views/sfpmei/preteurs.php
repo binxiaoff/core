@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
+?>
 <div id="contenu">
     <div class="container-fluid">
         <div class="row">
@@ -71,7 +76,7 @@
                             <td><?= $lender['prenom_ou_dirigeant'] ?></td>
                             <td><?= $lender['email'] ?></td>
                             <td><?= $lender['telephone'] ?></td>
-                            <td><?= $lender['status'] == 1 ? 'En ligne' : 'Hors ligne' ?></td>
+                            <td><?= $lender['status'] == Clients::STATUS_ONLINE ? 'En ligne' : 'Hors ligne' ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/preteur/<?= $lender['id_client'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir la fiche du prêteur">

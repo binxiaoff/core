@@ -1,9 +1,11 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
@@ -79,23 +81,23 @@ class LenderAccountDisplayManager
 
         return [
             'inprogress' => array_filter($lenderBids, function ($bid) {
-                return $bid['status'] == \bids::STATUS_BID_PENDING;
+                return $bid['status'] == Bids::STATUS_PENDING;
             }),
             'rejected'   => array_filter($lenderBids, function ($bid) {
-                return $bid['status'] == \bids::STATUS_BID_REJECTED;
+                return $bid['status'] == Bids::STATUS_REJECTED;
             }),
             'accepted'   => array_filter($lenderBids, function ($bid) {
-                return $bid['status'] == \bids::STATUS_BID_ACCEPTED;
+                return $bid['status'] == Bids::STATUS_ACCEPTED;
             }),
             'autobid'    => [
                 'inprogress' => array_filter($lenderBids, function ($bid) {
-                    return $bid['id_autobid'] > 0 && $bid['status'] == \bids::STATUS_BID_PENDING;
+                    return $bid['id_autobid'] > 0 && $bid['status'] == Bids::STATUS_PENDING;
                 }),
                 'rejected'   => array_filter($lenderBids, function ($bid) {
-                    return $bid['id_autobid'] > 0 && $bid['status'] == \bids::STATUS_BID_REJECTED;
+                    return $bid['id_autobid'] > 0 && $bid['status'] == Bids::STATUS_REJECTED;
                 }),
                 'accepted'   => array_filter($lenderBids, function ($bid) {
-                    return $bid['id_autobid'] > 0 && $bid['status'] == \bids::STATUS_BID_ACCEPTED;
+                    return $bid['id_autobid'] > 0 && $bid['status'] == Bids::STATUS_ACCEPTED;
                 }),
                 'count'      => count(array_filter($lenderBids, function ($bid) {
                     return $bid['id_autobid'] > 0;

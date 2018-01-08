@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
@@ -7,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -63,7 +65,7 @@ EOF
             $limit = $input->getOption('limit-loans');
             $limit = $limit ? $limit : 100;
 
-            $loans = $loan->select('status = 0 AND fichier_declarationContratPret = "" AND id_project IN (' . implode(', ', array_column($projects, 'id_project')) . ')', 'id_loan ASC', 0, $limit);
+            $loans = $loan->select('status = ' . Loans::STATUS_ACCEPTED .' AND fichier_declarationContratPret = "" AND id_project IN (' . implode(', ', array_column($projects, 'id_project')) . ')', 'id_loan ASC', 0, $limit);
 
             if (count($loans) > 0) {
                 /** @var \companies $borrowerCompany */

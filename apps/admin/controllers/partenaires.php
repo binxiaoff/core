@@ -1132,10 +1132,9 @@ class partenairesController extends bootstrap
                 $name              = 'Agence ' . $submitter->getName();
                 break;
             case 'utilisateur':
-                $clientRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                $submitter               = $clientRepository->find($this->params[1]);
                 $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-                $companyClient           = $companyClientRepository->findOneBy(['idClient' => $submitter]);
+                $companyClient           = $companyClientRepository->find($this->params[1]);
+                $submitter               = $companyClient->getIdClient();
                 $partner                 = $partnerRepository->findOneBy(['idCompany' => $companyClient->getIdCompany()->getIdParentCompany()]);
                 $name                    = $submitter->getPrenom() . ' ' . $submitter->getNom();
                 break;
@@ -1208,8 +1207,9 @@ class partenairesController extends bootstrap
                 $submitter         = $companyRepository->find($this->params[1]);
                 break;
             case 'utilisateur':
-                $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                $submitter        = $clientRepository->find($this->params[1]);
+                $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
+                $companyClient           = $companyClientRepository->find($this->params[1]);
+                $submitter               = $companyClient->getIdClient();
                 break;
             default:
                 header('Location: ' . $this->lurl . '/partenaires');

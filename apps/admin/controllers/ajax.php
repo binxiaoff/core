@@ -1,12 +1,9 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -242,7 +239,7 @@ class ajaxController extends bootstrap
                 }
 
                 if (null === $result) {
-                    $projectRequestManager->assignEligiblePartnerProduct($project);
+                    $projectRequestManager->assignEligiblePartnerProduct($project, $this->userEntity->getIdUser());
                 }
 
                 echo json_encode([
@@ -495,7 +492,7 @@ class ajaxController extends bootstrap
             $bid = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($_POST['id_bid']);
             $bidManger->reject($bid, false);
 
-            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = 0', 'added DESC');
+            $this->lBids = $bids->select('id_lender_account = ' . $bid->getIdLenderAccount()->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
         }
     }
 
@@ -548,9 +545,9 @@ class ajaxController extends bootstrap
             return;
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $project);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $project);
 
         if ($project->status == ProjectsStatus::COMMERCIAL_REJECTION) {
             /** @var \projects_status_history $projectStatusHistory */
@@ -673,13 +670,13 @@ class ajaxController extends bootstrap
 
         $entityManager->flush($projectRating);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($_POST['status'] == 1) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REVIEW, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::ANALYSIS_REJECTION, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ANALYSIS_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -780,6 +777,8 @@ class ajaxController extends bootstrap
         $projectManager = $this->get('unilend.service.project_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
         $projectRatingManager = $this->get('unilend.service.project_rating_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         $riskRating = $projectRatingManager->calculateRiskRating($project);
         $project->setRisk($riskRating);
@@ -817,9 +816,9 @@ class ajaxController extends bootstrap
                 $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::PREP_FUNDING, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::COMITY_REJECTION, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REJECTION, $project);
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
@@ -862,7 +861,7 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            $projectManager->addProjectStatus($_SESSION['user']['id_user'], ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::SUSPENSIVE_CONDITIONS, $project);
         }
 
         if (
