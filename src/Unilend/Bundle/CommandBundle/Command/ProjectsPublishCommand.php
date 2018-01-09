@@ -27,7 +27,7 @@ class ProjectsPublishCommand extends ContainerAwareCommand
             ->setName('projects:publish')
             ->setDescription('Finds the projects to be funded and publish them')
             ->setHelp(<<<EOF
-The <info>projects:publish</info> command finds the projects to be funded and publishes them.
+The <info>projects:publish</info> command finds the projects to be funded and publishes them. 
 <info>php bin/console publish:projects</info>
 EOF
             );
