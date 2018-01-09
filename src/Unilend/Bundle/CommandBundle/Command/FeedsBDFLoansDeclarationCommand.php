@@ -372,15 +372,15 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param int    $projectId
-     * @param string $closeOutNettingDate
-     * @param string $judgementDate
-     * @param string $latePaymentDate
-     * @param string $unpaidAmount
+     * @param int         $projectId
+     * @param string|null $closeOutNettingDate
+     * @param string|null $judgementDate
+     * @param string|null $latePaymentDate
+     * @param string|null $unpaidAmount
      *
      * @return string
      */
-    private function checkUnpaidDate($projectId, $closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount)
+    private function checkUnpaidDate(int $projectId, $closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount): string
     {
         if (0 == $this->checkAmounts($unpaidAmount)) {
             return '00000000';
