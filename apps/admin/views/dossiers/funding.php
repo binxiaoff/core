@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+
+?>
 <script type="text/javascript">
     $(function() {
         jQuery.tablesorter.addParser({
@@ -71,7 +76,7 @@
 
                 $montantHaut = 0;
                 $montantBas  = 0;
-                foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = 0') as $b) {
+                foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = ' . Bids::STATUS_PENDING) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }

@@ -43,7 +43,7 @@ class SecurityController extends Controller
 
         $request->getSession()->remove('captchaInformation');
 
-        return $this->render('pages/login.html.twig', $pageData);
+        return $this->render('security/login.html.twig', $pageData);
     }
 
     /**
@@ -111,29 +111,69 @@ class SecurityController extends Controller
      * @Route("/pwd", name="pwd_forgotten")
      * @Method("POST")
      */
-    public function passwordForgottenAction(Request $request)
+    public function handlePasswordForgottenAction(Request $request) : Response
     {
         if ($request->isXmlHttpRequest()) {
             $entityManagerSimulator = $this->get('unilend.service.entity_manager');
             /** @var \clients $client */
             $client = $entityManagerSimulator->getRepository('clients');
-            $email   = $request->request->get('client_email');
+            $email  = $request->request->get('client_email');
 
             if (filter_var($email, FILTER_VALIDATE_EMAIL) && $client->get($email, 'status = ' . Clients::STATUS_ONLINE . ' AND email')) {
                 /** @var \temporary_links_login $temporaryLink */
                 $temporaryLink = $entityManagerSimulator->getRepository('temporary_links_login');
                 $token         = $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
-                $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client]);
 
-                $keywords = [
-                    'firstName'     => $client->prenom,
-                    'login'         => $client->email,
-                    'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-                    'lenderPattern' => $wallet->getWireTransferPattern()
-                ];
+                if (null === $wallet) {
+                    $this->get('logger')->error(
+                        'Client ' . $client->id_client . ' has no wallet',
+                        ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    );
+
+                    return new JsonResponse('nok');
+                }
+
+                switch ($wallet->getIdType()->getLabel()) {
+                    case WalletType::LENDER:
+                        $mailType = 'mot-de-passe-oublie';
+                        $keywords = [
+                            'firstName'     => $client->prenom,
+                            'login'         => $client->email,
+                            'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                            'lenderPattern' => $wallet->getWireTransferPattern()
+                        ];
+                        break;
+                    case WalletType::BORROWER:
+                        $mailType = 'mot-de-passe-oublie-emprunteur';
+                        $keywords = [
+                            'firstName'            => $client->prenom,
+                            'temporaryToken'       => $token,
+                            'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+                        ];
+                        break;
+                    case WalletType::PARTNER:
+                        $mailType = 'mot-de-passe-oublie-partenaire';
+                        $keywords = [
+                            'firstName'     => $client->prenom,
+                            'login'         => $client->email,
+                            'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                            'lenderPattern' => $wallet->getWireTransferPattern()
+                        ];
+                        break;
+                    default:
+                        $this->get('logger')->warn(
+                            'Forgotten email functionality is not available for wallets of type "' . $wallet->getIdType()->getLabel() . '"',
+                            ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+
+                        return new JsonResponse('nok');
+                }
+
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $keywords);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailType, $keywords);
 
                 try {
                     $message->setTo($client->email);
@@ -158,25 +198,26 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/{token}", name="define_new_password", requirements={"token": "[a-z0-9]{32}"})
+     * @Route("/nouveau-mot-de-passe/{securityToken}", name="define_new_password", requirements={"securityToken": "[a-z0-9]{32}"})
      *
-     * @param string $token
+     * @param string $securityToken
+     *
      * @return Response
      */
-    public function defineNewPasswordAction($token)
+    public function passwordForgottenAction(string $securityToken) : Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
         if ($this->get('session')->getFlashBag()->has('passwordSuccess')) {
-            return $this->render('pages/password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
         /** @var \temporary_links_login $temporaryLink */
         $temporaryLink = $entityManager->getRepository('temporary_links_login');
 
-        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
-            return $this->render('pages/password_forgotten.html.twig', ['token' => $token]);
+            return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken]);
         }
 
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
@@ -186,27 +227,28 @@ class SecurityController extends Controller
         $client = $entityManager->getRepository('clients');
         $client->get($temporaryLink->id_client, 'id_client');
 
-        return $this->render('pages/password_forgotten.html.twig', ['token' => $token, 'secretQuestion' => $client->secrete_question]);
+        return $this->render('security/password_forgotten.html.twig', ['token' => $securityToken, 'secretQuestion' => $client->secrete_question]);
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{token}", name="save_new_password", requirements={"token": "[a-z0-9]{32}"})
+     * @Route("/nouveau-mot-de-passe/submit/{securityToken}", name="save_new_password", requirements={"securityToken": "[a-z0-9]{32}"})
      * @Method("POST")
      *
-     * @param string  $token
+     * @param string  $securityToken
      * @param Request $request
+     *
      * @return Response
      */
-    public function changePasswordFormAction($token, Request $request)
+    public function changePasswordFormAction(string $securityToken, Request $request) : Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
         /** @var \temporary_links_login $temporaryLink */
         $temporaryLink = $entityManager->getRepository('temporary_links_login');
 
-        if (false === $temporaryLink->get($token, 'expires > NOW() AND token')) {
+        if (false === $temporaryLink->get($securityToken, 'expires > NOW() AND token')) {
             $this->addFlash('tokenError', $this->get('translator')->trans('password-forgotten_invalid-token'));
-            return $this->redirectToRoute('define_new_password', ['token' => $token]);
+            return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
         }
 
         $temporaryLink->accessed = (new \DateTime('NOW'))->format('Y-m-d H:i:s');
@@ -261,9 +303,14 @@ class SecurityController extends Controller
             $formManager->saveFormSubmission($client, ClientsHistoryActions::CHANGE_PASSWORD, serialize(['id_client' => $client->id_client, 'newmdp' => md5($request->request->get('client_new_password'))]), $request->getClientIp());
         }
 
-        return $this->redirectToRoute('define_new_password', ['token' => $token]);
+        return $this->redirectToRoute('define_new_password', ['securityToken' => $securityToken]);
     }
 
+    /**
+     * @param \clients $client
+     *
+     * @throws \Swift_RfcComplianceException
+     */
     private function sendPasswordModificationEmail(\clients $client)
     {
         $keywords = [
@@ -304,6 +351,11 @@ class SecurityController extends Controller
         return new Response('not an ajax request');
     }
 
+    /**
+     * @param string $password
+     *
+     * @return bool
+     */
     private function checkPasswordComplexity($password)
     {
         /** @var BCryptPasswordEncoder $securityPasswordEncoder */

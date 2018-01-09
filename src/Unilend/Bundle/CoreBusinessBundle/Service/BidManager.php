@@ -114,14 +114,14 @@ class BidManager
             ->setProject($project)
             ->setAmount(bcmul($amount, 100))
             ->setRate($rate)
-            ->setStatus(Bids::STATUS_BID_PENDING)
+            ->setStatus(Bids::STATUS_PENDING)
             ->setAutobid($autobidSetting);
 
         $legacyBid->id_lender_account = $wallet->getId();
         $legacyBid->id_project        = $iProjectId;
         $legacyBid->amount            = bcmul($amount, 100);
         $legacyBid->rate              = $rate;
-        $legacyBid->status            = \bids::STATUS_BID_PENDING;
+        $legacyBid->status            = Bids::STATUS_PENDING;
         if ($autobidSetting instanceof Autobid) {
             $legacyBid->id_autobid = $autobidSetting->getIdAutobid();
         }
@@ -292,14 +292,14 @@ class BidManager
      */
     public function reject(Bids $bid, $sendNotification = true)
     {
-        if ($bid->getStatus() == Bids::STATUS_BID_PENDING || $bid->getStatus() == Bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+        if ($bid->getStatus() == Bids::STATUS_PENDING || $bid->getStatus() == Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID) {
             $walletBalanceHistory = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
 
             if ($sendNotification) {
                 $this->notificationRejection($bid, $walletBalanceHistory);
             }
 
-            $bid->setStatus(Bids::STATUS_BID_REJECTED);
+            $bid->setStatus(Bids::STATUS_REJECTED);
             $this->entityManager->flush($bid);
         }
     }
@@ -310,13 +310,13 @@ class BidManager
      */
     public function rejectPartially(Bids $bid, $fRepaymentAmount)
     {
-        if ($bid->getStatus() == \bids::STATUS_BID_PENDING || $bid->getStatus() == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+        if (in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
             $walletBalanceHistory = $this->creditRejectedBid($bid, $fRepaymentAmount);
             $this->notificationRejection($bid, $walletBalanceHistory);
             // Save new amount of the bid after repayment
             $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
             $bid->setAmount($amount)
-                ->setStatus(Bids::STATUS_BID_ACCEPTED);
+                ->setStatus(Bids::STATUS_ACCEPTED);
             $this->entityManager->flush($bid);
         }
     }
@@ -346,13 +346,13 @@ class BidManager
                     $newBid = clone $bid;
                     $newBid->setOrdre($iBidOrder)
                            ->setRate($currentRate)
-                           ->setStatus(Bids::STATUS_BID_PENDING);
+                           ->setStatus(Bids::STATUS_PENDING);
                     $this->entityManager->persist($newBid);
-                    $bid->setStatus(Bids::STATUS_BID_REJECTED);
+                    $bid->setStatus(Bids::STATUS_REJECTED);
                     $this->entityManager->flush($newBid);
                 } else {
                     $bid->setRate($currentRate)
-                        ->setStatus(Bids::STATUS_BID_PENDING);
+                        ->setStatus(Bids::STATUS_PENDING);
                 }
                 $this->entityManager->flush($bid);
             } else {

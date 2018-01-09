@@ -9,6 +9,12 @@
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool"/>
         <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet"/>
 
+        <service id="unilend.swiftmailer" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\UnilendMailer">
+            <argument type="service" id="swiftmailer.transport"/>
+            <argument type="service" id="logger"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+        </service>
+
         <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>

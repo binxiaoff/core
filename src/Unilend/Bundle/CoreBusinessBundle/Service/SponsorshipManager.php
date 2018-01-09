@@ -512,7 +512,7 @@ class SponsorshipManager
         $walletRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $bidRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $sponseeWallet           = $walletRepository->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
-        $totalAmountAcceptedBids = $bidRepository->getSumBidsForLenderAndStatus($sponseeWallet, Bids::STATUS_BID_ACCEPTED);
+        $totalAmountAcceptedBids = $bidRepository->getSumBidsForLenderAndStatus($sponseeWallet, Bids::STATUS_ACCEPTED);
 
         if ($totalAmountAcceptedBids <= $sponsorship->getIdCampaign()->getAmountSponsee()) {
             return ['isEligible' => false, 'reason' => 'Sponsee has not enough accepted bids'];

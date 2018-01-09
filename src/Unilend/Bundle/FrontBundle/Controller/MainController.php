@@ -73,7 +73,7 @@ class MainController extends Controller
             return $this->redirectToRoute('home_borrower');
         }
 
-        return $this->render('pages/homepage_acquisition.html.twig', $template);
+        return $this->render('main/home.html.twig', $template);
     }
 
     /**
@@ -118,7 +118,7 @@ class MainController extends Controller
             }
         });
 
-        return $this->render('pages/homepage_lender.html.twig', $template);
+        return $this->render('main/home_lender.html.twig', $template);
     }
 
     /**
@@ -127,8 +127,8 @@ class MainController extends Controller
      */
     public function homeBorrowerAction()
     {
-        $projectManager = $this->get('unilend.service.project_manager');
-        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        $projectManager        = $this->get('unilend.service.project_manager');
+        $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var \borrowing_motive $borrowingMotive */
         $borrowingMotive = $this->get('unilend.service.entity_manager')->getRepository('borrowing_motive');
@@ -146,7 +146,7 @@ class MainController extends Controller
 
         $template['featureBorrower'] = $testimonialService->getFeaturedTestimonialBorrower();
 
-        return $this->render('pages/homepage_borrower.html.twig', $template);
+        return $this->render('main/home_borrower.html.twig', $template);
     }
 
     /**
@@ -340,7 +340,7 @@ class MainController extends Controller
             'right_content' => $content['bloc-droite']
         ];
 
-        return $this->render('pages/template-big-header.html.twig', ['cms' => $cms]);
+        return $this->render('cms_templates/template_big_header.html.twig', ['cms' => $cms]);
     }
 
     /**
@@ -398,7 +398,7 @@ class MainController extends Controller
             'next'        => $nextPage
         ];
 
-        return $this->render('pages/template-nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
+        return $this->render('cms_templates/template_nav.html.twig', ['navigation' => $navigation, 'cms' => $cms, 'page' => $page]);
     }
 
     /**
@@ -453,7 +453,7 @@ class MainController extends Controller
         $sessionHandler->set('projectRequest', $session);
         $sessionHandler->set('partnerProjectRequest', $isPartnerFunnel);
 
-        return $this->render('pages/template_borrower_landing_page.html.twig', $template);
+        return $this->render('cms_templates/template_borrower_landing_page.html.twig', $template);
     }
 
     /**
@@ -551,7 +551,7 @@ class MainController extends Controller
             'right_content' => $template
         ];
 
-        return $this->render('pages/static_pages/template-cgv.html.twig', ['cms' => $cms]);
+        return $this->render('cms_templates/template_cgv.html.twig', ['cms' => $cms]);
     }
 
     private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
@@ -634,7 +634,7 @@ class MainController extends Controller
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
 
-        return $this->render('partials/site/footer.html.twig', [
+        return $this->render('partials/footer.html.twig', [
             'menus'             => $contentManager->getFooterMenu(),
             'displayDisclaimer' => $route !== 'project_detail'
         ]);
@@ -679,7 +679,7 @@ class MainController extends Controller
             }
         }
 
-        return $this->render('partials/site/reviews.html.twig', ['reviews' => $reviews]);
+        return $this->render('partials/reviews.html.twig', ['reviews' => $reviews]);
     }
 
     /**
@@ -699,12 +699,7 @@ class MainController extends Controller
             $acceptCookies->id_client = $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') ? $this->getUser()->getClientId() : 0;
             $acceptCookies->create();
 
-            $response = new JsonResponse(true);
-            // Remove the httpOnly version. This line can be remove after 31/01/2018, when the last httpOnly cookie will be expired.
-            $response->headers->removeCookie('acceptCookies');
-            $response->headers->setCookie(new Cookie("acceptCookies", $acceptCookies->id_accept_cookies, time() + (365 * 24 * 3600), '/', null, false, false));
-
-            return $response;
+            return new JsonResponse(true);
         }
 
         return new Response('not an ajax request');
@@ -723,7 +718,7 @@ class MainController extends Controller
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
         $this->setCmsSeoData($tree);
-        $response = $this->render('pages/static_pages/about_us.html.twig');
+        $response = $this->render('static_pages/about_us.html.twig');
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -774,7 +769,7 @@ class MainController extends Controller
         ];
 
         $this->setCmsSeoData($tree);
-        $response = $this->render('pages/static_pages/statistics.html.twig', $template);
+        $response = $this->render('static_pages/statistics.html.twig', $template);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -830,7 +825,7 @@ class MainController extends Controller
             'date'           => $requestedDate,
             'availableDates' => $statisticsManager->getAvailableDatesForFPFStatistics()
         ];
-        $response = $this->render('pages/static_pages/statistics-fpf.html.twig', $template);
+        $response = $this->render('static_pages/statistics_fpf.html.twig', $template);
 
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \tree $tree */
@@ -905,7 +900,7 @@ class MainController extends Controller
         }
         $template['sections'] =  $pagesBySections;
 
-        return $this->render('pages/static_pages/sitemap.html.twig', $template);
+        return $this->render('static_pages/sitemap.html.twig', $template);
     }
 
     /**
@@ -976,7 +971,7 @@ class MainController extends Controller
             }
         }
 
-        return $this->render('partials/site/lender_tos_popup.html.twig', ['tosDetails' => $tosDetails]);
+        return $this->render('partials/lender_tos_popup.html.twig', ['tosDetails' => $tosDetails]);
     }
 
     /**
@@ -996,7 +991,7 @@ class MainController extends Controller
         $this->setCmsSeoData($tree);
 
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
-        $response                      = $this->render('pages/static_pages/testimonials.html.twig', $template);
+        $response                      = $this->render('static_pages/testimonials.html.twig', $template);
         $finalElements                 = [
             'contenu'      => $response->getContent(),
             'complement'   => '',
@@ -1006,10 +1001,15 @@ class MainController extends Controller
         return $this->renderCmsNav($tree, $finalElements, $entityManagerSimulator, 'apropos-statistiques');
     }
 
-    private function getProjectCountForCategoryTreeMap($countByCategory)
+    /**
+     * @param array $countByCategory
+     *
+     * @return array
+     */
+    private function getProjectCountForCategoryTreeMap(array $countByCategory)
     {
         /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
+        $translator     = $this->get('translator');
         $dataForTreeMap = [];
 
         foreach ($countByCategory as $category => $count) {
@@ -1022,6 +1022,9 @@ class MainController extends Controller
         return $dataForTreeMap;
     }
 
+    /**
+     * @param \tree $tree
+     */
     private function setCmsSeoData(\tree $tree)
     {
         /** @var SeoPage $seoPage */

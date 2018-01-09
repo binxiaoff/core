@@ -3,6 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatisticQueue;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
@@ -97,16 +98,18 @@ class transfertsController extends bootstrap
                     } else {
                         $attribution = $this->statusOperations[$reception->getStatusBo()];
                     }
+
                     $affectedReceptions[] = [
                         $reception->getIdReception(),
                         $reception->getMotif(),
                         $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
                         $attribution,
-                        $reception->getIdClient()->getIdClient(),
+                        $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
                         $reception->getAdded()->format('d/m/Y'),
                         '',
                         $reception->getComment(),
-                        $reception->getLigne()
+                        $reception->getLigne(),
+                        Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
                     ];
                 }
             } catch (Exception $exception) {
@@ -255,10 +258,11 @@ class transfertsController extends bootstrap
                     $reception->getMotif(),
                     $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
                     $reception->getAdded()->format('d/m/Y'),
-                    substr($reception->getLigne(), 32, 2),
+                    substr($reception->getLigne(), 32, 2) . ' / ' . substr($reception->getLigne(), 7, 4),
                     '',
                     $reception->getLigne(),
-                    $reception->getComment()
+                    $reception->getComment(),
+                    Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
                 ];
             }
         } catch (Exception $exception) {
@@ -591,6 +595,8 @@ class transfertsController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
@@ -625,7 +631,7 @@ class transfertsController extends bootstrap
                 $commission = $projectManager->getCommissionFunds($project, true);
                 $operationManager->projectCommission($project, $commission);
 
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
+                $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::REMBOURSEMENT, $project);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
                 $borrowerManager = $this->get('unilend.service.borrower_manager');
@@ -864,7 +870,7 @@ class transfertsController extends bootstrap
             /** @var \bids $bids */
             $bids           = $this->loadData('bids');
             $originalWallet = $walletRepository->getWalletByType($originalClient->id_client, WalletType::LENDER);
-            if ($bids->exist($originalWallet->getId(), 'status = ' . \bids::STATUS_BID_PENDING . ' AND id_lender_account ')) {
+            if ($bids->exist($originalWallet->getId(), 'status = ' . Bids::STATUS_PENDING . ' AND id_lender_account ')) {
                 $this->addErrorMessageAndRedirect('Le défunt a des bids en cours.');
             }
 

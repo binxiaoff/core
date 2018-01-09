@@ -200,7 +200,8 @@ class ProjectRequestController extends Controller
         $project->id_client_submitter                  = $user->getClientId();
         $project->create();
 
-        $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::SIMULATION, $project);
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::SIMULATION, $project);
 
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
@@ -546,8 +547,8 @@ class ProjectRequestController extends Controller
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $projectData);
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $projectData);
         }
 
         return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);
@@ -581,8 +582,8 @@ class ProjectRequestController extends Controller
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $projectData);
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $projectData);
         }
 
         return $this->redirectToRoute('partner_project_request_details', ['hash' => $project->getHash()]);
@@ -623,8 +624,8 @@ class ProjectRequestController extends Controller
             $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
             $projectData->get($project->getIdProject());
 
-            $projectManager = $this->get('unilend.service.project_manager');
-            $projectManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $projectData, 0, $abandonReason->getLabel());
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $projectData, 0, $abandonReason->getLabel());
         }
 
         return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);

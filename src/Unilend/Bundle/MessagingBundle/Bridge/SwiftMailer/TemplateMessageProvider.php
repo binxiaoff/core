@@ -79,7 +79,7 @@ class TemplateMessageProvider
      *
      * @return TemplateMessage
      */
-    public function newMessage($templateName, array $keywords = [], $wrapKeywords = true)
+    public function newMessage($templateName, array $keywords = [], bool $wrapKeywords = true)
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $templateName,
@@ -92,11 +92,35 @@ class TemplateMessageProvider
             throw new \InvalidArgumentException('The mail template ' . $templateName . ' for the language ' . $this->defaultLanguage . ' is not found.');
         }
 
+        return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
+    }
+
+    /**
+     * @param MailTemplates $mailTemplate
+     * @param array         $keywords
+     * @param bool          $wrapKeywords
+     *
+     * @return TemplateMessage
+     */
+    public function newMessageByTemplate(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
+    {
+        return $this->setMessageAttributes($mailTemplate, $keywords, $wrapKeywords);
+    }
+
+    /**
+     * @param MailTemplates $mailTemplate
+     * @param array         $keywords
+     * @param bool          $wrapKeywords
+     *
+     * @return TemplateMessage
+     */
+    private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
+    {
         $commonKeywords      = $this->getCommonKeywords();
         $overwrittenKeywords = array_intersect_key($keywords, $commonKeywords);
 
         if (false === empty($overwrittenKeywords) && $this->logger instanceof LoggerInterface) {
-            $this->logger->warning('Following keywords are overwritten by common keywords in "' . $templateName . '" email: ' . implode(', ', array_keys($overwrittenKeywords)));
+            $this->logger->warning('Following keywords are overwritten by common keywords in "' . $mailTemplate->getType() . '" email: ' . implode(', ', array_keys($overwrittenKeywords)));
         }
 
         if ($mailTemplate->getIdHeader()) {
