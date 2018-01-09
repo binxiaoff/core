@@ -526,7 +526,7 @@ class beneficiaires_effectifsController extends bootstrap
             'last_name'        => $owner->getIdClient()->getNom(),
             'first_name'       => $owner->getIdClient()->getPrenom(),
             'type'             => null === $owner->getIdType() ? null : $owner->getIdType()->getId(),
-            'percentage'       => $owner->getPercentageDetained(),
+            'percentage'       => $owner->getPercentageDetained() == 0 ? '' : $owner->getPercentageDetained(),
             'birth_date'       => $owner->getIdClient()->getNaissance()->format('d/m/Y'),
             'birth_place'      => $owner->getIdClient()->getVilleNaissance(),
             'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
