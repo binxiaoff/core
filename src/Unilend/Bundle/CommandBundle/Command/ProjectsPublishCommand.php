@@ -9,8 +9,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionTypeNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionTypeNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
@@ -66,10 +66,7 @@ EOF
                     }
 
                     $this->zipProjectAttachments($oProject, $entityManagerSimulator);
-
-                    if (false === $oProjectManager->isRateMinReached($oProject)) {
-                        $this->sendNewProjectEmail($oProject, $entityManagerSimulator);
-                    }
+                    $this->sendNewProjectEmail($oProject, $entityManagerSimulator);
                 } catch (\Exception $exception) {
                     $oLogger->critical('An exception occurred during publishing of project ' . $oProject->id_project . ' with message: ' . $exception->getMessage(), [
                         'method' => __METHOD__,
@@ -262,6 +259,9 @@ EOF
         $noAutobidPlaced  = array_diff(array_keys($autoBidsAmount), array_column($bids, 'id_lender_account'));
         $autolendUrl      = $hostUrl . $router->generate('autolend');
 
+        $isProjectMinRateReached = $this->getContainer()->get('unilend.service.project_manager')
+            ->isRateMinReached($project);
+
         $offset = 0;
         $limit  = 100;
         $logger->info('Send publication emails for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
@@ -276,7 +276,6 @@ EOF
                 $keywords = [];
 
                 if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
-                    $notifications       = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
                     $autobidNotification = $clientsGestionMailsNotifRepository->findOneBy(
                         [
                             'idNotif'       => ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
@@ -317,7 +316,8 @@ EOF
                                 && null !== ($bidEntity = $bidsRepository->find($bidPlacedNotification->getIdBid()))
                                 && null !== $bidEntity->getAutobid()
                             ) {
-                                $mailType = 'nouveau-projet-autobid';
+                                $notifications = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
+                                $mailType      = 'nouveau-projet-autobid';
 
                                 $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidEntity->getAmount(), 100, 4), 2), 'EUR');
                                 $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
@@ -329,8 +329,9 @@ EOF
 
                                 $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
                                 $keywords['autolendUrl']      = $autolendUrl;
-                            } else {
-                                $mailType = 'nouveau-projet';
+                            } elseif (false === $isProjectMinRateReached) {
+                                $notifications = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
+                                $mailType      = 'nouveau-projet';
 
                                 if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
                                     $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
@@ -376,21 +377,23 @@ EOF
                             }
                             ++$emailsSent;
                         }
-                        try {
-                            $notificationManager->createEmailNotification(
-                                $notifications->id_notification,
-                                ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-                                $wallet->getIdClient()->getIdClient(),
-                                null,
-                                $project->id_project,
-                                null,
-                                $immediateNotification
-                            );
-                        } catch (OptimisticLockException $exception) {
-                            $logger->warning(
-                                'Could not insert the new project notification for client: ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
-                                ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                            );
+                        if (isset($notifications)) {
+                            try {
+                                $notificationManager->createEmailNotification(
+                                    $notifications->id_notification,
+                                    ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+                                    $wallet->getIdClient()->getIdClient(),
+                                    null,
+                                    $project->id_project,
+                                    null,
+                                    $immediateNotification
+                                );
+                            } catch (OptimisticLockException $exception) {
+                                $logger->warning(
+                                    'Could not insert the new project notification for client: ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
+                                    ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                                );
+                            }
                         }
                     }
                 }
