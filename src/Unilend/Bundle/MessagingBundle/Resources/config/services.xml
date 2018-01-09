@@ -47,6 +47,7 @@
         <service id="unilend.swiftmailer.db_spool" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool">
             <argument type="service" id="unilend.service.mail_queue"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport">
@@ -59,6 +60,10 @@
         <service id="mailjet.api.client" class="Mailjet\Client" public="false">
             <argument>%mailjet.api_key%</argument>
             <argument>%mailjet.api_secret%</argument>
+            <argument>true</argument>
+            <argument type="collection">
+                <argument key="version">v3.1</argument>
+            </argument>
         </service>
     </services>
 </container>

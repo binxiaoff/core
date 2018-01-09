@@ -71,24 +71,20 @@ class MailjetTransport implements \Swift_Transport
      */
     public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
-        $senderEmail = array_keys($message->getFrom());
-        $senderName  = array_values($message->getFrom());
-        $recipients  = array_keys($message->getTo());
-        $replyTo     = $message->getReplyTo();
-        $body        = [
-            'FromEmail'   => array_shift($senderEmail),
-            'FromName'    => array_shift($senderName),
-            'Subject'     => $message->getSubject(),
-            'Html-part'   => $message->getBody(),
-            'Recipients'  => array_map(function($recipient) { return ['Email' => $recipient]; }, $recipients)
+        $replyTo = $message->getReplyTo();
+        $body    = [
+            'From'     => $this->convertEmailsToArray($message->getFrom())[0],
+            'To'       => $this->convertEmailsToArray($message->getTo()),
+            'Subject'  => $message->getSubject(),
+            'HTMLPart' => $message->getBody()
         ];
 
         if (method_exists($message, 'getQueueId') && null !== $message->getQueueId()) {
-            $body['Mj-CustomID'] = $message->getQueueId();
+            $body['CustomID'] = (string) $message->getQueueId();
         }
 
-        if (is_array($replyTo)) {
-            $body['Headers']['Reply-To'] = TemplateMessage::emailAddressToString($replyTo);
+        if (false === empty($replyTo)) {
+            $body['ReplyTo'] = $this->convertEmailsToArray($replyTo)[0];
         }
 
         if (false === empty($message->getChildren())) {
@@ -96,9 +92,9 @@ class MailjetTransport implements \Swift_Transport
             foreach ($message->getChildren() as $child) {
                 if (1 === preg_match('/^(?<content_type>.*); name=(?<file_name>.*)$/', $child->getHeaders()->get('Content-Type')->getFieldBody(), $matches)) {
                     $body['Attachments'][] = [
-                        'Content-Type' => $matches['content_type'],
-                        'Filename'     => $matches['file_name'],
-                        'content'      => base64_encode($child->getBody())
+                        'ContentType'   => $matches['content_type'],
+                        'Filename'      => $matches['file_name'],
+                        'Base64Content' => base64_encode($child->getBody())
                     ];
                 }
             }
@@ -117,5 +113,44 @@ class MailjetTransport implements \Swift_Transport
     public function registerPlugin(Swift_Events_EventListener $plugin)
     {
         $this->eventDispatcher->bindEventListener($plugin);
+    }
+
+    /**
+     * @param string|array $emails
+     *
+     * @return array
+     */
+    private function convertEmailsToArray($emails) : array
+    {
+        $formattedEmails = [];
+
+        if (is_string($emails)) {
+            $emails = str_replace(',', ';', $emails);
+            $emails = explode(';', $emails);
+        }
+
+        foreach ($emails as $email => $name) {
+            if (is_int($email)) {
+                $email = $name;
+                $name  = null;
+            }
+
+            if (1 === preg_match('#^(?<name>.*)\s?\<(?<email>.*)\>$#', trim($email), $matches)) {
+                $email = $matches['email'];
+                $name  = $matches['name'];
+            }
+
+            $formattedEmail = [
+                'Email' => $email
+            ];
+
+            if (false === empty($name)) {
+                $formattedEmail['Name'] = $name;
+            }
+
+            $formattedEmails[] = $formattedEmail;
+        }
+
+        return $formattedEmails;
     }
 }
