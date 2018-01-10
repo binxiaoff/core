@@ -7,7 +7,6 @@ use Mailjet\Resources;
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Swift_Events_EventListener;
-use Swift_Mime_Message;
 
 class MailjetTransport implements \Swift_Transport
 {

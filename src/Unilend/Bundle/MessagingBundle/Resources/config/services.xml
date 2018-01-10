@@ -62,7 +62,7 @@
             <argument>%mailjet.api_secret%</argument>
             <argument>true</argument>
             <argument type="collection">
-                <argument key="version">v3.1</argument>
+                <argument key="version">%mailjet.api_version%</argument>
             </argument>
         </service>
     </services>
