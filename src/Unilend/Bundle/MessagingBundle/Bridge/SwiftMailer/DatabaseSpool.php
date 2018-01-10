@@ -3,31 +3,31 @@
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Mailjet\Response;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Service\MailQueueManager;
 
 class DatabaseSpool extends \Swift_ConfigurableSpool
 {
-    /**
-     * @var MailQueueManager
-     */
+    /** @var MailQueueManager */
     protected $mailQueueManager;
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     protected $entityManager;
+    /** @var LoggerInterface */
+    protected $logger;
 
     /**
      * @param MailQueueManager $mailQueueManager
      * @param EntityManager    $entityManager
-     *
-     * @throws \InvalidArgumentException
+     * @param LoggerInterface  $logger
      */
-    public function __construct(MailQueueManager $mailQueueManager, EntityManager $entityManager)
+    public function __construct(MailQueueManager $mailQueueManager, EntityManager $entityManager, LoggerInterface $logger)
     {
         $this->mailQueueManager = $mailQueueManager;
         $this->entityManager    = $entityManager;
+        $this->logger           = $logger;
     }
 
     /**
@@ -97,7 +97,16 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             foreach ($batch as $email) {
                 $email->setStatus(MailQueue::STATUS_PROCESSING);
 
-                $message  = $this->mailQueueManager->getMessage($email);
+                try {
+                    $message = $this->mailQueueManager->getMessage($email);
+                } catch (\Swift_RfcComplianceException $exception) {
+                    $this->logger->error(
+                        'Unable to retrieve message ' . $email->getIdQueue() . '. Got exception: ' . $exception->getMessage(),
+                        ['file' => $exception->getFile(), 'line' => $exception->getFile()]
+                    );
+                    continue;
+                }
+
                 $response = $transport->send($message, $failedRecipients);
 
                 if (! ($transport instanceof MailjetTransport)) {
@@ -136,7 +145,15 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
             }
         }
 
-        $this->entityManager->flush();
+        try {
+            $this->entityManager->flush();
+        } catch (OptimisticLockException $exception) {
+            $this->logger->error(
+                'Unable to save message queue flush due to Doctrine error: ' . $exception->getMessage(),
+                ['file' => $exception->getFile(), 'line' => $exception->getFile()]
+            );
+        }
+
         return $count;
     }
 }

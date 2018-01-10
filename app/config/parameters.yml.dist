@@ -10,6 +10,7 @@ parameters:
 
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
+    mailjet.api_version:            v3.1
     mailer_transport:               smtp # mailjet for prod, smtp for the rest of the environments
     mailer_host:                    localhost
     mailer_port:                    1025
