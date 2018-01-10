@@ -344,9 +344,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     {
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
-        //TODO check if target path fits security for roles
-
-
         if (! $targetPath) {
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
