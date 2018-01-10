@@ -116,9 +116,10 @@ class NotificationManager
      * @param int|null                  $loanId
      * @param bool                      $sent
      *
+     * @return ClientsGestionMailsNotif
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null, $sent = false)
+    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null, $sent = false) : ClientsGestionMailsNotif
     {
         $emailNotification = new ClientsGestionMailsNotif();
         $emailNotification
@@ -139,6 +140,8 @@ class NotificationManager
 
         $this->entityManager->persist($emailNotification);
         $this->entityManager->flush($emailNotification);
+
+        return $emailNotification;
     }
 
     /**

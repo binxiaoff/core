@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionTypeNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
@@ -272,129 +274,124 @@ EOF
             $logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
             foreach ($lenders as $aLender) {
-                $wallet   = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
-                $keywords = [];
+                $wallet                 = $walletRepository->getWalletByType($aLender['id_client'], WalletType::LENDER);
+                $keywords               = [];
+                $newProjectNotification = null;
+                $emailNotification      = null;
+                $mailType               = null;
 
-                if ($productManager->isClientEligible($wallet->getIdClient(), $project)) {
-                    $autobidNotification = $clientsGestionMailsNotifRepository->findOneBy(
-                        [
-                            'idNotif'       => ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
-                            'idProject'     => $project->id_project,
-                            'idClient'      => $wallet->getIdClient()->getIdClient(),
-                            'immediatement' => 1
-                        ]
-                    );
-                    if (null === $autobidNotification) {
-                        $immediateNotification = false;
-                        $notificationSettings  = $clientsGestionNotificationsRepository->findOneBy(
-                            [
-                                'idClient'      => $wallet->getIdClient()->getIdClient(),
-                                'idNotif'       => [ClientsGestionTypeNotif::TYPE_NEW_PROJECT, ClientsGestionTypeNotif::TYPE_BID_PLACED],
-                                'immediatement' => 1
-                            ]
+                $isClientEligible                          = $productManager->isClientEligible($wallet->getIdClient(), $project);
+                $hasAcceptedRejectedAutobidNotification    = $this->hasAcceptedRejectedAutobidNotification($project, $wallet, $clientsGestionMailsNotifRepository);
+                $hasNewProjectOrAutobidNotificationSetting = $this->hasNewProjectOrAutobidNotificationSetting($wallet, $clientsGestionNotificationsRepository);
+
+                if ($isClientEligible) {
+                    $newProjectNotification = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
+                }
+
+                if (null !== $newProjectNotification && $isClientEligible && false === $hasAcceptedRejectedAutobidNotification) {
+                    try {
+                        $emailNotification = $notificationManager->createEmailNotification(
+                            $newProjectNotification->id_notification,
+                            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+                            $wallet->getIdClient()->getIdClient(),
+                            null,
+                            $project->id_project
                         );
+                    } catch (OptimisticLockException $exception) {
+                        $logger->warning(
+                            'Could not insert the new project notification for client: ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                    }
+                }
 
-                        if (null !== $notificationSettings) {
-                            $immediateNotification = true;
+                if ($isClientEligible && false === $hasAcceptedRejectedAutobidNotification && $hasNewProjectOrAutobidNotificationSetting) {
+                    try {
+                        $hasAutolendOn = $autobidSettingsManager->isOn($wallet->getIdClient());
+                    } catch (\Exception $exception) {
+                        $logger->error(
+                            'Could not check Autolend activation state for lender: ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                        /** Do not include any advises about autolend in the email */
+                        $hasAutolendOn = null;
+                    }
+                    $autolendSettingsAdvises = '';
+                    /** @var Notifications $bidPlacedNotification */
+                    $bidPlacedNotification = $notificationsRepository->findOneBy(['idLender' => $wallet->getId(), 'idProject' => $project->id_project, 'type' => Notifications::TYPE_BID_PLACED]);
 
-                            try {
-                                $hasAutolendOn = $autobidSettingsManager->isOn($wallet->getIdClient());
-                            } catch (\Exception $exception) {
-                                $logger->error(
-                                    'Could not check Autolend activation state for lender: ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
-                                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                                );
-                                /** Do not include any advises about autolend in the email */
-                                $hasAutolendOn = null;
-                            }
-                            $autolendSettingsAdvises = '';
-                            /** @var Notifications $bidPlacedNotification */
-                            $bidPlacedNotification = $notificationsRepository->findOneBy(['idLender' => $wallet->getId(), 'idProject' => $project->id_project, 'type' => Notifications::TYPE_BID_PLACED]);
+                    if (
+                        null !== $bidPlacedNotification
+                        && null !== ($bidEntity = $bidsRepository->find($bidPlacedNotification->getIdBid()))
+                        && null !== $bidEntity->getAutobid()
+                    ) {
+                        $mailType = 'nouveau-projet-autobid';
 
-                            if (
-                                null !== $bidPlacedNotification
-                                && null !== ($bidEntity = $bidsRepository->find($bidPlacedNotification->getIdBid()))
-                                && null !== $bidEntity->getAutobid()
-                            ) {
-                                $notifications = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
-                                $mailType      = 'nouveau-projet-autobid';
+                        $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidEntity->getAmount(), 100, 4), 2), 'EUR');
+                        $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
 
-                                $keywords['autoBidAmount'] = $currencyFormatter->formatCurrency(round(bcdiv($bidEntity->getAmount(), 100, 4), 2), 'EUR');
-                                $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
+                        $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 1);
+                        $keywords['autoBidRate']     = $numberFormatter->format($bidEntity->getRate());
+                        $keywords['autoLendMinRate'] = $numberFormatter->format($autolendMinRate);
+                        $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
 
-                                $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 1);
-                                $keywords['autoBidRate']     = $numberFormatter->format($bidEntity->getRate());
-                                $keywords['autoLendMinRate'] = $numberFormatter->format($autolendMinRate);
-                                $numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+                        $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
+                        $keywords['autolendUrl']      = $autolendUrl;
+                    } elseif (false === $isProjectMinRateReached) {
+                        $mailType = 'nouveau-projet';
 
-                                $keywords['availableBalance'] = $currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
-                                $keywords['autolendUrl']      = $autolendUrl;
-                            } elseif (false === $isProjectMinRateReached) {
-                                $notifications = $notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
-                                $mailType      = 'nouveau-projet';
+                        if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
+                            $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
 
-                                if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
-                                    $walletDepositUrl = $hostUrl . $router->generate('lender_wallet_deposit');
-
-                                    if (isset($autoBidsStatus[$wallet->getId()])) {
-                                        switch ($autoBidsStatus[$wallet->getId()]) {
-                                            case \autobid::STATUS_INACTIVE :
-                                                $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%', $autolendUrl]);
-                                                break;
-                                            case \autobid::STATUS_ACTIVE :
-                                                if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
-                                                    $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
-                                                }
-                                                if (bccomp($autoBidsMinRate[$wallet->getId()], $projectRateRange['rate_max'], 2) > 0) {
-                                                    $autolendMinRateTooHigh  = $translator->trans('email-nouveau-projet_autobid-min-rate-too-high', ['%autolendUrl%' => $autolendUrl]);
-                                                    $autolendSettingsAdvises .= empty($autolendSettingsAdvises) ? $autolendMinRateTooHigh : '<br>' . $autolendMinRateTooHigh;
-                                                }
-                                                break;
-                                            default :
-                                                break;
+                            if (isset($autoBidsStatus[$wallet->getId()])) {
+                                switch ($autoBidsStatus[$wallet->getId()]) {
+                                    case \autobid::STATUS_INACTIVE :
+                                        $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%', $autolendUrl]);
+                                        break;
+                                    case \autobid::STATUS_ACTIVE :
+                                        if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
+                                            $autolendSettingsAdvises = $translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
                                         }
-                                    }
-                                    $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($autolendSettingsAdvises);
-                                } elseif (false === $hasAutolendOn) {
-                                    $suggestAutolendActivation         = $translator->trans('email-nouveau-projet_suggest-autolend-activation', ['%autolendUrl%', $autolendUrl]);
-                                    $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($suggestAutolendActivation);
-                                } else {
-                                    $keywords['customAutolendContent'] = '';
+                                        if (bccomp($autoBidsMinRate[$wallet->getId()], $projectRateRange['rate_max'], 2) > 0) {
+                                            $autolendMinRateTooHigh  = $translator->trans('email-nouveau-projet_autobid-min-rate-too-high', ['%autolendUrl%' => $autolendUrl]);
+                                            $autolendSettingsAdvises .= empty($autolendSettingsAdvises) ? $autolendMinRateTooHigh : '<br>' . $autolendMinRateTooHigh;
+                                        }
+                                        break;
+                                    default :
+                                        break;
                                 }
                             }
-                            $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
-                            $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
-
-                            $message = $messageProvider->newMessage($mailType, $commonKeywords + $keywords);
-                            try {
-                                $message->setTo($aLender['email']);
-                                $mailer->send($message);
-                            } catch (\Exception $exception) {
-                                $logger->warning(
-                                    'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
-                                    ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $aLender['id_client'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                                );
-                            }
-                            ++$emailsSent;
+                            $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($autolendSettingsAdvises);
+                        } elseif (false === $hasAutolendOn) {
+                            $suggestAutolendActivation         = $translator->trans('email-nouveau-projet_suggest-autolend-activation', ['%autolendUrl%', $autolendUrl]);
+                            $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($suggestAutolendActivation);
+                        } else {
+                            $keywords['customAutolendContent'] = '';
                         }
-                        if (isset($notifications)) {
-                            try {
-                                $notificationManager->createEmailNotification(
-                                    $notifications->id_notification,
-                                    ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-                                    $wallet->getIdClient()->getIdClient(),
-                                    null,
-                                    $project->id_project,
-                                    null,
-                                    $immediateNotification
-                                );
-                            } catch (OptimisticLockException $exception) {
-                                $logger->warning(
-                                    'Could not insert the new project notification for client: ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
-                                    ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                                );
+                    }
+                    if (null !== $mailType) {
+                        $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
+                        $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
+                        $message                   = $messageProvider->newMessage($mailType, $commonKeywords + $keywords);
+                        try {
+                            if (null !== $emailNotification) {
+                                $emailNotification->setImmediatement(1);
+                                $entityManager->flush($emailNotification);
                             }
+                            $message->setTo($aLender['email']);
+                            $mailer->send($message);
+                        } catch (\Exception $exception) {
+                            if ($exception instanceof OptimisticLockException) {
+                                $errorMessage = 'Could not set "immediatement" to 1';
+                            } else {
+                                $errorMessage = 'Could not send email: ' . $mailType;
+                            }
+                            $logger->warning(
+                                $errorMessage . ' - Exception: ' . $exception->getMessage(),
+                                ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                            );
                         }
+                        ++$emailsSent;
                     }
                 }
             }
@@ -420,5 +417,45 @@ EOF
             </table>';
 
         return $customAutolendContent;
+    }
+
+    /**
+     * @param \projects        $project
+     * @param Wallet           $wallet
+     * @param EntityRepository $clientsGestionMailsNotifRepository
+     *
+     * @return bool
+     */
+    private function hasAcceptedRejectedAutobidNotification(\projects $project, Wallet $wallet, EntityRepository $clientsGestionMailsNotifRepository): bool
+    {
+        $autobidNotification = $clientsGestionMailsNotifRepository->findOneBy(
+            [
+                'idNotif'       => ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
+                'idProject'     => $project->id_project,
+                'idClient'      => $wallet->getIdClient()->getIdClient(),
+                'immediatement' => 1
+            ]
+        );
+
+        return null !== $autobidNotification;
+    }
+
+    /**
+     * @param Wallet           $wallet
+     * @param EntityRepository $clientsGestionNotificationsRepository
+     *
+     * @return bool
+     */
+    private function hasNewProjectOrAutobidNotificationSetting(Wallet $wallet, EntityRepository $clientsGestionNotificationsRepository): bool
+    {
+        $notificationSettings = $clientsGestionNotificationsRepository->findOneBy(
+            [
+                'idClient'      => $wallet->getIdClient()->getIdClient(),
+                'idNotif'       => [ClientsGestionTypeNotif::TYPE_NEW_PROJECT, ClientsGestionTypeNotif::TYPE_BID_PLACED],
+                'immediatement' => 1
+            ]
+        );
+
+        return null !== $notificationSettings;
     }
 }
