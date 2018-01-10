@@ -14,6 +14,8 @@ class BidsRepository extends EntityRepository
      * @param array $criteria
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function countBy(array $criteria = [])
     {
@@ -26,6 +28,7 @@ class BidsRepository extends EntityRepository
             }
         }
         $query = $qb->getQuery();
+
         return $query->getSingleScalarResult();
     }
 
@@ -35,8 +38,10 @@ class BidsRepository extends EntityRepository
      * @param int|Clients $clientId
      *
      * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
+    public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId) : integer
     {
         $qb = $this->createQueryBuilder('b')
             ->select('COUNT(b.idBid) AS bidNumber')
@@ -53,8 +58,10 @@ class BidsRepository extends EntityRepository
      * @param \DateTime $date
      *
      * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
+    public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date) : integer
     {
         $queryBuilder = $this->createQueryBuilder('b');
         $queryBuilder->select('COUNT(b.idBid)')
@@ -70,17 +77,19 @@ class BidsRepository extends EntityRepository
     /**
      * @param Wallet|int   $wallet
      * @param Projects|int $project
-     * @param int          $status
+     * @param array        $status
      *
-     * @return mixed
+     * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getSumByWalletAndProjectAndStatus($wallet, $project, $status)
+    public function getSumByWalletAndProjectAndStatus($wallet, $project, array $status) : integer
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('SUM(b.amount) / 100')
             ->where('b.idProject = :project')
             ->andWhere('b.idLenderAccount = :wallet')
-            ->andWhere('b.status = :status')
+            ->andWhere('b.status IN (:status)')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project)
             ->setParameter('status', $status);
@@ -92,9 +101,11 @@ class BidsRepository extends EntityRepository
      * @param Wallet|int $wallet
      * @param int        $status
      *
-     * @return mixed
+     * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getSumBidsForLenderAndStatus($wallet, $status)
+    public function getSumBidsForLenderAndStatus($wallet, int $status) : integer
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('ROUND(SUM(b.amount) / 100, 2)')

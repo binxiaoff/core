@@ -1003,24 +1003,19 @@ class ProjectsController extends Controller
             ]);
         }
 
-        /** @var \bids $bid */
-        $bid                    = $entityManagerSimulator->getRepository('bids');
-        $bid->id_lender_account = $wallet->getId();
-        $bid->id_project        = $project->id_project;
-        $bid->amount            = $amount * 100;
-        $bid->rate              = $rate;
 
-        //necessary as some methods need an entity and some a data. And as the bid is not persisted yet it can't be selected from the database
-        $bidEntity = new Bids();
-        $bidEntity->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
-        $bidEntity->setIdLenderAccount($wallet);
-        $bidEntity->setAmount($amount * 100);
-        $bidEntity->setRate($rate);
+        $bid = new Bids();
+        $bid
+            ->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project))
+            ->setIdLenderAccount($wallet)
+            ->setAmount($amount * 100)
+            ->setRate($rate);
 
-        $reasons = $productManager->checkBidEligibility($bidEntity);
+        $reasons = $productManager->checkBidEligibility($bid);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_PENDING);
+            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject(), [Bids::STATUS_PENDING]);
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);
