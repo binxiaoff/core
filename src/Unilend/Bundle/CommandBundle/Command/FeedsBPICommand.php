@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
@@ -80,9 +81,9 @@ class FeedsBPICommand extends ContainerAwareCommand
             }
 
             if ($project->status == ProjectsStatus::EN_FUNDING) {
-                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'amount') / 100;
+                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . Bids::STATUS_PENDING, 'amount') / 100;
             } else {
-                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'amount') / 100;
+                $totalBids = $bids->sum('id_project = ' . $project->id_project . ' AND status = ' . Bids::STATUS_ACCEPTED, 'amount') / 100;
             }
 
             if ($totalBids > $project->amount) {

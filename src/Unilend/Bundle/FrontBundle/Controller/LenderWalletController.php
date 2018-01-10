@@ -23,7 +23,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -40,7 +39,7 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function walletDepositAction()
+    public function depositAction()
     {
         $template = [
             'balance'          => $this->getUser()->getBalance(),
@@ -51,25 +50,27 @@ class LenderWalletController extends Controller
             'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ];
 
-        return $this->render('pages/lender_wallet/deposit.html.twig', $template);
+        return $this->render('lender_wallet/deposit.html.twig', $template);
     }
 
     /**
-     * @Route("/alimentation/resultat/{token}", name="lender_wallet_deposit_result")
+     * @Route("/alimentation/resultat/{paymentToken}", name="lender_wallet_deposit_result")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param string $paymentToken
      *
      * @return Response
      */
-    public function walletDepositResultAction($token)
+    public function depositResultAction(string $paymentToken) : Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $token]);
+        $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $paymentToken]);
         /** @var UserLender $user */
         $user = $this->getUser();
         if ($user) {
             $wallet = $this->getWallet();
             if ($wallet && $backPayline && $backPayline->getWallet() === $wallet) {
-                return $this->render('pages/lender_wallet/deposit_result.html.twig', [
+                return $this->render('lender_wallet/deposit_result.html.twig', [
                     'depositAmount'  => round(bcdiv($backPayline->getAmount(), 100, 4), 2),
                     'depositCode'    => $backPayline->getCode(),
                     'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
@@ -86,9 +87,9 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function walletDepositResultErrorAction()
+    public function depositResultErrorAction()
     {
-        return $this->render('pages/lender_wallet/deposit_result.html.twig', [
+        return $this->render('lender_wallet/deposit_result.html.twig', [
             'depositCode'    => 'X',
             'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
         ]);
@@ -101,7 +102,7 @@ class LenderWalletController extends Controller
      * @param Request $request
      * @return Response
      */
-    public function walletWithdrawalAction(Request $request)
+    public function withdrawalAction(Request $request)
     {
         if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
             return $this->redirectToRoute('lender_completeness');
@@ -140,7 +141,7 @@ class LenderWalletController extends Controller
             return $this->redirectToRoute('lender_wallet_withdrawal');
         }
 
-        return $this->render('pages/lender_wallet/withdrawal.html.twig', $template);
+        return $this->render('lender_wallet/withdrawal.html.twig', $template);
     }
 
     /**
@@ -163,16 +164,13 @@ class LenderWalletController extends Controller
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
-        /** @var OperationRepository $operationRepository */
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
-        $client = $this->getClient();
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-        $wallet = $this->getWallet();
+        $client        = $this->getClient();
+        $wallet        = $this->getWallet();
 
         if ($client) {
-            $serialize = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
+            /** @var BankAccount $bankAccount */
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
             $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
             /** @var ClientsStatus $lastStatus */
@@ -192,7 +190,7 @@ class LenderWalletController extends Controller
             } else {
                 if (false === is_numeric($amount)) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-                } elseif (empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
+                } elseif (null === $bankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 } elseif ($amount <= 0 || $amount > $this->getUser()->getBalance()) {
                     $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
@@ -326,7 +324,7 @@ class LenderWalletController extends Controller
         $paylineManager = $this->get('unilend.service.payline_manager');
         $paylineManager->handlePaylineReturn($token, $version);
 
-        return $this->redirectToRoute('lender_wallet_deposit_result', ['token' => $token]);
+        return $this->redirectToRoute('lender_wallet_deposit_result', ['paymentToken' => $token]);
     }
 
     /**

@@ -193,8 +193,10 @@ class emprunteursController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $projectId     = filter_var($this->params[1], FILTER_VALIDATE_INT);
             $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
             if ($project) {
-                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+                $client = $project->getIdCompany()->getIdClientOwner();
+
                 switch ($this->params[0]) {
                     case 'pouvoir' :
                         $this->link = $this->furl . '/pdf/pouvoir/' . $client->getHash() . '/' . $projectId;
@@ -255,14 +257,14 @@ class emprunteursController extends bootstrap
         if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
             $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
+            $projectStatusNotificationSender = $this->get('unilend.service.project_status_manager');
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
 
             foreach ($companyProjects as $project) {
                 try {
-                    $projectStatusManager->sendCollectiveProceedingStatusNotificationsToLenders($project);
+                    $projectStatusNotificationSender->sendCollectiveProceedingStatusNotificationsToLenders($project);
                 } catch (\Exception $exception) {
                     $logger->warning(
                         'Collective proceeding email was not sent to lenders. Error : ' . $exception->getMessage(),
@@ -272,7 +274,42 @@ class emprunteursController extends bootstrap
             }
         }
 
-        header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner());
+        header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $company->getIdClientOwner()->getIdClient());
         die;
+    }
+
+    public function _test_eligibilite()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
+
+        if ($userManager->isGrantedRisk($this->userEntity)) {
+            $success = '';
+            $error   = '';
+            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
+            $uploadedFile = $this->request->files->get('siren_list');
+
+            if (false === empty($uploadedFile)) {
+                $uploadDir = $bulkCompanyCheckManager->getEligibilityInputPendingDir();
+                try {
+                    $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
+                    $success = 'Le fichier a été pris en compte. Une notification vous sera envoyé dès qu\'il sera traité';
+                } catch (\Exception $exception) {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error(
+                        'Could not upload the file into ' . $uploadDir . ' Error: ' . $exception->getMessage(),
+                        ['method', __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
+                    $error = 'Le fichier n\'a pas été pris en compte. Veuillez rééssayer ou contacter l\'équipe technique.';
+                }
+            }
+            $this->render(null, ['success' => $success, 'error' => $error]);
+        } else {
+            header('Location: ' . $this->lurl);
+            die;
+        }
     }
 }

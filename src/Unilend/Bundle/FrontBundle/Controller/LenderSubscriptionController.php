@@ -28,15 +28,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Villes;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
@@ -132,7 +129,7 @@ class LenderSubscriptionController extends Controller
             'companyIdentityForm'   => $companyIdentityForm->createView()
         ];
 
-        return $this->render('pages/lender_subscription/personal_information.html.twig', $template);
+        return $this->render('lender_subscription/personal_information.html.twig', $template);
     }
 
     /**
@@ -357,13 +354,19 @@ class LenderSubscriptionController extends Controller
             $entityManager->beginTransaction();
             try {
                 $entityManager->persist($client);
+
                 $clientAddress->setIdClient($client);
+
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
-                $company->setIdClientOwner($client->getIdClient());
+
+                $company->setIdClientOwner($client);
+
                 $entityManager->persist($company);
                 $entityManager->flush($company);
+
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
+
                 $entityManager->commit();
             } catch (Exception $exception) {
                 $entityManager->getConnection()->rollBack();
@@ -484,10 +487,10 @@ class LenderSubscriptionController extends Controller
         ];
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
+            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
-        return $this->render('pages/lender_subscription/documents.html.twig', $template);
+        return $this->render('lender_subscription/documents.html.twig', $template);
     }
 
 
@@ -531,7 +534,7 @@ class LenderSubscriptionController extends Controller
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             $this->validateAttachmentsPerson($form, $client, $clientAddress, $fileBag);
         } else {
-            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneByIdClientOwner($client);
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
         }
 
@@ -691,7 +694,7 @@ class LenderSubscriptionController extends Controller
             'lenderBankMotif'  => $client->getLenderPattern($client->id_client)
         ];
 
-        return $this->render('pages/lender_subscription/money_deposit.html.twig', $template);
+        return $this->render('lender_subscription/money_deposit.html.twig', $template);
     }
 
     /**
@@ -793,7 +796,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageAction()
     {
-        return $this->render('pages/lender_subscription/landing_page.html.twig', [
+        return $this->render('lender_subscription/landing_page.html.twig', [
             'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
             'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
         ]);
@@ -826,21 +829,7 @@ class LenderSubscriptionController extends Controller
             $template['sponsorCode']      = $request->query->get('sponsor');
         }
 
-        return $this->render('pages/lender_subscription/landing_page_sponsorship.html.twig', $template);
-    }
-
-
-    /**
-     * @Route("/figaro/", name="figaro_landing_page")
-     * @Method("GET")
-     * @return Response
-     */
-    public function figaroLandingPageAction()
-    {
-        return $this->render('pages/lender_subscription/partners/figaro.html.twig', [
-            'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
-            'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
-        ]);
+        return $this->render('lender_subscription/sponsorship_landing_page.html.twig', $template);
     }
 
     /**
@@ -850,7 +839,7 @@ class LenderSubscriptionController extends Controller
      */
     public function landingPageFormOnlyAction()
     {
-        return $this->render('pages/lender_subscription/landing_page_form_only.html.twig', [
+        return $this->render('lender_subscription/landing_page_form_only.html.twig', [
             'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
             'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
         ]);

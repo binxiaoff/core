@@ -1,16 +1,11 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS clientEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS ClientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class clients extends clients_crud
 {
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -106,30 +101,13 @@ class clients extends clients_crud
             FROM clients 
             WHERE id_client = "' . $_SESSION['client']['id_client'] . '" 
                 AND password = "' . $_SESSION['client']['password'] . '" 
-                AND status = 1';
+                AND status = ' . ClientEntity::STATUS_ONLINE;
         $res = $this->bdd->query($sql);
 
         if ($this->bdd->result($res, 0) != 1) {
             return false;
         } else {
             return true;
-        }
-    }
-
-    public function getLastStatut($id_client)
-    {
-        $sql = 'SELECT id_client_status
-                FROM `clients_status_history`
-                WHERE id_client = ' . $id_client . '
-                ORDER BY added DESC
-                LIMIT 1';
-        $result           = $this->bdd->query($sql);
-        $id_client_status = (int) ($this->bdd->result($result, 0, 0));
-
-        if ($id_client_status == 6) {
-            return true;
-        } else {
-            return false;
         }
     }
 
@@ -499,72 +477,69 @@ class clients extends clients_crud
     public function getBorrowersSalesForce()
     {
         $sQuery = "SELECT
-                      c.id_client as 'IDClient',
-                      c.id_client as 'IDClient_2',
-                      c.id_langue as 'Langue',
-                      REPLACE(c.civilite,',','') as 'Civilite',
-                      REPLACE(c.nom,',','') as 'Nom',
-                      REPLACE(c.nom_usage,',','') as 'Nom_usage',
-                      REPLACE(c.prenom,',','') as 'Prenom',
-                      CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
+                      c.id_client AS 'IDClient',
+                      c.id_client AS 'IDClient_2',
+                      c.id_langue AS 'Langue',
+                      REPLACE(c.civilite,',','') AS 'Civilite',
+                      REPLACE(c.nom,',','') AS 'Nom',
+                      REPLACE(c.nom_usage,',','') AS 'Nom_usage',
+                      REPLACE(c.prenom,',','') AS 'Prenom',
+                      CONVERT(REPLACE(c.fonction,',','') USING utf8) AS 'Fonction',
                       CASE c.naissance
-                      WHEN '0000-00-00' then '2001-01-01'
-                      ELSE
-                        CASE SUBSTRING(c.naissance,1,1)
-                        WHEN '0' then '2001-01-01'
-                        ELSE c.naissance
-                        END
-                      END as 'DateNaissance',
-                      REPLACE(ville_naissance,',','') as 'VilleNaissance',
-                      ccountry.fr as 'PaysNaissance',
-                      nv2.fr_f as 'Nationalite',
-                      REPLACE(c.telephone,'\t','') as 'Telephone',
-                      c.mobile as 'Mobile',
-                      REPLACE(c.email,',','') as 'Email',
-                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
+                          WHEN '0000-00-00' then '2001-01-01'
+                          ELSE
+                            CASE SUBSTRING(c.naissance,1,1)
+                                WHEN '0' then '2001-01-01'
+                                ELSE c.naissance
+                            END
+                      END AS 'DateNaissance',
+                      REPLACE(ville_naissance,',','') AS 'VilleNaissance',
+                      ccountry.fr AS 'PaysNaissance',
+                      nv2.fr_f AS 'Nationalite',
+                      REPLACE(c.telephone,'\t','') AS 'Telephone',
+                      c.mobile AS 'Mobile',
+                      REPLACE(c.email,',','') AS 'Email',
+                      c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
                       CASE c.type
-                      WHEN 1 THEN 'Physique'
-                      WHEN 2 THEN 'Morale'
-                      WHEN 3 THEN 'Physique'
-                      ELSE 'Morale'
-                      END as 'TypeContact',
+                        WHEN 1 THEN 'Physique'
+                        WHEN 2 THEN 'Morale'
+                        WHEN 3 THEN 'Physique'
+                        ELSE 'Morale'
+                      END AS 'TypeContact',
                       CASE c.status
-                      WHEN 1 THEN 'oui'
-                      ELSE 'non'
-                      END as 'Valide',
+                        WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
+                        ELSE 'non'
+                      END AS 'Valide',
                       CASE c.added
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.added
-                      END as 'date_inscription',
+                        WHEN '0000-00-00 00:00:00' then ''
+                        ELSE c.added
+                      END AS 'date_inscription',
                       CASE c.updated
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.updated
-                      END as 'DateMiseJour',
+                        WHEN '0000-00-00 00:00:00' then ''
+                        ELSE c.updated
+                      END AS 'DateMiseJour',
                       CASE c.lastlogin
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.lastlogin
-                      END as 'DateDernierLogin',
-                      REPLACE(ca.adresse1,',','') as 'Adresse1',
-                      REPLACE(ca.adresse2,',','') as 'Adresse2',
-                      REPLACE(ca.adresse3,',','') as 'Adresse3',
-                      REPLACE(ca.cp,',','') as 'CP',
-                      REPLACE(ca.ville,',','') as 'Ville',
-                      acountry.fr as 'Pays',
+                        WHEN '0000-00-00 00:00:00' then ''
+                        ELSE c.lastlogin
+                      END AS 'DateDernierLogin',
+                      REPLACE(ca.adresse1,',','') AS 'Adresse1',
+                      REPLACE(ca.adresse2,',','') AS 'Adresse2',
+                      REPLACE(ca.adresse3,',','') AS 'Adresse3',
+                      REPLACE(ca.cp,',','') AS 'CP',
+                      REPLACE(ca.ville,',','') AS 'Ville',
+                      acountry.fr AS 'Pays',
                       '012240000002G4e' as 'Sfcompte'
-                    FROM
-                      clients c
+                    FROM clients c
                       INNER JOIN companies co on c.id_client = co.id_client_owner
                       INNER JOIN projects p ON p.id_company = co.id_company
                       LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
                       LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
                       LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
                       LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                    group by
-                      c.id_client";
+                    GROUP BY c.id_client";
 
         return $this->bdd->executeQuery($sQuery);
     }
-
 
     public function countClientsByRegion()
     {
@@ -628,29 +603,6 @@ class clients extends clients_crud
         }
 
         return $regionsCount;
-    }
-
-    public function getBorrowersByCategory()
-    {
-        $sQuery = 'SELECT
-                      count(DISTINCT projects.id_project), company_sector.sector
-                    FROM
-                      `companies`
-                      INNER JOIN projects ON companies.id_company = projects.id_company
-                      INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project
-                      INNER JOIN projects_status ON (projects_status_history.id_project_status = projects_status.id_project_status AND projects_status.status = 80)
-                      INNER JOIN company_sector ON companies.sector = company_sector.id_company_sector
-
-                      GROUP BY companies.sector';
-
-        $oStatement = $this->bdd->executeQuery($sQuery);
-        $aCountByCategories = array();
-
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aCountByCategories[$aRow['id_sector']] = $aRow['count'];
-        }
-
-        return $aCountByCategories;
     }
 
     /**

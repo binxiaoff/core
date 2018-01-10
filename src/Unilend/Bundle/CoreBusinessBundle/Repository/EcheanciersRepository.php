@@ -297,7 +297,7 @@ class EcheanciersRepository extends EntityRepository
               LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
             WHERE e.date_echeance_reel BETWEEN :startDate AND :endDate
                 AND e.status IN (' . Echeanciers::STATUS_REPAID . ', ' . Echeanciers::STATUS_PARTIALLY_REPAID . ')
-                AND e.status_ra = 0
+                AND e.status_ra = ' . Echeanciers::IS_NOT_EARLY_REPAID . '
             ORDER BY e.date_echeance ASC';
 
         return $this->getEntityManager()->getConnection()->executeQuery(
@@ -386,21 +386,22 @@ class EcheanciersRepository extends EntityRepository
                 LEFT JOIN companies com ON p.id_company = com.id_company
                 LEFT JOIN company_status cs ON cs.id = com.id_status
                 WHERE e.id_lender = :lender
-                    AND e.status = 0
+                    AND e.status = ' . Echeanciers::STATUS_PENDING . '
                     AND e.date_echeance >= NOW()
                     AND IF(
                         (cs.label IN (:companyStatus)
                         OR p.status = ' . ProjectsStatus::LOSS . '
                         OR (p.status = ' . ProjectsStatus::PROBLEME . '
-                        AND DATEDIFF(NOW(), (
-                        SELECT psh2.added
-                        FROM projects_status_history psh2
-                        INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
-                        AND psh2.id_project = e.id_project
-                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1
-                    )) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ')), TRUE, FALSE) = FALSE
+                            AND DATEDIFF(NOW(), (
+                                SELECT psh2.added
+                                FROM projects_status_history psh2
+                                INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                                WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
+                                    AND psh2.id_project = e.id_project
+                                ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                                LIMIT 1
+                            )
+                        ) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . ')), TRUE, FALSE) = FALSE
                 GROUP BY month
             ) AS t
             GROUP BY t.month';
@@ -620,17 +621,21 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Loans|int $loan
+     * @param Loans|int|array $loans
      *
      * @return float
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getRemainingCapitalByLoan($loan)
+    public function getRemainingCapitalByLoan($loans)
     {
+        if (false === is_array($loans)) {
+            $loans[] = $loans;
+        }
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2)')
-            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'e.idLoan = l.idLoan')
-            ->where('e.idLoan = :loan')
-            ->setParameter('loan', $loan);
+            ->where('e.idLoan in (:loan)')
+            ->setParameter('loan', $loans);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
@@ -713,7 +718,7 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idLoan')
             ->addGroupBy('e.ordre');
 
-        $remainingAmounts = $queryBuilder->getQuery()->getArrayResult();
+        $remainingAmounts                  = $queryBuilder->getQuery()->getArrayResult();
         $remainingAmountsByLoanAndSequence = [];
 
         foreach ($remainingAmounts as $remainingAmount) {

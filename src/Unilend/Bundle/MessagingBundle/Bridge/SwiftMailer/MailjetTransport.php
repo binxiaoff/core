@@ -71,16 +71,6 @@ class MailjetTransport implements \Swift_Transport
      */
     public function send(\Swift_Mime_SimpleMessage $message, &$failedRecipients = null)
     {
-        $count = (
-            count((array) $message->getTo())
-            + count((array) $message->getCc())
-            + count((array) $message->getBcc())
-        );
-
-        if (0 === $count) {
-            throw new \Exception('No email address provided');
-        }
-
         $senderEmail = array_keys($message->getFrom());
         $senderName  = array_values($message->getFrom());
         $recipients  = array_keys($message->getTo());

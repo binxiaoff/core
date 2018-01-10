@@ -13,45 +13,35 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectRepaymentManager
 {
     /** @var EntityManager */
     private $entityManager;
-
     /** @var OperationManager */
     private $operationManager;
-
     /** @var LoggerInterface */
     private $logger;
-
-    /** @var ProjectManager */
-    private $projectManager;
-
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
-
     /** @var ProjectRepaymentNotificationSender */
     private $projectRepaymentNotificationSender;
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-
     /** @var ProjectChargeManager */
     private $projectChargeManager;
-
     /** @var DebtCollectionFeeManager */
     private $debtCollectionFeeManager;
 
     /**
-     * ProjectRepaymentManager constructor.
-     *
      * @param EntityManager                      $entityManager
      * @param EntityManagerSimulator             $entityManagerSimulator
      * @param OperationManager                   $operationManager
-     * @param ProjectManager                     $projectManager
+     * @param ProjectStatusManager               $projectStatusManager
      * @param ProjectRepaymentTaskManager        $projectRepaymentTaskManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param ProjectChargeManager               $projectChargeManager
@@ -62,7 +52,7 @@ class ProjectRepaymentManager
         EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         OperationManager $operationManager,
-        ProjectManager $projectManager,
+        ProjectStatusManager $projectStatusManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         ProjectRepaymentNotificationSender $projectRepaymentNotificationSender,
         ProjectChargeManager $projectChargeManager,
@@ -74,7 +64,7 @@ class ProjectRepaymentManager
         $this->entityManagerSimulator             = $entityManagerSimulator;
         $this->operationManager                   = $operationManager;
         $this->logger                             = $logger;
-        $this->projectManager                     = $projectManager;
+        $this->projectStatusManager               = $projectStatusManager;
         $this->projectRepaymentTaskManager        = $projectRepaymentTaskManager;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
         $this->projectChargeManager               = $projectChargeManager;
@@ -146,7 +136,7 @@ class ProjectRepaymentManager
         $pendingRepaymentSchedule = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
             ->findByProject($projectRepaymentTask->getIdProject(), null, null, [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID], null, null, 0, 1);
         if (0 === count($pendingRepaymentSchedule)) {
-            $this->projectManager->addProjectStatus($userId, ProjectsStatus::REMBOURSE, $projectRepaymentTask->getIdProject());
+            $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::REMBOURSE, $projectRepaymentTask->getIdProject());
             $this->projectRepaymentNotificationSender->sendInternalNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
             $this->projectRepaymentNotificationSender->sendClientNotificationEndOfRepayment($projectRepaymentTask->getIdProject());
         }

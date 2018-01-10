@@ -23,7 +23,7 @@ class LenderAccountController extends Controller
             'isBlacklisted'              => $this->get('unilend.service.sponsorship_manager')->isClientCurrentlyBlacklisted($this->getClient())
         ];
 
-        return $this->render('frontbundle/lender_account/partials/lender_account_nav.html.twig', $template);
+        return $this->render('lender_account/lender_account_nav.html.twig', $template);
     }
 
     private function getClient()

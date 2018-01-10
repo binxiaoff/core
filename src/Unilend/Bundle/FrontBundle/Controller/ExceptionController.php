@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Log\DebugLoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Loader\ExistsLoaderInterface;
 
 class ExceptionController extends Controller
 {
@@ -17,7 +18,7 @@ class ExceptionController extends Controller
      *
      * @return Response
      */
-    public function error404Action()
+    public function error404Action() : Response
     {
         $seoPage = $this->container->get('sonata.seo.page');
         $seoPage->addMeta('name', 'robots', 'noindex');
@@ -30,7 +31,14 @@ class ExceptionController extends Controller
         return $this->render('exception/error.html.twig', ['errorPageTitle' => $pageTitle, 'errorTitle' => $title, 'errorDetails' => $details]);
     }
 
-    public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null)
+    /**
+     * @param Request                   $request
+     * @param FlattenException          $exception
+     * @param DebugLoggerInterface|null $logger
+     *
+     * @return Response
+     */
+    public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null) : Response
     {
         if ($logger instanceof LoggerInterface) {
             try {
@@ -78,7 +86,7 @@ class ExceptionController extends Controller
      *
      * @return string
      */
-    private function getAndCleanOutputBuffering($startObLevel)
+    private function getAndCleanOutputBuffering(int $startObLevel) : string
     {
         if (ob_get_level() <= $startObLevel) {
             return '';
@@ -96,7 +104,7 @@ class ExceptionController extends Controller
      *
      * @return string
      */
-    private function findTemplate(Request $request, $format, $showException)
+    private function findTemplate(Request $request, string $format, bool $showException) : string
     {
         $name = $showException ? 'exception' : 'error';
         if ($showException && 'html' == $format) {
@@ -115,18 +123,22 @@ class ExceptionController extends Controller
         return sprintf('@Twig/Exception/%s.html.twig', $showException ? 'exception_full' : $name);
     }
 
-    // to be removed when the minimum required version of Twig is >= 3.0
-    private function templateExists($template)
+    /**
+     * @param string $template
+     *
+     * @return bool
+     */
+    private function templateExists(string $template) : bool
     {
         $template = (string) $template;
 
         $loader = $this->get('twig')->getLoader();
-        if ($loader instanceof \Twig_ExistsLoaderInterface) {
+        if ($loader instanceof ExistsLoaderInterface || method_exists($loader, 'exists')) {
             return $loader->exists($template);
         }
 
         try {
-            $loader->getSource($template);
+            $loader->getSourceContext($template)->getCode();
 
             return true;
         } catch (\Twig_Error_Loader $e) {

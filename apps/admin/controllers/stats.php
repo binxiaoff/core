@@ -12,6 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class statsController extends bootstrap
 {
@@ -55,24 +56,25 @@ class statsController extends bootstrap
 
         }
 
-        $sql = 'SELECT
-                        c.id_client,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.telephone,
-                        c.mobile,
-                        c.added,
-                        c.etape_inscription_preteur,
-                        c.source,
-                        c.source2
-                    FROM clients c
-                      INNER JOIN wallet w ON c.id_client = w.id_client
-                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
-                    WHERE c.etape_inscription_preteur > 0 
-                        AND c.status = 1 
-                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
-                        AND c.added <= "' . $date2 . ' 23:59:59"';
+        $sql = '
+            SELECT
+                c.id_client,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.telephone,
+                c.mobile,
+                c.added,
+                c.etape_inscription_preteur,
+                c.source,
+                c.source2
+            FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+            WHERE c.etape_inscription_preteur > 0 
+                AND c.status = ' . Clients::STATUS_ONLINE . '
+                AND c.added >= "' . $date1 . ' 00:00:00"
+                AND c.added <= "' . $date2 . ' 23:59:59"';
 
         $result = $this->bdd->query($sql);
 
@@ -85,8 +87,8 @@ class statsController extends bootstrap
             $this->autoFireView = false;
             $this->hideDecoration();
 
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"Export_etape_inscription.csv\"");
+            header('Content-type: application/vnd.ms-excel');
+            header('Content-disposition: attachment; filename="Export_etape_inscription.csv"');
 
             if ($_POST['spy_date1'] != '') {
                 $d1    = explode('/', $_POST['spy_date1']);
@@ -102,24 +104,25 @@ class statsController extends bootstrap
                 $date2 = date('Y-m-d', strtotime('last day of this month'));
             }
 
-            $sql = 'SELECT
-                        c.id_client,
-                        c.nom,
-                        c.prenom,
-                        c.email,
-                        c.telephone,
-                        c.mobile,
-                        c.added,
-                        c.etape_inscription_preteur,
-                        c.source,
-                        c.source2
-                    FROM clients c
-                      INNER JOIN wallet w ON c.id_client = w.id_client
-                      INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
-                    WHERE c.etape_inscription_preteur > 0 
-                        AND c.status = 1 
-                        AND c.added >= "' . $date1 . ' 00:00:00' . '"
-                        AND c.added <= "' . $date2 . ' 23:59:59"';
+            $sql = '
+                SELECT
+                    c.id_client,
+                    c.nom,
+                    c.prenom,
+                    c.email,
+                    c.telephone,
+                    c.mobile,
+                    c.added,
+                    c.etape_inscription_preteur,
+                    c.source,
+                    c.source2
+                FROM clients c
+                INNER JOIN wallet w ON c.id_client = w.id_client
+                INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+                WHERE c.etape_inscription_preteur > 0 
+                    AND c.status = ' . Clients::STATUS_ONLINE . ' 
+                    AND c.added >= "' . $date1 . ' 00:00:00"
+                    AND c.added <= "' . $date2 . ' 23:59:59"';
 
             $result = $this->bdd->query($sql);
 
@@ -414,16 +417,14 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    private function downloadIfufile($name)
+    private function downloadIfufile($fileName)
     {
         $this->autoFireView = false;
         $this->hideDecoration();
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
         $ifuManager = $this->get('unilend.service.ifu_manager');
-
-        $fileName = $name . '_' . date('Ymd') . '.csv';
-        $filePath = $ifuManager->getStorageRootPath() . DIRECTORY_SEPARATOR . $fileName;
+        $filePath   = $ifuManager->getStorageRootPath() . DIRECTORY_SEPARATOR . $fileName;
 
         if (file_exists($filePath)) {
             header('Content-Description: File Transfer');
@@ -445,12 +446,12 @@ class statsController extends bootstrap
 
     public function _requete_infosben_download()
     {
-        $this->downloadIfufile('requete_infosben');
+        $this->downloadIfufile(IfuManager::FILE_NAME_INFOSBEN);
     }
 
     public function _requete_beneficiaires_download()
     {
-        $this->downloadIfufile('requete_beneficiaires');
+        $this->downloadIfufile(IfuManager::FILE_NAME_BENEFICIARY);
     }
 
     /**
@@ -459,7 +460,7 @@ class statsController extends bootstrap
      */
     public function _requete_revenus_download()
     {
-        $this->downloadIfufile('requete_revenus');
+        $this->downloadIfufile(IfuManager::FILE_NAME_INCOME);
     }
 
     public function _requete_encheres()
@@ -478,8 +479,8 @@ class statsController extends bootstrap
                   id_bid, 
                   (SELECT id_client FROM wallet w WHERE w.id = b.id_lender_account) AS id_client, 
                   added, 
-                  (CASE status WHEN ' . Bids::STATUS_BID_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_BID_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_BID_REJECTED . ' THEN "KO" END) AS Statut, 
-                  ROUND((amount/100),0), REPLACE(rate,".",",") as rate 
+                  (CASE status WHEN ' . Bids::STATUS_PENDING . ' THEN "En cours" WHEN ' . Bids::STATUS_ACCEPTED . ' THEN "OK" WHEN ' . Bids::STATUS_REJECTED . ' THEN "KO" END) AS Statut, 
+                  ROUND((amount / 100), 0), REPLACE(rate, ".", ",") AS rate 
                 FROM bids b';
 
         $resultat = $this->bdd->query($sql);
@@ -533,13 +534,13 @@ class statsController extends bootstrap
                       e.status
                     FROM echeanciers e
                       INNER JOIN wallet w ON w.id = e.id_lender
-                      LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES.'\')
-                      LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_RETENUES_A_LA_SOURCE.'\')
-                      LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CSG.'\')
-                      LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX.'\')
-                      LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES.'\')
-                      LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE.'\')
-                      LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \''.OperationType::TAX_FR_CRDS.'\')
+                      LEFT JOIN operation prelevements_obligatoires ON prelevements_obligatoires.id_repayment_schedule = e.id_echeancier AND prelevements_obligatoires.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES . '\')
+                      LEFT JOIN operation retenues_source ON retenues_source.id_repayment_schedule = e.id_echeancier AND retenues_source.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_RETENUES_A_LA_SOURCE . '\')
+                      LEFT JOIN operation csg ON csg.id_repayment_schedule = e.id_echeancier AND csg.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CSG . '\')
+                      LEFT JOIN operation prelevements_sociaux ON prelevements_sociaux.id_repayment_schedule = e.id_echeancier AND prelevements_sociaux.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX . '\')
+                      LEFT JOIN operation contributions_additionnelles ON contributions_additionnelles.id_repayment_schedule = e.id_echeancier AND contributions_additionnelles.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES . '\')
+                      LEFT JOIN operation prelevements_solidarite ON prelevements_solidarite.id_repayment_schedule = e.id_echeancier AND prelevements_solidarite.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE . '\')
+                      LEFT JOIN operation crds ON crds.id_repayment_schedule = e.id_echeancier AND crds.id_type  = (SELECT id FROM operation_type WHERE label = \'' . OperationType::TAX_FR_CRDS . '\')
                     WHERE e.id_project = ' . $_POST['id_projet'] . '
                     GROUP BY e.id_echeancier';
 
@@ -767,10 +768,35 @@ class statsController extends bootstrap
                 'type'                   => CompanyRating::TYPE_INFOLEGALE_SCORE
             ]);
 
+            $source = '';
+            if ($company->getIdClientOwner() && false == $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
+                $source = $company->getIdClientOwner()->getSource();
+            }
+
+            $partner = '';
+            if ($project->getIdPartner()) {
+                $partner = $project->getIdPartner()->getIdCompany()->getName();
+            }
+
+            $adviserName = 'Non';
+            if ($project->getIdPrescripteur()) {
+                $adviser = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
+                if ($adviser) {
+                    $adviserClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($adviser->getIdClient());
+                    if ($adviserClient) {
+                        $adviserName = $adviserClient->getPrenom() . ' ' . $adviserClient->getNom();
+                    }
+                }
+            }
+
             $row = [
                 'id projet'        => $project->getIdProject(),
                 'added'            => $project->getAdded()->format('d/m/Y'),
                 'company_name'     => $company->getName(),
+                'siren'            => $company->getSiren(),
+                'source'           => $source,
+                'partner'          => $partner,
+                'adviser'          => $adviserName,
                 'motivation'       => $motivation ? $motivation->getMotive() : '',
                 'amount'           => $project->getAmount(),
                 'duration'         => $project->getPeriod(),
@@ -852,6 +878,10 @@ class statsController extends bootstrap
             'id_project',
             'date dépôt',
             'raison sociale',
+            'siren',
+            'source',
+            'partenaire',
+            'prescripteur',
             'motif exprimé',
             'montant',
             'durée',
@@ -886,7 +916,7 @@ class statsController extends bootstrap
         $filePath = $this->getParameter('path.protected') . '/queries/' . $fileName;
 
         if (file_exists($filePath)) {
-           $this->download($filePath);
+            $this->download($filePath);
         } else {
             echo "Le fichier n'a pas été généré. ";
         }
@@ -931,7 +961,7 @@ class statsController extends bootstrap
         $files = scandir($directoryPath);
         foreach ($files as $file) {
             if ('reporting_mensuel_sfpmei' == substr($file, 0, 24)) {
-                $fileDate = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
+                $fileDate                                     = \DateTime::createFromFormat('Ymd', substr($file, -13, 8));
                 $this->reportingList[$fileDate->format('Ym')] = [
                     'displayDate' => strftime('%B %Y', $fileDate->getTimestamp()),
                     'link'        => '/stats/reporting_sfpmei/file/' . $file,

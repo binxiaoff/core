@@ -2,36 +2,57 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class CompanyManager
 {
     /** @var EntityManager */
     private $entityManager;
-
-    /** @var TranslatorInterface */
-    private $translator;
-
-    /** @var ProjectManager $projectManager */
-    private $projectManager;
-
+    /** @var ProjectStatusManager */
+    private $projectStatusManager;
     /** @var  RiskDataMonitoringManager */
     private $riskDataMonitoringManger;
+    /** @var WalletCreationManager */
+    private $walletCreationManager;
+    /** @var TranslatorInterface */
+    private $translator;
+    /** @var LoggerInterface */
+    private $logger;
 
-    public function __construct(EntityManager $entityManager, TranslatorInterface $translator, ProjectManager $projectManager, RiskDataMonitoringManager $riskDataMonitoringManager)
+    /**
+     * @param EntityManager             $entityManager
+     * @param ProjectStatusManager      $projectStatusManager
+     * @param RiskDataMonitoringManager $riskDataMonitoringManager
+     * @param WalletCreationManager     $walletCreationManager
+     * @param TranslatorInterface       $translator
+     * @param LoggerInterface           $logger
+     */
+    public function __construct(
+        EntityManager $entityManager,
+        ProjectStatusManager $projectStatusManager,
+        RiskDataMonitoringManager $riskDataMonitoringManager,
+        WalletCreationManager $walletCreationManager,
+        TranslatorInterface $translator,
+        LoggerInterface $logger
+    )
     {
         $this->entityManager            = $entityManager;
-        $this->translator               = $translator;
-        $this->projectManager           = $projectManager;
+        $this->projectStatusManager     = $projectStatusManager;
         $this->riskDataMonitoringManger = $riskDataMonitoringManager;
+        $this->walletCreationManager    = $walletCreationManager;
+        $this->translator               = $translator;
+        $this->logger                   = $logger;
     }
 
     /**
@@ -74,6 +95,8 @@ class CompanyManager
      * @param null|string    $receiver
      * @param null|string    $siteContent
      * @param null|string    $mailContent
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function addCompanyStatus(Companies $company, CompanyStatus $newStatus, Users $user, \DateTime $changedOn = null, $receiver = null, $siteContent = null, $mailContent = null)
     {
@@ -101,7 +124,7 @@ class CompanyManager
 
                 foreach ($companyProjects as $project) {
                     if (ProjectsStatus::PROBLEME !== $project->getStatus()) {
-                        $this->projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::PROBLEME, $project);
+                        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::PROBLEME, $project);
                     }
 
                     $directDebitEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
@@ -115,5 +138,66 @@ class CompanyManager
                 }
             }
         }
+    }
+
+    /**
+     * @param null|string $siren
+     * @param int         $userId
+     *
+     * @return Companies
+     */
+    public function createBorrowerBlankCompany($siren = null, $userId)
+    {
+        $clientEntity        = new Clients();
+        $companyEntity       = new Companies();
+        $clientAddressEntity = new ClientsAdresses();
+
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            $clientEntity
+                ->setIdLangue('fr')
+                ->setStatus(Clients::STATUS_ONLINE);
+
+            $this->entityManager->persist($clientEntity);
+            $this->entityManager->flush($clientEntity);
+
+            $clientAddressEntity->setIdClient($clientEntity);
+            $this->entityManager->persist($clientAddressEntity);
+
+            $companyEntity
+                ->setSiren($siren)
+                ->setIdClientOwner($clientEntity)
+                ->setStatusAdresseCorrespondance(1);
+            $this->entityManager->persist($companyEntity);
+            $this->entityManager->flush($companyEntity);
+
+            $this->walletCreationManager->createWallet($clientEntity, WalletType::BORROWER);
+
+            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
+                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+
+            $this->addCompanyStatus(
+                $companyEntity,
+                $statusInBonis,
+                $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId)
+            );
+
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            try {
+                $this->entityManager->getConnection()->rollBack();
+            } catch (\Exception $connectionException) {
+                $this->logger->error(
+                    'Failed to rollback the transaction. Error: ' . $connectionException->getMessage() . ' - Code: ' . $connectionException->getCode(),
+                    ['method' => __METHOD__, 'file' => $connectionException->getFile(), 'line' => $connectionException->getLine()]
+                );
+            }
+            $this->logger->error(
+                'Could not create blank company for SIREN: ' . $siren . ' Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
+
+        return $companyEntity;
     }
 }

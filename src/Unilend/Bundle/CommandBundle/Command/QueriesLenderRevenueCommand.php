@@ -8,10 +8,14 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
+    const LOST_PROJECT_IDS = [32108, 28957];
+
     /**
      * @see Command
      */
@@ -41,18 +45,10 @@ EOF
             $year = $ifuManager->getYear();
         }
 
-        $yesterday = new \DateTime('yesterday');
+        $filePath = $ifuManager->getStorageRootPath();
+        $filename = IfuManager::FILE_NAME_INCOME;
+        $file     = $filePath . DIRECTORY_SEPARATOR . $filename;
 
-        $filePath          = $ifuManager->getStorageRootPath();
-        $filename          = 'requete_revenus_' . date('Ymd') . '.csv';
-        $yesterdayFilename = 'requete_revenus_' . $yesterday->format('Ymd') . '.csv';
-
-        $file          = $filePath . DIRECTORY_SEPARATOR . $filename;
-        $yesterdayFile = $filePath . DIRECTORY_SEPARATOR . $yesterdayFilename;
-
-        if (file_exists($yesterdayFile)) {
-            unlink($yesterdayFile);
-        }
         if (file_exists($file)) {
             unlink($file);
         }
@@ -62,24 +58,32 @@ EOF
         $activeSheet = $csvFile->setActiveSheetIndex(0);
         $row         = 1;
 
-        $activeSheet->setCellValueByColumnAndRow(0, $row, 'Code Entreprise');
-        $activeSheet->setCellValueByColumnAndRow(1, $row, 'CodeBénéficiaire');
-        $activeSheet->setCellValueByColumnAndRow(2, $row, 'CodeV');
-        $activeSheet->setCellValueByColumnAndRow(3, $row, 'Date');
-        $activeSheet->setCellValueByColumnAndRow(4, $row, 'Montant');
-        $activeSheet->setCellValueByColumnAndRow(5, $row, 'Monnaie');
+        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, 'Cdos');
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, 'Cbéné');
+        $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, 'CodeV');
+        $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, 'Date');
+        $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, 'Montant');
+        $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, 'Monnaie');
         $row++;
 
-        $operationRepository  = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $operationRepository                = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
+        $loanRepository                     = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Loans');
+        $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+
+        $walletsWithMovements    = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => self::LOST_PROJECT_IDS]);
+        $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
+            'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
+        ]);
 
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
             $sumLoans = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_LOAN], null, $year);
             if ($sumLoans > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '117');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, round($sumLoans));
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '117');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, round($sumLoans));
                 $row += 1;
             }
 
@@ -88,8 +92,8 @@ EOF
             $grossInterest               = round(bcsub($grossInterest, $grossInterestRegularization, 4));
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '53');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $grossInterest);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $grossInterest);
                 $row += 1;
             }
 
@@ -98,8 +102,8 @@ EOF
             $deductedAtSource               = round(bcsub($deductedAtSource, $deductedAtSourceRegularization, 4));
             if ($deductedAtSource > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '2');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $deductedAtSource);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '2');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $deductedAtSource);
                 $row += 1;
             }
 
@@ -108,8 +112,8 @@ EOF
             $statutoryContributions               = round(bcsub($statutoryContributions, $statutoryContributionsRegularization, 4));
             if ($statutoryContributions > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '54');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $statutoryContributions);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '54');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $statutoryContributions);
                 $row += 1;
             }
 
@@ -118,8 +122,8 @@ EOF
             $capitalRepayments               = round(bcsub($capitalRepayments, $capitalRepaymentsRegularization, 4));
             if ($capitalRepayments > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '118');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $capitalRepayments);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '118');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $capitalRepayments);
                 $row += 1;
             }
 
@@ -128,8 +132,8 @@ EOF
             $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
             if ($interestWhileInFrance > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueByColumnAndRow(2, $row, '66');
-                $activeSheet->setCellValueByColumnAndRow(4, $row, $interestWhileInFrance);
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
+                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
                 $row += 1;
             }
 
@@ -139,22 +143,45 @@ EOF
                 $netInterestWhileInEEA            = round(bcsub($netInterestWhileInEEA, $regularizedNetInterestWhileInEEA, 4));
                 if ($netInterestWhileInEEA > 0) {
                     $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                    $activeSheet->setCellValueByColumnAndRow(2, $row, '81');
-                    $activeSheet->setCellValueByColumnAndRow(4, $row, $netInterestWhileInEEA);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '81');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $netInterestWhileInEEA);
                     $row += 1;
                 }
-            }
 
-            if (in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
                 $capitalWhileInEEA            = $operationRepository->sumRegularizedCapitalRepaymentsInEeaExceptFrance($wallet, $year);
                 $regularizedCapitalWhileInEEA = $operationRepository->sumCapitalRepaymentsInEeaExceptFrance($wallet, $year);
                 $capitalWhileInEEA            = round(bcsub($capitalWhileInEEA, $regularizedCapitalWhileInEEA, 4));
                 if ($capitalWhileInEEA > 0) {
                     $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                    $activeSheet->setCellValueByColumnAndRow(2, $row, '82');
-                    $activeSheet->setCellValueByColumnAndRow(4, $row, $capitalWhileInEEA);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '82');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $capitalWhileInEEA);
                     $row += 1;
                 }
+
+                $lostCapital = 0;
+                foreach ($lostProjects as $lostProject) {
+                    $loans      = $loanRepository->findBy([
+                        'idLender'       => $wallet,
+                        'idProject'      => $lostProject,
+                        'idTypeContract' => $eligibleContractsTolost
+                    ]);
+                    $repository = null;
+                    if ($lostProject->getCloseOutNettingDate()) {
+                        $repository = $closeOutNettingRepaymentRepository;
+                    } else {
+                        $repository = $repaymentScheduleRepository;
+                    }
+
+                    $lostCapital = round(bcadd($lostCapital, $repository->getRemainingCapitalByLoan($loans), 4), 2);
+                }
+                $lostCapital = round($lostCapital);
+                if ($lostCapital > 0) {
+                    $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '162');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $lostCapital);
+                    $row += 1;
+                }
+
             }
         }
         /** @var \PHPExcel_Writer_CSV $writer */
@@ -178,9 +205,9 @@ EOF
             'Monnaie'        => 'EUR',
         ];
 
-        $activeSheet->setCellValueByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
-        $activeSheet->setCellValueByColumnAndRow(1, $row, $wallet->getWireTransferPattern());
-        $activeSheet->setCellValueByColumnAndRow(3, $row, $commonValues['Date']);
-        $activeSheet->setCellValueByColumnAndRow(5, $row, $commonValues['Monnaie']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(0, $row, $commonValues['CodeEntreprise']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(1, $row, $wallet->getWireTransferPattern());
+        $activeSheet->setCellValueExplicitByColumnAndRow(3, $row, $commonValues['Date']);
+        $activeSheet->setCellValueExplicitByColumnAndRow(5, $row, $commonValues['Monnaie']);
     }
 }

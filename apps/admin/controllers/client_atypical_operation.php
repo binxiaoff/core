@@ -1,7 +1,7 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
@@ -202,7 +202,7 @@ class client_atypical_operationController extends bootstrap
                 $clientAtypicalOperation->setClient($client)
                     ->setDetectionStatus($status)
                     ->setRule($rule)
-                    ->setIdUser($_SESSION['user']['id_user'])
+                    ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($this->userEntity->getIdUser()))
                     ->setUserComment($_POST['user_comment']);
                 $entityManager->persist($clientAtypicalOperation);
                 $entityManager->flush($clientAtypicalOperation);
@@ -258,7 +258,7 @@ class client_atypical_operationController extends bootstrap
             if ($_POST['vigilance_status'] <= $clientVigilanceStatus->getVigilanceStatus()) {
                 $atypicalOperation->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED)
                     ->setUserComment($_POST['user_comment'])
-                    ->setIdUser($_SESSION['user']['id_user']);
+                    ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']));
 
                 $clientVigilanceStatusManager->retrogradeClientVigilanceStatusHistory(
                     $clientVigilanceStatus->getClient(),
@@ -277,7 +277,7 @@ class client_atypical_operationController extends bootstrap
                 $atypicalOperation
                     ->setDetectionStatus(ClientAtypicalOperation::STATUS_TREATED)
                     ->setRule($rule)
-                    ->setIdUser($_SESSION['user']['id_user'])
+                    ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']))
                     ->setUserComment($_POST['user_comment']);
 
                 $clientVigilanceStatusManager->upgradeClientVigilanceStatusHistory(
@@ -306,7 +306,7 @@ class client_atypical_operationController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         if (false === empty($_POST['user_comment'])) {
             $atypicalOperation->setDetectionStatus(ClientAtypicalOperation::STATUS_WAITING_ACK)
-                ->setIdUser($_SESSION['user']['id_user'])
+                ->setIdUser($entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']))
                 ->setUserComment($_POST['user_comment']);
             $entityManager->flush($atypicalOperation);
             echo json_encode(['message' => 'OK']);
@@ -365,19 +365,17 @@ class client_atypical_operationController extends bootstrap
     }
 
     /**
-     * @param int $userId
+     * @param Users $userId
      * @return string
      */
     private function getUserNameByID($userId)
     {
-        if (Users::USER_ID_CRON === $userId) {
+        if (Users::USER_ID_CRON === $userId->getIdUser()) {
             return 'Cron';
         } elseif (Users::USER_ID_FRONT === $userId) {
             return 'Front';
         } else {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-            $user = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
-            return $user->getName() . ' ' . $user->getFirstname();
+            return  $userId->getFirstname() . ' ' . $userId->getName();
         }
     }
 }

@@ -69,8 +69,6 @@ class InvoiceManager
 
     /**
      * @param Factures $invoice
-     *
-     * @throws \Exception
      */
     public function generateProjectFundsCommissionInvoice(Factures $invoice)
     {
@@ -83,8 +81,6 @@ class InvoiceManager
 
     /**
      * @param Factures $invoice
-     *
-     * @throws \Exception
      */
     public function generateProjectRepaymentCommissionInvoice(Factures $invoice)
     {
@@ -106,11 +102,9 @@ class InvoiceManager
             'margin-left'   => 15
         ];
 
-        $client   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($invoice->getIdProject()->getIdCompany()->getIdClientOwner());
         $filePath = $this->getBorrowerInvoiceFilePath($invoice);
-
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
-            'client'      => $client,
+            'client'      => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
             'project'     => $invoice->getIdProject(),
             'invoice'     => $invoice,
             'paymentDate' => null === $paymentDate ? $invoice->getDate() : $paymentDate,
@@ -127,7 +121,7 @@ class InvoiceManager
      */
     public function getBorrowerInvoiceFilePath(Factures $invoice)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($invoice->getIdProject()->getIdCompany()->getIdClientOwner());
+        $client = $invoice->getIdProject()->getIdCompany()->getIdClientOwner();
 
         if ($invoice->getOrdre() >= 1) {
             return $this->protectedPath . '/pdf/facture/facture_ER-' . $client->getHash() . '-' . $invoice->getIdProject()->getIdProject() . '-' . $invoice->getOrdre() . '.pdf';

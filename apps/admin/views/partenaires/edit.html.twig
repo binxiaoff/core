@@ -1,42 +1,64 @@
 {% extends 'layout.html.twig' %}
 
 {% block pluginsCSS %}
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/nestable/nestable.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/nestable/nestable.css">
 {% endblock %}
 
 {% block pluginsJS %}
-    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/nestable/jquery.nestable.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/nestable/jquery.nestable.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function(){
-            App.initHelpers(['validation', 'datatables', 'summernote', 'datepicker'])
+            App.initHelpers(['validation', 'datatables', 'summernote'])
 
             /*
              * Extend dataTable actions
-             * add "Reset Password" button + modal
+             * Add stats, password
              */
+            var updateActionButtons = function ($tr, addPassword) {
+                var $buttonsContainer = $tr.find('td:last-child .text-nowrap')
+                var statsUrl = $tr.closest('.table').data('stats-url')
+
+                if (addPassword) {
+                    $buttonsContainer.prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                }
+
+                if (statsUrl) {
+                    $buttonsContainer.append('<a href="' + statsUrl + $tr.data('id') + '" class="btn btn-xs btn-default stats-btn" title="Statistiques"><i class="fa fa-line-chart"></i></a>')
+                }
+            }
+
+            var $agenciesTable = $('#table-agencies')
+            $agenciesTable.DT({
+                before: function() {
+                    $agenciesTable.find('tbody tr').each(function() {
+                        updateActionButtons($(this), false)
+                    })
+                },
+                updated: function(id) {
+                    updateActionButtons($agenciesTable.find('tr[data-id=' + id + ']'), false)
+                }
+            })
+
             var $usersTable = $('#table-users')
             var $sendPasswordModal = $('#modal-send-password')
             $usersTable.DT({
                 before: function() {
-                    $usersTable.find('tbody tr').each(function(){
-                        var $tr = $(this)
-                        $tr.find('td:last-child .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                    $usersTable.find('tbody tr').each(function() {
+                        updateActionButtons($(this), true)
                     })
                 },
                 updated: function(id) {
-                    $usersTable.find('tr[data-id=' + id + '] .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                    updateActionButtons($usersTable.find('tr[data-id=' + id + ']'), true)
                 }
             })
-            $usersTable.on('click', '.password-btn', function(){
+            $usersTable.on('click', '.password-btn', function() {
                 var id = $(this).closest('tr').data('id')
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
@@ -314,11 +336,20 @@
 {% endblock %}
 
 {% block pageHeader %}
-    <div class="push-15-r pull-left">
-        <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
-    </div>
-    <div class="push clearfix">
-        <h1 class="h2 push-20-t">{{ partner.idCompany.name }}</h1>
+    <div class="row">
+        <div class="col-sm-7">
+            <div class="push-15 clearfix">
+                <div class="push-15-r v-align">
+                    <img class="img-responsive-vertical" src="{{ app.staticUrl }}/images/admin/partner/{{ partner.logo }}" alt="{{ partner.idCompany.name|e('html_attr') }}">
+                </div>
+                <h1 class="h2 v-align">{{ partner.idCompany.name }}</h1>
+            </div>
+        </div>
+        <div class="col-sm-5 text-right hidden-xs">
+            <a href="{{ app.adminUrl }}/partenaires/stats/partenaire/{{ partner.id }}" class="btn btn-default">
+                <i class="fa fa-line-chart"></i>
+            </a>
+        </div>
     </div>
 {% endblock %}
 
@@ -330,20 +361,20 @@
             </div>
             <div class="block-content block-content-full">
                 <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
-                       data-table
                        data-table-search="true"
                        data-table-editor
                        data-table-editor-url="{{ app.adminUrl }}/partenaires/agence/{{ partner.id }}"
-                       data-table-editor-actions="add, modify">
+                       data-table-editor-actions="add, modify, delete"
+                       data-stats-url="{{ app.adminUrl }}/partenaires/stats/agence/">
                     <thead>
-                        <tr>
-                            <th data-editor-name="name" data-editor-type="text">Nom</th>
-                            <th data-editor-name="siren" data-editor-type="text" data-editor-optional>SIREN</th>
-                            <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
-                            <th data-editor-name="address" data-editor-type="text">Adresse</th>
-                            <th data-editor-name="postcode" data-editor-type="text">Code postal</th>
-                            <th data-editor-name="city" data-editor-type="text">Ville</th>
-                        </tr>
+                    <tr>
+                        <th data-editor-name="name" data-editor-type="text">Nom</th>
+                        <th data-editor-name="siren" data-editor-type="text" data-editor-optional>SIREN</th>
+                        <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
+                        <th data-editor-name="address" data-editor-type="text">Adresse</th>
+                        <th data-editor-name="postcode" data-editor-type="text">Code postal</th>
+                        <th data-editor-name="city" data-editor-type="text">Ville</th>
+                    </tr>
                     </thead>
                     <tbody>
                     {% for agency in agencies %}
@@ -369,7 +400,8 @@
                        data-table-search="true"
                        data-table-editor
                        data-table-editor-url="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}"
-                       data-table-editor-actions="add, modify, toggle">
+                       data-table-editor-actions="add, modify, toggle, delete"
+                       data-stats-url="{{ app.adminUrl }}/partenaires/stats/utilisateur/">
                     <thead>
                     <tr>
                         <th data-editor-name="lastname" data-editor-type="text">Nom</th>

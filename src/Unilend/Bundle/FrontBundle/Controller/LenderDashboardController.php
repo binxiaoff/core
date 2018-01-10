@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
@@ -87,7 +88,7 @@ class LenderDashboardController extends Controller
                     'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
                     'end_date'         => $aProject['date_retrait'],
                     'funding_duration' => $projectStats->days,
-                    'pending_bids'     => $bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'], $wallet->getId())
+                    'pending_bids'     => $bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'], $wallet->getId())
                 ];
             }
 
@@ -100,7 +101,7 @@ class LenderDashboardController extends Controller
                 'days_left'        => $aProject['daysLeft'],
                 'risk'             => $aProject['risk'],
                 'average_rate'     => $aProject['avgrate'],
-                'bid_count'        => count($bid->getBidsByStatus(\bids::STATUS_BID_PENDING, $aProject['id_project'])),
+                'bid_count'        => count($bid->getBidsByStatus(Bids::STATUS_PENDING, $aProject['id_project'])),
                 'finished'         => ($aProject['status'] > \projects_status::EN_FUNDING || (new \DateTime($aProject['date_retrait'])) < (new \DateTime('NOW'))),
                 'end_date'         => $aProject['date_retrait'],
                 'funding_duration' => $projectStats->days
@@ -133,7 +134,7 @@ class LenderDashboardController extends Controller
         $loansRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         return $this->render(
-            '/pages/lender_dashboard/lender_dashboard.html.twig',
+            'lender_dashboard/index.html.twig',
             [
                 'dashboardPanels'   => $this->getDashboardPreferences(),
                 'lenderDetails' => [
@@ -163,7 +164,7 @@ class LenderDashboardController extends Controller
                     'upcoming_interests'      => round($upcomingGrossInterests - $problematicProjects['interests'], 2),
                     'interests_in_difficulty' => round($problematicProjects['interests'], 2)
                 ],
-                'ongoingBids'       => $bid->counter('id_lender_account = ' . $wallet->getId() . ' AND status = ' . \bids::STATUS_BID_PENDING),
+                'ongoingBids'       => $bid->counter('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING),
                 'ongoingProjects'   => $ongoingBidsByProject,
                 'publishedProjects' => $publishedProjects,
                 'timeAxis'          => [
@@ -313,6 +314,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getPaddingData(array $repaymentDateRange)
@@ -340,6 +342,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getMonthAxis(array $repaymentDateRange)
@@ -364,6 +367,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $lenderRepaymentsData
+     *
      * @return array
      */
     private function getQuarterAxis(array $lenderRepaymentsData)
@@ -395,6 +399,7 @@ class LenderDashboardController extends Controller
 
     /**
      * Returns the full and short month names
+     *
      * @return array
      */
     private function getMonthNames()
@@ -414,6 +419,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $repaymentDateRange
+     *
      * @return array
      */
     private function getYearAxis(array $repaymentDateRange)
@@ -433,6 +439,7 @@ class LenderDashboardController extends Controller
 
     /**
      * @param array $lenderRepaymentsData
+     *
      * @return array
      */
     private function getQuarterAndYearSum(array $lenderRepaymentsData)

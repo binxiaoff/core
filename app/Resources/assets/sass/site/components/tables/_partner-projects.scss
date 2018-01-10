@@ -1,4 +1,4 @@
-.table-prospects, .table-projects, .table-users {
+.table-projects, .table-users {
     table-layout: fixed;
 
     tr {
@@ -23,15 +23,15 @@
     }
 }
 
-.table-projects-item-borrower, .table-prospects-item-borrower,
-.table-projects-item-submitter, .table-prospects-item-submitter,
+.table-projects-item-borrower,
+.table-projects-item-submitter,
 .details-memo-author {
     width: 23%;
 }
 
 .ui-user-type-partner-admin {
-    .table-projects-item-borrower, .table-prospects-item-borrower,
-    .table-projects-item-submitter, .table-prospects-item-submitter,
+    .table-projects-item-borrower,
+    .table-projects-item-submitter,
     .details-memo-author {
         width: 18%;
     }

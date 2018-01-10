@@ -19,6 +19,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -37,7 +38,7 @@ class ProjectsController extends Controller
 {
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
-     * @Template("pages/projects.html.twig")
+     * @Template("projects/list.html.twig")
      *
      * @Method("GET")
      *
@@ -54,7 +55,7 @@ class ProjectsController extends Controller
 
     /**
      * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
-     * @Template("partials/components/project-list/map-item-template.html.twig")
+     * @Template("projects/list/map_item_template.html.twig")
      *
      * @Method("POST")
      * @return Response
@@ -263,7 +264,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function projectDetailAction($projectSlug, Request $request)
+    public function detailAction($projectSlug, Request $request)
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
@@ -406,7 +407,7 @@ class ProjectsController extends Controller
 
         $this->setProjectDetailsSeoData($template['project']['company']['sectorId'], $template['project']['company']['city'], $template['project']['amount']);
 
-        return $this->render('pages/project_detail.html.twig', $template);
+        return $this->render('projects/detail.html.twig', $template);
     }
 
     /**
@@ -654,7 +655,7 @@ class ProjectsController extends Controller
             });
         }
 
-        return $this->render('partials/components/project-detail/bids-list-detail.html.twig', $template);
+        return $this->render('projects/detail/bids_list_detail.html.twig', $template);
     }
 
     /**
@@ -884,9 +885,9 @@ class ProjectsController extends Controller
                 $offset    = 0;
                 $limit     = 1000;
                 $bidStatus = [
-                    \bids::STATUS_BID_PENDING  => $translator->trans('preteur-projets_enchere-en-cours'),
-                    \bids::STATUS_BID_ACCEPTED => $translator->trans('preteur-projets_enchere-ok'),
-                    \bids::STATUS_BID_REJECTED => $translator->trans('preteur-projets_enchere-ko')
+                    Bids::STATUS_PENDING  => $translator->trans('preteur-projets_enchere-en-cours'),
+                    Bids::STATUS_ACCEPTED => $translator->trans('preteur-projets_enchere-ok'),
+                    Bids::STATUS_REJECTED => $translator->trans('preteur-projets_enchere-ko')
                 ];
 
                 while ($bidsList = $bids->select('id_project = ' . $project->id_project, 'ordre ASC', $offset, $limit)) {
@@ -1019,7 +1020,7 @@ class ProjectsController extends Controller
         $reasons = $productManager->checkBidEligibility($bidEntity);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_BID_PENDING);
+            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_PENDING);
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);
@@ -1061,13 +1062,13 @@ class ProjectsController extends Controller
                     /** @var \bids $bids */
                     $bids      = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $wallet->getId() . ' AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'id_lender_account = ' . $wallet->getId() . ' AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
                         'ROUND(amount / 100)'
                     );
                     /** @var \loans $loans */
                     $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $wallet->getId() . ' AND status = ' . \loans::STATUS_ACCEPTED,
+                        'id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 
@@ -1082,12 +1083,12 @@ class ProjectsController extends Controller
                     /** @var \bids $bids */
                     $bids        = $entityManagerSimulator->getRepository('bids');
                     $totalBids = $bids->sum(
-                        'id_lender_account = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                        'id_lender_account = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
                         'ROUND(amount / 100)');
                     /** @var \loans $loans */
                     $loans      = $entityManagerSimulator->getRepository('loans');
                     $totalLoans = $loans->sum(
-                        'id_lender = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . \loans::STATUS_ACCEPTED,
+                        'id_lender = ' . $wallet->getId() . ' AND added >= DATE_SUB(NOW(), INTERVAL 1 MONTH) AND status = ' . Loans::STATUS_ACCEPTED,
                         'ROUND(amount / 100)'
                     );
 

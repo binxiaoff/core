@@ -3,6 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
@@ -229,7 +230,7 @@ class sfpmeiController extends bootstrap
                 $this->projectsCount            = $this->loans->getProjectsCount($this->wallet->getId());
                 $this->problematicProjectsCount = $this->projects->countProjectsByStatusAndLender($this->wallet->getId(), $statusKO);
                 $this->publishedProjectsCount   = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOK, $statusKO));
-                $this->runningBids              = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
+                $this->runningBids              = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
                 $this->hasTransferredLoans      = $this->get('unilend.service.lender_manager')->hasTransferredLoans($this->wallet->getIdClient());
                 $this->lenderLoans              = $this->loans->getSumLoansByProject($this->wallet->getId());
                 $this->projectsInDebt           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
@@ -301,10 +302,10 @@ class sfpmeiController extends bootstrap
                 $this->totalRepaymentsNextMonthAmount = $this->echeanciers->getNextRepaymentAmountInDateRange($this->wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
                 $this->totalLoansAmount               = $this->loans->sumPrets($this->wallet->getId());
                 $this->totalLoansCount                = $this->loans->counter('id_lender = ' . $this->wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
-                $this->runningBids                    = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
+                $this->runningBids                    = $this->bids->select('id_lender_account = ' . $this->wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
                 $this->totalRunningBidsAmount         = round(array_sum(array_column($this->runningBids, 'amount')) / 100);
                 $this->totalRunningBidsCount          = count($this->runningBids);
-                $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
+                $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
                 $this->averageLoanRate                = $this->loans->getAvgPrets($this->wallet->getId());
                 $this->currentBankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->clients->id_client);
                 $this->isPhysicalPerson               = in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER]);
@@ -329,7 +330,7 @@ class sfpmeiController extends bootstrap
                         'country'  => $paysV2Repository->find($this->clients_adresses->id_pays_fiscal) ? $paysV2Repository->find($this->clients_adresses->id_pays_fiscal)->getFr() : ''
                     ];
 
-                    $this->settings->get('Liste deroulante origine des fonds', 'status = 1 AND type');
+                    $this->settings->get('Liste deroulante origine des fonds', 'type');
                     $this->fundsOriginList = $this->settings->value;
                     $this->fundsOriginList = explode(';', $this->fundsOriginList);
                 } else {
@@ -393,7 +394,7 @@ class sfpmeiController extends bootstrap
                         $this->factures($this->params[2]);
                     }
                     break;
-                default :
+                default:
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
                     $clientAddress->get($this->clients->id_client, 'id_client');
                     $this->clientAddress = '';
@@ -645,7 +646,6 @@ class sfpmeiController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $invoiceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Factures');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects $project */
         $project = $projectRepository->find($projectId);
@@ -654,9 +654,7 @@ class sfpmeiController extends bootstrap
 
         if (false === empty($project)) {
             $invoiceList = $invoiceRepository->findBy(['idProject' => $project->getIdProject()], ['date' => 'DESC']);
-
-            /** @var Clients $client */
-            $client = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
+            $client      = $project->getIdCompany()->getIdClientOwner();
 
             foreach ($invoiceList as $invoice) {
                 $projectInvoice['num_facture']     = $invoice->getNumFacture();

@@ -7,11 +7,14 @@ use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\UnexpectedResultException;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -65,9 +68,15 @@ class ClientsRepository extends EntityRepository
                 ->setParameter('status', $status, \PDO::PARAM_INT);
         }
 
-        $query = $queryBuilder->getQuery();
+        $query  = $queryBuilder->getQuery();
 
-        return $query->getSingleScalarResult() > 0;
+        try {
+            $result = $query->getSingleScalarResult();
+        } catch (UnexpectedResultException $exception) {
+            return false;
+        }
+
+        return $result > 0;
     }
 
     /**
@@ -360,7 +369,7 @@ class ClientsRepository extends EntityRepository
                       (
                         SELECT cs.label FROM clients_status_history cshs1
                         INNER JOIN clients_status cs on cshs1.id_client_status =cs.id_client_status
-                        WHERE cshs1.id_client=c.id_client
+                        WHERE cshs1.id_client = c.id_client
                         ORDER BY cshs1.added DESC LIMIT 1
                       ) AS 'StatusCompletude',
                       CASE c.added
@@ -396,12 +405,11 @@ class ClientsRepository extends EntityRepository
                       LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
                       LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
                       LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                      LEFT JOIN loans l on w.id = l.id_lender and l.status = 0
+                      LEFT JOIN loans l on w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
                       LEFT JOIN clients_status cs on c.status = cs.id_client_status
                       LEFT JOIN prospects p ON p.email = c.email
-                    WHERE c.status = 1
-                    GROUP BY
-                      c.id_client";
+                    WHERE c.status = " . Clients::STATUS_ONLINE . "
+                    GROUP BY c.id_client";
 
         return $this->getEntityManager()->getConnection()->executeQuery($query);
     }
@@ -791,5 +799,27 @@ class ClientsRepository extends EntityRepository
             ->setParameter('lenderTypes', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param CompanyClient $companyClient
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function countDuplicatesByFullName(CompanyClient $companyClient) : int
+    {
+        return $this->createQueryBuilder('c')
+            ->select('COUNT(c.idClient)')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->where('LOWER(c.nom) LIKE LOWER(:lastname)')
+            ->andWhere('LOWER(c.prenom) LIKE LOWER(:firstname)')
+            ->andWhere('cc.idCompany = :company')
+            ->setParameter('lastname', $companyClient->getIdClient()->getNom())
+            ->setParameter('firstname', $companyClient->getIdClient()->getPrenom())
+            ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }
