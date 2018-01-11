@@ -9,20 +9,22 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(name="unq_accepted_bids_id_bid_id_loan", columns={"id_bid", "id_loan"})}, indexes={@ORM\Index(name="idx_accepted_bids_id_loan", columns={"id_loan"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AcceptedBidsRepository")
  */
 class AcceptedBids
 {
     /**
-     * @var integer
+     * @var Bids
      *
      * @ORM\Column(name="id_bid", type="integer", nullable=false)
      */
     private $idBid;
 
     /**
-     * @var integer
+     * @var Loans
      *
-     * @ORM\Column(name="id_loan", type="integer", nullable=false)
+     * @ORM\Column(name="id_loan", type="integer", nullable=true)
      */
     private $idLoan;
 
@@ -32,6 +34,20 @@ class AcceptedBids
      * @ORM\Column(name="amount", type="integer", nullable=false)
      */
     private $amount;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="added", type="datetime", nullable=false)
+     */
+    private $added;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     */
+    private $updated;
 
     /**
      * @var integer
@@ -47,7 +63,7 @@ class AcceptedBids
     /**
      * Set idBid
      *
-     * @param integer $idBid
+     * @param Bids $idBid
      *
      * @return AcceptedBids
      */
@@ -61,7 +77,7 @@ class AcceptedBids
     /**
      * Get idBid
      *
-     * @return integer
+     * @return Bids
      */
     public function getIdBid()
     {
@@ -71,7 +87,7 @@ class AcceptedBids
     /**
      * Set idLoan
      *
-     * @param integer $idLoan
+     * @param Loans $idLoan
      *
      * @return AcceptedBids
      */
@@ -85,7 +101,7 @@ class AcceptedBids
     /**
      * Get idLoan
      *
-     * @return integer
+     * @return Loans
      */
     public function getIdLoan()
     {
@@ -124,5 +140,23 @@ class AcceptedBids
     public function getIdAcceptedBid()
     {
         return $this->idAcceptedBid;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -4,12 +4,14 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptedBids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -53,6 +55,9 @@ class BidManager
     /** @var WalletManager */
     private $walletManager;
 
+    /** @var SponsorshipManager */
+    private $sponsorshipManager;
+
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param NotificationManager    $notificationManager
@@ -71,17 +76,19 @@ class BidManager
         ProductManager $productManager,
         CIPManager $cipManager,
         EntityManager $entityManager,
-        WalletManager $walletManager
+        WalletManager $walletManager,
+        SponsorshipManager $sponsorshipManager
     )
     {
-        $this->entityManagerSimulator  = $entityManagerSimulator;
+        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->lenderManager          = $lenderManager;
-        $this->productManager          = $productManager;
-        $this->cipManager              = $cipManager;
-        $this->entityManager           = $entityManager;
-        $this->walletManager           = $walletManager;
+        $this->productManager         = $productManager;
+        $this->cipManager             = $cipManager;
+        $this->entityManager          = $entityManager;
+        $this->walletManager          = $walletManager;
+        $this->sponsorshipManager     = $sponsorshipManager;
     }
 
     /**
@@ -117,7 +124,6 @@ class BidManager
         $bid->setIdLenderAccount($wallet)
             ->setProject($project)
             ->setAmount(bcmul($amount, 100))
-            ->setInitialAmount(bcmul($amount, 100))
             ->setRate($rate)
             ->setStatus(Bids::STATUS_PENDING)
             ->setAutobid($autobidSetting);
@@ -305,26 +311,6 @@ class BidManager
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $repaymentAmount
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Exception
-     */
-    public function rejectPartially(Bids $bid, $repaymentAmount)
-    {
-        if (in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
-            $walletBalanceHistory = $this->creditRejectedBid($bid, $repaymentAmount);
-            $this->notificationRejection($bid, $walletBalanceHistory);
-            // Save new amount of the bid after repayment
-            $amount = bcsub($bid->getAmount(), bcmul($repaymentAmount, 100));
-            $bid->setAmount($amount)
-                ->setStatus(Bids::STATUS_ACCEPTED);
-            $this->entityManager->flush($bid);
-        }
-    }
-
-    /**
      * @param Bids   $bid
      * @param string $currentRate
      * @param int    $mode
@@ -447,4 +433,39 @@ class BidManager
 
         return $projectRateSettings->getGlobalMinMaxRate();
     }
+
+    /**
+     * @param Bids  $bid
+     * @param float $acceptedAmount
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
+    public function acceptBid(Bids $bid, float $acceptedAmount)
+    {
+        $bid->setStatus(Bids::STATUS_ACCEPTED);
+        $acceptedAmountHundred = bcmul($acceptedAmount, 100);
+
+        $acceptedBid = new AcceptedBids();
+        $acceptedBid
+            ->setIdBid($bid)
+            ->setAmount($acceptedAmountHundred);
+
+        $this->entityManager->persist($acceptedBid);
+        $this->entityManager->flush($acceptedBid);
+
+        if ($acceptedAmountHundred < $bid->getAmount() && in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
+            $walletBalanceHistory = $this->creditRejectedBid($bid, $acceptedAmount);
+            $this->notificationRejection($bid, $walletBalanceHistory);
+        }
+
+        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
+            try {
+                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+            } catch (\Exception $exception) {
+                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $bid->getProject()->getIdProject()]);
+            }
+        }
+    }
+
 }
