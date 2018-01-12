@@ -1,0 +1,64 @@
+Highcharts.chart('yoy-production', {
+    chart: {
+        zoomType: 'xy'
+    },
+    title: {
+        text: 'Production de la même période 2018 vs 2017 (YoY)'
+    },
+    subtitle: {
+        text: 'En K€ + en nombre de dossiers'
+    },
+    xAxis: [{
+        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+        crosshair: true
+    }],
+    yAxis: [{ // Primary yAxis
+        title: {
+            text: 'Montant en K€',
+        },
+        labels: {
+            format: '{value} K€',
+        }
+    }, { // Secondary yAxis
+        title: {
+            text: 'Nombre',
+        },
+        opposite: true
+    }],
+    tooltip: {
+        shared: true
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'left',
+        x: 120,
+        verticalAlign: 'top',
+        y: 100,
+        floating: true
+    },
+    series: [{
+        name: 'Montant 2017',
+        type: 'spline',
+        data: [7, 10, 9, 14, 18, 21, 25, 26, 23, 18, 13, 9],
+        tooltip: {
+            valueSuffix: 'K€'
+        }
+    }, {
+        name: 'Montant 2018',
+        type: 'spline',
+        data: [17, 18, 25, 18, 26, 18, 16, 14, 25, 17, 15, 12],
+        tooltip: {
+            valueSuffix: 'K€'
+        }
+    }, {
+        name: 'Nombre 2017',
+        type: 'column',
+        yAxis: 1,
+        data: [49, 71, 106, 129, 144, 176, 135, 148, 216, 194, 95, 54]
+    },{
+        name: 'Nombre 2018',
+        type: 'column',
+        yAxis: 1,
+        data: [44, 65, 89, 120, 150, 180, 120, 150, 250, 175, 132, 85]
+    }]
+});

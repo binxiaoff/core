@@ -1,0 +1,163 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <style>
+        .fa-arrow-up {
+            color: #009933;
+        }
+
+        .fa-arrow-down {
+            color: #FF0000;
+        }
+    </style>
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/highcharts/highcharts.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/plugins/highcharts/modules/exporting.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+    {% include 'dashboard/blocks/activite/sent_to_analyse.js.twig' %}
+    {% include 'dashboard/blocks/activite/under_repayment.js.twig' %}
+    {% include 'dashboard/blocks/activite/yoy_production.js.twig' %}
+    {% include 'dashboard/blocks/activite/traitement_delay.js.twig' %}
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Dashboard d'Activité Commercial
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="block block-themed">
+                    <div class="block-header bg-primary">
+                        <h3 class="block-title">En attente de Traitement Commerciale</h3>
+                    </div>
+                    <div class="block-content block-content-full text-center">
+                        <span class="h2 font-w300 text-primary">{{ projectsInSalesTreatmentStatusNb }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="block block-themed">
+                    <div class="block-header bg-primary">
+                        <h3 class="block-title">Émission de la même période 2018 vs 2017 (YoY)</h3>
+                    </div>
+                    <div class="block-content border-t">
+                        <div class="row items-push text-center">
+                            <div class="col-xs-6 border-r">
+                                <div class="h3 font-w300 text-primary">{{ releasedProjectThisYearAmount|localizedcurrency('EUR') }}</div>
+                                <div class="push-5">
+                                    {% if deltaYoyAmountInPercentage >= 0 %}
+                                        <i class="fa fa-arrow-up"></i>
+                                    {% elseif deltaYoyAmountInPercentage == 0 %}
+                                        <i class="fa fa-arrow-right"></i>
+                                    {% else %}
+                                        <i class="fa fa-arrow-down"></i>
+                                    {% endif %}
+                                    {{ deltaYoyAmountInPercentage }} %
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="h3 font-w300 text-primary">{{ releasedProjectThisYearNb }}</div>
+                                <div class="push-5">
+                                    {% if deltaYoyNbInPercentage >= 0 %}
+                                        <i class="fa fa-arrow-up"></i>
+                                    {% elseif deltaYoyNbInPercentage == 0 %}
+                                        <i class="fa fa-arrow-right"></i>
+                                    {% else %}
+                                        <i class="fa fa-arrow-down"></i>
+                                    {% endif %}
+                                    {{ deltaYoyNbInPercentage }} %
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="block block-themed">
+                    <div class="block-header bg-primary">
+                        <h3 class="block-title">Émission 12/2017 vs 11/2017 (Mom)</h3>
+                    </div>
+                    <div class="block-content border-t">
+                        <div class="row items-push text-center">
+                            <div class="col-xs-6 border-r">
+                                <div class="h3 font-w300 text-primary">{{ releasedProjectLastMonthAmount|localizedcurrency('EUR') }}</div>
+                                <div class="push-5">
+                                    {% if deltaMomAmountInPercentage >= 0 %}
+                                        <i class="fa fa-arrow-up"></i>
+                                    {% elseif deltaMomAmountInPercentage == 0 %}
+                                        <i class="fa fa-arrow-right"></i>
+                                    {% else %}
+                                        <i class="fa fa-arrow-down"></i>
+                                    {% endif %}
+                                    {{ deltaMomAmountInPercentage }} %
+                                </div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="h3 font-w300 text-primary">{{ releasedProjectLastMonthNb }}</div>
+                                <div class="push-5">
+                                    {% if deltaMomNbInPercentage > 0 %}
+                                        <i class="fa fa-arrow-up"></i>
+                                    {% elseif deltaMomNbInPercentage == 0 %}
+                                        <i class="fa fa-arrow-right"></i>
+                                    {% else %}
+                                        <i class="fa fa-arrow-down"></i>
+                                    {% endif %}
+                                    {{ deltaMomNbInPercentage }} %
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h2 class="content-heading">Répartition des dossier par canal d’arrivée (sur 12 mois glissants)</h2>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="sent-to-analyse"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="under-repayment"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="content-heading">Production (en K€ + en nombre de dossiers)</h2>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="yoy-production"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="content-heading">Temps de traitement par statut (Tous dossiers sauf Reprise de FdC)</h2>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="traitement-delay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -185,7 +185,7 @@ class dashboardController extends bootstrap
         $project  = $this->loadData('projects');
         $projects = $project->getImpossibleEvaluationProjects();
 
-        return array_map(function($project) {
+        return array_map(function ($project) {
             $project['creation'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
             return $project;
         }, $projects);
@@ -253,4 +253,151 @@ class dashboardController extends bootstrap
         header('Location: ' . $this->lurl . '/dashboard');
         die;
     }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function _activite()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        if (
+            $userManager->isUserGroupSales($this->userEntity)
+            || isset($this->params[0]) && 'sales' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
+        ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+            $projectsInSalesTreatmentStatusNb = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
+
+            $firstDayOfThisYear = new DateTime('first day of this year');
+            $today              = new DateTime();
+            $firstOfLastYear    = new DateTime('first day of last year');
+            $sameDayOfLastYear  = clone $today;
+            $sameDayOfLastYear->modify('-1 year');
+            $yearOverYear = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
+
+            $firstDayOfLastMonth   = new DateTime('first day of last month');
+            $lastDayOfLastMonth    = new DateTime('last day of last month');
+            $firstDayOfTwoMonthAgo = new DateTime('first day of 2 month ago');
+            $lastDayOfTwoMonthAgo  = new DateTime('last day of 2 month ago');
+            $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
+
+            $twelveMonthAgo = clone $firstDayOfLastMonth;
+            $twelveMonthAgo->modify('-11 months');
+            $twelveMonths = $this->get12rollingMonths(clone $twelveMonthAgo);
+
+            $statSentToAnalysis = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
+            $statRepayment      = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
+            $this->render(null, [
+                'projectsInSalesTreatmentStatusNb' => $projectsInSalesTreatmentStatusNb,
+                'releasedProjectThisYearNb'        => $yearOverYear['number'],
+                'releasedProjectThisYearAmount'    => $yearOverYear['amount'],
+                'deltaYoyNbInPercentage'           => $yearOverYear['deltaNbInPercentage'],
+                'deltaYoyAmountInPercentage'       => $yearOverYear['deltaAmountInPercentage'],
+                'releasedProjectLastMonthNb'       => $monthOverMonth['number'],
+                'releasedProjectLastMonthAmount'   => $monthOverMonth['amount'],
+                'deltaMomNbInPercentage'           => $monthOverMonth['deltaNbInPercentage'],
+                'deltaMomAmountInPercentage'       => $monthOverMonth['deltaAmountInPercentage'],
+                'twelveMonths'                     => $twelveMonths,
+                'statSentToAnalysisHighcharts'     => $statSentToAnalysis,
+                'statRepaymentHighcharts'          => $statRepayment,
+            ]);
+        } else {
+            header('Location: ' . $this->url);
+            die;
+        }
+    }
+
+    /**
+     * @param DateTime $from
+     * @param DateTime $end
+     * @param DateTime $compareWithFrom
+     * @param DateTime $compareWithEnd
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function getReleaseProjectAndDelta(DateTime $from, DateTime $end, DateTime $compareWithFrom, DateTime $compareWithEnd) : array
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+        $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::REMBOURSEMENT], $from, $end);
+        $releasedProjectNb     = count($releasedProject);
+        $releasedProjectAmount = 0;
+        foreach ($releasedProject as $project) {
+            $releasedProjectAmount += $project['amount'];
+        }
+
+        $releasedProjectToCompare       = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::REMBOURSEMENT], $compareWithFrom, $compareWithEnd);
+        $releasedProjectToCompareNb     = count($releasedProjectToCompare);
+        $releasedProjectToCompareAmount = 0;
+        foreach ($releasedProjectToCompare as $project) {
+            $releasedProjectToCompareAmount += $project['amount'];
+        }
+
+        $deltaNbInPercentage     = round(bcmul(bcdiv(($releasedProjectNb - $releasedProjectToCompareNb), $releasedProjectToCompareNb, 5), 100, 2), 1);
+        $deltaAmountInPercentage = round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2), 1);
+
+        return [
+            'number'                  => $releasedProjectNb,
+            'amount'                  => $releasedProjectAmount,
+            'deltaNbInPercentage'     => $deltaNbInPercentage,
+            'deltaAmountInPercentage' => $deltaAmountInPercentage,
+        ];
+    }
+
+    /**
+     * @param DateTime $start
+     *
+     * @return array
+     */
+    private function get12rollingMonths(DateTime $start) : array
+    {
+        $months = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $months[] = $start->format('m/Y');
+            $start->modify('+1 month');
+        }
+
+        return $months;
+    }
+
+    /**
+     * @param int      $status
+     * @param DateTime $start
+     * @param DateTime $end
+     * @param array    $twelveMonths
+     *
+     * @return array
+     */
+    private function getProjectCountInStatusFor12RollingMonths(int $status, DateTime $start, DateTime $end, array $twelveMonths) : array
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countProjectInStatusByMonthAndPartner($status, $start, $end);
+
+        $countInStatusHighcharts = [];
+        foreach ($countInStatus as $item) {
+            $countInStatusHighcharts[$item['partner']][$item['month']] = (int) $item['number'];
+        }
+        ksort($countInStatusHighcharts);
+        foreach ($countInStatusHighcharts as &$partnerStat) {
+            foreach ($twelveMonths as $month) {
+                if (false === isset($partnerStat[$month])) {
+                    $partnerStat[$month] = 0;
+                }
+            }
+            ksort($partnerStat);
+        }
+
+        return $countInStatusHighcharts;
+    }
+
 }

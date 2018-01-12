@@ -355,17 +355,14 @@ class ProjectsRepository extends EntityRepository
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT
-                      *
-                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
-                          FROM projects_status_history psh_max
-                          GROUP BY id_project) AS psh_max
-                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
+        $query = 'SELECT *
+                    FROM projects_status_history psh
                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                       INNER JOIN projects p ON p.id_project = psh.id_project
                     WHERE
                       ps.status IN (:status)
-                      AND psh.added BETWEEN :start AND :end';
+                      AND psh.added BETWEEN :start AND :end
+                    GROUP BY p.id_project';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
@@ -959,16 +956,16 @@ class ProjectsRepository extends EntityRepository
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION], 'healthy' => $healthy],
             ['companyStatus' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY, 'healthy' => \PDO::PARAM_BOOL]
         );
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
         return $result;
     }
 
     /**
-     * @param bool            $weighted
-     * @param bool            $groupFirstYears
-     * @param \DateTime|null  $date
+     * @param bool           $weighted
+     * @param bool           $groupFirstYears
+     * @param \DateTime|null $date
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
@@ -1144,7 +1141,7 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= '
+            $query       .= '
                 WHERE p.id_client_submitter = :submitterId';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
@@ -1152,7 +1149,7 @@ class ProjectsRepository extends EntityRepository
                 WHERE p.id_company_submitter = :submitterId';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getIdCompany()->getIdCompany();
-            $query .= '
+            $query       .= '
                 WHERE p.id_company_submitter = :submitterId OR p.id_company_submitter IN (SELECT id_company FROM companies WHERE id_parent_company = :submitterId)';
         } else {
             throw new InvalidArgumentException('One and only one of the parameters must be set');
@@ -1195,7 +1192,7 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= '
+            $query       .= '
                 WHERE p.id_client_submitter = :submitterId';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
@@ -1203,7 +1200,7 @@ class ProjectsRepository extends EntityRepository
                 WHERE p.id_company_submitter = :submitterId';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getId();
-            $query .= '
+            $query       .= '
                 WHERE p.id_partner = :submitterId';
         } else {
             throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
@@ -1240,13 +1237,13 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= ' AND p.id_client_submitter = :submitter';
+            $query       .= ' AND p.id_client_submitter = :submitter';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
-            $query .= ' AND p.id_company_submitter = :submitter';
+            $query       .= ' AND p.id_company_submitter = :submitter';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getId();
-            $query .= ' AND p.id_partner = :submitter';
+            $query       .= ' AND p.id_partner = :submitter';
         } else {
             throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
         }
@@ -1258,5 +1255,34 @@ class ProjectsRepository extends EntityRepository
         ]);
 
         return $nativeQuery->getResult();
+    }
+
+    /**
+     * @param int       $status
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     */
+    public function countProjectInStatusByMonthAndPartner(int $status, \DateTime $start, \DateTime $end) : array
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('DATE_FORMAT(psh.added,\'%m/%Y\') AS month, c.name as partner, count(DISTINCT p.idProject) as number')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProject = p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'pa.id = p.idPartner')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = pa.idCompany')
+            ->where('ps.status = :status')
+            ->andWhere('psh.added BETWEEN :start AND :end')
+            ->groupBy('month, p.idPartner')
+            ->orderBy('psh.added')
+            ->setParameter('status', $status)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        return $queryBuilder->getQuery()->getArrayResult();
     }
 }
