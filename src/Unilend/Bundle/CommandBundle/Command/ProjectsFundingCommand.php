@@ -25,8 +25,8 @@ class ProjectsFundingCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var MailerManager $mailerManager */
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
         /** @var LoggerInterface $logger */
@@ -36,9 +36,9 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
 
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \loans $loan */
-        $loan = $entityManager->getRepository('loans');
+        $loan = $entityManagerSimulator->getRepository('loans');
 
         $hasProjectFinished = false;
         $projects           = $project->selectProjectsByStatus([\projects_status::EN_FUNDING], '', [], '', '', false);
@@ -89,7 +89,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $mailerManager->sendProjectFinishedToStaff($project);
                     }
                 } catch (\Exception $exception) {
-                    $logger->critical('An exception occurred during publishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
+                    $logger->critical('An exception occurred during funding of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
                             'method' => __METHOD__,
                             'file'   => $exception->getFile(),
                             'line'   => $exception->getLine()

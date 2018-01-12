@@ -54,6 +54,7 @@ class LoanManager
             ->setProject($acceptedBids[0]->getIdBid()->getProject())
             ->setAmount($loanAmount)
             ->setRate($rate)
+            ->setStatus(Loans::STATUS_ACCEPTED)
             ->setIdTypeContract($contract);
 
         $this->entityManager->persist($loan);

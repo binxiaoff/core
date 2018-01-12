@@ -272,16 +272,16 @@ class WalletRepository extends EntityRepository
     /**
      * @param int $projectId
      *
-     * @return Wallet[]
+     * @return array
      */
-    public function findLenderWithAcceptedBidsByProject(int $projectId) : array
+    public function findLenderWithAcceptedBidsByProject(int $projectId): array
     {
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'w.id = b.idLenderAccount')
             ->innerJoin('UnilendCoreBusinessBundle:AcceptedBids', 'ab', Join::WITH, 'b.idBid = ab.idBid')
             ->where('b.idProject = :project')
-            ->groupBy('b.idLenderAccount')
+            ->groupBy('w.id')
             ->setParameter('project', $projectId);
 
         return $queryBuilder->getQuery()->getResult();

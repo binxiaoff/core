@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * AcceptedBids
  *
- * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(name="unq_accepted_bids_id_bid_id_loan", columns={"id_bid", "id_loan"})}, indexes={@ORM\Index(name="idx_accepted_bids_id_loan", columns={"id_loan"})})
+ * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(name="unq_accepted_bids_id_bid_id_loan", columns={"id_bid", "id_loan"})}, indexes={@ORM\Index(name="idx_accepted_bids_id_loan", columns={"id_loan"}), @ORM\Index(name="idx_accepted_bids_id_bid", columns={"id_bid"})})
  * @ORM\Entity
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AcceptedBidsRepository")
@@ -15,16 +15,22 @@ use Doctrine\ORM\Mapping as ORM;
 class AcceptedBids
 {
     /**
-     * @var Bids
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Bids
      *
-     * @ORM\Column(name="id_bid", type="integer", nullable=false)
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Bids")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_bid", referencedColumnName="id_bid")
+     * })
      */
     private $idBid;
 
     /**
-     * @var Loans
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Loans
      *
-     * @ORM\Column(name="id_loan", type="integer", nullable=true)
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Loans")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_loan", referencedColumnName="id_loan")
+     * })
      */
     private $idLoan;
 
@@ -45,7 +51,7 @@ class AcceptedBids
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -67,7 +73,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setIdBid($idBid)
+    public function setIdBid(Bids $idBid): AcceptedBids
     {
         $this->idBid = $idBid;
 
@@ -79,7 +85,7 @@ class AcceptedBids
      *
      * @return Bids
      */
-    public function getIdBid()
+    public function getIdBid(): Bids
     {
         return $this->idBid;
     }
@@ -87,11 +93,11 @@ class AcceptedBids
     /**
      * Set idLoan
      *
-     * @param Loans $idLoan
+     * @param Loans|null $idLoan
      *
      * @return AcceptedBids
      */
-    public function setIdLoan($idLoan)
+    public function setIdLoan(?Loans $idLoan): AcceptedBids
     {
         $this->idLoan = $idLoan;
 
@@ -103,7 +109,7 @@ class AcceptedBids
      *
      * @return Loans
      */
-    public function getIdLoan()
+    public function getIdLoan(): Loans
     {
         return $this->idLoan;
     }
@@ -111,11 +117,11 @@ class AcceptedBids
     /**
      * Set amount
      *
-     * @param integer $amount
+     * @param int $amount
      *
      * @return AcceptedBids
      */
-    public function setAmount($amount)
+    public function setAmount(int $amount): AcceptedBids
     {
         $this->amount = $amount;
 
@@ -125,9 +131,9 @@ class AcceptedBids
     /**
      * Get amount
      *
-     * @return integer
+     * @return int
      */
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->amount;
     }
@@ -135,9 +141,9 @@ class AcceptedBids
     /**
      * Get idAcceptedBid
      *
-     * @return integer
+     * @return int
      */
-    public function getIdAcceptedBid()
+    public function getIdAcceptedBid(): int
     {
         return $this->idAcceptedBid;
     }
@@ -158,5 +164,45 @@ class AcceptedBids
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getAdded(): \DateTime
+    {
+        return $this->added;
+    }
+
+    /**
+     * @param \DateTime $added
+     *
+     * @return AcceptedBids
+     */
+    public function setAdded(\DateTime $added): AcceptedBids
+    {
+        $this->added = $added;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdated(): \DateTime
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @param \DateTime|null $updated
+     *
+     * @return AcceptedBids
+     */
+    public function setUpdated(?\DateTime $updated): AcceptedBids
+    {
+        $this->updated = $updated;
+
+        return $this;
     }
 }

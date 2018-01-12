@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="loans", indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="id_project", columns={"id_project"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="idx_loans_added", columns={"added"}), @ORM\Index(name="idx_loans_id_type_contract", columns={"id_type_contract"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoansRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Loans
 {
@@ -24,34 +25,6 @@ class Loans
      * })
      */
     private $idTransfer;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
-     */
-    private $idPartenaire;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
-     */
-    private $idPartenaireSubcode;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_country_juridiction", type="integer", nullable=false)
-     */
-    private $idCountryJuridiction;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="number_of_terms", type="integer", nullable=false)
-     */
-    private $numberOfTerms;
 
     /**
      * @var float
@@ -75,16 +48,9 @@ class Loans
     private $status;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="en_attente_mail_rejet_envoye", type="integer", nullable=false)
-     */
-    private $enAttenteMailRejetEnvoye;
-
-    /**
      * @var string
      *
-     * @ORM\Column(name="fichier_declarationContratPret", type="string", length=191, nullable=false)
+     * @ORM\Column(name="fichier_declarationContratPret", type="string", length=191, nullable=true)
      */
     private $fichierDeclarationcontratpret;
 
@@ -150,7 +116,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdTransfer(LoanTransfer $idTransfer)
+    public function setIdTransfer(LoanTransfer $idTransfer): Loans
     {
         $this->idTransfer = $idTransfer;
 
@@ -162,7 +128,7 @@ class Loans
      *
      * @return LoanTransfer
      */
-    public function getIdTransfer()
+    public function getIdTransfer(): LoanTransfer
     {
         return $this->idTransfer;
     }
@@ -174,7 +140,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setProject(Projects $idProject)
+    public function setProject(Projects $idProject): Loans
     {
         $this->idProject = $idProject;
 
@@ -186,105 +152,9 @@ class Loans
      *
      * @return Projects
      */
-    public function getProject()
+    public function getProject(): Projects
     {
         return $this->idProject;
-    }
-
-    /**
-     * Set idPartenaire
-     *
-     * @param integer $idPartenaire
-     *
-     * @return Loans
-     */
-    public function setIdPartenaire($idPartenaire)
-    {
-        $this->idPartenaire = $idPartenaire;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaire
-     *
-     * @return integer
-     */
-    public function getIdPartenaire()
-    {
-        return $this->idPartenaire;
-    }
-
-    /**
-     * Set idPartenaireSubcode
-     *
-     * @param integer $idPartenaireSubcode
-     *
-     * @return Loans
-     */
-    public function setIdPartenaireSubcode($idPartenaireSubcode)
-    {
-        $this->idPartenaireSubcode = $idPartenaireSubcode;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaireSubcode
-     *
-     * @return integer
-     */
-    public function getIdPartenaireSubcode()
-    {
-        return $this->idPartenaireSubcode;
-    }
-
-    /**
-     * Set idCountryJuridiction
-     *
-     * @param integer $idCountryJuridiction
-     *
-     * @return Loans
-     */
-    public function setIdCountryJuridiction($idCountryJuridiction)
-    {
-        $this->idCountryJuridiction = $idCountryJuridiction;
-
-        return $this;
-    }
-
-    /**
-     * Get idCountryJuridiction
-     *
-     * @return integer
-     */
-    public function getIdCountryJuridiction()
-    {
-        return $this->idCountryJuridiction;
-    }
-
-    /**
-     * Set numberOfTerms
-     *
-     * @param integer $numberOfTerms
-     *
-     * @return Loans
-     */
-    public function setNumberOfTerms($numberOfTerms)
-    {
-        $this->numberOfTerms = $numberOfTerms;
-
-        return $this;
-    }
-
-    /**
-     * Get numberOfTerms
-     *
-     * @return integer
-     */
-    public function getNumberOfTerms()
-    {
-        return $this->numberOfTerms;
     }
 
     /**
@@ -294,7 +164,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setAmount($amount)
+    public function setAmount(float $amount): Loans
     {
         $this->amount = $amount;
 
@@ -306,7 +176,7 @@ class Loans
      *
      * @return float
      */
-    public function getAmount()
+    public function getAmount(): float
     {
         return $this->amount;
     }
@@ -318,7 +188,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setRate($rate)
+    public function setRate(float $rate): Loans
     {
         $this->rate = $rate;
 
@@ -330,7 +200,7 @@ class Loans
      *
      * @return float
      */
-    public function getRate()
+    public function getRate(): float
     {
         return $this->rate;
     }
@@ -342,7 +212,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Loans
     {
         $this->status = $status;
 
@@ -354,33 +224,9 @@ class Loans
      *
      * @return integer
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
-    }
-
-    /**
-     * Set enAttenteMailRejetEnvoye
-     *
-     * @param integer $enAttenteMailRejetEnvoye
-     *
-     * @return Loans
-     */
-    public function setEnAttenteMailRejetEnvoye($enAttenteMailRejetEnvoye)
-    {
-        $this->enAttenteMailRejetEnvoye = $enAttenteMailRejetEnvoye;
-
-        return $this;
-    }
-
-    /**
-     * Get enAttenteMailRejetEnvoye
-     *
-     * @return integer
-     */
-    public function getEnAttenteMailRejetEnvoye()
-    {
-        return $this->enAttenteMailRejetEnvoye;
     }
 
     /**
@@ -390,7 +236,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setFichierDeclarationcontratpret($fichierDeclarationcontratpret)
+    public function setFichierDeclarationcontratpret(string $fichierDeclarationcontratpret): Loans
     {
         $this->fichierDeclarationcontratpret = $fichierDeclarationcontratpret;
 
@@ -402,7 +248,7 @@ class Loans
      *
      * @return string
      */
-    public function getFichierDeclarationcontratpret()
+    public function getFichierDeclarationcontratpret(): string
     {
         return $this->fichierDeclarationcontratpret;
     }
@@ -414,7 +260,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Loans
     {
         $this->added = $added;
 
@@ -426,7 +272,7 @@ class Loans
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -438,7 +284,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): Loans
     {
         $this->updated = $updated;
 
@@ -450,7 +296,7 @@ class Loans
      *
      * @return \DateTime
      */
-    public function getUpdated()
+    public function getUpdated(): \DateTime
     {
         return $this->updated;
     }
@@ -460,7 +306,7 @@ class Loans
      *
      * @return integer
      */
-    public function getIdLoan()
+    public function getIdLoan(): int
     {
         return $this->idLoan;
     }
@@ -472,7 +318,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdLender(Wallet $idLender)
+    public function setIdLender(Wallet $idLender): Loans
     {
         $this->idLender = $idLender;
 
@@ -484,7 +330,7 @@ class Loans
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
-    public function getIdLender()
+    public function getIdLender(): Wallet
     {
         return $this->idLender;
     }
@@ -496,7 +342,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdTypeContract(UnderlyingContract $idTypeContract = null)
+    public function setIdTypeContract(UnderlyingContract $idTypeContract): Loans
     {
         $this->idTypeContract = $idTypeContract;
 
@@ -508,8 +354,26 @@ class Loans
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract
      */
-    public function getIdTypeContract()
+    public function getIdTypeContract(): UnderlyingContract
     {
         return $this->idTypeContract;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -110,7 +110,7 @@ class BidManager
      * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, $sendNotification = true) : Bids
+    public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, $sendNotification = true): Bids
     {
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
@@ -272,7 +272,7 @@ class BidManager
      * @return bool|Bids
      * @throws \Exception
      */
-    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate, $sendNotification = true)
+    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate, $sendNotification = true): void
     {
         $biddenAutobid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idProject' => $project, 'idAutobid' => $autoBid]);
         if (
@@ -363,7 +363,7 @@ class BidManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function creditRejectedBid(Bids $bid, float $amount) :  WalletBalanceHistory
+    private function creditRejectedBid(Bids $bid, float $amount):  WalletBalanceHistory
     {
         $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $amount, $bid);
         $amountX100           = $amount * 100;
@@ -401,7 +401,7 @@ class BidManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory)
+    private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory): void
     {
         if (WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()) {
             $this->notificationManager->create(
@@ -422,7 +422,7 @@ class BidManager
      *
      * @return array
      */
-    public function getProjectRateRange(\projects $project)
+    public function getProjectRateRange(\projects $project): array
     {
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
@@ -441,7 +441,7 @@ class BidManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function acceptBid(Bids $bid, float $acceptedAmount)
+    public function accept(Bids $bid, float $acceptedAmount): void
     {
         $bid->setStatus(Bids::STATUS_ACCEPTED);
         $acceptedAmountHundred = bcmul($acceptedAmount, 100);
@@ -452,7 +452,7 @@ class BidManager
             ->setAmount($acceptedAmountHundred);
 
         $this->entityManager->persist($acceptedBid);
-        $this->entityManager->flush($acceptedBid);
+        $this->entityManager->flush([$bid, $acceptedBid]);
 
         if ($acceptedAmountHundred < $bid->getAmount() && in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
             $walletBalanceHistory = $this->creditRejectedBid($bid, $acceptedAmount);
