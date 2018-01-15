@@ -43,7 +43,9 @@ EOF
         // One project each execution, to avoid the memory issue.
         $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', 1, false);
         $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-
+        if (count($aProjectToFund) > 0) {
+            $projectLifecycleManager->setLogger($oLogger);
+        }
         foreach ($aProjectToFund as $aProject) {
             if ($oProject->get($aProject['id_project'])) {
                 $oLogger->info('Publishing the project ' . $aProject['id_project'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']]);
