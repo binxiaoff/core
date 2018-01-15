@@ -3,18 +3,11 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionTypeNotif;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -57,7 +50,6 @@ EOF
 
                 try {
                     $bHasProjectPublished = true;
-                    $this->insertNewProjectNotification($oProject, $entityManagerSimulator);
                     $projectLifecycleManager->publish($oProject);
 
                     if ($oProjectManager->isFunded($oProject)) {
@@ -201,66 +193,6 @@ EOF
             if (time() >= $deletionDate) {
                 $fileSystem->remove($sFilePath);
             }
-        }
-    }
-
-    /**
-     * @param \projects              $project
-     * @param EntityManagerSimulator $entityManagerSimulator
-     */
-    private function insertNewProjectNotification(\projects $project, EntityManagerSimulator $entityManagerSimulator): void
-    {
-        /** @var \clients $clientData */
-        $clientData = $entityManagerSimulator->getRepository('clients');
-
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var NotificationsRepository $notificationsRepository */
-        $notificationsRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Notifications');
-
-        $notificationManager = $this->getContainer()->get('unilend.service.notification_manager');
-        $productManager      = $this->getContainer()->get('unilend.service_product.product_manager');
-        $logger              = $this->getContainer()->get('monolog.logger.console');
-
-        $offset = 0;
-        $limit  = 100;
-        $logger->info('Send new project notification for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-
-        while ($lenders = $clientData->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
-            $notificationSent = 0;
-            $offset           += $limit;
-            $logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-
-            foreach ($lenders as $lender) {
-                $wallet                 = $walletRepository->getWalletByType($lender['id_client'], WalletType::LENDER);
-                $isClientEligible       = $productManager->isClientEligible($wallet->getIdClient(), $project);
-                $newProjectNotification = null;
-
-                if ($isClientEligible) {
-                    $notificationSent++;
-                    $newProjectNotification = $notificationsRepository->findOneBy(['idNotification' => Notifications::TYPE_NEW_PROJECT, 'idLender' => $wallet, 'idProject' => $project->id_project]);
-                }
-
-                if (null !== $newProjectNotification && $isClientEligible) {
-                    try {
-                        $notificationManager->createEmailNotification(
-                            $newProjectNotification->id_notification,
-                            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-                            $wallet->getIdClient()->getIdClient(),
-                            null,
-                            $project->id_project,
-                            null,
-                            true
-                        );
-                    } catch (OptimisticLockException $exception) {
-                        $logger->warning(
-                            'Could not insert the new project notification for client ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
-                            ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                        );
-                    }
-                }
-            }
-            $logger->info('Notifications sent: ' . $notificationSent, ['method' => __METHOD__, 'id_project' => $project->id_project]);
         }
     }
 }

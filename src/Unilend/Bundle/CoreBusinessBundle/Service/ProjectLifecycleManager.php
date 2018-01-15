@@ -5,11 +5,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, Sponsorship, TaxType, UnderlyingContractAttributeType, Users, Wallet, WalletType
+    Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, Sponsorship, TaxType, UnderlyingContractAttributeType, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
@@ -166,48 +167,19 @@ class ProjectLifecycleManager
 
     /**
      * @param \projects $project
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function publish(\projects $project)
     {
-        /** @var \bids $bidData */
-        $bidData = $this->entityManagerSimulator->getRepository('bids');
-
-        $offset = 0;
-        $limit  = 100;
-
-        while ($bids = $bidData->getFirstProjectBidsByLender($project->id_project, $limit, $offset)) {
-            foreach ($bids as $bid) {
-                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
-
-                if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-                    if ($bid['min_status'] == Bids::STATUS_PENDING) {
-                        $this->notificationManager->createNotification(
-                            Notifications::TYPE_BID_PLACED,
-                            $wallet->getIdClient()->getIdClient(),
-                            $project->id_project,
-                            $bid['amount'] / 100,
-                            $bid['id_bid']
-                        );
-                    } elseif ($bid['min_status'] == Bids::STATUS_REJECTED ) {
-                        $this->notificationManager->create(
-                            Notifications::TYPE_BID_REJECTED,
-                            ($bid['id_autobid'] > 0) ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
-                            $wallet->getIdClient()->getIdClient(),
-                            'sendBidRejected',
-                            $project->id_project,
-                            $bid['amount'] / 100,
-                            $bid['id_bid']
-                        );
-                    }
-                }
-            }
-
-            $offset += $limit;
-        }
-
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::EN_FUNDING, $project);
+        $this->insertNewProjectNotification($project);
+        try {
+            $this->sendAcceptedOrRejectedBidNotifications($project);
+        } catch (OptimisticLockException $exception) {
+            $this->logger->error(
+                'Error while inserting new project notifications on the project: ' . $project->id_project . ' Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 
     /**
@@ -420,7 +392,7 @@ class ProjectLifecycleManager
                     $this->bidManager->reject($bid, true);
                 }
 
-                $treatedBidNb ++;
+                $treatedBidNb++;
 
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $project->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
@@ -470,7 +442,7 @@ class ProjectLifecycleManager
         /** @var \loans $loan */
         $loan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \underlying_contract $contract */
-        $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
+        $contract      = $this->entityManagerSimulator->getRepository('underlying_contract');
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
         $aLenderList = $legacyBid->getLenders($project->id_project, [Bids::STATUS_ACCEPTED]);
@@ -506,9 +478,9 @@ class ProjectLifecycleManager
                     $fBidAmount = round(bcdiv($bid->getAmount(), 100, 4), 2);
 
                     if (true === $bIFPContract && bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
-                        $fInterests = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
+                        $fInterests      = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
                         $fLoansLenderSum += $fBidAmount;
-                        $aBidIFP[] = array(
+                        $aBidIFP[]       = array(
                             'bid_id' => $bid->getIdBid(),
                             'amount' => $fBidAmount
                         );
@@ -529,7 +501,7 @@ class ProjectLifecycleManager
                         $fRest = bcsub($fBidAmount, $fDiff, 2);
                         if (0 < $fRest) {
                             $fInterests = bcadd($fInterests, bcmul($bid->getRate(), $fRest, 2), 2);
-                            $aBidIFP[] = array(
+                            $aBidIFP[]  = array(
                                 'bid_id' => $bid->getIdBid(),
                                 'amount' => $fRest
                             );
@@ -605,9 +577,9 @@ class ProjectLifecycleManager
                     $fBidAmount = round(bcdiv($bid->getAmount(), 100, 4), 2);
 
                     if (bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
-                        $fInterests = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
+                        $fInterests      = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
                         $fLoansLenderSum = bcadd($fLoansLenderSum, $fBidAmount, 2);
-                        $aBidIFP[] = [
+                        $aBidIFP[]       = [
                             'bid_id' => $bid->getIdBid(),
                             'amount' => $fBidAmount
                         ];
@@ -644,9 +616,9 @@ class ProjectLifecycleManager
 
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDING_KO, $project);
 
-        $criteria      = ['idProject' => $project->id_project];
-        $bids          = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
-        $iBidNbTotal   = $bidRepository->countBy($criteria);
+        $criteria     = ['idProject' => $project->id_project];
+        $bids         = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
+        $iBidNbTotal  = $bidRepository->countBy($criteria);
         $treatedBidNb = 0;
 
         if ($this->logger instanceof LoggerInterface) {
@@ -656,7 +628,7 @@ class ProjectLifecycleManager
         foreach ($bids as $bid) {
             if ($bid) {
                 $this->bidManager->reject($bid, false);
-                $treatedBidNb ++;
+                $treatedBidNb++;
                 if ($this->logger instanceof LoggerInterface) {
                     $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . 'bids treated (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
                 }
@@ -967,7 +939,7 @@ class ProjectLifecycleManager
                 $oFunded = $oPublished;
             }
 
-            $project->date_funded  = $oFunded->format('Y-m-d H:i:s');
+            $project->date_funded = $oFunded->format('Y-m-d H:i:s');
             $project->update();
 
             $this->mailerManager->sendFundedToStaff($project);
@@ -986,7 +958,7 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function insertNewProjectEmails(\projects $project): void
+    private function insertNewProjectEmails(\projects $project) : void
     {
         /** @var \clients $clientData */
         $clientData = $this->entityManagerSimulator->getRepository('clients');
@@ -999,8 +971,7 @@ class ProjectLifecycleManager
 
         $bidsRepository                        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $clientsGestionNotificationsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletRepository                      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $companyEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
         $projectPeriodData->getPeriod($project->period);
@@ -1017,9 +988,8 @@ class ProjectLifecycleManager
         $autoBidsMinRate  = array_column($autoBidSettings, 'rate_min', 'id_lender');
         $autoBidsStatus   = array_column($autoBidSettings, 'status', 'id_lender');
         $projectRateRange = $this->bidManager->getProjectRateRange($project);
-        $bids             = $bidsData->getLenders($project->id_project);
-        $noAutobidPlaced  = array_diff(array_keys($autoBidsAmount), array_column($bids, 'id_lender_account'));
         $autolendUrl      = $this->frontUrl . $this->router->generate('autolend');
+        $walletDepositUrl = $this->frontUrl . $this->router->generate('lender_wallet_deposit');
 
         $isProjectMinRateReached = $this->projectManager->isRateMinReached($project);
 
@@ -1028,8 +998,8 @@ class ProjectLifecycleManager
         $this->logger->info('Insert publication emails for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
         while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
-            $emailsSent = 0;
-            $offset     += $limit;
+            $emailsInserted = 0;
+            $offset         += $limit;
             $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
             foreach ($lenders as $lender) {
@@ -1039,7 +1009,7 @@ class ProjectLifecycleManager
                 $bidEntity = null;
 
                 $isClientEligible                          = $this->productManager->isClientEligible($wallet->getIdClient(), $project);
-                $hasNewProjectOrAutobidNotificationSetting = $this->hasNewProjectOrAutobidNotificationSetting($wallet, $clientsGestionNotificationsRepository);
+                $hasNewProjectOrAutobidNotificationSetting = $this->hasNewProjectOrAutobidNotificationSetting($wallet->getIdClient(), $clientsGestionNotificationsRepository);
 
                 if ($isClientEligible && $hasNewProjectOrAutobidNotificationSetting) {
                     $autolendSettingsAdvises = '';
@@ -1080,15 +1050,13 @@ class ProjectLifecycleManager
                     } elseif (false === $isProjectMinRateReached && null === $bidEntity) {
                         $mailType = 'nouveau-projet';
 
-                        if (true === $hasAutolendOn && true === in_array($wallet->getId(), $noAutobidPlaced)) {
-                            $walletDepositUrl = $this->frontUrl . $this->router->generate('lender_wallet_deposit');
-
+                        if (true === $hasAutolendOn) {
                             if (isset($autoBidsStatus[$wallet->getId()])) {
                                 switch ($autoBidsStatus[$wallet->getId()]) {
-                                    case \autobid::STATUS_INACTIVE :
-                                        $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%', $autolendUrl]);
+                                    case \autobid::STATUS_INACTIVE:
+                                        $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%' => $autolendUrl]);
                                         break;
-                                    case \autobid::STATUS_ACTIVE :
+                                    case \autobid::STATUS_ACTIVE:
                                         if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
                                             $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
                                         }
@@ -1097,27 +1065,36 @@ class ProjectLifecycleManager
                                             $autolendSettingsAdvises .= empty($autolendSettingsAdvises) ? $autolendMinRateTooHigh : '<br>' . $autolendMinRateTooHigh;
                                         }
                                         break;
-                                    default :
+                                    default:
                                         break;
                                 }
                             }
                             $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($autolendSettingsAdvises);
                         } elseif (false === $hasAutolendOn) {
-                            $suggestAutolendActivation         = $this->translator->trans('email-nouveau-projet_suggest-autolend-activation', ['%autolendUrl%', $autolendUrl]);
+                            $suggestAutolendActivation         = $this->translator->trans('email-nouveau-projet_suggest-autolend-activation', ['%autolendUrl%' => $autolendUrl]);
                             $keywords['customAutolendContent'] = $this->getAutolendCustomMessage($suggestAutolendActivation);
                         } else {
                             $keywords['customAutolendContent'] = '';
                         }
                     }
                     if (null !== $mailType) {
+                        $publishingDate = new \DateTime($project->date_publication);
+                        try {
+                            $this->notificationManager->createEmailNotification(0, ClientsGestionTypeNotif::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), null, $project->id_project, null, true, $publishingDate);
+                        } catch (OptimisticLockException $exception) {
+                            $this->logger->warning(
+                                'Could not insert the new project email notification for client ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(),
+                                ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                            );
+                        }
                         $keywords['firstName']     = $wallet->getIdClient()->getPrenom();
                         $keywords['lenderPattern'] = $wallet->getWireTransferPattern();
                         $message                   = $this->messageProvider->newMessage($mailType, $commonKeywords + $keywords);
                         try {
                             $message->setTo($lender['email']);
-                            $message->setToSendAt(new \DateTime($project->date_publication));
+                            $message->setToSendAt($publishingDate);
                             $this->mailer->send($message);
-                            ++$emailsSent;
+                            ++$emailsInserted;
                         } catch (\Exception $exception) {
                             $this->logger->warning(
                                 'Could not insert email ' . $mailType . ' - Exception: ' . $exception->getMessage(),
@@ -1127,7 +1104,7 @@ class ProjectLifecycleManager
                     }
                 }
             }
-            $this->logger->info('Number of emails inserted = ' . $emailsSent, ['method' => __METHOD__, 'id_project' => $project->id_project]);
+            $this->logger->info('Number of emails inserted = ' . $emailsInserted, ['method' => __METHOD__, 'id_project' => $project->id_project]);
         }
     }
 
@@ -1136,7 +1113,7 @@ class ProjectLifecycleManager
      *
      * @return string
      */
-    private function getAutolendCustomMessage(string $content): string
+    private function getAutolendCustomMessage(string $content) : string
     {
         if (empty($content)) {
             return $content;
@@ -1152,21 +1129,98 @@ class ProjectLifecycleManager
     }
 
     /**
-     * @param Wallet           $wallet
+     * @param Clients          $client
      * @param EntityRepository $clientsGestionNotificationsRepository
      *
      * @return bool
      */
-    private function hasNewProjectOrAutobidNotificationSetting(Wallet $wallet, EntityRepository $clientsGestionNotificationsRepository): bool
+    private function hasNewProjectOrAutobidNotificationSetting(Clients $client, EntityRepository $clientsGestionNotificationsRepository) : bool
     {
         $notificationSettings = $clientsGestionNotificationsRepository->findOneBy(
             [
-                'idClient'      => $wallet->getIdClient()->getIdClient(),
+                'idClient'      => $client->getIdClient(),
                 'idNotif'       => [ClientsGestionTypeNotif::TYPE_NEW_PROJECT, ClientsGestionTypeNotif::TYPE_BID_PLACED],
                 'immediatement' => 1
             ]
         );
 
         return null !== $notificationSettings;
+    }
+
+    /**
+     * @param \projects $project
+     */
+    private function insertNewProjectNotification(\projects $project) : void
+    {
+        /** @var \clients $clientData */
+        $clientData = $this->entityManagerSimulator->getRepository('clients');
+
+        /** @var WalletRepository $walletRepository */
+        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+
+        $offset = 0;
+        $limit  = 100;
+        $this->logger->info('Insert new project notification for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+
+        while ($lenders = $clientData->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
+            $notificationsCount = 0;
+            $offset             += $limit;
+            $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
+
+            foreach ($lenders as $lender) {
+                $wallet                 = $walletRepository->getWalletByType($lender['id_client'], WalletType::LENDER);
+                $isClientEligible       = $this->productManager->isClientEligible($wallet->getIdClient(), $project);
+                $newProjectNotification = null;
+
+                if ($isClientEligible) {
+                    $notificationsCount++;
+                    $this->notificationManager->createNotification(Notifications::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), $project->id_project);
+                }
+            }
+            $this->logger->info('Notifications inserted: ' . $notificationsCount, ['method' => __METHOD__, 'id_project' => $project->id_project]);
+        }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @throws OptimisticLockException
+     */
+    private function sendAcceptedOrRejectedBidNotifications(\projects $project) : void
+    {
+        /** @var \bids $bidData */
+        $bidData = $this->entityManagerSimulator->getRepository('bids');
+
+        $offset = 0;
+        $limit  = 100;
+
+        while ($bids = $bidData->getFirstProjectBidsByLender($project->id_project, $limit, $offset)) {
+            foreach ($bids as $bid) {
+                $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid['id_lender_account']);
+
+                if (null !== $wallet && WalletType::LENDER === $wallet->getIdType()->getLabel()) {
+                    if ($bid['min_status'] == Bids::STATUS_PENDING) {
+                        $this->notificationManager->createNotification(
+                            Notifications::TYPE_BID_PLACED,
+                            $wallet->getIdClient()->getIdClient(),
+                            $project->id_project,
+                            $bid['amount'] / 100,
+                            $bid['id_bid']
+                        );
+                    } elseif ($bid['min_status'] == Bids::STATUS_REJECTED) {
+                        $this->notificationManager->create(
+                            Notifications::TYPE_BID_REJECTED,
+                            ($bid['id_autobid'] > 0) ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
+                            $wallet->getIdClient()->getIdClient(),
+                            'sendBidRejected',
+                            $project->id_project,
+                            $bid['amount'] / 100,
+                            $bid['id_bid']
+                        );
+                    }
+                }
+            }
+            $offset += $limit;
+        }
     }
 }
