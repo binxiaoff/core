@@ -964,8 +964,6 @@ class ProjectLifecycleManager
         $clientData = $this->entityManagerSimulator->getRepository('clients');
         /** @var \autobid $autobidData */
         $autobidData = $this->entityManagerSimulator->getRepository('autobid');
-        /** @var \bids $bidsData */
-        $bidsData = $this->entityManagerSimulator->getRepository('bids');
         /** @var \project_period $projectPeriodData */
         $projectPeriodData = $this->entityManagerSimulator->getRepository('project_period');
 
@@ -1031,7 +1029,7 @@ class ProjectLifecycleManager
                             'Could not get the placed autobid for the lender ' . $wallet->getId() . '. The email "nouveau-projet-autobid" will not be sent. Error: ' . $exception->getMessage(),
                             ['method' => __METHOD__, 'project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                         );
-                        $bidEntity = false;
+                        continue;
                     }
 
                     if ($bidEntity instanceof Bids) {
@@ -1040,10 +1038,11 @@ class ProjectLifecycleManager
                         $keywords['autoBidAmount'] = $this->currencyFormatter->formatCurrency(round(bcdiv($bidEntity->getAmount(), 100, 4), 2), 'EUR');
                         $autolendMinRate           = max($projectRateRange['rate_min'], $autoBidsMinRate[$wallet->getId()]);
 
+                        $defaultFormatterFractionDigits = $this->numberFormatter->getAttribute(\NumberFormatter::MIN_FRACTION_DIGITS);
                         $this->numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 1);
                         $keywords['autoBidRate']     = $this->numberFormatter->format($bidEntity->getRate());
                         $keywords['autoLendMinRate'] = $this->numberFormatter->format($autolendMinRate);
-                        $this->numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+                        $this->numberFormatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, $defaultFormatterFractionDigits);
 
                         $keywords['availableBalance'] = $this->currencyFormatter->formatCurrency($wallet->getAvailableBalance(), 'EUR');
                         $keywords['autolendUrl']      = $autolendUrl;
