@@ -73,7 +73,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setIdBid(Bids $idBid): AcceptedBids
+    public function setIdBid(Bids $idBid) : AcceptedBids
     {
         $this->idBid = $idBid;
 
@@ -85,7 +85,7 @@ class AcceptedBids
      *
      * @return Bids
      */
-    public function getIdBid(): Bids
+    public function getIdBid() : Bids
     {
         return $this->idBid;
     }
@@ -97,7 +97,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setIdLoan(?Loans $idLoan): AcceptedBids
+    public function setIdLoan(?Loans $idLoan) : AcceptedBids
     {
         $this->idLoan = $idLoan;
 
@@ -109,7 +109,7 @@ class AcceptedBids
      *
      * @return Loans
      */
-    public function getIdLoan(): Loans
+    public function getIdLoan() : Loans
     {
         return $this->idLoan;
     }
@@ -121,7 +121,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setAmount(int $amount): AcceptedBids
+    public function setAmount(int $amount) : AcceptedBids
     {
         $this->amount = $amount;
 
@@ -133,7 +133,7 @@ class AcceptedBids
      *
      * @return int
      */
-    public function getAmount(): int
+    public function getAmount() : int
     {
         return $this->amount;
     }
@@ -143,7 +143,7 @@ class AcceptedBids
      *
      * @return int
      */
-    public function getIdAcceptedBid(): int
+    public function getIdAcceptedBid() : int
     {
         return $this->idAcceptedBid;
     }
@@ -151,7 +151,7 @@ class AcceptedBids
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue() : void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -161,7 +161,7 @@ class AcceptedBids
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue() : void
     {
         $this->updated = new \DateTime();
     }
@@ -169,7 +169,7 @@ class AcceptedBids
     /**
      * @return \DateTime
      */
-    public function getAdded(): \DateTime
+    public function getAdded() : \DateTime
     {
         return $this->added;
     }
@@ -179,7 +179,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setAdded(\DateTime $added): AcceptedBids
+    public function setAdded(\DateTime $added) : AcceptedBids
     {
         $this->added = $added;
 
@@ -189,7 +189,7 @@ class AcceptedBids
     /**
      * @return \DateTime
      */
-    public function getUpdated(): \DateTime
+    public function getUpdated() : \DateTime
     {
         return $this->updated;
     }
@@ -199,7 +199,7 @@ class AcceptedBids
      *
      * @return AcceptedBids
      */
-    public function setUpdated(?\DateTime $updated): AcceptedBids
+    public function setUpdated(?\DateTime $updated) : AcceptedBids
     {
         $this->updated = $updated;
 

@@ -116,7 +116,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdTransfer(LoanTransfer $idTransfer): Loans
+    public function setIdTransfer(LoanTransfer $idTransfer) : Loans
     {
         $this->idTransfer = $idTransfer;
 
@@ -128,7 +128,7 @@ class Loans
      *
      * @return LoanTransfer
      */
-    public function getIdTransfer(): LoanTransfer
+    public function getIdTransfer() : LoanTransfer
     {
         return $this->idTransfer;
     }
@@ -140,7 +140,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setProject(Projects $idProject): Loans
+    public function setProject(Projects $idProject) : Loans
     {
         $this->idProject = $idProject;
 
@@ -152,7 +152,7 @@ class Loans
      *
      * @return Projects
      */
-    public function getProject(): Projects
+    public function getProject() : Projects
     {
         return $this->idProject;
     }
@@ -164,7 +164,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setAmount(float $amount): Loans
+    public function setAmount(float $amount) : Loans
     {
         $this->amount = $amount;
 
@@ -176,7 +176,7 @@ class Loans
      *
      * @return float
      */
-    public function getAmount(): float
+    public function getAmount() : float
     {
         return $this->amount;
     }
@@ -188,7 +188,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setRate(float $rate): Loans
+    public function setRate(float $rate) : Loans
     {
         $this->rate = $rate;
 
@@ -200,7 +200,7 @@ class Loans
      *
      * @return float
      */
-    public function getRate(): float
+    public function getRate() : float
     {
         return $this->rate;
     }
@@ -212,7 +212,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setStatus(int $status): Loans
+    public function setStatus(int $status) : Loans
     {
         $this->status = $status;
 
@@ -224,7 +224,7 @@ class Loans
      *
      * @return integer
      */
-    public function getStatus(): int
+    public function getStatus() : int
     {
         return $this->status;
     }
@@ -236,7 +236,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setFichierDeclarationcontratpret(string $fichierDeclarationcontratpret): Loans
+    public function setFichierDeclarationcontratpret(string $fichierDeclarationcontratpret) : Loans
     {
         $this->fichierDeclarationcontratpret = $fichierDeclarationcontratpret;
 
@@ -248,7 +248,7 @@ class Loans
      *
      * @return string
      */
-    public function getFichierDeclarationcontratpret(): string
+    public function getFichierDeclarationcontratpret() : string
     {
         return $this->fichierDeclarationcontratpret;
     }
@@ -260,7 +260,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setAdded(\DateTime $added): Loans
+    public function setAdded(\DateTime $added) : Loans
     {
         $this->added = $added;
 
@@ -272,7 +272,7 @@ class Loans
      *
      * @return \DateTime
      */
-    public function getAdded(): \DateTime
+    public function getAdded() : \DateTime
     {
         return $this->added;
     }
@@ -284,7 +284,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setUpdated(?\DateTime $updated): Loans
+    public function setUpdated(?\DateTime $updated) : Loans
     {
         $this->updated = $updated;
 
@@ -296,7 +296,7 @@ class Loans
      *
      * @return \DateTime
      */
-    public function getUpdated(): \DateTime
+    public function getUpdated() : \DateTime
     {
         return $this->updated;
     }
@@ -306,7 +306,7 @@ class Loans
      *
      * @return integer
      */
-    public function getIdLoan(): int
+    public function getIdLoan() : int
     {
         return $this->idLoan;
     }
@@ -318,7 +318,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdLender(Wallet $idLender): Loans
+    public function setIdLender(Wallet $idLender) : Loans
     {
         $this->idLender = $idLender;
 
@@ -330,7 +330,7 @@ class Loans
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
      */
-    public function getIdLender(): Wallet
+    public function getIdLender() : Wallet
     {
         return $this->idLender;
     }
@@ -342,7 +342,7 @@ class Loans
      *
      * @return Loans
      */
-    public function setIdTypeContract(UnderlyingContract $idTypeContract): Loans
+    public function setIdTypeContract(UnderlyingContract $idTypeContract) : Loans
     {
         $this->idTypeContract = $idTypeContract;
 
@@ -354,7 +354,7 @@ class Loans
      *
      * @return \Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract
      */
-    public function getIdTypeContract(): UnderlyingContract
+    public function getIdTypeContract() : UnderlyingContract
     {
         return $this->idTypeContract;
     }
@@ -362,7 +362,7 @@ class Loans
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue(): void
+    public function setAddedValue() : void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -372,7 +372,7 @@ class Loans
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue(): void
+    public function setUpdatedValue() : void
     {
         $this->updated = new \DateTime();
     }

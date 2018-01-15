@@ -102,7 +102,7 @@ class BidManager
     /**
      * @param Wallet       $wallet
      * @param Projects     $project
-     * @param int|float    $amount
+     * @param float        $amount
      * @param float        $rate
      * @param Autobid|null $autobidSetting
      * @param bool         $sendNotification
@@ -110,7 +110,7 @@ class BidManager
      * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, bool $sendNotification = true) : Bids
+    public function bid(Wallet $wallet, Projects $project, float $amount, float $rate, ?Autobid $autobidSetting, bool $sendNotification = true) : Bids
     {
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
