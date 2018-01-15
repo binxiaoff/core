@@ -630,7 +630,7 @@ class EcheanciersRepository extends EntityRepository
     public function getRemainingCapitalByLoan($loans)
     {
         if (false === is_array($loans)) {
-            $loans[] = $loans;
+            $loans = array($loans);
         }
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2)')
