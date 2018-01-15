@@ -81,9 +81,9 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                             $mailerManager->sendFundFailedToLender($project);
                         }
 
-                        $now = new \DateTime();
+                        $now          = new \DateTime();
                         $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
-                        $message = $slackManager->getProjectName($project) . ' - Cloturé le ' . $now->format('d/m/Y à H:i') . ' (' . $loan->getNbPreteurs($project->id_project) . ' prêteurs - ' . str_replace('.', ',', round($project->getAverageInterestRate(), 2)) . '%)';
+                        $message      = $slackManager->getProjectName($project) . ' - Cloturé le ' . $now->format('d/m/Y à H:i') . ' (' . $loan->getNbPreteurs($project->id_project) . ' prêteurs - ' . str_replace('.', ',', round($project->getAverageInterestRate(), 2)) . '%)';
                         $slackManager->sendMessage($message);
 
                         $mailerManager->sendProjectFinishedToStaff($project);

@@ -58,13 +58,13 @@ class LoanManager
             ->setIdTypeContract($contract);
 
         $this->entityManager->persist($loan);
+        $this->entityManager->flush($loan);
 
         /** @var AcceptedBids $acceptedBid */
         foreach ($acceptedBids as $acceptedBid) {
             $acceptedBid->setIdLoan($loan);
+            $this->entityManager->flush($acceptedBid);
         }
-
-        $this->entityManager->flush();
     }
 
     /**
