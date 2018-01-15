@@ -25,7 +25,7 @@ class SecurityController extends Controller
      */
     public function loginAction(Request $request)
     {
-        if ($this->getUser()) {
+        if ($this->container->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('home');
         }
 
