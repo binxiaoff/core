@@ -115,11 +115,12 @@ class NotificationManager
      * @param int|null                  $projectId
      * @param int|null                  $loanId
      * @param bool                      $sent
+     * @param null|\DateTime            $notificationDate
      *
      * @return ClientsGestionMailsNotif
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createEmailNotification($notificationId, $mailType, $clientId, WalletBalanceHistory $walletBalanceHistory = null, $projectId = null, $loanId = null, $sent = false) : ClientsGestionMailsNotif
+    public function createEmailNotification(int $notificationId, int $mailType, int $clientId, WalletBalanceHistory $walletBalanceHistory = null, int $projectId = null, int $loanId = null, bool $sent = false, \DateTime $notificationDate = null) : ClientsGestionMailsNotif
     {
         $emailNotification = new ClientsGestionMailsNotif();
         $emailNotification
@@ -129,6 +130,9 @@ class NotificationManager
             ->setIdNotification($notificationId)
             ->setIdProject($projectId)
             ->setIdLoan($loanId);
+        if ($notificationDate instanceof \DateTime) {
+            $emailNotification->setDateNotif($notificationDate);
+        }
 
         if (null !== $walletBalanceHistory) {
             $emailNotification->setIdWalletBalanceHistory($walletBalanceHistory);
