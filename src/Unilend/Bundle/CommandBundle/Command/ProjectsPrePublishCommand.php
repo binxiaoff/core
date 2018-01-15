@@ -29,13 +29,13 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
                 $output->writeln('Project : ' . $project->title);
 
                 try {
+                    $projectLifecycleManager->setLogger($logger);
                     $projectLifecycleManager->prePublish($project);
                 } catch (\Exception $exception) {
-                    $logger->critical('An exception occurred during prepublishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
-                            'method' => __METHOD__,
-                            'file'   => $exception->getFile(),
-                            'line'   => $exception->getLine()
-                        ]);
+                    $logger->critical(
+                        'An exception occurred during prepublishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(),
+                        ['method' => __METHOD__, 'file'   => $exception->getFile(), 'line'   => $exception->getLine() ]
+                    );
                 }
             }
         }
