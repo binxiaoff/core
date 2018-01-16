@@ -24,6 +24,8 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
         $project        = $entityManagerSimulator->getRepository('projects');
         $projectsToFund = $project->selectProjectsByStatus([\projects_status::A_FUNDER], "AND p.date_publication <= (NOW() + INTERVAL 15 MINUTE)", [], '', 1, false);
 
+        $projectLifecycleManager->setLogger($logger);
+
         foreach ($projectsToFund as $projectTable) {
             if ($project->get($projectTable['id_project'])) {
                 $output->writeln('Project : ' . $project->title);
@@ -31,11 +33,10 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
                 try {
                     $projectLifecycleManager->prePublish($project);
                 } catch (\Exception $exception) {
-                    $logger->critical('An exception occurred during prepublishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
-                            'method' => __METHOD__,
-                            'file'   => $exception->getFile(),
-                            'line'   => $exception->getLine()
-                        ]);
+                    $logger->critical(
+                        'An exception occurred during prepublishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(),
+                        ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
                 }
             }
         }
