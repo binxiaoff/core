@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+
+?>
 <script type="text/javascript">
     $(function() {
         jQuery.tablesorter.addParser({
@@ -88,7 +93,7 @@
                 <?php foreach ($this->lProjects as $iIndex => $aProject) : ?>
                     <?php
                         $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
-                        $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
+                        $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = ' . EcheanciersEmprunteur::STATUS_PENDING, 'ordre ASC');
                     ?>
                     <tr<?= ($iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] ?></a></td>

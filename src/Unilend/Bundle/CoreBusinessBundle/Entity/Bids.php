@@ -14,11 +14,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Bids
 {
-    const STATUS_BID_PENDING                  = 0;
-    const STATUS_BID_ACCEPTED                 = 1;
-    const STATUS_BID_REJECTED                 = 2;
-    const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
-
+    const STATUS_PENDING                      = 0;
+    const STATUS_ACCEPTED                     = 1;
+    const STATUS_REJECTED                     = 2;
+    const STATUS_TEMPORARILY_REJECTED_AUTOBID = 3;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects

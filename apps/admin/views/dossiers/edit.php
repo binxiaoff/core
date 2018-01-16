@@ -181,6 +181,28 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
     .takeover-popup {
         width: 400px;
     }
+
+    .memo-privacy-switch {
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+    }
+
+    .memo-privacy-switch.public {
+        background: no-repeat center url('<?= $this->surl ?>/images/admin/unlock.png');
+    }
+
+    .memo-privacy-switch.private {
+        background: no-repeat center url('<?= $this->surl ?>/images/admin/lock.png');
+    }
+
+    .memo-privacy-switch.loading {
+        background: no-repeat center url('<?= $this->lurl ?>/oneui/js/plugins/bootstrap3-editable/img/loading.gif');
+    }
+
+    .memo-privacy-switch > a {
+        margin: 0;
+    }
 </style>
 
 <script>
@@ -502,6 +524,44 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                     }
                 }
             })
+    })
+
+    $(document).on('click', '.memo-privacy-switch', function (event) {
+        event.preventDefault()
+
+        var $switch = $(this)
+        var commentId = $switch.closest('[data-comment-id]').data('comment-id')
+        var privacy = $switch.hasClass('public')
+
+        if ($switch.hasClass('loading')) {
+            alert('La visibilité du mémo est en cours de modification, veuillez patienter')
+            return
+        }
+
+        $.ajax({
+            url: '<?= $this->lurl ?>/dossiers/memo',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                commentId: commentId,
+                public: privacy ? 0 : 1
+            },
+            beforeSend: function () {
+                $switch.removeClass('public private').addClass('loading')
+            },
+            success: function (response) {
+                if (response.success) {
+                    $switch.removeClass('loading').addClass(privacy ? 'private' : 'public')
+                } else if (response.error) {
+                    $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
+                    alert(response.error)
+                }
+            },
+            error: function () {
+                $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
+                alert('Impossible de modifier la visibilité du mémo (erreur inconnue)')
+            }
+        })
     })
 })
 </script>

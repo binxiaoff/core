@@ -100,10 +100,9 @@ class MailerManager
     public function sendBidConfirmation(\notifications $notification)
     {
         /** @var Bids $bid */
-        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
+        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idBid' => $notification->id_bid, 'idAutobid' => null]);
 
         if (null !== $bid) {
-            $mailTemplate = $bid->getAutobid() ? 'confirmation-autobid' : 'confirmation-bid';
             $keywords     = [
                 'firstName'     => $bid->getIdLenderAccount()->getIdClient()->getPrenom(),
                 'companyName'   => $bid->getProject()->getIdCompany()->getName(),
@@ -116,15 +115,15 @@ class MailerManager
             ];
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage($mailTemplate, $keywords);
+            $message = $this->messageProvider->newMessage('confirmation-bid', $keywords);
 
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception){
                 $this->oLogger->warning(
-                    'Could not send email: ' . $mailTemplate . ' - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    'Could not send email: "confirmation-bid" - Exception: ' . $exception->getMessage(),
+                    ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $bid->getIdLenderAccount()->getIdClient()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
             }
         }
@@ -186,7 +185,7 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
-        if ($oBorrower->status == 1) {
+        if ($oBorrower->status == Clients::STATUS_ONLINE) {
             $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait);
 
             if ($inter['mois'] > 0) {
@@ -1865,7 +1864,7 @@ class MailerManager
         $token     = $this->entityManagerSimulator->getRepository('temporary_links_login')->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG);
         $variables = [
             'firstName'                  => $client->getPrenom(),
-            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['token' => $token]),
+            'activationLink'             => $this->sFUrl . $this->container->get('router')->generate('partner_security', ['securityToken' => $token]),
             'borrowerServicePhoneNumber' => $this->settingsRepository->findOneBy(['type' => 'Téléphone emprunteur'])->getValue(),
             'borrowerServiceEmail'       => $this->settingsRepository->findOneBy(['type' => 'Adresse emprunteur'])->getValue(),
         ];

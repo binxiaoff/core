@@ -2,8 +2,10 @@
 
 use Doctrine\DBAL\Statement;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -409,19 +411,15 @@ class projects extends projects_crud
         return parent::get($id_project, 'id_project');
     }
 
-    public function countProjectsByStatusAndLender($lender, $status)
+    public function countProjectsByStatusAndLender($lender, array $status)
     {
-        if (is_array($status)) {
-            $statusString = implode(",", $status);
-        }
-
         $sql = '
             SELECT COUNT(DISTINCT l.id_project)
             FROM loans l
             INNER JOIN projects p ON l.id_project = p.id_project
             WHERE id_lender = ' . $lender . '
-            AND l.status = 0
-            AND p.status IN (' . $statusString . ')';
+            AND l.status = ' . Loans::STATUS_ACCEPTED . '
+            AND p.status IN (' . implode(',', $status) . ')';
 
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
@@ -517,7 +515,7 @@ class projects extends projects_crud
                 $queryBuilder
                     ->from('bids')
                     ->andWhere('status IN (:status)')
-                    ->setParameter('status', [\bids::STATUS_BID_PENDING, \bids::STATUS_BID_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                    ->setParameter('status', [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
                 break;
             case ProjectsStatus::FUNDING_KO:
                 $queryBuilder
@@ -638,7 +636,7 @@ class projects extends projects_crud
             FROM projects p
               INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE (capital + interets + commission + tva - paid_capital - paid_interest - paid_commission_vat_incl) > 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
               INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
-              INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
+              INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = ' . EcheanciersEmprunteur::STATUS_PENDING . '
             WHERE p.status = ' . ProjectsStatus::PROBLEME . '
                   AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
         );
@@ -719,8 +717,9 @@ class projects extends projects_crud
                           FROM loans l
                           INNER JOIN projects p ON p.id_project = l.id_project
                           INNER JOIN projects_status ps ON ps.status = p.status
-                          WHERE l.status = 0 AND p.status > ' . ProjectsStatus::EN_FUNDING . '
-                          AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
+                          WHERE l.status = ' . Loans::STATUS_ACCEPTED . '
+                            AND p.status > ' . ProjectsStatus::EN_FUNDING . '
+                            AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
                           GROUP BY l.id_loan
                        ) t
                        GROUP BY t.id_project
@@ -728,7 +727,7 @@ class projects extends projects_crud
                     INNER JOIN (
                       SELECT count(b.id_bid) as bids_nb, b.id_project
                       FROM bids b
-                      WHERE b.status = ' . \bids::STATUS_BID_ACCEPTED . '
+                      WHERE b.status = ' . Bids::STATUS_ACCEPTED . '
                       GROUP BY b.id_project
                     ) pb ON pb.id_project = pg.id_project
                     LEFT JOIN (
@@ -736,7 +735,7 @@ class projects extends projects_crud
                       FROM (
                         SELECT id_project, amount, rate
                         FROM bids
-                        WHERE status = ' . \bids::STATUS_BID_ACCEPTED . '
+                        WHERE status = ' . Bids::STATUS_ACCEPTED . '
                         AND id_autobid != ""
                       ) t1
                       GROUP BY t1.id_project
@@ -876,7 +875,16 @@ class projects extends projects_crud
 
     public function getAverageNumberOfLendersForProject()
     {
-        $sQuery     = 'SELECT ROUND(AVG(t.lenderCount), 0) FROM (SELECT id_project, COUNT(DISTINCT id_lender) AS lenderCount FROM `loans` WHERE status = 0 GROUP BY id_project) AS t ';
+        $sQuery = '
+            SELECT ROUND(AVG(t.lenderCount), 0) 
+            FROM (
+                SELECT id_project, 
+                    COUNT(DISTINCT id_lender) AS lenderCount 
+                FROM loans
+                WHERE status = ' . Loans::STATUS_ACCEPTED . ' 
+                GROUP BY id_project
+            ) AS t ';
+
         $oStatement = $this->bdd->executeQuery($sQuery);
 
         return $oStatement->fetchColumn(0);
@@ -999,19 +1007,17 @@ class projects extends projects_crud
     {
         $result = [];
         $sql    = '
-        SELECT
-          companies.sector,
-          count(companies.sector) AS count,
-          sum(l.amount) / 100 AS loaned_amount,
-          avg(l.rate) AS average_rate
-        FROM companies
-          INNER JOIN projects ON projects.id_company = companies.id_company
-          INNER JOIN projects_status_history
-            ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
-          INNER JOIN loans l ON l.id_project = projects.id_project
-        WHERE l.id_lender = :id_lender AND l.status = 0
-        GROUP BY companies.sector
-        ';
+            SELECT
+                companies.sector,
+                COUNT(companies.sector) AS count,
+                SUM(l.amount) / 100 AS loaned_amount,
+                AVG(l.rate) AS average_rate
+            FROM companies
+            INNER JOIN projects ON projects.id_company = companies.id_company
+            INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
+            INNER JOIN loans l ON l.id_project = projects.id_project
+            WHERE l.id_lender = :id_lender AND l.status = ' . Loans::STATUS_ACCEPTED . '
+            GROUP BY companies.sector';
 
         /** @var Statement $query */
         $query = $this->bdd->executeQuery($sql, ['id_lender' => $lenderId], ['id_lender' => \PDO::PARAM_INT]);

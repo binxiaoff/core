@@ -3,14 +3,15 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\Translation\TranslatorInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\core\Loader;
 
 class CIPManager
@@ -643,7 +644,7 @@ class CIPManager
         $lenderBids      = $bid->sum('
                 id_lender_account = ' . $bid->id_lender_account . ' 
                 AND id_project = ' . $project->id_project . ' 
-                AND status IN (' . \bids::STATUS_BID_PENDING . ', ' . \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY . ')',
+                AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
             'ROUND(amount / 100)'
         );
 

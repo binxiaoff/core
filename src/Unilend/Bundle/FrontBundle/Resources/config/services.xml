@@ -106,7 +106,7 @@
             <argument type="service" id="logger" />
             <argument type="service" id="translator" />
             <argument type="service" id="unilend.swiftmailer.message_provider" />
-            <argument type="service" id="swiftmailer.mailer.default" />
+            <argument type="service" id="mailer" />
             <argument type="service" id="unilend.service.wire_transfer_out_manager" />
             <argument>%url.universign%</argument>
             <argument>%kernel.root_dir%</argument>

@@ -69,8 +69,6 @@ class InvoiceManager
 
     /**
      * @param Factures $invoice
-     *
-     * @throws \Exception
      */
     public function generateProjectFundsCommissionInvoice(Factures $invoice)
     {
@@ -83,8 +81,6 @@ class InvoiceManager
 
     /**
      * @param Factures $invoice
-     *
-     * @throws \Exception
      */
     public function generateProjectRepaymentCommissionInvoice(Factures $invoice)
     {

@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class CheckBorrowerDebitCommand extends ContainerAwareCommand
@@ -46,7 +47,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
 
                     <td>' . $l['date_echeance_emprunteur'] . '</td>
                     <td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-                    <td>' . ((int) $l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
+                    <td>' . ((int) $l['status_emprunteur'] === Echeanciers::STATUS_REPAID ? 'Oui' : 'Non') . '</td>
                 </tr>';
         }
 

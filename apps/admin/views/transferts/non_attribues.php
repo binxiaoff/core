@@ -21,8 +21,8 @@
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 4, 5]},
-                {searchable: false, targets: [1, 2, 3, 4, 5, 6, 7]},
-                {visible: false, targets: [6, 7]},
+                {searchable: false, targets: [1, 2, 3, 4, 5, 6, 7, 8]},
+                {visible: false, targets: [6, 7, 8]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
@@ -39,6 +39,7 @@
                 var receptionId = data[0]
                 var comment = data[7]
                 var line = data[6]
+                var rejection = data[8]
 
                 var attachReceptionBtn = '<a class="attach-reception thickbox" title="Attribuer l\'operation" href="<?= $this->lurl ?>/transferts/attribution/' + receptionId + '">' +
                     '<span class="fa fa-check"></span>' +
@@ -53,11 +54,18 @@
                     '<span class="fa fa-pencil"></span>' +
                     '</a>'
 
+                if (rejection) {
+                    $row.css('background', '#f9adb3')
+                }
+
                 if (comment !== null && comment !== '') {
                     addCommentBtn = '<a class="add-comment modify-comment table-action" data-comment="' + comment + '" title="Modifier le commentaire">' +
                         '<span class="fa fa-pencil-square"></span>' +
                         '</a>'
-                    $row.css('background', '#fdeec6')
+
+                    if (! rejection) {
+                        $row.css('background', '#fdeec6')
+                    }
                 }
                 $row.find('td:last-child').append(attachReceptionBtn + ignoreReceptionBtn + showReceptionBtn + addCommentBtn)
                 $row.attr('data-reception-id', receptionId)
@@ -170,7 +178,7 @@
             <th>Motif</th>
             <th>Montant</th>
             <th>Date</th>
-            <th title="Code interbancaire (Cfonb120)">Code</th>
+            <th>Code *</th>
             <th style="width: 120px">&nbsp;</th>
         </tr>
         </thead>
@@ -180,11 +188,15 @@
             <th>Motif</th>
             <th>Montant</th>
             <th>Date</th>
-            <th title="Code interbancaire (Cfonb120)">Code</th>
+            <th>Code *</th>
             <th>&nbsp;</th>
         </tr>
         </tfoot>
     </table>
+    <p>
+        <strong>* Code interbancaire (Cfonb120) / Code BNPP</strong><br>
+        Les virements prêteur dont le code BNPP n'est pas "0568" ne sont pas attribués automatiquement et doivent l'être manuellement.
+    </p>
     <div class="hidden">
         <div id="modal-show-reception" style="padding: 10px; min-width: 500px;">
             <div class="line"></div>

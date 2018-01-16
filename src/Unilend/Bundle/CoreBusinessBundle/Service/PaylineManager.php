@@ -21,42 +21,30 @@ class PaylineManager
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-
     /** @var EntityManager */
     private $entityManager;
-
     /** @var TemplateMessageProvider */
     private $messageProvider;
-
     /** @var \Swift_Mailer */
     private $mailer;
-
     /** @var ClientManager */
     private $clientManager;
-
     /** @var OperationManager */
     private $operationManager;
-
     /** @var RouterInterface */
     private $router;
-
     /** @var LoggerInterface */
     private $logger;
-
     /** @var string */
     private $sUrl;
-
     /** @var boolean */
     private $isProduction;
-
     /** @var string */
     private $merchantId;
-
     /** @var string */
     private $accessKey;
-
     /** @var NumberFormatter */
-    private $numberFormatter;
+    private $currencyFormatter;
 
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -67,7 +55,7 @@ class PaylineManager
         OperationManager $operationManager,
         RouterInterface $router,
         Packages $assetsPackages,
-        NumberFormatter $numberFormatter,
+        NumberFormatter $currencyFormatter,
         $paylineFile,
         $environment,
         $merchantId,
@@ -87,7 +75,7 @@ class PaylineManager
         $this->isProduction           = $environment === 'prod' ? true : false;
         $this->merchantId             = (string) $merchantId; // PaylineSDK need string
         $this->accessKey              = $accessKey;
-        $this->numberFormatter        = $numberFormatter;
+        $this->currencyFormatter      = $currencyFormatter;
     }
 
     /**
@@ -262,8 +250,8 @@ class PaylineManager
 
             $keywords = [
                 'firstName'     => $backPayline->getWallet()->getIdClient()->getPrenom(),
-                'amount'        => $this->numberFormatter->format($amount),
-                'balance'       => $this->numberFormatter->format((float) $backPayline->getWallet()->getAvailableBalance()),
+                'amount'        => $this->currencyFormatter->formatCurrency($amount, 'EUR'),
+                'balance'       => $this->currencyFormatter->formatCurrency((float) $backPayline->getWallet()->getAvailableBalance(), 'EUR'),
                 'lenderPattern' => $backPayline->getWallet()->getWireTransferPattern()
             ];
 

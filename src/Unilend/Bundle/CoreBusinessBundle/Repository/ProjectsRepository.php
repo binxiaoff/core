@@ -11,7 +11,7 @@ use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyStatus, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
+    Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
 use Unilend\librairies\CacheKeys;
 
@@ -918,39 +918,40 @@ class ProjectsRepository extends EntityRepository
     {
         $query = '
             SELECT
-              COUNT(DISTINCT p.id_project) AS amount,
-              (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
+                COUNT(DISTINCT p.id_project) AS amount,
+                (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
             FROM projects p
-              INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
-              INNER JOIN companies c ON c.id_company = p.id_company
-              INNER JOIN company_status cs ON cs.id = c.id_status
+            INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
+            INNER JOIN companies c ON c.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
             WHERE p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
-              AND
-                (
-                SELECT lender_payment_status.status
-                FROM echeanciers lender_payment_status
-                WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre
-                  AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
-                LIMIT 1 ) = 0
-              AND
-                (
-                SELECT lender_payment_date.date_echeance
-                FROM echeanciers lender_payment_date
-                WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre
-                  AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
-                LIMIT 1) < NOW()
-              AND IF(
+                AND (
+                    SELECT lender_payment_status.status
+                    FROM echeanciers lender_payment_status
+                    WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                    LIMIT 1 
+                ) = ' . Echeanciers::STATUS_PENDING . '
+                AND (
+                    SELECT lender_payment_date.date_echeance
+                    FROM echeanciers lender_payment_date
+                    WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
+                    LIMIT 1
+                ) < NOW()
+                AND IF((
                     cs.label IN (:companyStatus)
                     OR p.status = ' . ProjectsStatus::LOSS . '
-                    OR (p.status = ' . ProjectsStatus::PROBLEME . '
+                    OR (
+                        p.status = ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
-                                            SELECT psh2.added
-                                            FROM projects_status_history psh2
-                                              INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                            WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
-                                              AND psh2.id_project = echeanciers_emprunteur.id_project
-                                            ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :healthy
+                            SELECT psh2.added
+                            FROM projects_status_history psh2
+                            INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                            WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = echeanciers_emprunteur.id_project
+                            ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                            LIMIT 1
+                        )) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
+                    )
+                ), FALSE, TRUE) = :healthy
             GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(

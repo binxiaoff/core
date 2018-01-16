@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
@@ -152,14 +153,14 @@ class preteursController extends bootstrap
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
             }
 
-            $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . \loans::STATUS_ACCEPTED);
+            $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
             $this->txMoyen  = $loans->getAvgPrets($wallet->getId());
             $this->sumPrets = $loans->sumPrets($wallet->getId());
 
             if (isset($this->params[1])) {
-                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . \loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = ' . $this->params[1] . ' AND status = ' . Loans::STATUS_ACCEPTED);
             } else {
-                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . \loans::STATUS_ACCEPTED);
+                $this->lEncheres = $loans->select('id_lender = ' . $wallet->getId() . ' AND YEAR(added) = YEAR(CURDATE()) AND status = ' . Loans::STATUS_ACCEPTED);
             }
 
             $this->SumDepot = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]);
@@ -179,9 +180,9 @@ class preteursController extends bootstrap
             }
 
             $this->sumRembMontant = $this->echeanciers->getRepaidAmount(['id_lender' => $wallet->getId()]);
-            $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode(', ', [Bids::STATUS_BID_ACCEPTED, Bids::STATUS_BID_REJECTED]));
+            $this->avgPreteur     = $bids->getAvgPreteur($wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
             $this->sumBidsEncours = $bids->sumBidsEncours($wallet->getId());
-            $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_BID_PENDING, 'added DESC');
+            $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
 
             $this->attachments     = $wallet->getIdClient()->getAttachments();
@@ -340,7 +341,7 @@ class preteursController extends bootstrap
                 $this->city_fiscal         = $this->companies->city;
                 $this->zip_fiscal          = $this->companies->zip;
 
-                $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
+                $this->settings->get("Liste deroulante origine des fonds societe", 'type');
                 $this->origine_fonds = $this->settings->value;
                 $this->origine_fonds = explode(';', $this->origine_fonds);
 
@@ -356,7 +357,7 @@ class preteursController extends bootstrap
                 $this->aExemptionYears = array_column($this->taxExemption, 'year');
                 $this->iNextYear       = date('Y') + 1;
 
-                $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
+                $this->settings->get("Liste deroulante origine des fonds", 'type');
                 $this->origine_fonds                 = $this->settings->value;
                 $this->origine_fonds                 = explode(';', $this->origine_fonds);
                 $this->taxExemptionUserHistoryAction = $this->getTaxExemptionHistoryActionDetails($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
@@ -1211,32 +1212,6 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
         $this->aLenders = $clientRepository->getLendersToMatchBirthCity(200);
-    }
-
-    public function _email_history_preview()
-    {
-        $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $mailQueueManager */
-        $mailQueueManager = $this->get('unilend.service.mail_queue');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue $mailQueue */
-        $mailQueue = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:MailQueue')->find($this->params[0]);
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $email */
-        $email = $mailQueueManager->getMessage($mailQueue);
-        /** @var \DateTime $sentAt */
-        $sentAt = $mailQueue->getSentAt();
-
-        $from = $email->getFrom();
-        $to   = $email->getTo();
-
-        $this->email = [
-            'date'    => $sentAt->format('d/m/Y H:i'),
-            'from'    => array_shift($from),
-            'to'      => array_shift($to),
-            'subject' => $email->getSubject(),
-            'body'    => $email->getBody()
-        ];
     }
 
     /**
