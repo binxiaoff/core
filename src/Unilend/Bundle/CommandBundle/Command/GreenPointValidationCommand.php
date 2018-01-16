@@ -2,6 +2,8 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,23 +63,35 @@ EOF
             $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
             $requests          = [];
 
+            $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+
             foreach ($clients as $client) {
                 $attachments = $client->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
                         continue;
                     }
-                    if (false === $attachmentManager->isModifiedAttachment($attachment)) {
+
+                    try {
+                        $validationCount = $clientStatusHistoryRepository->getValidationsCount($client->getIdClient());
+                    } catch (NoResultException $noResultException) {
+                        $validationCount = 0;
+                    } catch (NonUniqueResultException $nonUniqueResultException) {
+                        $validationCount = 1;
+                    }
+                    if ($validationCount > 0 && false === $attachmentManager->isModifiedAttachment($attachment)) {
                         $logger->warning(
                             'The attachment ID ' . $attachment->getId() . ' will be ignored according to isModifiedAttachment method.',
                             ['method' => __METHOD__, 'id_client' => $client->getIdClient()]
                         );
                         continue;
                     }
+
                     if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {
                         $logger->error('Attachment file not found (ID ' . $attachment->getId() . ')', ['class' => __CLASS__, 'function' => __FUNCTION__]);
                         continue;
                     }
+
                     $greenPointAttachment = $attachment->getGreenpointAttachment();
                     if (null === $greenPointAttachment) {
                         $greenPointAttachment = new GreenpointAttachment();
