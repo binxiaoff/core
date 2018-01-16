@@ -3,8 +3,8 @@
 namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Mailjet\Response;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -45,7 +45,7 @@ class MailQueueManager
      * @param TemplateMessage $message
      *
      * @return bool
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Swift_RfcComplianceException
      */
     public function queue(TemplateMessage $message) : bool
@@ -63,31 +63,38 @@ class MailQueueManager
             chmod($this->sharedTemporaryPath . $attachments[$index]['tmp_file'], 0660);
         }
 
-        $recipients   = TemplateMessage::emailAddressToString($message->getTo());
-        $replyTo      = is_array($message->getReplyTo()) ? TemplateMessage::emailAddressToString($message->getReplyTo()) : null;
-        $clientId     = null;
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $replyTo          = $this->emailAddressToString($message->getReplyTo());
 
-        if (1 === count($message->getTo())) {
-            $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $recipients]);
+        foreach ($message->getTo() as $email => $name) {
+            $recipient = $email;
+
+            if (false === empty($name)) {
+                $recipient = $name . ' <' . $email . '>';
+            }
+
+            $clientId = null;
+            $clients  = $clientRepository->findBy(['email' => $email]);
 
             if (1 === count($clients)) {
                 $clientId = $clients[0]->getIdClient();
             }
+
+            $mailQueue = new MailQueue();
+            $mailQueue
+                ->setIdMailTemplate($mailTemplate)
+                ->setSerializedVariables(json_encode($message->getVariables()))
+                ->setAttachments(json_encode($attachments))
+                ->setReplyTo($replyTo)
+                ->setStatus(MailQueue::STATUS_PENDING)
+                ->setToSendAt($message->getToSendAt())
+                ->setRecipient($recipient)
+                ->setIdClient($clientId);
+
+            $this->entityManager->persist($mailQueue);
         }
 
-        $mailQueue = new MailQueue();
-        $mailQueue
-            ->setIdMailTemplate($mailTemplate)
-            ->setSerializedVariables(json_encode($message->getVariables()))
-            ->setAttachments(json_encode($attachments))
-            ->setRecipient($recipients)
-            ->setIdClient($clientId)
-            ->setReplyTo($replyTo)
-            ->setStatus(MailQueue::STATUS_PENDING)
-            ->setToSendAt($message->getToSendAt());
-
-        $this->entityManager->persist($mailQueue);
-        $this->entityManager->flush($mailQueue);
+        $this->entityManager->flush();
 
         return true;
     }
@@ -108,8 +115,17 @@ class MailQueueManager
             ->setQueueId($email->getIdQueue());
 
         if (false === empty($email->getReplyTo())) {
-            $message->setReplyTo($email->getReplyTo());
+            $replyToEmail = $email->getReplyTo();
+            $replyToName  = null;
+
+            if (1 === preg_match('#^(?<name>.*)\s?\<(?<email>.*)\>$#', $replyToEmail, $matches)) {
+                $replyToEmail = trim($matches['email']);
+                $replyToName  = trim($matches['name']);
+            }
+
+            $message->setReplyTo($replyToEmail, $replyToName);
         }
+
         $attachments = json_decode($email->getAttachments(), true);
         if (is_array($attachments)) {
             foreach ($attachments as $attachment) {
@@ -167,33 +183,24 @@ class MailQueueManager
     }
 
     /**
-     * @param MailQueue $email
-     * @param Response  $response
+     * @param array $emails
      *
-     * @return null|integer
+     * @return string
      */
-    public function findMessageId(MailQueue $email, Response $response)
+    private function emailAddressToString(array $emails)
     {
-        $messageId = null;
-        if ($email->getRecipient()) {
-            // Get first recipient (see TECH-241)
-            $recipient = array_values(explode(',', $email->getRecipient()))[0];
-            if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                $firstRecipient= trim($matches['email']);
-            } else {
-                $firstRecipient = trim($recipient);
+        $formattedEmails = '';
+        foreach ($emails as $email => $name) {
+            if ($formattedEmails) {
+                $formattedEmails .= ', ';
             }
-            $body = $response->getBody();
-            if (false === empty($body['Sent'])) {
-                foreach ($body['Sent'] as $sent) {
-                    if ($sent['Email'] === $firstRecipient) {
-                        $messageId = $sent['MessageID'];
-                        break;
-                    }
-                }
+            if ($name) {
+                $formattedEmails .= $name . ' <' . $email . '>';
+            } else {
+                $formattedEmails .= $email;
             }
         }
 
-        return $messageId;
+        return $formattedEmails;
     }
 }

@@ -7,6 +7,7 @@ use Mailjet\Resources;
 use Mailjet\Response;
 use Psr\Log\LoggerInterface;
 use Swift_Events_EventListener;
+use Unilend\Bundle\CoreBusinessBundle\Entity\MailQueue;
 
 class MailjetTransport implements \Swift_Transport
 {
@@ -151,5 +152,26 @@ class MailjetTransport implements \Swift_Transport
         }
 
         return $formattedEmails;
+    }
+
+    /**
+     * @param MailQueue $mailQueue
+     * @param Response  $response
+     *
+     * @return null|integer
+     */
+    public function getMessageId(MailQueue $mailQueue, Response $response)
+    {
+        $body = $response->getBody();
+
+        if (false === empty($body['Messages'])) {
+            foreach ($body['Messages'] as $message) {
+                if (isset($message['CustomID'], $message['To'][0]['MessageID']) && $message['CustomID'] == $mailQueue->getIdQueue()) {
+                    return $message['To'][0]['MessageID'];
+                }
+            }
+        }
+
+        return null;
     }
 }

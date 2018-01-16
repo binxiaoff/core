@@ -100,8 +100,8 @@ class TemplateMessage extends \Swift_Message
     }
 
     /**
-     * @param mixed $addresses
-     * @param null  $name
+     * @param string|array $addresses
+     * @param string|null  $name
      *
      * @return $this
      *
@@ -110,16 +110,27 @@ class TemplateMessage extends \Swift_Message
     public function setTo($addresses, $name = null)
     {
         $addresses = self::normalizeEmail($addresses);
+
         parent::setTo($addresses, $name);
 
         return $this;
     }
 
+    /**
+     * @param string|array $addresses
+     * @param string|null  $name
+     *
+     * @return $this
+     *
+     * @throws \Swift_RfcComplianceException
+     */
     public function setReplyTo($addresses, $name = null)
     {
         $addresses = self::normalizeEmail($addresses);
 
-        return parent::setReplyTo($addresses, $name);
+        parent::setReplyTo($addresses, $name);
+
+        return $this;
     }
 
     /**
@@ -152,32 +163,6 @@ class TemplateMessage extends \Swift_Message
     public function getToSendAt()
     {
         return $this->toSendAt;
-    }
-
-    /**
-     * @param array $emails
-     *
-     * @return string
-     */
-    public static function emailAddressToString(array $emails)
-    {
-        if (is_array($emails)) {
-            $formattedEmails = '';
-            foreach ($emails as $email => $name) {
-                if ($formattedEmails) {
-                    $formattedEmails .= ', ';
-                }
-                if ($name) {
-                    $formattedEmails .= $name . ' <' . $email . '>';
-                } else {
-                    $formattedEmails .= $email;
-                }
-            }
-        } else {
-            $formattedEmails = $emails;
-        }
-
-        return $formattedEmails;
     }
 
     /**
@@ -214,10 +199,14 @@ class TemplateMessage extends \Swift_Message
      *
      * @param string|array $emails
      *
-     * @return array
+     * @return string|array
      */
     private static function normalizeEmail($emails)
     {
+        if (is_string($emails)) {
+            return self::removeTimeStampSuffix($emails);
+        }
+
         $normalizedEmails = [];
 
         $emails = self::emailAddressToArray($emails);

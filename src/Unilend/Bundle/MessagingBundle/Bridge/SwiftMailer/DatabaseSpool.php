@@ -130,8 +130,7 @@ class DatabaseSpool extends \Swift_ConfigurableSpool
                         foreach ($batch as $email) {
                             $email->setStatus(MailQueue::STATUS_SENT);
                             $email->setSentAt(new \DateTime());
-                            $messageId = $this->mailQueueManager->findMessageId($email, $response);
-                            $email->setIdMessageMailjet($messageId);
+                            $email->setIdMessageMailjet($transport->getMessageId($email, $response));
                         }
                     } else {
                         $reasonPhrase = json_encode($response->getReasonPhrase());
