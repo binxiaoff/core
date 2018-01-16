@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, Sponsorship, TaxType, UnderlyingContractAttributeType, Users, WalletType
+    AcceptedBids, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, TaxType, UnderlyingContractAttributeType, Users, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
@@ -383,7 +383,7 @@ class ProjectLifecycleManager
         }
     }
 
-    /***
+    /**
      * @param \projects $project
      *
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -400,10 +400,15 @@ class ProjectLifecycleManager
             if ($bid) {
                 if ($bidBalance < $project->amount) {
                     $bidAmount      = round(bcdiv($bid->getAmount(), 100, 4), 2);
-                    $bidBalance     = bcadd($bidBalance, $bidAmount, 2);
-                    $acceptedAmount = $bidBalance > $project->amount ? $bidBalance - $project->amount : $bidAmount;
+                    $bidBalance     = round(bcadd($bidBalance, $bidAmount, 2));
+                    $acceptedAmount = null;
 
+                    if ($bidBalance > $project->amount) {
+                        $cutAmount      = $bidBalance - $project->amount;
+                        $acceptedAmount = bcmul(bcsub($bidAmount, $cutAmount, 2), 100);
+                    }
                     $this->bidManager->accept($bid, $acceptedAmount);
+
                 } else {
                     $this->bidManager->reject($bid, true);
                 }
@@ -472,7 +477,7 @@ class ProjectLifecycleManager
                     continue;
                 }
 
-                $bidAmount = round(bcdiv($acceptedBid->getIdBid()->getAmount(), 100, 4), 2);
+                $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
                 if (true === $isIfpContract && bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
                     $interests      = bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $bidAmount, 2), 2);
                     $loansLenderSum += $bidAmount;
@@ -525,7 +530,7 @@ class ProjectLifecycleManager
 
             /** @var AcceptedBids $acceptedBid */
             foreach ($acceptedBids as $acceptedBid) {
-                $bidAmount      = round(bcdiv($acceptedBid->getIdBid()->getAmount(), 100, 4), 2);
+                $bidAmount      = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
                 $interests      = bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $bidAmount, 2), 2);
                 $loansLenderSum = bcadd($loansLenderSum, $bidAmount, 2);
                 $ifpBids[]      = $acceptedBid;

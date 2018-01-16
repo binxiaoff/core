@@ -102,7 +102,7 @@ class BidManager
     /**
      * @param Wallet       $wallet
      * @param Projects     $project
-     * @param float        $amount
+     * @param float|int    $amount
      * @param float        $rate
      * @param Autobid|null $autobidSetting
      * @param bool         $sendNotification
@@ -110,14 +110,14 @@ class BidManager
      * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, Projects $project, float $amount, float $rate, ?Autobid $autobidSetting, bool $sendNotification = true) : Bids
+    public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, bool $sendNotification = true) : Bids
     {
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
         $projectId     = $project->getIdProject();
         $legacyProject->get($projectId);
 
-        $minAmountSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientSettings')->findOneBy(['type' => 'Pret min']);
+        $minAmountSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Pret min']);
         $amountMin        = (int) $minAmountSetting->getValue();
 
         $bid = new Bids();
@@ -435,27 +435,28 @@ class BidManager
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $acceptedAmount
+     * @param Bids       $bid
+     * @param float|null $acceptedAmount
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function accept(Bids $bid, float $acceptedAmount) : void
+    public function accept(Bids $bid, ?float $acceptedAmount) : void
     {
         $bid->setStatus(Bids::STATUS_ACCEPTED);
-        $acceptedAmountHundred = bcmul($acceptedAmount, 100);
+        $acceptedAmount = null == $acceptedAmount ? $bid->getAmount() : $acceptedAmount;
 
         $acceptedBid = new AcceptedBids();
         $acceptedBid
             ->setIdBid($bid)
-            ->setAmount($acceptedAmountHundred);
+            ->setAmount($acceptedAmount);
 
         $this->entityManager->persist($acceptedBid);
         $this->entityManager->flush([$bid, $acceptedBid]);
 
-        if ($acceptedAmountHundred < $bid->getAmount() && in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
-            $walletBalanceHistory = $this->creditRejectedBid($bid, $acceptedAmount);
+        if ($acceptedAmount < $bid->getAmount()) {
+            $rejectedAmount       = bcsub($bid->getAmount(), $acceptedAmount);
+            $walletBalanceHistory = $this->creditRejectedBid($bid, $rejectedAmount / 100);
             $this->notificationRejection($bid, $walletBalanceHistory);
         }
 
