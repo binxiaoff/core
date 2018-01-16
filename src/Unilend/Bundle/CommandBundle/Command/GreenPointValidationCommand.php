@@ -68,6 +68,10 @@ EOF
                         continue;
                     }
                     if (false === $attachmentManager->isModifiedAttachment($attachment)) {
+                        $logger->warning(
+                            'The attachment ID ' . $attachment->getId() . ' will be ignored according to isModifiedAttachment method.',
+                            ['method' => __METHOD__, 'id_client' => $client->getIdClient()]
+                        );
                         continue;
                     }
                     if (false == file_exists(realpath($attachmentManager->getFullPath($attachment)))) {

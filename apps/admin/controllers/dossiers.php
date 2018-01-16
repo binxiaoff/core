@@ -1218,6 +1218,8 @@ class dossiersController extends bootstrap
 
                     $this->autoFireView = true;
                     $this->setView('memos');
+
+                    return;
                 }
             } elseif (
                 isset($_POST['commentId'], $_POST['public'])
