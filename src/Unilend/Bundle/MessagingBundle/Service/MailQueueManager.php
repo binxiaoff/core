@@ -97,8 +97,8 @@ class MailQueueManager
      *
      * @param MailQueue $email
      *
-     * @return bool|TemplateMessage
-     * @throws \Exception
+     * @return TemplateMessage
+     * @throws \Swift_RfcComplianceException
      */
     public function getMessage(MailQueue $email)
     {

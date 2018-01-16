@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
@@ -104,5 +105,28 @@ class BidsRepository extends EntityRepository
             ->setParameter('status', $status);
 
         return $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Wallet|int   $lenderWallet
+     * @param Projects|int $project
+     *
+     * @return Bids|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findFirstAutoBidByLenderAndProject($lenderWallet, $project)
+    {
+        $queryBuilder = $this->createQueryBuilder('b');
+        $queryBuilder->where('b.idLenderAccount = :wallet')
+            ->andWhere('b.idProject = :project')
+            ->andWhere('b.idAutobid IS NOT NULL')
+            ->setParameter('wallet', $lenderWallet)
+            ->setParameter('project', $project)
+            ->orderBy('b.idBid', 'ASC')
+            ->addOrderBy('b.added', 'ASC')
+            ->setMaxResults(1)
+            ->setFirstResult(0);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }

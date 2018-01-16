@@ -257,7 +257,7 @@ class ProjectStatusManager
 
         if (
             $projectStatus === ProjectsStatus::REMBOURSEMENT
-            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($project)
+            && 0 < $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getOverdueScheduleCount($projectEntity)
         ) {
             return;
         }
@@ -284,7 +284,7 @@ class ProjectStatusManager
                 $project->status = $projectStatus;
             }
         } catch (\Exception $exception) {
-            $this->logger->critical('An exception occured while updating project status for project: ' . $project->getIdProject() .
+            $this->logger->critical('An exception occured while updating project status for project: ' . $projectEntity->getIdProject() .
                 ' - Exception: ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
         }
 
