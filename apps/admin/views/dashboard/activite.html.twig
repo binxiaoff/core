@@ -15,6 +15,7 @@
 {% block pluginsJS %}
     <script src="{{ app.adminUrl }}/oneui/js/plugins/highcharts/highcharts.js"></script>
     <script src="{{ app.adminUrl }}/oneui/js/plugins/highcharts/modules/exporting.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/highcharts/modules/funnel.js"></script>
     <script src="{{ app.adminUrl }}/oneui/js/plugins/highcharts/highcharts.lang.fr.js"></script>
 {% endblock %}
 
@@ -24,6 +25,10 @@
         {% include 'dashboard/blocks/activite/under_repayment.js.twig' %}
         {% include 'dashboard/blocks/activite/yoy_production.js.twig' %}
         {% include 'dashboard/blocks/activite/traitement_delay.js.twig' %}
+        {% include 'dashboard/blocks/activite/number_by_last_status_all.js.twig' %}
+        {% include 'dashboard/blocks/activite/number_by_last_status_acquisition_merger.js.twig' %}
+        {% include 'dashboard/blocks/activite/number_by_last_status_cash_flow.js.twig' %}
+        {% include 'dashboard/blocks/activite/number_by_last_status_partner.js.twig' %}
     </script>
 {% endblock %}
 
@@ -121,6 +126,7 @@
                 </div>
             </div>
         </div>
+
         <h2 class="content-heading">Répartition des dossier par canal d’arrivée (sur 12 mois glissants)</h2>
         <div class="row">
             <div class="col-lg-6">
@@ -138,6 +144,39 @@
                 </div>
             </div>
         </div>
+
+        <h2 class="content-heading">Nombre de dossiers par dernier statut</h2>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="number-by-last-status-all"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="number-by-last-status-partner"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="number-by-last-status-cash-flow"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="block">
+                    <div class="block-content block-content-full text-center">
+                        <div id="number-by-last-status-acquisition-merger"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <h2 class="content-heading">Émission (en K€ + en nombre de dossiers)</h2>
         <div class="row">

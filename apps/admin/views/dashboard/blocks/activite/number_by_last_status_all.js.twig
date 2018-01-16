@@ -1,0 +1,34 @@
+Highcharts.chart('number-by-last-status-all', {
+    chart: {
+        type: 'funnel'
+    },
+    title: {
+        text: 'Tous les dossiers'
+    },
+    plotOptions: {
+        series: {
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b> ({point.y:,.0f})',
+                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black',
+                softConnector: true
+            },
+            center: ['40%', '50%'],
+            neckWidth: '30%',
+            neckHeight: '25%',
+            width: '80%'
+        }
+    },
+    legend: {
+        enabled: false
+    },
+    series: [{
+        name: 'Nombre de projet',
+        data: [
+            {% for status in countableStatus %}
+            {% if not loop.first %},{% endif %}
+               ['{{ status.label }}', {% if statusAllNb[status.status]['number'] is defined %} {{ statusAllNb[status.status]['number'] }} {% else %} 0 {% endif %} ]
+            {% endfor %}
+        ]
+    }]
+});

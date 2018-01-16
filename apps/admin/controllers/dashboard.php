@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, ProjectsStatus, Users, UsersTypes, Zones
+    BorrowingMotive, Partner, ProjectsStatus, Users, UsersTypes, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
@@ -291,6 +291,26 @@ class dashboardController extends bootstrap
             $statSentToAnalysis = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
             $statRepayment      = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
 
+            $countableStatus     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
+                'status' => [
+                    ProjectsStatus::COMMERCIAL_REVIEW,
+                    ProjectsStatus::ANALYSIS_REVIEW,
+                    ProjectsStatus::PREP_FUNDING,
+                    ProjectsStatus::EN_FUNDING,
+                    ProjectsStatus::FUNDE
+                ]
+            ], ['status' => 'ASC']);
+            $statusAllNb         = $this->countByStatus($countableStatus);
+            $statusCashFlowNb    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
+            $statusAcquisitionNb = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
+            $statusPartnerNb     = $this->countByStatus($countableStatus, null, [
+                Partner::PARTNER_U_CAR_ID,
+                Partner::PARTNER_MEDILEND_ID,
+                Partner::PARTNER_AXA_ID,
+                Partner::PARTNER_MAPA_ID,
+                Partner::PARTNER_UNILEND_PARTNERS_ID
+            ]);
+
             $lastDayOfLastYear        = new DateTime('last day of december last year');
             $releasedProjectsThisYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstDayOfThisYear, $today);
             $releasedProjectsLastYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstOfLastYear, $lastDayOfLastYear);
@@ -331,6 +351,11 @@ class dashboardController extends bootstrap
                 'releasedProjectsLastYear'         => $releasedProjectsLastYear,
                 'delays'                           => $delays,
                 'borrowingMotives'                 => $borrowingMotives,
+                'countableStatus'                  => $countableStatus,
+                'statusAllNb'                      => $statusAllNb,
+                'statusCashFlowNb'                 => $statusCashFlowNb,
+                'statusAcquisitionNb'              => $statusAcquisitionNb,
+                'statusPartnerNb'                  => $statusPartnerNb,
             ]);
         } else {
             header('Location: ' . $this->url);
@@ -430,6 +455,13 @@ class dashboardController extends bootstrap
         return $countInStatusHighcharts;
     }
 
+    /**
+     * @param int $status
+     * @param     $motives
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
     private function getDelayByStatus(int $status, $motives)
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -437,11 +469,38 @@ class dashboardController extends bootstrap
         $delays        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getDelayByStatus($status, $motives);
 
         $formattedDelays = [];
-        foreach ($delays as $index => $delay) {
+        foreach ($delays as $delay) {
             $formattedDelays[$delay['id_motive']] = round(bcdiv($delay['diff'], 1440, 3), 2);
         }
 
         return $formattedDelays;
+    }
+
+    /**
+     * @param array      $countableStatus
+     * @param array|null $borrowingMotives
+     * @param array|null $partners
+     *
+     * @return array
+     */
+    private function countByStatus(array $countableStatus, ?array $borrowingMotives = null, ?array $partners = null) : array
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $status = [];
+        foreach ($countableStatus as $item) {
+            $status[] = $item->getStatus();
+        }
+
+        $statusNb = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countByStatus($status, $borrowingMotives, $partners);
+
+        $formattedStatusNb = [];
+        foreach ($statusNb as $number) {
+            $formattedStatusNb[$number['status']] = ['number' => $number['project_number']];
+        }
+
+        return $formattedStatusNb;
     }
 
 }

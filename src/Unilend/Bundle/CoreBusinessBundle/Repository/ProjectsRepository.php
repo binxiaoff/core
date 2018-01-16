@@ -1345,4 +1345,32 @@ class ProjectsRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param array      $status
+     * @param array|null $borrowingMotives
+     * @param array|null $partners
+     *
+     * @return array
+     */
+    public function countByStatus(array $status, ?array $borrowingMotives, ?array $partners) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.status, COUNT(p) as project_number')
+            ->where('p.status in (:status)')
+            ->groupBy('p.status')
+            ->setParameter('status', $status);
+
+        if ($borrowingMotives) {
+            $queryBuilder->andWhere('p.idBorrowingMotive in (:motives)')
+                ->setParameter('motives', $borrowingMotives);
+        }
+
+        if ($partners) {
+            $queryBuilder->andWhere('p.idPartner in (:partners)')
+                ->setParameter('partners', $partners);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
 }
