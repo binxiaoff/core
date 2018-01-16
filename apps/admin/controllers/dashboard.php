@@ -1,9 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    BorrowingMotive, ProjectsStatus, Users, UsersTypes, Zones
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class dashboardController extends bootstrap
@@ -287,10 +286,34 @@ class dashboardController extends bootstrap
 
             $twelveMonthAgo = clone $firstDayOfLastMonth;
             $twelveMonthAgo->modify('-11 months');
-            $twelveMonths = $this->get12rollingMonths(clone $twelveMonthAgo);
+            $twelveMonths = $this->get12rollingMonths($twelveMonthAgo);
 
             $statSentToAnalysis = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
             $statRepayment      = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
+
+            $lastDayOfLastYear        = new DateTime('last day of december last year');
+            $releasedProjectsThisYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstDayOfThisYear, $today);
+            $releasedProjectsLastYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstOfLastYear, $lastDayOfLastYear);
+
+            $borrowingMotives = [
+                BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
+                BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
+                BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
+                BorrowingMotive::ID_MOTIVE_WORK,
+                BorrowingMotive::ID_MOTIVE_CASH_FLOW,
+                BorrowingMotive::ID_MOTIVE_OTHER
+            ];
+
+            $delays = [
+                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
+                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
+                ['label' => 'Prép funding + conditions suspensives', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives)],
+                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
+                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
+                ['label' => 'Traitement commerciale', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
+                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
+            ];
+
             $this->render(null, [
                 'projectsInSalesTreatmentStatusNb' => $projectsInSalesTreatmentStatusNb,
                 'releasedProjectThisYearNb'        => $yearOverYear['number'],
@@ -304,6 +327,10 @@ class dashboardController extends bootstrap
                 'twelveMonths'                     => $twelveMonths,
                 'statSentToAnalysisHighcharts'     => $statSentToAnalysis,
                 'statRepaymentHighcharts'          => $statRepayment,
+                'releasedProjectsThisYear'         => $releasedProjectsThisYear,
+                'releasedProjectsLastYear'         => $releasedProjectsLastYear,
+                'delays'                           => $delays,
+                'borrowingMotives'                 => $borrowingMotives,
             ]);
         } else {
             header('Location: ' . $this->url);
@@ -359,10 +386,12 @@ class dashboardController extends bootstrap
      */
     private function get12rollingMonths(DateTime $start) : array
     {
-        $months = [];
+        $months     = [];
+        $firstMonth = clone $start;
+
         for ($i = 1; $i <= 12; $i++) {
-            $months[] = $start->format('m/Y');
-            $start->modify('+1 month');
+            $months[] = $firstMonth->format('m/Y');
+            $firstMonth->modify('+1 month');
         }
 
         return $months;
@@ -375,13 +404,14 @@ class dashboardController extends bootstrap
      * @param array    $twelveMonths
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     private function getProjectCountInStatusFor12RollingMonths(int $status, DateTime $start, DateTime $end, array $twelveMonths) : array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countProjectInStatusByMonthAndPartner($status, $start, $end);
+        $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getStatisticsByStatusByMonth($status, true, $start, $end);
 
         $countInStatusHighcharts = [];
         foreach ($countInStatus as $item) {
@@ -398,6 +428,20 @@ class dashboardController extends bootstrap
         }
 
         return $countInStatusHighcharts;
+    }
+
+    private function getDelayByStatus(int $status, $motives)
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $delays        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getDelayByStatus($status, $motives);
+
+        $formattedDelays = [];
+        foreach ($delays as $index => $delay) {
+            $formattedDelays[$delay['id_motive']] = round(bcdiv($delay['diff'], 1440, 3), 2);
+        }
+
+        return $formattedDelays;
     }
 
 }

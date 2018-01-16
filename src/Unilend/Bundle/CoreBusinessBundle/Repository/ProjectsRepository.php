@@ -3,13 +3,13 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use PDO;
 use Psr\Log\InvalidArgumentException;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
@@ -1259,30 +1259,90 @@ class ProjectsRepository extends EntityRepository
 
     /**
      * @param int       $status
+     * @param bool      $groupByPartner
      * @param \DateTime $start
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function countProjectInStatusByMonthAndPartner(int $status, \DateTime $start, \DateTime $end) : array
+    public function getStatisticsByStatusByMonth(int $status, bool $groupByPartner, \DateTime $start, \DateTime $end) : array
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $queryBuilder = $this->createQueryBuilder('p');
-        $queryBuilder->select('DATE_FORMAT(psh.added,\'%m/%Y\') AS month, c.name as partner, count(DISTINCT p.idProject) as number')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProject = p.idProject')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
-            ->innerJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'pa.id = p.idPartner')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = pa.idCompany')
-            ->where('ps.status = :status')
-            ->andWhere('psh.added BETWEEN :start AND :end')
-            ->groupBy('month, p.idPartner')
-            ->orderBy('psh.added')
-            ->setParameter('status', $status)
-            ->setParameter('start', $start)
-            ->setParameter('end', $end);
+        $select  = 'DATE_FORMAT(sps.added,\'%m/%Y\') AS month, COUNT(sps.id_project) AS number, SUM(sps.amount) AS amount';
+        $groupBy = 'month';
+        if ($groupByPartner) {
+            $select  .= ', sps.partner as partner';
+            $groupBy .= ', sps.partner';
+        }
 
-        return $queryBuilder->getQuery()->getArrayResult();
+        $query = '
+            SELECT ' . $select . '
+            FROM (
+                   SELECT p.id_project, p.amount, psh.added, c.name AS partner
+                   FROM projects p
+                     INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
+                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                     INNER JOIN partner pa ON pa.id = p.id_partner
+                     INNER JOIN companies c ON pa.id_company = c.id_company
+                   WHERE ps.status = :status AND psh.added BETWEEN :start AND :end
+                   GROUP BY p.id_project
+                   ORDER BY psh.added ASC
+                 ) sps
+            GROUP BY ' . $groupBy;
+
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'status' => $status,
+            'start'  => $start->format('Y-m-d H:i:s'),
+            'end'    => $end->format('Y-m-d H:i:s'),
+        ])->fetchAll();
+
+        return $result;
+    }
+
+    /**
+     * @param int   $status
+     * @param array $borrowingMotives
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getDelayByStatus(int $status, array $borrowingMotives) : array
+    {
+        $query = '
+                SELECT b.id_motive, b.motive, AVG(TIMESTAMPDIFF(MINUTE, psh.added, psh2.added)) AS diff
+                FROM (
+                       SELECT id_project, MIN(added) AS added
+                       FROM projects_status_history p
+                         INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+                       WHERE ps.status = :status
+                       GROUP BY id_project
+                     ) psh
+                  INNER JOIN (
+                               SELECT id_project, MIN(added) AS added
+                               FROM projects_status_history p
+                                 INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+                               WHERE ps.status > :status
+                               GROUP BY id_project
+                             ) psh2 ON psh2.id_project = psh.id_project
+                  INNER JOIN projects p ON p.id_project = psh.id_project
+                  INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
+                  WHERE b.id_motive IN (1, 3, 4, 5, 6, 7)
+                GROUP BY b.id_motive
+                ORDER BY b.rank';
+
+        $result = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->executeQuery(
+                $query,
+                ['status' => $status, 'motives' => $borrowingMotives],
+                ['status' => PDO::PARAM_INT, 'motives', Connection::PARAM_INT_ARRAY]
+            )
+            ->fetchAll();
+
+        return $result;
     }
 }

@@ -22,53 +22,14 @@ Highcharts.chart('traitement-delay', {
             stacking: 'normal'
         }
     },
-    series: [{
-        name: 'Fundé',
-        data: [5, 3, 4, 7, 2, 6],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
+    series: [
+        {% for delay in delays %}
+        {% if not loop.first %},{% endif %}
+        {
+            name: '{{ delay.label }}',
+            data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}]
+
         }
-    }, {
-        name: 'En Funding',
-        data: [2, 2, 3, 2, 1, 7],
-        tooltip: {
-            valueSuffix: ' jours  en moyen'
-        }
-    }, {
-        name: 'Prép Funding + Conditions Suspensives',
-        data: [3, 4, 4, 2, 5, 2],
-        tooltip: {
-            valueSuffix: ' jours  en moyen'
-        }
-    }, {
-        name: 'Revue Analyste',
-        data: [4, 7, 2, 8, 5, 5],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
-        }
-    }, {
-        name: 'Attente analyste',
-        data: [2, 4, 7, 8, 8, 9],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
-        }
-    }, {
-        name: 'Traitement commerciale',
-        data: [3, 7, 7, 5, 8, 5],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
-        }
-    }, {
-        name: 'Attente commerciale',
-        data: [4, 3, 4, 3, 8, 6],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
-        }
-    }, {
-        name: 'Demande complète',
-        data: [3, 4, 4, 2, 5, 8],
-        tooltip: {
-            valueSuffix: ' jours en moyen'
-        }
-    }]
+        {% endfor %}
+    ]
 });

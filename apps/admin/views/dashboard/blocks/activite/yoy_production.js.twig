@@ -3,25 +3,25 @@ Highcharts.chart('yoy-production', {
         zoomType: 'xy'
     },
     title: {
-        text: 'Production de la même période 2018 vs 2017 (YoY)'
+        text: 'Émission de la même période {{ 'now'|date('Y') }} vs {{ 'last year'|date('Y') }} (YoY)'
     },
     subtitle: {
         text: 'En K€ + en nombre de dossiers'
     },
     xAxis: [{
-        categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+        categories: ['Janvier', 'Févier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
         crosshair: true
     }],
     yAxis: [{ // Primary yAxis
         title: {
-            text: 'Montant en K€',
+            text: 'Montant en K€'
         },
         labels: {
-            format: '{value} K€',
+            format: '{value} K€'
         }
     }, { // Secondary yAxis
         title: {
-            text: 'Nombre',
+            text: 'Nombre'
         },
         opposite: true
     }],
@@ -37,28 +37,28 @@ Highcharts.chart('yoy-production', {
         floating: true
     },
     series: [{
-        name: 'Montant 2017',
+        name: 'Montant {{ 'last year'|date('Y') }}',
         type: 'spline',
-        data: [7, 10, 9, 14, 18, 21, 25, 26, 23, 18, 13, 9],
+        data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
             valueSuffix: 'K€'
         }
     }, {
-        name: 'Montant 2018',
+        name: 'Montant {{ 'now'|date('Y') }}',
         type: 'spline',
-        data: [17, 18, 25, 18, 26, 18, 16, 14, 25, 17, 15, 12],
+        data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
             valueSuffix: 'K€'
         }
     }, {
-        name: 'Nombre 2017',
+        name: 'Nombre {{ 'last year'|date('Y') }}',
         type: 'column',
         yAxis: 1,
-        data: [49, 71, 106, 129, 144, 176, 135, 148, 216, 194, 95, 54]
+        data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]
     },{
-        name: 'Nombre 2018',
+        name: 'Nombre {{ 'now'|date('Y') }}',
         type: 'column',
         yAxis: 1,
-        data: [44, 65, 89, 120, 150, 180, 120, 150, 250, 175, 132, 85]
+        data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]
     }]
 });
