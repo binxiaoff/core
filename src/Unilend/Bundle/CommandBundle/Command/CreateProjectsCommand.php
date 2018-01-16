@@ -11,7 +11,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
 {
@@ -160,9 +159,8 @@ class CreateProjectsCommand extends ContainerAwareCommand
         $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
         $project->create();
 
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
-        $projectManager->addProjectStatus($user->getIdUser(), ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
+        $projectStatusManager->addProjectStatus($user->getIdUser(), ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }

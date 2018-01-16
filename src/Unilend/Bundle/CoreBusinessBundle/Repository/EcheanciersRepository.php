@@ -630,7 +630,7 @@ class EcheanciersRepository extends EntityRepository
     public function getRemainingCapitalByLoan($loans)
     {
         if (false === is_array($loans)) {
-            $loans[] = $loans;
+            $loans = array($loans);
         }
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->select('ROUND(SUM(e.capital  - e.capitalRembourse) / 100, 2)')
@@ -747,5 +747,28 @@ class EcheanciersRepository extends EntityRepository
             ->setMaxResults(1);
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return Echeanciers
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findFirstOverdueScheduleByProject($project) : Echeanciers
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->where('e.idProject = :idProject')
+            ->andWhere('DATE(e.dateEcheance) <= CURRENT_DATE()')
+            ->andWhere('e.status IN (:unfinished)')
+            ->setParameter('idProject', $project)
+            ->setParameter('unfinished', [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID])
+            ->groupBy('e.ordre')
+            ->orderBy('e.ordre', 'ASC')
+            ->setMaxResults(1)
+            ->setFirstResult(0);
+
+        return $queryBuilder->getQuery()->getOneOrNullResult();
     }
 }
