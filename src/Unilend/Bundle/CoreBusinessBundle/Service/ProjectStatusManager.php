@@ -352,7 +352,7 @@ class ProjectStatusManager
 
     /**
      * @param Projects $project
-     * @param Users    $userId
+     * @param Users    $user
      */
     private function abandonOlderProjects(Projects $project, Users $user)
     {
@@ -364,7 +364,7 @@ class ProjectStatusManager
         foreach ($previousProjects as $previousProject) {
             $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
             if (in_array($previousProjectEntity->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST])) {
-                $this->addProjectStatus($user, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'same_company_project_rejected');
+                $this->addProjectStatus($user, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'Un autre projet de la société a été rejeté');
             }
         }
     }
