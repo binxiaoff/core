@@ -371,48 +371,6 @@ class projects extends projects_crud
         return ['previousProject' => $previous, 'nextProject' => $next];
     }
 
-    // liste les projets favoris dont la date de retrait est dans j-2
-    public function getDerniersFav($id_client)
-    {
-        $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        if (0 < $this->bdd->num_rows($resultat)) {
-            $lesfav = '';
-            $i      = 0;
-            while ($f = $this->bdd->fetch_assoc($resultat)) {
-                $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
-                $i++;
-            }
-
-            $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
-
-            $resultat = $this->bdd->query($sql);
-
-            while ($record = $this->bdd->fetch_assoc($resultat)) {
-                $result[] = $record;
-            }
-        }
-
-        return $result;
-    }
-
-    public function getLastProject($id_company)
-    {
-        $sql = 'SELECT id_project
-                FROM projects
-                WHERE id_company = ' . $id_company . '
-                ORDER BY added DESC
-                LIMIT 1';
-
-        $result     = $this->bdd->query($sql);
-        $id_project = (int) ($this->bdd->result($result, 0, 0));
-
-        return parent::get($id_project, 'id_project');
-    }
-
     public function countProjectsByStatusAndLender($lender, array $status)
     {
         $sql = '
