@@ -104,7 +104,6 @@ class TemplateMessage extends \Swift_Message
      * @param string|null  $name
      *
      * @return $this
-     *
      * @throws \Swift_RfcComplianceException
      */
     public function setTo($addresses, $name = null)
@@ -121,7 +120,6 @@ class TemplateMessage extends \Swift_Message
      * @param string|null  $name
      *
      * @return $this
-     *
      * @throws \Swift_RfcComplianceException
      */
     public function setReplyTo($addresses, $name = null)

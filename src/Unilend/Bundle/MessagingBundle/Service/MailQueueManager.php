@@ -92,9 +92,8 @@ class MailQueueManager
                 ->setIdClient($clientId);
 
             $this->entityManager->persist($mailQueue);
+            $this->entityManager->flush($mailQueue);
         }
-
-        $this->entityManager->flush();
 
         return true;
     }
