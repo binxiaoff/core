@@ -130,10 +130,12 @@ class projects extends projects_crud
                 p.*,
                 co.siren,
                 co.name,
-                ps.label
+                ps.label,
+                IFNULL(pn.pre_scoring, -1) AS pre_scoring
             FROM projects p
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN projects_status ps on ps.status = p.status';
+            LEFT JOIN companies co ON p.id_company = co.id_company
+            LEFT JOIN projects_status ps on ps.status = p.status
+            LEFT JOIN projects_notes pn ON p.id_project = pn.id_project';
         $sql .= 0 < count($where) ? ' WHERE ' . implode(' AND ', $where) : '';
         $sql .= ' ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
