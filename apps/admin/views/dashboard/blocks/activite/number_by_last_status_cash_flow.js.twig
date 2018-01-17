@@ -3,7 +3,7 @@ Highcharts.chart('number-by-last-status-cash-flow', {
         type: 'funnel'
     },
     title: {
-        text: 'Les dossiers de trésorerie'
+        text: 'Trésorerie'
     },
     plotOptions: {
         series: {
@@ -23,11 +23,11 @@ Highcharts.chart('number-by-last-status-cash-flow', {
         enabled: false
     },
     series: [{
-        name: 'Nombre de projet',
+        name: 'Nombre de projets',
         data: [
             {% for status in countableStatus %}
             {% if not loop.first %},{% endif %}
-            ['{{ status.label }}', {% if statusCashFlowNb[status.status]['number'] is defined %} {{ statusCashFlowNb[status.status]['number'] }} {% else %} 0 {% endif %} ]
+            ['{{ status.label }}', {% if statusCashFlowCount[status.status]['number'] is defined %} {{ statusCashFlowCount[status.status]['number'] }} {% else %} 0 {% endif %} ]
             {% endfor %}
         ]
     }]

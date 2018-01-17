@@ -343,36 +343,35 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param array     $status
+     * @param int       $status
      * @param \DateTime $start
      * @param \DateTime $end
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function findProjectsHavingHadStatusBetweenDates(array $status, \DateTime $start, \DateTime $end)
+    public function findProjectsHavingHadStatusBetweenDates(int $status, \DateTime $start, \DateTime $end)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT *
-                    FROM projects_status_history psh
-                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      INNER JOIN projects p ON p.id_project = psh.id_project
-                    WHERE
-                      ps.status IN (:status)
-                      AND psh.added BETWEEN :start AND :end
-                    GROUP BY p.id_project';
+        $query = '
+            SELECT *
+            FROM
+              (SELECT MIN(psh.id_project_status_history) AS id_project_status_history
+               FROM projects_status_history psh
+               INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+               WHERE ps.status = :status
+               GROUP BY id_project ) psh1
+            INNER JOIN projects_status_history psh2 ON psh2.id_project_status_history = psh1.id_project_status_history
+            INNER JOIN projects p ON p.id_project = psh2.id_project
+            WHERE psh2.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'status' => $status,
                 'start'  => $start->format('Y-m-d H:i:s'),
                 'end'    => $end->format('Y-m-d H:i:s')
-            ], [
-                'status' => Connection::PARAM_INT_ARRAY,
-                'start'  => PDO::PARAM_STR,
-                'end'    => PDO::PARAM_STR
             ])->fetchAll();
 
         return $result;
@@ -1274,23 +1273,27 @@ class ProjectsRepository extends EntityRepository
         $select  = 'DATE_FORMAT(sps.added,\'%m/%Y\') AS month, COUNT(sps.id_project) AS number, SUM(sps.amount) AS amount';
         $groupBy = 'month';
         if ($groupByPartner) {
-            $select  .= ', sps.partner as partner';
-            $groupBy .= ', sps.partner';
+            $select  .= ', sps.partner as partner, sps.partnerId AS partnerId';
+            $groupBy .= ', sps.partnerId';
         }
 
         $query = '
             SELECT ' . $select . '
-            FROM (
-                   SELECT p.id_project, p.amount, psh.added, c.name AS partner
-                   FROM projects p
-                     INNER JOIN projects_status_history psh ON psh.id_project = p.id_project
-                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                     INNER JOIN partner pa ON pa.id = p.id_partner
-                     INNER JOIN companies c ON pa.id_company = c.id_company
-                   WHERE ps.status = :status AND psh.added BETWEEN :start AND :end
-                   GROUP BY p.id_project
-                   ORDER BY psh.added ASC
-                 ) sps
+            FROM
+              (SELECT p.id_project, p.amount, psh2.added, c.name AS partner, pa.id AS partnerId
+               FROM
+                 (SELECT MIN(psh.id_project_status_history) AS id_project_status_history
+                  FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                  WHERE ps.status = :status
+                  GROUP BY id_project) psh1
+               INNER JOIN projects_status_history psh2 ON psh2.id_project_status_history = psh1.id_project_status_history
+               INNER JOIN projects p ON p.id_project = psh2.id_project
+               INNER JOIN partner pa ON pa.id = p.id_partner
+               INNER JOIN companies c ON pa.id_company = c.id_company
+               WHERE psh2.added BETWEEN :start AND :end
+               GROUP BY p.id_project
+               ORDER BY psh2.added ASC ) sps
             GROUP BY ' . $groupBy;
 
         $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
@@ -1312,26 +1315,26 @@ class ProjectsRepository extends EntityRepository
     public function getDelayByStatus(int $status, array $borrowingMotives) : array
     {
         $query = '
-                SELECT b.id_motive, b.motive, AVG(TIMESTAMPDIFF(MINUTE, psh.added, psh2.added)) AS diff
-                FROM (
-                       SELECT id_project, MIN(added) AS added
-                       FROM projects_status_history p
-                         INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
-                       WHERE ps.status = :status
-                       GROUP BY id_project
-                     ) psh
-                  INNER JOIN (
-                               SELECT id_project, MIN(added) AS added
-                               FROM projects_status_history p
-                                 INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
-                               WHERE ps.status > :status
-                               GROUP BY id_project
-                             ) psh2 ON psh2.id_project = psh.id_project
-                  INNER JOIN projects p ON p.id_project = psh.id_project
-                  INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
-                  WHERE b.id_motive IN (1, 3, 4, 5, 6, 7)
-                GROUP BY b.id_motive
-                ORDER BY b.rank';
+        SELECT b.id_motive,
+               b.motive,
+               AVG(TIMESTAMPDIFF(MINUTE, psh.added, psh2.added)) AS diff
+        FROM
+          (SELECT id_project, MIN(added) AS added
+           FROM projects_status_history p
+           INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+           WHERE ps.status = :status
+           GROUP BY id_project ) psh
+        INNER JOIN
+          (SELECT id_project, MIN(added) AS added
+           FROM projects_status_history p
+           INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+           WHERE ps.status > :status
+           GROUP BY id_project ) psh2 ON psh2.id_project = psh.id_project
+        INNER JOIN projects p ON p.id_project = psh.id_project
+        INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
+        WHERE b.id_motive IN (:motives)
+        GROUP BY b.id_motive
+        ORDER BY b.rank';
 
         $result = $this
             ->getEntityManager()
@@ -1339,7 +1342,7 @@ class ProjectsRepository extends EntityRepository
             ->executeQuery(
                 $query,
                 ['status' => $status, 'motives' => $borrowingMotives],
-                ['status' => PDO::PARAM_INT, 'motives', Connection::PARAM_INT_ARRAY]
+                ['motives' => Connection::PARAM_INT_ARRAY]
             )
             ->fetchAll();
 
@@ -1353,11 +1356,11 @@ class ProjectsRepository extends EntityRepository
      *
      * @return array
      */
-    public function countByStatus(array $status, ?array $borrowingMotives, ?array $partners) : array
+    public function countByStatus(array $status, ?array $borrowingMotives = null, ?array $partners = null) : array
     {
         $queryBuilder = $this->createQueryBuilder('p');
-        $queryBuilder->select('p.status, COUNT(p) as project_number')
-            ->where('p.status in (:status)')
+        $queryBuilder->select('p.status, COUNT(p) AS project_number')
+            ->where('p.status IN (:status)')
             ->groupBy('p.status')
             ->setParameter('status', $status);
 

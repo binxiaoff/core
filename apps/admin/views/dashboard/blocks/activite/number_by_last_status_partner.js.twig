@@ -3,7 +3,7 @@ Highcharts.chart('number-by-last-status-partner', {
         type: 'funnel'
     },
     title: {
-        text: 'Tous les dossiers des partenaires'
+        text: 'Partenaires'
     },
     plotOptions: {
         series: {
@@ -23,11 +23,11 @@ Highcharts.chart('number-by-last-status-partner', {
         enabled: false
     },
     series: [{
-        name: 'Nombre de projet',
+        name: 'Nombre de projets',
         data: [
             {% for status in countableStatus %}
             {% if not loop.first %},{% endif %}
-            ['{{ status.label }}', {% if statusPartnerNb[status.status]['number'] is defined %} {{ statusPartnerNb[status.status]['number'] }} {% else %} 0 {% endif %} ]
+            ['{{ status.label }}', {% if statusPartnerCount[status.status]['number'] is defined %} {{ statusPartnerCount[status.status]['number'] }} {% else %} 0 {% endif %} ]
             {% endfor %}
         ]
     }]

@@ -1,9 +1,9 @@
-Highcharts.chart('traitement-delay', {
+Highcharts.chart('treatment-delay', {
     chart: {
         type: 'bar'
     },
     title: {
-        text: 'Temps de traitement par statut (Tous dossiers sauf Reprise de FdC)'
+        text: 'Temps de traitement par statut (sauf reprises de FdC)'
     },
     xAxis: {
         categories: ['Achat d\'équipement ou matériel', 'Développement', 'Immobilier', 'Travaux', 'Trésorerie', 'Autre']
@@ -27,8 +27,10 @@ Highcharts.chart('traitement-delay', {
         {% if not loop.first %},{% endif %}
         {
             name: '{{ delay.label }}',
-            data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}]
-
+            data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}],
+            tooltip: {
+                valueSuffix: ' jours'
+            }
         }
         {% endfor %}
     ]

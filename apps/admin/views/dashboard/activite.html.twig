@@ -21,10 +21,10 @@
 
 {% block pageScripts %}
     <script>
-        {% include 'dashboard/blocks/activite/sent_to_analyse.js.twig' %}
+        {% include 'dashboard/blocks/activite/sent_to_analysis.js.twig' %}
         {% include 'dashboard/blocks/activite/under_repayment.js.twig' %}
         {% include 'dashboard/blocks/activite/yoy_production.js.twig' %}
-        {% include 'dashboard/blocks/activite/traitement_delay.js.twig' %}
+        {% include 'dashboard/blocks/activite/treatment_delay.js.twig' %}
         {% include 'dashboard/blocks/activite/number_by_last_status_all.js.twig' %}
         {% include 'dashboard/blocks/activite/number_by_last_status_acquisition_merger.js.twig' %}
         {% include 'dashboard/blocks/activite/number_by_last_status_cash_flow.js.twig' %}
@@ -34,7 +34,7 @@
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        Dashboard d'Activité Commercial
+        Activité commercial
     </h1>
 {% endblock %}
 
@@ -44,22 +44,22 @@
             <div class="col-lg-4">
                 <div class="block block-themed">
                     <div class="block-header bg-primary">
-                        <h3 class="block-title">En attente de Traitement Commerciale</h3>
+                        <h3 class="block-title">Projets en cours de traitement commercial</h3>
                     </div>
-                    <div class="block-content border-t text-center" style="padding-bottom: 26px;">
-                        <span class="h2 text-primary">{{ projectsInSalesTreatmentStatusNb }}</span>
+                    <div class="block-content text-center" style="padding-top: 26px; padding-bottom: 27px;">
+                        <span class="h2 text-primary">{{ projectsInSalesTreatmentStatusCount }}</span> <small>projets</small>
                     </div>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="block block-themed">
                     <div class="block-header bg-primary">
-                        <h3 class="block-title">Émission de la même période {{ 'now'|date('Y') }} vs {{ 'last year'|date('Y') }} (YoY)</h3>
+                        <h3 class="block-title">Émissions de la même période {{ 'now'|date('Y') }} vs {{ 'last year'|date('Y') }} (YoY)</h3>
                     </div>
-                    <div class="block-content border-t">
+                    <div class="block-content">
                         <div class="row items-push text-center">
                             <div class="col-xs-6 border-r">
-                                <div class="h3 text-primary">{{ releasedProjectThisYearAmount|localizedcurrency('EUR') }}</div>
+                                <div class="h3 text-primary">{{ (releasedProjectThisYearAmount / 1000)|localizednumber }} K€</div>
                                 <div>
                                     {% if deltaYoyAmountInPercentage >= 0 %}
                                         <i class="fa fa-arrow-up"></i>
@@ -68,20 +68,20 @@
                                     {% else %}
                                         <i class="fa fa-arrow-down"></i>
                                     {% endif %}
-                                    {{ deltaYoyAmountInPercentage }} %
+                                    {{ deltaYoyAmountInPercentage|localizednumber }} %
                                 </div>
                             </div>
                             <div class="col-xs-6">
-                                <div class="h3 text-primary">{{ releasedProjectThisYearNb }}</div>
+                                <div class="h3 text-primary">{{ releasedProjectThisYearCount }}</div>
                                 <div>
-                                    {% if deltaYoyNbInPercentage >= 0 %}
+                                    {% if deltaYoyCountInPercentage >= 0 %}
                                         <i class="fa fa-arrow-up"></i>
-                                    {% elseif deltaYoyNbInPercentage == 0 %}
+                                    {% elseif deltaYoyCountInPercentage == 0 %}
                                         <i class="fa fa-arrow-right"></i>
                                     {% else %}
                                         <i class="fa fa-arrow-down"></i>
                                     {% endif %}
-                                    {{ deltaYoyNbInPercentage }} %
+                                    {{ deltaYoyCountInPercentage|localizednumber }} %
                                 </div>
                             </div>
                         </div>
@@ -91,12 +91,12 @@
             <div class="col-lg-4">
                 <div class="block block-themed">
                     <div class="block-header bg-primary">
-                        <h3 class="block-title">Émission {{ 'last month'|date('m/Y') }} vs {{ '2 months ago'|date('m/Y') }} (Mom)</h3>
+                        <h3 class="block-title">Émissions {{ 'last month'|date('m/Y') }} vs {{ '2 months ago'|date('m/Y') }} (MoM)</h3>
                     </div>
-                    <div class="block-content border-t">
+                    <div class="block-content">
                         <div class="row items-push text-center">
                             <div class="col-xs-6 border-r">
-                                <div class="h3 text-primary">{{ releasedProjectLastMonthAmount|localizedcurrency('EUR') }}</div>
+                                <div class="h3 text-primary">{{ (releasedProjectLastMonthAmount / 1000)|localizednumber }} K€</div>
                                 <div>
                                     {% if deltaMomAmountInPercentage >= 0 %}
                                         <i class="fa fa-arrow-up"></i>
@@ -105,20 +105,20 @@
                                     {% else %}
                                         <i class="fa fa-arrow-down"></i>
                                     {% endif %}
-                                    {{ deltaMomAmountInPercentage }} %
+                                    {{ deltaMomAmountInPercentage|localizednumber }} %
                                 </div>
                             </div>
                             <div class="col-xs-6">
-                                <div class="h3 text-primary">{{ releasedProjectLastMonthNb }}</div>
+                                <div class="h3 text-primary">{{ releasedProjectLastMonthCount }}</div>
                                 <div>
-                                    {% if deltaMomNbInPercentage > 0 %}
+                                    {% if deltaMomCountInPercentage > 0 %}
                                         <i class="fa fa-arrow-up"></i>
-                                    {% elseif deltaMomNbInPercentage == 0 %}
+                                    {% elseif deltaMomCountInPercentage == 0 %}
                                         <i class="fa fa-arrow-right"></i>
                                     {% else %}
                                         <i class="fa fa-arrow-down"></i>
                                     {% endif %}
-                                    {{ deltaMomNbInPercentage }} %
+                                    {{ deltaMomCountInPercentage|localizednumber }} %
                                 </div>
                             </div>
                         </div>
@@ -127,12 +127,12 @@
             </div>
         </div>
 
-        <h2 class="content-heading">Répartition des dossier par canal d’arrivée (sur 12 mois glissants)</h2>
+        <h2 class="content-heading">Projets par canal d’arrivée (12 mois glissants)</h2>
         <div class="row">
             <div class="col-lg-6">
                 <div class="block">
                     <div class="block-content block-content-full text-center">
-                        <div id="sent-to-analyse"></div>
+                        <div id="sent-to-analysis"></div>
                     </div>
                 </div>
             </div>
@@ -145,7 +145,7 @@
             </div>
         </div>
 
-        <h2 class="content-heading">Nombre de dossiers par dernier statut</h2>
+        <h2 class="content-heading">Projets en cours</h2>
         <div class="row">
             <div class="col-lg-6">
                 <div class="block">
@@ -177,8 +177,7 @@
             </div>
         </div>
 
-
-        <h2 class="content-heading">Émission (en K€ + en nombre de dossiers)</h2>
+        <h2 class="content-heading">Émissions (en k€ & en nombre de projets)</h2>
         <div class="row">
             <div class="col-lg-12">
                 <div class="block">
@@ -189,12 +188,12 @@
             </div>
         </div>
 
-        <h2 class="content-heading">Temps de traitement par statut (Tous dossiers sauf Reprise de FdC)</h2>
+        <h2 class="content-heading">Temps de traitement par statut (sauf reprises de FdC)</h2>
         <div class="row">
             <div class="col-lg-12">
                 <div class="block">
                     <div class="block-content block-content-full text-center">
-                        <div id="traitement-delay"></div>
+                        <div id="treatment-delay"></div>
                     </div>
                 </div>
             </div>

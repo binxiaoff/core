@@ -3,7 +3,7 @@ Highcharts.chart('number-by-last-status-acquisition-merger', {
         type: 'funnel'
     },
     title: {
-        text: 'Les dossiers de reprise de FdC'
+        text: 'Les projets de reprise de FdC'
     },
     plotOptions: {
         series: {
@@ -23,11 +23,11 @@ Highcharts.chart('number-by-last-status-acquisition-merger', {
         enabled: false
     },
     series: [{
-        name: 'Nombre de projet',
+        name: 'Nombre de projets',
         data: [
             {% for status in countableStatus %}
             {% if not loop.first %},{% endif %}
-            ['{{ status.label }}', {% if statusAcquisitionNb[status.status]['number'] is defined %} {{ statusAcquisitionNb[status.status]['number'] }} {% else %} 0 {% endif %} ]
+            ['{{ status.label }}', {% if statusAcquisitionCount[status.status]['number'] is defined %} {{ statusAcquisitionCount[status.status]['number'] }} {% else %} 0 {% endif %} ]
             {% endfor %}
         ]
     }]

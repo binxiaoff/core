@@ -253,9 +253,6 @@ class dashboardController extends bootstrap
         die;
     }
 
-    /**
-     * @throws \Doctrine\DBAL\DBALException
-     */
     public function _activite()
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
@@ -269,93 +266,111 @@ class dashboardController extends bootstrap
 
             $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-            $projectsInSalesTreatmentStatusNb = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
+            try {
+                $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
 
-            $firstDayOfThisYear = new DateTime('first day of this year');
-            $today              = new DateTime();
-            $firstOfLastYear    = new DateTime('first day of last year');
-            $sameDayOfLastYear  = clone $today;
-            $sameDayOfLastYear->modify('-1 year');
-            $yearOverYear = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
+                $firstDayOfThisYear = new DateTime('first day of this year');
+                $today              = new DateTime();
+                $firstOfLastYear    = new DateTime('first day of last year');
+                $sameDayOfLastYear  = clone $today;
+                $sameDayOfLastYear->modify('-1 year');
+                $yearOverYear = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
 
-            $firstDayOfLastMonth   = new DateTime('first day of last month');
-            $lastDayOfLastMonth    = new DateTime('last day of last month');
-            $firstDayOfTwoMonthAgo = new DateTime('first day of 2 month ago');
-            $lastDayOfTwoMonthAgo  = new DateTime('last day of 2 month ago');
-            $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
+                $firstDayOfLastMonth   = new DateTime('first day of last month');
+                $lastDayOfLastMonth    = new DateTime('last day of last month');
+                $firstDayOfTwoMonthAgo = new DateTime('first day of 2 month ago');
+                $lastDayOfTwoMonthAgo  = new DateTime('last day of 2 month ago');
+                $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
 
-            $twelveMonthAgo = clone $firstDayOfLastMonth;
-            $twelveMonthAgo->modify('-11 months');
-            $twelveMonths = $this->get12rollingMonths($twelveMonthAgo);
+                $twelveMonthAgo = clone $firstDayOfLastMonth;
+                $twelveMonthAgo->modify('-11 months');
+                $twelveMonths = $this->getRollingMonths($twelveMonthAgo, $lastDayOfLastMonth);
 
-            $statSentToAnalysis = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
-            $statRepayment      = $this->getProjectCountInStatusFor12RollingMonths(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth, $twelveMonths);
+                $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth);
+                $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth);
 
-            $countableStatus     = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
-                'status' => [
-                    ProjectsStatus::COMMERCIAL_REVIEW,
-                    ProjectsStatus::ANALYSIS_REVIEW,
-                    ProjectsStatus::PREP_FUNDING,
-                    ProjectsStatus::EN_FUNDING,
-                    ProjectsStatus::FUNDE
-                ]
-            ], ['status' => 'ASC']);
-            $statusAllNb         = $this->countByStatus($countableStatus);
-            $statusCashFlowNb    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
-            $statusAcquisitionNb = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
-            $statusPartnerNb     = $this->countByStatus($countableStatus, null, [
-                Partner::PARTNER_U_CAR_ID,
-                Partner::PARTNER_MEDILEND_ID,
-                Partner::PARTNER_AXA_ID,
-                Partner::PARTNER_MAPA_ID,
-                Partner::PARTNER_UNILEND_PARTNERS_ID
-            ]);
+                $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
+                    'status' => [
+                        ProjectsStatus::COMMERCIAL_REVIEW,
+                        ProjectsStatus::ANALYSIS_REVIEW,
+                        ProjectsStatus::PREP_FUNDING,
+                        ProjectsStatus::EN_FUNDING,
+                        ProjectsStatus::FUNDE
+                    ]
+                ], ['status' => 'ASC']);
+                $statusAllCount         = $this->countByStatus($countableStatus);
+                $statusCashFlowCount    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
+                $statusAcquisitionCount = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
+                $statusPartnerCount     = $this->countByStatus($countableStatus, null, [
+                    Partner::PARTNER_U_CAR_ID,
+                    Partner::PARTNER_MEDILEND_ID,
+                    Partner::PARTNER_AXA_ID,
+                    Partner::PARTNER_MAPA_ID,
+                    Partner::PARTNER_UNILEND_PARTNERS_ID
+                ]);
 
-            $lastDayOfLastYear        = new DateTime('last day of december last year');
-            $releasedProjectsThisYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstDayOfThisYear, $today);
-            $releasedProjectsLastYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstOfLastYear, $lastDayOfLastYear);
+                $lastDayOfLastYear        = new DateTime('last day of december last year');
+                $releasedProjectsThisYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstDayOfThisYear, $today);
+                $releasedProjectsLastYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstOfLastYear, $lastDayOfLastYear);
 
-            $borrowingMotives = [
-                BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
-                BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
-                BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
-                BorrowingMotive::ID_MOTIVE_WORK,
-                BorrowingMotive::ID_MOTIVE_CASH_FLOW,
-                BorrowingMotive::ID_MOTIVE_OTHER
-            ];
+                $borrowingMotives = [
+                    BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
+                    BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
+                    BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
+                    BorrowingMotive::ID_MOTIVE_WORK,
+                    BorrowingMotive::ID_MOTIVE_CASH_FLOW,
+                    BorrowingMotive::ID_MOTIVE_OTHER
+                ];
 
-            $delays = [
-                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
-                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
-                ['label' => 'Prép funding + conditions suspensives', 'data' => $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives)],
-                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
-                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
-                ['label' => 'Traitement commerciale', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
-                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
-            ];
+                $readyFundingDelay      = $this->getDelayByStatus(ProjectsStatus::SUSPENSIVE_CONDITIONS, $borrowingMotives);
+                $suspenseConditionDelay = $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives);
+                $beforeFundingDelay     = [];
+
+                foreach ($borrowingMotives as $motive) {
+                    $beforeFundingDelay[$motive] = (isset($readyFundingDelay[$motive]) ? $readyFundingDelay[$motive] : 0) + (isset($suspenseConditionDelay[$motive]) ? $suspenseConditionDelay[$motive] : 0);
+                }
+
+                $delays = [
+                    ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
+                    ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
+                    ['label' => 'Prép funding + conditions suspensives', 'data' => $beforeFundingDelay],
+                    ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
+                    ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
+                    ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
+                    ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
+                ];
+            } catch (Exception $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error('Error occurs when displaying the sales activity dashboard. Error : ' . $exception->getMessage(),
+                    ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
+
+                header('Location: ' . $this->url);
+                die;
+            }
 
             $this->render(null, [
-                'projectsInSalesTreatmentStatusNb' => $projectsInSalesTreatmentStatusNb,
-                'releasedProjectThisYearNb'        => $yearOverYear['number'],
-                'releasedProjectThisYearAmount'    => $yearOverYear['amount'],
-                'deltaYoyNbInPercentage'           => $yearOverYear['deltaNbInPercentage'],
-                'deltaYoyAmountInPercentage'       => $yearOverYear['deltaAmountInPercentage'],
-                'releasedProjectLastMonthNb'       => $monthOverMonth['number'],
-                'releasedProjectLastMonthAmount'   => $monthOverMonth['amount'],
-                'deltaMomNbInPercentage'           => $monthOverMonth['deltaNbInPercentage'],
-                'deltaMomAmountInPercentage'       => $monthOverMonth['deltaAmountInPercentage'],
-                'twelveMonths'                     => $twelveMonths,
-                'statSentToAnalysisHighcharts'     => $statSentToAnalysis,
-                'statRepaymentHighcharts'          => $statRepayment,
-                'releasedProjectsThisYear'         => $releasedProjectsThisYear,
-                'releasedProjectsLastYear'         => $releasedProjectsLastYear,
-                'delays'                           => $delays,
-                'borrowingMotives'                 => $borrowingMotives,
-                'countableStatus'                  => $countableStatus,
-                'statusAllNb'                      => $statusAllNb,
-                'statusCashFlowNb'                 => $statusCashFlowNb,
-                'statusAcquisitionNb'              => $statusAcquisitionNb,
-                'statusPartnerNb'                  => $statusPartnerNb,
+                'projectsInSalesTreatmentStatusCount' => $projectsInSalesTreatmentStatusCount,
+                'releasedProjectThisYearCount'        => $yearOverYear['number'],
+                'releasedProjectThisYearAmount'       => $yearOverYear['amount'],
+                'deltaYoyCountInPercentage'           => $yearOverYear['deltaCountInPercentage'],
+                'deltaYoyAmountInPercentage'          => $yearOverYear['deltaAmountInPercentage'],
+                'releasedProjectLastMonthCount'       => $monthOverMonth['number'],
+                'releasedProjectLastMonthAmount'      => $monthOverMonth['amount'],
+                'deltaMomCountInPercentage'           => $monthOverMonth['deltaCountInPercentage'],
+                'deltaMomAmountInPercentage'          => $monthOverMonth['deltaAmountInPercentage'],
+                'twelveMonths'                        => $twelveMonths,
+                'statSentToAnalysisHighcharts'        => $statSentToAnalysis,
+                'statRepaymentHighcharts'             => $statRepayment,
+                'releasedProjectsThisYear'            => $releasedProjectsThisYear,
+                'releasedProjectsLastYear'            => $releasedProjectsLastYear,
+                'delays'                              => $delays,
+                'borrowingMotives'                    => $borrowingMotives,
+                'countableStatus'                     => $countableStatus,
+                'statusAllCount'                      => $statusAllCount,
+                'statusCashFlowCount'                 => $statusCashFlowCount,
+                'statusAcquisitionCount'              => $statusAcquisitionCount,
+                'statusPartnerCount'                  => $statusPartnerCount,
             ]);
         } else {
             header('Location: ' . $this->url);
@@ -379,42 +394,44 @@ class dashboardController extends bootstrap
 
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::REMBOURSEMENT], $from, $end);
-        $releasedProjectNb     = count($releasedProject);
+        $releasedProject       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT, $from, $end);
+        $releasedProjectCount  = count($releasedProject);
         $releasedProjectAmount = 0;
         foreach ($releasedProject as $project) {
             $releasedProjectAmount += $project['amount'];
         }
 
-        $releasedProjectToCompare       = $projectRepository->findProjectsHavingHadStatusBetweenDates([ProjectsStatus::REMBOURSEMENT], $compareWithFrom, $compareWithEnd);
-        $releasedProjectToCompareNb     = count($releasedProjectToCompare);
+        $releasedProjectToCompare       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT, $compareWithFrom, $compareWithEnd);
+        $releasedProjectToCompareCount  = count($releasedProjectToCompare);
         $releasedProjectToCompareAmount = 0;
         foreach ($releasedProjectToCompare as $project) {
             $releasedProjectToCompareAmount += $project['amount'];
         }
 
-        $deltaNbInPercentage     = round(bcmul(bcdiv(($releasedProjectNb - $releasedProjectToCompareNb), $releasedProjectToCompareNb, 5), 100, 2), 1);
+        $deltaCountInPercentage  = round(bcmul(bcdiv(($releasedProjectCount - $releasedProjectToCompareCount), $releasedProjectToCompareCount, 5), 100, 2), 1);
         $deltaAmountInPercentage = round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2), 1);
 
         return [
-            'number'                  => $releasedProjectNb,
+            'number'                  => $releasedProjectCount,
             'amount'                  => $releasedProjectAmount,
-            'deltaNbInPercentage'     => $deltaNbInPercentage,
+            'deltaCountInPercentage'  => $deltaCountInPercentage,
             'deltaAmountInPercentage' => $deltaAmountInPercentage,
         ];
     }
 
     /**
      * @param DateTime $start
+     * @param DateTime $end
      *
      * @return array
      */
-    private function get12rollingMonths(DateTime $start) : array
+    private function getRollingMonths(DateTime $start, DateTime $end) : array
     {
         $months     = [];
         $firstMonth = clone $start;
+        $lastMonth  = clone $end;
 
-        for ($i = 1; $i <= 12; $i++) {
+        while ($firstMonth <= $lastMonth) {
             $months[] = $firstMonth->format('m/Y');
             $firstMonth->modify('+1 month');
         }
@@ -426,43 +443,56 @@ class dashboardController extends bootstrap
      * @param int      $status
      * @param DateTime $start
      * @param DateTime $end
-     * @param array    $twelveMonths
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getProjectCountInStatusFor12RollingMonths(int $status, DateTime $start, DateTime $end, array $twelveMonths) : array
+    private function getProjectCountInStatus(int $status, DateTime $start, DateTime $end) : array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $countInStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getStatisticsByStatusByMonth($status, true, $start, $end);
 
+        $partnerColor = [
+            Partner::PARTNER_U_CAR_ID            => '#FCA234',
+            Partner::PARTNER_MEDILEND_ID         => '#15AAE8',
+            Partner::PARTNER_AXA_ID              => '#133082',
+            Partner::PARTNER_MAPA_ID             => '#EC3846',
+            Partner::PARTNER_UNILEND_PARTNERS_ID => '#91ED81',
+            Partner::PARTNER_UNILEND_ID          => '#B20066'
+        ];
+
         $countInStatusHighcharts = [];
         foreach ($countInStatus as $item) {
-            $countInStatusHighcharts[$item['partner']][$item['month']] = (int) $item['number'];
+            $countInStatusHighcharts[$item['partnerId']]['data'][$item['month']] = (int) $item['number'];
+            $countInStatusHighcharts[$item['partnerId']]['label']                = $item['partner'];
+            $countInStatusHighcharts[$item['partnerId']]['color']                = isset($partnerColor[$item['partnerId']]) ? $partnerColor[$item['partnerId']] : '';
         }
         ksort($countInStatusHighcharts);
+
+        $months = $this->getRollingMonths($start, $end);
+
         foreach ($countInStatusHighcharts as &$partnerStat) {
-            foreach ($twelveMonths as $month) {
-                if (false === isset($partnerStat[$month])) {
-                    $partnerStat[$month] = 0;
+            foreach ($months as $month) {
+                if (false === isset($partnerStat['data'][$month])) {
+                    $partnerStat['data'][$month] = 0;
                 }
             }
-            ksort($partnerStat);
+            ksort($partnerStat['data']);
         }
 
         return $countInStatusHighcharts;
     }
 
     /**
-     * @param int $status
-     * @param     $motives
+     * @param  int   $status
+     * @param  array $motives
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function getDelayByStatus(int $status, $motives)
+    private function getDelayByStatus(int $status, array $motives) : array
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -493,14 +523,14 @@ class dashboardController extends bootstrap
             $status[] = $item->getStatus();
         }
 
-        $statusNb = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countByStatus($status, $borrowingMotives, $partners);
+        $statusCount = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->countByStatus($status, $borrowingMotives, $partners);
 
-        $formattedStatusNb = [];
-        foreach ($statusNb as $number) {
-            $formattedStatusNb[$number['status']] = ['number' => $number['project_number']];
+        $formattedStatusCount = [];
+        foreach ($statusCount as $number) {
+            $formattedStatusCount[$number['status']] = ['number' => $number['project_number']];
         }
 
-        return $formattedStatusNb;
+        return $formattedStatusCount;
     }
 
 }

@@ -46,12 +46,12 @@ Highcharts.chart('under-repayment', {
         }
     },
     series: [
-        {% for partner, partnerStat in statRepaymentHighcharts %}
+        {% for partnerStat in statRepaymentHighcharts %}
         {% if not loop.first %},{% endif %}
         {
-            name: '{{ partner }}',
-            data: [{% for number in partnerStat %} {% if not loop.first %},{% endif %} {{ number }} {% endfor %}]
-
+            name: '{{ partnerStat.label }}',
+            data: [{% for number in partnerStat.data %} {% if not loop.first %},{% endif %} {{ number }} {% endfor %}]
+            {% if partnerStat.color is not empty %},color: '{{ partnerStat.color }}'{% endif %}
         }
         {% endfor %}
     ]

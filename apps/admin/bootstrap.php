@@ -13,7 +13,12 @@ class bootstrap extends Controller
             'title'    => 'Dashboard',
             'uri'      => 'dashboard',
             'zone'     => Zones::ZONE_LABEL_DASHBOARD,
-            'children' => []
+            'children' => [
+                [
+                    'title' => 'Activité commercial',
+                    'uri'   => 'dashboard/activite'
+                ]
+            ]
         ],
         [
             'title'    => 'Edition',
