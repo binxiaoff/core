@@ -127,17 +127,17 @@ EOF
                 $row += 1;
             }
 
-            $interestWhileInFrance            = $operationRepository->getGrossInterestPaymentsInFrance($wallet, $year);
-            $regularizedInterestWhileInFrance = $operationRepository->getRegularizedGrossInterestPaymentsInFrance($wallet, $year);
-            $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
-            if ($interestWhileInFrance > 0) {
-                $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
-                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
-                $row += 1;
-            }
-
             if (in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+                $interestWhileInFrance            = $operationRepository->getGrossInterestPaymentsInFrance($wallet, $year);
+                $regularizedInterestWhileInFrance = $operationRepository->getRegularizedGrossInterestPaymentsInFrance($wallet, $year);
+                $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
+                if ($interestWhileInFrance > 0) {
+                    $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
+                    $row += 1;
+                }
+
                 $netInterestWhileInEEA            = $operationRepository->sumNetInterestRepaymentsNotInEeaExceptFrance($wallet, $year);
                 $regularizedNetInterestWhileInEEA = $operationRepository->sumRegularizedNetInterestRepaymentsNotInEeaExceptFrance($wallet, $year);
                 $netInterestWhileInEEA            = round(bcsub($netInterestWhileInEEA, $regularizedNetInterestWhileInEEA, 4));
