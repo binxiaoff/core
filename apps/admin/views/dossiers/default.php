@@ -1,3 +1,4 @@
+<?php $isRiskUser = true;$this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <script>
     var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
 
@@ -243,7 +244,9 @@
                         <th style="width:12%">Statut</th>
                         <th style="width:12%">Commercial</th>
                         <th style="width:9%">Analyste</th>
-                        <th style="width:4%">Presc.</th>
+                        <?php if ($isRiskUser) : ?>
+                            <th style="width:4%">Pré-score</th>
+                        <?php endif; ?>
                         <th style="width:4%">Comment.</th>
                         <th style="width:2%"></th>
                     </tr>
@@ -265,7 +268,9 @@
                             <td><?= $p['label'] ?></td>
                             <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                             <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                            <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur">' : '' ?></td>
+                            <?php if ($isRiskUser) : ?>
+                                <td><?= -1 == $p['pre_scoring'] ? '' : $p['pre_scoring'] ?></td>
+                            <?php endif; ?>
                             <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
