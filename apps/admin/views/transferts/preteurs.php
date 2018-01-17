@@ -21,8 +21,8 @@
             processing: true,
             columnDefs: [
                 {orderable: false, targets: [1, 3, 6]},
-                {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8]},
-                {visible: false, targets: [7, 8]},
+                {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8, 9]},
+                {visible: false, targets: [7, 8, 9]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
@@ -40,8 +40,7 @@
                 var receptionId = data[0]
                 var comment = data[7]
                 var line = data[8]
-                var amount = data[2]
-                var negative = (amount.replace(',', '.').replace(/[^\d\-\.]/g, '') < 0) ? true : false
+                var rejection = data[9]
 
                 var addCommentBtn = '<a class="add-comment table-action" data-comment="' + comment + '" title="Commenter l\'opération">' +
                     '<span class="fa fa-pencil"></span>' +
@@ -50,7 +49,7 @@
                     '<span class="fa fa-eye"></span>' +
                     '</a>'
 
-                if (negative) {
+                if (rejection) {
                     $row.css('background', '#f9adb3')
                 }
 
@@ -58,8 +57,10 @@
                     addCommentBtn = '<a class="add-comment modify-comment table-action" data-comment="' + comment + '" title="Modifier le commentaire">' +
                         '<span class="fa fa-pencil-square"></span>' +
                         '</a>'
-                    if (!negative)
+
+                    if (! rejection) {
                         $row.css('background', '#fdeec6')
+                    }
                 }
                 $row.attr('data-reception-id', receptionId)
                 $row.find('td:last-child').append(showReceptionBtn + addCommentBtn)

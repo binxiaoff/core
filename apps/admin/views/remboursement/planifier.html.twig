@@ -10,22 +10,33 @@
 
 {% block pageScripts %}
     <script>
-      $(function () {
-        // Page helpers are initialised in app.js and can be called quickly using their name
-        App.initHelpers(['datepicker', 'validation']);
+        $(function () {
+            // Page helpers are initialised in app.js and can be called quickly using their name
+            App.initHelpers(['datepicker', 'validation']);
 
-        // Repayment date
-        $('#repayment-date').datepicker({
-          startDate: new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') }} -1, {{ repaymentMinDate|date('d') }}),
-          autoclose: true
-        })
+            // Repayment date
+            var $repaymentDatePicker = $('#repayment-date')
+            var repaymentMinDate = new Date({{ repaymentMinDate|date('Y') }}, {{ repaymentMinDate|date('m') - 1 }}, {{ repaymentMinDate|date('d') }})
+            $repaymentDatePicker.datepicker({
+                startDate: repaymentMinDate,
+                autoclose: true
+            })
+            var $bypassCheck = $('#bypass-date-restriction')
+            if ($bypassCheck.length) {
+                $bypassCheck.on('change', function () {
+                    var startDate = this.checked ? new Date() : repaymentMinDate
+                    $repaymentDatePicker.datepicker('destroy')
+                    $repaymentDatePicker.datepicker({startDate: startDate})
+                    $repaymentDatePicker.datepicker('refresh')
+                })
+            }
 
-        // Pre-fill tax-rate
-        $('#debt-collection-mission').change(function () {
-          var rate = $(this).find('option:selected').data('tax-rate')
-          $('#debt-collection-rate').val(rate)
+            // Pre-fill tax-rate
+            $('#debt-collection-mission').change(function () {
+                var rate = $(this).find('option:selected').data('tax-rate')
+                $('#debt-collection-rate').val(rate)
+            })
         })
-      })
     </script>
 {% endblock %}
 
@@ -152,6 +163,13 @@
                                         <p class="bg-warning font-s12" style="padding: 10px 15px;">
                                             S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.
                                         </p>
+                                        {% if canBypassDateRestriction and repaymentMinDate|date('Y-m-d') > 'now'|date('Y-m-d') %}
+                                            <p>
+                                                <label class="css-input css-checkbox css-checkbox-primary">
+                                                    <input type="checkbox" name="bypass-date-restriction" id="bypass-date-restriction"><span></span> Contourner la restriction de date
+                                                </label>
+                                            </p>
+                                        {% endif %}
                                     {% endif %}
                                 </div>
                             </div>

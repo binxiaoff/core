@@ -1,9 +1,9 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class dashboardController extends bootstrap
@@ -55,7 +55,7 @@ class dashboardController extends bootstrap
             $this->upcomingProjects             = $this->getSaleUpcomingProjects();
             $this->impossibleEvaluationProjects = $this->getImpossibleEvaluationProjects();
             $this->collapsedStatus              = self::$saleCollapsedStatus;
-            $this->salesPeople                  = $user->select('status = 1 AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+            $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
         } else {
             header('Location: ' . $this->lurl);
             die;
@@ -234,8 +234,8 @@ class dashboardController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \projects $project */
         $project = $this->loadData('projects');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
@@ -245,7 +245,7 @@ class dashboardController extends bootstrap
 
             if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
                 $status = empty($projectEntity->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
-                $projectManager->addProjectStatus($_SESSION['user']['id_user'], $status, $project);
+                $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
                 $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
             }
         }

@@ -121,10 +121,19 @@ class AutolendController extends Controller
         $template['validation_date'] = strftime('%d %B %G', $validateTime->format('U'));
         $template['autolend_amount'] = $autoBidSettingsManager->getAmount($client);
 
-        return $this->render('pages/autolend.html.twig', $template);
+        return $this->render('autolend/autolend.html.twig', $template);
     }
 
-    private function handleSimpleSettings($post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
+    /**
+     * @param array                  $post
+     * @param \settings              $settings
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param Request                $request
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function handleSimpleSettings(array $post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');
@@ -179,7 +188,16 @@ class AutolendController extends Controller
         return [];
     }
 
-    private function handleExpertSettings($post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
+    /**
+     * @param array                  $post
+     * @param \settings              $settings
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param Request                $request
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function handleExpertSettings(array $post, \settings $settings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
         /** @var Clients $client */
         $client = $this->getClient();
@@ -276,6 +294,14 @@ class AutolendController extends Controller
         return [];
     }
 
+    /**
+     * @param \client_settings       $clientSettings
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param Request                $request
+     *
+     * @return string
+     * @throws \Exception
+     */
     private function saveAutolendOff(\client_settings $clientSettings, AutoBidSettingsManager $autoBidSettingsManager, Request $request)
     {
         /** @var Clients $client */
@@ -290,6 +316,14 @@ class AutolendController extends Controller
         }
     }
 
+    /**
+     * @param array                  $userSettings
+     * @param array                  $projectPeriods
+     * @param \projects              $project
+     * @param \project_rate_settings $projectRateSettings
+     *
+     * @return array
+     */
     private function fillMissingAutolendSettings(array $userSettings, array $projectPeriods, \projects $project, \project_rate_settings $projectRateSettings)
     {
         $settings           = [];

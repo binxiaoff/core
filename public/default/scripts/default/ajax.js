@@ -182,25 +182,6 @@ function controleMdp(mdp, id, async, idConfirmation) {
     return result;
 }
 
-// fonction controle mdp
-function acceptCookies() {
-    $.post(add_url + "/ajax/acceptCookies").done(function (data) {
-
-        var obj = jQuery.parseJSON(data);
-
-        if (obj.reponse == true) {
-            $('.cookies').slideUp();
-            setTimeout(function () {
-                $(".cookies").remove();
-            }, 3000);
-
-        }
-        else {
-
-        }
-    });
-}
-
 function controleCity(elmCity, elmCountry, async) {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;

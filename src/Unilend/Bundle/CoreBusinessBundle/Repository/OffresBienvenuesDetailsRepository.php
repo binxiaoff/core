@@ -53,7 +53,7 @@ class OffresBienvenuesDetailsRepository extends EntityRepository
             ->andwhere('0 = (SELECT COUNT(b.idBid) FROM Unilend\Bundle\CoreBusinessBundle\Entity\Bids b WHERE b.idLenderAccount = w.id AND b.status = :rejected)')
             ->setParameter('dateLimit', $date)
             ->setParameter('unused', OffresBienvenuesDetails::STATUS_NEW)
-            ->setParameter('rejected', Bids::STATUS_BID_REJECTED);
+            ->setParameter('rejected', Bids::STATUS_REJECTED);
 
         return $queryBuilder->getQuery()->getResult();
     }

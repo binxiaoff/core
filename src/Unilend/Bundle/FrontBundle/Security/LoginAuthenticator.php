@@ -7,26 +7,26 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
 use Symfony\Component\Security\Core\Exception\AccountExpiredException;
-use Symfony\Component\Security\Core\Exception\BadCredentialsException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Exception\LockedException;
-use Symfony\Component\Security\Core\Exception\DisabledException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Security\Core\Exception\DisabledException;
+use Symfony\Component\Security\Core\Exception\LockedException;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -52,7 +52,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $entityManager;
 
     /**
-     * LoginAuthenticator constructor.
      * @param UserPasswordEncoder $securityPasswordEncoder
      * @param RouterInterface $router
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -91,6 +90,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if ($targetPath) {
             $targetPath = $this->removeHost($targetPath);
+
             return $targetPath;
         }
 
@@ -103,7 +103,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if (in_array('ROLE_PARTNER', $user->getRoles())) {
-            return $this->router->generate('partner_project_request');
+            return $this->router->generate('partner_home');
         }
 
         return $this->router->generate('home');
@@ -206,19 +206,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->saveLogin($client);
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
-        if (! $targetPath) {
-            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
-        }
-
-        if (
-            $user instanceof UserLender
-            && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])
-        ) {
-            $targetPath = $this->router->generate('lender_completeness');
-        }
-
-        $response = new RedirectResponse($targetPath);
+        $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
+        $response   = new RedirectResponse($targetPath);
 
         $cookie = new Cookie(self::COOKIE_NO_CF, 1);
         $response->headers->setCookie($cookie);
@@ -342,5 +331,30 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $fragment  = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
 
         return $path . $query . $fragment;
+    }
+
+    /**
+     * @param Request  $request
+     * @param string   $providerKey
+     * @param BaseUser $user
+     *
+     * @return string
+     */
+    private function getUserSpecificTargetPath(Request $request, string $providerKey, BaseUser $user) : string
+    {
+        $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
+
+        if (! $targetPath) {
+            $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
+        }
+
+        if (
+            $user instanceof UserLender
+            && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])
+        ) {
+            $targetPath = $this->router->generate('lender_completeness');
+        }
+
+        return $targetPath;
     }
 }

@@ -19,22 +19,46 @@
 
             /*
              * Extend dataTable actions
-             * add "Reset Password" button + modal
+             * Add stats, password
              */
+            var updateActionButtons = function ($tr, addPassword) {
+                var $buttonsContainer = $tr.find('td:last-child .text-nowrap')
+                var statsUrl = $tr.closest('.table').data('stats-url')
+
+                if (addPassword) {
+                    $buttonsContainer.prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                }
+
+                if (statsUrl) {
+                    $buttonsContainer.append('<a href="' + statsUrl + $tr.data('id') + '" class="btn btn-xs btn-default stats-btn" title="Statistiques"><i class="fa fa-line-chart"></i></a>')
+                }
+            }
+
+            var $agenciesTable = $('#table-agencies')
+            $agenciesTable.DT({
+                before: function() {
+                    $agenciesTable.find('tbody tr').each(function() {
+                        updateActionButtons($(this), false)
+                    })
+                },
+                updated: function(id) {
+                    updateActionButtons($agenciesTable.find('tr[data-id=' + id + ']'), false)
+                }
+            })
+
             var $usersTable = $('#table-users')
             var $sendPasswordModal = $('#modal-send-password')
             $usersTable.DT({
                 before: function() {
-                    $usersTable.find('tbody tr').each(function(){
-                        var $tr = $(this)
-                        $tr.find('td:last-child .text-nowrap').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                    $usersTable.find('tbody tr').each(function() {
+                        updateActionButtons($(this), true)
                     })
                 },
                 updated: function(id) {
-                    $usersTable.find('tr[data-id=' + id + '] .btn-group').prepend('<a class="btn btn-xs btn-default password-btn" title="Mot de passe"><span class="fa fa-lock"></span></a>')
+                    updateActionButtons($usersTable.find('tr[data-id=' + id + ']'), true)
                 }
             })
-            $usersTable.on('click', '.password-btn', function(){
+            $usersTable.on('click', '.password-btn', function() {
                 var id = $(this).closest('tr').data('id')
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
@@ -337,11 +361,11 @@
             </div>
             <div class="block-content block-content-full">
                 <table id="table-agencies" class="table table-bordered table-header-bg table-striped"
-                       data-table
                        data-table-search="true"
                        data-table-editor
                        data-table-editor-url="{{ app.adminUrl }}/partenaires/agence/{{ partner.id }}"
-                       data-table-editor-actions="add, modify, stats">
+                       data-table-editor-actions="add, modify, delete"
+                       data-stats-url="{{ app.adminUrl }}/partenaires/stats/agence/">
                     <thead>
                     <tr>
                         <th data-editor-name="name" data-editor-type="text">Nom</th>
@@ -354,7 +378,7 @@
                     </thead>
                     <tbody>
                     {% for agency in agencies %}
-                        <tr data-id="{{ agency.idCompany }}" data-stats-url="{{ app.adminUrl }}/partenaires/stats/agence/{{ agency.idCompany }}">
+                        <tr data-id="{{ agency.idCompany }}">
                             <td>{{ agency.name }}</td>
                             <td>{{ agency.siren }}</td>
                             <td>{{ agency.phone }}</td>
@@ -376,7 +400,8 @@
                        data-table-search="true"
                        data-table-editor
                        data-table-editor-url="{{ app.adminUrl }}/partenaires/utilisateur/{{ partner.id }}"
-                       data-table-editor-actions="add, modify, toggle, stats">
+                       data-table-editor-actions="add, modify, toggle, delete"
+                       data-stats-url="{{ app.adminUrl }}/partenaires/stats/utilisateur/">
                     <thead>
                     <tr>
                         <th data-editor-name="lastname" data-editor-type="text">Nom</th>
@@ -385,12 +410,12 @@
                         <th data-editor-name="agency" data-editor-type="select" data-editor-options="{% for agency in agencies %}{{ agency.name|e('html_attr') }}:{{ agency.idCompany }}{% if not loop.last %}, {% endif %}{% endfor %}">Agence</th>
                         <th data-editor-name="phone" data-editor-type="text">Téléphone</th>
                         <th data-editor-name="role" data-editor-type="select" data-editor-options="Administrateur:admin, Agent:agent">Rôle</th>
-                        <th data-editor-disabled data-type="date-fr">Dernière connexion</th>
+                        <th data-editor-name="lastlogin" data-editor-type="date" data-editor-disabled data-type="date-fr">Dernière connexion</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for user in users %}
-                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}" data-stats-url="{{ app.adminUrl }}/partenaires/stats/utilisateur/{{ user.idClient.idClient }}">
+                        <tr data-id="{{ user.id }}" data-state="{% if user.idClient.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}active{% else %}inactive{% endif %}">
                             <td>{{ user.idClient.nom }}</td>
                             <td>{{ user.idClient.prenom }}</td>
                             <td>{{ user.idClient.email }}</td>

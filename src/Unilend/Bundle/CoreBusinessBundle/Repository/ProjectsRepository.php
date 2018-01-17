@@ -11,7 +11,7 @@ use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyStatus, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
+    Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
 use Unilend\librairies\CacheKeys;
 
@@ -21,6 +21,7 @@ class ProjectsRepository extends EntityRepository
      * @param int $lenderId
      *
      * @return int
+     * @throws \Doctrine\DBAL\Cache\CacheException
      */
     public function countCompaniesLenderInvestedIn($lenderId)
     {
@@ -127,7 +128,8 @@ class ProjectsRepository extends EntityRepository
                 ),
                 $queryBuilder->expr()->andX(
                     $queryBuilder->expr()->eq('p.status', ':noAutoEvaluationStatus'),
-                    $queryBuilder->expr()->notLike('c.telephone', $queryBuilder->expr()->literal(''))
+                    $queryBuilder->expr()->notLike('c.telephone', $queryBuilder->expr()->literal('')),
+                    $queryBuilder->expr()->isNotNull('c.telephone')
                 )
             ))
             ->setParameter('userCompanies', $companies)
@@ -182,6 +184,7 @@ class ProjectsRepository extends EntityRepository
      * @param int|null    $client
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getMonthlyStatistics($projectStatus, \DatePeriod $datePeriod, array $companies = null, $client = null)
     {
@@ -266,6 +269,8 @@ class ProjectsRepository extends EntityRepository
      * @param array  $companyStatusLabel
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCountProjectsBySirenAndNotInStatus($siren, array $projectStatus, array $companyStatusLabel)
     {
@@ -312,6 +317,7 @@ class ProjectsRepository extends EntityRepository
      * @param int       $projectStatus
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getIndicatorBetweenDates($select, \DateTime $start, \DateTime $end, $projectStatus)
     {
@@ -342,6 +348,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsHavingHadStatusBetweenDates(array $status, \DateTime $start, \DateTime $end)
     {
@@ -379,6 +386,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsWithDebtCollectionMissionBetweenDates(\DateTime $start, \DateTime $end)
     {
@@ -415,6 +423,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsHavingHadCompanyStatusInCollectiveProceeding(\DateTime $start, \DateTime $end)
     {
@@ -453,6 +462,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime $end
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findProjectsInRepaymentAtDate(\DateTime $end)
     {
@@ -561,6 +571,8 @@ class ProjectsRepository extends EntityRepository
      * @param string $siren
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getCountProjectsByStatusAndSiren(array $status, $siren)
     {
@@ -580,6 +592,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAverageInterestRateByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -620,6 +633,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAverageInterestRateUntil(\DateTime $date = null)
     {
@@ -659,6 +673,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAverageInterestRateByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -704,6 +719,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAveragePeriodByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -743,6 +759,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getNonWeightedAveragePeriodUntil(\DateTime $date = null)
     {
@@ -781,6 +798,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAveragePeriodByCohortUntil($groupFirstYears = true, \DateTime $date = null)
     {
@@ -825,6 +843,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null $date
      *
      * @return string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getWeightedAveragePeriodUntil(\DateTime $date = null)
     {
@@ -893,44 +912,46 @@ class ProjectsRepository extends EntityRepository
      * @param bool $healthy
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getCountProjectsWithLateRepayments($healthy = true, $groupFirstYears = true)
     {
         $query = '
             SELECT
-              COUNT(DISTINCT p.id_project) AS amount,
-              (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
+                COUNT(DISTINCT p.id_project) AS amount,
+                (' . $this->getCohortQuery($groupFirstYears) . ') AS cohort
             FROM projects p
-              INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
-              INNER JOIN companies c ON c.id_company = p.id_company
-              INNER JOIN company_status cs ON cs.id = c.id_status
+            INNER JOIN echeanciers_emprunteur ON echeanciers_emprunteur.id_project = p.id_project 
+            INNER JOIN companies c ON c.id_company = p.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
             WHERE p.status >= ' . ProjectsStatus::REMBOURSEMENT . '
-              AND
-                (
-                SELECT lender_payment_status.status
-                FROM echeanciers lender_payment_status
-                WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre
-                  AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
-                LIMIT 1 ) = 0
-              AND
-                (
-                SELECT lender_payment_date.date_echeance
-                FROM echeanciers lender_payment_date
-                WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre
-                  AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
-                LIMIT 1) < NOW()
-              AND IF(
+                AND (
+                    SELECT lender_payment_status.status
+                    FROM echeanciers lender_payment_status
+                    WHERE lender_payment_status.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = lender_payment_status.id_project
+                    LIMIT 1 
+                ) = ' . Echeanciers::STATUS_PENDING . '
+                AND (
+                    SELECT lender_payment_date.date_echeance
+                    FROM echeanciers lender_payment_date
+                    WHERE lender_payment_date.ordre = echeanciers_emprunteur.ordre AND echeanciers_emprunteur.id_project = lender_payment_date.id_project
+                    LIMIT 1
+                ) < NOW()
+                AND IF((
                     cs.label IN (:companyStatus)
                     OR p.status = ' . ProjectsStatus::LOSS . '
-                    OR (p.status = ' . ProjectsStatus::PROBLEME . '
+                    OR (
+                        p.status = ' . ProjectsStatus::PROBLEME . '
                         AND DATEDIFF(NOW(), (
-                                            SELECT psh2.added
-                                            FROM projects_status_history psh2
-                                              INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                                            WHERE ps2.status = ' . ProjectsStatus::PROBLEME . '
-                                              AND psh2.id_project = echeanciers_emprunteur.id_project
-                                            ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                                            LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :healthy
+                            SELECT psh2.added
+                            FROM projects_status_history psh2
+                            INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                            WHERE ps2.status = ' . ProjectsStatus::PROBLEME . ' AND psh2.id_project = echeanciers_emprunteur.id_project
+                            ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                            LIMIT 1
+                        )) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '
+                    )
+                ), FALSE, TRUE) = :healthy
             GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()->executeQuery(
@@ -950,6 +971,7 @@ class ProjectsRepository extends EntityRepository
      * @param \DateTime|null  $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getAverageLoanAgeByCohortUntil($weighted, $groupFirstYears, \DateTime $date = null)
     {
@@ -1009,10 +1031,11 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param bool            $weighted
-     * @param \DateTime|null  $date
+     * @param bool           $weighted
+     * @param \DateTime|null $date
      *
      * @return bool|string
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getAverageLoanAgeUntil($weighted, \DateTime $date = null)
     {

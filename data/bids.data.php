@@ -1,46 +1,11 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\Bids as BidsEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 
 class bids extends bids_crud
 {
-    const STATUS_BID_PENDING                  = 0;
-    const STATUS_BID_ACCEPTED                 = 1;
-    const STATUS_BID_REJECTED                 = 2;
-    const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
-
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
-
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
@@ -130,7 +95,7 @@ class bids extends bids_crud
 
     public function sumBidsEncours($id_lender)
     {
-        $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = ' . BidsEntity::STATUS_PENDING;
 
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));
@@ -156,7 +121,7 @@ class bids extends bids_crud
         $sql = '
             SELECT COUNT(DISTINCT id_lender_account) 
             FROM bids 
-            WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_BID_PENDING;
+            WHERE id_project = ' . $id_project . ' AND status = ' . BidsEntity::STATUS_PENDING;
 
         $result = $this->bdd->query($sql);
         return (int) $this->bdd->result($result, 0, 0);
@@ -167,7 +132,7 @@ class bids extends bids_crud
         $result = $this->bdd->query('
             SELECT MAX(rate) 
             FROM bids 
-            WHERE id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING);
+            WHERE id_project = ' . $project->id_project . ' AND status = ' . BidsEntity::STATUS_PENDING);
 
         return round($this->bdd->result($result), 1);
     }
@@ -184,7 +149,7 @@ class bids extends bids_crud
             SELECT id_lender_account,
                 COUNT(*) AS bid_nb,
                 SUM(amount) AS amount_sum
-            FROM bids
+            FROM  bids
             WHERE id_project = ' . $iProjectId;
 
         if ('' !== $sStatus) {
@@ -236,7 +201,7 @@ class bids extends bids_crud
             $statement = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)));
             $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
             $statement->closeCursor();
-        } catch (\Doctrine\DBAL\DBALException $ex) {
+        } catch (\Exception $ex) {
             return false;
         }
         $iTotal = 0;
@@ -288,10 +253,10 @@ class bids extends bids_crud
                 SELECT
                     rate,
                     COUNT(*) AS bidsCount,
-                    SUM(IF(status = 0, 1, 0)) AS activeBidsCount,
+                    SUM(IF(status = ' . BidsEntity::STATUS_PENDING . ', 1, 0)) AS activeBidsCount,
                     SUM(ROUND(amount / 100, 2)) AS totalAmount,
-                    SUM(IF(status = 0, ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
-                    IF(SUM(amount) > 0, ROUND(SUM(IF(status = 2, 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
+                    SUM(IF(status = ' . BidsEntity::STATUS_PENDING . ', ROUND(amount / 100, 2), 0)) AS activeTotalAmount,
+                    IF(SUM(amount) > 0, ROUND(SUM(IF(status = ' . BidsEntity::STATUS_REJECTED . ', 0, ROUND(amount / 100, 2))) / SUM(ROUND(amount / 100, 2)) * 100, 1), 100) AS activePercentage
                 FROM bids
                 WHERE id_project = ' . $projectId . '
                 GROUP BY rate
@@ -334,17 +299,6 @@ class bids extends bids_crud
         return $bids;
     }
 
-    public function countBidsOnProjectByStatusForLender($iLenderId, $iProjectID, $iStatus)
-    {
-        $aBind = array('lenderId' => $iLenderId, 'projectId' => $iProjectID, 'status' => $iStatus);
-        $aType = array('lenderId' => \PDO::PARAM_INT, 'projectId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT);
-
-        $sQuery = 'SELECT count(*) FROM bids WHERE id_lender_account = :lenderId AND id_project = :projectId and status = :status';
-        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
-
-        return $oStatement->fetchColumn(0);
-    }
-
     public function countLendersOnProject($projectId)
     {
         $aBind = array('projectId' => $projectId);
@@ -358,7 +312,7 @@ class bids extends bids_crud
 
     public function getNumberActiveBidsByRate($projectId)
     {
-        $aBind = array('projectId' => $projectId, 'bidStatus' => self::STATUS_BID_PENDING);
+        $aBind = array('projectId' => $projectId, 'bidStatus' => BidsEntity::STATUS_PENDING);
         $aType = array('projectId' => \PDO::PARAM_INT, 'bidStatus' => \PDO::PARAM_INT);
 
         $sQuery = ' SELECT rate, count(*) as nb_bids
@@ -434,7 +388,11 @@ class bids extends bids_crud
                 b.id_bid, 
                 w.id_client, 
                 b.added, 
-                (CASE b.STATUS WHEN 0 THEN "En cours" WHEN 1 THEN "OK" WHEN 2 THEN "KO" END) AS status, 
+                CASE b.STATUS 
+                    WHEN ' . BidsEntity::STATUS_PENDING . ' THEN "En cours" 
+                    WHEN ' . BidsEntity::STATUS_ACCEPTED . ' THEN "OK" 
+                    WHEN ' . BidsEntity::STATUS_REJECTED . ' THEN "KO" 
+                END AS status, 
                 ROUND((b.amount / 100), 0) AS amount, 
                 REPLACE (b.rate, ".", ",") AS rate
             FROM bids b
