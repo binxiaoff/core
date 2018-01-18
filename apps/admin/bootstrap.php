@@ -10,13 +10,13 @@ class bootstrap extends Controller
 {
     const MENU = [
         [
-            'title'    => 'Dashboard',
-            'uri'      => 'dashboard',
+            'title'    => 'Accueil',
+            'uri'   => 'root',
             'zone'     => Zones::ZONE_LABEL_DASHBOARD,
             'children' => [
                 [
-                    'title' => 'Dashboard',
-                    'uri'   => 'dashboard'
+                    'title' => 'Accueil',
+                    'uri'   => ''
                 ],
                 [
                     'title' => 'Activité commercial',
