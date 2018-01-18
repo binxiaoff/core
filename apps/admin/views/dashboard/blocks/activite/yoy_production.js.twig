@@ -3,13 +3,13 @@ Highcharts.chart('yoy-production', {
         zoomType: 'xy'
     },
     title: {
-        text: 'Émission de la même période {{ 'now'|date('Y') }} vs {{ 'last year'|date('Y') }} (YoY)'
+        text: 'Émission (12 mois glissante vs la même période N-1)'
     },
     subtitle: {
         text: 'k€ & en nombre de projets'
     },
     xAxis: [{
-        categories: ['Janvier', 'Févier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'],
+        categories: [{% for index, month in twelveMonths %} {% if not loop.first %},{% endif %} '{{ month }}<br>{{ twelveMonthsLastYear[index] }}' {% endfor %}],
         crosshair: true
     }],
     yAxis: [{ // Primary yAxis
@@ -37,26 +37,26 @@ Highcharts.chart('yoy-production', {
         floating: true
     },
     series: [{
-        name: 'Montant {{ 'last year'|date('Y') }}',
+        name: 'Montant N-1',
         type: 'spline',
         data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
             valueSuffix: 'K€'
         }
     }, {
-        name: 'Montant {{ 'now'|date('Y') }}',
+        name: 'Montant N',
         type: 'spline',
         data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
             valueSuffix: 'K€'
         }
     }, {
-        name: 'Nombre {{ 'last year'|date('Y') }}',
+        name: 'Nombre N-1',
         type: 'column',
         yAxis: 1,
         data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]
     },{
-        name: 'Nombre {{ 'now'|date('Y') }}',
+        name: 'Nombre N',
         type: 'column',
         yAxis: 1,
         data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]

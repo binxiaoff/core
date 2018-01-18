@@ -255,127 +255,122 @@ class dashboardController extends bootstrap
 
     public function _activite()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
-        if (
-            $userManager->isUserGroupSales($this->userEntity)
-            || isset($this->params[0]) && 'sales' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
-        ) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-            try {
-                $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
+        try {
+            // nombre de projets en cours de traitement commercial
+            $projectsInSalesTreatmentStatusCount = count($projectRepository->findBy(['status' => ProjectsStatus::COMMERCIAL_REVIEW]));
 
-                $firstDayOfThisYear = new DateTime('first day of this year');
-                $today              = new DateTime();
-                $firstOfLastYear    = new DateTime('first day of last year');
-                $sameDayOfLastYear  = clone $today;
-                $sameDayOfLastYear->modify('-1 year');
-                $yearOverYear = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
+            // émissions yoy
+            $firstDayOfThisYear = new DateTime('first day of this year');
+            $today              = new DateTime();
+            $firstOfLastYear    = new DateTime('first day of last year');
+            $sameDayOfLastYear  = new DateTime('1 year ago');
+            $yearOverYear       = $this->getReleaseProjectAndDelta($firstDayOfThisYear, $today, $firstOfLastYear, $sameDayOfLastYear);
 
-                $firstDayOfLastMonth   = new DateTime('first day of last month');
-                $lastDayOfLastMonth    = new DateTime('last day of last month');
-                $firstDayOfTwoMonthAgo = new DateTime('first day of 2 month ago');
-                $lastDayOfTwoMonthAgo  = new DateTime('last day of 2 month ago');
-                $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
+            // émissions mom
+            $firstDayOfLastMonth   = new DateTime('first day of last month');
+            $lastDayOfLastMonth    = new DateTime('last day of last month');
+            $firstDayOfTwoMonthAgo = new DateTime('first day of 2 month ago');
+            $lastDayOfTwoMonthAgo  = new DateTime('last day of 2 month ago');
+            $monthOverMonth        = $this->getReleaseProjectAndDelta($firstDayOfLastMonth, $lastDayOfLastMonth, $firstDayOfTwoMonthAgo, $lastDayOfTwoMonthAgo);
 
-                $twelveMonthAgo = clone $firstDayOfLastMonth;
-                $twelveMonthAgo->modify('-11 months');
-                $twelveMonths = $this->getRollingMonths($twelveMonthAgo, $lastDayOfLastMonth);
+            // projets par canal d’arrivée
+            $twelveMonthAgo     = new DateTime('first day of 11 months ago');
+            $twelveMonths       = $this->getRollingMonths($twelveMonthAgo, $today);
+            $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $today);
+            $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $today);
 
-                $statSentToAnalysis = $this->getProjectCountInStatus(ProjectsStatus::PENDING_ANALYSIS, $twelveMonthAgo, $lastDayOfLastMonth);
-                $statRepayment      = $this->getProjectCountInStatus(ProjectsStatus::REMBOURSEMENT, $twelveMonthAgo, $lastDayOfLastMonth);
+            // projets en cours
+            $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
+                'status' => [
+                    ProjectsStatus::COMMERCIAL_REVIEW,
+                    ProjectsStatus::ANALYSIS_REVIEW,
+                    ProjectsStatus::PREP_FUNDING,
+                    ProjectsStatus::EN_FUNDING,
+                    ProjectsStatus::FUNDE
+                ]
+            ], ['status' => 'ASC']);
+            $statusAllCount         = $this->countByStatus($countableStatus);
+            $statusCashFlowCount    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
+            $statusAcquisitionCount = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
+            $statusPartnerCount     = $this->countByStatus($countableStatus, null, [
+                Partner::PARTNER_U_CAR_ID,
+                Partner::PARTNER_MEDILEND_ID,
+                Partner::PARTNER_AXA_ID,
+                Partner::PARTNER_MAPA_ID,
+                Partner::PARTNER_UNILEND_PARTNERS_ID
+            ]);
 
-                $countableStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findBy([
-                    'status' => [
-                        ProjectsStatus::COMMERCIAL_REVIEW,
-                        ProjectsStatus::ANALYSIS_REVIEW,
-                        ProjectsStatus::PREP_FUNDING,
-                        ProjectsStatus::EN_FUNDING,
-                        ProjectsStatus::FUNDE
-                    ]
-                ], ['status' => 'ASC']);
-                $statusAllCount         = $this->countByStatus($countableStatus);
-                $statusCashFlowCount    = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_CASH_FLOW]);
-                $statusAcquisitionCount = $this->countByStatus($countableStatus, [BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER]);
-                $statusPartnerCount     = $this->countByStatus($countableStatus, null, [
-                    Partner::PARTNER_U_CAR_ID,
-                    Partner::PARTNER_MEDILEND_ID,
-                    Partner::PARTNER_AXA_ID,
-                    Partner::PARTNER_MAPA_ID,
-                    Partner::PARTNER_UNILEND_PARTNERS_ID
-                ]);
+            // émissions n vs n-1 (12 mois glissants)
+            $twentyFourMonthsAgo             = new DateTime('first day of 23 months ago');
+            $twelveMonthsLastYear            = $this->getRollingMonths($twentyFourMonthsAgo, $sameDayOfLastYear);
+            $releasedProjectsThisRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twelveMonthAgo, $today);
+            $releasedProjectsLastRollingYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $twentyFourMonthsAgo, $sameDayOfLastYear);
 
-                $lastDayOfLastYear        = new DateTime('last day of december last year');
-                $releasedProjectsThisYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstDayOfThisYear, $today);
-                $releasedProjectsLastYear = $projectRepository->getStatisticsByStatusByMonth(ProjectsStatus::REMBOURSEMENT, false, $firstOfLastYear, $lastDayOfLastYear);
+            $borrowingMotives = [
+                BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
+                BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
+                BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
+                BorrowingMotive::ID_MOTIVE_WORK,
+                BorrowingMotive::ID_MOTIVE_CASH_FLOW,
+                BorrowingMotive::ID_MOTIVE_OTHER
+            ];
 
-                $borrowingMotives = [
-                    BorrowingMotive::ID_MOTIVE_PURCHASE_MATERIAL,
-                    BorrowingMotive::ID_MOTIVE_DEVELOPMENT,
-                    BorrowingMotive::ID_MOTIVE_REAL_ESTATE,
-                    BorrowingMotive::ID_MOTIVE_WORK,
-                    BorrowingMotive::ID_MOTIVE_CASH_FLOW,
-                    BorrowingMotive::ID_MOTIVE_OTHER
-                ];
+            $readyFundingDelay      = $this->getDelayByStatus(ProjectsStatus::SUSPENSIVE_CONDITIONS, $borrowingMotives);
+            $suspenseConditionDelay = $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives);
+            $beforeFundingDelay     = [];
 
-                $readyFundingDelay      = $this->getDelayByStatus(ProjectsStatus::SUSPENSIVE_CONDITIONS, $borrowingMotives);
-                $suspenseConditionDelay = $this->getDelayByStatus(ProjectsStatus::PREP_FUNDING, $borrowingMotives);
-                $beforeFundingDelay     = [];
-
-                foreach ($borrowingMotives as $motive) {
-                    $beforeFundingDelay[$motive] = (isset($readyFundingDelay[$motive]) ? $readyFundingDelay[$motive] : 0) + (isset($suspenseConditionDelay[$motive]) ? $suspenseConditionDelay[$motive] : 0);
-                }
-
-                $delays = [
-                    ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
-                    ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
-                    ['label' => 'Prép funding + conditions suspensives', 'data' => $beforeFundingDelay],
-                    ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
-                    ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
-                    ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
-                    ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
-                ];
-            } catch (Exception $exception) {
-                /** @var \Psr\Log\LoggerInterface $logger */
-                $logger = $this->get('logger');
-                $logger->error('Error occurs when displaying the sales activity dashboard. Error : ' . $exception->getMessage(),
-                    ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
-
-                header('Location: ' . $this->url);
-                die;
+            foreach ($borrowingMotives as $motive) {
+                $beforeFundingDelay[$motive] = (isset($readyFundingDelay[$motive]) ? $readyFundingDelay[$motive] : 0) + (isset($suspenseConditionDelay[$motive]) ? $suspenseConditionDelay[$motive] : 0);
             }
 
-            $this->render(null, [
-                'projectsInSalesTreatmentStatusCount' => $projectsInSalesTreatmentStatusCount,
-                'releasedProjectThisYearCount'        => $yearOverYear['number'],
-                'releasedProjectThisYearAmount'       => $yearOverYear['amount'],
-                'deltaYoyCountInPercentage'           => $yearOverYear['deltaCountInPercentage'],
-                'deltaYoyAmountInPercentage'          => $yearOverYear['deltaAmountInPercentage'],
-                'releasedProjectLastMonthCount'       => $monthOverMonth['number'],
-                'releasedProjectLastMonthAmount'      => $monthOverMonth['amount'],
-                'deltaMomCountInPercentage'           => $monthOverMonth['deltaCountInPercentage'],
-                'deltaMomAmountInPercentage'          => $monthOverMonth['deltaAmountInPercentage'],
-                'twelveMonths'                        => $twelveMonths,
-                'statSentToAnalysisHighcharts'        => $statSentToAnalysis,
-                'statRepaymentHighcharts'             => $statRepayment,
-                'releasedProjectsThisYear'            => $releasedProjectsThisYear,
-                'releasedProjectsLastYear'            => $releasedProjectsLastYear,
-                'delays'                              => $delays,
-                'borrowingMotives'                    => $borrowingMotives,
-                'countableStatus'                     => $countableStatus,
-                'statusAllCount'                      => $statusAllCount,
-                'statusCashFlowCount'                 => $statusCashFlowCount,
-                'statusAcquisitionCount'              => $statusAcquisitionCount,
-                'statusPartnerCount'                  => $statusPartnerCount,
-            ]);
-        } else {
+            $delays = [
+                ['label' => 'Fundé', 'data' => $this->getDelayByStatus(ProjectsStatus::FUNDE, $borrowingMotives)],
+                ['label' => 'En funding', 'data' => $this->getDelayByStatus(ProjectsStatus::EN_FUNDING, $borrowingMotives)],
+                ['label' => 'Prép funding + conditions suspensives', 'data' => $beforeFundingDelay],
+                ['label' => 'Reveue analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::ANALYSIS_REVIEW, $borrowingMotives)],
+                ['label' => 'Attent analyste', 'data' => $this->getDelayByStatus(ProjectsStatus::PENDING_ANALYSIS, $borrowingMotives)],
+                ['label' => 'Traitement commercial', 'data' => $this->getDelayByStatus(ProjectsStatus::COMMERCIAL_REVIEW, $borrowingMotives)],
+                ['label' => 'Demande complète', 'data' => $this->getDelayByStatus(ProjectsStatus::COMPLETE_REQUEST, $borrowingMotives)]
+            ];
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Error occurs when displaying the sales activity dashboard. Error : ' . $exception->getMessage(),
+                ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
+
             header('Location: ' . $this->url);
             die;
         }
+
+        $this->render(null, [
+            'projectsInSalesTreatmentStatusCount' => $projectsInSalesTreatmentStatusCount,
+            'releasedProjectThisYearCount'        => $yearOverYear['number'],
+            'releasedProjectThisYearAmount'       => $yearOverYear['amount'],
+            'deltaYoyCountInPercentage'           => $yearOverYear['deltaCountInPercentage'],
+            'deltaYoyAmountInPercentage'          => $yearOverYear['deltaAmountInPercentage'],
+            'releasedProjectLastMonthCount'       => $monthOverMonth['number'],
+            'releasedProjectLastMonthAmount'      => $monthOverMonth['amount'],
+            'deltaMomCountInPercentage'           => $monthOverMonth['deltaCountInPercentage'],
+            'deltaMomAmountInPercentage'          => $monthOverMonth['deltaAmountInPercentage'],
+            'twelveMonths'                        => $twelveMonths,
+            'statSentToAnalysisHighcharts'        => $statSentToAnalysis,
+            'statRepaymentHighcharts'             => $statRepayment,
+            'twelveMonthsLastYear'                => $twelveMonthsLastYear,
+            'releasedProjectsThisYear'            => $releasedProjectsThisRollingYear,
+            'releasedProjectsLastYear'            => $releasedProjectsLastRollingYear,
+            'delays'                              => $delays,
+            'borrowingMotives'                    => $borrowingMotives,
+            'countableStatus'                     => $countableStatus,
+            'statusAllCount'                      => $statusAllCount,
+            'statusCashFlowCount'                 => $statusCashFlowCount,
+            'statusAcquisitionCount'              => $statusAcquisitionCount,
+            'statusPartnerCount'                  => $statusPartnerCount,
+        ]);
     }
 
     /**
@@ -470,17 +465,6 @@ class dashboardController extends bootstrap
             $countInStatusHighcharts[$item['partnerId']]['color']                = isset($partnerColor[$item['partnerId']]) ? $partnerColor[$item['partnerId']] : '';
         }
         ksort($countInStatusHighcharts);
-
-        $months = $this->getRollingMonths($start, $end);
-
-        foreach ($countInStatusHighcharts as &$partnerStat) {
-            foreach ($months as $month) {
-                if (false === isset($partnerStat['data'][$month])) {
-                    $partnerStat['data'][$month] = 0;
-                }
-            }
-            ksort($partnerStat['data']);
-        }
 
         return $countInStatusHighcharts;
     }

@@ -50,8 +50,8 @@ Highcharts.chart('sent-to-analysis', {
         {% if not loop.first %},{% endif %}
         {
             name: '{{ partnerStat.label }}',
-            data: [{% for number in partnerStat.data %} {% if not loop.first %},{% endif %} {{ number }} {% endfor %}]
-            {% if partnerStat.color is not empty %},color: '{{ partnerStat.color }}'{% endif %}
+            data: [{% for month in twelveMonths %} {% if not loop.first %},{% endif %} {% if partnerStat['data'][month] is defined %} {{ partnerStat['data'][month] }} {% else %} 0 {% endif %} {% endfor %}]
+            {% if partnerStat.color is not empty %}, color: '{{ partnerStat.color }}'{% endif %}
         }
         {% endfor %}
     ]

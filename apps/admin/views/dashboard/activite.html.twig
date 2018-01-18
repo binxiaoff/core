@@ -34,7 +34,7 @@
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        Activité commercial
+        Activité commerciale
     </h1>
 {% endblock %}
 
@@ -59,7 +59,7 @@
                     <div class="block-content">
                         <div class="row items-push text-center">
                             <div class="col-xs-6 border-r">
-                                <div class="h3 text-primary">{{ (releasedProjectThisYearAmount / 1000)|localizednumber }} K€</div>
+                                <div class="h3 text-primary">{{ releasedProjectThisYearAmount|localizednumber }} €</div>
                                 <div>
                                     {% if deltaYoyAmountInPercentage >= 0 %}
                                         <i class="fa fa-arrow-up"></i>
@@ -96,7 +96,7 @@
                     <div class="block-content">
                         <div class="row items-push text-center">
                             <div class="col-xs-6 border-r">
-                                <div class="h3 text-primary">{{ (releasedProjectLastMonthAmount / 1000)|localizednumber }} K€</div>
+                                <div class="h3 text-primary">{{ releasedProjectLastMonthAmount|localizednumber }} €</div>
                                 <div>
                                     {% if deltaMomAmountInPercentage >= 0 %}
                                         <i class="fa fa-arrow-up"></i>
