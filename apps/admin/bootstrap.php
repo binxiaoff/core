@@ -600,14 +600,6 @@ class bootstrap extends Controller
 
         $navigation = self::MENU;
 
-        if (
-            null !== $user
-            && 'Dashboard' === $navigation[0]['title']
-            && ($userManager->isUserGroupRisk($user) || $userManager->isUserGroupSales($user))
-        ) {
-            $navigation[0]['title'] = 'Mon flux';
-        }
-
         $context['app'] = [
             'navigation' => $navigation,
             'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
