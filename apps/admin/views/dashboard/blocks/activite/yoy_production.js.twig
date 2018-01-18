@@ -14,10 +14,10 @@ Highcharts.chart('yoy-production', {
     }],
     yAxis: [{ // Primary yAxis
         title: {
-            text: 'Montant en K€'
+            text: 'Montant en k€'
         },
         labels: {
-            format: '{value} K€'
+            format: '{value} k€'
         }
     }, { // Secondary yAxis
         title: {
@@ -41,14 +41,14 @@ Highcharts.chart('yoy-production', {
         type: 'spline',
         data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
-            valueSuffix: 'K€'
+            valueSuffix: 'k€'
         }
     }, {
         name: 'Montant N',
         type: 'spline',
         data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
         tooltip: {
-            valueSuffix: 'K€'
+            valueSuffix: 'k€'
         }
     }, {
         name: 'Nombre N-1',
