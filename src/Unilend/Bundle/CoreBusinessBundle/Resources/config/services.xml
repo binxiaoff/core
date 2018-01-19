@@ -175,7 +175,6 @@
             <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
             <argument type="service" id="unilend.service.ws_client.ellisphere_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
@@ -379,6 +378,7 @@
         <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.ws_client.euler_manager"/>
+            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
             <argument type="service" id="monolog.logger.wsclient"/>
             <argument type="service" id="translator"/>
         </service>

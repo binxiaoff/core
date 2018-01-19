@@ -3,10 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyRating, CompanyRatingHistory, CompanyStatus, ProjectsComments, ProjectsStatus, RiskDataMonitoring, RiskDataMonitoringCallLog, Users
+    Companies, CompanyRating, CompanyRatingHistory, CompanyStatus, ProjectEligibilityRuleSet, ProjectsComments, ProjectsStatus, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog, RiskDataMonitoringType, Users
 };
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
@@ -30,6 +31,9 @@ class RiskDataMonitoringManager
         CompanyStatus::STATUS_RECEIVERSHIP,
         CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
     ];
+
+    const PROVIDER_EULER   = 'euler';
+    const PROVIDER_ALTARES = 'altares';
 
     /** @var EntityManager */
     private $entityManager;
@@ -59,13 +63,13 @@ class RiskDataMonitoringManager
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $provider
      *
      * @return bool
      */
-    public function isSirenMonitored(string $siren, string $ratingType)
+    public function isSirenMonitored(string $siren, string $provider) : bool
     {
-        $monitoring = $this->getMonitoringForSiren($siren, $ratingType);
+        $monitoring = $this->getMonitoringForSiren($siren, $provider);
 
         if (null !== $monitoring) {
             return $monitoring->isOngoing();
@@ -81,24 +85,12 @@ class RiskDataMonitoringManager
      * @return null|EulerCompanyRating
      * @throws \Exception
      */
-    public function getEulerHermesGradeWithMonitoring(string $siren, string $countryCode)
+    public function activateEulerHermesGradeMonitoring(string $siren, string $countryCode)
     {
-        $eulerHermesGrade   = null;
-        $existingMonitoring = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren,'ratingType' => CompanyRating::TYPE_EULER_HERMES_GRADE]);
+        $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, true);
 
-        if (null !== $existingMonitoring) {
-            $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, false);
-        } else {
-            try {
-                $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, true);
-            } catch (\Exception $exception) {
-                if (EulerHermesManager::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED == $exception->getCode()) {
-                    $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, false);
-                }
-                if (null !== $eulerHermesGrade) {
-                    $this->startMonitoringPeriod($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
-                }
-            }
+        if (null !== $eulerHermesGrade) {
+            $this->startMonitoringPeriod($siren, self::PROVIDER_EULER);
         }
 
         return $eulerHermesGrade;
@@ -106,25 +98,25 @@ class RiskDataMonitoringManager
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $provider
      *
      * @throws \Exception
      */
-    public function saveEndOfMonitoringPeriodNotification(string $siren, string $ratingType)
+    public function saveEndOfMonitoringPeriodNotification(string $siren, string $provider) : void
     {
-        $currentMonitoring = $this->getMonitoringForSiren($siren, $ratingType);
+        $currentMonitoring = $this->getMonitoringForSiren($siren, $provider);
         if (null !== $currentMonitoring) {
             $this->stopMonitoringPeriod($currentMonitoring);
         }
 
         /** @var Companies $company */
-        foreach ($this->getMonitoredCompanies($siren, $ratingType, false) as $company) {
+        foreach ($this->getMonitoredCompanies($siren, $provider, false) as $company) {
             if (
-                CompanyRating::TYPE_EULER_HERMES_GRADE === $ratingType
+                self::PROVIDER_EULER === $provider
                 && $this->eligibleForEulerLongTermMonitoring($company)
             ) {
                 if ($this->eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
-                    $this->startMonitoringPeriod($siren, $ratingType);
+                    $this->startMonitoringPeriod($siren, $provider);
                     break;
                 }
             }
@@ -136,42 +128,47 @@ class RiskDataMonitoringManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveEulerHermesGradeMonitoringEvent(string $siren)
+    public function saveEulerHermesGradeMonitoringEvent(string $siren) : void
     {
-        $monitoring         = $this->getMonitoringForSiren($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
-        $monitoredCompanies = $this->getMonitoredCompanies($siren, CompanyRating::TYPE_EULER_HERMES_GRADE);
+        $monitoring         = $this->getMonitoringForSiren($siren, self::PROVIDER_EULER);
+        $monitoredCompanies = $this->getMonitoredCompanies($siren, self::PROVIDER_EULER);
+
+        $monitoringType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findOneBy(['provider' => self::PROVIDER_EULER]);
+
+        $this->eulerHermesManager->setReadFromCache(false);
+        try {
+            $eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr', false);
+        } catch(\Exception $exception) {
+            $this->logger->error(
+                'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
+                ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'siren', $monitoring->getSiren()]
+            );
+        }
+        $this->eulerHermesManager->setReadFromCache(true);
 
         /** @var Companies $company */
         foreach ($monitoredCompanies as $company) {
-            if ($this->isSirenMonitored($company->getSiren(), CompanyRating::TYPE_EULER_HERMES_GRADE)) {
+            if ($this->isSirenMonitored($company->getSiren(), self::PROVIDER_EULER)) {
                 $monitoringCallLog = $this->createMonitoringEvent($monitoring);
                 $this->entityManager->persist($monitoringCallLog);
                 $this->entityManager->flush($monitoringCallLog);
 
-                try {
-                    $this->eulerHermesManager->setReadFromCache(false);
-                    if (null !== ($eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr', false))) {
-                        $companyRatingHistory = $this->saveCompanyRating($company, $eulerGrade);
+                $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
 
-                        $monitoringCallLog->setIdCompanyRatingHistory($companyRatingHistory);
-                        $this->entityManager->flush($monitoringCallLog);
-                    }
-                } catch (\Exception $exception) {
-                    $this->logger->error(
-                        'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]
-                    );
-                }
+                $monitoringCallLog->setIdCompanyRatingHistory($companyRatingHistory);
+                $this->entityManager->flush($monitoringCallLog);
+
+                $this->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
+                $this->saveMonitoringEventInProjectMemos($company, self::PROVIDER_EULER);
             }
         }
-        $this->eulerHermesManager->setReadFromCache(true);
         $this->entityManager->flush();
     }
 
     /**
      * @param string $siren
      */
-    public function stopMonitoringForSiren(string $siren)
+    public function stopMonitoringForSiren(string $siren) : void
     {
         $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
         $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -180,12 +177,11 @@ class RiskDataMonitoringManager
             if (0 == $projectRepository->getCountProjectsBySirenAndNotInStatus($siren, self::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS, self::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
                 /** @var RiskDataMonitoring $monitoring */
                 foreach ($riskDataMonitoringRepository->findBy(['siren' => $siren, 'end' => null]) as $monitoring) {
-                    switch ($monitoring->getRatingType()) {
-                        case CompanyRating::TYPE_EULER_HERMES_GRADE:
+                    switch ($monitoring->getProvider()) {
+                        case self::PROVIDER_EULER:
                             $monitoringStopped = $this->eulerHermesManager->stopMonitoring($monitoring->getSiren(), 'fr');
                             break;
-                        case CompanyRating::TYPE_ALTARES_SCORE_20:
-                        case CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100:
+                        case self::PROVIDER_ALTARES:
                             $monitoringStopped = $this->altaresManager->stopMonitoring($monitoring->getSiren());
                             break;
                         default:
@@ -212,26 +208,30 @@ class RiskDataMonitoringManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function stopMonitoringPeriod(RiskDataMonitoring $monitoring)
+    private function stopMonitoringPeriod(RiskDataMonitoring $monitoring) : void
     {
         if ($monitoring->isOngoing()) {
             $monitoring->setEnd(new \DateTime('NOW'));
             $this->entityManager->flush($monitoring);
 
-            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and type ' . $monitoring->getRatingType(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $monitoring->getSiren()]);
+            $this->logger->info('End of monitoring period saved for siren ' . $monitoring->getSiren() . ' and provider ' . $monitoring->getProvider(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $monitoring->getSiren()
+            ]);
         }
     }
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $provider
      * @param bool   $isOngoing
      *
-     * @return null|array
+     * @return array
      */
-    private function getMonitoredCompanies(string $siren, string $ratingType = null, bool $isOngoing = true)
+    private function getMonitoredCompanies(string $siren, string $provider, bool $isOngoing = true) : array
     {
-        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySiren($siren, $ratingType, $isOngoing);
+        $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySiren($siren, $provider, $isOngoing);
 
         return $monitoredCompanies;
     }
@@ -243,7 +243,7 @@ class RiskDataMonitoringManager
      * @return bool
      * @throws \Exception
      */
-    private function eligibleForEulerLongTermMonitoring(Companies $company)
+    private function eligibleForEulerLongTermMonitoring(Companies $company) : bool
     {
         if (in_array($company->getIdStatus()->getLabel(), self::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
             return false;
@@ -259,23 +259,26 @@ class RiskDataMonitoringManager
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $provider
      *
-     * @return null|RiskDataMonitoring
+     * @return RiskDataMonitoring
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function startMonitoringPeriod(string $siren, string $ratingType)
+    public function startMonitoringPeriod(string $siren, string $provider) : RiskDataMonitoring
     {
-        if ($this->isSirenMonitored($siren, $ratingType)) {
-            $this->logger->warning('Siren ' . $siren . ' is already monitored. Can not start monitoring period for type ' . $ratingType, ['class' => __CLASS__, 'function' => __FUNCTION__, 'siren', $siren]);
-            return null;
+        //TODO see if it is easier just to pass the monitoring object here instead of provider. given that all provider should start at the same time ...
+
+        if ($this->isSirenMonitored($siren, $provider)) {
+            throw new \Exception('Siren ' . $siren . ' is already monitored. Can not start monitoring period for provider ' . $provider);
         }
 
-        $monitoring = new RiskDataMonitoring();
-        $monitoring
-            ->setSiren($siren)
-            ->setRatingType($ratingType)
-            ->setStart(new \DateTime('NOW'));
+        $monitoring = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'provider' => $provider, 'start' => NULL]);
+        if (null === $monitoring) {
+            throw new \Exception('Monitoring period can not start. There is no entry in risk_data_monitoring for siren ' . $siren . ' and provider ' . $provider);
+        }
+
+        $monitoring->setStart(new \DateTime('NOW'));
 
         $this->entityManager->persist($monitoring);
         $this->entityManager->flush($monitoring);
@@ -288,7 +291,7 @@ class RiskDataMonitoringManager
      *
      * @return RiskDataMonitoringCallLog
      */
-    private function createMonitoringEvent(RiskDataMonitoring $monitoring) : RiskDataMonitoring
+    private function createMonitoringEvent(RiskDataMonitoring $monitoring) : RiskDataMonitoringCallLog
     {
         $monitoringCallLog = new RiskDataMonitoringCallLog();
         $monitoringCallLog
@@ -299,22 +302,37 @@ class RiskDataMonitoringManager
     }
 
     /**
-     * @param CompanyRating $companyRating
+     * @param Companies $company
+     * @param string    $provider
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function saveMonitoringEventInProjectMemos(CompanyRating $companyRating)
+    private function saveMonitoringEventInProjectMemos(Companies $company, string $provider) : void
     {
-        $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
-            ->findBy(['idCompany' => $companyRating->getIdCompanyRatingHistory()->getIdCompany()]);
+        $memoContent             = '<p><b>Evénement surveillance ' . $provider . ' </b></p><ul>';
+        $providerMonitoringTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => $provider]);
 
-        $memoContent = '<p><b>Evénement monitoring</b> : ' . $this->translator->trans('company-rating_' . $companyRating->getType()) . ' : ' . $companyRating->getValue() . '</p>';
+        /** @var RiskDataMonitoringType $type */
+        foreach ($providerMonitoringTypes as $type) {
+            $assessment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringAssessment')->findOneBy(['idRiskDataMonitoringType' => $type]);
+            if (null !== $type->getIdProjectEligibilityRule() && null !== $assessment->getIdProjectEligibilityRuleSet()) {
+                $ruleSet     = 'Politique de Risque : ' . $assessment->getIdProjectEligibilityRuleSet()->getLabel();
+                $rule        = $type->getIdProjectEligibilityRule()->getLabel() . ' ' . $type->getIdProjectEligibilityRule()->getLabel();
+                $result      = (bool) $assessment->getValue() ? 'ok' : 'echoué';
+                $memoContent .= '<li>' . $ruleSet . ' : ' . $rule . ' ' . $result . '<li>';
+            } else {
+                $memoContent .= '<li>' . $assessment->getIdRiskDataMonitoringType()->getLabel() . ' ' . $assessment->getValue() . '</li>';
+            }
+            //TODO: translations provider, value
+        }
+        $memoContent .= '</ul>';
 
+        $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
         foreach ($companyProjects as $project) {
             $projectCommentEntity = new ProjectsComments();
             $projectCommentEntity
                 ->setIdProject($project)
-                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT))
+                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_WEBSERVICE))
                 ->setContent($memoContent)
                 ->setPublic(false);
 
@@ -331,13 +349,13 @@ class RiskDataMonitoringManager
      * @return CompanyRatingHistory
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function saveCompanyRating(Companies $company, EulerCompanyRating $eulerGrade)
+    private function saveEulerCompanyRating(Companies $company, EulerCompanyRating $eulerGrade) : CompanyRatingHistory
     {
         $companyRatingHistory = new CompanyRatingHistory();
         $companyRatingHistory
             ->setIdCompany($company)
             ->setAction(\company_rating_history::ACTION_WS)
-            ->setIdUser(Users::USER_ID_FRONT);
+            ->setIdUser(Users::USER_ID_WEBSERVICE);
 
         $this->entityManager->persist($companyRatingHistory);
         $this->entityManager->flush($companyRatingHistory);
@@ -351,20 +369,18 @@ class RiskDataMonitoringManager
         $this->entityManager->persist($companyRating);
         $this->entityManager->flush($companyRating);
 
-        $this->saveMonitoringEventInProjectMemos($companyRating);
-
         return $companyRatingHistory;
     }
 
     /**
      * @param string $siren
-     * @param string $ratingType
+     * @param string $provider
      *
      * @return null|RiskDataMonitoring
      */
-    private function getMonitoringForSiren($siren, $ratingType)
+    private function getMonitoringForSiren(string $siren, string $provider) : ?RiskDataMonitoring
     {
-        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'ratingType' => $ratingType, 'end' => null]);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'provider' => $provider, 'end' => null]);
     }
 
     /**
@@ -377,5 +393,34 @@ class RiskDataMonitoringManager
         $callLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findCallLogsForSiren($siren);
 
         return count($callLogs) > 0;
+    }
+
+    /**
+     * @param RiskDataMonitoringType    $monitoringType
+     * @param RiskDataMonitoringCallLog $monitoringCallLog
+     * @param string|bool|int           $value
+     *
+     * @return RiskDataMonitoringAssessment
+     * @throws OptimisticLockException
+     * */
+    private function saveAssessment(RiskDataMonitoringType $monitoringType, RiskDataMonitoringCallLog $monitoringCallLog, $value) : RiskDataMonitoringAssessment
+    {
+        $currentRiskPolicy = null;
+        if ($monitoringType->getIdProjectEligibilityRule()) {
+            $currentRiskPolicy = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')
+                ->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
+        }
+
+        $assessment = new RiskDataMonitoringAssessment();
+        $assessment
+            ->setIdProjectEligibilityRuleSet($currentRiskPolicy)
+            ->setIdRiskDataMonitoringType($monitoringType)
+            ->setIdRiskDataMonitoringCallLog($monitoringCallLog)
+            ->setValue($value);
+
+        $this->entityManager->persist($assessment);
+        $this->entityManager->flush($assessment);
+
+        return $assessment;
     }
 }

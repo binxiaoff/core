@@ -36,12 +36,12 @@ class CompaniesRepository extends EntityRepository
 
     /**
      * @param string      $siren
-     * @param string|null $ratingType
+     * @param string|null $provider
      * @param bool        $ongoing
      *
      * @return array
      */
-    public function getMonitoredCompaniesBySiren($siren, $ratingType = null, $ongoing = true)
+    public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true) : array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
@@ -52,9 +52,9 @@ class CompaniesRepository extends EntityRepository
             $queryBuilder->andWhere('rdm.end IS NULL');
         }
 
-        if (null !== $ratingType) {
-            $queryBuilder->andWhere('rdm.ratingType = :ratingType')
-                ->setParameter('ratingType', $ratingType);
+        if (null !== $provider) {
+            $queryBuilder->andWhere('rdm.provider = :provider')
+                ->setParameter('provider', $provider);
         }
 
         return $queryBuilder->getQuery()->getResult();

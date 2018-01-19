@@ -47,8 +47,6 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
-    /** @var RiskDataMonitoringManager */
-    private $riskDataMonitoringManager;
 
     /**
      * @param EntityManager              $entityManager
@@ -59,7 +57,6 @@ class ExternalDataManager
      * @param InfogreffeManager          $infogreffeManager
      * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
-     * @param RiskDataMonitoringManager  $riskDataMonitoringManager
      */
     public function __construct(
         EntityManager $entityManager,
@@ -69,8 +66,7 @@ class ExternalDataManager
         InfolegaleManager $infolegaleManager,
         InfogreffeManager $infogreffeManager,
         EllisphereManager $ellisphereManager,
-        CompanyBalanceSheetManager $companyBalanceSheetManager,
-        RiskDataMonitoringManager $riskDataMonitoringManager
+        CompanyBalanceSheetManager $companyBalanceSheetManager
     )
     {
         $this->entityManager              = $entityManager;
@@ -81,7 +77,6 @@ class ExternalDataManager
         $this->infogreffeManager          = $infogreffeManager;
         $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
-        $this->riskDataMonitoringManager  = $riskDataMonitoringManager;
     }
 
     /**
@@ -256,10 +251,11 @@ class ExternalDataManager
      * @param string $siren
      *
      * @return EulerCompanyRating|null
+     * @throws \Exception
      */
-    public function getEulerHermesGrade($siren)
+    public function getEulerHermesGrade(string $siren)
     {
-        $eulerHermesGrade = $this->riskDataMonitoringManager->getEulerHermesGradeWithMonitoring($siren, 'fr');
+        $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr');
 
         if (
             null !== $eulerHermesGrade

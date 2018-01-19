@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="risk_data_monitoring", indexes={@ORM\Index(name="idx_risk_data_monitoring_siren", columns={"siren"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class RiskDataMonitoring
 {
@@ -22,9 +23,9 @@ class RiskDataMonitoring
     /**
      * @var string
      *
-     * @ORM\Column(name="rating_type", type="string", length=191, nullable=true)
+     * @ORM\Column(name="provider", type="string", length=191, nullable=false)
      */
-    private $ratingType;
+    private $provider;
 
     /**
      * @var \DateTime
@@ -39,6 +40,20 @@ class RiskDataMonitoring
      * @ORM\Column(name="end", type="datetime", nullable=true)
      */
     private $end;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="added", type="datetime", nullable=false)
+     */
+    private $added;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
+     */
+    private $updated;
 
     /**
      * @var integer
@@ -56,7 +71,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setSiren($siren)
+    public function setSiren(string $siren) : RiskDataMonitoring
     {
         $this->siren = $siren;
 
@@ -68,33 +83,33 @@ class RiskDataMonitoring
      *
      * @return string
      */
-    public function getSiren()
+    public function getSiren() : string
     {
         return $this->siren;
     }
 
     /**
-     * Set ratingType
+     * Set provider
      *
-     * @param string $ratingType
+     * @param string $provider
      *
      * @return RiskDataMonitoring
      */
-    public function setRatingType($ratingType)
+    public function setProvider(string $provider) : RiskDataMonitoring
     {
-        $this->ratingType = $ratingType;
+        $this->provider = $provider;
 
         return $this;
     }
 
     /**
-     * Get ratingType
+     * Get provider
      *
      * @return string
      */
-    public function getRatingType()
+    public function getProvider() : string
     {
-        return $this->ratingType;
+        return $this->provider;
     }
 
     /**
@@ -104,7 +119,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setStart($start)
+    public function setStart(\DateTime $start) : RiskDataMonitoring
     {
         $this->start = $start;
 
@@ -116,7 +131,7 @@ class RiskDataMonitoring
      *
      * @return \DateTime
      */
-    public function getStart()
+    public function getStart() : \DateTime
     {
         return $this->start;
     }
@@ -128,7 +143,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setEnd($end)
+    public function setEnd(\DateTime $end) : RiskDataMonitoring
     {
         $this->end = $end;
 
@@ -138,9 +153,9 @@ class RiskDataMonitoring
     /**
      * Get end
      *
-     * @return \DateTime
+     * @return null|\DateTime
      */
-    public function getEnd()
+    public function getEnd() : ?\DateTime
     {
         return $this->end;
     }
@@ -150,7 +165,7 @@ class RiskDataMonitoring
      *
      * @return integer
      */
-    public function getId()
+    public function getId() : int
     {
         return $this->id;
     }
@@ -158,8 +173,74 @@ class RiskDataMonitoring
     /**
      * @return bool
      */
-    public function isOngoing()
+    public function isOngoing() : bool
     {
         return empty($this->getEnd());
+    }
+
+    /**
+     * Set added
+     *
+     * @param \DateTime $added
+     *
+     * @return RiskDataMonitoring
+     */
+    public function setAdded(\DateTime $added) : RiskDataMonitoring
+    {
+        $this->added = $added;
+
+        return $this;
+    }
+
+    /**
+     * Get added
+     *
+     * @return \DateTime
+     */
+    public function getAdded() : \DateTime
+    {
+        return $this->added;
+    }
+
+    /**
+     * Set updated
+     *
+     * @param \DateTime $updated
+     *
+     * @return RiskDataMonitoring
+     */
+    public function setUpdated(?\DateTime $updated) : RiskDataMonitoring
+    {
+        $this->updated = $updated;
+
+        return $this;
+    }
+
+    /**
+     * Get updated
+     *
+     * @return \DateTime|null
+     */
+    public function getUpdated() : ?\DateTime
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue() : void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue() : void
+    {
+        $this->updated = new \DateTime();
     }
 }

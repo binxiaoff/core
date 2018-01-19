@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
+use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager;
 
 class RiskDataMonitoringController extends Controller
 {
@@ -43,7 +43,15 @@ class RiskDataMonitoringController extends Controller
         }
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
-        $riskDataMonitoringManager->saveEulerHermesGradeMonitoringEvent($data['siren']);
+        try {
+            $riskDataMonitoringManager->saveEulerHermesGradeMonitoringEvent($data['siren']);
+        } catch (\Exception $exception) {
+            $this->container->get('logger')->warning('Euler Hermes monitoring event for siren ' . $data['siren'] . ' event could not be saved. Exception: ' . $exception->getMessage(), [
+                'file'  => $exception->getFile(),
+                'line'  => $exception->getLine(),
+                'siren' => $data['siren']
+            ]);
+        }
 
         return $this->endpointFeedback(self::SUCCESS, 'Grade change has been saved', 201);
     }
@@ -71,7 +79,15 @@ class RiskDataMonitoringController extends Controller
         }
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
-        $riskDataMonitoringManager->saveEndOfMonitoringPeriodNotification($data['siren'], CompanyRating::TYPE_EULER_HERMES_GRADE);
+        try {
+            $riskDataMonitoringManager->saveEndOfMonitoringPeriodNotification($data['siren'], RiskDataMonitoringManager::PROVIDER_EULER);
+        } catch (\Exception $exception) {
+            $this->container->get('logger')->warning('Euler Hermes monitoring end for siren ' . $data['siren'] . ' event could not be saved. Exception: ' . $exception->getMessage(), [
+                'file'  => $exception->getFile(),
+                'line'  => $exception->getLine(),
+                'siren' => $data['siren']
+            ]);
+        }
 
         return $this->endpointFeedback(self::SUCCESS, 'End of monitoring period saved', 200);
     }
@@ -153,7 +169,7 @@ class RiskDataMonitoringController extends Controller
 
         $riskDataMonitoringManager = $this->get('unilend.service.risk_data_monitoring_manager');
 
-        if (false === $riskDataMonitoringManager->isSirenMonitored($siren, CompanyRating::TYPE_EULER_HERMES_GRADE)) {
+        if (false === $riskDataMonitoringManager->isSirenMonitored($siren, RiskDataMonitoringManager::PROVIDER_EULER)) {
             return $this->endpointFeedback(self::VALIDATION_ERROR, 'Siren ' . $siren . ' is not actively monitored', 404);
         }
 

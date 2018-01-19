@@ -166,7 +166,6 @@ class EulerHermesManager
      * @param bool   $withMonitoring
      *
      * @return null|CompanyRating
-     *
      * @throws \Exception
      */
     public function getGrade($siren, $countryCode, $withMonitoring = false)
