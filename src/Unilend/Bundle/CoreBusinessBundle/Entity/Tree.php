@@ -138,13 +138,6 @@ class Tree
     private $updated;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="canceled", type="datetime", nullable=false)
-     */
-    private $canceled;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="id_tree", type="integer")
@@ -568,30 +561,6 @@ class Tree
     public function getUpdated()
     {
         return $this->updated;
-    }
-
-    /**
-     * Set canceled
-     *
-     * @param \DateTime $canceled
-     *
-     * @return Tree
-     */
-    public function setCanceled($canceled)
-    {
-        $this->canceled = $canceled;
-
-        return $this;
-    }
-
-    /**
-     * Get canceled
-     *
-     * @return \DateTime
-     */
-    public function getCanceled()
-    {
-        return $this->canceled;
     }
 
     /**

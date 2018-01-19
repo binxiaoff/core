@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class SlackController extends Controller
@@ -81,12 +82,6 @@ class SlackController extends Controller
         }
 
         $riskCheck = $this->get('unilend.service.eligibility.eligibility_manager')->checkSirenEligibility($siren);
-        try {
-            $companyIdentity = $this->get('unilend.service.ws_client.altares_manager')->getCompanyIdentity($siren);
-        } catch (\Exception $exception) {
-            unset($exception);
-            $companyIdentity = null;
-        }
 
         $eligibility = 'Éligible';
         $color       = 'good';
@@ -96,12 +91,20 @@ class SlackController extends Controller
             'short' => true
         ]];
 
-        if (null !== $companyIdentity && false === empty($companyIdentity->getCorporateName())) {
-            $fields[] = [
-                'title' => 'Nom société',
-                'value' => $companyIdentity->getCorporateName(),
-                'short' => true
-            ];
+        if (empty($riskCheck) || $riskCheck[0] !== ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN) {
+            try {
+                $companyIdentity = $this->get('unilend.service.ws_client.altares_manager')->getCompanyIdentity($siren);
+
+                if (false === empty($companyIdentity->getCorporateName())) {
+                    $fields[] = [
+                        'title' => 'Nom société',
+                        'value' => $companyIdentity->getCorporateName(),
+                        'short' => true
+                    ];
+                }
+            } catch (\Exception $exception) {
+                unset($exception);
+            }
         }
 
         if (is_array($riskCheck) && false === empty($riskCheck)) {
