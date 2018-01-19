@@ -258,7 +258,7 @@ class emprunteursController extends bootstrap
             $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
             /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
-            $projectStatusNotificationSender = $this->get('unilend.service.project_status_manager');
+            $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
 
