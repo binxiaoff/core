@@ -925,7 +925,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
         $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
