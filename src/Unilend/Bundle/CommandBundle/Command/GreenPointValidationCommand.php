@@ -2,8 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\ORMException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -74,10 +73,12 @@ EOF
 
                     try {
                         $validationCount = $clientStatusHistoryRepository->getValidationsCount($client->getIdClient());
-                    } catch (NoResultException $noResultException) {
+                    } catch (ORMException $exception) {
                         $validationCount = 0;
-                    } catch (NonUniqueResultException $nonUniqueResultException) {
-                        $validationCount = 1;
+                        $logger->warning(
+                            'Could not check the validation count on id_client: ' . $client->getIdClient() . ' - Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
                     }
                     if ($validationCount > 0 && false === $attachmentManager->isModifiedAttachment($attachment)) {
                         $logger->warning(
