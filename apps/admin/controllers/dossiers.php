@@ -1154,11 +1154,10 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->search = urldecode(filter_var($this->params[0], FILTER_SANITIZE_STRING));
-
         if (false === empty($this->params[0])) {
             /** @var \clients $clients */
             $clients       = $this->loadData('clients');
+            $this->search  = urldecode(filter_var($this->params[0], FILTER_SANITIZE_STRING));
             $this->clients = $clients->searchEmprunteurs('OR', $this->search, $this->search, '', '', str_replace(' ', '', $this->search));
         }
     }
@@ -1334,43 +1333,46 @@ class dossiersController extends bootstrap
         $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
         $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-        $clientManager = $this->get('unilend.service.client_manager');
+        if (
+            isset($this->params[0], $_POST['id_client'])
+            && 'client' === $this->params[0]
+            && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+            $clientManager = $this->get('unilend.service.client_manager');
 
-        if (isset($_POST['send_create_etape1'])) {
-            if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-                header('Location: ' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
-                die;
-            } else {
-                header('Location: ' . $this->lurl . '/dossiers/add/create_etape2');
-                die;
-            }
-        }
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
-        $companyManager = $this->get('unilend.service.company_manager');
+            if (false === $clientManager->isBorrower($clientEntity)) {
+                $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
+                $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur';
 
-        if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
-            if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var Clients $clientEntity */
-                $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
-                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
-                } else {
-                    $_SESSION['freeow']['title']   = 'Erreur';
-                    $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
-                    header('Location: ' . $this->lurl . '/dossiers/add/create');
-                    die;
-                }
-            } else {
-                $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
+                header('Location: ' . $this->lurl . '/dossiers/add/create');
+                exit;
             }
 
+            $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
-            die;
-        } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
-            $companyEntity = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
+            exit;
+        } elseif (
+            isset($this->params[0])
+            && 'nouveau' === $this->params[0]
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
+            $this->createProject($companyEntity, $defaultPartner->getId());
+
+            header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+            exit;
+        } elseif (
+            isset($this->params[0], $this->params[1])
+            && 'siren' === $this->params[0]
+            && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyEntity  = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
@@ -1378,25 +1380,17 @@ class dossiersController extends bootstrap
             $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-            die;
-        } elseif (isset($this->params[0])) {
-            if ($this->projects->get($this->params[0])) {
-                if ($this->projects->create_bo) {
-                    $this->companies->get($this->projects->id_company, 'id_company');
-                    $this->clients->get($this->companies->id_client_owner, 'id_client');
+            exit;
+        } elseif (
+            isset($this->params[0])
+            && $this->projects->get($this->params[0])
+            && 0 == $this->projects->create_bo
+        ) {
+            $_SESSION['freeow']['title']   = 'Création de dossier';
+            $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
 
-                    // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
-                    if ($clientManager->isLender($this->clients)) {
-                        $this->clients->email = '';
-                    }
-                } elseif (0 == $this->projects->create_bo) {
-                    $_SESSION['freeow']['title']   = 'Création de dossier';
-                    $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
-
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                    die;
-                }
-            }
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            exit;
         }
 
         $this->settings->get('Durée des prêts autorisées', 'type');

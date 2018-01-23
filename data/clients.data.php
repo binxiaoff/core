@@ -138,12 +138,26 @@ class clients extends clients_crud
         }
     }
 
-    public function searchEmprunteurs($searchType, $nom, $prenom, $email = '', $societe = '', $siren = '')
+    /**
+     * @param string   $searchType
+     * @param string   $nom
+     * @param string   $prenom
+     * @param string   $email
+     * @param string   $societe
+     * @param string   $siren
+     * @param int|null $status
+     *
+     * @return array
+     */
+    public function searchEmprunteurs($searchType, $nom, $prenom = '', $email = '', $societe = '', $siren = '', int $status = null) : array
     {
         $conditions = [
-            'c.nom LIKE "%' . $nom . '%"',
-            'c.prenom LIKE "%' . $prenom . '%"',
+            'c.nom LIKE "%' . $nom . '%"'
         ];
+
+        if ($prenom != '') {
+            $conditions[] = 'c.prenom LIKE "%' . $prenom . '%"';
+        }
 
         if ($email != '') {
             $conditions[] = 'c.email LIKE "%' . $email . '%"';
@@ -157,31 +171,35 @@ class clients extends clients_crud
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
-        $result = [];
-        $query  = '
-            SELECT 
-                c.*,
-                co.*
+        if (null !== $status) {
+            $conditions[] = 'c.status = ' . $status;
+        }
+
+        $borrowers = [];
+        $query     = '
+            SELECT c.*, co.*, COUNT(p.id_project) AS projets
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
+            INNER JOIN projects p ON co.id_company = p.id_company
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
             WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . '))
+                AND wt.label = "' . WalletType::BORROWER . '"
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
-           LIMIT 100';
+            LIMIT 100';
 
-        $resultat = $this->bdd->query($query);
-
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $result[] = $record;
+        $result = $this->bdd->query($query);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $borrowers[] = $record;
         }
-        return $result;
+        return $borrowers;
     }
 
     public function totalmontantEmprunt($id_client)
     {
-        // Récupération du totel montant emprunt d'un client
-        $sql    = 'SELECT SUM(p.amount) as total FROM clients c,companies co,projects p WHERE c.id_client = co.id_client_owner AND co.id_company = p.id_company AND c.id_client = ' . $id_client;
+        // Récupération du montant total emprunté d'un client
+        $sql    = 'SELECT SUM(p.amount) AS total FROM clients c,companies co,projects p WHERE c.id_client = co.id_client_owner AND co.id_company = p.id_company AND c.id_client = ' . $id_client;
         $result = $this->bdd->query($sql);
 
         return $this->bdd->result($result, 0, 0);

@@ -108,7 +108,7 @@
 <div id="contenu">
     <div class="row">
         <div class="col-md-12">
-            <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un projet</a>
+            <a href="<?= $this->lurl ?>/dossiers/add" class="btn-primary pull-right">Créer un projet</a>
         </div>
     </div>
 
