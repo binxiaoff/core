@@ -439,6 +439,69 @@ class ExternalDataManager
     }
 
     /**
+     * @param           $siren
+     * @param \DateTime $sinceDate
+     *
+     * @return array
+     */
+    public function getAllMandatesExceptGivenSirenOnActiveExecutives($siren, \DateTime $sinceDate) : array
+    {
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->getAllMandatesExceptGivenSirenOnActiveExecutives($siren, $sinceDate);
+    }
+
+    /**
+     * @param $siren
+     * @param $sinceDate
+     *
+     * @return InfolegaleExecutivePersonalChange[]
+     */
+    public function getAllPreviousExecutivesMandatesSince($siren, $sinceDate) : array
+    {
+        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->getPreviousExecutivesLeftAfter($siren, $sinceDate);
+
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->findMandatesByExecutivesSince($previousExecutives, $sinceDate);
+    }
+
+    /**
+     * @param int    $executiveId
+     * @param string $siren
+     * @param int    $extended
+     *
+     * @return array
+     */
+    public function getPeriodForExecutiveInACompany(int $executiveId, string $siren, int $extended) : array
+    {
+        $now     = new \DateTime();
+        $started = $now;
+        $ended   = $now;
+        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+            'idExecutive' => $executiveId,
+            'siren'       => $siren
+        ]);
+        foreach ($changes as $change) {
+            if (null !== $change->getEnded()) {
+                $ended = $change->getEnded();
+            }
+
+            if (null === $change->getNominated()) {
+                $mockedNominatedDate = new \DateTime('5 years ago');
+                if ($change->getEnded() > $mockedNominatedDate) {
+                    $started = $mockedNominatedDate;
+                } else {
+                    $started = $change->getEnded();
+                }
+            } else {
+                $started = $change->getNominated();
+            }
+        }
+
+        return ['started' => $started, 'ended' => $ended->modify('+' . $extended . ' year')];
+    }
+
+    /**
      * @param string $siren
      * @param int    $executiveId
      * @param string $positionCode

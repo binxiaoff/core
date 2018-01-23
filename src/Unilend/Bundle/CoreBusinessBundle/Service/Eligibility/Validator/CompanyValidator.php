@@ -528,7 +528,7 @@ class CompanyValidator
     private function checkCurrentExecutivesEventsDepositorCompanyRoleTarget(string $siren) : array
     {
         try {
-            $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 'TC-RISK-019', 1, ContentiousParticipant::TYPE_TARGET);
+            $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 1, ContentiousParticipant::TYPE_TARGET);
 
             if ($hasPejorativeEvent) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT];
@@ -557,7 +557,7 @@ class CompanyValidator
     private function checkCurrentExecutivesEventsDepositorCompanyRoleComplainant(string $siren) : array
     {
         try {
-            $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 'TCK-RISK-020', 1, ContentiousParticipant::TYPE_COMPLAINANT);
+            $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 1, ContentiousParticipant::TYPE_COMPLAINANT);
             if ($hasPejorativeEvent) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT];
             }
@@ -585,7 +585,7 @@ class CompanyValidator
     private function checkCurrentExecutivesEventsDepositorCompanyNoRole(string $siren) : array
     {
         try {
-            if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_NO_ROLE_12MONTHS, 'TC-RISK-021', 1)) {
+            if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_NO_ROLE_12MONTHS, 1)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT];
             }
         } catch (\BadMethodCallException $exception) {
@@ -610,7 +610,7 @@ class CompanyValidator
     private function checkCurrentExecutivesEventsDepositorCompanyCollectiveProceeding(string $siren) : array
     {
         try {
-            if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_COLLECTIVE_PROCEEDING, 'TC-RISK-022', 3)) {
+            if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_COLLECTIVE_PROCEEDING, 3)) {
                 return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT];
             }
         } catch (\BadMethodCallException $exception) {
@@ -637,12 +637,11 @@ class CompanyValidator
     private function checkCurrentExecutivesEventsOtherManagerCompanies($depositorSiren)
     {
         $this->externalDataManager->refreshExecutiveChanges($depositorSiren);
-        $otherCompaniesOfActiveExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
-            ->getAllMandatesExceptGivenSirenOnActiveExecutives($depositorSiren, new \DateTime('5 years ago'));
+        $otherCompaniesOfActiveExecutives = $this->externalDataManager->getAllMandatesExceptGivenSirenOnActiveExecutives($depositorSiren, new \DateTime('5 years ago'));
 
         try {
             foreach ($otherCompaniesOfActiveExecutives as $siren) {
-                if ($this->hasEventCodeInList($siren['siren'], AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, 'TC-RISK-014', 3)) {
+                if ($this->hasEventCodeInList($siren['siren'], AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, 3)) {
                     return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT];
                 }
             }
@@ -672,13 +671,12 @@ class CompanyValidator
     private function checkPreviousExecutivesHistory($siren)
     {
         $this->externalDataManager->refreshExecutiveChanges($siren);
-        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getPreviousExecutivesLeftAfter($siren, new \DateTime('3 years ago'));
-        $allMandates        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findMandatesByExecutivesSince($previousExecutives, new \DateTime('3 years ago'));
+        $allMandates = $this->externalDataManager->getAllPreviousExecutivesMandatesSince($siren, new \DateTime('3 years ago'));
 
         try {
             foreach ($allMandates as $mandate) {
-                $mandatePeriod      = $this->getPeriodForExecutiveInACompany($mandate->getIdExecutive(), $mandate->getSiren(), 1);
-                $hasPejorativeEvent = $this->hasEventCodeInList($mandate->getSiren(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, 'TC-RISK-018', null, null, $mandatePeriod);
+                $mandatePeriod      = $this->externalDataManager->getPeriodForExecutiveInACompany($mandate->getIdExecutive(), $mandate->getSiren(), 1);
+                $hasPejorativeEvent = $this->hasEventCodeInList($mandate->getSiren(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, null, null, $mandatePeriod);
 
                 if ($hasPejorativeEvent) {
                     return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
@@ -699,7 +697,6 @@ class CompanyValidator
     /**
      * @param string      $siren
      * @param array       $eventCodeList
-     * @param string      $ruleName
      * @param int|null    $eventYearsOld
      * @param string|null $participantType
      * @param array|null  $mandatePeriod
@@ -708,7 +705,7 @@ class CompanyValidator
      * @throws \BadMethodCallException
      * @return bool
      */
-    private function hasEventCodeInList(string $siren, array $eventCodeList, string $ruleName, int $eventYearsOld = null, string $participantType = null, array $mandatePeriod = null) : bool
+    private function hasEventCodeInList(string $siren, array $eventCodeList, ?int $eventYearsOld = null, ?string $participantType = null, ?array $mandatePeriod = null) : bool
     {
         if (false === ($eventYearsOld xor $mandatePeriod)) {
             throw new \BadMethodCallException('You must provide either event years old Or mandate period');
@@ -727,7 +724,7 @@ class CompanyValidator
                 $eventDate = $this->getEventDateToUse($event, $announcement);
 
                 if (false === $eventDate) {
-                    $this->logger->warning('Escaping check ' . $ruleName . ' on announcement ID: ' . $announcement->getId() .
+                    $this->logger->warning('Escaping check on announcement ID: ' . $announcement->getId() .
                         '. All dates from event effective date, event resolution date and announcement publish date are null',
                         ['method' => __METHOD__, 'siren' => $siren, 'announcementID' => $announcement->getId()]
                     );
@@ -746,20 +743,22 @@ class CompanyValidator
                             /** This part checks the role of the company in this event "Sollicité" / "Demandeur" */
                             if (count($announcement->getContentiousParticipants()) > 0) {
                                 foreach ($announcement->getContentiousParticipants() as $participant) {
-                                    if ($participant->getType() === $participantType && $participant->getType() === ContentiousParticipant::TYPE_COMPLAINANT) {
-                                        $requestedEvents++;
-                                        if ($requestedEvents >= 3) {
+                                    if ($participant->getType() === $participantType) {
+                                        if ($participant->getType() === ContentiousParticipant::TYPE_COMPLAINANT) {
+                                            $requestedEvents++;
+                                            if ($requestedEvents >= 3) {
+                                                return true;
+                                            }
+                                        }
+
+                                        if ($participant->getType() === ContentiousParticipant::TYPE_TARGET) {
                                             return true;
                                         }
-                                    }
-
-                                    if ($participant->getType() === $participantType && $participant->getType() === ContentiousParticipant::TYPE_TARGET) {
-                                        return true;
                                     }
                                 }
                             } else {
                                 $this->logger->error(
-                                    'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched ' . $ruleName . ' (DEPOSITOR_WITH_ROLE) but no role ("contentious participants") found.',
+                                    'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched DEPOSITOR_WITH_ROLE but no role ("contentious participants") was found.',
                                     ['method' => __METHOD__, 'siren' => $siren, 'line' => __LINE__]
                                 );
                                 throw new \UnexpectedValueException(ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT);
@@ -810,42 +809,6 @@ class CompanyValidator
         }
 
         return $interval->y > $numberOfYears;
-    }
-
-    /**
-     * @param int    $executiveId
-     * @param string $siren
-     * @param int    $extended
-     *
-     * @return array
-     */
-    private function getPeriodForExecutiveInACompany($executiveId, $siren, $extended)
-    {
-        $now     = new \DateTime();
-        $started = $now;
-        $ended   = $now;
-        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
-            'idExecutive' => $executiveId,
-            'siren'       => $siren
-        ]);
-        foreach ($changes as $change) {
-            if (null !== $change->getEnded()) {
-                $ended = $change->getEnded();
-            }
-
-            if (null === $change->getNominated()) {
-                $mockedNominatedDate = new \DateTime('5 years ago');
-                if ($change->getEnded() > $mockedNominatedDate) {
-                    $started = $mockedNominatedDate;
-                } else {
-                    $started = $change->getEnded();
-                }
-            } else {
-                $started = $change->getNominated();
-            }
-        }
-
-        return ['started' => $started, 'ended' => $ended->modify('+' . $extended . ' year')];
     }
 
     /**
