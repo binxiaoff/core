@@ -213,40 +213,62 @@ function valid_etape1(id_project) {
         setTimeout(function () {
             $('#error_etape1').slideUp();
         }, 3000);
-
     });
 }
 
 function valid_etape2(id_project) {
-    var val = 'id_project=' + id_project + '&etape=2&' + $('#dossier_etape2').serialize();
+    var data = 'id_project=' + id_project + '&etape=2&' + $('#dossier_etape2').serialize();
 
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#societe").val($("#raison_sociale_etape2").val());
+    $.ajax({
+        url: add_url + '/ajax/valid_etapes',
+        method: 'POST',
+        data: data,
+        dataType: 'json',
+        beforeSend: function () {
+            $('#spinner_etape2').slideDown()
+            $('#error_etape2').slideUp()
+            $('#valid_etape2').slideUp()
+        }
+    }).done(function (response) {
+        $('#spinner_etape2').slideUp()
+        $('#societe').val($('#raison_sociale_etape2').val())
 
-        if ($("#same_address_etape2").prop('checked')) {
-            $("#adresse").val($("#address_etape2").val());
-            $("#city").val($("#ville_etape2").val());
-            $("#zip").val($("#postal_etape2").val());
-            $("#phone").val($("#phone_etape2").val());
+        if ($('#same_address_etape2').prop('checked')) {
+            $('#adresse').val($('#address_etape2').val())
+            $('#city').val($('#ville_etape2').val())
+            $('#zip').val($('#postal_etape2').val())
+            $('#phone').val($('#phone_etape2').val())
         } else {
-            $("#adresse").val($("#adresse_correspondance_etape2").val());
-            $("#city").val($("#city_correspondance_etape2").val());
-            $("#zip").val($("#zip_correspondance_etape2").val());
-            $("#phone").val($("#phone_correspondance_etape2").val());
+            $('#adresse').val($('#adresse_correspondance_etape2').val())
+            $('#city').val($('#city_correspondance_etape2').val())
+            $('#zip').val($('#zip_correspondance_etape2').val())
+            $('#phone').val($('#phone_correspondance_etape2').val())
         }
 
-        $("#valid_etape2").slideDown();
+        var $responseContainer = $('#valid_etape2')
+        if (response && response.error && response.error.length) {
+            $responseContainer = $('#error_etape2')
+            $responseContainer.html('')
 
+            $.each(response.error, function (index, message) {
+                if (index > 0) {
+                    $responseContainer.append('<br>')
+                }
+                $responseContainer.append(message)
+            })
+        }
+
+        $responseContainer.slideDown()
         setTimeout(function () {
-            $("#valid_etape2").slideUp();
-        }, 3000);
-    });
+            $responseContainer.slideUp()
+        }, 5000)
+    })
 }
 
 function valid_etape4_1(id_project) {
     var val = 'id_project=' + id_project + '&etape=4.1&' + $('#dossier_etape4_1').serialize();
 
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
+    $.post(add_url + '/ajax/valid_etapes', val).done(function () {
         $("#valid_etape4_1").slideDown();
 
         setTimeout(function () {
@@ -256,7 +278,6 @@ function valid_etape4_1(id_project) {
 }
 
 function generer_le_mdp(id_client) {
-
     var val = {
         id_client: id_client
     };
