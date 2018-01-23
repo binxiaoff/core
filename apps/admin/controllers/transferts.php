@@ -353,7 +353,7 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _recherche_emprunteur()
+    public function _recherche_projet()
     {
         $this->hideDecoration();
         /** @var \Doctrine\ORM\EntityManager $entityManager */

@@ -4,7 +4,7 @@
         <thead>
         <tr>
             <th>ID projet</th>
-            <th>Nom</th>
+            <th>Titre</th>
             <th>Statut</th>
             <th></th>
         </tr>
@@ -20,11 +20,9 @@
                         <button class="btn btn-xs btn-default" type="submit"><i class="fa fa-check"></i></button>
                     </div>
                 </td>
-
                 <input type="hidden" name="id_reception" value="{{ receptionId }}">
                 <input type="hidden" name="id_project" value="{{ project.idProject }}">
                 <input type="hidden" name="type_remb" value="{{ repaymentType }}">
-
             {% else %}
                 <td colspan="4">Aucun projet a été trouvé.</td>
             {% endif %}

@@ -56,7 +56,7 @@
     </div>
     <div id="project-form-container" style="display:none;">
         <hr>
-        <form method="post" name="project-form" id="project-form">
+        <form method="get" name="project-form" id="project-form" action="<?= $this->lurl ?>/transferts/recherche_projet">
             <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
                 <div class="form-group">
                     <label for="id_project">ID projet</label>
@@ -133,7 +133,7 @@
             return;
         }
 
-        $.get(add_url + '/transferts/recherche_emprunteur', $(this).serialize()).done(function (data) {
+        $.get($(this).attr('action'), $(this).serialize()).done(function (data) {
             $('#project-form-container').hide();
             $('#response').html(data).show(0, function () {
                 $.colorbox.resize();
