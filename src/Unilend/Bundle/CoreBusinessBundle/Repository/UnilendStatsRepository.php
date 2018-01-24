@@ -39,8 +39,7 @@ class UnilendStatsRepository extends EntityRepository
                     FROM echeanciers e
                     WHERE e.ordre = ee.ordre AND ee.id_project = e.id_project
                     LIMIT 1
-                ) AS date,
-                ee.id_project
+                ) AS date
             FROM echeanciers_emprunteur ee
             WHERE (
                     SELECT e2.status
@@ -58,8 +57,7 @@ class UnilendStatsRepository extends EntityRepository
                     FROM echeanciers e
                     WHERE e.ordre = ee.ordre AND ee.id_project = e.id_project
                     LIMIT 1
-                ) AS date,
-                ee.id_project
+                ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
             WHERE (
@@ -80,8 +78,7 @@ class UnilendStatsRepository extends EntityRepository
                     FROM echeanciers e
                     WHERE e.ordre = ee.ordre AND ee.id_project = e.id_project
                     LIMIT 1
-                ) AS date,
-                ee.id_project
+                ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
             INNER JOIN companies c ON p.id_company = c.id_company
@@ -116,8 +113,7 @@ class UnilendStatsRepository extends EntityRepository
                     FROM echeanciers e
                     WHERE e.ordre = ee.ordre AND ee.id_project = e.id_project
                     LIMIT 1
-                ) AS date,
-                ee.id_project
+                ) AS date
             FROM echeanciers_emprunteur ee
             INNER JOIN projects p ON ee.id_project = p.id_project
             INNER JOIN companies com ON p.id_company = com.id_company
@@ -168,8 +164,6 @@ class UnilendStatsRepository extends EntityRepository
             INNER JOIN operation o_commission ON o_recovery.id_wallet_creditor = o_commission.id_wallet_creditor AND o_recovery.id_project = o_commission.id_project AND DATE(o_recovery.added) = DATE(o_commission.added)
             INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::COLLECTION_COMMISSION_PROVISION . '"
             GROUP BY o_recovery.id';
-
-        print_r($query);
 
         $params = [
             'inBonis'                   => CompanyStatus::STATUS_IN_BONIS,
@@ -531,8 +525,6 @@ class UnilendStatsRepository extends EntityRepository
                  ORDER BY psh.id_project_status ASC
                  LIMIT 1
                  ) BETWEEN :startDate AND :endDate';
-
-        print_r($query);
 
         $values = $this->getEntityManager()
             ->getConnection()
