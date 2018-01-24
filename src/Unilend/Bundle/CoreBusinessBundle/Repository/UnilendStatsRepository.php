@@ -22,8 +22,7 @@ class UnilendStatsRepository extends EntityRepository
         $query = '
             SELECT
                 - ROUND((o_withdraw.amount + o_commission.amount) * 100) AS amount,
-                o_withdraw.added AS date,
-                o_withdraw.id_project
+                o_withdraw.added AS date
             FROM operation o_withdraw
                 INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
                 INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND o_withdraw.id_project = o_commission.id_project 
