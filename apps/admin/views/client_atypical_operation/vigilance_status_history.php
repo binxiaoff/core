@@ -15,7 +15,11 @@
         <tr id="row-<?= $vigilanceStatus->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
             <td>
                 <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $vigilanceStatus->getVigilanceStatus() ?>">
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $vigilanceStatus->getClient()->getIdClient() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                    <?php if (false === empty($this->hideEditLink)) : ?>
+                        <?= $vigilanceStatus->getClient()->getIdClient() ?>
+                    <?php else : ?>
+                        <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $vigilanceStatus->getClient()->getIdClient() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                    <?php endif; ?>
                 </span>
             </td>
             <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>
