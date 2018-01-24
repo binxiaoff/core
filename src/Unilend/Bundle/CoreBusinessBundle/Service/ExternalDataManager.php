@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
@@ -174,8 +175,6 @@ class ExternalDataManager
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
-
-            $this->entityManager->flush();
         }
 
         return $score;
@@ -416,15 +415,24 @@ class ExternalDataManager
                 ]);
 
                 if (null === $change) {
-                    $change = new InfolegaleExecutivePersonalChange();
-                    $change->setIdExecutive($executive->getExecutiveId())
-                        ->setFirstName($executive->getFirstName())
-                        ->setLastName($executive->getName())
-                        ->setSiren($mandate->getSiren())
-                        ->setPosition($mandate->getPosition()->getLabel())
-                        ->setCodePosition($mandate->getPosition()->getCode());
-                    $this->entityManager->persist($change);
-                    $this->entityManager->flush($change);
+                    try {
+                        $change = new InfolegaleExecutivePersonalChange();
+                        $change->setIdExecutive($executive->getExecutiveId())
+                            ->setFirstName($executive->getFirstName())
+                            ->setLastName($executive->getName())
+                            ->setSiren($mandate->getSiren())
+                            ->setPosition($mandate->getPosition()->getLabel())
+                            ->setCodePosition($mandate->getPosition()->getCode());
+                        $this->entityManager->persist($change);
+                        $this->entityManager->flush($change);
+                    } catch (\Exception $exception) {
+                        $this->logger->error(
+                            'Could not save the Infolegal personal change into DB using id_executive: ' .
+                            $executive->getExecutiveId() . ', siren: ' . $mandate->getSiren() . ', position: ' . $mandate->getPosition()->getCode() . '. Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                        continue;
+                    }
                 }
 
                 if (null === $change->getNominated()) {
@@ -629,7 +637,7 @@ class ExternalDataManager
      * @param string $type
      * @param string $value
      */
-    private function setRating($type, $value)
+    private function setRating(string $type, string $value)
     {
         $companyRating = new CompanyRating();
         $companyRating->setIdCompanyRatingHistory($this->companyRatingHistory);
@@ -637,5 +645,13 @@ class ExternalDataManager
         $companyRating->setValue($value);
 
         $this->entityManager->persist($companyRating);
+        try {
+            $this->entityManager->flush($companyRating);
+        } catch (OptimisticLockException $exception) {
+            $this->logger->error(
+                'Could not save the company rating type ' . $type . ' with value ' . $value . ' Using company rating history ID ' . $this->companyRatingHistory->getIdCompanyRatingHistory() . ' Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'id_company' => $this->companyRatingHistory->getIdCompany()->getIdCompany(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 }
