@@ -50,7 +50,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <div class="attention">Attention : Client <?= $this->params[0] ?> innconu</div>
     <?php else : ?>
     <div><?= $this->clientStatusMessage ?></div>
-    <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
+    <h1>Prêteur</h1>
+    <h2><?= $this->clients->prenom . ' ' . $this->clients->nom ?></h2>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
@@ -66,7 +67,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <table class="form" style="margin: auto;">
             <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr class="particulier">
-                    <th>ID Client :</th>
+                    <th>ID client :</th>
                     <td>
                         <span><?= $this->clients->id_client ?></span>
                     </td>
@@ -74,10 +75,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <td><h3>Informations MRZ</h3></td>
                 </tr>
                 <tr class="particulier">
-                    <th>Civilite :</th>
+                    <th>Civilité :</th>
                     <td>
-                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
-                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
+                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"> <label for="civilite1">Madame</label>
+                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."> <label for="civilite2">Monsieur</label>
                     </td>
                     <td rowspan="6" style="vertical-align: top">
                         <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
@@ -163,8 +164,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <tr class="particulier">
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="success">mdp envoyé</span>
+                        <input style="font-size: 11px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')">
+                        <span style="margin-left:5px;color:green; display:none;" class="success">Email envoyé</span>
                         <span style="margin-left:5px;color:orange; display:none;" class="warning">Email non envoyé</span>
                         <span style="margin-left:5px;color:red; display:none;" class="error">Erreur</span>
                     </td>
@@ -205,8 +206,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <td></td>
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                        <input style="font-size: 11px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">Mot de passe généré</span>
                     </td>
                 </tr>
             <?php endif; ?>

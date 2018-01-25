@@ -511,18 +511,18 @@ class ProjectRequestController extends Controller
                 $email = $email . '-' . time();
             }
 
-            $advisorClient->email     = $email;
-            $advisorClient->civilite  = $request->request->get('advisor')['civility'];
-            $advisorClient->prenom    = $request->request->get('advisor')['firstname'];
-            $advisorClient->nom       = $request->request->get('advisor')['lastname'];
-            $advisorClient->fonction  = $request->request->get('advisor')['function'];
-            $advisorClient->telephone = $request->request->get('advisor')['mobile'];
-            $advisorClient->slug      = $ficelle->generateSlug($advisorClient->prenom . '-' . $advisorClient->nom);
-
+            $advisorClient->email        = $email;
+            $advisorClient->civilite     = $request->request->get('advisor')['civility'];
+            $advisorClient->prenom       = $request->request->get('advisor')['firstname'];
+            $advisorClient->nom          = $request->request->get('advisor')['lastname'];
+            $advisorClient->fonction     = $request->request->get('advisor')['function'];
+            $advisorClient->telephone    = $request->request->get('advisor')['mobile'];
+            $advisorClient->slug         = $ficelle->generateSlug($advisorClient->prenom . '-' . $advisorClient->nom);
             $advisorClient->source       = $sourceManager->getSource(SourceManager::SOURCE1);
             $advisorClient->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
             $advisorClient->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
             $advisorClient->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
+            $advisorClient->status       = Clients::STATUS_OFFLINE;
 
             if (empty($advisorClient->id_client)) {
                 $advisorClient->create();

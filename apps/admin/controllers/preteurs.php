@@ -446,9 +446,9 @@ class preteursController extends bootstrap
                     $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
                     $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email'], $this->clients)) {
-                        $this->clients->email = $_POST['email'];
+                    $email = trim($_POST['email']);
+                    if ($this->isEmailUnique($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $birthday = null;
@@ -599,9 +599,9 @@ class preteursController extends bootstrap
                     $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
                     $this->clients->fonction = $_POST['fonction_e'];
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
-                        $this->clients->email = $_POST['email_e'];
+                    $email = trim($_POST['email_e']);
+                    if ($this->isEmailUnique($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
@@ -1594,23 +1594,27 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param string $email
-     * @param \clients $clientEntity
+     * @param string   $email
+     * @param \clients $client
+     *
      * @return bool
      */
-    private function isEmailUnique($email, \clients $clientEntity)
+    private function isEmailUnique(string $email, \clients $client) : bool
     {
-        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . Clients::STATUS_ONLINE);
-        if (count($clientsWithSameEmailAddress) > 0) {
-            $ClientIdWithSameEmail = '';
-            foreach ($clientsWithSameEmailAddress as $client) {
-                $ClientIdWithSameEmail .= ' ' . $client['id_client'];
-            }
-            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $ClientIdWithSameEmail;
-            return false;
-        } else {
+        if ($email === $client->email) {
             return true;
         }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+        if (count($duplicates) > 0) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisée par un autre compte';
+            return false;
+        }
+
+        return true;
     }
 
     /**

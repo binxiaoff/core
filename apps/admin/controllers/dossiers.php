@@ -2132,6 +2132,8 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         $oClients->get($iClientId);
 
+        // @todo If client is an advisor, is it normal to send email with password
+        // @todo Is the check right? Shouldn't it be 'empty' instead of 'isset'
         if (isset($oClients->secrete_question, $oClients->secrete_reponse)) {
             return 'depot-dossier-completude';
         } else {
