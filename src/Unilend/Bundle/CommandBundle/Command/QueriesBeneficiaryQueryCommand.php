@@ -119,7 +119,7 @@ EOF
                 $clientCountry                      = $countryRepository->find($fiscalAndLocationData['id_country']);
                 $fiscalAndLocationData['isoFiscal'] = $clientCountry->getIso();
 
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE  && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
+                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
@@ -127,7 +127,9 @@ EOF
                     $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
                     $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
-                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON);
+                    // The tax rate is change in 2018. We need to use TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON instead.
+                    // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
+                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
                     $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
