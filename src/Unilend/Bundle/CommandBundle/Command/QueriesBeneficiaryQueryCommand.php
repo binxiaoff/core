@@ -127,7 +127,7 @@ EOF
                     $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
                     $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
-                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
                     $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);

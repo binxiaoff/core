@@ -20,6 +20,7 @@ class TaxType
     const TYPE_SOLIDARITY_DEDUCTIONS                        = 6;
     const TYPE_CRDS                                         = 7;
     const TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE                = 8;
+    const TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON         = 9;
 
     /**
      * @var string
@@ -50,8 +51,6 @@ class TaxType
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idTaxType;
-
-
 
     /**
      * Set name

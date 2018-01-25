@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -59,46 +60,44 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         }
 
         /*****TAX*****/
-        $statutoryContributionsByContract            = $operationRepository
-            ->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, true);
-        $regularisedStatutoryContributionsByContract = $operationRepository
-            ->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, true, true);
+        $statutoryContributionsByContract            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, true);
+        $regularisedStatutoryContributionsByContract = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, true, true);
         $statutoryContributionsByContract            = array_combine(array_column($statutoryContributionsByContract, 'contract_label'), array_values($statutoryContributionsByContract));
-        $regularisedStatutoryContributionsByContract = array_combine(array_column($regularisedStatutoryContributionsByContract, 'contract_label'),
-            array_values($regularisedStatutoryContributionsByContract));
+        $regularisedStatutoryContributionsByContract = array_combine(array_column($regularisedStatutoryContributionsByContract, 'contract_label'), array_values($regularisedStatutoryContributionsByContract));
 
-        $deductionAtSource            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedDeductionAtSource = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $deductionAtSourceLegalEntity            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedDeductionAtSourceLegalEntity = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $csg            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedCsg = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $deductionAtSourcePerson                 = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, OperationSubType::TAX_FR_RETENUES_A_LA_SOURCE_PERSON, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedDeductionAtSourcePerson      = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_RETENUES_A_LA_SOURCE, OperationSubType::TAX_FR_RETENUES_A_LA_SOURCE_PERSON_REGULARIZATION, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $socialDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedSocialDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $csg            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedCsg = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CSG, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $additionalContribution            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedAdditionalContribution = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $socialDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedSocialDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $solidarityDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedSolidarityDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $additionalContribution            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedAdditionalContribution = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $crds            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedCrds = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $solidarityDeduction            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedSolidarityDeduction = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
-        $statutoryContributions            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth);
-        $regularisedStatutoryContributions = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+        $crds            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedCrds = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_CRDS, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
+
+        $statutoryContributions            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth);
+        $regularisedStatutoryContributions = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, false, true);
 
         $exemptedIncome            = $operationRepository->getExemptedIncomeTax($firstDayOfLastMonth, $lastDayOfLastMonth);
         $regularisedExemptedIncome = $operationRepository->getExemptedIncomeTax($firstDayOfLastMonth, $lastDayOfLastMonth, true);
 
-        $statutoryContributionsTaxBDC     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
-            UnderlyingContract::CONTRACT_BDC);
-        $statutoryContributionsTaxIFP     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
-            UnderlyingContract::CONTRACT_IFP);
-        $statutoryContributionsTaxMiniBon = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract,
-            UnderlyingContract::CONTRACT_MINIBON);
+        $statutoryContributionsTaxBDC     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract, UnderlyingContract::CONTRACT_BDC);
+        $statutoryContributionsTaxIFP     = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract, UnderlyingContract::CONTRACT_IFP);
+        $statutoryContributionsTaxMiniBon = $this->getTaxFromGroupedRawData($statutoryContributionsByContract, $regularisedStatutoryContributionsByContract, UnderlyingContract::CONTRACT_MINIBON);
         $statutoryContributionsTax        = $this->getTaxFromRawData($statutoryContributions, $regularisedStatutoryContributions);
-        $deductionAtSourceTax             = $this->getTaxFromRawData($deductionAtSource, $regularisedDeductionAtSource);
+        $deductionAtSourceTaxLegalEntity  = $this->getTaxFromRawData($deductionAtSourceLegalEntity, $regularisedDeductionAtSourceLegalEntity);
+        $deductionAtSourceTaxPerson       = $this->getTaxFromRawData($deductionAtSourcePerson, $regularisedDeductionAtSourcePerson);
         $csgTax                           = $this->getTaxFromRawData($csg, $regularisedCsg);
         $socialDeductionTax               = $this->getTaxFromRawData($socialDeduction, $regularisedSocialDeduction);
         $additionalContributionTax        = $this->getTaxFromRawData($additionalContribution, $regularisedAdditionalContribution);
@@ -112,7 +111,9 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $statutoryContributionsInterestsIFP     = 0;
         $statutoryContributionsInterestsMiniBon = 0;
         $exemptedInterests                      = 0;
-        $deductionAtSourceInterests             = 0;
+        $deductionAtSourceInterestsLegalEntity  = 0;
+        $deductionAtSourceInterestsPerson       = 0;
+
         foreach ($interestsRawData as $row) {
             /** @var UnderlyingContract $contract */
             $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
@@ -134,8 +135,12 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 $exemptedInterests = round(bcadd($exemptedInterests, $row['interests'], 4), 2);
             }
 
-            if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
-                $deductionAtSourceInterests = round(bcadd($deductionAtSourceInterests, $row['interests'], 4), 2);
+            if ('legal_entity' == $row['client_type']) {
+                $deductionAtSourceInterestsLegalEntity = round(bcadd($deductionAtSourceInterestsLegalEntity, $row['interests'], 4), 2);
+            }
+
+            if ('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) {
+                $deductionAtSourceInterestsPerson = round(bcadd($deductionAtSourceInterestsPerson, $row['interests'], 4), 2);
             }
         }
 
@@ -161,8 +166,12 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 $exemptedInterests = round(bcsub($exemptedInterests, $row['interests'], 4), 2);
             }
 
-            if ((('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) || 'legal_entity' == $row['client_type'])) {
-                $deductionAtSourceInterests = round(bcsub($deductionAtSourceInterests, $row['interests'], 4), 2);
+            if ('legal_entity' == $row['client_type']) {
+                $deductionAtSourceInterestsLegalEntity = round(bcsub($deductionAtSourceInterestsLegalEntity, $row['interests'], 4), 2);
+            }
+
+            if ('person' == $row['client_type'] && 'ww' == $row['fiscal_residence']) {
+                $deductionAtSourceInterestsPerson = round(bcsub($deductionAtSourceInterestsPerson, $row['interests'], 4), 2);
             }
         }
 
@@ -240,10 +249,16 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                         <th style="background-color:#F4F3DA;">Taux</th>
                     </tr>
                     <tr>
-                        <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterests) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceTax) . '</td>
+                        <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source (personne morale)</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
+                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterestsLegalEntity) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceTaxLegalEntity) . '</td>
                         <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] . '%</td>
+                    </tr>
+                    <tr>
+                        <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source (personne physique)</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
+                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterestsPerson) . '</td>
+                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceTaxPerson) . '</td>
+                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON] . '%</td>
                     </tr>
                     <tr>
                         <th style="background-color:#ECAEAE;" colspan="4">Pr&eacute;l&egrave;vements sociaux</th>
