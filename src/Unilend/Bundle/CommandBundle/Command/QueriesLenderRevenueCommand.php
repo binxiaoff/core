@@ -90,7 +90,7 @@ EOF
             $grossInterest               = round(bcsub($grossInterest, $grossInterestRegularization, 4));
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '161');
                 $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $grossInterest);
                 $row += 1;
             }

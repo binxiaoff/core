@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -73,7 +73,6 @@ EOF
             'DépNaissance',
             'ComNaissance',
             'LieuNaissance',
-            'NomMari',
             'Siret',
             'AdISO',
             'Adresse',
@@ -82,18 +81,14 @@ EOF
             'Commune',
             'CodePostal',
             'Ville',
-            'IdFiscal',
             'PaysISO',
-            'Entité',
             'ToRS',
-            'Plib',
             'Tél',
             'Banque',
             'IBAN',
             'BIC',
             'EMAIL',
-            'Obs',
-            ''
+            'Obs'
         ];
 
         $fiscalAndLocationData = [];
@@ -201,13 +196,12 @@ EOF
             $wallet->getWireTransferPattern(),
             $client->getNom(),
             $client->getCivilite(),
-            $client->getNom(),
+            ($client->getCivilite() === Clients::TITLE_MISS) ? $client->getNom() : '',
             $client->getPrenom(),
             $client->getNaissance()->format('d/m/Y'),
             empty($client->getInseeBirth()) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($client->getInseeBirth(), 0, 2),
             empty($client->getInseeBirth()) ? $fiscalAndLocationData['inseeBirth'] : $client->getInseeBirth(),
             $fiscalAndLocationData['birthPlace'],
-            '',
             '',
             $fiscalAndLocationData['isoFiscal'],
             '',
@@ -216,11 +210,8 @@ EOF
             $fiscalAndLocationData['location'],//commune fiscal
             $fiscalAndLocationData['zip'],
             $fiscalAndLocationData['city'],
-            '',
             $fiscalAndLocationData['isoBirth'],
-            'X',
             $fiscalAndLocationData['deductedAtSource'],
-            'N',
             $client->getTelephone(),
             '',
             '',
@@ -252,7 +243,6 @@ EOF
             '',
             '',
             '',
-            '',
             $company->getSiret(),
             $fiscalAndLocationData['isoFiscal'],
             '',
@@ -261,11 +251,8 @@ EOF
             '',
             $company->getZip(),
             $company->getCity(),
-            '',
             $fiscalAndLocationData['isoFiscal'],
-            'X',
             '',
-            'N',
             $company->getPhone(),
             '',
             '',
