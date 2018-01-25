@@ -447,7 +447,7 @@ class preteursController extends bootstrap
                     $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
                     $email = trim($_POST['email']);
-                    if ($this->isEmailUnique($email, $this->clients)) {
+                    if ($this->checkEmail($email, $this->clients)) {
                         $this->clients->email = $email;
                     }
 
@@ -600,7 +600,7 @@ class preteursController extends bootstrap
                     $this->clients->fonction = $_POST['fonction_e'];
 
                     $email = trim($_POST['email_e']);
-                    if ($this->isEmailUnique($email, $this->clients)) {
+                    if ($this->checkEmail($email, $this->clients)) {
                         $this->clients->email = $email;
                     }
 
@@ -1599,7 +1599,7 @@ class preteursController extends bootstrap
      *
      * @return bool
      */
-    private function isEmailUnique(string $email, \clients $client) : bool
+    private function checkEmail(string $email, \clients $client) : bool
     {
         if ($email === $client->email) {
             return true;
@@ -1607,7 +1607,14 @@ class preteursController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+        $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
+
+        if (1 !== preg_match($emailRegex, $email)) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Le format est incorrect';
+            return false;
+        }
+
+        $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
 
         if (count($duplicates) > 0) {
             $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisée par un autre compte';
