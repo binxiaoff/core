@@ -366,12 +366,12 @@ class transfertsController extends bootstrap
         $project     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->request->query->getInt('id_project'));
         $receptionId = $this->request->query->getInt('id_reception');
 
-        if ($project) {
+        if (null !== $project) {
             $status      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
             $statusLabel = $status->getLabel();
         }
 
-        $this->render(null, ['project' => $project, 'receptionId' => $receptionId, 'statusLabel' => $statusLabel, 'repaymentType' => $_GET['type_remb']]);
+        $this->render(null, ['project' => $project, 'receptionId' => $receptionId, 'statusLabel' => $statusLabel, 'repaymentType' => $this->request->query->get('type_remb')]);
     }
 
     public function _attribuer_preteur()
