@@ -203,6 +203,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
     .memo-privacy-switch > a {
         margin: 0;
     }
+
+    #popup.rejection-popup {
+        padding-bottom: 0;
+        width: 800px;
+    }
 </style>
 
 <script>
