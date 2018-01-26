@@ -42,20 +42,6 @@ class RiskDataMonitoring
     private $end;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=true)
-     */
-    private $updated;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="id", type="integer")
@@ -176,71 +162,5 @@ class RiskDataMonitoring
     public function isOngoing() : bool
     {
         return empty($this->getEnd());
-    }
-
-    /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return RiskDataMonitoring
-     */
-    public function setAdded(\DateTime $added) : RiskDataMonitoring
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded() : \DateTime
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return RiskDataMonitoring
-     */
-    public function setUpdated(?\DateTime $updated) : RiskDataMonitoring
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime|null
-     */
-    public function getUpdated() : ?\DateTime
-    {
-        return $this->updated;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setAddedValue() : void
-    {
-        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
-            $this->added = new \DateTime();
-        }
-    }
-
-    /**
-     * @ORM\PreUpdate
-     */
-    public function setUpdatedValue() : void
-    {
-        $this->updated = new \DateTime();
     }
 }

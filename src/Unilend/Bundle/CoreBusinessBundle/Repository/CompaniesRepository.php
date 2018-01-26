@@ -9,6 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringCycleManager;
 
 class CompaniesRepository extends EntityRepository
 {
@@ -145,5 +146,77 @@ class CompaniesRepository extends EntityRepository
             ->setParameter('parent', $company->getIdParentCompany())
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getNotYetMonitoredSirenWithProjects() : array
+    {
+        $lastAdded = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('rdm.start')
+            ->from('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm')
+            ->orderBy('rdm.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getScalarResult();
+
+        $sirenExistSubQuery = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('rdm2')
+            ->from('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm2')
+            ->where('rdm2.siren = co.siren')      ;
+
+        $queryBuilder = $this->createQueryBuilder('co');
+        $queryBuilder->select('DISTINCT co.siren')
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = co.idCompany')
+            ->where('co.added > :lastAdded')
+            ->andWhere('p.status > :firstProjectStatus')
+            ->andWhere($queryBuilder->expr()->not($queryBuilder->expr()->exists($sirenExistSubQuery->getDQL())))
+            ->setParameter('lastAdded', $lastAdded)
+            ->setParameter('firstProjectStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getSirenWithProjectOrCompanyStatusNotToBeMonitored() : array
+    {
+        $queryBuilder = $this->createQueryBuilder('co');
+        $queryBuilder->select('DISTINCT(co.siren) AS siren')
+            ->innerJoin('UnilendCoreBusinessBundle:CompanyStatus', 'cs', Join::WITH, 'cs.id = co.idStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'co.idCompany = p.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'co.siren = rdm.siren')
+            ->where('cs.label != :inBonis')
+            ->orWhere('p.status IN (:finalStatus)')
+            ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
+            ->setParameter('finalStatus', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE]);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getSirenWithActiveProjectsAndNoMonitoring()
+    {
+        $query = '
+          SELECT DISTINCT(co.siren) AS siren 
+          FROM companies co 
+            INNER JOIN projects p ON co.id_company = p.id_company 
+            INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren 
+          WHERE p.status > ' . ProjectsStatus::ABANDONED . ' 
+            AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
+            AND rdm.end <= NOW() 
+            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query)
+            ->fetchAll();
     }
 }

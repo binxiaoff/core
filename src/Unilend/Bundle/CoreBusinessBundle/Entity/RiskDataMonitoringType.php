@@ -27,9 +27,12 @@ class RiskDataMonitoringType
     private $label;
 
     /**
-     * @var ProjectEligibilityRule
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule
      *
-     * @ORM\Column(name="id_project_eligibility_rule", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project_eligibility_rule", referencedColumnName="id")
+     * })
      */
     private $idProjectEligibilityRule;
 
