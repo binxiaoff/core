@@ -2,12 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-
 use Doctrine\ORM\EntityRepository;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
@@ -25,9 +25,9 @@ class UnilendStatsRepository extends EntityRepository
                 o_withdraw.added AS date
             FROM operation o_withdraw
                 INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-                INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
-                INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
-            GROUP BY o_withdraw.id
+                INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND o_withdraw.id_project = o_commission.id_project 
+                    AND o_commission.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::BORROWER_COMMISSION_FUNDS . '")
+            GROUP BY o_withdraw.id_project
 
         UNION ALL
 
@@ -197,8 +197,8 @@ class UnilendStatsRepository extends EntityRepository
                 o_withdraw.added AS date
             FROM operation o_withdraw
             INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-            INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
-            INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND  ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
+            INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND o_withdraw.id_project = o_commission.id_project
+                AND o_commission.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::BORROWER_COMMISSION_FUNDS . '")
                 AND (
                     SELECT DATE(psh.added) 
                     FROM projects_status_history psh 
@@ -447,8 +447,8 @@ class UnilendStatsRepository extends EntityRepository
               o_withdraw.added                                       AS date
             FROM operation o_withdraw
               INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-              INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
-              INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
+              INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND o_withdraw.id_project = o_commission.id_project
+                AND o_commission.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::BORROWER_COMMISSION_FUNDS . '")
                 AND (
                      SELECT psh.added
                      FROM projects_status_history psh
@@ -546,8 +546,8 @@ class UnilendStatsRepository extends EntityRepository
                 o_withdraw.added                                       AS date
             FROM operation o_withdraw
             INNER JOIN operation_type ot_withdraw ON o_withdraw.id_type = ot_withdraw.id AND ot_withdraw.label = "' . OperationType::BORROWER_WITHDRAW . '"
-            INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND DATE(o_withdraw.added) = DATE(o_commission.added)
-            INNER JOIN operation_type ot_commission ON o_commission.id_type = ot_commission.id AND ot_commission.label = "' . OperationType::BORROWER_COMMISSION . '"
+            INNER JOIN operation o_commission ON o_withdraw.id_wallet_debtor = o_commission.id_wallet_debtor AND o_withdraw.id_project = o_commission.id_project
+                AND o_commission.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::BORROWER_COMMISSION_FUNDS . '")
             WHERE (
                     SELECT added
                     FROM projects_status_history psh
