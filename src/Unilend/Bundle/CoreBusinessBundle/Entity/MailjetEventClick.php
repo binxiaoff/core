@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="mailjet_event_click", indexes={@ORM\Index(name="email", columns={"email"}), @ORM\Index(name="custom_id", columns={"custom_id"}), @ORM\Index(name="url", columns={"url"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class MailjetEventClick
 {
@@ -81,13 +82,6 @@ class MailjetEventClick
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
     private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
 
     /**
      * @var integer
@@ -341,30 +335,6 @@ class MailjetEventClick
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return MailjetEventClick
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get id
      *
      * @return integer
@@ -372,5 +342,15 @@ class MailjetEventClick
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }
