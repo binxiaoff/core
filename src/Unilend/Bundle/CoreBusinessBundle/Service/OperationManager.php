@@ -144,7 +144,9 @@ class OperationManager
                         ->setTransfer($item->getTransfer())
                         ->setWelcomeOffer($item->getWelcomeOffer())
                         ->setWireTransferIn($item->getWireTransferIn())
-                        ->setWireTransferOut($item->getWireTransferOut());
+                        ->setWireTransferOut($item->getWireTransferOut())
+                        ->setIdRepaymentTaskLog($item->getIdRepaymentTaskLog())
+                        ->setSponsorship($item->getSponsorship());
                 }
             }
 
@@ -449,16 +451,18 @@ class OperationManager
      */
     private function tax(Loans $loan, $amountInterestGross, $origin)
     {
-        $walletRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletTypeRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
-        $operationTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType');
+        $walletRepository           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletTypeRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
+        $operationTypeRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType');
+        $operationSubTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType');
 
         $underlyingContract = $loan->getIdTypeContract();
         $taxes              = $this->taxManager->getLenderRepaymentInterestTax($loan->getIdLender()->getIdClient(), $amountInterestGross, new \DateTime(), $underlyingContract);
 
         foreach ($taxes as $type => $tax) {
-            $operationType = '';
-            $walletType    = '';
+            $operationType    = null;
+            $walletType       = null;
+            $operationSubType = null;
             switch ($type) {
                 case TaxType::TYPE_STATUTORY_CONTRIBUTIONS:
                     $operationType = OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES;
@@ -484,6 +488,9 @@ class OperationManager
                     $operationType = OperationType::TAX_FR_CRDS;
                     $walletType    = WalletType::TAX_FR_CRDS;
                     break;
+                case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON:
+                    $operationSubType = OperationSubType::TAX_FR_RETENUES_A_LA_SOURCE_PERSON;
+                // no break
                 case TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE:
                     $operationType = OperationType::TAX_FR_RETENUES_A_LA_SOURCE;
                     $walletType    = WalletType::TAX_FR_RETENUES_A_LA_SOURCE;
@@ -495,8 +502,11 @@ class OperationManager
             $walletTaxType = $walletTypeRepository->findOneBy(['label' => $walletType]);
             $walletTax     = $walletRepository->findOneBy(['idType' => $walletTaxType]);
             $operationType = $operationTypeRepository->findOneBy(['label' => $operationType]);
+            if ($operationSubType) {
+                $operationSubType = $operationSubTypeRepository->findOneBy(['label' => $operationSubType]);
+            }
 
-            $this->newOperation($tax, $operationType, null, $loan->getIdLender(), $walletTax, $origin);
+            $this->newOperation($tax, $operationType, $operationSubType, $loan->getIdLender(), $walletTax, $origin);
         }
     }
 
@@ -788,13 +798,14 @@ class OperationManager
     }
 
     /**
-     * @param Operation  $operation
-     * @param float|null $amount
+     * @param Operation    $operation
+     * @param float|null   $amount
+     * @param array|object $origins
      *
      * @return bool
      * @throws \Exception
      */
-    public function regularize(Operation $operation, $amount = null)
+    public function regularize(Operation $operation, ?float $amount = null, $origins = [])
     {
         switch ($operation->getType()->getLabel()) {
             case OperationType::BORROWER_COMMISSION:
@@ -855,6 +866,9 @@ class OperationManager
                 case OperationSubType::BORROWER_COMMISSION_REPAYMENT:
                     $operationSubTypeLabel = OperationSubType::BORROWER_COMMISSION_REPAYMENT_REGULARIZATION;
                     break;
+                case OperationSubType::TAX_FR_RETENUES_A_LA_SOURCE_PERSON:
+                    $operationSubTypeLabel = OperationSubType::TAX_FR_RETENUES_A_LA_SOURCE_PERSON_REGULARIZATION;
+                    break;
                 default:
                     throw new \Exception('The operation type ' . $operation->getSubType()->getLabel() . ' is not supported');
             }
@@ -870,7 +884,13 @@ class OperationManager
         $operationType    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => $operationTypeLabel]);
         $operationSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => $operationSubTypeLabel]);
 
-        return $this->newOperation($amount, $operationType, $operationSubType, $debtor, $creditor, $operation);
+        if (false === is_array($origins)) {
+            $origins = [$origins];
+        }
+        // $operation must be the first element in the list.
+        array_unshift($origins, $operation);
+
+        return $this->newOperation($amount, $operationType, $operationSubType, $debtor, $creditor, $origins);
     }
 
     /**
