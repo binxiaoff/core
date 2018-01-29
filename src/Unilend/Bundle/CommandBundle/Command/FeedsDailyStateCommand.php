@@ -528,7 +528,9 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $totalBorrowerProvisionDirectDebit       = round(bcsub($borrowerProvisionDirectDebit, $borrowerProvisionCancelDirectDebit, 4), 2);
             $totalBorrowerProvisionWireTransfer      = round(bcsub($borrowerProvisionWireTransfer, $borrowerProvisionCancelWireTransfer, 4), 2);
             $totalBorrowerProvisionOther             = round(bcsub($borrowerProvisionOther, $borrowerProvisionCancelOther, 4), 2);
-            $borrowerWithdraw                        = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
+            $borrowerWithdrawProject                 = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
+            $borrowerWithdrawOther                   = empty($line[OperationSubType::BORROWER_WITHDRAW_OWN_MONEY]) ? 0 : $line[OperationSubType::BORROWER_WITHDRAW_OWN_MONEY];
+            $borrowerWithdraw                        = round(bcadd($borrowerWithdrawProject, $borrowerWithdrawOther, 4), 2);
             $borrowerCommissionProject               = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS];
             $borrowerCommissionProjectRegularization = empty($line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_FUNDS_REGULARIZATION];
             $borrowerCommissionPayment               = empty($line[OperationSubType::BORROWER_COMMISSION_REPAYMENT]) ? 0 : $line[OperationSubType::BORROWER_COMMISSION_REPAYMENT];
