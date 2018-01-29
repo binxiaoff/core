@@ -44,7 +44,7 @@ class IfuManager
 
         $walletsWithMovements = array_merge($walletsWithMovements, $this->getWalletsHavingLoss($year));
 
-        return $walletsWithMovements;
+        return array_unique($walletsWithMovements, SORT_REGULAR);
     }
 
     /**
