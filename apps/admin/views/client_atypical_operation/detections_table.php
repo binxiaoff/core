@@ -29,9 +29,9 @@
                     <?php if (false === empty($this->hideEditLink)) : ?>
                         <?= $atypicalOperation->getClient()->getIdClient() ?>
                     <?php else : ?>
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $atypicalOperation->getClient()->getIdClient() ?>">
-                        <?= $atypicalOperation->getClient()->getIdClient() ?>
-                    </a>
+                        <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $atypicalOperation->getClient()->getIdClient() ?>">
+                            <?= $atypicalOperation->getClient()->getIdClient() ?>
+                        </a>
                     <?php endif; ?>
                 </span>
             </td>

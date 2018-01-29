@@ -48,7 +48,7 @@ class ClientVigilanceStatusManager
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
                 ->setAtypicalOperation($clientAtypicalOperation)
-                ->setIdUser($userId)
+                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId))
                 ->setUserComment($comment);
             $this->entityManager->persist($vigilanceStatusHistory);
             $this->entityManager->flush($vigilanceStatusHistory);
@@ -79,7 +79,7 @@ class ClientVigilanceStatusManager
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
                 ->setAtypicalOperation($clientAtypicalOperation)
-                ->setIdUser($userId)
+                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId))
                 ->setUserComment($comment);
             $this->entityManager->persist($vigilanceStatusHistory);
             $this->entityManager->flush($vigilanceStatusHistory);
