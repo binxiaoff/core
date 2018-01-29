@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS ClientEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients as ClientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -149,25 +149,27 @@ class clients extends clients_crud
      *
      * @return array
      */
-    public function searchEmprunteurs($searchType, $nom, $prenom = '', $email = '', $societe = '', $siren = '', int $status = null) : array
+    public function searchEmprunteurs($searchType, $nom = '', $prenom = '', $email = '', $societe = '', $siren = '', int $status = null) : array
     {
-        $conditions = [
-            'c.nom LIKE "%' . $nom . '%"'
-        ];
+        $conditions = [];
 
-        if ($prenom != '') {
+        if (false === empty($nom)) {
+            $conditions[] = 'c.nom LIKE "%' . $nom . '%"';
+        }
+
+        if (false === empty($prenom)) {
             $conditions[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
-        if ($email != '') {
+        if (false !== empty($email)) {
             $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
 
-        if ($societe != '') {
+        if (false !== empty($societe)) {
             $conditions[] = 'co.name LIKE "%' . $societe . '%"';
         }
 
-        if ($siren != '') {
+        if (false !== empty($siren)) {
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
@@ -177,17 +179,24 @@ class clients extends clients_crud
 
         $borrowers = [];
         $query     = '
-            SELECT c.*, co.*, COUNT(p.id_project) AS projets
+            SELECT 
+                c.*,
+                co.*
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             INNER JOIN projects p ON co.id_company = p.id_company
             INNER JOIN wallet w ON c.id_client = w.id_client
-            INNER JOIN wallet_type wt ON w.id_type = wt.id
-            WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND wt.label = "' . WalletType::BORROWER . '"
-            GROUP BY c.id_client
-            ORDER BY c.id_client DESC
-            LIMIT 100';
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::BORROWER . '"';
+
+            if (false === empty($conditions)) {
+                $query .= '
+                    WHERE ' . implode(' ' . $searchType . ' ', $conditions);
+            }
+
+            $query .= '
+                GROUP BY c.id_client
+                ORDER BY c.id_client DESC
+                LIMIT 100';
 
         $result = $this->bdd->query($query);
         while ($record = $this->bdd->fetch_assoc($result)) {

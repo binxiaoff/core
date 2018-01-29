@@ -358,7 +358,8 @@ function check_status_dossier(status, id_project) {
             id_project: id_project,
             rejection_reason: $('#rejection_reason option:selected').val(),
             comment: comment,
-            public: $('[name=rejection_public]:checked').val()
+            public: $('[name=rejection_privacy]:checked').val(),
+            send_email: $('[name=send_email]:checked').val()
         }).done(function (data) {
             if (data != 'nok') {
                 location.reload()
@@ -372,7 +373,6 @@ function check_status_dossier(status, id_project) {
 
 function nodizaines(val, id) {
     val = parseFloat(val.replace(',', '.'));
-    var long = val.length;
     if (val > 10) {
         alert('Vous devez renseigner un chiffre inférieur à 10');
         $("#" + id).val('0');
@@ -396,6 +396,7 @@ function valid_rejete_etape6(status, id_project) {
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
             avis                            = ckedAvis.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
+            send_email                      = $('[name=send_email]:checked').val(),
             form_ok                         = true;
 
         if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
@@ -445,7 +446,8 @@ function valid_rejete_etape6(status, id_project) {
                 dirigeance: dirigeance,
                 indicateur_risque_dynamique: indicateur_risque_dynamique,
                 avis: avis,
-                rejection_reason: rejection_reason
+                rejection_reason: rejection_reason,
+                send_email: send_email
             }).done(function(data) {
                 var response = jQuery.parseJSON(data)
 
@@ -502,6 +504,7 @@ function valid_rejete_etape7(status, id_project) {
             indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
             avis_comite                   = ckedAvis_comite.getData(),
             rejection_reason              = $('#rejection_reason option:selected').val(),
+            send_email                    = $('[name=send_email]:checked').val(),
             suspensive_conditions_comment = $('#suspensive-conditions-memo-textarea').length ? $('#suspensive-conditions-memo-textarea').val() : '',
             form_ok = true;
 
@@ -549,6 +552,7 @@ function valid_rejete_etape7(status, id_project) {
                 dirigeance_comite: dirigeance,
                 indicateur_risque_dynamique_comite: indicateur_risque_dynamique,
                 rejection_reason: rejection_reason,
+                send_email: send_email,
                 suspensive_conditions_comment: suspensive_conditions_comment
             }).done(function(data) {
                 var response = jQuery.parseJSON(data)

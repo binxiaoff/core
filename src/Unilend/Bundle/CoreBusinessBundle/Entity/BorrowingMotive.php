@@ -12,6 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class BorrowingMotive
 {
+    const ID_MOTIVE_PURCHASE_MATERIAL  = 1;
+    const ID_MOTIVE_ACQUISITION_MERGER = 2;
+    const ID_MOTIVE_DEVELOPMENT        = 3;
+    const ID_MOTIVE_REAL_ESTATE        = 4;
+    const ID_MOTIVE_WORK               = 5;
+    const ID_MOTIVE_CASH_FLOW          = 6;
+    const ID_MOTIVE_OTHER              = 7;
     /**
      * @var string
      *
@@ -48,8 +55,6 @@ class BorrowingMotive
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     private $idMotive;
-
-
 
     /**
      * Set motive
