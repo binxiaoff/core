@@ -69,8 +69,11 @@ EOF
         $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
 
-        $walletsWithMovements    = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
-        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => IfuManager::LOST_PROJECT_IDS]);
+        $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $lostProjects         = [];
+        if (false === empty(IfuManager::LOSS_PROJECT_IDS[$year])) {
+            $lostProjects = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => IfuManager::LOSS_PROJECT_IDS[$year]]);
+        }
         $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
             'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
         ]);
