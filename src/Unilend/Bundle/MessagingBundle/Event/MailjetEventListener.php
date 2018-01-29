@@ -109,7 +109,7 @@ class MailjetEventListener implements EventListenerInterface
             $this->entityManager->flush($spamEvent);
         } catch (ORMException $exception) {
             $this->logger->error(
-                'Could not save Mailjet "open" event',
+                'Could not save Mailjet "spam" event',
                 ['file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
@@ -139,7 +139,7 @@ class MailjetEventListener implements EventListenerInterface
             $this->entityManager->flush($clickEvent);
         } catch (ORMException $exception) {
             $this->logger->error(
-                'Could not save Mailjet "open" event',
+                'Could not save Mailjet "click" event',
                 ['file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
@@ -172,7 +172,7 @@ class MailjetEventListener implements EventListenerInterface
             $this->entityManager->flush($unsubEvent);
         } catch (ORMException $exception) {
             $this->logger->error(
-                'Could not save Mailjet "open" event',
+                'Could not save Mailjet "unsub" event',
                 ['file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
@@ -205,7 +205,7 @@ class MailjetEventListener implements EventListenerInterface
             $this->entityManager->flush($bounceEvent);
         } catch (ORMException $exception) {
             $this->logger->error(
-                'Could not save Mailjet "open" event',
+                'Could not save Mailjet "bounce" event',
                 ['file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
@@ -235,7 +235,7 @@ class MailjetEventListener implements EventListenerInterface
             $this->entityManager->flush($blockedEvent);
         } catch (ORMException $exception) {
             $this->logger->error(
-                'Could not save Mailjet "open" event',
+                'Could not save Mailjet "blocked" event',
                 ['file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
