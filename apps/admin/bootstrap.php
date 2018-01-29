@@ -10,10 +10,19 @@ class bootstrap extends Controller
 {
     const MENU = [
         [
-            'title'    => 'Dashboard',
-            'uri'      => 'dashboard',
+            'title'    => 'Accueil',
+            'uri'   => 'root',
             'zone'     => Zones::ZONE_LABEL_DASHBOARD,
-            'children' => []
+            'children' => [
+                [
+                    'title' => 'Accueil',
+                    'uri'   => ''
+                ],
+                [
+                    'title' => 'Activité commercial',
+                    'uri'   => 'dashboard/activite'
+                ]
+            ]
         ],
         [
             'title'    => 'Edition',
@@ -590,14 +599,6 @@ class bootstrap extends Controller
         }
 
         $navigation = self::MENU;
-
-        if (
-            null !== $user
-            && 'Dashboard' === $navigation[0]['title']
-            && ($userManager->isUserGroupRisk($user) || $userManager->isUserGroupSales($user))
-        ) {
-            $navigation[0]['title'] = 'Mon flux';
-        }
 
         $context['app'] = [
             'navigation' => $navigation,

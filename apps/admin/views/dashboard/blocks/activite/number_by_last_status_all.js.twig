@@ -1,0 +1,54 @@
+Highcharts.chart('number-by-last-status-all', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Projects en cours'
+    },
+    subtitle: {
+        text: 'Nombre de projets par statut'
+    },
+    xAxis: {
+        categories: [
+            'Tous les projets',
+            'Partenaires',
+            'Trésorerie',
+            'Reprise de FdC'
+        ],
+        crosshair: true
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: 'Nombre de projets'
+        }
+    },
+    tooltip: {
+        headerFormat: '<strong>{point.key}</strong><table>',
+        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name} : </td>' +
+        '<td style="padding:0"><b>{point.y}</b></td></tr>',
+        footerFormat: '</table>',
+        shared: true,
+        useHTML: true
+    },
+    plotOptions: {
+        column: {
+            pointPadding: 0.2,
+            borderWidth: 0
+        }
+    },
+    series: [
+        {% for status in countableStatus %}
+        {% if not loop.first %},{% endif %}
+        {
+            name: '{{ status.label }}',
+            data: [
+                {% if statusAllCount[status.status]['number'] is defined %} {{ statusAllCount[status.status]['number'] }} {% else %} 0 {% endif %},
+                {% if statusCashFlowCount[status.status]['number'] is defined %} {{ statusCashFlowCount[status.status]['number'] }} {% else %} 0 {% endif %},
+                {% if statusAcquisitionCount[status.status]['number'] is defined %} {{ statusAcquisitionCount[status.status]['number'] }} {% else %} 0 {% endif %},
+                {% if statusPartnerCount[status.status]['number'] is defined %} {{ statusPartnerCount[status.status]['number'] }} {% else %} 0 {% endif %}
+            ]
+        }
+        {% endfor %}
+    ]
+});
