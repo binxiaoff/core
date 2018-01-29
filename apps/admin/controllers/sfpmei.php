@@ -767,6 +767,7 @@ class sfpmeiController extends bootstrap
         }
 
         $this->clientVigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory');
+        $this->hideEditLink                 = true;
     }
 
     /**

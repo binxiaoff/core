@@ -42,9 +42,12 @@ class ClientVigilanceStatusHistory
     private $updated;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
     private $idUser;
 
@@ -158,7 +161,7 @@ class ClientVigilanceStatusHistory
     }
 
     /**
-     * @return int
+     * @return Users
      */
     public function getIdUser()
     {
@@ -166,11 +169,11 @@ class ClientVigilanceStatusHistory
     }
 
     /**
-     * @param int $idUser
+     * @param Users $idUser
      *
      * @return ClientVigilanceStatusHistory
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser)
     {
         $this->idUser = $idUser;
 
