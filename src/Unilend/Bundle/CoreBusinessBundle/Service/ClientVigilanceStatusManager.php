@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientVigilanceStatusHistory;
@@ -31,14 +32,18 @@ class ClientVigilanceStatusManager
     /**
      * @param Clients                      $client
      * @param int                          $vigilanceStatus
-     * @param int                          $userId
+     * @param int|Users                    $userId
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
      * @param null|string                  $comment
      *
      * @return null|ClientVigilanceStatusHistory
+     * @throws OptimisticLockException
      */
-    public function upgradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
+    public function upgradeClientVigilanceStatusHistory(Clients $client, int $vigilanceStatus, $userId, ?ClientAtypicalOperation $clientAtypicalOperation = null, ?string $comment = null) : ?ClientVigilanceStatusHistory
     {
+        if (false === $userId instanceof Users) {
+            $userId = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+        }
         $currentClientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
@@ -48,7 +53,7 @@ class ClientVigilanceStatusManager
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
                 ->setAtypicalOperation($clientAtypicalOperation)
-                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId))
+                ->setIdUser($userId)
                 ->setUserComment($comment);
             $this->entityManager->persist($vigilanceStatusHistory);
             $this->entityManager->flush($vigilanceStatusHistory);
@@ -62,14 +67,18 @@ class ClientVigilanceStatusManager
     /**
      * @param Clients                      $client
      * @param int                          $vigilanceStatus
-     * @param int                          $userId
+     * @param int|Users                    $userId
      * @param ClientAtypicalOperation|null $clientAtypicalOperation
      * @param null|string                  $comment
      *
      * @return null|ClientVigilanceStatusHistory
+     * @throws OptimisticLockException
      */
-    public function retrogradeClientVigilanceStatusHistory(Clients $client, $vigilanceStatus, $userId, ClientAtypicalOperation $clientAtypicalOperation = null, $comment = null)
+    public function retrogradeClientVigilanceStatusHistory(Clients $client, int $vigilanceStatus, $userId, ?ClientAtypicalOperation $clientAtypicalOperation = null, ?string $comment = null) : ?ClientVigilanceStatusHistory
     {
+        if (false === $userId instanceof Users) {
+            $userId = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+        }
         $currentClientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC']);
 
         if (null === $currentClientVigilanceStatus ||
@@ -79,7 +88,7 @@ class ClientVigilanceStatusManager
             $vigilanceStatusHistory->setClient($client)
                 ->setVigilanceStatus($vigilanceStatus)
                 ->setAtypicalOperation($clientAtypicalOperation)
-                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId))
+                ->setIdUser($userId)
                 ->setUserComment($comment);
             $this->entityManager->persist($vigilanceStatusHistory);
             $this->entityManager->flush($vigilanceStatusHistory);
