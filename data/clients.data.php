@@ -149,15 +149,15 @@ class clients extends clients_crud
             $conditions[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
-        if ($email != '') {
+        if (false !== empty($email)) {
             $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
 
-        if ($societe != '') {
+        if (false !== empty($societe)) {
             $conditions[] = 'co.name LIKE "%' . $societe . '%"';
         }
 
-        if ($siren != '') {
+        if (false !== empty($siren)) {
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
@@ -168,8 +168,8 @@ class clients extends clients_crud
                 co.*
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
-            WHERE (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . ')) AND ('
-            . implode(' ' . $searchType . ' ', $conditions) . ')
+            WHERE (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . '))
+             AND (' . implode(' ' . $searchType . ' ', $conditions) . ')
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
             LIMIT 100';
