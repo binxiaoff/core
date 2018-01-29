@@ -14,8 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
-    const LOST_PROJECT_IDS = [32108, 28957];
-
     /**
      * @see Command
      */
@@ -72,7 +70,7 @@ EOF
         $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
 
         $walletsWithMovements    = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
-        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => self::LOST_PROJECT_IDS]);
+        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => IfuManager::LOST_PROJECT_IDS]);
         $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
             'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
         ]);
@@ -92,7 +90,7 @@ EOF
             $grossInterest               = round(bcsub($grossInterest, $grossInterestRegularization, 4));
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '161');
                 $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $grossInterest);
                 $row += 1;
             }
