@@ -21,15 +21,21 @@
                 $projectsContainer.html($message)
             }
 
-            $('.nav a').bind('click', function (e) {
+            $('.nav a').bind('click', function () {
                 var $link = $(this)
                 var $tab = $($link.attr('href'))
+                var $blockContainer = $tab.closest('.block')
+                var $blockHeader = $blockContainer.find('.block-header')
+                var statusLabel = $link.find('.project-status-label').text()
+
+                $blockHeader.removeClass('hidden').find('.block-title').text(statusLabel)
 
                 if (!$tab.hasClass('loaded')) {
-                    var $blockContainer = $tab.closest('.block')
-                    $blockContainer.addClass('block-opt-refresh')
-
+                    var $blockContent = $blockContainer.find('.block-content')
                     var $projectsContainer = $tab.find('.projects-list')
+
+                    $blockContainer.addClass('block-opt-refresh')
+                    $blockContent.addClass('hidden')
                     $projectsContainer.html('')
 
                     $.ajax({
@@ -41,6 +47,7 @@
                         },
                         complete: function () {
                             $blockContainer.removeClass('block-opt-refresh')
+                            $blockContent.removeClass('hidden')
                         },
                         success: function (response) {
                             if (response && response.success && response.data) {
@@ -80,51 +87,73 @@
 
 {% block content %}
     <div class="content">
-        <div class="row text-uppercase">
+        <div class="row">
             <div class="col-xs-6 col-sm-3">
-                <div class="block block-rounded">
-                    <div class="block-content block-content-full">
-                        <div class="font-s12 font-w700">
-                            Envoyés
-                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets en statut &quot;Demande complète&quot; ou plus"></span>
-                        </div>
-                        <div class="h2 font-w300 text-primary">
-                            <div class="pull-right">{{ kpi.sentAmount|localizednumber }}&nbsp;€</div>
-                            <div>{{ kpi.sentCount|localizednumber }}</div>
+                <div class="block">
+                    <div class="block-header">
+                        <ul class="block-options">
+                            <li>
+                                <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets en statut &quot;Demande complète&quot; ou plus"></span>
+                            </li>
+                        </ul>
+                        <h3 class="block-title">Envoyés</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <div class="row pull-t items-push">
+                            <div class="col-xs-6 border-r">
+                                <div class="h3 text-primary">{{ kpi.sentCount|localizednumber }}</div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="h3 text-primary">{{ kpi.sentAmount|localizednumber }}&nbsp;€</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-xs-6 col-sm-3">
-                <div class="block block-rounded">
-                    <div class="block-content block-content-full">
-                        <div class="font-s12 font-w700">Fonds débloqués</div>
-                        <div class="h2 font-w300 text-primary">
-                            <div class="pull-right">{{ kpi.repaymentAmount|localizednumber }}&nbsp;€</div>
-                            <div>{{ kpi.repaymentCount|localizednumber }}</div>
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Fonds débloqués</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <div class="row pull-t items-push">
+                            <div class="col-xs-6 border-r">
+                                <div class="h3 text-primary">{{ kpi.repaymentCount|localizednumber }}</div>
+                            </div>
+                            <div class="col-xs-6">
+                                <div class="h3 text-primary">{{ kpi.repaymentAmount|localizednumber }}&nbsp;€</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-xs-6 col-sm-3">
-                <div class="block block-rounded">
-                    <div class="block-content block-content-full">
-                        <div class="font-s12 font-w700">
-                            Problèmes
-                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets déjà passés en statut &quot;Problème&quot; ou &quot;Défaut&quot;"></span>
-                        </div>
-                        <span class="h2 font-w300 text-primary">{{ kpi.problemRate|localizednumber }}&nbsp;%</span>
+                <div class="block">
+                    <div class="block-header">
+                        <ul class="block-options">
+                            <li>
+                                <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets déjà passés en statut &quot;Problème&quot; ou &quot;Défaut&quot;"></span>
+                            </li>
+                        </ul>
+                        <h3 class="block-title">Problèmes</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ kpi.problemRate|localizednumber }}&nbsp;%</p>
                     </div>
                 </div>
             </div>
             <div class="col-xs-6 col-sm-3">
-                <div class="block block-rounded">
-                    <div class="block-content block-content-full">
-                        <div class="font-s12 font-w700">
-                            Rejets
-                            <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets non éligibles ou rejetés. Ne contient pas les abandons."></span>
-                        </div>
-                        <span class="h2 font-w300 text-primary">{{ kpi.rejectionRate|localizednumber }}&nbsp;%</span>
+                <div class="block">
+                    <div class="block-header">
+                        <ul class="block-options">
+                            <li>
+                                <span class="fa fa-question-circle-o font-s13" data-toggle="tooltip" title="Projets non éligibles ou rejetés. Ne contient pas les abandons."></span>
+                            </li>
+                        </ul>
+                        <h3 class="block-title">Rejets</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ kpi.rejectionRate|localizednumber }}&nbsp;%</p>
                     </div>
                 </div>
             </div>
@@ -137,7 +166,10 @@
                             <ul class="nav nav-pills nav-stacked push" data-toggle="tabs">
                                 {% for projectStatus in projectsCountSortedByStatus %}
                                     <li{% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %} class="active"{% endif %}>
-                                        <a href="#project-status-{{ projectStatus.status }}" data-project-status="{{ projectStatus.status }}"><span class="badge pull-right">{{ projectStatus.statusCount }}</span> {{ projectStatus.statusLabel }}</a>
+                                        <a href="#project-status-{{ projectStatus.status }}" data-project-status="{{ projectStatus.status }}">
+                                            <span class="badge pull-right">{{ projectStatus.statusCount }}</span>
+                                            <span class="project-status-label">{{ projectStatus.statusLabel }}</span>
+                                        </a>
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -146,15 +178,19 @@
                 </div>
                 <div class="col-lg-9">
                     <div class="block">
-                        <div class="block-content tab-content">
+                        <div class="block-header{% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is not defined %} hidden{% endif %}">
+                            <h3 class="block-title">
+                                {% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is defined %}Traitement commercial{% endif %}
+                            </h3>
+                        </div>
+                        <div class="block-content tab-content pull-t">
                             {% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is not defined %}
                                 <div role="tabpanel" class="tab-pane active">
-                                    <div class="font-w300 push-15">Cliquez sur un statut pour voir la liste des projets correspondant</div>
+                                    <div class="push-15">Cliquez sur un statut pour voir la liste des projets correspondant</div>
                                 </div>
                             {% endif %}
                             {% for projectStatus in projectsCountSortedByStatus %}
                                 <div role="tabpanel" class="tab-pane{% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %} loaded active{% endif %}" id="project-status-{{ projectStatus.status }}">
-                                    <h4 class="font-w300 push-15">{{ projectStatus.statusLabel }}</h4>
                                     <div class="projects-list">
                                         {% if projectStatus.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW') %}
                                             {% include 'partenaires/projects_list.html.twig' %}

@@ -467,7 +467,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
-        <service id="unilend.service.project_status_notification_sender" class="Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender">
+        <service id="unilend.service.project_status_notification_sender" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>

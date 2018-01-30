@@ -257,8 +257,8 @@ class emprunteursController extends bootstrap
         if (in_array($company->getIdStatus()->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
             $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $companyProjects    = $projectsRepository->findFundedButNotRepaidProjectsByCompany($company);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
-            $projectStatusNotificationSender = $this->get('unilend.service.project_status_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
+            $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
 
