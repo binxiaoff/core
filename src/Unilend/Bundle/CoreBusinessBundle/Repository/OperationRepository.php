@@ -887,26 +887,27 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalDebtCollectionRepaymentByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
-                  FROM operation o
-                  INNER JOIN operation_sub_type ost ON o.id_sub_type = ost.id
-                  INNER JOIN projects p ON o.id_project = p.id_project
-                  INNER JOIN companies c ON p.id_company = c.id_company
-                  INNER JOIN company_status cs ON cs.id = c.id_status
-                  WHERE ost.label = :capital_repayment_debt_collection
-                  AND IF (
-                      p.status = :statusLoss
-                      OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
-                      OR (p.status = :statusProblem AND cs.label = :inBonis
-                        AND DATEDIFF(NOW(), (
-                        SELECT psh2.added
-                        FROM projects_status_history psh2
-                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = :statusProblem
-                              AND psh2.id_project = o.id_project
-                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
-                  GROUP BY cohort';
+        $query = '
+            SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
+            FROM operation o
+            INNER JOIN operation_sub_type ost ON o.id_sub_type = ost.id
+            INNER JOIN projects p ON o.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
+            WHERE ost.label = :capital_repayment_debt_collection
+            AND IF (
+                p.status = :statusLoss
+                OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
+                OR (p.status = :statusProblem AND cs.label = :inBonis
+                  AND DATEDIFF(NOW(), (
+                  SELECT psh2.added
+                  FROM projects_status_history psh2
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE ps2.status = :statusProblem
+                        AND psh2.id_project = o.id_project
+                  ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                  LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
+            GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()
             ->executeQuery(
@@ -936,26 +937,27 @@ class OperationRepository extends EntityRepository
      */
     public function getTotalDebtCollectionLenderCommissionByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
-                  FROM operation o
-                  INNER JOIN operation_type ot ON o.id_type = ot.id
-                  INNER JOIN projects p ON o.id_project = p.id_project
-                  INNER JOIN companies c ON p.id_company = c.id_company
-                  INNER JOIN company_status cs ON cs.id = c.id_status
-                  WHERE ot.label = :collection_commission_lender
-                  AND IF (
-                      p.status = :statusLoss
-                      OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
-                      OR (p.status = :statusProblem
-                          AND DATEDIFF(NOW(), (
-                        SELECT psh2.added
-                        FROM projects_status_history psh2
-                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = :statusProblem
-                              AND psh2.id_project = o.id_project
-                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
-                  GROUP BY cohort';
+        $query = '
+            SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
+            FROM operation o
+            INNER JOIN operation_type ot ON o.id_type = ot.id
+            INNER JOIN projects p ON o.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
+            WHERE ot.label = :collection_commission_lender
+            AND IF (
+                p.status = :statusLoss
+                OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
+                OR (p.status = :statusProblem
+                    AND DATEDIFF(NOW(), (
+                  SELECT psh2.added
+                  FROM projects_status_history psh2
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE ps2.status = :statusProblem
+                        AND psh2.id_project = o.id_project
+                  ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                  LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
+            GROUP BY cohort';
 
         $statement = $this->getEntityManager()->getConnection()
             ->executeQuery(
