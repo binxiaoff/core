@@ -1,3 +1,19 @@
+<link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="<?= $this->lurl ?>/oneui/js/pages/upcomingCloseOutNetting.js"></script>
+<style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
 <script>
     $(function() {
         $('[data-toggle="tooltip"]').tooltip({
@@ -98,6 +114,22 @@
 
 </style>
 <div id="contenu">
+    <?php if ($this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)) : ?>
+        <h1>Projets à déchoir</h1>
+        <div class="projects">
+            <table id="projects-to-decline" class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Projet</th>
+                    <th>Société</th>
+                    <th>Écart DDT</th>
+                    <th>Date de funding</th>
+                    <th>Projets de la même société</th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    <?php endif; ?>
     <h1>Mes projets (<?= $this->userProjects['count'] ?>)</h1>
     <div id="user-projects">
         <?php $this->templateProjects = $this->userProjects; ?>

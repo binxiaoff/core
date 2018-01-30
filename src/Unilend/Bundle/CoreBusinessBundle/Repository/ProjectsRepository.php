@@ -13,6 +13,8 @@ use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
+use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager;
 use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
@@ -1375,5 +1377,90 @@ class ProjectsRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param int $numberOfDays
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getProjectsWithUpcomingCloseOutNettingDate(int $numberOfDays) : array
+    {
+        $query     = '
+            SELECT
+              e.id_project,
+              MAX(date_echeance)           AS last_repayment_date,
+              funding_status_history.added AS funding_date
+            FROM echeanciers e
+              INNER JOIN projects p ON p.id_project = e.id_project
+              INNER JOIN companies c ON p.id_company = c.id_company
+              INNER JOIN company_status cs ON c.id_status = cs.id
+              INNER JOIN (
+                 SELECT
+                   psh.id_project,
+                   MIN(psh.added) AS added
+                 FROM projects_status_history psh
+                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                 WHERE ps.status = :statusFunding
+                 GROUP BY psh.id_project
+               ) funding_status_history ON e.id_project = funding_status_history.id_project
+            WHERE
+              e.status = :repaid
+              AND p.status IN (:projectStatus)
+              AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = :emptyDate)
+              AND cs.label IN (:companyStatus)
+            GROUP BY e.id_project
+            HAVING (DATE(funding_date) < :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberFirstGeneration) OR
+                   (DATE(funding_date) >= :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberSecondGeneration)
+        ';
+        $params    = [
+            'statusFunding'              => ProjectsStatus::EN_FUNDING,
+            'repaid'                     => Echeanciers::STATUS_REPAID,
+            'projectStatus'              => [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME],
+            'emptyDate'                  => '0000-00-00',
+            'companyStatus'              => [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
+            'fundingChangeDate'          => DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE,
+            'daysNumberFirstGeneration'  => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS - $numberOfDays,
+            'daysNumberSecondGeneration' => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_SECOND_GENERATION_LOANS - $numberOfDays
+        ];
+        $types     = [
+            'statusFunding'              => PDO::PARAM_INT,
+            'repaid'                     => PDO::PARAM_INT,
+            'projectStatus'              => Connection::PARAM_INT_ARRAY,
+            'emptyDate'                  => PDO::PARAM_STR,
+            'companyStatus'              => Connection::PARAM_STR_ARRAY,
+            'fundingChangeDate'          => PDO::PARAM_STR,
+            'daysNumberFirstGeneration'  => PDO::PARAM_INT,
+            'daysNumberSecondGeneration' => PDO::PARAM_INT
+        ];
+        $statement = $this->getEntityManager()
+            ->getConnection()
+            ->executeCacheQuery($query, $params, $types, new QueryCacheProfile(CacheKeys::HALF_DAY, md5(__METHOD__)));
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $statement->closeCursor();
+
+        return $result;
+    }
+
+    /**
+     * @param int    $project
+     * @param string $siren
+     *
+     * @return array
+     */
+    public function getFundedProjectsBelongingToTheSameCompany(int $project, string $siren) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->where('c.siren = :siren')
+            ->andWhere('p.idProject != :project')
+            ->andWhere('p.status IN (:projectStatus)')
+            ->setParameter('siren', $siren)
+            ->setParameter('project', $project)
+            ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
+
+        return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
     }
 }
