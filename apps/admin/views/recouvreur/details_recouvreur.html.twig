@@ -69,6 +69,7 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Opération</th>
+                                <th>ID projet</th>
                                 <th class="text-right">Montant débité</th>
                                 <th class="text-right">Montant crédité</th>
                             </tr>
@@ -78,6 +79,7 @@
                                 <tr>
                                     <td>{{ operation.date|localizeddate('short', 'none') }}</td>
                                     <td>{{ ('debt-collector-operation_' ~ operation.label)|trans }}</td>
+                                    <td>{{ operation.idProject }}</td>
                                     <td class="text-right text-primary">{{ operation.amount > 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
                                     <td class="text-right">{{ operation.amount < 0 ? '' : operation.amount|localizedcurrency('EUR') }}</td>
                                 </tr>
@@ -101,6 +103,7 @@
                             <thead>
                             <tr>
                                 <th>ID Reception</th>
+                                <th>ID Projet</th>
                                 <th>Date du remboursement</th>
                                 <th class="text-right">Montant des honoraires</th>
                                 <th>Détails honoraires</th>
@@ -110,6 +113,7 @@
                             {% for repaymentFee in repaymentFees %}
                                 <tr>
                                     <td>{{ repaymentFee.idWireTransferIn }}</td>
+                                    <td>{{ repaymentFee.idProject }}</td>
                                     <td>{{ repaymentFee.added|localizeddate('short', 'none') }}</td>
                                     <td class="text-right">{{ repaymentFee.amount|localizedcurrency('EUR') }}</td>
                                     <td>
