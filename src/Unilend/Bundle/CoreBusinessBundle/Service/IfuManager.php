@@ -11,6 +11,8 @@ class IfuManager
     const FILE_NAME_INFOSBEN    = 'INFOSBEN.csv';
     const FILE_NAME_INCOME      = 'REVENUS.csv';
 
+    const LOSS_PROJECT_IDS = [2017 => [32108, 28957]];
+
     /** @var EntityManager */
     private $entityManager;
 
@@ -32,7 +34,7 @@ class IfuManager
      *
      * @return array
      */
-    public function getWallets($year)
+    public function getWallets(int $year) : array
     {
         $walletsWithMovements = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getLenderWalletsWithOperationsInYear([
             OperationType::LENDER_LOAN,
@@ -40,7 +42,9 @@ class IfuManager
             OperationType::GROSS_INTEREST_REPAYMENT
         ], $year);
 
-        return $walletsWithMovements;
+        $walletsWithMovements = array_merge($walletsWithMovements, $this->getWalletsHavingLoss($year));
+
+        return array_unique($walletsWithMovements, SORT_REGULAR);
     }
 
     /**
@@ -70,5 +74,22 @@ class IfuManager
         }
 
         return $year;
+    }
+
+    /**
+     * @param int $year
+     *
+     * @return array
+     */
+    private function getWalletsHavingLoss(int $year) : array
+    {
+        $projects = empty(self::LOSS_PROJECT_IDS[$year]) ? [] : self::LOSS_PROJECT_IDS[$year];
+        $wallets  = [];
+
+        if ($projects) {
+            $wallets = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getLenderWalletsByProjects(self::LOSS_PROJECT_IDS[$year]);
+        }
+
+        return $wallets;
     }
 }

@@ -69,7 +69,7 @@ EOF
                 14378,
                 '',
                 $wallet->getIdClient()->getIdClient(),
-                4,
+                3,
                 6,
                 'P'
             ];
