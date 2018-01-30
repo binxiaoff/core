@@ -40,14 +40,22 @@ class LoanManager
 
     /**
      * @param array              $acceptedBids
-     * @param float              $loanAmount
-     * @param float              $rate
      * @param UnderlyingContract $contract
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function create(array $acceptedBids, float $loanAmount, float $rate, UnderlyingContract $contract)
+    public function create(array $acceptedBids, UnderlyingContract $contract)
     {
+        $loanAmount = 0;
+        $interests  = 0;
+
+        foreach ($acceptedBids as $acceptedBid) {
+            $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $acceptedBid->getAmount(), 4), 4), 2);
+            $loanAmount += $acceptedBid->getAmount();
+        }
+
+        $rate = round(bcdiv($interests, $loanAmount, 4), 2);
+
         $loan = new Loans();
         $loan
             ->setIdLender($acceptedBids[0]->getIdBid()->getIdLenderAccount())

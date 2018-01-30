@@ -338,9 +338,11 @@ class BidManager
                     $iBidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
                     $iBidOrder ++;
                     $newBid = clone $bid;
-                    $newBid->setOrdre($iBidOrder)
-                           ->setRate($currentRate)
-                           ->setStatus(Bids::STATUS_PENDING);
+                    $newBid
+                        ->setOrdre($iBidOrder)
+                        ->setRate($currentRate)
+                        ->setStatus(Bids::STATUS_PENDING)
+                        ->setAdded(new \DateTime('NOW'));
                     $this->entityManager->persist($newBid);
                     $bid->setStatus(Bids::STATUS_REJECTED);
                     $this->entityManager->flush($newBid);

@@ -400,12 +400,12 @@ class ProjectLifecycleManager
             if ($bid) {
                 if ($bidBalance < $project->amount) {
                     $bidAmount      = round(bcdiv($bid->getAmount(), 100, 4), 2);
-                    $bidBalance     = round(bcadd($bidBalance, $bidAmount, 2));
+                    $bidBalance     = round(bcadd($bidBalance, $bidAmount, 4), 2);
                     $acceptedAmount = null;
 
                     if ($bidBalance > $project->amount) {
-                        $cutAmount      = $bidBalance - $project->amount;
-                        $acceptedAmount = bcmul(bcsub($bidAmount, $cutAmount, 2), 100);
+                        $cutAmount      = round(bcsub($bidBalance, $project->amount, 4), 2);
+                        $acceptedAmount = round(bcmul(bcsub($bidAmount, $cutAmount, 4), 100));
                     }
                     $this->bidManager->accept($bid, $acceptedAmount);
 
@@ -463,45 +463,49 @@ class ProjectLifecycleManager
 
         $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
         /** @var Wallet $wallet */
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLenderWithAcceptedBidsByProject($project->id_project) as $wallet) {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project->id_project) as $wallet) {
             $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
             $loansLenderSum = 0;
-            $interests      = 0;
             $isIfpContract  = true;
             $ifpBids        = [];
 
             /** @var AcceptedBids $acceptedBid */
             foreach ($acceptedBids as $acceptedBid) {
                 if (false === $wallet->getIdClient()->isNaturalPerson()) {
-                    $this->loanManager->create($acceptedBids, $acceptedBid->getAmount(), $acceptedBid->getIdBid()->getRate(), $additionalContract);
+                    $this->loanManager->create([$acceptedBid], $additionalContract);
                     continue;
                 }
 
                 $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
                 if (true === $isIfpContract && bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
-                    $interests      = bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $bidAmount, 2), 2);
                     $loansLenderSum += $bidAmount;
                     $ifpBids[]      = $acceptedBid;
                     continue;
                 }
 
-                // Greater than IFP max amount ? create additional contract loan, split it if needed.
-                $isIfpContract = false;
-                $notIfpAmount  = bcsub(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2);
+                // Greater than IFP max amount ? create additional contract loan, split it if needed. Duplicate accepted bid, as there are two loans for one accepted bid
+                $isIfpContract     = false;
+                $notIfpAmount      = bcsub(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2);
 
-                $this->loanManager->create([$acceptedBid], $notIfpAmount * 100, $acceptedBid->getIdBid()->getRate(), $additionalContract);
+                $clonedAcceptedBid = clone $acceptedBid;
+                $clonedAcceptedBid->setAmount(bcmul($notIfpAmount, 100));
+                $this->entityManager->persist($clonedAcceptedBid);
+                $this->entityManager->flush($clonedAcceptedBid);
+
+                $this->loanManager->create([$clonedAcceptedBid], $additionalContract);
 
                 $remainingAmount = bcsub($bidAmount, $notIfpAmount, 2);
                 if (0 < $remainingAmount) {
-                    $interests = bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $remainingAmount, 2), 2);
+                    $acceptedBid->setAmount(bcmul($remainingAmount, 100));
+                    $this->entityManager->flush($acceptedBid);
                     $ifpBids[] = $acceptedBid;
                 }
+
                 $loansLenderSum = $IFPLoanAmountMax;
             }
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
-                $rate = round(bcdiv($interests, $loansLenderSum, 4), 2);
-                $this->loanManager->create($ifpBids, $loansLenderSum * 100, $rate, $ifpContract);
+                $this->loanManager->create($ifpBids, $ifpContract);
             }
         }
     }
@@ -519,25 +523,13 @@ class ProjectLifecycleManager
         }
 
         $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLenderWithAcceptedBidsByProject($project->id_project);
+        $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project->id_project);
 
         /** @var Wallet $wallet */
         foreach ($lenderWallets as $wallet) {
-            $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
-            $loansLenderSum = 0;
-            $interests      = 0;
-            $ifpBids        = [];
+            $acceptedBids = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
 
-            /** @var AcceptedBids $acceptedBid */
-            foreach ($acceptedBids as $acceptedBid) {
-                $bidAmount      = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
-                $interests      = bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $bidAmount, 2), 2);
-                $loansLenderSum = bcadd($loansLenderSum, $bidAmount, 2);
-                $ifpBids[]      = $acceptedBid;
-            }
-
-            $rate = round(bcdiv($interests, $loansLenderSum, 4), 2);
-            $this->loanManager->create($ifpBids, $loansLenderSum * 100, $rate, $ifpContract);
+            $this->loanManager->create($acceptedBids, $ifpContract);
         }
     }
 

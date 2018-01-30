@@ -274,7 +274,7 @@ class WalletRepository extends EntityRepository
      *
      * @return array
      */
-    public function findLenderWithAcceptedBidsByProject(int $projectId): array
+    public function findLendersWithAcceptedBidsByProject(int $projectId) : array
     {
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder

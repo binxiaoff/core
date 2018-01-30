@@ -24,6 +24,7 @@ class AcceptedBidsRepository extends EntityRepository
             ->where('b.idLenderAccount = :wallet')
             ->andWhere('b.idProject = :project')
             ->orderBy('b.rate', 'DESC')
+            ->orderBy('b.amount', 'ASC')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project);
 
