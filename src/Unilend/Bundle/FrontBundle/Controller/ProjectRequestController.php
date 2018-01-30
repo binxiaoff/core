@@ -170,7 +170,7 @@ class ProjectRequestController extends Controller
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email)) {
+        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email, Clients::STATUS_ONLINE)) {
             $email .= '-' . time();
         }
 

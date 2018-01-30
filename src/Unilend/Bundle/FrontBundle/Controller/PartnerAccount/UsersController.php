@@ -59,7 +59,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function userFormAction(Request $request)
+    public function userFormAction(Request $request) : Response
     {
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -97,9 +97,14 @@ class UsersController extends Controller
                     $entityManager->flush();
                     break;
                 case 'activate':
-                    $client->setStatus(Clients::STATUS_ONLINE);
-                    $entityManager->persist($client);
-                    $entityManager->flush();
+                    $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
+                    if (empty($duplicates)) {
+                        $client->setStatus(Clients::STATUS_ONLINE);
+                        $entityManager->persist($client);
+                        $entityManager->flush();
+                    } else {
+                        $this->addFlash('partnerUserError', $this->get('translator')->trans('partner-users_duplicate-online-user-error-message'));
+                    }
                     break;
             }
         }
@@ -255,7 +260,7 @@ class UsersController extends Controller
         } else {
             $client = $temporaryLinks->getIdClient();
 
-            if (null === $client || false === $client->isPartner()) {
+            if (null === $client || false === $client->isPartner() || Clients::STATUS_ONLINE !== $client->getStatus()) {
                 return $this->redirectToRoute('home');
             }
 
@@ -300,7 +305,6 @@ class UsersController extends Controller
                     $client->setPassword($password);
                     $client->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING));
                     $client->setSecreteReponse(md5($formData['answer']));
-                    $client->setStatus(Clients::STATUS_ONLINE);
 
                     $entityManager->persist($client);
 

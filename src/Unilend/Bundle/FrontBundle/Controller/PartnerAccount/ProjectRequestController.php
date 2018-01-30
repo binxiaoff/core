@@ -497,7 +497,7 @@ class ProjectRequestController extends Controller
         }
         if (isset($request->request->get('contact')['email'])) {
             $email = $request->request->get('contact')['email'];
-            if ($clientRepository->existEmail($email)) {
+            if ($clientRepository->existEmail($email, Clients::STATUS_ONLINE)) {
                 if ($this->removeEmailSuffix($client->getEmail()) === $email) {
                     $email = $client->getEmail();
                 } else {

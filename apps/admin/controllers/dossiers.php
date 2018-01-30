@@ -2090,41 +2090,47 @@ class dossiersController extends bootstrap
         }
     }
 
-    private function getEmailVarCompletude($oProjects, $oClients, $oCompanies)
+    /**
+     * @param \projects  $project
+     * @param \clients   $client
+     * @param \companies $company
+     *
+     * @return array
+     */
+    private function getEmailVarCompletude(\projects $project, \clients $client, \companies $company) : array
     {
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        /** @var \settings $settings */
+        $settings = $this->loadData('settings');
 
-        $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings->value;
+        $settings->get('Facebook', 'type');
+        $facebookLink = $settings->value;
 
-        $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings->value;
+        $settings->get('Twitter', 'type');
+        $twitterLink = $settings->value;
 
-        $oSettings->get('Adresse emprunteur', 'type');
-        $sBorrowerEmail = $oSettings->value;
+        $settings->get('Adresse emprunteur', 'type');
+        $borrowerEmail = $settings->value;
 
-        $oSettings->get('Téléphone emprunteur', 'type');
-        $sBorrowerPhoneNumber = $oSettings->value;
+        $settings->get('Téléphone emprunteur', 'type');
+        $borrowerPhoneNumber = $settings->value;
 
         /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
 
-        return array(
+        return [
+            'prenom'                 => $client->prenom,
+            'raison_sociale'         => $company->name,
+            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][$project->id_project]) ? $_SESSION['project_submission_files_list'][$project->id_project] : '',
+            'lien_reprise_dossier'   => $this->furl . '/depot_de_dossier/fichiers/' . $project->hash,
+            'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $project->hash,
+            'link_compte_emprunteur' => $this->surl . '/espace-emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+            'adresse_emprunteur'     => $borrowerEmail,
+            'telephone_emprunteur'   => $borrowerPhoneNumber,
             'furl'                   => $this->furl,
             'surl'                   => $this->surl,
-            'adresse_emprunteur'     => $sBorrowerEmail,
-            'telephone_emprunteur'   => $sBorrowerPhoneNumber,
-            'prenom'                 => $oClients->prenom,
-            'raison_sociale'         => $oCompanies->name,
-            'lien_reprise_dossier'   => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
-            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? $_SESSION['project_submission_files_list'][$oProjects->id_project] : '',
-            'lien_fb'                => $lien_fb,
-            'lien_tw'                => $lien_tw,
-            'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
-            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client,
-                    \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG)
-        );
+            'lien_fb'                => $facebookLink,
+            'lien_tw'                => $twitterLink,
+        ];
     }
 
     private function selectEmailCompleteness($iClientId)

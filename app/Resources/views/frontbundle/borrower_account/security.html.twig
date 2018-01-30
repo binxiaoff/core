@@ -18,7 +18,7 @@
                 <article class="dashboard-tab-pane tab-pane">
                     <div class="panel">
                         <header class="panel-header">
-                            <h3>{{ 'borrower-profile_security-title'|trans }}</h3>
+                            <h3>{% trans %} borrower-profile_security-title {% endtrans %}</h3>
                         </header>
 
                         <div class="panel-content">
@@ -35,37 +35,43 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
-                            <form action="" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
-                                <div class="row row-multi-col">
-                                    <div class="col-lg-6 col-md-6 col-sm-4">
-                                        <div class="form-field">
-                                            <label for="borrower_security_password">{% trans %}common_password{% endtrans %}<span class="field-required">*</span></label>
-                                            <input type="password" name="borrower_security[password]" id="borrower_security_password" required="required" class="input-field">
+                            {% if expired %}
+                                <div class="message-error">
+                                    {% trans %} borrower-profile_security-link-expired {% endtrans %}
+                                </div>
+                            {% elseif displayForm %}
+                                <form action="{{ path('borrower_account_security', {'securityToken': securityToken}) }}" method="post">
+                                    <div class="row row-multi-col">
+                                        <div class="col-lg-6 col-md-6 col-sm-4">
+                                            <div class="form-field">
+                                                <label for="borrower_security_password">{% trans %} common_password {% endtrans %}<span class="field-required">*</span></label>
+                                                <input type="password" name="borrower_security[password]" id="borrower_security_password" required="required" class="input-field">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-4">
+                                            <div class="form-field">
+                                                <label for="borrower_security_repeated-password">{% trans %} common_password-confirmation {% endtrans %}<span class="field-required">*</span></label>
+                                                <input type="password" name="borrower_security[repeated_password]" id="borrower_security_repeated-password" required="required" class="input-field">
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6 col-md-6 col-sm-4">
+                                    <div class="row">
                                         <div class="form-field">
-                                            <label for="borrower_security_repeated-password">{% trans %}common_password-confirmation{% endtrans %}<span class="field-required">*</span></label>
-                                            <input type="password" name="borrower_security[repeated_password]" id="borrower_security_repeated-password" required="required" class="input-field">
+                                            <label for="borrower_security_question">{% trans %} common_security-question {% endtrans %}<span class="field-required">*</span></label>
+                                            <input type="text" name="borrower_security[question]" id="borrower_security_question" required="required" class="input-field">
                                         </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="form-field">
-                                        <label for="borrower_security_question">{% trans %}common_security-question{% endtrans %}<span class="field-required">*</span></label>
-                                        <input type="text" name="borrower_security[question]" id="borrower_security_question" required="required" class="input-field">
+                                    <div class="row">
+                                        <div class="form-field">
+                                            <label for="borrower_security_answer">{% trans %} common_security-answer {% endtrans %}<span class="field-required">*</span></label>
+                                            <input type="text" name="borrower_security[answer]" id="borrower_security_answer" required="required" class="input-field">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <div class="form-field">
-                                        <label for="borrower_security_answer">{% trans %}common_security-answer{% endtrans %}<span class="field-required">*</span></label>
-                                        <input type="text" name="borrower_security[answer]" id="borrower_security_answer" required="required" class="input-field">
+                                    <div class="row">
+                                        <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{% trans %} borrower-profile_security-submit-button {% endtrans %}</button>
                                     </div>
-                                </div>
-                                <div class="row">
-                                    <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{{ 'borrower-profile_security-submit-button'|trans }}</button>
-                                </div>
-                            </form>
+                                </form>
+                            {% endif %}
                         </div><!-- /.panel-content -->
                     </div><!-- /.panel -->
                 </article><!-- /.dashboard-tab-pane -->
