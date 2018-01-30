@@ -722,14 +722,16 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $lenderWithdraw                  = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
             $unilendWithdraw                 = empty($line[OperationType::UNILEND_WITHDRAW]) ? 0 : $line[OperationType::UNILEND_WITHDRAW];
             $debtCollectorWithdraw           = empty($line[OperationType::DEBT_COLLECTOR_WITHDRAW]) ? 0 : $line[OperationType::DEBT_COLLECTOR_WITHDRAW];
-            $borrowerWithdraw                = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
+            $borrowerWithdrawProject         = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
+            $borrowerWithdrawOther           = empty($line[OperationSubType::BORROWER_WITHDRAW_OWN_MONEY]) ? 0 : $line[OperationSubType::BORROWER_WITHDRAW_OWN_MONEY];
+            $borrowerWithdraw                = round(bcadd($borrowerWithdrawProject, $borrowerWithdrawOther, 4), 2);
             $totalWithdraw                   = round(bcadd(bcadd(bcadd(bcadd($totalTaxWithdraw, $lenderWithdraw, 7), $unilendWithdraw, 7), $debtCollectorWithdraw, 7), $borrowerWithdraw, 7), 2);
             $activeSheet->setCellValueExplicit(self::TAX_WITHDRAW_COLUMN_NEW . $row, $totalTaxWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::LENDER_WITHDRAW_COLUMN . $row, $lenderWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::UNILEND_WITHDRAW_COLUMN . $row, $unilendWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_WITHDRAW_COLUMN . $row, $debtCollectorWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $row, $borrowerWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_OTHER_COLUMN . $row, 0, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_FUNDS_COLUMN . $row, $borrowerWithdrawProject, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+            $activeSheet->setCellValueExplicit(self::BORROWER_WITHDRAW_OTHER_COLUMN . $row, $borrowerWithdrawOther, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit(self::TOTAL_OUTGOING_COLUMN . $row, $totalWithdraw, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $totalMovements = round(bcsub($totalProvision, $totalWithdraw, 4), 2);

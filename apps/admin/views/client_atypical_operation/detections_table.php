@@ -26,9 +26,13 @@
         <tr id="row-<?= $atypicalOperation->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
             <td >
                 <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $currentStatus->getVigilanceStatus() ?>">
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $atypicalOperation->getClient()->getIdClient() ?>">
+                    <?php if (false === empty($this->hideEditLink)) : ?>
                         <?= $atypicalOperation->getClient()->getIdClient() ?>
-                    </a>
+                    <?php else : ?>
+                        <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $atypicalOperation->getClient()->getIdClient() ?>">
+                            <?= $atypicalOperation->getClient()->getIdClient() ?>
+                        </a>
+                    <?php endif; ?>
                 </span>
             </td>
             <td><?= $atypicalOperation->getClient()->getPrenom() . ' ' . $atypicalOperation->getClient()->getNom() ?></td>

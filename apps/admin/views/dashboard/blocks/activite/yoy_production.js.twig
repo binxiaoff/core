@@ -1,0 +1,64 @@
+Highcharts.chart('yoy-production', {
+    chart: {
+        zoomType: 'xy'
+    },
+    title: {
+        text: 'Émission (12 mois glissante vs la même période N-1)'
+    },
+    subtitle: {
+        text: 'k€ & en nombre de projets'
+    },
+    xAxis: [{
+        categories: [{% for index, month in twelveMonths %} {% if not loop.first %},{% endif %} '{{ month }}<br>{{ twelveMonthsLastYear[index] }}' {% endfor %}],
+        crosshair: true
+    }],
+    yAxis: [{ // Primary yAxis
+        title: {
+            text: 'Montant en k€'
+        },
+        labels: {
+            format: '{value} k€'
+        }
+    }, { // Secondary yAxis
+        title: {
+            text: 'Nombre'
+        },
+        opposite: true
+    }],
+    tooltip: {
+        shared: true
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'left',
+        x: 120,
+        verticalAlign: 'top',
+        y: 100,
+        floating: true
+    },
+    series: [{
+        name: 'Montant N-1',
+        type: 'spline',
+        data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
+        tooltip: {
+            valueSuffix: 'k€'
+        }
+    }, {
+        name: 'Montant N',
+        type: 'spline',
+        data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.amount / 1000 }} {% endfor %}],
+        tooltip: {
+            valueSuffix: 'k€'
+        }
+    }, {
+        name: 'Nombre N-1',
+        type: 'column',
+        yAxis: 1,
+        data: [{% for monthData in releasedProjectsLastYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]
+    },{
+        name: 'Nombre N',
+        type: 'column',
+        yAxis: 1,
+        data: [{% for monthData in releasedProjectsThisYear %} {% if not loop.first %},{% endif %} {{ monthData.number }} {% endfor %}]
+    }]
+});

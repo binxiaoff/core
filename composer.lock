@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "fd13986fc00d39129b602803256231fd",
+    "content-hash": "6a69c9c5c0658fcc3f43461bb8d849d5",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -3017,21 +3017,21 @@
         },
         {
             "name": "knplabs/knp-mailjet-bundle",
-            "version": "1.1.1",
+            "version": "v2.x-dev",
             "target-dir": "Knp/Bundle/MailjetBundle",
             "source": {
                 "type": "git",
-                "url": "https://github.com/KnpLabs/KnpMailjetBundle.git",
-                "reference": "971afc82e05f218604ccff10ea8baaf448f872a2"
+                "url": "https://github.com/ipecador/KnpMailjetBundle.git",
+                "reference": "e3e0a7199a995b35a4ab66afd6f47c25c3b6995f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/KnpMailjetBundle/zipball/971afc82e05f218604ccff10ea8baaf448f872a2",
-                "reference": "971afc82e05f218604ccff10ea8baaf448f872a2",
+                "url": "https://api.github.com/repos/ipecador/KnpMailjetBundle/zipball/e3e0a7199a995b35a4ab66afd6f47c25c3b6995f",
+                "reference": "e3e0a7199a995b35a4ab66afd6f47c25c3b6995f",
                 "shasum": ""
             },
             "require": {
-                "knplabs/mailjet-api-php": "1.*",
+                "knplabs/mailjet-api-php": "v2.x-dev",
                 "php": ">=5.3.8",
                 "symfony/framework-bundle": "~2.3|~3.0"
             },
@@ -3042,7 +3042,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1.x-dev"
+                    "dev-v2": "2.x-dev"
                 }
             },
             "autoload": {
@@ -3050,24 +3050,26 @@
                     "Knp\\Bundle\\MailjetBundle": ""
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
-                    "name": "KNPLabs Team",
+                    "name": "KnpLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
             "description": "Symfony2 Bundle for initializing Mailjet PHP API wrapper and handling Event API callbacks",
-            "homepage": "https://github.com/KnpLabs/KnpMailjetBundle",
+            "homepage": "https://github.com/ipecador/KnpMailjetBundle",
             "keywords": [
-                "Mailjet",
                 "api",
-                "bundle"
+                "bundle",
+                "mailjet"
             ],
-            "time": "2016-07-05T13:29:55+00:00"
+            "support": {
+                "source": "https://github.com/ipecador/KnpMailjetBundle/tree/v2"
+            },
+            "time": "2018-01-12T16:48:59+00:00"
         },
         {
             "name": "knplabs/knp-snappy",
@@ -3201,16 +3203,16 @@
         },
         {
             "name": "knplabs/mailjet-api-php",
-            "version": "1.1.2",
+            "version": "v2.x-dev",
             "source": {
                 "type": "git",
-                "url": "https://github.com/KnpLabs/mailjet-api-php.git",
-                "reference": "8e691d473774fe3696cc7a55da7333ed3ec0116d"
+                "url": "https://github.com/ipecador/mailjet-api-php.git",
+                "reference": "59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/mailjet-api-php/zipball/8e691d473774fe3696cc7a55da7333ed3ec0116d",
-                "reference": "8e691d473774fe3696cc7a55da7333ed3ec0116d",
+                "url": "https://api.github.com/repos/ipecador/mailjet-api-php/zipball/59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed",
+                "reference": "59f30d4971fbde7e0f097c594e3d3a1ccc1f69ed",
                 "shasum": ""
             },
             "require": {
@@ -3223,7 +3225,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1.x-dev"
+                    "dev-v2": "2.x-dev"
                 }
             },
             "autoload": {
@@ -3231,23 +3233,25 @@
                     "Mailjet\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
-                    "name": "KNPLabs Team",
+                    "name": "KnpLabs Team",
                     "homepage": "http://knplabs.com"
                 }
             ],
             "description": "Mailjet PHP API client",
             "homepage": "https://github.com/KnpLabs/mailjet-api-php",
             "keywords": [
-                "Mailjet",
-                "api"
+                "api",
+                "mailjet"
             ],
-            "time": "2015-01-31T04:50:35+00:00"
+            "support": {
+                "source": "https://github.com/ipecador/mailjet-api-php/tree/v2"
+            },
+            "time": "2018-01-15T14:06:37+00:00"
         },
         {
             "name": "mailjet/mailjet-apiv3-php",
@@ -5582,7 +5586,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "knplabs/mailjet-api-php": 20,
+        "knplabs/knp-mailjet-bundle": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

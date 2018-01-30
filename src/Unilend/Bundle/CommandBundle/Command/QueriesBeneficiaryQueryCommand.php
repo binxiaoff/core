@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
@@ -73,7 +73,6 @@ EOF
             'DépNaissance',
             'ComNaissance',
             'LieuNaissance',
-            'NomMari',
             'Siret',
             'AdISO',
             'Adresse',
@@ -82,18 +81,14 @@ EOF
             'Commune',
             'CodePostal',
             'Ville',
-            'IdFiscal',
             'PaysISO',
-            'Entité',
             'ToRS',
-            'Plib',
             'Tél',
             'Banque',
             'IBAN',
             'BIC',
             'EMAIL',
-            'Obs',
-            ''
+            'Obs'
         ];
 
         $fiscalAndLocationData = [];
@@ -119,7 +114,7 @@ EOF
                 $clientCountry                      = $countryRepository->find($fiscalAndLocationData['id_country']);
                 $fiscalAndLocationData['isoFiscal'] = $clientCountry->getIso();
 
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE  && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
+                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
                     $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
@@ -127,6 +122,8 @@ EOF
                     $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
                     $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
+                    // The tax rate is change in 2018. We need to use TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON instead.
+                    // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
                     $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
                     $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
                 } else {
@@ -199,13 +196,12 @@ EOF
             $wallet->getWireTransferPattern(),
             $client->getNom(),
             $client->getCivilite(),
-            $client->getNom(),
+            ($client->getCivilite() === Clients::TITLE_MISS) ? $client->getNom() : '',
             $client->getPrenom(),
             $client->getNaissance()->format('d/m/Y'),
             empty($client->getInseeBirth()) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($client->getInseeBirth(), 0, 2),
             empty($client->getInseeBirth()) ? $fiscalAndLocationData['inseeBirth'] : $client->getInseeBirth(),
             $fiscalAndLocationData['birthPlace'],
-            '',
             '',
             $fiscalAndLocationData['isoFiscal'],
             '',
@@ -214,11 +210,8 @@ EOF
             $fiscalAndLocationData['location'],//commune fiscal
             $fiscalAndLocationData['zip'],
             $fiscalAndLocationData['city'],
-            '',
             $fiscalAndLocationData['isoBirth'],
-            'X',
             $fiscalAndLocationData['deductedAtSource'],
-            'N',
             $client->getTelephone(),
             '',
             '',
@@ -250,7 +243,6 @@ EOF
             '',
             '',
             '',
-            '',
             $company->getSiret(),
             $fiscalAndLocationData['isoFiscal'],
             '',
@@ -259,11 +251,8 @@ EOF
             '',
             $company->getZip(),
             $company->getCity(),
-            '',
             $fiscalAndLocationData['isoFiscal'],
-            'X',
             '',
-            'N',
             $company->getPhone(),
             '',
             '',

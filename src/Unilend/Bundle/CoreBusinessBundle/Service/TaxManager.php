@@ -29,7 +29,7 @@ class TaxManager
         TaxType::TYPE_CRDS
     ];
 
-    const TAX_TYPE_FOREIGNER_LENDER    = [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+    const TAX_TYPE_FOREIGNER_LENDER    = [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON];
     const TAX_TYPE_LEGAL_ENTITY_LENDER = [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
 
     /**
@@ -106,7 +106,7 @@ class TaxManager
      */
     private function getLegalEntityLenderRepaymentInterestsTax($interestsGross)
     {
-        return $this->calculateTaxes($interestsGross, [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+        return $this->calculateTaxes($interestsGross, self::TAX_TYPE_LEGAL_ENTITY_LENDER);
     }
 
     /**
@@ -142,26 +142,13 @@ class TaxManager
             $taxExemption = $this->entityManagerSimulator->getRepository('lender_tax_exemption');
 
             if ($taxExemption->get($wallet->getId() . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
-                return $this->calculateTaxes($interestsGross, [
-                    TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-                    TaxType::TYPE_CRDS,
-                    TaxType::TYPE_CSG,
-                    TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
-                    TaxType::TYPE_SOCIAL_DEDUCTIONS
-                ]);
+                return $this->calculateTaxes($interestsGross, self::TAX_TYPE_EXEMPTED_LENDER);
             } else {
-                return $this->calculateTaxes($interestsGross, [
-                    TaxType::TYPE_STATUTORY_CONTRIBUTIONS,
-                    TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
-                    TaxType::TYPE_CRDS,
-                    TaxType::TYPE_CSG,
-                    TaxType::TYPE_SOLIDARITY_DEDUCTIONS,
-                    TaxType::TYPE_SOCIAL_DEDUCTIONS
-                ]);
+                return $this->calculateTaxes($interestsGross, self::TAX_TYPE_TAXABLE_LENDER);
             }
         } else {
             if ($underlyingContract instanceof UnderlyingContract && UnderlyingContract::CONTRACT_IFP !== $underlyingContract->getLabel()) {
-                return $this->calculateTaxes($interestsGross, [TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+                return $this->calculateTaxes($interestsGross, self::TAX_TYPE_FOREIGNER_LENDER);
             }
         }
 
