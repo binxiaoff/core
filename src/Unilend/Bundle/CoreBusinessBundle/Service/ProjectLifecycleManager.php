@@ -483,6 +483,11 @@ class ProjectLifecycleManager
                     continue;
                 }
 
+                if (false === $isIfpContract) {
+                    $this->loanManager->create([$acceptedBid], $additionalContract);
+                    continue;
+                }
+
                 // Greater than IFP max amount ? create additional contract loan, split it if needed. Duplicate accepted bid, as there are two loans for one accepted bid
                 $isIfpContract     = false;
                 $notIfpAmount      = bcsub(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2);

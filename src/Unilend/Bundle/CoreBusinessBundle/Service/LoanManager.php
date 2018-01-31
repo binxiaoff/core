@@ -54,7 +54,7 @@ class LoanManager
             $loanAmount += $acceptedBid->getAmount();
         }
 
-        $rate = round(bcdiv($interests, $loanAmount, 4), 2);
+        $rate = round(bcdiv($interests, $loanAmount, 4), 1);
 
         $loan = new Loans();
         $loan
