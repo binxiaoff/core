@@ -83,10 +83,8 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
         $remainingDueCapitalRunningRepayments = $operationRepository->getRemainingDueCapitalForProjects($endDate, array_column($projectsInRepayment, 'id_project'));
         $repaymentsInMonth                    = $repaymentRepository->findRepaidRepaymentsBetweenDates($startDate, $endDate);
         $sumRepaymentsInMonth                 = $repaymentRepository->getSumRepaidRepaymentsBetweenDates($startDate, $endDate);
-        $repaymentFinishedProjects            = $projectRepository->findProjectsHavingHadStatusBetweenDates([
-            ProjectsStatus::REMBOURSE,
-            ProjectsStatus::REMBOURSEMENT_ANTICIPE
-        ], $startDate, $endDate);
+        $repaidProjects                       = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSE, $startDate, $endDate);
+        $earlyRepaidProjects                  = $projectRepository->findProjectsHavingHadStatusBetweenDates(ProjectsStatus::REMBOURSEMENT_ANTICIPE, $startDate, $endDate);
         $rejectWireTransfersIn                = $wireTransferInRepository->getRejectedDirectDebitIndicatorsBetweenDates($startDate, $endDate);
         $regularizationWireTransfers          = $wireTransferInRepository->getBorrowerProvisionRegularizationIndicatorsBetweenDates($startDate, $endDate);
         $lateRepayments                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->getLateRepaymentIndicators($endDate);
@@ -145,8 +143,8 @@ class QueriesMonthlyReportingSfpmeiCommand extends ContainerAwareCommand
             29 => ['Montant restant dû des financements en cours' => $remainingDueCapitalRunningRepayments],
             31 => ['Nombre de remboursements mensuels des emprunteurs' => count($repaymentsInMonth)],
             32 => ['Montant de remboursements mensuels des emprunteurs' => $sumRepaymentsInMonth],
-            34 => ['Nombre de financements clos' => count($repaymentFinishedProjects)],
-            35 => ['Montant de financements clos' => array_sum(array_column($repaymentFinishedProjects, 'amount'))],
+            34 => ['Nombre de financements clos' => count($repaidProjects) + count($earlyRepaidProjects)],
+            35 => ['Montant de financements clos' => array_sum(array_column($repaidProjects, 'amount')) + array_sum(array_column($earlyRepaidProjects, 'amount'))],
             37 => ['Nombre de rejets de prélèvements emprunteurs' => $rejectWireTransfersIn['number']],
             38 => ['Montant des rejets de prélèvements emprunteurs' => $rejectWireTransfersIn['amount']],
             40 => ['Nombre de rejets régularisés' => $regularizationWireTransfers['number']],

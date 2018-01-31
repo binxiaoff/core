@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients AS ClientEntity;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients as ClientEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
@@ -138,22 +138,26 @@ class clients extends clients_crud
         }
     }
 
-    public function searchEmprunteurs($searchType, $nom, $prenom, $email = '', $societe = '', $siren = '')
+    public function searchEmprunteurs($searchType, $nom = '', $prenom = '', $email = '', $societe = '', $siren = '')
     {
-        $conditions = [
-            'c.nom LIKE "%' . $nom . '%"',
-            'c.prenom LIKE "%' . $prenom . '%"',
-        ];
+        $conditions = [];
 
-        if ($email != '') {
+        if (false === empty($nom)) {
+            $conditions[] = 'c.nom LIKE "%' . $nom . '%"';
+        }
+        if (false === empty($prenom)) {
+            $conditions[] = 'c.prenom LIKE "%' . $prenom . '%"';
+        }
+
+        if (false === empty($email)) {
             $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
 
-        if ($societe != '') {
+        if (false === empty($societe)) {
             $conditions[] = 'co.name LIKE "%' . $societe . '%"';
         }
 
-        if ($siren != '') {
+        if (false === empty($siren)) {
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
@@ -164,11 +168,11 @@ class clients extends clients_crud
                 co.*
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
-            WHERE ' . implode(' ' . $searchType . ' ', $conditions) . '
-                AND (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . '))
+            WHERE (c.type IS NULL OR c.type NOT IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER, ClientEntity::TYPE_LEGAL_ENTITY, ClientEntity::TYPE_LEGAL_ENTITY_FOREIGNER]) . '))
+             AND (' . implode(' ' . $searchType . ' ', $conditions) . ')
             GROUP BY c.id_client
             ORDER BY c.id_client DESC
-           LIMIT 100';
+            LIMIT 100';
 
         $resultat = $this->bdd->query($query);
 

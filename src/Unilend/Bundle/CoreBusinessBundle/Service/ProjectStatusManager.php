@@ -156,6 +156,18 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-company-incident');
             case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-previous-manager-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-other-companies');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-no-role-12-months-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-collective-proceeding-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-target-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-complainant-incident');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT:
+                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-missing-incident');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident':
@@ -352,7 +364,7 @@ class ProjectStatusManager
 
     /**
      * @param Projects $project
-     * @param Users    $userId
+     * @param Users    $user
      */
     private function abandonOlderProjects(Projects $project, Users $user)
     {
@@ -364,7 +376,7 @@ class ProjectStatusManager
         foreach ($previousProjects as $previousProject) {
             $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
             if (in_array($previousProjectEntity->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST])) {
-                $this->addProjectStatus($user, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'same_company_project_rejected');
+                $this->addProjectStatus($user, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'Un autre projet de la société a été rejeté');
             }
         }
     }

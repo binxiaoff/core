@@ -111,7 +111,7 @@ class projects_status_history extends projects_status_history_crud
             SELECT IFNULL(next_status.id_project_status_history, base_status.id_project_status_history) AS id_project_status_history,
                 IFNULL(ps.label, "none") AS label,
                 IFNULL(ps.status, "0") AS status,
-                IFNULL(DATEDIFF(next_status.added, base_status.added), "") AS diff_days,
+                IFNULL(DATEDIFF(next_status.added, base_status.added), 0) AS diff_days,
                 IFNULL(next_status.added, "") AS added
             FROM projects_status_history base_status
             LEFT JOIN projects_status_history next_status ON next_status.id_project_status_history = (SELECT id_project_status_history FROM projects_status_history WHERE id_project = base_status.id_project AND (added > base_status.added OR (added = base_status.added AND id_project_status_history > base_status.id_project_status_history)) AND id_project_status != base_status.id_project_status ORDER BY added ASC, id_project_status_history ASC LIMIT 1)

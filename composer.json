@@ -14,6 +14,16 @@
       "app/AppCache.php"
     ]
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/ipecador/KnpMailjetBundle.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/ipecador/mailjet-api-php.git"
+    }
+  ],
   "require": {
     "php": ">=7.1.11",
     "knplabs/knp-snappy-bundle": "^1.5",
@@ -37,7 +47,8 @@
     "sonata-project/seo-bundle": "^2.0",
     "ekino/newrelic-bundle": "^1.4",
     "sonata-project/cache-bundle": "^2.3",
-    "knplabs/knp-mailjet-bundle": "^1.1",
+    "knplabs/mailjet-api-php": "v2.x-dev",
+    "knplabs/knp-mailjet-bundle": "v2.x-dev",
     "cleentfaar/slack-bundle": "^0.20.1",
     "ramsey/uuid": "^3.7",
     "jbroadway/urlify": "^1.0",

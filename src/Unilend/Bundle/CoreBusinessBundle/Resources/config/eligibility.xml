@@ -12,6 +12,7 @@
         <service id="unilend.service.eligibility.company_validator" class="Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.external_data_manager"/>
+            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>

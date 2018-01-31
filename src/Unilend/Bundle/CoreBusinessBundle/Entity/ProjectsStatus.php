@@ -69,7 +69,15 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT           = 'infolegale_company_incident';
     const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT   = 'infolegale_current_manager_incident';
     const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
-    const UNEXPECTED_RESPONSE                                       = 'unexpected_response_from_';
+
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT            = 'infolegale_current_manager_other_companies_incident';
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT = 'infolegale_current_manager_depositor_no_role_12months_incident';
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT               = 'non_eligible_reason_infolegale_current_manager_depositor_cp_incident';
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT      = 'non_eligible_reason_infolegale_current_manager_depositor_role_target_incident';
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT = 'non_eligible_reason_infolegale_current_manager_depositor_role_complainant_incident';
+    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT     = 'non_eligible_reason_infolegale_current_manager_depositor_role_missing_incident';
+
+    const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
     const AFTER_REPAYMENT = [
         self::REMBOURSEMENT,

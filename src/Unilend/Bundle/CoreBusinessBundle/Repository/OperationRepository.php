@@ -749,6 +749,8 @@ class OperationRepository extends EntityRepository
                         "borrower_provision_cancel_wire_transfer_in",
                         "borrower_provision_cancel_other")
                       )
+                    WHEN "' . OperationType::BORROWER_WITHDRAW . '" THEN
+                      IF(o.id_sub_type IS NULL, ot.label, ost.label)
                  ELSE ot.label END AS movement
             FROM operation o USE INDEX (idx_operation_added)
             INNER JOIN operation_type ot ON o.id_type = ot.id

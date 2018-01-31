@@ -25,9 +25,8 @@ class SecurityController extends Controller
      */
     public function loginAction(Request $request)
     {
-        if ($this->getUser()) {
-            $tokenStorage = $this->get('security.token_storage');
-            return $this->get('unilend.frontbundle.security.login_authenticator')->onAuthenticationSuccess($request, $tokenStorage->getToken(), 'default');
+        if ($this->container->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('home');
         }
 
         /** @var AuthenticationUtils $authenticationUtils */

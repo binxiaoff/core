@@ -573,7 +573,7 @@ class ajaxController extends bootstrap
             $entityManager->persist($projectCommentEntity);
             $entityManager->flush($projectCommentEntity);
 
-            if (false === empty($client->email)) {
+            if (false === empty($client->email) && '1' === $_POST['send_email']) {
                 $keywords = [
                     'firstName' => $client->prenom
                 ];
@@ -690,7 +690,7 @@ class ajaxController extends bootstrap
 
             $client = $project->getIdCompany()->getIdClientOwner();
 
-            if ($client instanceof Clients && false === empty($client->getEmail())) {
+            if ($client instanceof Clients && false === empty($client->getEmail()) && '1' === $_POST['send_email']) {
                 $keywords = [
                     'firstName' => $client->getPrenom()
                 ];
@@ -822,7 +822,7 @@ class ajaxController extends bootstrap
 
             /** @var \projects_status_history $projectStatusHistory */
             $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->id_project);
+            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
 
             /** @var \projects_status_history_details $historyDetails */
             $historyDetails                            = $this->loadData('projects_status_history_details');
@@ -830,7 +830,7 @@ class ajaxController extends bootstrap
             $historyDetails->comity_rejection_reason   = $_POST['rejection_reason'];
             $historyDetails->create();
 
-            if (false === empty($client->email)) {
+            if (false === empty($client->email) && '1' === $_POST['send_email']) {
                 $keywords = [
                     'firstName' => $client->prenom
                 ];

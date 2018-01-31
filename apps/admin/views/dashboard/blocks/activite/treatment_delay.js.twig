@@ -1,0 +1,37 @@
+Highcharts.chart('treatment-delay', {
+    chart: {
+        type: 'bar'
+    },
+    title: {
+        text: 'Temps de traitement par statut (sauf reprises de FdC)'
+    },
+    xAxis: {
+        categories: ['Achat d\'équipement ou matériel', 'Développement', 'Immobilier', 'Travaux', 'Trésorerie', 'Autre']
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: 'Nombre de jours'
+        }
+    },
+    legend: {
+        reversed: true
+    },
+    plotOptions: {
+        series: {
+            stacking: 'normal'
+        }
+    },
+    series: [
+        {% for delay in delays %}
+        {% if not loop.first %},{% endif %}
+        {
+            name: '{{ delay.label }}',
+            data: [{% for motive in borrowingMotives %} {% if not loop.first %},{% endif %}{% if delay.data[motive] is defined %}{{ delay.data[motive] }}{% else %}0{% endif %} {% endfor %}],
+            tooltip: {
+                valueSuffix: ' jours'
+            }
+        }
+        {% endfor %}
+    ]
+});

@@ -90,4 +90,24 @@ class ClientsStatusHistoryRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @param int $client
+     *
+     * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getValidationsCount(int $client) : int
+    {
+        $queryBuilder = $this->createQueryBuilder('csh');
+        $queryBuilder->select('COUNT(csh.idClientStatusHistory)')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
+            ->where('csh.idClient = :idClient')
+            ->andWhere('cs.status = :validated')
+            ->setParameter('idClient', $client)
+            ->setParameter('validated', ClientsStatus::VALIDATED);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

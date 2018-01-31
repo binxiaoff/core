@@ -17,6 +17,7 @@ class OperationSubType
     const GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION = 'gross_interest_repayment_debt_collection';
     const BORROWER_COMMISSION_FUNDS                = 'borrower_commission_funds';
     const BORROWER_COMMISSION_REPAYMENT            = 'borrower_commission_repayment';
+    const BORROWER_WITHDRAW_OWN_MONEY              = 'borrower_withdraw_own_money';
 
     const TAX_FR_RETENUES_A_LA_SOURCE_PERSON = 'tax_fr_retenues_a_la_source_person';
 
