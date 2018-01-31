@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
+use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 
 class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
 {
@@ -32,6 +34,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
         $slackManager            = $this->getContainer()->get('unilend.service.slack_manager');
         $messageProvider         = $this->getContainer()->get('unilend.swiftmailer.message_provider');
         $logger                  = $this->getContainer()->get('monolog.logger.console');
+        $altaresManager          = $this->getContainer()->get('unilend.service.ws_client.altares_manager');
 
         $currentRiskPolicy = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityRuleSet')
             ->findOneBy(['status' => ProjectEligibilityRuleSet::STATUS_ACTIVE]);
@@ -68,13 +71,15 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 $excel       = new \PHPExcel();
                 $activeSheet = $excel->setActiveSheetIndex(0);
 
-                $sirenColumn         = 'A';
-                $preScoreColumn      = 'B';
-                $riskRuleStartColumn = 'C';
-                $rowIndex            = 1;
+                $sirenColumn               = 'A';
+                $preScoreColumn            = 'B';
+                $companyCreationDateColumn = 'C';
+                $riskRuleStartColumn       = 'D';
+                $rowIndex                  = 1;
 
                 $activeSheet->setCellValue($sirenColumn . $rowIndex, 'SIREN');
                 $activeSheet->setCellValue($preScoreColumn . $rowIndex, 'Pre-Score');
+                $activeSheet->setCellValue($companyCreationDateColumn . $rowIndex, 'Date création');
 
                 foreach ($ruleSet as $rule) {
                     $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, 'Règle ' . $rule->getIdRule()->getLabel());
@@ -93,7 +98,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     }
                     $activeSheet->setCellValue($sirenColumn . $rowIndex, $siren);
                     /** @var  $rule ProjectEligibilityRuleSetMember */
-                    $riskRuleStartColumn = 'C';
+                    $riskRuleStartColumn = 'D';
 
                     foreach ($ruleSet as $rule) {
                         try {
@@ -131,6 +136,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     } else {
                         $eligibilityResult = 'OUI';
                     }
+                    $activeSheet->setCellValue($companyCreationDateColumn . $rowIndex, $this->getCompanyCreationDate($siren, $altaresManager, $logger));
                     $activeSheet->setCellValue($preScoreColumn . $rowIndex, $this->getPreScoreValue($siren));
                     $activeSheet->setCellValue($riskRuleStartColumn . $rowIndex, $eligibilityResult);
                     $rowIndex++;
@@ -237,5 +243,29 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
         }
 
         return $preScoring;
+    }
+
+    /**
+     * @param string          $siren
+     * @param AltaresManager  $altaresManager
+     * @param LoggerInterface $logger
+     *
+     * @return string
+     */
+    private function getCompanyCreationDate(string $siren, AltaresManager $altaresManager, LoggerInterface $logger) : string
+    {
+        try {
+            $companyIdentity = $altaresManager->getCompanyIdentity($siren);
+            if (null !== $companyIdentity && $companyIdentity->getCreationDate() instanceof \DateTime) {
+                return $companyIdentity->getCreationDate()->format('d/m/Y');
+            }
+        } catch (\Exception $exception) {
+            $logger->warning(
+                'Could not get company creation date from Altares Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
+
+        return '';
     }
 }

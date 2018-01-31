@@ -2,7 +2,10 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\OptimisticLockException;
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
@@ -47,6 +50,8 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * @param EntityManager              $entityManager
@@ -57,6 +62,7 @@ class ExternalDataManager
      * @param InfogreffeManager          $infogreffeManager
      * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
+     * @param LoggerInterface            $logger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -66,7 +72,8 @@ class ExternalDataManager
         InfolegaleManager $infolegaleManager,
         InfogreffeManager $infogreffeManager,
         EllisphereManager $ellisphereManager,
-        CompanyBalanceSheetManager $companyBalanceSheetManager
+        CompanyBalanceSheetManager $companyBalanceSheetManager,
+        LoggerInterface $logger
     )
     {
         $this->entityManager              = $entityManager;
@@ -77,6 +84,7 @@ class ExternalDataManager
         $this->infogreffeManager          = $infogreffeManager;
         $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
+        $this->logger                     = $logger;
     }
 
     /**
@@ -162,8 +170,6 @@ class ExternalDataManager
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
-
-            $this->entityManager->flush();
         }
 
         return $score;
@@ -371,6 +377,8 @@ class ExternalDataManager
 
     /**
      * @param string $siren
+     *
+     * @throws \Exception
      */
     public function refreshExecutiveChanges($siren)
     {
@@ -394,7 +402,7 @@ class ExternalDataManager
                 if (isset($refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()])) {
                     continue;
                 }
-                $refreshedCompanyPosition[$mandate->getSiren()] = $mandate->getPosition()->getCode();
+                $refreshedCompanyPosition[$mandate->getSiren()][$mandate->getPosition()->getCode()] = $mandate->getPosition()->getCode();
 
                 $change = $personalChangeRepository->findOneBy([
                     'idExecutive'  => $executive->getExecutiveId(),
@@ -403,14 +411,24 @@ class ExternalDataManager
                 ]);
 
                 if (null === $change) {
-                    $change = new InfolegaleExecutivePersonalChange();
-                    $change->setIdExecutive($executive->getExecutiveId())
-                        ->setFirstName($executive->getFirstName())
-                        ->setLastName($executive->getName())
-                        ->setSiren($mandate->getSiren())
-                        ->setPosition($mandate->getPosition()->getLabel())
-                        ->setCodePosition($mandate->getPosition()->getCode());
-                    $this->entityManager->persist($change);
+                    try {
+                        $change = new InfolegaleExecutivePersonalChange();
+                        $change->setIdExecutive($executive->getExecutiveId())
+                            ->setFirstName($executive->getFirstName())
+                            ->setLastName($executive->getName())
+                            ->setSiren($mandate->getSiren())
+                            ->setPosition($mandate->getPosition()->getLabel())
+                            ->setCodePosition($mandate->getPosition()->getCode());
+                        $this->entityManager->persist($change);
+                        $this->entityManager->flush($change);
+                    } catch (\Exception $exception) {
+                        $this->logger->error(
+                            'Could not save the Infolegal personal change into DB using id_executive: ' .
+                            $executive->getExecutiveId() . ', siren: ' . $mandate->getSiren() . ', position: ' . $mandate->getPosition()->getCode() . '. Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                        continue;
+                    }
                 }
 
                 if (null === $change->getNominated()) {
@@ -419,10 +437,72 @@ class ExternalDataManager
                 if (null === $change->getEnded()) {
                     $change->setEnded($this->getExecutiveEnded($mandate->getSiren(), $executive->getExecutiveId(), $mandate->getPosition()->getCode()));
                 }
-
                 $this->entityManager->flush($change);
             }
         }
+    }
+
+    /**
+     * @param           $siren
+     * @param \DateTime $sinceDate
+     *
+     * @return array
+     */
+    public function getAllMandatesExceptGivenSirenOnActiveExecutives($siren, \DateTime $sinceDate) : array
+    {
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->getAllMandatesExceptGivenSirenOnActiveExecutives($siren, $sinceDate);
+    }
+
+    /**
+     * @param $siren
+     * @param $sinceDate
+     *
+     * @return InfolegaleExecutivePersonalChange[]
+     */
+    public function getAllPreviousExecutivesMandatesSince($siren, $sinceDate) : array
+    {
+        $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->getPreviousExecutivesLeftAfter($siren, $sinceDate);
+
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
+            ->findMandatesByExecutivesSince($previousExecutives, $sinceDate);
+    }
+
+    /**
+     * @param int    $executiveId
+     * @param string $siren
+     * @param int    $extended
+     *
+     * @return array
+     */
+    public function getPeriodForExecutiveInACompany(int $executiveId, string $siren, int $extended) : array
+    {
+        $now     = new \DateTime();
+        $started = $now;
+        $ended   = $now;
+        $changes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->findBy([
+            'idExecutive' => $executiveId,
+            'siren'       => $siren
+        ]);
+        foreach ($changes as $change) {
+            if (null !== $change->getEnded()) {
+                $ended = $change->getEnded();
+            }
+
+            if (null === $change->getNominated()) {
+                $mockedNominatedDate = new \DateTime('5 years ago');
+                if ($change->getEnded() > $mockedNominatedDate) {
+                    $started = $mockedNominatedDate;
+                } else {
+                    $started = $change->getEnded();
+                }
+            } else {
+                $started = $change->getNominated();
+            }
+        }
+
+        return ['started' => $started, 'ended' => $ended->modify('+' . $extended . ' year')];
     }
 
     /**
@@ -495,21 +575,22 @@ class ExternalDataManager
 
     /**
      * @param string   $siren
-     * @param int|null $yearsSince
+     * @param int|null $publishedSinceYears Number of years since announcement was published
      *
      * @return AnnouncementDetails[]
      */
-    public function getAnnouncements($siren, $yearsSince = null)
+    public function getAnnouncements($siren, $publishedSinceYears = null)
     {
-        $id            = [];
-        $announcements = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
+        $id                  = [];
+        $announcementDetails = [];
+        $announcements       = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
 
-        if (null !== $yearsSince) {
-            $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $yearsSince . 'Y'))->setTime(0, 0, 0);
+        if (null !== $publishedSinceYears) {
+            $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $publishedSinceYears . 'Y'))->setTime(0, 0, 0);
         }
 
         foreach ($announcements as $announcement) {
-            if (null === $yearsSince || isset($dateLimit) && $announcement->getPublishedDate() >= $dateLimit) {
+            if (null === $publishedSinceYears || isset($dateLimit) && $announcement->getPublishedDate() >= $dateLimit) {
                 $id[] = $announcement->getId();
             }
         }
@@ -517,8 +598,19 @@ class ExternalDataManager
         if (empty($id)) {
             return [];
         }
+        /** The WS getAnnouncementsDetails accepts a maximum of 100 exec IDs in the parameter list */
+        foreach (array_chunk($id, 100) as $execIds) {
+            /** @var ArrayCollection $announcementPage */
+            $announcementPage = $this->infolegaleManager->getAnnouncementsDetails($execIds)->getAnnouncementDetails();
+            $this->logger->info('Execs IDs: ' . \GuzzleHttp\json_encode($execIds), ['siren' => $siren, 'method' => __METHOD__, 'line' => __LINE__]);
 
-        return $this->infolegaleManager->getAnnouncementsDetails($id)->getAnnouncementDetails();
+            if ($announcementPage->count()) {
+                $this->logger->info('Number of annoucements details found: ' . $announcementPage->count(), ['siren' => $siren, 'method' => __METHOD__, 'line' => __LINE__]);
+                $announcementDetails = array_merge($announcementDetails, $announcementPage->toArray());
+            }
+        }
+
+        return $announcementDetails;
     }
 
     /**
@@ -541,7 +633,7 @@ class ExternalDataManager
      * @param string $type
      * @param string $value
      */
-    private function setRating($type, $value)
+    private function setRating(string $type, string $value)
     {
         $companyRating = new CompanyRating();
         $companyRating->setIdCompanyRatingHistory($this->companyRatingHistory);
@@ -549,5 +641,13 @@ class ExternalDataManager
         $companyRating->setValue($value);
 
         $this->entityManager->persist($companyRating);
+        try {
+            $this->entityManager->flush($companyRating);
+        } catch (OptimisticLockException $exception) {
+            $this->logger->error(
+                'Could not save the company rating type ' . $type . ' with value ' . $value . ' Using company rating history ID ' . $this->companyRatingHistory->getIdCompanyRatingHistory() . ' Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'id_company' => $this->companyRatingHistory->getIdCompany()->getIdCompany(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 }

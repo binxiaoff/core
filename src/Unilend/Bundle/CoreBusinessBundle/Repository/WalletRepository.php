@@ -268,4 +268,21 @@ class WalletRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @param array $projects
+     *
+     * @return array
+     */
+    public function getLenderWalletsByProjects($projects) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('w');
+        $queryBuilder
+            ->distinct()
+            ->innerJoin('UnilendCoreBusinessBundle:Loans', 'l', Join::WITH, 'l.idLender = w.id')
+            ->where('l.idProject in (:projects)')
+            ->setParameter('projects', $projects);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

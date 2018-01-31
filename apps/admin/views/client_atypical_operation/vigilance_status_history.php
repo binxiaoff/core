@@ -15,22 +15,22 @@
         <tr id="row-<?= $vigilanceStatus->getId() ?>" <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
             <td>
                 <span style="font-weight: bold; font-size: 14px" class="vigilance-status-<?= $vigilanceStatus->getVigilanceStatus() ?>">
-                    <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $vigilanceStatus->getClient()->getIdClient() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                    <?php if (false === empty($this->hideEditLink)) : ?>
+                        <?= $vigilanceStatus->getClient()->getIdClient() ?>
+                    <?php else : ?>
+                        <a target="_blank" href="<?= $this->lurl ?>/preteurs/edit/<?= $vigilanceStatus->getClient()->getIdClient() ?>"><?= $vigilanceStatus->getClient()->getIdClient() ?></a>
+                    <?php endif; ?>
                 </span>
             </td>
             <td><?= $vigilanceStatus->getClient()->getPrenom() . ' ' . $vigilanceStatus->getClient()->getNom() ?></td>
             <td><?= $this->translator->trans('client-vigilance_status-' . $vigilanceStatus->getVigilanceStatus()) ?></td>
             <td>
-                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()) : ?>
+                <?php if (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_CRON === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
                     Cron
-                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $vigilanceStatus->getIdUser()) : ?>
+                <?php elseif (\Unilend\Bundle\CoreBusinessBundle\Entity\Users::USER_ID_FRONT === $vigilanceStatus->getIdUser()->getIdUser()) : ?>
                     Front
                 <?php else : ?>
-                    <?php
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $user */
-                    $user = $this->userRepository->find($vigilanceStatus->getIdUser())
-                    ?>
-                    <?= $user->getName() . ' ' . $user->getFirstname() ?>
+                    <?= $vigilanceStatus->getIdUser()->getFirstName() . ' ' .  $vigilanceStatus->getIdUser()->getName() ?>
                 <? endif; ?>
             </td>
             <td><?= htmlentities($vigilanceStatus->getUserComment()) ?></td>

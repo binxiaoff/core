@@ -220,9 +220,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
      *
      * @return array
      */
-    public function getDebtCollectorWalletOperations($idWallet, \DateTime $startDate, \DateTime $endDate)
+    public function getDebtCollectorWalletOperations($idWallet)
     {
-        $queryBuilder = $this->getClientWalletOperationsQuery($idWallet, $startDate, $endDate);
+        $queryBuilder = $this->getClientWalletOperationsQuery($idWallet);
         $queryBuilder->addSelect('
             CASE 
                 WHEN(o.idWalletDebtor = wbh.idWallet)  
@@ -242,17 +242,14 @@ class WalletBalanceHistoryRepository extends EntityRepository
     }
 
     /**
-     * @param           $idWallet
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
+     * @param                $idWallet
+     * @param \DateTime|null $startDate
+     * @param \DateTime|null $endDate
      *
      * @return \Doctrine\ORM\QueryBuilder
      */
-    private function getClientWalletOperationsQuery($idWallet, \DateTime $startDate, \DateTime $endDate)
+    private function getClientWalletOperationsQuery($idWallet, ?\DateTime $startDate = null, ?\DateTime $endDate = null)
     {
-        $startDate->setTime(00, 00, 00);
-        $endDate->setTime(23, 59, 59);
-
         $queryBuilder = $this->createQueryBuilder('wbh')
             ->select('
                 o.id,
@@ -268,11 +265,20 @@ class WalletBalanceHistoryRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->leftJoin('UnilendCoreBusinessBundle:OperationSubType', 'ost', Join::WITH, 'o.idSubType = ost.id')
             ->where('wbh.idWallet = :idWallet')
-            ->andWhere('o.added BETWEEN :startDate AND :endDate')
             ->setParameter('idWallet', $idWallet)
-            ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'))
-            ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'))
             ->orderBy('wbh.id', 'DESC');
+
+        if ($startDate instanceof \DateTime) {
+            $startDate->setTime(00, 00, 00);
+            $queryBuilder->andWhere('o.added >= :startDate')
+                ->setParameter('startDate', $startDate->format('Y-m-d H:i:s'));
+        }
+
+        if ($endDate instanceof \DateTime) {
+            $endDate->setTime(00, 00, 00);
+            $queryBuilder->andWhere('o.added <= :endDate')
+                ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'));
+        }
 
         return $queryBuilder;
     }

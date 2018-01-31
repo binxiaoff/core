@@ -554,12 +554,12 @@ class OperationRepository extends EntityRepository
                   WHEN 3 THEN "person"
                   END AS client_type,
                   l.id_type_contract,
-                  CASE IFNULL((SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = w.id AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1), 0)
+                  CASE IFNULL((SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = w.id AND lih.added <= o_interest.added ORDER BY added DESC LIMIT 1), 0)
                     WHEN 0 THEN "fr"
                     ELSE "ww"
                   END AS fiscal_residence,
                   CASE lte.id_lender
-                    WHEN e.id_lender THEN "non_taxable"
+                    WHEN o_interest.' . $walletField . ' THEN "non_taxable"
                     ELSE "taxable"
                   END AS exemption_status,
                   SUM(o_interest.amount) AS interests
@@ -567,26 +567,28 @@ class OperationRepository extends EntityRepository
                   INNER JOIN operation_type ot_interest ON o_interest.id_type = ot_interest.id AND ot_interest.label = "' . $interestOperationType . '"
                   INNER JOIN wallet w ON o_interest.' . $walletField . ' = w.id
                   INNER JOIN clients c ON w.id_client = c.id_client
-                  INNER JOIN echeanciers e ON o_interest.id_repayment_schedule = e.id_echeancier
                   INNER JOIN loans l ON l.id_loan = o_interest.id_loan
                   LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(o_interest.added)
                 WHERE o_interest.added BETWEEN :start AND :end
                 GROUP BY l.id_type_contract, client_type, fiscal_residence,  exemption_status';
+
         return $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * @param string    $taxOperationType
-     * @param \DateTime $start
-     * @param \DateTime $end
-     * @param bool      $groupByContract
-     * @param bool      $regularization
+     * @param string      $taxOperationType
+     * @param null|string $taxOperationSubType
+     * @param \DateTime   $start
+     * @param \DateTime   $end
+     * @param bool        $groupByContract
+     * @param bool        $regularization
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTaxForFiscalState($taxOperationType, \DateTime $start, \DateTime $end, $groupByContract = false, $regularization = false)
+    public function getTaxForFiscalState(string $taxOperationType, ?string $taxOperationSubType, \DateTime $start, \DateTime $end, bool $groupByContract = false, bool $regularization = false) : array
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
@@ -596,18 +598,34 @@ class OperationRepository extends EntityRepository
         }
 
         $contractLabelColumn = $groupByContract ? ', uc.label as contract_label' : '';
-        $groupBy             = $groupByContract ? 'GROUP BY l.id_type_contract' : '';
+        $groupBy             = $groupByContract ? ' GROUP BY l.id_type_contract' : '';
 
         $query = 'SELECT SUM(o_tax.amount) AS tax ' . $contractLabelColumn . '
                   FROM operation o_tax USE INDEX (idx_operation_added)
                     INNER JOIN operation_type ot_tax ON ot_tax.id = o_tax.id_type
+                    LEFT JOIN operation_sub_type ost_tax ON ost_tax.id = o_tax.id_sub_type
                     INNER JOIN loans l ON l.id_loan = o_tax.id_loan
                     INNER JOIN underlying_contract uc ON uc.id_contract = l.id_type_contract
                   WHERE o_tax.added BETWEEN :start AND :end
-                    AND ot_tax.label = \'' . $taxOperationType . '\'' . $groupBy;
+                    AND ot_tax.label = :taxOperationType';
+
+        $parameters = [
+            'start'            => $start->format('Y-m-d H:i:s'),
+            'end'              => $end->format('Y-m-d H:i:s'),
+            'taxOperationType' => $taxOperationType
+        ];
+
+        if (null === $taxOperationSubType) {
+            $query .= ' AND o_tax.id_sub_type IS NULL';
+        } else {
+            $query                             .= ' AND ost_tax.label = :taxOperationSubType';
+            $parameters['taxOperationSubType'] = $taxOperationSubType;
+        }
+
+        $query .= $groupBy;
 
         return $this->getEntityManager()->getConnection()
-            ->executeQuery($query, ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->executeQuery($query, $parameters)
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -699,7 +717,7 @@ class OperationRepository extends EntityRepository
         }
 
         $select .=
-              'SUM(o.amount) AS amount,
+            'SUM(o.amount) AS amount,
                  CASE ot.label
                     WHEN "' . OperationType::LENDER_PROVISION . '" THEN
                       IF(o.id_backpayline IS NOT NULL,
@@ -731,6 +749,8 @@ class OperationRepository extends EntityRepository
                         "borrower_provision_cancel_wire_transfer_in",
                         "borrower_provision_cancel_other")
                       )
+                    WHEN "' . OperationType::BORROWER_WITHDRAW . '" THEN
+                      IF(o.id_sub_type IS NULL, ot.label, ost.label)
                  ELSE ot.label END AS movement
             FROM operation o USE INDEX (idx_operation_added)
             INNER JOIN operation_type ot ON o.id_type = ot.id
@@ -1338,12 +1358,12 @@ class OperationRepository extends EntityRepository
     public function getFeesPaymentOperations($wallet)
     {
         $queryBuilder = $this->createQueryBuilder('o');
-        $queryBuilder->select('SUM(o.amount) AS amount, DATE(o.added) AS added, IDENTITY(o.idWireTransferIn) AS idWireTransferIn')
+        $queryBuilder->select('SUM(o.amount) AS amount, DATE(o.added) AS added, IDENTITY(o.idWireTransferIn) AS idWireTransferIn, IDENTITY(o.idProject) AS idProject')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
             ->where('o.idWalletCreditor = :wallet')
             ->andWhere('ot.label IN (:feePayment)')
             ->groupBy('o.idWireTransferIn')
-            ->orderBy('o.added',  'DESC')
+            ->orderBy('o.added', 'DESC')
             ->setParameter('wallet', $wallet)
             ->setParameter('feePayment', [
                 OperationType::COLLECTION_COMMISSION_LENDER,
@@ -1352,5 +1372,41 @@ class OperationRepository extends EntityRepository
             ]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * Temporary method for TMA-2686. Can be deleted later
+     *
+     * @var bool $groupByTaskLog
+     * @var int  $idRepaymentTaskLog
+     *
+     * @return array
+     *
+     */
+    public function getRetenuALaSourceTaxForPerson(bool $groupByTaskLog = false, ?int $idRepaymentTaskLog = null) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('o');
+        $queryBuilder->select('o.id AS id, IDENTITY(o.idLoan) AS idLoan, IDENTITY(o.idRepaymentTaskLog) AS idRepaymentTaskLog')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = o.idWalletDebtor')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->where('c.type in (:person)')
+            ->andWhere('ot.label = :taxOperationType')
+            ->andWhere('YEAR(o.added) = :year')
+            ->orderBy('o.added')
+            ->setParameter('person', [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])
+            ->setParameter('taxOperationType', OperationType::TAX_FR_RETENUES_A_LA_SOURCE)
+            ->setParameter('year', 2018);
+
+        if ($groupByTaskLog) {
+            $queryBuilder->groupBy('o.idRepaymentTaskLog');
+        }
+
+        if ($idRepaymentTaskLog) {
+            $queryBuilder->andWhere('o.idRepaymentTaskLog = :idRepaymentTaskLog')
+                ->setParameter('idRepaymentTaskLog', $idRepaymentTaskLog);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
     }
 }

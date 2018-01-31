@@ -45,13 +45,6 @@
 
             // Item visibility
             if (in_array($zone, $this->lZonesHeader)) {
-                // Check user and adjust title for Dashboard item
-                if ($title === 'Dashboard') {
-                    if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupSales($this->userEntity)) {
-                        $title = 'Mon flux';
-                    }
-                }
-
                 $active = $this->menu_admin === $zone ? ' class="active"' : '';
                 $menuHtml .= '<li>';
                 $menuHtml .= empty($item['uri']) ? '<span' . $active . '>' . $title . '</span>' : '<a href="' . $this->lurl . '/' . $item['uri'] . '"' . $active . '>' . $title . '</a>';

@@ -121,7 +121,7 @@ class UnilendMailer extends \Swift_Mailer
      */
     private function checkEmailAddress(string $email) : bool
     {
-        if (1 !== preg_match('/^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i', $email)) {
+        if (1 !== preg_match('/^[^#*$: @\/]+@.*\.[^#*$: @\/]+$/i', $email)) {
             return false;
         }
 

@@ -925,7 +925,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\ProjectStatusNotificationSender $projectStatusNotificationSender */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusNotificationSender $projectStatusNotificationSender */
         $projectStatusNotificationSender = $this->get('unilend.service.project_status_notification_sender');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
@@ -1143,11 +1143,11 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        /** @var \project_rejection_reason $oProjectRejectionReason */
-        $oProjectRejectionReason = $this->loadData('project_rejection_reason');
-        $this->aRejectionReasons = $oProjectRejectionReason->select('', 'label');
-        $this->iStep             = $this->params[0];
-        $this->iProjectId        = $this->params[1];
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $this->rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findBy([], ['label' => 'ASC']);
+        $this->step             = $this->params[0];
+        $this->projectId        = $this->params[1];
     }
 
     public function _changeClient()

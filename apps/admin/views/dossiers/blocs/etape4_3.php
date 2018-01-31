@@ -180,7 +180,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -200,7 +200,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -239,7 +239,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -280,7 +280,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -316,7 +316,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -354,7 +354,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -379,7 +379,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -399,7 +399,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -423,7 +423,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -455,7 +455,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -483,7 +483,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -503,7 +503,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -587,7 +587,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -635,7 +635,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -676,7 +676,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -719,7 +719,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -742,7 +742,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -768,7 +768,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -789,7 +789,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -810,7 +810,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -835,7 +835,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -870,7 +870,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -890,7 +890,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -910,7 +910,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -930,7 +930,7 @@ if (1 === count($formTypes) && array_values($formTypes)[0] == company_tax_form_t
 
                         if (false === is_null($iPreviousNumber)) {
                             ?>
-                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iCurrentNumber) || $iCurrentNumber === '-' || empty($iPreviousNumber) || $iPreviousNumber === '-' ? 'N/A' : round(($iPreviousNumber - $iCurrentNumber) / abs($iCurrentNumber) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>

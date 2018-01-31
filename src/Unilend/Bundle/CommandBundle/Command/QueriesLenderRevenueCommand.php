@@ -14,8 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesLenderRevenueCommand extends ContainerAwareCommand
 {
-    const LOST_PROJECT_IDS = [32108, 28957];
-
     /**
      * @see Command
      */
@@ -71,8 +69,11 @@ EOF
         $repaymentScheduleRepository        = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $closeOutNettingRepaymentRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
 
-        $walletsWithMovements    = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
-        $lostProjects            = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => self::LOST_PROJECT_IDS]);
+        $walletsWithMovements = $this->getContainer()->get('unilend.service.ifu_manager')->getWallets($year);
+        $lostProjects         = [];
+        if (false === empty(IfuManager::LOSS_PROJECT_IDS[$year])) {
+            $lostProjects = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idProject' => IfuManager::LOSS_PROJECT_IDS[$year]]);
+        }
         $eligibleContractsTolost = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findBy([
             'label' => [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_MINIBON]
         ]);
@@ -92,7 +93,7 @@ EOF
             $grossInterest               = round(bcsub($grossInterest, $grossInterestRegularization, 4));
             if ($grossInterest > 0) {
                 $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '53');
+                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '161');
                 $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $grossInterest);
                 $row += 1;
             }
@@ -127,17 +128,17 @@ EOF
                 $row += 1;
             }
 
-            $interestWhileInFrance            = $operationRepository->getGrossInterestPaymentsInFrance($wallet, $year);
-            $regularizedInterestWhileInFrance = $operationRepository->getRegularizedGrossInterestPaymentsInFrance($wallet, $year);
-            $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
-            if ($interestWhileInFrance > 0) {
-                $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
-                $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
-                $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
-                $row += 1;
-            }
-
             if (in_array($wallet->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+                $interestWhileInFrance            = $operationRepository->getGrossInterestPaymentsInFrance($wallet, $year);
+                $regularizedInterestWhileInFrance = $operationRepository->getRegularizedGrossInterestPaymentsInFrance($wallet, $year);
+                $interestWhileInFrance            = round(bcsub($interestWhileInFrance, $regularizedInterestWhileInFrance, 4));
+                if ($interestWhileInFrance > 0) {
+                    $this->addCommonCellValues($activeSheet, $row, $year, $wallet);
+                    $activeSheet->setCellValueExplicitByColumnAndRow(2, $row, '66');
+                    $activeSheet->setCellValueExplicitByColumnAndRow(4, $row, $interestWhileInFrance);
+                    $row += 1;
+                }
+
                 $netInterestWhileInEEA            = $operationRepository->sumNetInterestRepaymentsNotInEeaExceptFrance($wallet, $year);
                 $regularizedNetInterestWhileInEEA = $operationRepository->sumRegularizedNetInterestRepaymentsNotInEeaExceptFrance($wallet, $year);
                 $netInterestWhileInEEA            = round(bcsub($netInterestWhileInEEA, $regularizedNetInterestWhileInEEA, 4));

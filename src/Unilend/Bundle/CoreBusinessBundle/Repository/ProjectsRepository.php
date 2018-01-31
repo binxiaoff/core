@@ -3,13 +3,13 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use PDO;
 use Psr\Log\InvalidArgumentException;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
@@ -343,39 +343,35 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param array     $status
+     * @param int       $status
      * @param \DateTime $start
      * @param \DateTime $end
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function findProjectsHavingHadStatusBetweenDates(array $status, \DateTime $start, \DateTime $end)
+    public function findProjectsHavingHadStatusBetweenDates(int $status, \DateTime $start, \DateTime $end)
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT
-                      *
-                    FROM (SELECT MAX(id_project_status_history) AS max_id_projects_status_history
-                          FROM projects_status_history psh_max
-                          GROUP BY id_project) AS psh_max
-                      INNER JOIN projects_status_history psh ON psh_max.max_id_projects_status_history = psh.id_project_status_history
-                      INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                      INNER JOIN projects p ON p.id_project = psh.id_project
-                    WHERE
-                      ps.status IN (:status)
-                      AND psh.added BETWEEN :start AND :end';
+        $query = '
+            SELECT *
+            FROM
+              (SELECT MIN(psh.id_project_status_history) AS id_project_status_history
+               FROM projects_status_history psh
+               INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+               WHERE ps.status = :status
+               GROUP BY id_project ) psh1
+            INNER JOIN projects_status_history psh2 ON psh2.id_project_status_history = psh1.id_project_status_history
+            INNER JOIN projects p ON p.id_project = psh2.id_project
+            WHERE psh2.added BETWEEN :start AND :end';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, [
                 'status' => $status,
                 'start'  => $start->format('Y-m-d H:i:s'),
                 'end'    => $end->format('Y-m-d H:i:s')
-            ], [
-                'status' => Connection::PARAM_INT_ARRAY,
-                'start'  => PDO::PARAM_STR,
-                'end'    => PDO::PARAM_STR
             ])->fetchAll();
 
         return $result;
@@ -959,16 +955,16 @@ class ProjectsRepository extends EntityRepository
             ['companyStatus' => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION], 'healthy' => $healthy],
             ['companyStatus' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY, 'healthy' => \PDO::PARAM_BOOL]
         );
-        $result = $statement->fetchAll(PDO::FETCH_ASSOC);
+        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
         $statement->closeCursor();
 
         return $result;
     }
 
     /**
-     * @param bool            $weighted
-     * @param bool            $groupFirstYears
-     * @param \DateTime|null  $date
+     * @param bool           $weighted
+     * @param bool           $groupFirstYears
+     * @param \DateTime|null $date
      *
      * @return array
      * @throws \Doctrine\DBAL\DBALException
@@ -1144,7 +1140,7 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= '
+            $query       .= '
                 WHERE p.id_client_submitter = :submitterId';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
@@ -1152,7 +1148,7 @@ class ProjectsRepository extends EntityRepository
                 WHERE p.id_company_submitter = :submitterId';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getIdCompany()->getIdCompany();
-            $query .= '
+            $query       .= '
                 WHERE p.id_company_submitter = :submitterId OR p.id_company_submitter IN (SELECT id_company FROM companies WHERE id_parent_company = :submitterId)';
         } else {
             throw new InvalidArgumentException('One and only one of the parameters must be set');
@@ -1195,7 +1191,7 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= '
+            $query       .= '
                 WHERE p.id_client_submitter = :submitterId';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
@@ -1203,7 +1199,7 @@ class ProjectsRepository extends EntityRepository
                 WHERE p.id_company_submitter = :submitterId';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getId();
-            $query .= '
+            $query       .= '
                 WHERE p.id_partner = :submitterId';
         } else {
             throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
@@ -1240,13 +1236,13 @@ class ProjectsRepository extends EntityRepository
 
         if ($submitter instanceof Clients) {
             $submitterId = $submitter->getIdClient();
-            $query .= ' AND p.id_client_submitter = :submitter';
+            $query       .= ' AND p.id_client_submitter = :submitter';
         } elseif ($submitter instanceof Companies) {
             $submitterId = $submitter->getIdCompany();
-            $query .= ' AND p.id_company_submitter = :submitter';
+            $query       .= ' AND p.id_company_submitter = :submitter';
         } elseif ($submitter instanceof Partner) {
             $submitterId = $submitter->getId();
-            $query .= ' AND p.id_partner = :submitter';
+            $query       .= ' AND p.id_partner = :submitter';
         } else {
             throw new InvalidArgumentException('Unknown submitter type ' . get_class($submitter));
         }
@@ -1258,5 +1254,126 @@ class ProjectsRepository extends EntityRepository
         ]);
 
         return $nativeQuery->getResult();
+    }
+
+    /**
+     * @param int       $status
+     * @param bool      $groupByPartner
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getStatisticsByStatusByMonth(int $status, bool $groupByPartner, \DateTime $start, \DateTime $end) : array
+    {
+        $start->setTime(0, 0, 0);
+        $end->setTime(23, 59, 59);
+
+        $select  = 'DATE_FORMAT(sps.added,\'%m/%Y\') AS month, COUNT(sps.id_project) AS number, SUM(sps.amount) AS amount';
+        $groupBy = 'month';
+        if ($groupByPartner) {
+            $select  .= ', sps.partner as partner, sps.partnerId AS partnerId';
+            $groupBy .= ', sps.partnerId';
+        }
+
+        $query = '
+            SELECT ' . $select . '
+            FROM
+              (SELECT p.id_project, p.amount, psh2.added, c.name AS partner, pa.id AS partnerId
+               FROM
+                 (SELECT MIN(psh.id_project_status_history) AS id_project_status_history
+                  FROM projects_status_history psh
+                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                  WHERE ps.status = :status
+                  GROUP BY id_project) psh1
+               INNER JOIN projects_status_history psh2 ON psh2.id_project_status_history = psh1.id_project_status_history
+               INNER JOIN projects p ON p.id_project = psh2.id_project
+               INNER JOIN partner pa ON pa.id = p.id_partner
+               INNER JOIN companies c ON pa.id_company = c.id_company
+               WHERE psh2.added BETWEEN :start AND :end
+               GROUP BY p.id_project
+               ORDER BY psh2.added ASC ) sps
+            GROUP BY ' . $groupBy;
+
+        $result = $this->getEntityManager()->getConnection()->executeQuery($query, [
+            'status' => $status,
+            'start'  => $start->format('Y-m-d H:i:s'),
+            'end'    => $end->format('Y-m-d H:i:s'),
+        ])->fetchAll();
+
+        return $result;
+    }
+
+    /**
+     * @param int   $status
+     * @param array $borrowingMotives
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getDelayByStatus(int $status, array $borrowingMotives) : array
+    {
+        $query = '
+        SELECT b.id_motive,
+               b.motive,
+               AVG(TIMESTAMPDIFF(MINUTE, psh.added, psh2.added)) AS diff
+        FROM
+          (SELECT id_project, MIN(added) AS added
+           FROM projects_status_history p
+           INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+           WHERE ps.status = :status
+           GROUP BY id_project ) psh
+        INNER JOIN
+          (SELECT id_project, MIN(added) AS added
+           FROM projects_status_history p
+           INNER JOIN projects_status ps ON p.id_project_status = ps.id_project_status
+           WHERE ps.status > :status
+           GROUP BY id_project ) psh2 ON psh2.id_project = psh.id_project
+        INNER JOIN projects p ON p.id_project = psh.id_project
+        INNER JOIN borrowing_motive b ON p.id_borrowing_motive = b.id_motive
+        WHERE b.id_motive IN (:motives)
+        GROUP BY b.id_motive
+        ORDER BY b.rank';
+
+        $result = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->executeQuery(
+                $query,
+                ['status' => $status, 'motives' => $borrowingMotives],
+                ['motives' => Connection::PARAM_INT_ARRAY]
+            )
+            ->fetchAll();
+
+        return $result;
+    }
+
+    /**
+     * @param array      $status
+     * @param array|null $borrowingMotives
+     * @param array|null $partners
+     *
+     * @return array
+     */
+    public function countByStatus(array $status, ?array $borrowingMotives = null, ?array $partners = null) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->select('p.status, COUNT(p) AS project_number')
+            ->where('p.status IN (:status)')
+            ->groupBy('p.status')
+            ->setParameter('status', $status);
+
+        if ($borrowingMotives) {
+            $queryBuilder->andWhere('p.idBorrowingMotive in (:motives)')
+                ->setParameter('motives', $borrowingMotives);
+        }
+
+        if ($partners) {
+            $queryBuilder->andWhere('p.idPartner in (:partners)')
+                ->setParameter('partners', $partners);
+        }
+
+        return $queryBuilder->getQuery()->getArrayResult();
     }
 }
