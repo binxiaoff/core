@@ -207,7 +207,6 @@ class clients extends clients_crud
 
     public function totalmontantEmprunt($id_client)
     {
-        // Récupération du montant total emprunté d'un client
         $sql    = 'SELECT SUM(p.amount) AS total FROM clients c,companies co,projects p WHERE c.id_client = co.id_client_owner AND co.id_company = p.id_company AND c.id_client = ' . $id_client;
         $result = $this->bdd->query($sql);
 

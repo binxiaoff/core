@@ -206,7 +206,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                     <tr>
                         <th>ID</th>
                         <th>Nom</th>
-                        <th>statut</th>
+                        <th>Statut</th>
                         <th>Montant</th>
                         <th>PDF</th>
                         <th>Factures</th>
