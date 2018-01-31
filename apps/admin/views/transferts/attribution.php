@@ -133,10 +133,10 @@
             return;
         }
 
-        $("#cboxLoadingGraphic").show();
+        $('#cboxLoadingGraphic').show();
 
         $.get($(this).attr('action'), $(this).serialize()).done(function (data) {
-            $("#cboxLoadingGraphic").hide();
+            $('#cboxLoadingGraphic').hide();
             $('#project-form-container').hide();
             $('#response').html(data).show(0, function () {
                 $.colorbox.resize();
