@@ -86,6 +86,13 @@ class remboursementController extends bootstrap
             die;
         }
 
+        $ongoingProjectRepaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $reception->getIdProject(),
+            'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
+        ]);
+
+        $hasOngoingProjectRepaymentTask = null !== $ongoingProjectRepaymentTask;
+
         $debtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(true, ['id' => 'DESC']);
 
         if ($this->request->isMethod('POST')) {
@@ -135,8 +142,22 @@ class remboursementController extends bootstrap
                     /** @var ProjectPaymentManager $paymentManager */
                     $paymentManager = $this->get('unilend.service_repayment.project_payment_manager');
                 }
-                $paymentManager->pay($reception, $this->userEntity, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectChargesToApply);
 
+                try {
+                    $paymentManager->pay($reception, $this->userEntity, $repayOn, $debtCollectionMission, $debtCollectionFeeRate, $projectChargesToApply);
+                } catch (Exception $exception) {
+                    /** @var \Psr\Log\LoggerInterface $logger */
+                    $logger = $this->get('logger');
+                    $logger->error('Exception occurs when plan a repayment task. Error : ' . $exception->getMessage(), [
+                        'method' => __METHOD__,
+                        'file'   => $exception->getFile(),
+                        'line'   => $exception->getLine()
+                    ]);
+
+                    $session->getFlashBag()->add('repayment_task_error', $exception->getMessage());
+                    header('Location: ' . $this->url . '/remboursement/planifier/' . $receptionId);
+                    die;
+                }
                 $session->getFlashBag()->add('repayment_task_info', 'Le remboursement est créé, il est en attente de validation.');
 
                 header('Location: ' . $this->url . '/remboursement/confirmation/' . $receptionId);
@@ -166,6 +187,7 @@ class remboursementController extends bootstrap
             'repaymentMinDate'                 => $this->getRepaymentMinDate($reception),
             'canBypassDateRestriction'         => $this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity),
             'session'                          => $session,
+            'hasOngoingProjectRepaymentTask'   => $hasOngoingProjectRepaymentTask,
         ]);
     }
 
@@ -208,13 +230,16 @@ class remboursementController extends bootstrap
         }
 
         $projectRepaymentTaskRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask');
-        $projectRepaymentTasks          = $projectRepaymentTaskRepository->findBy(['idWireTransferIn' => $reception, 'status' => [
-            ProjectRepaymentTask::STATUS_PENDING,
-            ProjectRepaymentTask::STATUS_READY,
-            ProjectRepaymentTask::STATUS_IN_PROGRESS,
-            ProjectRepaymentTask::STATUS_ERROR,
-            ProjectRepaymentTask::STATUS_REPAID
-        ]]);
+        $projectRepaymentTasks          = $projectRepaymentTaskRepository->findBy([
+            'idWireTransferIn' => $reception,
+            'status'           => [
+                ProjectRepaymentTask::STATUS_PENDING,
+                ProjectRepaymentTask::STATUS_READY,
+                ProjectRepaymentTask::STATUS_IN_PROGRESS,
+                ProjectRepaymentTask::STATUS_ERROR,
+                ProjectRepaymentTask::STATUS_REPAID
+            ]
+        ]);
 
         if (0 === count($projectRepaymentTasks)) {
             header('Location: ' . $this->url);
