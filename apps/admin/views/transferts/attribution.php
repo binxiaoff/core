@@ -1,6 +1,6 @@
 <style>
     #response .attention {
-        width: 100%!important;
+        width: 100% !important;
     }
 </style>
 
@@ -25,7 +25,7 @@
                     <label for="id">ID Prêteur</label>
                     <input class="form-control" type="text" id="id" name="id">
                 </div>
-                </fieldset>
+            </fieldset>
             <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
                 <h3>Personne physique</h3>
                 <div class="form-group">
@@ -56,7 +56,7 @@
     </div>
     <div id="project-form-container" style="display:none;">
         <hr>
-        <form method="post" name="project-form" id="project-form" enctype="multipart/form-data" action="<?= $this->lurl ?>/transferts/non_attribues">
+        <form method="get" name="project-form" id="project-form" action="<?= $this->lurl ?>/transferts/recherche_projet">
             <fieldset style="background: #ECECEC; padding: 15px 15px 0; margin-bottom: 15px;">
                 <div class="form-group">
                     <label for="id_project">ID projet</label>
@@ -76,8 +76,8 @@
                 </div>
             </fieldset>
             <div class="text-right">
-                <input type="hidden" name="id_reception" value ="<?= $this->receptions->id_reception ?>">
-                <button type="submit" class="btn-primary">Valider</button>
+                <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
+                <button type="submit" class="btn-primary">Rechercher</button>
             </div>
         </form>
     </div>
@@ -86,49 +86,61 @@
 </div>
 
 <script>
-    $('#switch-lender').click(function() {
+    $('#switch-lender').click(function () {
         $('#switch-lender').removeClass('btnDisabled');
         $('#switch-project').addClass('btnDisabled');
         $('#project-form-container').hide(0);
         $('#response').hide(0);
-        $('#lender-form-container').show(0, function() {
+        $('#lender-form-container').show(0, function () {
             $.colorbox.resize();
         });
     });
 
-    $('#switch-project').click(function() {
+    $('#switch-project').click(function () {
         $('#switch-lender').addClass('btnDisabled');
         $('#switch-project').removeClass('btnDisabled');
         $('#lender-form-container').hide(0);
         $('#response').hide(0);
-        $('#project-form-container').show(0, function() {
+        $('#project-form-container').show(0, function () {
             $.colorbox.resize();
         });
         $('#id_project').focus();
     });
 
-    $('#search-lender').submit(function(e) {
+    $('#search-lender').submit(function (e) {
         e.preventDefault();
 
-        $.post(add_url + '/transferts/attribution_preteur', $(this).serialize()).done(function(data) {
-            if (data != 'nok') {
+        $.post(add_url + '/transferts/attribution_preteur', $(this).serialize()).done(function (data) {
+            if (data !== 'nok') {
                 $('#lender-form-container').hide();
-                $('#response').html(data).show(0, function() {
+                $('#response').html(data).show(0, function () {
                     $.colorbox.resize();
                 });
             }
         });
     });
 
-    $('#project-form').submit(function(e) {
-        if ($('[name=type_remb]:checked').val() == undefined) {
-            e.preventDefault();
+    $('#project-form').submit(function (e) {
+        e.preventDefault();
+
+        if ($('[name=type_remb]:checked').val() === undefined) {
             alert('Vous devez renseigner le type de remboursement');
+            return;
         }
 
-        if ($('#id_project').val() == '') {
-            e.preventDefault();
+        if ($('#id_project').val() === '') {
             alert('Vous devez renseigner le numéro de projet');
+            return;
         }
+
+        $('#cboxLoadingGraphic').show();
+
+        $.get($(this).attr('action'), $(this).serialize()).done(function (data) {
+            $('#cboxLoadingGraphic').hide();
+            $('#project-form-container').hide();
+            $('#response').html(data).show(0, function () {
+                $.colorbox.resize();
+            });
+        });
     });
 </script>
