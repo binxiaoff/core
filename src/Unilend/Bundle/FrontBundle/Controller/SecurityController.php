@@ -184,7 +184,7 @@ class SecurityController extends Controller
                 $keywords = [
                     'firstName'     => $client->getPrenom(),
                     'login'         => $client->getEmail(),
-                    'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
                     'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
                 break;
