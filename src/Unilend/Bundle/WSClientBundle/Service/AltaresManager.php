@@ -15,6 +15,7 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummary;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\NotificationInformation;
 
 class AltaresManager
 {
@@ -28,10 +29,18 @@ class AltaresManager
     const RESOURCE_START_MONITORING = 'start_altares_monitoring';
     const RESOURCE_END_MONITORING   = 'end_altares_monitoring';
 
-    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN = [101, 102, 108, 109, 106];
-    const EXCEPTION_CODE_NO_FINANCIAL_DATA        = [118];
-    const EXCEPTION_CODE_TECHNICAL_ERROR          = [-1, 0, 1, 2, 3, 4, 5, 7, 8];
-    const EXCEPTION_CODE_ALTARES_DOWN             = -999;
+    const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN        = [101, 102, 108, 109, 106];
+    const EXCEPTION_CODE_NO_FINANCIAL_DATA               = [118];
+    const EXCEPTION_CODE_TECHNICAL_ERROR                 = [-1, 0, 1, 2, 3, 4, 5, 7, 8];
+    const EXCEPTION_CODE_ALTARES_DOWN                    = -999;
+    const EXCEPTION_CODE_ALTARES_SIREN_ALREADY_MONITORED = 503;
+
+    /** RiskDataMonitoring Notification Status for WS call*/
+    const NOTIFICATION_STATUS_NOT_READ = 2;
+    const NOTIFICATION_STATUS_READ     = 1;
+    const NOTIFICATION_STATUS_ALL      = 3;
+
+    const DEFAULT_PAGE_NUMBER = 1;
 
     const CALL_TIMEOUT = 8;
 
@@ -47,6 +56,8 @@ class AltaresManager
     private $identityClient;
     /** @var \SoapClient */
     private $riskClient;
+    /** @var \SoapClient */
+    private $riskMonitoringClient;
     /** @var Serializer */
     private $serializer;
     /** @var ResourceManager */
@@ -63,6 +74,7 @@ class AltaresManager
      * @param CallHistoryManager $callHistoryManager
      * @param \SoapClient        $identityClient
      * @param \SoapClient        $riskClient
+     * @param \SoapClient        $riskMonitoringClient
      * @param Serializer         $serializer
      * @param ResourceManager    $resourceManager
      */
@@ -73,18 +85,20 @@ class AltaresManager
         CallHistoryManager $callHistoryManager,
         \SoapClient $identityClient,
         \SoapClient $riskClient,
+        \SoapClient $riskMonitoringClient,
         Serializer $serializer,
         ResourceManager $resourceManager
     )
     {
-        $this->login              = $login;
-        $this->password           = $password;
-        $this->logger             = $logger;
-        $this->callHistoryManager = $callHistoryManager;
-        $this->identityClient     = $identityClient;
-        $this->riskClient         = $riskClient;
-        $this->serializer         = $serializer;
-        $this->resourceManager    = $resourceManager;
+        $this->login                = $login;
+        $this->password             = $password;
+        $this->logger               = $logger;
+        $this->callHistoryManager   = $callHistoryManager;
+        $this->identityClient       = $identityClient;
+        $this->riskClient           = $riskClient;
+        $this->riskMonitoringClient = $riskMonitoringClient;
+        $this->serializer           = $serializer;
+        $this->resourceManager      = $resourceManager;
     }
 
     /**
@@ -373,19 +387,30 @@ class AltaresManager
     }
 
 
+    /**
+     * @param string $siren
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function startMonitoring(string $siren) : bool
     {
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_START_MONITORING);
-        /** @var \SoapClient $soapClient */
-        $soapClient = $this->{'AlertClient'}; //TODO To be confirmed which client should be called
-        $response   = $soapClient->__soapCall(
+        $response   = $this->riskMonitoringClient->__soapCall(
             $wsResource->getResourceName(), [
-            ['identification' => $this->getIdentification(), 'refClient' => 'sffpme'] + ['siren' => $siren]
+            ['identification' => $this->getIdentification(), 'refClient' => 'sffpme', 'ajoutAlerte' => true, 'operation' => 1, 'siren' => $siren]
         ]);
 
         if (null !== $response) {
-            //TODO do things according to possible feedback
-            return true;
+            if (
+                $response->return->correct
+                || null !== $response->return->exception && self::EXCEPTION_CODE_ALTARES_SIREN_ALREADY_MONITORED == $response->return->exception->code
+            ) {
+                return true;
+            }
+            if (null !== $response->return->exception && false === empty($response->return->exception->description)) {
+                throw new \Exception('Altares exception: ' . $response->return->exception->description);
+            }
         }
 
         return false;
@@ -394,13 +419,95 @@ class AltaresManager
 
     public function stopMonitoring(string $siren) : bool
     {
+        $response   = $this->riskMonitoringClient->__soapCall(
+            'deletePortfolioItem', [
+            ['identification' => $this->getIdentification(), 'refClient' => 'sffpme', 'ajoutAlerte' => false, 'operation' => 2, 'siren' => $siren]
+        ]);
 
+        if (null !== $response) {
+
+        }
 
         return false;
     }
 
-    public function getMonitoringEvents(string $siren)
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param int       $numberEvents
+     * @param int|null  $page
+     *
+     * @return null|NotificationInformation
+     * @throws \Exception
+     */
+    public function getMonitoringEvents(\DateTime $start, \DateTime $end, int $numberEvents, ?int $page = self::DEFAULT_PAGE_NUMBER) : ?NotificationInformation
     {
+        $response   = $this->riskMonitoringClient->__soapCall(
+            'getAllAlertes', [
+            [
+                'identification' => $this->getIdentification(),
+                'refClient'      => 'sffpme',
+                'au'             => $end->format('Y-m-d'),
+                'du'             => $start->format('Y-m-d'),
+                'etatLu'         => self::NOTIFICATION_STATUS_NOT_READ,
+                'page'           => $page,
+                'taillePage'     => $numberEvents
+            ]
+        ]);
 
+        if (null !== $response) {
+            if ($response->return->correct && false === empty($response->return->myInfo)) {
+                if (false === is_array($response->return->myInfo->alerteList)) {
+                    $response->return->myInfo->alerteList = [$response->return->myInfo->alerteList];
+                }
+
+                foreach ($response->return->myInfo->alerteList as $index => $notification) {
+                    if (false === is_array($response->return->myInfo->alerteList[$index]->evenementList)) {
+                        $response->return->myInfo->alerteList[$index]->evenementList = [$response->return->myInfo->alerteList[$index]->evenementList];
+                    }
+                }
+                /** @var NotificationInformation $notificationInformation */
+                $notificationInformation = $this->serializer->deserialize(json_encode($response->return->myInfo), NotificationInformation::class, 'json');
+
+                return $notificationInformation;
+            }
+
+            if (null !== $response->return->exception && false === empty($response->return->exception->description)) {
+                throw new \Exception('Altares exception: ' . $response->return->exception->description);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $notificationId
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function setNotificationAsRead(string $notificationId) : bool
+    {
+        $response   = $this->riskMonitoringClient->__soapCall(
+            'setLu', [
+            [
+                'identification' => $this->getIdentification(),
+                'refClient'      => 'sffpme',
+                'alerteId'       => $notificationId,
+                'bLu'            => true
+            ]
+        ]);
+
+        if (null !== $response) {
+            if ($response->return->correct) {
+                return true;
+            }
+
+            if (null !== $response->return->exception && false === empty($response->return->exception->description)) {
+                throw new \Exception('Altares exception: ' . $response->return->exception->description);
+            }
+        }
+
+        return false;
     }
 }

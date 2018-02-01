@@ -81,4 +81,18 @@ class MonitoringManger
 
         return count($callLogs) > 0;
     }
+
+    /**
+     * @return \DateTime
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getLastMonitoringEventDate(string $provider) : \DateTime
+    {
+        $lastEvent = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findLastCallLogForProvider($provider);
+        if (null === $lastEvent) {
+            return new \DateTime('2013-01-01');
+        }
+
+        return $lastEvent->getAdded();
+    }
 }

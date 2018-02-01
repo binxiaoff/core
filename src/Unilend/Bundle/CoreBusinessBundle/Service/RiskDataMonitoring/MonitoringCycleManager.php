@@ -11,6 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 class MonitoringCycleManager
 {
     const LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS = [
+        ProjectsStatus::NOT_ELIGIBLE,
         ProjectsStatus::ABANDONED,
         ProjectsStatus::COMMERCIAL_REJECTION,
         ProjectsStatus::ANALYSIS_REJECTION,

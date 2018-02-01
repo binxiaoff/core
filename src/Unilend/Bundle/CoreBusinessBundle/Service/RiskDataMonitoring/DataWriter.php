@@ -180,18 +180,14 @@ class DataWriter
      */
     public function startMonitoringPeriod(string $siren, string $provider) : RiskDataMonitoring
     {
-        //TODO see if it is easier just to pass the monitoring object here instead of provider. given that all provider should start at the same time ...
-
         if ($this->monitoringManager->isSirenMonitored($siren, $provider)) {
             throw new \Exception('Siren ' . $siren . ' is already monitored. Can not start monitoring period for provider ' . $provider);
         }
 
-        $monitoring = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'provider' => $provider, 'start' => NULL]);
-        if (null === $monitoring) {
-            throw new \Exception('Monitoring period can not start. There is no entry in risk_data_monitoring for siren ' . $siren . ' and provider ' . $provider);
-        }
-
-        $monitoring->setStart(new \DateTime('NOW'));
+        $monitoring = new RiskDataMonitoring();
+        $monitoring->setSiren($siren)
+            ->setProvider($provider)
+            ->setStart(new \DateTime('NOW'));
 
         $this->entityManager->persist($monitoring);
         $this->entityManager->flush($monitoring);

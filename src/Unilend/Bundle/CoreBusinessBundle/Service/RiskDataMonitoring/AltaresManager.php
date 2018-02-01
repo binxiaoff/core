@@ -10,11 +10,25 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator\CompanyValidator;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\EventDetail;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\Notification;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\RiskDataMonitoring\NotificationInformation;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager as AltaresWsClient;
 
 class AltaresManager
 {
-    const PROVIDER_NAME = 'altares';
+    const PROVIDER_NAME                     = 'altares';
+    const EVENT_CODES_IMPACTING_ELIGIBILITY = [
+        'ALTA_ACT',
+        'ALTA_ADR',
+        'ALTA_CAP',
+        'ALTA_EIRL',
+        'ALTA_ETA',
+        'ALTA_FJ',
+        'ALTA_RS',
+        'ALTA_SCO',
+        'ALTA_BIL'
+    ];
 
     /** @var EntityManager */
     private $entityManager;
@@ -61,18 +75,20 @@ class AltaresManager
 
     /**
      * @param string $siren
-     * @param string $altaresCode
      *
      * @throws OptimisticLockException
      * @throws \Exception
      */
-    public function saveAltaresMonitoringEvent(string $siren, string $altaresCode) : void
+    private function saveMonitoringEvent(string $siren) : void
     {
-        $monitoring         = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME);
+        if (null === $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME)) {
+            $monitoring = $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
+        }
+
         $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
         $monitoringTypes    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => self::PROVIDER_NAME]);
 
-        $this->refreshDataByEventCode($siren, $altaresCode);
+        $this->refreshData($siren);
 
         /** @var Companies $company */
         foreach ($monitoredCompanies as $company) {
@@ -96,9 +112,7 @@ class AltaresManager
                 }
             }
             $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
-
         }
-        $this->entityManager->flush();
     }
 
     /**
@@ -116,34 +130,17 @@ class AltaresManager
 
     /**
      * @param string $siren
-     * @param string $altaresCode
      *
      * @throws \Exception
      */
-    private function refreshDataByEventCode(string $siren, string $altaresCode) : void
+    private function refreshData(string $siren) : void
     {
         $this->altaresWsManager->setReadFromCache(false);
 
-        switch ($altaresCode) {
-            case 'ALTA_ACT':
-            case 'ALTA_ADR':
-            case 'ALTA_CAP':
-            case 'ALTA_EIRL':
-            case 'ALTA_ETA':
-            case 'ALTA_FJ':
-            case 'ALTA_RS':
-                $this->altaresWsManager->getCompanyIdentity($siren);
-                break;
-            case 'ALTA_SCO':
-                $this->altaresWsManager->getScore($siren);
-                break;
-            case 'ALTA_BIL':
-                $this->altaresWsManager->getBalanceSheets($siren);
-                break;
-            default:
-                //TODO don't know what for instance
-                break;
-        }
+        $this->altaresWsManager->getCompanyIdentity($siren);
+        $this->altaresWsManager->getScore($siren);
+        $this->altaresWsManager->getBalanceSheets($siren);
+
         $this->altaresWsManager->setReadFromCache(true);
     }
 
@@ -151,6 +148,7 @@ class AltaresManager
      * @param string $siren
      *
      * @return bool
+     * @throws \Exception
      */
     public function activateMonitoring(string $siren) : bool
     {
@@ -167,9 +165,73 @@ class AltaresManager
         return $this->altaresWsManager->stopMonitoring($siren);
     }
 
-
-    public function setEventAsRead(String $eventId)
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    public function saveMonitoringEvents() : void
     {
+        $lastEvent               = $this->monitoringManager->getLastMonitoringEventDate(self::PROVIDER_NAME);
+        $now                     = new \DateTime('NOW');
+        $numberOfNotReadEvents   = $this->getNumberOfNotReadNotReadNotifications($lastEvent, $now);
+        $notificationInformation = $this->altaresWsManager->getMonitoringEvents($lastEvent, $now, $numberOfNotReadEvents);
 
+        $eventAffectsEligibility = false;
+        /** @var Notification $notification */
+        foreach ($notificationInformation->getNotificationList() as $notification) {
+            /** @var EventDetail $event */
+            foreach ($notification->getEventList() as $event) {
+                if (in_array($event->getEventCode(), self::EVENT_CODES_IMPACTING_ELIGIBILITY)) {
+                    $eventAffectsEligibility = true;
+                }
+            }
+
+            if ($eventAffectsEligibility) {
+                $this->saveMonitoringEvent($notification->getSiren());
+                $this->setNotificationAsRead($notification);
+            }
+        }
+    }
+
+    /**
+     * @param Notification $notification
+     */
+    public function setNotificationAsRead(Notification $notification) : void
+    {
+        try {
+            $this->altaresWsManager->setNotificationAsRead($notification->getId());
+        } catch (\Exception $exception) {
+            $this->logger->warning('Altares notification status could not be set to "read". NotificationId: ' . $notification->getId() . ', Exception: ' . $exception->getMessage(), [
+                'file'           => __CLASS__,
+                'line'           => __LINE__,
+                'idNotification' => $notification->getId(),
+                'siren'          => $notification->getSiren()
+            ]);
+        }
+    }
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getNumberOfNotReadNotReadNotifications(\DateTime $start, \DateTime $end)
+    {
+        /** @var NotificationInformation $notificationInformation */
+        $notificationInformation = $this->altaresWsManager->getMonitoringEvents($start, $end, 1);
+
+        return $notificationInformation->getCountNotReadNotificationsSelection();
+    }
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getGlobalNumberOfNotReadEvents()
+    {
+        $start                   = new \DateTime('First fo September 2013');
+        $end                     = new \DateTime('NOW');
+        $notificationInformation = $this->altaresWsManager->getMonitoringEvents($start, $end, 1);
+
+        return $notificationInformation->getCountNotReadNotificationsGlobal();
     }
 }
