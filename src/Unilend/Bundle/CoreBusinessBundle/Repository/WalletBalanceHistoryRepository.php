@@ -275,7 +275,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
         }
 
         if ($endDate instanceof \DateTime) {
-            $endDate->setTime(00, 00, 00);
+            $endDate->setTime(23, 59, 59);
             $queryBuilder->andWhere('o.added <= :endDate')
                 ->setParameter('endDate', $endDate->format('Y-m-d H:i:s'));
         }
