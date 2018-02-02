@@ -76,14 +76,14 @@
                     <td>
                         <form method="post" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= addslashes($aProject['title']) ?> (<?= $aProject['id_project'] ?>) ?');">
                             <?php if (
-                                isset($aProject['status_remb'], $aProject['status_mandat'], $aProject['authority_status'])
+                                isset($aProject['status_remb'], $aProject['status_mandat'], $aProject['authority_status'], $aProject['needsBeneficialOwnerDeclaration'])
                                 && $aProject['status_remb'] == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_PENDING
                                 && $aProject['status_mandat'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                                 && $aProject['authority_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
-                                && $aProject['beneficial_owner_declaration_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
+                                && $aProject['needsBeneficialOwnerDeclaration'] && $aProject['beneficial_owner_declaration_status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED
                             ) : ?>
-                                <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds" />
-                                <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
+                                <input type="submit" name="validateProxy" class="btn-primary" value="Débloquer les fonds">
+                                <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>">
                             <?php endif; ?>
                         </form>
                     </td>
