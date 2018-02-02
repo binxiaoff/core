@@ -18,7 +18,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
     {
         $this
             ->setName('unilend:project:upcoming_close_out_netting:notify')
-            ->setDescription('Send notifications about upcoming projects close out netting, X days before lender repayment schedule')
+            ->setDescription('Send notifications about upcoming projects close out netting, X days before the close out netting limit date')
             ->addArgument('interval', InputArgument::REQUIRED, 'Number of days left before lenders repayment date');
     }
 
@@ -53,7 +53,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
                 $project     = $projectRepository->find($projectRow['id_project']);
                 $fundingDate = new \DateTime($projectRow['funding_date']);
                 $daysLeft    = $today->diff(new \DateTime($projectRow['last_repayment_date']))->days;
-$output->writeln('Projet: ' . $project->getIdProject() . ' days left: ' . $daysLeft);
+                $output->writeln('Projet: ' . $project->getIdProject() . ' days left: ' . $daysLeft);
                 $isDebtCollectionFeeDueToBorrower = $debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($project);
                 if (
                     (ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS - $interval === $daysLeft && false === $isDebtCollectionFeeDueToBorrower)
@@ -79,7 +79,7 @@ $output->writeln('Projet: ' . $project->getIdProject() . ' days left: ' . $daysL
 
                 }
             } catch (\Exception $exception) {
-                $logger->warning(
+                $logger->error(
                     'Could not get details for upcoming close out netting projects. Error: ' . $exception->getMessage(),
                     ['method' => __METHOD__, 'id_project' => $project->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
@@ -111,7 +111,7 @@ $output->writeln('Projet: ' . $project->getIdProject() . ' days left: ' . $daysL
                 $logger->error('Could not send slack notification, no configured slack channels found.', ['method' => __METHOD__, 'setting_type' => $settingType]);
             }
         } catch (\Exception $exception) {
-            $logger->warning(
+            $logger->error(
                 'Could not send slack notification about upcoming projects to decline. Exception: ' . $exception->getMessage(),
                 ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
@@ -152,7 +152,7 @@ $output->writeln('Projet: ' . $project->getIdProject() . ' days left: ' . $daysL
             $mailer->send($message);
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');
-            $logger->warning(
+            $logger->error(
                 'Could not send email: ' . $mailType . '. - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );

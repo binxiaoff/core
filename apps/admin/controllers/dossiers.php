@@ -3276,7 +3276,7 @@ class dossiersController extends bootstrap
             $this->render(null, [
                 'remainingAmountToCollect'     => $totalRemainingAmount,
                 'pendingWireTransferInAmount'  => $totalPendingWireTransferInAmount,
-                'nbProjectsWithDeptCollection' => $projectsWithDebtCollection,
+                'nbProjectsWithDebtCollection' => $projectsWithDebtCollection,
                 'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,
                 'projectWithPaymentProblems'   => $projectData
             ]);

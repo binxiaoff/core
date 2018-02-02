@@ -1389,30 +1389,40 @@ class ProjectsRepository extends EntityRepository
     {
         $query     = '
             SELECT
-              e.id_project,
-              MAX(date_echeance)           AS last_repayment_date,
-              funding_status_history.added AS funding_date
-            FROM echeanciers e
-              INNER JOIN projects p ON p.id_project = e.id_project
-              INNER JOIN companies c ON p.id_company = c.id_company
-              INNER JOIN company_status cs ON c.id_status = cs.id
-              INNER JOIN (
-                 SELECT
-                   psh.id_project,
-                   MIN(psh.added) AS added
-                 FROM projects_status_history psh
-                   INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                 WHERE ps.status = :statusFunding
-                 GROUP BY psh.id_project
-               ) funding_status_history ON e.id_project = funding_status_history.id_project
-            WHERE
-              e.status = :repaid
-              AND p.status IN (:projectStatus)
-              AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = :emptyDate)
-              AND cs.label IN (:companyStatus)
-            GROUP BY e.id_project
-            HAVING (DATE(funding_date) < :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberFirstGeneration) OR
-                   (DATE(funding_date) >= :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberSecondGeneration)
+              id_project,
+              last_repayment_date,
+              CASE
+                WHEN funding_date < :fundingChangeDate THEN DATEDIFF(NOW(), DATE_ADD(last_repayment_date, INTERVAL :daysNumberFirstGeneration DAY))
+                ELSE DATEDIFF(NOW(), DATE_ADD(last_repayment_date, INTERVAL :daysNumberSecondGeneration DAY))
+              END AS days_diff_con_limit_date,
+              funding_date
+            FROM
+                (SELECT
+                  e.id_project,
+                  MAX(date_echeance)           AS last_repayment_date,
+                  funding_status_history.added AS funding_date
+                FROM echeanciers e
+                  INNER JOIN projects p ON p.id_project = e.id_project
+                  INNER JOIN companies c ON p.id_company = c.id_company
+                  INNER JOIN company_status cs ON c.id_status = cs.id
+                  INNER JOIN (
+                     SELECT
+                       psh.id_project,
+                       MIN(psh.added) AS added
+                     FROM projects_status_history psh
+                       INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                     WHERE ps.status = :statusFunding
+                     GROUP BY psh.id_project
+                   ) funding_status_history ON e.id_project = funding_status_history.id_project
+                WHERE
+                  e.status = :repaid
+                  AND p.status IN (:projectStatus)
+                  AND (p.close_out_netting_date IS NULL OR p.close_out_netting_date = :emptyDate)
+                  AND cs.label IN (:companyStatus)
+                GROUP BY e.id_project
+                HAVING (DATE(funding_date) < :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberFirstGeneration - :numberOfDays) OR
+                       (DATE(funding_date) >= :fundingChangeDate AND DATEDIFF(NOW(), last_repayment_date) >= :daysNumberSecondGeneration - :numberOfDays)
+               ) AS upcoming_con
         ';
         $params    = [
             'statusFunding'              => ProjectsStatus::EN_FUNDING,
@@ -1421,8 +1431,9 @@ class ProjectsRepository extends EntityRepository
             'emptyDate'                  => '0000-00-00',
             'companyStatus'              => [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
             'fundingChangeDate'          => DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE,
-            'daysNumberFirstGeneration'  => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS - $numberOfDays,
-            'daysNumberSecondGeneration' => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_SECOND_GENERATION_LOANS - $numberOfDays
+            'daysNumberFirstGeneration'  => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS,
+            'daysNumberSecondGeneration' => ProjectCloseOutNettingManager::OVERDUE_LIMIT_DAYS_SECOND_GENERATION_LOANS,
+            'numberOfDays'               => $numberOfDays
         ];
         $types     = [
             'statusFunding'              => PDO::PARAM_INT,
@@ -1432,7 +1443,8 @@ class ProjectsRepository extends EntityRepository
             'companyStatus'              => Connection::PARAM_STR_ARRAY,
             'fundingChangeDate'          => PDO::PARAM_STR,
             'daysNumberFirstGeneration'  => PDO::PARAM_INT,
-            'daysNumberSecondGeneration' => PDO::PARAM_INT
+            'daysNumberSecondGeneration' => PDO::PARAM_INT,
+            'numberOfDays'               => PDO::PARAM_INT
         ];
         $statement = $this->getEntityManager()
             ->getConnection()

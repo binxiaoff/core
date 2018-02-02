@@ -1,6 +1,5 @@
 <link href="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
 <script src="<?= $this->lurl ?>/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="<?= $this->lurl ?>/oneui/js/pages/upcomingCloseOutNetting.js"></script>
 <style>
     @font-face {
         font-family: 'FontAwesome';
@@ -69,6 +68,43 @@
                 })
             })
         })
+        if ($('.projects-to-decline-div') !== undefined) {
+            var dt = $('#projects-to-decline-table').DataTable({
+                ajax: '/dashboard/projets_a_dechoir',
+                language: {
+                    url: '/oneui/js/plugins/datatables/localisation/fr_FR.json'
+                },
+                columnDefs: [
+                    {visible: false, targets: [5]}
+                ],
+                initComplete:function (settings, json) {
+                    if (json.error !== null) {
+                        $('.dataTables_empty').html(json.error)
+                    }
+                },
+                createdRow: function (row, data, index) {
+                    var $row = $(row)
+                    $row.find('td:first-child').html(getProjectUrl(data[5], data[0]))
+                    var $otherProjectsColumn = $row.find('td:last-child')
+                    var projectList = ''
+                    $.each(data[4], function (key, projectId) {
+                        projectList += getProjectUrl(projectId)
+                        if (key < data[4].length - 1 ) {
+                            projectList += ', '
+                        }
+                    })
+                    $otherProjectsColumn.html(projectList)
+                }
+            })
+            function getProjectUrl(projectId, projectTitle) {
+                var linkText = projectTitle !== undefined ? projectTitle : projectId
+                return '<a href="/dossiers/edit/' + projectId + '">' + linkText + '</a>'
+            }
+            $.fn.dataTable.ext.errMode = 'none';
+            dt.on('error.dt', function (e, settings, techNote, message) {
+                console.log(message)
+            })
+        }
     })
 </script>
 <style>
@@ -114,10 +150,10 @@
 
 </style>
 <div id="contenu">
-    <?php if ($this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)) : ?>
-        <h1>Projets à déchoir</h1>
-        <div class="projects">
-            <table id="projects-to-decline" class="table table-bordered table-striped">
+    <?php if (true === $this->showProjectsToDecline) : ?>
+        <div class="projects-to-decline-div">
+            <h1>Projets à déchoir</h1>
+            <table id="projects-to-decline-table" class="table table-bordered table-striped" style="width: 100%">
                 <thead>
                 <tr>
                     <th>Projet</th>
