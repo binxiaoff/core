@@ -212,6 +212,15 @@
                                     <div class="pageBreakBefore">
                                         <div class="dates-table">
                                             <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
+                                                <tr>
+                                                    <th>DATE</th>
+                                                    <th>CAPITAL</th>
+                                                    <th>INTERETS</th>
+                                                    <th>COMMISSION<br/>UNILEND H.T.</th>
+                                                    <th>TVA</th>
+                                                    <th>TOTAL</th>
+                                                    <th>CAPITAL RESTANT DÛ</th>
+                                                </tr>
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endforeach; ?>
@@ -258,6 +267,15 @@
                                     <div class="pageBreakBefore">
                                         <div class="dates-table">
                                             <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
+                                                <tr>
+                                                    <th>NOM ou<br/>Raison sociale</th>
+                                                    <th>PRENOM<br/>ou SIREN</th>
+                                                    <th>ADRESSE</th>
+                                                    <th>CODE<br/> POSTAL</th>
+                                                    <th>VILLE</th>
+                                                    <th>MONTANT</th>
+                                                    <th>TAUX<br/> D'INTERET</th>
+                                                </tr>
                                 <?php endif; ?>
                             <?php endif; ?>
                         <?php endforeach; ?>

@@ -95,6 +95,10 @@ class pdfController extends bootstrap
 
         switch ($sTypePdf) {
             case 'authority':
+                $this->oSnapPdf->setOption('footer-right', '[page]/[toPage]');
+                $this->oSnapPdf->setOption('footer-font-size', '7');
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
+                break;
             case 'warranty':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
                 break;
