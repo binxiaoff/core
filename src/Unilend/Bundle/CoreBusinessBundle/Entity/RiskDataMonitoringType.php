@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * RiskDataMonitoringType
  *
  * @ORM\Table(name="risk_data_monitoring_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_label", columns={"label"})}, indexes={@ORM\Index(name="idx_risk_data_monitoring_type_provider", columns={"provider"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringTypeRepository")
  */
 class RiskDataMonitoringType
 {
@@ -22,9 +22,9 @@ class RiskDataMonitoringType
     /**
      * @var string
      *
-     * @ORM\Column(name="label", type="string", length=191, nullable=true)
+     * @ORM\Column(name="company_rating", type="string", length=191, nullable=true)
      */
-    private $label;
+    private $companyRating;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule
@@ -72,13 +72,13 @@ class RiskDataMonitoringType
     /**
      * Set label
      *
-     * @param string $label
+     * @param string $companyRating
      *
      * @return RiskDataMonitoringType
      */
-    public function setLabel(string $label) : RiskDataMonitoringType
+    public function setCompanyRating(?string $companyRating) : RiskDataMonitoringType
     {
-        $this->label = $label;
+        $this->companyRating = $companyRating;
 
         return $this;
     }
@@ -88,9 +88,9 @@ class RiskDataMonitoringType
      *
      * @return string
      */
-    public function getLabel() : string
+    public function getCompanyRating() : string
     {
-        return $this->label;
+        return $this->companyRating;
     }
 
     /**

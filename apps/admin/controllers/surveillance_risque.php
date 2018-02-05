@@ -22,10 +22,33 @@ class surveillance_risqueController extends bootstrap
         $this->dateFormatter = $this->get('date_formatter');
         $this->dateFormatter->setPattern('d MMM y');
         $this->currencyFormatter = $this->get('currency_formatter');
+        $this->translator        = $this->get('translator');
+
+        $start = new \DateTime('NOW');
+        $start->modify('-3 month');
 
         /** @var RiskDataMonitoringRepository $riskDataMonitoringRepository */
         $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
-        $this->events = $this->formatEvents($riskDataMonitoringRepository->getMonitoringEvents());
+
+        try {
+            $this->companyRatingEvents = $this->formatEvents($riskDataMonitoringRepository->getCompanyRatingEvents($start));
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('admin:surveillance_risque: Could not get list of company rating events. Exception message : ' . $exception->getMessage(), [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine()
+            ]);
+            $this->companyRatingEvents = [];
+        }
+
+        try {
+            $this->eligibilityEvents = $this->formatEvents($riskDataMonitoringRepository->getEligibilityEvents());
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('admin:surveillance_risque: Could not get list of eligibility events. Exception message : ' . $exception->getMessage(), [
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine()
+            ]);
+            $this->eligibilityEventss = [];
+        }
     }
 
     /**
@@ -35,12 +58,24 @@ class surveillance_risqueController extends bootstrap
      */
     private function formatEvents(array $events)
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository $operationRepository */
-        $operationRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Operation');
-        $activeStatus        = [ProjectsStatus::SALES_TEAM_UPCOMING_STATUS, ProjectsStatus::SALES_TEAM, ProjectsStatus::RISK_TEAM, ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME];
-        $formattedEvents     = [];
+        $operationRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $activeStatus                     = [
+            ProjectsStatus::SALES_TEAM_UPCOMING_STATUS,
+            ProjectsStatus::SALES_TEAM,
+            ProjectsStatus::RISK_TEAM,
+            ProjectsStatus::REMBOURSEMENT,
+            ProjectsStatus::PROBLEME
+        ];
+        $formattedEvents                  = [];
 
         foreach ($events as $event) {
+            if (isset($event['value']) && isset($event['previous_value']) && $event['value'] === $event['previous_value']) {
+                continue;
+            }
+
             if (false === in_array($event['status'], [ProjectsStatus::ABANDONED, ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])) {
                 if (false === isset($formattedEvents[$event['siren']])) {
                     $formattedEvents[$event['siren']] = [
@@ -56,6 +91,10 @@ class surveillance_risqueController extends bootstrap
 
                 if ($formattedEvents[$event['siren']]['activeSiren'] || in_array($event['status'], $activeStatus)) {
                     $formattedEvents[$event['siren']]['activeSiren'] = true;
+                }
+
+                if (empty($event['company_rating']) && empty($event['previous_value']) && false === is_numeric($event['value'])) {
+                    $event['value'] = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($event['value']);
                 }
 
                 $formattedEvents[$event['siren']]['count']++;

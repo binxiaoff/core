@@ -416,16 +416,26 @@ class AltaresManager
         return false;
     }
 
-
+    /**
+     * @param string $siren
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public function stopMonitoring(string $siren) : bool
     {
-        $response   = $this->riskMonitoringClient->__soapCall(
-            'deletePortfolioItem', [
-            ['identification' => $this->getIdentification(), 'refClient' => 'sffpme', 'ajoutAlerte' => false, 'operation' => 2, 'siren' => $siren]
+        $response = $this->riskMonitoringClient->__soapCall('deletePortfolioItem', [
+            ['identification' => $this->getIdentification(), 'siren' => $siren]
         ]);
 
         if (null !== $response) {
+            if ($response->return->correct) {
+                return true;
+            }
 
+            if (null !== $response->return->exception && false === empty($response->return->exception->description)) {
+                throw new \Exception('Altares exception: ' . $response->return->exception->description);
+            }
         }
 
         return false;
