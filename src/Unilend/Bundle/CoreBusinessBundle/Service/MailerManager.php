@@ -476,6 +476,17 @@ class MailerManager
 
             $now          = new \DateTime();
             $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : $bid->getProject()->getDateFin();
+
+            if (false === $endDate instanceof \DateTime) {
+                $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait(), 'getDateFin' => $bid->getProject()->getDateFin()];
+                $this->oLogger->warning(
+                    'Could not determine the project end date using following values: ' . json_encode($datesUsed) .
+                    ' No mail will be sent to the client ' . $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
+                    ['method' => __METHOD__, 'id_project' => $project->id_project, 'id_notification' => $notification->id_notification]
+                );
+
+                return;
+            }
             $interval     = $this->formatDateDiff($now, $endDate);
             $bidManager   = $this->container->get('unilend.service.bid_manager');
             $projectRates = $bidManager->getProjectRateRange($project);
