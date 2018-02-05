@@ -1,6 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionFeeDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -95,7 +96,7 @@ class remboursementController extends bootstrap
 
         $debtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(true, ['id' => 'DESC']);
 
-        if ($this->request->isMethod('POST')) {
+        if ($this->request->isMethod(Request::METHOD_POST)) {
             $errors                = [];
             $projectChargesToApply = [];
             if ($this->request->request->get('charges')) {
