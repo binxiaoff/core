@@ -445,6 +445,8 @@ class OperationManager
     }
 
     /**
+     * Todo: add a date as a parameter so that when we do the regularization, we can take into account the original tax
+     *
      * @param Loans  $loan
      * @param        $amountInterestGross
      * @param        $origin

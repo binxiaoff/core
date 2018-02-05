@@ -57,8 +57,10 @@ class ProjectEarlyRepaymentManager
      * @param int                  $idUser
      *
      * @return ProjectRepaymentTaskLog
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function repay(ProjectRepaymentTask $projectRepaymentTask, $idUser = Users::USER_ID_CRON)
+    public function repay(ProjectRepaymentTask $projectRepaymentTask, $idUser = Users::USER_ID_CRON) : ProjectRepaymentTaskLog
     {
         if (ProjectRepaymentTask::TYPE_EARLY !== $projectRepaymentTask->getType()) {
             $this->logger->warning(
@@ -73,49 +75,64 @@ class ProjectEarlyRepaymentManager
             return null;
         }
 
-        $repaidLoanNb = 0;
-        $repaidAmount = 0;
-        $project      = $projectRepaymentTask->getIdProject();
+        $repaidLoanNb               = 0;
+        $repaidAmount               = 0;
+        $project                    = $projectRepaymentTask->getIdProject();
+        $projectRepaymentTaskLog    = null;
+        $projectRepaymentTaskStatus = null;
 
-        $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
+        try {
+            $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
 
-        $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->terminatePendingDirectDebits($project);
-        $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
-        $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
+            $this->entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->terminatePendingDirectDebits($project);
+            $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->earlyPayAllPendingSchedules($projectRepaymentTask->getIdWireTransferIn());
+            $this->projectRepaymentNotificationSender->createEarlyRepaymentEmail($projectRepaymentTask->getIdWireTransferIn());
 
-        $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
+            $this->projectStatusManager->addProjectStatus($idUser, ProjectsStatus::REMBOURSEMENT_ANTICIPE, $project);
 
-        $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
+            $loans = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $project]);
 
-        $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+            $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
-        foreach ($loans as $loan) {
-            $this->entityManager->getConnection()->beginTransaction();
-            try {
-                $repaidCapital = $this->operationManager->earlyRepayment($loan, $projectRepaymentTaskLog);
+            foreach ($loans as $loan) {
+                $this->entityManager->getConnection()->beginTransaction();
+                try {
+                    $repaidCapital = $this->operationManager->earlyRepayment($loan, $projectRepaymentTaskLog);
 
-                $repaidAmount = round(bcadd($repaidAmount, $repaidCapital, 4), 2);
-                if ($repaidCapital > 0) {
-                    $repaidLoanNb++;
+                    $repaidAmount = round(bcadd($repaidAmount, $repaidCapital, 4), 2);
+                    if ($repaidCapital > 0) {
+                        $repaidLoanNb++;
+                    }
+                    $repaymentScheduleRepository->earlyRepayAllPendingSchedules($loan);
+                    $this->entityManager->commit();
+                } catch (\Exception $exception) {
+                    $this->entityManager->rollback();
+
+                    $this->logger->error('Early repayment error on loan (id: ' . $loan->getIdLoan() . ') Error message : ' . $exception->getMessage(), [
+                        'method' => __METHOD__,
+                        'file'   => $exception->getFile(),
+                        'line'   => $exception->getLine()
+                    ]);
+
+                    throw $exception;
+                    break;
                 }
-                $repaymentScheduleRepository->earlyRepayAllPendingSchedules($loan);
-                $this->entityManager->commit();
-            } catch (\Exception $exception) {
-                $this->entityManager->rollback();
-
-                $this->logger->error('Early repayment error on loan (id: ' . $loan->getIdLoan() . ') Error message : ' . $exception->getMessage());
-
-                break;
             }
+            $projectRepaymentTaskStatus = ProjectRepaymentTask::STATUS_REPAID;
+
+            $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
+            if (0 !== count($pendingRepaymentSchedule)) {
+                throw new \Exception('Early repayment for the project (id: ' . $project->getIdProject() . ') is not completed.');
+            }
+        } catch (\Exception $exception) {
+            $projectRepaymentTaskStatus = ProjectRepaymentTask::STATUS_ERROR;
+
+            throw $exception;
+        } finally {
+            $this->projectRepaymentTaskManager->log($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
+            $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $projectRepaymentTaskStatus);
         }
 
-        $pendingRepaymentSchedule = $repaymentScheduleRepository->findByProject($project, null, null, Echeanciers::STATUS_PENDING, null, null, 0, 1);
-
-        if (0 === count($pendingRepaymentSchedule)) {
-            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_REPAID);
-            $this->entityManager->flush($projectRepaymentTask);
-        }
-
-        return $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
+        return $projectRepaymentTaskLog;
     }
 }
