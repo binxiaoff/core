@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LenderTaxExemption
  *
  * @ORM\Table(name="lender_tax_exemption", uniqueConstraints={@ORM\UniqueConstraint(name="id_lender_year", columns={"id_lender", "year"})}, indexes={@ORM\Index(name="id_lender", columns={"id_lender"}), @ORM\Index(name="iso_country", columns={"iso_country"}), @ORM\Index(name="year", columns={"year"})})
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LenderTaxExemptionRepository")
  */
 class LenderTaxExemption
@@ -20,16 +21,19 @@ class LenderTaxExemption
     private $isoCountry;
 
     /**
-     * @var \DateTime
+     * @var integer
      *
-     * @ORM\Column(name="year", type="date", nullable=false)
+     * @ORM\Column(name="year", type="integer", nullable=false)
      */
     private $year;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *  @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
     private $idUser;
 
@@ -43,7 +47,7 @@ class LenderTaxExemption
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -65,8 +69,6 @@ class LenderTaxExemption
      * })
      */
     private $idLender;
-
-
 
     /**
      * Set isoCountry
@@ -95,7 +97,7 @@ class LenderTaxExemption
     /**
      * Set year
      *
-     * @param \DateTime $year
+     * @param integer $year
      *
      * @return LenderTaxExemption
      */
@@ -109,7 +111,7 @@ class LenderTaxExemption
     /**
      * Get year
      *
-     * @return \DateTime
+     * @return integer
      */
     public function getYear()
     {
@@ -119,11 +121,11 @@ class LenderTaxExemption
     /**
      * Set idUser
      *
-     * @param integer $idUser
+     * @param Users $idUser
      *
      * @return LenderTaxExemption
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser)
     {
         $this->idUser = $idUser;
 
@@ -133,7 +135,7 @@ class LenderTaxExemption
     /**
      * Get idUser
      *
-     * @return integer
+     * @return Users
      */
     public function getIdUser()
     {
@@ -220,5 +222,23 @@ class LenderTaxExemption
     public function getIdLender()
     {
         return $this->idLender;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue() : void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue() : void
+    {
+        $this->updated = new \DateTime();
     }
 }

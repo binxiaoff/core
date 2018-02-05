@@ -138,10 +138,10 @@ class TaxManager
         }
 
         if (0 == $lenderTaxationHistory->resident_etranger) {
-            /** @var \lender_tax_exemption $taxExemption */
-            $taxExemption = $this->entityManagerSimulator->getRepository('lender_tax_exemption');
+            $LenderTaxExemptionRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+            $taxExemption = $LenderTaxExemptionRepository->findOneBy(['idLender' => $wallet, 'year' => $taxDate->format('Y'), 'isoCountry' => 'FR']);
 
-            if ($taxExemption->get($wallet->getId() . '" AND year = "' . $taxDate->format('Y') . '" AND iso_country = "FR', 'id_lender')) { // @todo i18n
+            if (null !== $taxExemption) { // @todo i18n
                 return $this->calculateTaxes($interestsGross, self::TAX_TYPE_EXEMPTED_LENDER);
             } else {
                 return $this->calculateTaxes($interestsGross, self::TAX_TYPE_TAXABLE_LENDER);
