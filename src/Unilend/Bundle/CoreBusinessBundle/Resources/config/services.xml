@@ -352,6 +352,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="knp_snappy.pdf"/>
             <argument type="service" id="twig"/>
+            <argument type="service" id="unilend.service.project_manager"/>
             <argument>%path.protected%</argument>
         </service>
 

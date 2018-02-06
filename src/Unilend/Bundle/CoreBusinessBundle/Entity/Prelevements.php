@@ -22,6 +22,8 @@ class Prelevements
     const CLIENT_TYPE_LENDER   = 1;
     const CLIENT_TYPE_BORROWER = 2;
 
+    const TYPE_RECURRENT = 1;
+
     /**
      * @var integer
      *
@@ -74,13 +76,6 @@ class Prelevements
     /**
      * @var integer
      *
-     * @ORM\Column(name="jour_prelevement", type="integer", nullable=false)
-     */
-    private $jourPrelevement;
-
-    /**
-     * @var integer
-     *
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
@@ -116,7 +111,7 @@ class Prelevements
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="added_xml", type="datetime", nullable=false)
+     * @ORM\Column(name="added_xml", type="datetime", nullable=true)
      */
     private $addedXml;
 
@@ -130,7 +125,7 @@ class Prelevements
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -311,30 +306,6 @@ class Prelevements
     public function getTypePrelevement()
     {
         return $this->typePrelevement;
-    }
-
-    /**
-     * Set jourPrelevement
-     *
-     * @param integer $jourPrelevement
-     *
-     * @return Prelevements
-     */
-    public function setJourPrelevement($jourPrelevement)
-    {
-        $this->jourPrelevement = $jourPrelevement;
-
-        return $this;
-    }
-
-    /**
-     * Get jourPrelevement
-     *
-     * @return integer
-     */
-    public function getJourPrelevement()
-    {
-        return $this->jourPrelevement;
     }
 
     /**
