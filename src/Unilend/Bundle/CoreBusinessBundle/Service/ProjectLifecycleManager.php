@@ -405,7 +405,7 @@ class ProjectLifecycleManager
 
                     if ($bidBalance > $project->amount) {
                         $cutAmount      = round(bcsub($bidBalance, $project->amount, 4), 2);
-                        $acceptedAmount = round(bcmul(bcsub($bidAmount, $cutAmount, 4), 100));
+                        $acceptedAmount = round(bcsub($bidAmount, $cutAmount, 4));
                     }
                     $this->bidManager->accept($bid, $acceptedAmount);
 
@@ -483,7 +483,7 @@ class ProjectLifecycleManager
                     continue;
                 }
 
-                if (false === $isIfpContract) {
+                if (false === $isIfpContract || bccomp($loansLenderSum, $IFPLoanAmountMax) == 0) {
                     $this->loanManager->create([$acceptedBid], $additionalContract);
                     continue;
                 }
@@ -518,7 +518,8 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws OptimisticLockException
+     * @throws \Exception
      */
     private function buildLoanIFP(\projects $project) : void
     {
@@ -527,12 +528,32 @@ class ProjectLifecycleManager
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
 
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($ifpContract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+            throw new \UnexpectedValueException('The IFP contract max amount is not set');
+        } else {
+            $IFPLoanAmountMax = $contractAttrVars[0];
+        }
+
         $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
         $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project->id_project);
 
         /** @var Wallet $wallet */
         foreach ($lenderWallets as $wallet) {
-            $acceptedBids = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
+            if (false === $wallet->getIdClient()->isNaturalPerson()) {
+                throw new \InvalidArgumentException('Bids of legal entity have been accepted. This is not allowed for IFP contracts');
+            }
+
+            $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
+            $loansLenderSum = 0;
+
+            /** @var AcceptedBids $acceptedBid */
+            foreach ($acceptedBids as $acceptedBid) {
+                $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
+                if (bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2) > 0) {
+                    throw new \InvalidArgumentException('Sum of bids for client ' . $wallet->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
+                }
+            }
 
             $this->loanManager->create($acceptedBids, $ifpContract);
         }

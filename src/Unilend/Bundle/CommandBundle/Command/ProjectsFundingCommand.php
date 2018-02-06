@@ -90,10 +90,10 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                     }
                 } catch (\Exception $exception) {
                     $logger->critical('An exception occurred during funding of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
-                            'method' => __METHOD__,
-                            'file'   => $exception->getFile(),
-                            'line'   => $exception->getLine()
-                        ]);
+                        'method' => __METHOD__,
+                        'file'   => $exception->getFile(),
+                        'line'   => $exception->getLine()
+                    ]);
                 }
             }
         }

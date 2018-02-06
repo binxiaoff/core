@@ -446,7 +446,7 @@ class BidManager
     public function accept(Bids $bid, ?float $acceptedAmount) : void
     {
         $bid->setStatus(Bids::STATUS_ACCEPTED);
-        $acceptedAmount = null == $acceptedAmount ? $bid->getAmount() : $acceptedAmount;
+        $acceptedAmount = null == $acceptedAmount ? $bid->getAmount() : bcmul($acceptedAmount, 100);
 
         $acceptedBid = new AcceptedBids();
         $acceptedBid
