@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
@@ -898,34 +899,49 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param bool $groupFirstYears
      * @param bool $isHealthy
+     * @param bool $groupFirstYears
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTotalDebtCollectionRepaymentByCohort($isHealthy, $groupFirstYears = true)
+    public function getTotalDebtCollectionRepaymentByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
-                  FROM operation o
-                  INNER JOIN projects p ON o.id_project = p.id_project
-                  WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = :capital_repayment_debt_collection)
-                  AND IF (
-                      p.status IN (130,140,150,160)
-                      OR (p.status IN (100,110,120)
-                          AND DATEDIFF(NOW(), (
-                        SELECT psh2.added
-                        FROM projects_status_history psh2
-                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = 100
-                              AND psh2.id_project = o.id_project
-                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
-                  GROUP BY cohort';
+        $query = '
+            SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
+            FROM operation o
+            INNER JOIN operation_sub_type ost ON o.id_sub_type = ost.id
+            INNER JOIN projects p ON o.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
+            WHERE ost.label = :capital_repayment_debt_collection
+            AND IF (
+                p.status = :statusLoss
+                OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
+                OR (p.status = :statusProblem AND cs.label = :inBonis
+                  AND DATEDIFF(NOW(), (
+                  SELECT psh2.added
+                  FROM projects_status_history psh2
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE ps2.status = :statusProblem
+                        AND psh2.id_project = o.id_project
+                  ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                  LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
+            GROUP BY cohort';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery(
-            $query,
-            ['isHealthy' => $isHealthy, 'capital_repayment_debt_collection' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]
-        );
+        $statement = $this->getEntityManager()->getConnection()
+            ->executeQuery(
+                $query,
+                [
+                    'isHealthy'                         => $isHealthy,
+                    'capital_repayment_debt_collection' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION,
+                    'statusLoss'                        => ProjectsStatus::LOSS,
+                    'statusProblem'                     => ProjectsStatus::PROBLEME,
+                    'companyStatus'                     => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
+                    'inBonis'                           => CompanyStatus::STATUS_IN_BONIS
+                ],
+                ['companyStatus' => Connection::PARAM_STR_ARRAY]
+            );
         $result    = $statement->fetchAll();
         $statement->closeCursor();
 
@@ -937,30 +953,45 @@ class OperationRepository extends EntityRepository
      * @param bool $groupFirstYears
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTotalDebtCollectionLenderCommissionByCohort($isHealthy, $groupFirstYears = true)
+    public function getTotalDebtCollectionLenderCommissionByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
     {
-        $query = 'SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
-                  FROM operation o
-                  INNER JOIN projects p ON o.id_project = p.id_project
-                  WHERE o.id_type = (SELECT id FROM operation_type WHERE label = :collection_commission_lender)
-                  AND IF (
-                      p.status IN (130,140,150,160)
-                      OR (p.status IN (100,110,120)
-                          AND DATEDIFF(NOW(), (
-                        SELECT psh2.added
-                        FROM projects_status_history psh2
-                          INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
-                        WHERE ps2.status = 100
-                              AND psh2.id_project = o.id_project
-                        ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
-                        LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
-                  GROUP BY cohort';
+        $query = '
+            SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
+            FROM operation o
+            INNER JOIN operation_type ot ON o.id_type = ot.id
+            INNER JOIN projects p ON o.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN company_status cs ON cs.id = c.id_status
+            WHERE ot.label = :collection_commission_lender
+            AND IF (
+                p.status = :statusLoss
+                OR (p.status = :statusProblem AND cs.label IN (:companyStatus))
+                OR (p.status = :statusProblem
+                    AND DATEDIFF(NOW(), (
+                  SELECT psh2.added
+                  FROM projects_status_history psh2
+                    INNER JOIN projects_status ps2 ON psh2.id_project_status = ps2.id_project_status
+                  WHERE ps2.status = :statusProblem
+                        AND psh2.id_project = o.id_project
+                  ORDER BY psh2.added DESC, psh2.id_project_status_history DESC
+                  LIMIT 1)) > ' . UnilendStats::DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS . '), FALSE, TRUE) = :isHealthy
+            GROUP BY cohort';
 
-        $statement = $this->getEntityManager()->getConnection()->executeQuery(
-            $query,
-            ['isHealthy' => $isHealthy, 'collection_commission_lender' => OperationType::COLLECTION_COMMISSION_LENDER]
-        );
+        $statement = $this->getEntityManager()->getConnection()
+            ->executeQuery(
+                $query,
+                [
+                    'isHealthy'                    => $isHealthy,
+                    'collection_commission_lender' => OperationType::COLLECTION_COMMISSION_LENDER,
+                    'statusLoss'                   => ProjectsStatus::LOSS,
+                    'statusProblem'                => ProjectsStatus::PROBLEME,
+                    'companyStatus'                => [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION],
+                    'inBonis'                      => CompanyStatus::STATUS_IN_BONIS
+                ],
+                ['companyStatus' => Connection::PARAM_STR_ARRAY]
+            );
         $result    = $statement->fetchAll();
         $statement->closeCursor();
 
