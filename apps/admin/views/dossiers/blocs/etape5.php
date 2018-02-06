@@ -70,7 +70,7 @@
                         </td>
                         <td class="type_col"><?= $attachmentType->getLabel() ?></td>
                         <td class="label_col">
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $currentAttachment->getId() ?>/file/<?= urlencode($currentAttachment->getPath()) ?>"><?= $currentAttachment->getPath() ?></a>
+                            <a href="<?= $this->url ?>/attachment/download/id/<?= $currentAttachment->getId() ?>/file/<?= urlencode($currentAttachment->getPath()) ?>"><?= empty($currentAttachment->getOriginalName()) ? $currentAttachment->getPath() : $currentAttachment->getOriginalName() ?></a>
                         </td>
                         <td class="statut_fichier_<?= $attachmentType->getId() ?>" id="statut_fichier_id_<?= $projectAttachment->getId() ?>"><?= $currentAttachment ? 'Enregistré' : '' ?></td>
                     <?php else : ?>

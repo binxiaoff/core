@@ -1026,7 +1026,7 @@ var App = function() {
             // Vars
             self.submitUrl = self.$elem.data('table-editor-url')
             self.extraHiddenFields = self.$elem.data('table-editor-hidden')
-            self.randomModalId = Math.floor((Math.random() * 10) + 1)
+            self.randomModalId = Math.random().toString(36).substr(2, 9)
             self.delay = 900
             // Append to wrapper
             self.$wrapper = self.$elem.closest('.dataTables_wrapper')

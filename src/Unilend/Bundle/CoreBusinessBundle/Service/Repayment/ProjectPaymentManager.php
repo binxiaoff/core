@@ -76,15 +76,24 @@ class ProjectPaymentManager
      */
     public function pay(Receptions $wireTransferIn, Users $user, \DateTime $repayOn = null, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
     {
+        /** @var \echeanciers $repaymentScheduleData */
+        $repaymentScheduleData       = $this->entityManagerSimulator->getRepository('echeanciers');
         $paymentScheduleRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
         $repaymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $walletRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var \echeanciers $repaymentScheduleData */
-        $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
 
         $project                          = $wireTransferIn->getIdProject();
         $amount                           = round(bcdiv($wireTransferIn->getMontant(), 100, 4), 2);
         $isDebtCollectionFeeDueToBorrower = $this->debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($project);
+
+        $ongoingProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
+        ]);
+
+        if (null !== $ongoingProjectRepaymentTask) {
+            throw new \Exception('Another repayment task of the same project (id : ' . $project->getIdProject() . ') is in progress. The task creation of this project is temporarily disabled');
+        }
 
         $debtCollectorWallet = null;
         if ($debtCollectionMission) {
@@ -183,7 +192,8 @@ class ProjectPaymentManager
                     $interestToPay = round(bcsub($netRepaymentAmount, $capitalToPay, 4), 2);
                 }
 
-                $paymentSchedule->setPaidCapital($paymentSchedule->getPaidCapital() + bcmul($capitalToPay, 100))
+                $paymentSchedule
+                    ->setPaidCapital($paymentSchedule->getPaidCapital() + bcmul($capitalToPay, 100))
                     ->setPaidInterest($paymentSchedule->getPaidInterest() + bcmul($interestToPay, 100))
                     ->setPaidCommissionVatIncl($paymentSchedule->getPaidCommissionVatIncl() + bcmul($commissionToPay,
                             100));
@@ -192,7 +202,8 @@ class ProjectPaymentManager
                     && $paymentSchedule->getInterets() == $paymentSchedule->getPaidInterest()
                     && $paymentSchedule->getPaidCommissionVatIncl() == $paymentSchedule->getCommission() + $paymentSchedule->getTva()
                 ) {
-                    $paymentSchedule->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
+                    $paymentSchedule
+                        ->setStatusEmprunteur(EcheanciersEmprunteur::STATUS_PAID)
                         ->setDateEcheanceEmprunteurReel(new \DateTime());
 
                     // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.

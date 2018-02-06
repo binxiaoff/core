@@ -147,6 +147,7 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
+            $this->wallet = $wallet;
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
@@ -331,6 +332,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $client = $wallet->getIdClient();
+            $this->wallet = $wallet;
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
@@ -1424,7 +1426,7 @@ class preteursController extends bootstrap
         $oClientSettingsManager = $this->get('unilend.service.client_settings_manager');
         $oClient                = $this->loadData('clients');
 
-         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], ['on', 'off'])){
+         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], ['on', 'off'])) {
              $oClient->get($this->params[0]);
              $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
              $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
@@ -1513,6 +1515,7 @@ class preteursController extends bootstrap
             && $this->clients->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
+            $this->wallet              = $wallet;
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
 
             if (isset($_POST['send_dates'])) {
@@ -1557,7 +1560,7 @@ class preteursController extends bootstrap
             isset($this->params[0])
             && is_numeric($this->params[0])
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
-        ){
+        ) {
             $lenderBids = $bids->getBidsByLenderAndDates($wallet);
 
             PHPExcel_Settings::setCacheStorageMethod(

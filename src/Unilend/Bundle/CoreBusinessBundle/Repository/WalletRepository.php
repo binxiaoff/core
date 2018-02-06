@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
@@ -265,6 +265,24 @@ class WalletRepository extends EntityRepository
             ->setParameter('accepted', Bids::STATUS_ACCEPTED)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int $projectId
+     *
+     * @return array
+     */
+    public function findLendersWithAcceptedBidsByProject(int $projectId) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('w');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'w.id = b.idLenderAccount')
+            ->innerJoin('UnilendCoreBusinessBundle:AcceptedBids', 'ab', Join::WITH, 'b.idBid = ab.idBid')
+            ->where('b.idProject = :project')
+            ->groupBy('w.id')
+            ->setParameter('project', $projectId);
 
         return $queryBuilder->getQuery()->getResult();
     }

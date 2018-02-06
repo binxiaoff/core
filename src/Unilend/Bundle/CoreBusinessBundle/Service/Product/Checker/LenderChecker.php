@@ -32,7 +32,8 @@ trait LenderChecker
         $wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
 
-        $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $project->getIdProject(), Bids::STATUS_PENDING);
+        $totalAmount       = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getSumByWalletAndProjectAndStatus($wallet, $project->getIdProject(), [Bids::STATUS_PENDING]);
         $maxAmountEligible = $this->getMaxEligibleAmount($client, $product, $contractManager, $isAutoBid);
 
         if (null === $maxAmountEligible) {

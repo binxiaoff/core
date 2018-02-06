@@ -6,44 +6,44 @@ class UserBorrower extends BaseUser
 {
     /** @var string */
     private $firstName;
-    /** @var  string */
+    /** @var string */
     private $lastName;
-    /** @var  string */
+    /** @var string */
     private $siren;
-    /** @var  float */
+    /** @var float */
     private $balance;
 
     /**
-     * UserBorrower constructor.
-     * @param string $username
-     * @param string $password
-     * @param string $email
-     * @param string $salt
-     * @param array  $roles
-     * @param bool   $isActive
-     * @param int    $clientId
-     * @param string $hash
-     * @param string $firstName
-     * @param string $lastName
-     * @param string $siren
-     * @param float  $balance
-     * @param null   $lastLoginDate
+     * @param string         $username
+     * @param string         $password
+     * @param string         $email
+     * @param string         $salt
+     * @param array          $roles
+     * @param bool           $isActive
+     * @param int            $clientId
+     * @param string         $hash
+     * @param string         $firstName
+     * @param string         $lastName
+     * @param string         $siren
+     * @param float          $balance
+     * @param \DateTime|null $lastLoginDate
      */
     public function __construct(
-        $username,
-        $password,
-        $email,
-        $salt,
+        string $username,
+        string $password,
+        string $email,
+        string $salt,
         array $roles,
-        $isActive,
-        $clientId,
-        $hash,
-        $firstName,
-        $lastName,
-        $siren,
-        $balance,
-        $lastLoginDate = null
-    ) {
+        bool $isActive,
+        int $clientId,
+        string $hash,
+        string $firstName,
+        string $lastName,
+        string $siren,
+        float $balance,
+        ?\DateTime $lastLoginDate = null
+    )
+    {
         parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
 
         $this->firstName = $firstName;
