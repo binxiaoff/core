@@ -80,6 +80,11 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+                {% if hasOngoingProjectRepaymentTask %}
+                    <div class="alert">
+                        <p>Une autre tâche de remboursement du même projet est en cours d'exécution. Merci de réessayer ultérieurement.</p>
+                    </div>
+                {% endif %}
                 <form id="schedule-repayment-form" class="validate" method="post">
                     <div class="row">
                         <div class="col-md-6">
@@ -176,7 +181,7 @@
                         </div>
                     </div>
                     <div class="text-left">
-                        <button class="btn btn-primary" type="submit">Continuer <span class="fa fa-chevron-right"></span></button>
+                        <button class="btn btn-primary" type="submit"{% if hasOngoingProjectRepaymentTask %} disabled{% endif %}>Continuer <span class="fa fa-chevron-right"></span></button>
                     </div>
                 </form>
             </div>

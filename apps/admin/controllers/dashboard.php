@@ -37,6 +37,8 @@ class dashboardController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
+        $this->showProjectsToDecline = false;
+
         if (
             $userManager->isUserGroupRisk($this->userEntity)
             || isset($this->params[0]) && 'risk' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
@@ -44,6 +46,10 @@ class dashboardController extends bootstrap
             $this->template     = 'risk';
             $this->userProjects = $this->getRiskUserProjects($user);
             $this->teamProjects = $this->getRiskTeamProjects($user);
+
+            if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupCompliance($this->userEntity)) {
+                $this->showProjectsToDecline = true;
+            }
         } elseif (
             $userManager->isUserGroupSales($this->userEntity)
             || isset($this->params[0]) && 'sales' === $this->params[0] && ($userManager->isUserGroupManagement($this->userEntity) || $userManager->isUserGroupIT($this->userEntity))
@@ -517,4 +523,53 @@ class dashboardController extends bootstrap
         return $formattedStatusCount;
     }
 
+    public function _projets_a_dechoir()
+    {
+        $this->hideDecoration();
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        $error       = null;
+        $data        = [];
+
+        if ($userManager->isUserGroupRisk($this->userEntity) || $userManager->isUserGroupCompliance($this->userEntity)) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var \Monolog\Logger $logger */
+            $logger            = $this->get('logger');
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            try {
+                $intervalSetting       = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->findOneBy(['type' => 'Jours avant notification decheance du terme']);
+                $projectsToDeclineSoon = $projectRepository->getProjectsWithUpcomingCloseOutNettingDate(null !== $intervalSetting ? $intervalSetting->getValue() : 15);
+
+                foreach ($projectsToDeclineSoon as $projectRow) {
+                    try {
+                        $project = $projectRepository->find($projectRow['id_project']);
+                        $data[]  = [
+                            $project->getTitle(),
+                            $project->getIdCompany()->getName(),
+                            $projectRow['days_diff_con_limit_date'] === 0 ? 'Aujourd\'hui' : ($projectRow['days_diff_con_limit_date'] < 0 ? 'J' : 'J+') . $projectRow['days_diff_con_limit_date'],
+                            (new \DateTime($projectRow['funding_date']))->format('d/m/Y'),
+                            $projectRepository->getFundedProjectsBelongingToTheSameCompany($project->getIdProject(), $project->getIdCompany()->getSiren()),
+                            $project->getIdProject()
+                        ];
+                    } catch (\Exception $exception) {
+                        $logger->warning(
+                            'Could not get the project details. Error: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'id_project' => $projectRow['id_project'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                    }
+                }
+            } catch (\Exception $exception) {
+                $error = 'Impossible de charger la liste des projets à déchoir';
+                $logger->warning(
+                    'Could not load the projects to decline. Error: ' . $exception->getMessage(),
+                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
+            echo json_encode(['data' => $data, 'error' => $error]);
+            die;
+        }
+    }
 }

@@ -60,19 +60,19 @@
     </form>
 </div>
 <div style="margin: 30px auto; padding: 10px 20px 20px; width: 1160px; background-color: #fff; text-align: left;">
-    <h1>Liste des dossiers<?= $this->iProjectsCount > 0 ? ' (' . $this->iProjectsCount . ' résultat' . ($this->iProjectsCount == 1 ? '' : 's') . ')' : '' ?></h1>
+    <h1>Liste des projets<?= $this->iProjectsCount > 0 ? ' (' . $this->iProjectsCount . ' résultat' . ($this->iProjectsCount == 1 ? '' : 's') . ')' : '' ?></h1>
     <?php if ($this->iProjectsCount > 0) : ?>
         <table class="tablesorter">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Siren</th>
+                    <th>ID projet</th>
+                    <th>Nom</th>
+                    <th>SIREN</th>
                     <th>Raison sociale</th>
-                    <th>Date demande</th>
-                    <th>Date modification</th>
                     <th>Montant</th>
                     <th>Durée</th>
                     <th>Statut</th>
+                    <th>Date demande</th>
                     <th>Analyste</th>
                     <th>&nbsp;</th>
                 </tr>
@@ -81,22 +81,22 @@
                 <?php $i = 1; ?>
                 <?php foreach ($this->aProjects as $p) : ?>
                     <?php $this->users->get($p['id_analyste'], 'id_user'); ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
-                        <td><?= $p['id_project'] ?></td>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="project-<?= $p['id_project'] ?>">
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['id_project'] ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['title'] ?></a></td>
                         <td><?= $p['siren'] ?></td>
                         <td><?= $p['name'] ?></td>
-                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
-                        <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
-                        <td><?= (in_array($p['period'], array(0, 1000000))) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td class="text-right"><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
+                        <td><?= (in_array($p['period'], [0, 1000000])) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>
+                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
                             </a>
                             <script>
-                                $("#ledossier<?= $p['id_project']?> ").click(function () {
+                                $("#project-<?= $p['id_project']?> ").click(function () {
                                     $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
                                 });
                             </script>
@@ -107,6 +107,6 @@
             </tbody>
         </table>
     <?php else : ?>
-        Aucun dossier
+        Aucun projet
     <?php endif; ?>
 </div>
