@@ -162,8 +162,8 @@ echo $this->generateBalanceTotalLineHtml('Total actif', array_merge($codeImmoInc
     </thead>
     <tbody>
     <?php
-    $codeCompteResultat = ['FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA', 'GB', 'GC', 'GD', 'GE', 'GG', 'GV', 'GM', 'GQ', 'GU', 'GW', 'HA', 'HB', 'HC', 'HE', 'HF', 'HG', 'HN', 'YP'];
-    echo $this->generateBalanceLineHtml($codeCompteResultat, \company_tax_form_type::FORM_2033);
+        $codeCompteResultat = ['FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA', 'GB', 'GC', 'GD', 'GE', 'GG', 'GM', 'GQ', 'GU', 'GV', 'GW', 'HA', 'HB', 'HC', 'HE', 'HF', 'HG', 'HN', 'YP'];
+        echo $this->generateBalanceLineHtml($codeCompteResultat, \company_tax_form_type::FORM_2033);
     ?>
     </tbody>
 </table>
