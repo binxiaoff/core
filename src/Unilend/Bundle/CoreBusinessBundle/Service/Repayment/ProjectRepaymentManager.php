@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
@@ -179,6 +180,8 @@ class ProjectRepaymentManager
 
             $this->entityManager->getConnection()->beginTransaction();
             try {
+                $this->entityManager->getConnection()->setTransactionIsolation(Connection::TRANSACTION_READ_COMMITTED);
+
                 /** @var Echeanciers $repaymentSchedule */
                 $repaymentSchedule = $projectRepaymentDetail->getIdRepaymentSchedule();
                 if (null === $repaymentSchedule) {

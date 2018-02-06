@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
@@ -97,6 +98,8 @@ class ProjectEarlyRepaymentManager
             foreach ($loans as $loan) {
                 $this->entityManager->getConnection()->beginTransaction();
                 try {
+                    $this->entityManager->getConnection()->setTransactionIsolation(Connection::TRANSACTION_READ_COMMITTED);
+
                     $repaidCapital = $this->operationManager->earlyRepayment($loan, $projectRepaymentTaskLog);
 
                     $repaidAmount = round(bcadd($repaidAmount, $repaidCapital, 4), 2);

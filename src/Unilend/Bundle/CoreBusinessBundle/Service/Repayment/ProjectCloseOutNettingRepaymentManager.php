@@ -2,12 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
@@ -157,6 +157,8 @@ class ProjectCloseOutNettingRepaymentManager
 
             $this->entityManager->getConnection()->beginTransaction();
             try {
+                $this->entityManager->getConnection()->setTransactionIsolation(Connection::TRANSACTION_READ_COMMITTED);
+
                 $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $projectRepaymentDetail->getIdLoan()]);
                 if (null === $closeOutNettingRepayment) {
                     throw new \Exception('Cannot found close out netting repayment for loan (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLoan() .
