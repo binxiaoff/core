@@ -4,8 +4,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptedBids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -37,39 +39,40 @@ class LoanManager
     }
 
     /**
-     * @param \loans $loan
+     * @param array              $acceptedBids
+     * @param UnderlyingContract $contract
      *
-     * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function create(\loans $loan)
+    public function create(array $acceptedBids, UnderlyingContract $contract)
     {
-        $acceptedBids = $loan->getAcceptedBids();
-        if (empty($acceptedBids)) {
-            return false;
-        }
-        $loan->create();
+        $loanAmount = 0;
+        $interests  = 0;
 
-        if (empty($loan->id_loan)) {
-            return false;
-        }
-        /** @var \accepted_bids $acceptedBid */
-        $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        foreach ($acceptedBids as $aAcceptedBid) {
-            $acceptedBid->unsetData();
-            $acceptedBid->id_bid  = $aAcceptedBid['bid_id'];
-            $acceptedBid->id_loan = $loan->id_loan;
-            $acceptedBid->amount  = $aAcceptedBid['amount'] * 100;
-            $acceptedBid->create();
-
-            if ($acceptedBid->id_accepted_bid > 0 && $this->logger instanceof LoggerInterface) {
-                $this->logger->info(
-                    'Loan ' . $loan->id_loan . ' generated from bid ' . $aAcceptedBid['bid_id'] . ' with amount ' . $aAcceptedBid['amount'],
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $loan->id_project, 'id_loan' => $loan->id_loan, 'id_bid' => $aAcceptedBid['bid_id'])
-                );
-            }
+        foreach ($acceptedBids as $acceptedBid) {
+            $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $acceptedBid->getAmount(), 4), 4), 2);
+            $loanAmount += $acceptedBid->getAmount();
         }
 
-        return true;
+        $rate = round(bcdiv($interests, $loanAmount, 4), 1);
+
+        $loan = new Loans();
+        $loan
+            ->setIdLender($acceptedBids[0]->getIdBid()->getIdLenderAccount())
+            ->setProject($acceptedBids[0]->getIdBid()->getProject())
+            ->setAmount($loanAmount)
+            ->setRate($rate)
+            ->setStatus(Loans::STATUS_ACCEPTED)
+            ->setIdTypeContract($contract);
+
+        $this->entityManager->persist($loan);
+        $this->entityManager->flush($loan);
+
+        /** @var AcceptedBids $acceptedBid */
+        foreach ($acceptedBids as $acceptedBid) {
+            $acceptedBid->setIdLoan($loan);
+            $this->entityManager->flush($acceptedBid);
+        }
     }
 
     /**

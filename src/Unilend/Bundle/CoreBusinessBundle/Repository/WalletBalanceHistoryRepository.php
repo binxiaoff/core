@@ -65,21 +65,20 @@ class WalletBalanceHistoryRepository extends EntityRepository
                             o.amount,
                             IF(ot.label = "' . OperationType::LENDER_LOAN . '", o.amount, - o.amount)
                         ),
-                        IF(
-                            wbh.id_autobid IS NULL,
-                            IF(
-                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid),
-                                - b.amount / 100,
-                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added), - b.amount / 100, b.amount / 100)
-                            ),
-                            IF(
-                                1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
-                                - b.amount / 100,
-                                IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added), - b.amount / 100, b.amount / 100)
-                            )
-                        )
-                    ), 2
-                ) AS amount,
+                        IF(wbh.id_autobid IS NULL,
+                          IF(1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid), -b.amount / 100,
+                             IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_bid = wbh.id_bid AND wbh.added < wbh_bid.added),
+                                -b.amount / 100,
+                                 IF(b.amount != ab.amount, b.amount / 100 - ab.amount / 100, b.amount / 100))
+                          ),
+                          IF(1 = (SELECT COUNT(*) FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project),
+                             -b.amount / 100,
+                             IF(EXISTS(SELECT * FROM wallet_balance_history wbh_bid WHERE wbh_bid.id_autobid = wbh.id_autobid AND wbh_bid.id_project = wbh.id_project AND wbh.added < wbh_bid.added),
+                                 -b.amount / 100,
+                                IF(b.amount != ab.amount, b.amount / 100 - ab.amount / 100, b.amount / 100))
+                          )
+                       )
+                    ), 2) AS amount,
                 IF(
                     ot.label IS NOT NULL,
                     ot.label,
@@ -118,6 +117,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 LEFT JOIN operation_sub_type ost ON o.id_sub_type = ost.id
                 LEFT JOIN echeanciers e ON e.id_echeancier = o.id_repayment_schedule
                 LEFT JOIN bids b ON wbh.id_bid = b.id_bid
+                LEFT JOIN accepted_bids ab ON b.id_bid = ab.id_bid
                 LEFT JOIN projects p ON IF(o.id_project IS NULL, wbh.id_project, o.id_project) = p.id_project
             WHERE wbh.id_wallet = :idWallet
                 AND wbh.added BETWEEN :startDate AND :endDate

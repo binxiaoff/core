@@ -527,7 +527,7 @@ class MailerManager
                 if ($endDate <= $now) {
                     $mailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
                     $keyWords     += [
-                        'bidDate'          => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidDate'          => $bid->getAdded()->format('%d %B %G'),
                         'bidTime'          => $bid->getAdded()->format('H\hi'),
                         'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
                         'projectsListLink' => $this->sFUrl . '/projects-a-financer'
@@ -540,7 +540,7 @@ class MailerManager
                 } else {
                     $mailTemplate = 'preteur-bid-ko-minimum-rate';
                     $keyWords     += [
-                        'bidDate' => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidDate' => $bid->getAdded()->format('%d %B %G'),
                         'bidTime' => $bid->getAdded()->format('H\hi'),
                     ];
                 }
