@@ -15,6 +15,8 @@ class BidsRepository extends EntityRepository
      * @param array $criteria
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function countBy(array $criteria = [])
     {
@@ -27,6 +29,7 @@ class BidsRepository extends EntityRepository
             }
         }
         $query = $qb->getQuery();
+
         return $query->getSingleScalarResult();
     }
 
@@ -36,6 +39,8 @@ class BidsRepository extends EntityRepository
      * @param int|Clients $clientId
      *
      * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
@@ -54,6 +59,8 @@ class BidsRepository extends EntityRepository
      * @param \DateTime $date
      *
      * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
@@ -71,17 +78,19 @@ class BidsRepository extends EntityRepository
     /**
      * @param Wallet|int   $wallet
      * @param Projects|int $project
-     * @param int          $status
+     * @param array        $status
      *
-     * @return mixed
+     * @return integer
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getSumByWalletAndProjectAndStatus($wallet, $project, $status)
+    public function getSumByWalletAndProjectAndStatus($wallet, $project, array $status)
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('SUM(b.amount) / 100')
             ->where('b.idProject = :project')
             ->andWhere('b.idLenderAccount = :wallet')
-            ->andWhere('b.status = :status')
+            ->andWhere('b.status IN (:status)')
             ->setParameter('wallet', $wallet)
             ->setParameter('project', $project)
             ->setParameter('status', $status);
@@ -94,8 +103,10 @@ class BidsRepository extends EntityRepository
      * @param int        $status
      *
      * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getSumBidsForLenderAndStatus($wallet, $status)
+    public function getSumBidsForLenderAndStatus($wallet, int $status)
     {
         $qb = $this->createQueryBuilder('b');
         $qb->select('ROUND(SUM(b.amount) / 100, 2)')

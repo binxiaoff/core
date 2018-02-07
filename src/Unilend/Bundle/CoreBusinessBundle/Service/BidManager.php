@@ -2,21 +2,22 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptedBids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
 use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenuesDetails;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Doctrine\ORM\EntityManager;
 
 /**
  * Class BidManager
@@ -28,16 +29,16 @@ class BidManager
     const MODE_REBID_AUTO_BID_UPDATE = 2;
 
     /** @var LoggerInterface */
-    private $oLogger;
+    private $logger;
 
     /** @var NotificationManager */
-    private $oNotificationManager;
+    private $notificationManager;
 
     /** @var AutoBidSettingsManager */
-    private $oAutoBidSettingsManager;
+    private $autoBidSettingsManager;
 
     /** @var LenderManager */
-    private $oLenderManager;
+    private $lenderManager;
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -54,60 +55,70 @@ class BidManager
     /** @var WalletManager */
     private $walletManager;
 
+    /** @var SponsorshipManager */
+    private $sponsorshipManager;
+
+    /**
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param NotificationManager    $notificationManager
+     * @param AutoBidSettingsManager $autoBidSettingsManager
+     * @param LenderManager          $lenderManager
+     * @param ProductManager         $productManager
+     * @param CIPManager             $cipManager
+     * @param EntityManager          $entityManager
+     * @param WalletManager          $walletManager
+     */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        NotificationManager $oNotificationManager,
-        AutoBidSettingsManager $oAutoBidSettingsManager,
-        LenderManager $oLenderManager,
+        NotificationManager $notificationManager,
+        AutoBidSettingsManager $autoBidSettingsManager,
+        LenderManager $lenderManager,
         ProductManager $productManager,
         CIPManager $cipManager,
         EntityManager $entityManager,
-        WalletManager $walletManager
+        WalletManager $walletManager,
+        SponsorshipManager $sponsorshipManager
     )
     {
-        $this->entityManagerSimulator  = $entityManagerSimulator;
-        $this->oNotificationManager    = $oNotificationManager;
-        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
-        $this->oLenderManager          = $oLenderManager;
-        $this->productManager          = $productManager;
-        $this->cipManager              = $cipManager;
-        $this->entityManager           = $entityManager;
-        $this->walletManager           = $walletManager;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->notificationManager    = $notificationManager;
+        $this->autoBidSettingsManager = $autoBidSettingsManager;
+        $this->lenderManager          = $lenderManager;
+        $this->productManager         = $productManager;
+        $this->cipManager             = $cipManager;
+        $this->entityManager          = $entityManager;
+        $this->walletManager          = $walletManager;
+        $this->sponsorshipManager     = $sponsorshipManager;
     }
 
     /**
-     * @param LoggerInterface $oLogger
+     * @param LoggerInterface $logger
      */
-    public function setLogger(LoggerInterface $oLogger)
+    public function setLogger(LoggerInterface $logger)
     {
-        $this->oLogger = $oLogger;
+        $this->logger = $logger;
     }
 
     /**
      * @param Wallet       $wallet
      * @param Projects     $project
-     * @param              $amount
-     * @param              $rate
+     * @param float|int    $amount
+     * @param float        $rate
      * @param Autobid|null $autobidSetting
-     * @param bool         $bSendNotification
+     * @param bool         $sendNotification
      *
      * @return Bids
      * @throws \Exception
      */
-    public function bid(Wallet $wallet, Projects $project, $amount, $rate, Autobid $autobidSetting = null, $bSendNotification = true)
+    public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, bool $sendNotification = true) : Bids
     {
-        /** @var \settings $oSettings */
-        $oSettings = $this->entityManagerSimulator->getRepository('settings');
         /** @var \projects $legacyProject */
         $legacyProject = $this->entityManagerSimulator->getRepository('projects');
-        /** @var \bids $legacyBid */
-        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
+        $projectId     = $project->getIdProject();
+        $legacyProject->get($projectId);
 
-        $oSettings->get('Pret min', 'type');
-        $iAmountMin = (int)$oSettings->value;
-
-        $iProjectId = $project->getIdProject();
-        $legacyProject->get($iProjectId);
+        $minAmountSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Pret min']);
+        $amountMin        = (int) $minAmountSetting->getValue();
 
         $bid = new Bids();
         $bid->setIdLenderAccount($wallet)
@@ -117,18 +128,9 @@ class BidManager
             ->setStatus(Bids::STATUS_PENDING)
             ->setAutobid($autobidSetting);
 
-        $legacyBid->id_lender_account = $wallet->getId();
-        $legacyBid->id_project        = $iProjectId;
-        $legacyBid->amount            = bcmul($amount, 100);
-        $legacyBid->rate              = $rate;
-        $legacyBid->status            = Bids::STATUS_PENDING;
-        if ($autobidSetting instanceof Autobid) {
-            $legacyBid->id_autobid = $autobidSetting->getIdAutobid();
-        }
-
-        if ($iAmountMin > $amount) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('Amount is less than the min amount for a bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+        if ($amountMin > $amount) {
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning('Amount is less than the min amount for a bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
             throw new BidException('bids-invalid-amount');
         }
@@ -136,83 +138,83 @@ class BidManager
         $projectRates = $this->getProjectRateRange($legacyProject);
 
         if (bccomp($rate, $projectRates['rate_max'], 1) > 0 || bccomp($rate, $projectRates['rate_min'], 1) < 0) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning(
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning(
                     'The rate is less than the min rate for a bid',
-                    ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]
+                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]
                 );
             }
             throw new BidException('bids-invalid-rate');
         }
 
         if (false === in_array($project->getStatus(), array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning(
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning(
                     'Project status is not valid for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_status' => $project->getStatus()]
+                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_status' => $project->getStatus()]
                 );
             }
             throw new BidException('bids-invalid-project-status');
         }
 
-        $oCurrentDate = new \DateTime();
-        $oEndDate     = $project->getDateRetrait();
+        $currentDate = new \DateTime();
+        $endDate     = $project->getDateRetrait();
         if ($legacyProject->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = $project->getDateFin();
+            $endDate = $project->getDateFin();
         }
 
-        if ($oCurrentDate > $oEndDate) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning(
+        if ($currentDate > $endDate) {
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning(
                     'Project end date is passed for bidding',
-                    ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_ended' => $oEndDate->format('c'), 'now' => $oCurrentDate->format('c')]);
+                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_ended' => $endDate->format('c'), 'now' => $currentDate->format('c')]);
             }
             throw new BidException('bids-invalid-project-status');
         }
 
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('Wallet is no Lender', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning('Wallet is no Lender', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
             throw new BidException('bids-invalid-lender');
         }
 
-        if (false === $this->oLenderManager->canBid($wallet->getIdClient())) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('lender cannot bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+        if (false === $this->lenderManager->canBid($wallet->getIdClient())) {
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning('lender cannot bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
             throw new BidException('bids-lender-cannot-bid');
         }
 
         if (false === $this->productManager->isBidEligible($bid)) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('The Bid is not eligible for the project', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning('The Bid is not eligible for the project', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
             }
             throw new BidException('bids-not-eligible');
         }
 
-        $iClientId = $wallet->getIdClient()->getIdClient();
-        $iBalance  = $wallet->getAvailableBalance();
+        $clientId = $wallet->getIdClient()->getIdClient();
+        $balance  = $wallet->getAvailableBalance();
 
-        if ($iBalance < $amount) {
-            if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->warning('lender\'s balance not enough for a bid', ['project_id' => $iProjectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'balance' => $iBalance]);
+        if ($balance < $amount) {
+            if ($this->logger instanceof LoggerInterface) {
+                $this->logger->warning('lender\'s balance not enough for a bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'balance' => $balance]);
             }
             throw new BidException('bids-low-balance');
         }
 
-        if ($this->cipManager->isCIPValidationNeeded($legacyBid) && false === $this->cipManager->hasValidEvaluation($wallet->getIdClient())) {
+        if ($this->cipManager->isCIPValidationNeeded($bid) && false === $this->cipManager->hasValidEvaluation($wallet->getIdClient())) {
             throw new BidException('bids-cip-validation-needed');
         }
 
-        $iBidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $iProjectId]);
-        $iBidNb ++;
-        $bid->setOrdre($iBidNb);
+        $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $projectId]);
+        $bidNb ++;
+        $bid->setOrdre($bidNb);
         $this->entityManager->persist($bid);
         $walletBalanceHistory = $this->walletManager->engageBalance($wallet, $amount, $bid);
         $this->entityManager->flush($bid);
 
-        $unusedWelcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $iClientId, 'status' => OffresBienvenuesDetails::TYPE_OFFER]);
+        $unusedWelcomeOffers = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->findBy(['idClient' => $clientId, 'status' => OffresBienvenuesDetails::TYPE_OFFER]);
         if ($unusedWelcomeOffers != null) {
             $offerTotal = 0;
             /** @var OffresBienvenuesDetails $offer */
@@ -226,15 +228,15 @@ class BidManager
                     // Apres addition de la derniere offre on se rend compte que le total depasse
                     if ($offerTotal > $amount) {
                         // On fait la diff et on créer un remb du trop plein d'offres
-                        $iAmountRepayment = $offerTotal - $amount;
+                        $amountRepayment = $offerTotal - $amount;
 
                         $welcomeOffer = new OffresBienvenuesDetails();
                         $welcomeOffer->setIdOffreBienvenue(0)
-                            ->setIdClient($iClientId)
+                            ->setIdClient($clientId)
                             ->setIdBidRemb($bid->getIdBid())
                             ->setStatus(OffresBienvenuesDetails::STATUS_NEW)
                             ->setType(OffresBienvenuesDetails::TYPE_CUT)
-                            ->setMontant($iAmountRepayment * 100);
+                            ->setMontant($amountRepayment * 100);
 
                         $this->entityManager->persist($welcomeOffer);
                         $this->entityManager->flush($welcomeOffer);
@@ -245,13 +247,13 @@ class BidManager
             }
         }
 
-        if ($bSendNotification) {
-            $this->oNotificationManager->create(
+        if ($sendNotification) {
+            $this->notificationManager->create(
                 Notifications::TYPE_BID_PLACED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
-                $iClientId,
+                $clientId,
                 'sendBidConfirmation',
-                $iProjectId,
+                $projectId,
                 $amount,
                 $bid->getIdBid(),
                 $walletBalanceHistory
@@ -267,9 +269,10 @@ class BidManager
      * @param float    $rate
      * @param bool     $sendNotification
      *
-     * @return Bids|false
+     * @return bool|Bids
+     * @throws \Exception
      */
-    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, $rate, $sendNotification = true)
+    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate, bool $sendNotification = true)
     {
         $biddenAutobid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idProject' => $project, 'idAutobid' => $autoBid]);
         if (
@@ -277,8 +280,8 @@ class BidManager
             && bccomp($autoBid->getRateMin(), $rate, 1) <= 0
             && WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
             && bccomp($autoBid->getIdLender()->getAvailableBalance(), $autoBid->getAmount()) >= 0
-            && $this->oAutoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
-            && $this->oAutoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
+            && $this->autoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
+            && $this->autoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
         ) {
             return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
         }
@@ -289,8 +292,11 @@ class BidManager
     /**
      * @param Bids $bid
      * @param bool $sendNotification
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function reject(Bids $bid, $sendNotification = true)
+    public function reject(Bids $bid, bool $sendNotification = true) : void
     {
         if ($bid->getStatus() == Bids::STATUS_PENDING || $bid->getStatus() == Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID) {
             $walletBalanceHistory = $this->creditRejectedBid($bid, $bid->getAmount() / 100);
@@ -305,29 +311,17 @@ class BidManager
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $fRepaymentAmount
-     */
-    public function rejectPartially(Bids $bid, $fRepaymentAmount)
-    {
-        if (in_array($bid->getStatus(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID])) {
-            $walletBalanceHistory = $this->creditRejectedBid($bid, $fRepaymentAmount);
-            $this->notificationRejection($bid, $walletBalanceHistory);
-            // Save new amount of the bid after repayment
-            $amount = bcsub($bid->getAmount(), bcmul($fRepaymentAmount, 100));
-            $bid->setAmount($amount)
-                ->setStatus(Bids::STATUS_ACCEPTED);
-            $this->entityManager->flush($bid);
-        }
-    }
-
-    /**
      * @param Bids   $bid
      * @param string $currentRate
-     * @param int    $iMode
-     * @param bool   $bSendNotification
+     * @param int    $mode
+     * @param bool   $sendNotification
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function reBidAutoBidOrReject(Bids $bid, $currentRate, $iMode, $bSendNotification = true)
+    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, int $mode, bool $sendNotification = true) : void
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
@@ -340,13 +334,15 @@ class BidManager
                 && WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()
                 && Clients::STATUS_ONLINE == $bid->getIdLenderAccount()->getIdClient()->getStatus()
             ) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
-                if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
+                if (self::MODE_REBID_AUTO_BID_CREATE === $mode) {
                     $iBidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
                     $iBidOrder ++;
                     $newBid = clone $bid;
-                    $newBid->setOrdre($iBidOrder)
-                           ->setRate($currentRate)
-                           ->setStatus(Bids::STATUS_PENDING);
+                    $newBid
+                        ->setOrdre($iBidOrder)
+                        ->setRate($currentRate)
+                        ->setStatus(Bids::STATUS_PENDING)
+                        ->setAdded(new \DateTime('NOW'));
                     $this->entityManager->persist($newBid);
                     $bid->setStatus(Bids::STATUS_REJECTED);
                     $this->entityManager->flush($newBid);
@@ -356,38 +352,41 @@ class BidManager
                 }
                 $this->entityManager->flush($bid);
             } else {
-                $this->reject($bid, $bSendNotification);
+                $this->reject($bid, $sendNotification);
             }
         }
     }
 
     /**
      * @param Bids  $bid
-     * @param float $fAmount
+     * @param float $amount
      *
      * @return WalletBalanceHistory
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function creditRejectedBid(Bids $bid, $fAmount)
+    private function creditRejectedBid(Bids $bid, float $amount) :  WalletBalanceHistory
     {
-        $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $fAmount, $bid);
-        $fAmountX100          = $fAmount * 100;
+        $walletBalanceHistory = $this->walletManager->releaseBalance($bid->getIdLenderAccount(), $amount, $bid);
+        $amountX100           = $amount * 100;
         $welcomeOffer         = new OffresBienvenuesDetails();
 
         $welcomeOfferTotal = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OffresBienvenuesDetails')->getSumOfferByBid($bid->getIdLenderAccount()->getIdClient()->getIdClient(), $bid->getIdBid());
         if ($welcomeOfferTotal > 0) {
-            if ($bid->getAmount() === $fAmountX100) { //Totally credit
-                $welcomeOffer->setMontant(min($welcomeOfferTotal, $fAmountX100));
-            } elseif (($bid->getAmount() - $fAmountX100) <= $welcomeOfferTotal) { //Partially credit
-                $welcomeOffer->setMontant($welcomeOfferTotal - ($bid->getAmount() - $fAmountX100));
+            if ($bid->getAmount() === $amountX100) { //Totally credit
+                $welcomeOffer->setMontant(min($welcomeOfferTotal, $amountX100));
+            } elseif (($bid->getAmount() - $amountX100) <= $welcomeOfferTotal) { //Partially credit
+                $welcomeOffer->setMontant($welcomeOfferTotal - ($bid->getAmount() - $amountX100));
             }
 
             if (false === empty($welcomeOffer->getMontant())) {
-                $welcomeOffer->setIdOffreBienvenue(0);
-                $welcomeOffer->setIdClient($bid->getIdLenderAccount()->getIdClient()->getIdClient());
-                $welcomeOffer->setIdBid(0);
-                $welcomeOffer->setIdBidRemb($bid->getIdBid());
-                $welcomeOffer->setStatus(OffresBienvenuesDetails::STATUS_NEW);
-                $welcomeOffer->setType(OffresBienvenuesDetails::TYPE_PAYBACK);
+                $welcomeOffer
+                    ->setIdOffreBienvenue(0)
+                    ->setIdClient($bid->getIdLenderAccount()->getIdClient()->getIdClient())
+                    ->setIdBid(0)
+                    ->setIdBidRemb($bid->getIdBid())
+                    ->setStatus(OffresBienvenuesDetails::STATUS_NEW)
+                    ->setType(OffresBienvenuesDetails::TYPE_PAYBACK);
 
                 $this->entityManager->persist($welcomeOffer);
                 $this->entityManager->flush($welcomeOffer);
@@ -401,11 +400,13 @@ class BidManager
     /**
      * @param Bids                 $bid
      * @param WalletBalanceHistory $walletBalanceHistory
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory)
+    private function notificationRejection(Bids $bid, WalletBalanceHistory $walletBalanceHistory) : void
     {
         if (WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()) {
-            $this->oNotificationManager->create(
+            $this->notificationManager->create(
                 Notifications::TYPE_BID_REJECTED,
                 $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
@@ -423,7 +424,7 @@ class BidManager
      *
      * @return array
      */
-    public function getProjectRateRange(\projects $project)
+    public function getProjectRateRange(\projects $project) : array
     {
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
@@ -434,4 +435,40 @@ class BidManager
 
         return $projectRateSettings->getGlobalMinMaxRate();
     }
+
+    /**
+     * @param Bids       $bid
+     * @param float|null $acceptedAmount
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
+    public function accept(Bids $bid, ?float $acceptedAmount) : void
+    {
+        $bid->setStatus(Bids::STATUS_ACCEPTED);
+        $acceptedAmount = null == $acceptedAmount ? $bid->getAmount() : bcmul($acceptedAmount, 100);
+
+        $acceptedBid = new AcceptedBids();
+        $acceptedBid
+            ->setIdBid($bid)
+            ->setAmount($acceptedAmount);
+
+        $this->entityManager->persist($acceptedBid);
+        $this->entityManager->flush([$bid, $acceptedBid]);
+
+        if ($acceptedAmount < $bid->getAmount()) {
+            $rejectedAmount       = bcsub($bid->getAmount(), $acceptedAmount);
+            $walletBalanceHistory = $this->creditRejectedBid($bid, $rejectedAmount / 100);
+            $this->notificationRejection($bid, $walletBalanceHistory);
+        }
+
+        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
+            try {
+                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
+            } catch (\Exception $exception) {
+                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $bid->getProject()->getIdProject()]);
+            }
+        }
+    }
+
 }

@@ -18,6 +18,7 @@ class Users
     // @todo useful because users can't belong to several groups for the moment
     const USER_ID_ALAIN_ELKAIM    = 28;
     const USER_ID_ARNAUD_SCHWARTZ = 23;
+    const USER_ID_NICOLAS_LESUR   = 3;
 
     const STATUS_ONLINE  = 1;
     const STATUS_OFFLINE = 0;

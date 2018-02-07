@@ -15,6 +15,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
@@ -29,6 +30,8 @@ class UserProvider implements UserProviderInterface
     private $notificationDisplayManager;
     /** @var LenderManager */
     private $lenderManager;
+    /** @var SlackManager */
+    private $slackManager;
 
     /**
      * UserProvider constructor.
@@ -37,13 +40,15 @@ class UserProvider implements UserProviderInterface
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
+     * @param SlackManager               $slackManager
      */
     public function __construct(
         EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
-        LenderManager $lenderManager
+        LenderManager $lenderManager,
+        SlackManager $slackManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -51,6 +56,7 @@ class UserProvider implements UserProviderInterface
         $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
+        $this->slackManager               = $slackManager;
     }
 
     /**
@@ -58,11 +64,24 @@ class UserProvider implements UserProviderInterface
      */
     public function loadUserByUsername($username)
     {
-        if (
-            false !== filter_var($username, FILTER_VALIDATE_EMAIL)
-            && ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]))
-        ) {
-            return $this->setUser($clientEntity);
+        if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]);
+            $usersCount = count($users);
+
+            if ($usersCount > 0) {
+                $clientEntity = current($users);
+
+                if ($usersCount > 1) {
+                    $ids = [];
+                    foreach ($users as $user) {
+                        $ids[] = $user->getIdClient();
+                    }
+
+                    $this->slackManager->sendMessage('L’adresse email ' . $username . ' est en doublon (' . $usersCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
+                }
+
+                return $this->setUser($clientEntity);
+            }
         }
 
         throw new UsernameNotFoundException(

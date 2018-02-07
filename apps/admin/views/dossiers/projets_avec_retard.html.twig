@@ -32,24 +32,44 @@
 
 {% block content %}
     <div class="content">
-        <div class="block">
-            <div class="block-content block-content-full">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="font-s12 font-w600 text-uppercase">Retard emprunteurs</div>
-                        <a class="h2 font-w300 text-primary">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</a>
+        <div class="row">
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Retard emprunteurs</h3>
                     </div>
-                    <div class="col-md-3">
-                        <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
-                        <a class="h2 font-w300 text-primary">{{ pendingWireTransferInAmount|localizedcurrency('EUR') }}</a>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</p>
                     </div>
-                    <div class="col-md-3">
-                        <div class="font-s12 font-w600 text-uppercase">Projets en retard</div>
-                        <a class="h2 font-w300 text-primary">{{ nbProjectsWithLateRepayments|localizednumber }}</a>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Réceptions à traiter</h3>
                     </div>
-                    <div class="col-md-3">
-                        <div class="font-s12 font-w600 text-uppercase">Projets en recouvrement</div>
-                        <a class="h2 font-w300 text-primary">{{ nbProjectsWithDeptCollection|localizednumber }}</a>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ pendingWireTransferInAmount|localizedcurrency('EUR') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Projets en retard</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ nbProjectsWithLateRepayments|localizednumber }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Projets en recouvrement</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ nbProjectsWithDebtCollection|localizednumber }}</p>
                     </div>
                 </div>
             </div>

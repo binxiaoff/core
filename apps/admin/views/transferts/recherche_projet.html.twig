@@ -1,0 +1,32 @@
+<br><br><br>
+<form method="post" enctype="multipart/form-data" action="{{ app.adminUrl }}/transferts/non_attribues">
+    <table class="table" id="project-attribution-form">
+        <thead>
+        <tr>
+            <th>ID projet</th>
+            <th>Titre</th>
+            <th>Statut</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            {% if project is not null %}
+                <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.idProject }}</a></td>
+                <td><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a></td>
+                <td>{{ statusLabel }}</td>
+                <td class="text-center">
+                    <div class="btn-group">
+                        <button class="btn btn-xs btn-default" type="submit"><i class="fa fa-check"></i></button>
+                        <input type="hidden" name="id_reception" value="{{ receptionId }}">
+                        <input type="hidden" name="id_project" value="{{ project.idProject }}">
+                        <input type="hidden" name="type_remb" value="{{ repaymentType }}">
+                    </div>
+                </td>
+            {% else %}
+                <td colspan="4">Aucun projet correspondant à votre titre."</td>
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
+</form>

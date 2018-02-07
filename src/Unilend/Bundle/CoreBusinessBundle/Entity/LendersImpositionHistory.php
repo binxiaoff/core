@@ -20,6 +20,9 @@ class LendersImpositionHistory
     private $residentEtranger;
 
     /**
+     * The value of this field can be different from ClientsAdresses::idPaysFiscal.
+     * Because there is a special tax law for the persons like public servant, and their tax country is always France, wherever they live.
+     *
      * @var integer
      *
      * @ORM\Column(name="id_pays", type="integer", nullable=false)

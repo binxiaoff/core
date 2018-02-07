@@ -35,6 +35,20 @@ class BackOfficeUserManager
      *
      * @return bool
      */
+    public function isUserGroupCompliance(Users $user)
+    {
+        if (UsersTypes::TYPE_COMPLIANCE == $user->getIdUserType()->getIdUserType() || $user->getIdUser() == Users::USER_ID_NICOLAS_LESUR) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Users $user
+     *
+     * @return bool
+     */
     public function isUserGroupIT(Users $user)
     {
         if (UsersTypes::TYPE_IT == $user->getIdUserType()->getIdUserType()) {
