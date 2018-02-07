@@ -108,91 +108,112 @@ class SecurityController extends Controller
     /**
      * @Route("/pwd", name="pwd_forgotten")
      * @Method("POST")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
     public function handlePasswordForgottenAction(Request $request) : Response
     {
-        if ($request->isXmlHttpRequest()) {
-            $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-            /** @var \clients $client */
-            $client = $entityManagerSimulator->getRepository('clients');
-            $email  = $request->request->get('client_email');
-
-            if (filter_var($email, FILTER_VALIDATE_EMAIL) && $client->get($email, 'status = ' . Clients::STATUS_ONLINE . ' AND email')) {
-                /** @var \temporary_links_login $temporaryLink */
-                $temporaryLink = $entityManagerSimulator->getRepository('temporary_links_login');
-                $token         = $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
-                $entityManager = $this->get('doctrine.orm.entity_manager');
-                $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->id_client]);
-
-                if (null === $wallet) {
-                    $this->get('logger')->error(
-                        'Client ' . $client->id_client . ' has no wallet',
-                        ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-
-                    return new JsonResponse('nok');
-                }
-
-                switch ($wallet->getIdType()->getLabel()) {
-                    case WalletType::LENDER:
-                        $mailType = 'mot-de-passe-oublie';
-                        $keywords = [
-                            'firstName'     => $client->prenom,
-                            'login'         => $client->email,
-                            'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-                            'lenderPattern' => $wallet->getWireTransferPattern()
-                        ];
-                        break;
-                    case WalletType::BORROWER:
-                        $mailType = 'mot-de-passe-oublie-emprunteur';
-                        $keywords = [
-                            'firstName'            => $client->prenom,
-                            'temporaryToken'       => $token,
-                            'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
-                        ];
-                        break;
-                    case WalletType::PARTNER:
-                        $mailType = 'mot-de-passe-oublie-partenaire';
-                        $keywords = [
-                            'firstName'     => $client->prenom,
-                            'login'         => $client->email,
-                            'passwordLink'  => $this->generateUrl('define_new_password', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
-                            'lenderPattern' => $wallet->getWireTransferPattern()
-                        ];
-                        break;
-                    default:
-                        $this->get('logger')->warn(
-                            'Forgotten email functionality is not available for wallets of type "' . $wallet->getIdType()->getLabel() . '"',
-                            ['id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                        );
-
-                        return new JsonResponse('nok');
-                }
-
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailType, $keywords);
-
-                try {
-                    $message->setTo($client->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->warning(
-                        'Could not send email : mot-de-passe-oublie - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-
-                    return new JsonResponse('nok');
-                }
-
-                return new JsonResponse('ok');
-            } else {
-                return new JsonResponse('nok');
-            }
-        } else {
+        if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
         }
+
+        $email = $request->request->get('client_email');
+
+        if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return new JsonResponse('nok');
+        }
+
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $clients           = $clientsRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+        $clientsCount      = count($clients);
+
+        if (0 === $clientsCount) {
+            return new JsonResponse('nok');
+        }
+
+        if ($clientsCount > 1) {
+            $ids = [];
+            foreach ($clients as $client) {
+                $ids[] = $client->getIdClient();
+            }
+
+            $slackManager = $this->get('unilend.service.slack_manager');
+            $slackManager->sendMessage('L’adresse email ' . $email . ' est en doublon (' . $clientsCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
+
+            return new JsonResponse('nok');
+        }
+
+        /** @var \temporary_links_login $temporaryLink */
+        $temporaryLink = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
+        $client        = current($clients);
+        $token         = $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_SHORT);
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client]);
+
+        if (null === $wallet) {
+            $this->get('logger')->error(
+                'Client ' . $client->getIdClient() . ' has no wallet',
+                ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+
+            return new JsonResponse('nok');
+        }
+
+        switch ($wallet->getIdType()->getLabel()) {
+            case WalletType::LENDER:
+                $mailType = 'mot-de-passe-oublie';
+                $keywords = [
+                    'firstName'     => $client->getPrenom(),
+                    'login'         => $client->getEmail(),
+                    'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'lenderPattern' => $wallet->getWireTransferPattern()
+                ];
+                break;
+            case WalletType::BORROWER:
+                $mailType = 'mot-de-passe-oublie-emprunteur';
+                $keywords = [
+                    'firstName'            => $client->getPrenom(),
+                    'temporaryToken'       => $token,
+                    'borrowerServiceEmail' => $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+                ];
+                break;
+            case WalletType::PARTNER:
+                $mailType = 'mot-de-passe-oublie-partenaire';
+                $keywords = [
+                    'firstName'     => $client->getPrenom(),
+                    'login'         => $client->getEmail(),
+                    'passwordLink'  => $this->generateUrl('define_new_password', ['securityToken' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+                    'lenderPattern' => $wallet->getWireTransferPattern()
+                ];
+                break;
+            default:
+                $this->get('logger')->warn(
+                    'Forgotten password functionality is not available for wallets of type "' . $wallet->getIdType()->getLabel() . '"',
+                    ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+
+                return new JsonResponse('nok');
+        }
+
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($mailType, $keywords);
+
+        try {
+            $message->setTo($client->getEmail());
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning(
+                'Could not send email "' . $mailType . '" - Exception: ' . $exception->getMessage(),
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+
+            return new JsonResponse('nok');
+        }
+
+        return new JsonResponse('ok');
     }
 
     /**

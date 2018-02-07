@@ -48,6 +48,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Client <?= $this->params[0] ?> innconu</div>
+    <?php elseif (empty($this->wallet)) : ?>
+        <div class="attention">Attention : ce compte n’est pas un compte prêteur</div>
     <?php else : ?>
     <div><?= $this->clientStatusMessage ?></div>
     <h1>Prêteur</h1>

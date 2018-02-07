@@ -132,7 +132,7 @@ class ProjectRequestController extends Controller
         $client = new Clients();
         $client
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_INACTIVE)
+            ->setStatus(Clients::STATUS_OFFLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))

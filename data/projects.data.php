@@ -1355,7 +1355,7 @@ class projects extends projects_crud
         $queryBuilder
             ->andWhere(
                 $queryBuilder->expr()->orX(
-                    'p.status = :incompleteProjectStatus AND DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.added',
+                    'p.status = :incompleteProjectStatus AND DATE_SUB(NOW(), INTERVAL 1 WEEK) < p.updated',
                     'p.status != :incompleteProjectStatus'
                 )
             )

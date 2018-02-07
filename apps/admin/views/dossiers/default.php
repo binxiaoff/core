@@ -1,4 +1,4 @@
-<?php $isRiskUser = true;$this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
+<?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <script>
     var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
 

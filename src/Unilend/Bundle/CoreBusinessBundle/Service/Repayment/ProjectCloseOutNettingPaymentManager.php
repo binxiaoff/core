@@ -74,6 +74,15 @@ class ProjectCloseOutNettingPaymentManager
         $amount                           = round(bcdiv($wireTransferIn->getMontant(), 100, 4), 2);
         $isDebtCollectionFeeDueToBorrower = $this->debtCollectionMissionManager->isDebtCollectionFeeDueToBorrower($project);
 
+        $ongoingProjectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
+            'idProject' => $project,
+            'status'    => ProjectRepaymentTask::STATUS_IN_PROGRESS
+        ]);
+
+        if (null !== $ongoingProjectRepaymentTask) {
+            throw new \Exception('Another repayment task of the same project (id : ' . $project->getIdProject() . ') is in progress. The task creation of this project is temporarily disabled.');
+        }
+
         $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
         $unpaidCapital          = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
         $unpaidInterest         = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);

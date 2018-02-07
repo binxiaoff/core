@@ -11,6 +11,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class ProjectCloseOutNettingManager
 {
+    const OVERDUE_LIMIT_DAYS_FIRST_GENERATION_LOANS  = 60;
+    const OVERDUE_LIMIT_DAYS_SECOND_GENERATION_LOANS = 180;
 
     /** @var EntityManager */
     private $entityManager;

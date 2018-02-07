@@ -614,15 +614,17 @@ class CIPManager
     }
 
     /**
-     * @param \bids $bid
+     * @param Bids $bid
      *
      * @return bool
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function isCIPValidationNeeded(\bids $bid)
+    public function isCIPValidationNeeded(Bids $bid) : bool
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
-        $project->get($bid->id_project);
+        $project->get($bid->getProject()->getIdProject());
 
         /** @var \product $product */
         $product = $this->entityManagerSimulator->getRepository('product');
@@ -634,22 +636,17 @@ class CIPManager
             return false;
         }
 
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid->id_lender_account);
+        $wallet = $bid->getIdLenderAccount();
 
         if (false === $wallet->getIdClient()->isNaturalPerson()) {
             return true;
         }
 
         $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $bid->sum('
-                id_lender_account = ' . $bid->id_lender_account . ' 
-                AND id_project = ' . $project->id_project . ' 
-                AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
-            'ROUND(amount / 100)'
-        );
-
-        $totalAmount = bcdiv($bid->amount, 100, 2);
-        $totalAmount = bcadd($totalAmount, (string) $lenderBids, 2);
+        $lenderBids      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getSumByWalletAndProjectAndStatus($wallet, $project->id_project, [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
+        $totalAmount     = $bid->getAmount();
+        $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);
 
         if (bccomp($totalAmount, $thresholdAmount, 2) <= 0) {
             return false;

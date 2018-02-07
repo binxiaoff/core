@@ -50,11 +50,10 @@ class recouvreurController extends bootstrap
             $data                 = [];
 
             if ($wallet && WalletType::DEBT_COLLECTOR === $wallet->getIdType()->getLabel()) {
-                $firstOperation = $walletBalanceHistory->findOneBy(['idWallet' => $wallet], ['added' => 'ASC']);
                 $data           = [
                     'address'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()]),
                     'entrustedProjects' => $this->getEntrustedProjectData($wallet->getIdClient()),
-                    'operationHistory'  => null !== $firstOperation ? $walletBalanceHistory->getDebtCollectorWalletOperations($wallet, $firstOperation->getAdded(), new \DateTime()) : [],
+                    'operationHistory'  => $walletBalanceHistory->getDebtCollectorWalletOperations($wallet),
                     'availableBalance'  => $wallet->getAvailableBalance(),
                     'repaymentFees'     => $this->getRepaymentsList($wallet)
                 ];

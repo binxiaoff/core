@@ -12,6 +12,7 @@ class CacheKeys
     const SHORT_TIME      = 300;
     const MEDIUM_TIME     = 1800;
     const LONG_TIME       = 3600;
+    const HALF_DAY        = 43200;
     const DAY             = 86400;
 
     /**

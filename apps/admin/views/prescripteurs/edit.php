@@ -68,13 +68,13 @@
             <thead>
                 <tr>
                     <th>ID projet</th>
+                    <th>Nom</th>
                     <th>SIREN</th>
                     <th>Raison sociale</th>
-                    <th>Date demande</th>
-                    <th>Date modification</th>
                     <th>Montant</th>
                     <th>Durée</th>
                     <th>Statut</th>
+                    <th>Date demande</th>
                     <th>Analyste</th>
                     <th>&nbsp;</th>
                 </tr>
@@ -83,22 +83,22 @@
                 <?php $i = 1; ?>
                 <?php foreach ($this->aProjects as $p) : ?>
                     <?php $this->users->get($p['id_analyste'], 'id_user'); ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="project-<?= $p['id_project'] ?>">
                         <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['id_project'] ?></a></td>
-                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['name'] ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['title'] ?></a></td>
                         <td><?= $p['siren'] ?></td>
-                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                        <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
+                        <td><?= $p['name'] ?></td>
                         <td class="text-right"><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= (in_array($p['period'], array(0, 1000000))) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= (in_array($p['period'], [0, 1000000])) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>
+                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
                             </a>
                             <script>
-                                $("#ledossier<?= $p['id_project']?> ").click(function () {
+                                $("#project-<?= $p['id_project']?> ").click(function () {
                                     $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
                                 });
                             </script>

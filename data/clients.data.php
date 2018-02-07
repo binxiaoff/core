@@ -161,15 +161,15 @@ class clients extends clients_crud
             $conditions[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
-        if (false !== empty($email)) {
+        if (false === empty($email)) {
             $conditions[] = 'c.email LIKE "%' . $email . '%"';
         }
 
-        if (false !== empty($societe)) {
+        if (false === empty($societe)) {
             $conditions[] = 'co.name LIKE "%' . $societe . '%"';
         }
 
-        if (false !== empty($siren)) {
+        if (false === empty($siren)) {
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
         }
 
