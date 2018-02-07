@@ -56,6 +56,7 @@ parameters:
     altares.password:               6e0f641ab06a4cc8eb998c9108b63d423e9f837c
     altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
     altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
+    altares.wsdl_url_risk_monitoring: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoAlerte?wsdl'
 
     ellisphere.contract_id:         ~
     ellisphere.user_prefix:         ~

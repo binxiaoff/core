@@ -79,7 +79,7 @@ class AltaresManager
      * @throws OptimisticLockException
      * @throws \Exception
      */
-    private function saveMonitoringEvent(string $siren) : void
+    private function saveMonitoringEvent(string $siren): void
     {
         if (null === $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME)) {
             $monitoring = $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
@@ -120,7 +120,7 @@ class AltaresManager
      *
      * @throws \Exception
      */
-    private function saveRefreshedDataInCompanyRatingHistory(CompanyRatingHistory $companyRatingHistory) : void
+    private function saveRefreshedDataInCompanyRatingHistory(CompanyRatingHistory $companyRatingHistory): void
     {
         $this->externalDataManager->setCompanyRatingHistory($companyRatingHistory);
         $this->externalDataManager->getCompanyIdentity($companyRatingHistory->getIdCompany()->getSiren());
@@ -133,7 +133,7 @@ class AltaresManager
      *
      * @throws \Exception
      */
-    private function refreshData(string $siren) : void
+    private function refreshData(string $siren): void
     {
         $this->altaresWsManager->setReadFromCache(false);
 
@@ -147,20 +147,23 @@ class AltaresManager
     /**
      * @param string $siren
      *
-     * @return bool
+     * @throws OptimisticLockException
      * @throws \Exception
      */
-    public function activateMonitoring(string $siren) : bool
+    public function activateMonitoring(string $siren): void
     {
-        return $this->altaresWsManager->startMonitoring($siren);
+        if ($this->altaresWsManager->startMonitoring($siren)) {
+            $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
+        }
     }
 
     /**
      * @param string $siren
      *
      * @return bool
+     * @throws \Exception
      */
-    public function stopMonitoring(string $siren) : bool
+    public function stopMonitoring(string $siren): bool
     {
         return $this->altaresWsManager->stopMonitoring($siren);
     }
@@ -169,7 +172,7 @@ class AltaresManager
      * @return mixed
      * @throws \Exception
      */
-    public function saveMonitoringEvents() : void
+    public function saveMonitoringEvents(): void
     {
         $lastEvent               = $this->monitoringManager->getLastMonitoringEventDate(self::PROVIDER_NAME);
         $now                     = new \DateTime('NOW');
@@ -196,7 +199,7 @@ class AltaresManager
     /**
      * @param Notification $notification
      */
-    public function setNotificationAsRead(Notification $notification) : void
+    public function setNotificationAsRead(Notification $notification): void
     {
         try {
             $this->altaresWsManager->setNotificationAsRead($notification->getId());

@@ -236,7 +236,8 @@ class EulerHermesManager
                 call_user_func($callable, isset($content) ? $content : '', 'error');
             }
             $this->logger->error(
-                'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage(),
+                'Exception at line: ' . __LINE__ . '. Message: ' . $exception->getMessage() .
+                'Exception cause by: ' . $exception->getFile() . ' ' . $exception->getLine(),
                 ['class' => __CLASS__, 'resource' => $wsResource->getLabel(), 'uri' => $uri]
             );
 
@@ -289,7 +290,7 @@ class EulerHermesManager
         if (409 === $response->getStatusCode() && self::RESOURCE_EULER_GRADE === $resource->getLabel()) {
             $responseContent = json_decode($content);
             if (isset($responseContent->Code) && self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED === $responseContent->Code) {
-                throw new \Exception($responseContent->message, self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED);
+                throw new \Exception($responseContent->Message, self::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED);
             } else {
                 $this->logger->warning('Call to ' . $resource->getResourceName() . ' Response code: ' . $response->getStatusCode() . '. Response content: ' . $content, $logContext);
             }

@@ -42,7 +42,7 @@ class CompaniesRepository extends EntityRepository
      *
      * @return array
      */
-    public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true) : array
+    public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
@@ -136,7 +136,7 @@ class CompaniesRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function countDuplicatesByNameAndParent(Companies $company) : int
+    public function countDuplicatesByNameAndParent(Companies $company): int
     {
         return $this->createQueryBuilder('co')
             ->select('COUNT(co.idCompany)')
@@ -151,17 +151,8 @@ class CompaniesRepository extends EntityRepository
     /**
      * @return array
      */
-    public function getNotYetMonitoredSirenWithProjects() : array
+    public function getNotYetMonitoredSirenWithProjects(): array
     {
-        $lastAdded = $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('rdm.start')
-            ->from('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm')
-            ->orderBy('rdm.id', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getScalarResult();
-
         $sirenExistSubQuery = $this->getEntityManager()
             ->createQueryBuilder()
             ->select('rdm2')
@@ -171,10 +162,10 @@ class CompaniesRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('co');
         $queryBuilder->select('DISTINCT co.siren')
             ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = co.idCompany')
-            ->where('co.added > :lastAdded')
-            ->andWhere('p.status > :firstProjectStatus')
+            ->where('p.status > :firstProjectStatus')
+            ->andWhere('p.status NOT IN (:excludedStatus)')
             ->andWhere($queryBuilder->expr()->not($queryBuilder->expr()->exists($sirenExistSubQuery->getDQL())))
-            ->setParameter('lastAdded', $lastAdded)
+            ->setParameter('excludedStatus', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)
             ->setParameter('firstProjectStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
 
         return $queryBuilder->getQuery()->getResult();
@@ -183,7 +174,7 @@ class CompaniesRepository extends EntityRepository
     /**
      * @return array
      */
-    public function getSirenWithProjectOrCompanyStatusNotToBeMonitored() : array
+    public function getSirenWithProjectOrCompanyStatusNotToBeMonitored(): array
     {
         $queryBuilder = $this->createQueryBuilder('co');
         $queryBuilder->select('DISTINCT(co.siren) AS siren')
@@ -212,7 +203,8 @@ class CompaniesRepository extends EntityRepository
           WHERE p.status > ' . ProjectsStatus::ABANDONED . ' 
             AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
             AND rdm.end <= NOW() 
-            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL';
+            AND (NOT EXISTS(SELECT * FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren)
+                    OR (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL)';
 
         return $this->getEntityManager()
             ->getConnection()

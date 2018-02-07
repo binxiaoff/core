@@ -51,7 +51,7 @@ class EventDetail
     /**
      * @param mixed $eventDate
      */
-    public function setEventDate($eventDate) : void
+    public function setEventDate($eventDate): void
     {
         $this->eventDate = $eventDate;
     }
@@ -59,7 +59,7 @@ class EventDetail
     /**
      * @param mixed $eventCode
      */
-    public function setEventCode($eventCode) : void
+    public function setEventCode($eventCode): void
     {
         $this->eventCode = $eventCode;
     }
@@ -67,7 +67,7 @@ class EventDetail
     /**
      * @param mixed $label
      */
-    public function setLabel($label) : void
+    public function setLabel($label): void
     {
         $this->label = $label;
     }

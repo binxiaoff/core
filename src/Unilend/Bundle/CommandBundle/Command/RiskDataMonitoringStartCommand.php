@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RiskDataMonitoringActivateCommand extends ContainerAwareCommand
+class RiskDataMonitoringStartCommand extends ContainerAwareCommand
 {
     /**
      * @see Command
@@ -14,7 +14,7 @@ class RiskDataMonitoringActivateCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('unilend:risk_data_monitoring:activate')
+            ->setName('unilend:risk_data_monitoring:start')
             ->setDescription('Activate risk data monitoring for newly added companies with projects');
     }
 
@@ -31,10 +31,7 @@ class RiskDataMonitoringActivateCommand extends ContainerAwareCommand
         }
     }
 
-    /**
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function activateMonitoringForNewSiren() : void
+    private function activateMonitoringForNewSiren(): void
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $riskDataMonitoringCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');
@@ -48,7 +45,7 @@ class RiskDataMonitoringActivateCommand extends ContainerAwareCommand
     /**
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function activateMonitoringForProjectsBeingReactivated() : void
+    private function activateMonitoringForProjectsBeingReactivated(): void
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $riskDataMonitoringCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');

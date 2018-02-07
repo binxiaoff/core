@@ -13,7 +13,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
      *
      * @return array
      */
-    public function findCallLogsForSiren(string $siren) : array
+    public function findCallLogsForSiren(string $siren): array
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
@@ -29,7 +29,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
      *
      * @return array
      */
-    public function findCallLogsForSirenAfterDate(string $siren, \DateTime $date) : array
+    public function findCallLogsForSirenAfterDate(string $siren, \DateTime $date): array
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
@@ -47,7 +47,7 @@ class RiskDataMonitoringCallLogRepository extends EntityRepository
      * @return RiskDataMonitoringCallLog
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findLastCallLogForProvider(string $provider) : ?RiskDataMonitoringCallLog
+    public function findLastCallLogForProvider(string $provider): ?RiskDataMonitoringCallLog
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')

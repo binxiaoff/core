@@ -57,7 +57,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setSiren(string $siren) : RiskDataMonitoring
+    public function setSiren(string $siren): RiskDataMonitoring
     {
         $this->siren = $siren;
 
@@ -69,7 +69,7 @@ class RiskDataMonitoring
      *
      * @return string
      */
-    public function getSiren() : string
+    public function getSiren(): string
     {
         return $this->siren;
     }
@@ -81,7 +81,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setProvider(string $provider) : RiskDataMonitoring
+    public function setProvider(string $provider): RiskDataMonitoring
     {
         $this->provider = $provider;
 
@@ -93,7 +93,7 @@ class RiskDataMonitoring
      *
      * @return string
      */
-    public function getProvider() : string
+    public function getProvider(): string
     {
         return $this->provider;
     }
@@ -105,7 +105,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setStart(\DateTime $start) : RiskDataMonitoring
+    public function setStart(\DateTime $start): RiskDataMonitoring
     {
         $this->start = $start;
 
@@ -117,7 +117,7 @@ class RiskDataMonitoring
      *
      * @return \DateTime
      */
-    public function getStart() : \DateTime
+    public function getStart(): \DateTime
     {
         return $this->start;
     }
@@ -129,7 +129,7 @@ class RiskDataMonitoring
      *
      * @return RiskDataMonitoring
      */
-    public function setEnd(\DateTime $end) : RiskDataMonitoring
+    public function setEnd(\DateTime $end): RiskDataMonitoring
     {
         $this->end = $end;
 
@@ -141,7 +141,7 @@ class RiskDataMonitoring
      *
      * @return null|\DateTime
      */
-    public function getEnd() : ?\DateTime
+    public function getEnd(): ?\DateTime
     {
         return $this->end;
     }
@@ -151,7 +151,7 @@ class RiskDataMonitoring
      *
      * @return integer
      */
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -159,7 +159,7 @@ class RiskDataMonitoring
     /**
      * @return bool
      */
-    public function isOngoing() : bool
+    public function isOngoing(): bool
     {
         return empty($this->getEnd());
     }

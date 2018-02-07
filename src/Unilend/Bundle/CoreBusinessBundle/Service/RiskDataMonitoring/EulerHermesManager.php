@@ -50,22 +50,25 @@ class EulerHermesManager
 
     /**
      * @param string $siren
-     * @param string $countryCode
      *
-     * @return null|EulerCompanyRating
      * @throws \Exception
      */
-    public function activateMonitoring(string $siren, string $countryCode) : ?EulerCompanyRating
+    public function activateMonitoring(string $siren) : void
     {
-        $this->eulerHermesManager->setReadFromCache(false);
-        $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, $countryCode, true);
-        $this->eulerHermesManager->setReadFromCache(true);
+        try {
+            $this->eulerHermesManager->setReadFromCache(false);
+            $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr', true);
+            $this->eulerHermesManager->setReadFromCache(true);
+        } catch (\Exception $exception) {
+            if (EulerHermesWsClient::EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED != $exception->getCode()) {
+                throw $exception;
+            }
+            $eulerHermesGrade = 'ok';
+        }
 
         if (null !== $eulerHermesGrade) {
             $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
         }
-
-        return $eulerHermesGrade;
     }
 
     /**
@@ -82,7 +85,7 @@ class EulerHermesManager
         $this->eulerHermesManager->setReadFromCache(false);
         try {
             $eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr', false);
-        } catch(\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
                 ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'siren', $monitoring->getSiren()]
@@ -90,15 +93,17 @@ class EulerHermesManager
         }
         $this->eulerHermesManager->setReadFromCache(true);
 
-        /** @var Companies $company */
-        foreach ($monitoredCompanies as $company) {
-            $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
-            $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
+        if (null !== $eulerGrade) {
+            /** @var Companies $company */
+            foreach ($monitoredCompanies as $company) {
+                $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
+                $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
 
-            $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
-            $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+                $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
+                $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+            }
+            $this->entityManager->flush();
         }
-        $this->entityManager->flush();
     }
 
     /**

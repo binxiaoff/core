@@ -65,7 +65,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setAdded(\DateTime $added) : RiskDataMonitoringCallLog
+    public function setAdded(\DateTime $added): RiskDataMonitoringCallLog
     {
         $this->added = $added;
 
@@ -77,7 +77,7 @@ class RiskDataMonitoringCallLog
      *
      * @return \DateTime
      */
-    public function getAdded() : \DateTime
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -89,7 +89,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setUpdated(?\DateTime $updated) : RiskDataMonitoringCallLog
+    public function setUpdated(?\DateTime $updated): RiskDataMonitoringCallLog
     {
         $this->updated = $updated;
 
@@ -101,7 +101,7 @@ class RiskDataMonitoringCallLog
      *
      * @return \DateTime
      */
-    public function getUpdated() : \DateTime
+    public function getUpdated(): \DateTime
     {
         return $this->updated;
     }
@@ -111,7 +111,7 @@ class RiskDataMonitoringCallLog
      *
      * @return integer
      */
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -123,7 +123,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setIdRiskDataMonitoring(RiskDataMonitoring $idRiskDataMonitoring) : RiskDataMonitoringCallLog
+    public function setIdRiskDataMonitoring(RiskDataMonitoring $idRiskDataMonitoring): RiskDataMonitoringCallLog
     {
         $this->idRiskDataMonitoring = $idRiskDataMonitoring;
 
@@ -135,7 +135,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoring
      */
-    public function getIdRiskDataMonitoring() : RiskDataMonitoring
+    public function getIdRiskDataMonitoring(): RiskDataMonitoring
     {
         return $this->idRiskDataMonitoring;
     }
@@ -147,7 +147,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory) : RiskDataMonitoringCallLog
+    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory): RiskDataMonitoringCallLog
     {
         $this->idCompanyRatingHistory = $idCompanyRatingHistory;
 
@@ -159,7 +159,7 @@ class RiskDataMonitoringCallLog
      *
      * @return CompanyRatingHistory
      */
-    public function getIdCompanyRatingHistory() : CompanyRatingHistory
+    public function getIdCompanyRatingHistory(): CompanyRatingHistory
     {
         return $this->idCompanyRatingHistory;
     }
@@ -167,7 +167,7 @@ class RiskDataMonitoringCallLog
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue() : void
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -177,7 +177,7 @@ class RiskDataMonitoringCallLog
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue() : void
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

@@ -79,7 +79,7 @@ class Notification
     /**
      * @param mixed $creationDate
      */
-    public function setCreationDate($creationDate) : void
+    public function setCreationDate($creationDate): void
     {
         $this->creationDate = $creationDate;
     }
@@ -87,7 +87,7 @@ class Notification
     /**
      * @param mixed $status
      */
-    public function setStatus($status) : void
+    public function setStatus($status): void
     {
         $this->status = $status;
     }
@@ -95,7 +95,7 @@ class Notification
     /**
      * @param mixed $id
      */
-    public function setId($id) : void
+    public function setId($id): void
     {
         $this->id = $id;
     }
@@ -103,7 +103,7 @@ class Notification
     /**
      * @param mixed $siren
      */
-    public function setSiren($siren) : void
+    public function setSiren($siren): void
     {
         $this->siren = $siren;
     }
@@ -111,7 +111,7 @@ class Notification
     /**
      * @param mixed $eventList
      */
-    public function setEventList($eventList) : void
+    public function setEventList($eventList): void
     {
         $this->eventList = $eventList;
     }

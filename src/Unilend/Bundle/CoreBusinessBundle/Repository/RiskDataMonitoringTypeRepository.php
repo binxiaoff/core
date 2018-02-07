@@ -16,7 +16,7 @@ class RiskDataMonitoringTypeRepository extends EntityRepository
      * @return null|RiskDataMonitoringType
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findRatingTypeByCompanyRatingOrRule($value) : ?RiskDataMonitoringType
+    public function findRatingTypeByCompanyRatingOrRule($value): ?RiskDataMonitoringType
     {
         $queryBuilder = $this->createQueryBuilder('rdmt');
         $queryBuilder

@@ -70,7 +70,7 @@ class MonitoringCycleManager
     public function activateMonitoringForSiren(string $siren) : void
     {
         try {
-            $this->eulerHermesManager->activateMonitoring($siren, 'fr');
+            $this->eulerHermesManager->activateMonitoring($siren);
             $this->altaresManager->activateMonitoring($siren);
         } catch (\Exception $exception) {
             $this->logger->error('Risk data monitoring could not be activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [

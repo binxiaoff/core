@@ -51,7 +51,7 @@ class NotificationInformation
     /**
      * @param mixed $notificationList
      */
-    public function setNotificationList($notificationList) : void
+    public function setNotificationList($notificationList): void
     {
         $this->notificationList = $notificationList;
     }
@@ -59,7 +59,7 @@ class NotificationInformation
     /**
      * @param mixed $countNotReadNotificationsGlobal
      */
-    public function setCountNotReadNotificationsGlobal($countNotReadNotificationsGlobal) : void
+    public function setCountNotReadNotificationsGlobal($countNotReadNotificationsGlobal): void
     {
         $this->countNotReadNotificationsGlobal = $countNotReadNotificationsGlobal;
     }
@@ -67,7 +67,7 @@ class NotificationInformation
     /**
      * @param mixed $countNotReadNotificationsSelection
      */
-    public function setCountNotReadNotificationsSelection($countNotReadNotificationsSelection) : void
+    public function setCountNotReadNotificationsSelection($countNotReadNotificationsSelection): void
     {
         $this->countNotReadNotificationsSelection = $countNotReadNotificationsSelection;
     }

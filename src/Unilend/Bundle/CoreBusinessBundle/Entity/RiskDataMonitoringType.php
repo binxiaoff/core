@@ -52,7 +52,7 @@ class RiskDataMonitoringType
      *
      * @return RiskDataMonitoringType
      */
-    public function setProvider(string $provider) : RiskDataMonitoringType
+    public function setProvider(string $provider): RiskDataMonitoringType
     {
         $this->provider = $provider;
 
@@ -64,7 +64,7 @@ class RiskDataMonitoringType
      *
      * @return string
      */
-    public function getProvider() : string
+    public function getProvider(): string
     {
         return $this->provider;
     }
@@ -76,7 +76,7 @@ class RiskDataMonitoringType
      *
      * @return RiskDataMonitoringType
      */
-    public function setCompanyRating(?string $companyRating) : RiskDataMonitoringType
+    public function setCompanyRating(?string $companyRating): RiskDataMonitoringType
     {
         $this->companyRating = $companyRating;
 
@@ -88,7 +88,7 @@ class RiskDataMonitoringType
      *
      * @return string
      */
-    public function getCompanyRating() : string
+    public function getCompanyRating(): string
     {
         return $this->companyRating;
     }
@@ -100,7 +100,7 @@ class RiskDataMonitoringType
      *
      * @return RiskDataMonitoringType
      */
-    public function setIdProjectEligibilityRule(?ProjectEligibilityRule $idProjectEligibilityRule) : RiskDataMonitoringType
+    public function setIdProjectEligibilityRule(?ProjectEligibilityRule $idProjectEligibilityRule): RiskDataMonitoringType
     {
         $this->idProjectEligibilityRule = $idProjectEligibilityRule;
 
@@ -112,7 +112,7 @@ class RiskDataMonitoringType
      *
      * @return ProjectEligibilityRule|null
      */
-    public function getIdProjectEligibilityRule() : ?ProjectEligibilityRule
+    public function getIdProjectEligibilityRule(): ?ProjectEligibilityRule
     {
         return $this->idProjectEligibilityRule;
     }
@@ -122,7 +122,7 @@ class RiskDataMonitoringType
      *
      * @return integer
      */
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }

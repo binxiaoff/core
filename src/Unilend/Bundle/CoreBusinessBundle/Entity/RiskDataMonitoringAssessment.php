@@ -73,7 +73,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setValue(string $value) : RiskDataMonitoringAssessment
+    public function setValue(string $value): RiskDataMonitoringAssessment
     {
         $this->value = $value;
 
@@ -85,7 +85,7 @@ class RiskDataMonitoringAssessment
      *
      * @return string
      */
-    public function getValue() : string
+    public function getValue(): string
     {
         return $this->value;
     }
@@ -97,7 +97,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setIdProjectEligibilityRuleSet(? ProjectEligibilityRuleSet $idProjectEligibilityRuleSet) : RiskDataMonitoringAssessment
+    public function setIdProjectEligibilityRuleSet(? ProjectEligibilityRuleSet $idProjectEligibilityRuleSet): RiskDataMonitoringAssessment
     {
         $this->idProjectEligibilityRuleSet = $idProjectEligibilityRuleSet;
 
@@ -109,7 +109,7 @@ class RiskDataMonitoringAssessment
      *
      * @return ProjectEligibilityRuleSet
      */
-    public function getIdProjectEligibilityRuleSet() : ProjectEligibilityRuleSet
+    public function getIdProjectEligibilityRuleSet(): ProjectEligibilityRuleSet
     {
         return $this->idProjectEligibilityRuleSet;
     }
@@ -121,7 +121,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setAdded(\DateTime $added) : RiskDataMonitoringAssessment
+    public function setAdded(\DateTime $added): RiskDataMonitoringAssessment
     {
         $this->added = $added;
 
@@ -133,7 +133,7 @@ class RiskDataMonitoringAssessment
      *
      * @return \DateTime
      */
-    public function getAdded() : \DateTime
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -143,7 +143,7 @@ class RiskDataMonitoringAssessment
      *
      * @return integer
      */
-    public function getId() : int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -155,7 +155,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setIdRiskDataMonitoringCallLog(? RiskDataMonitoringCallLog $idRiskDataMonitoringCallLog) : RiskDataMonitoringAssessment
+    public function setIdRiskDataMonitoringCallLog(? RiskDataMonitoringCallLog $idRiskDataMonitoringCallLog): RiskDataMonitoringAssessment
     {
         $this->idRiskDataMonitoringCallLog = $idRiskDataMonitoringCallLog;
 
@@ -167,7 +167,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function getIdRiskDataMonitoringCallLog() : RiskDataMonitoringCallLog
+    public function getIdRiskDataMonitoringCallLog(): RiskDataMonitoringCallLog
     {
         return $this->idRiskDataMonitoringCallLog;
     }
@@ -179,7 +179,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setIdRiskDataMonitoringType(RiskDataMonitoringType $idRiskDataMonitoringType) : RiskDataMonitoringAssessment
+    public function setIdRiskDataMonitoringType(RiskDataMonitoringType $idRiskDataMonitoringType): RiskDataMonitoringAssessment
     {
         $this->idRiskDataMonitoringType = $idRiskDataMonitoringType;
 
@@ -191,7 +191,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringType
      */
-    public function getIdRiskDataMonitoringType() : RiskDataMonitoringType
+    public function getIdRiskDataMonitoringType(): RiskDataMonitoringType
     {
         return $this->idRiskDataMonitoringType;
     }
@@ -199,7 +199,7 @@ class RiskDataMonitoringAssessment
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue() : void
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();

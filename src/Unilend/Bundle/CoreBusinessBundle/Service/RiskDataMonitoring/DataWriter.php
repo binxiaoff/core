@@ -45,7 +45,7 @@ class DataWriter
      * @return CompanyRatingHistory
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createCompanyRatingHistory(Companies $company) : CompanyRatingHistory
+    public function createCompanyRatingHistory(Companies $company): CompanyRatingHistory
     {
         $companyRatingHistory = new CompanyRatingHistory();
         $companyRatingHistory
@@ -67,7 +67,7 @@ class DataWriter
      * @return RiskDataMonitoringAssessment
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveAssessment(RiskDataMonitoringType $monitoringType, RiskDataMonitoringCallLog $monitoringCallLog, $value) : RiskDataMonitoringAssessment
+    public function saveAssessment(RiskDataMonitoringType $monitoringType, RiskDataMonitoringCallLog $monitoringCallLog, $value): RiskDataMonitoringAssessment
     {
         $currentRiskPolicy = null;
         if ($monitoringType->getIdProjectEligibilityRule()) {
@@ -94,7 +94,7 @@ class DataWriter
      *
      * @return string
      */
-    public function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider) : string
+    public function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider): string
     {
         $memoContent             = '';
         $providerMonitoringTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => $provider]);
@@ -125,7 +125,7 @@ class DataWriter
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveMonitoringEventInProjectMemos(RiskDataMonitoringCallLog $callLog, string $provider) : void
+    public function saveMonitoringEventInProjectMemos(RiskDataMonitoringCallLog $callLog, string $provider): void
     {
         $newData        = $this->companyRatingToHtml($callLog->getIdCompanyRatingHistory());
         $riskEvaluation = $this->projectRiskEvaluationToHtml($callLog, $provider);
@@ -154,7 +154,7 @@ class DataWriter
      *
      * @return string
      */
-    public function companyRatingToHtml(CompanyRatingHistory $companyRatingHistory) : string
+    public function companyRatingToHtml(CompanyRatingHistory $companyRatingHistory): string
     {
         $companyRatings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating')
             ->findBy(['idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory()]);
@@ -178,7 +178,7 @@ class DataWriter
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function startMonitoringPeriod(string $siren, string $provider) : RiskDataMonitoring
+    public function startMonitoringPeriod(string $siren, string $provider): RiskDataMonitoring
     {
         if ($this->monitoringManager->isSirenMonitored($siren, $provider)) {
             throw new \Exception('Siren ' . $siren . ' is already monitored. Can not start monitoring period for provider ' . $provider);
@@ -202,7 +202,7 @@ class DataWriter
      * @return RiskDataMonitoringCallLog
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createMonitoringEvent(RiskDataMonitoring $monitoring, CompanyRatingHistory $companyRatingHistory) : RiskDataMonitoringCallLog
+    public function createMonitoringEvent(RiskDataMonitoring $monitoring, CompanyRatingHistory $companyRatingHistory): RiskDataMonitoringCallLog
     {
         $monitoringCallLog = new RiskDataMonitoringCallLog();
         $monitoringCallLog
@@ -221,7 +221,7 @@ class DataWriter
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function stopMonitoringPeriod(RiskDataMonitoring $monitoring) : void
+    public function stopMonitoringPeriod(RiskDataMonitoring $monitoring): void
     {
         if ($monitoring->isOngoing()) {
             $monitoring->setEnd(new \DateTime('NOW'));
@@ -234,7 +234,7 @@ class DataWriter
      *
      * @return string
      */
-    private function getProviderName(string $provider) : string
+    private function getProviderName(string $provider): string
     {
         switch ($provider) {
             case AltaresManager::PROVIDER_NAME:

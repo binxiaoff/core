@@ -8,6 +8,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
 
 class MonitoringManger
 {
+    const PROVIDERS = [
+        AltaresManager::PROVIDER_NAME,
+        EulerHermesManager::PROVIDER_NAME
+    ];
+
     /** @var EntityManager */
     private $entityManager;
 

@@ -13,7 +13,7 @@ class RiskDataMonitoringRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getCompanyRatingEvents(\DateTime $start) : array
+    public function getCompanyRatingEvents(\DateTime $start): array
     {
         $query = '
           SELECT
@@ -61,7 +61,7 @@ class RiskDataMonitoringRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getEligibilityEvents() : array
+    public function getEligibilityEvents(): array
     {
         $query = '
             SELECT

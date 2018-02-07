@@ -26,8 +26,10 @@ class AltaresManager
     const RESOURCE_FINANCIAL_SUMMARY      = 'get_financial_summary_altares';
     const RESOURCE_MANAGEMENT_LINE        = 'get_balance_management_line_altares';
 
-    const RESOURCE_START_MONITORING = 'start_altares_monitoring';
-    const RESOURCE_END_MONITORING   = 'end_altares_monitoring';
+    const RESOURCE_START_MONITORING      = 'start_monitoring_altares';
+    const RESOURCE_END_MONITORING        = 'stop_monitoring_altares';
+    const RESOURCE_GET_NOTIFICATIONS     = 'get_notification_altares';
+    const RESOURCE_SET_NOTIFICATION_READ = 'set_notification_read_altares';
 
     const EXCEPTION_CODE_INVALID_OR_UNKNOWN_SIREN        = [101, 102, 108, 109, 106];
     const EXCEPTION_CODE_NO_FINANCIAL_DATA               = [118];
@@ -393,7 +395,7 @@ class AltaresManager
      * @return bool
      * @throws \Exception
      */
-    public function startMonitoring(string $siren) : bool
+    public function startMonitoring(string $siren): bool
     {
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_START_MONITORING);
         $response   = $this->riskMonitoringClient->__soapCall(
@@ -422,9 +424,11 @@ class AltaresManager
      * @return bool
      * @throws \Exception
      */
-    public function stopMonitoring(string $siren) : bool
+    public function stopMonitoring(string $siren): bool
     {
-        $response = $this->riskMonitoringClient->__soapCall('deletePortfolioItem', [
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_END_MONITORING);
+        $response   = $this->riskMonitoringClient->__soapCall(
+            $wsResource->getResourceName(), [
             ['identification' => $this->getIdentification(), 'siren' => $siren]
         ]);
 
@@ -450,10 +454,11 @@ class AltaresManager
      * @return null|NotificationInformation
      * @throws \Exception
      */
-    public function getMonitoringEvents(\DateTime $start, \DateTime $end, int $numberEvents, ?int $page = self::DEFAULT_PAGE_NUMBER) : ?NotificationInformation
+    public function getMonitoringEvents(\DateTime $start, \DateTime $end, int $numberEvents, ?int $page = self::DEFAULT_PAGE_NUMBER): ?NotificationInformation
     {
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_GET_NOTIFICATIONS);
         $response   = $this->riskMonitoringClient->__soapCall(
-            'getAllAlertes', [
+            $wsResource->getResourceName(), [
             [
                 'identification' => $this->getIdentification(),
                 'refClient'      => 'sffpme',
@@ -496,10 +501,11 @@ class AltaresManager
      * @return bool
      * @throws \Exception
      */
-    public function setNotificationAsRead(string $notificationId) : bool
+    public function setNotificationAsRead(string $notificationId): bool
     {
+        $wsResource = $this->resourceManager->getResource(self::RESOURCE_SET_NOTIFICATION_READ);
         $response   = $this->riskMonitoringClient->__soapCall(
-            'setLu', [
+            $wsResource->getResourceName(), [
             [
                 'identification' => $this->getIdentification(),
                 'refClient'      => 'sffpme',
