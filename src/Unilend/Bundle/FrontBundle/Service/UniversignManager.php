@@ -21,6 +21,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WireTransferOutUniversign;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager;
 use Unilend\Bundle\FrontBundle\Controller\UniversignController;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -47,6 +48,8 @@ class UniversignManager
     private $universignURL;
     /** @var string */
     private $rootDir;
+    /** @var SlackManager */
+    private $slackManager;
 
     /**
      * @param EntityManager           $entityManager
@@ -57,6 +60,7 @@ class UniversignManager
      * @param TemplateMessageProvider $messageProvider
      * @param \Swift_Mailer           $mailer
      * @param WireTransferOutManager  $wireTransferOutManager
+     * @param SlackManager            $slackManager
      * @param string                  $universignURL
      * @param string                  $rootDir
      */
@@ -69,6 +73,7 @@ class UniversignManager
         TemplateMessageProvider $messageProvider,
         \Swift_Mailer $mailer,
         WireTransferOutManager $wireTransferOutManager,
+        SlackManager $slackManager,
         $universignURL,
         $rootDir
     )
@@ -81,6 +86,7 @@ class UniversignManager
         $this->messageProvider        = $messageProvider;
         $this->mailer                 = $mailer;
         $this->wireTransferOutManager = $wireTransferOutManager;
+        $this->slackManager           = $slackManager;
         $this->universignURL          = $universignURL;
         $this->rootDir                = $rootDir;
     }
@@ -103,7 +109,8 @@ class UniversignManager
                     $this->signMandate($document);
                     break;
                 case ProjectCgv::class:
-                    // nothing else to do;
+                    /** @var ProjectCgv $document */
+                    $this->signTermsOfSale($document);
                     break;
                 case WireTransferOutUniversign::class:
                     /** @var WireTransferOutUniversign $document */
@@ -736,5 +743,14 @@ class UniversignManager
             $this->logger->critical('An exception occurred while cancelling mandate and proxy for project: ' . $project->getIdProject() .
                 ' - Exception: ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
         }
+    }
+
+    /**
+     * @param ProjectCgv $termsOfSale
+     */
+    public function signTermsOfSale(ProjectCgv $termsOfSale) : void
+    {
+        $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : Les CGV emprunteurs sont signées. ';
+        $this->slackManager->sendMessage($message, '@' . $termsOfSale->getIdProject()->getIdCommercial()->getSlack());
     }
 }
