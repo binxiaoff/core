@@ -748,7 +748,7 @@ class UniversignManager
     /**
      * @param ProjectCgv $termsOfSale
      */
-    public function signTermsOfSale(ProjectCgv $termsOfSale) : void
+    public function signTermsOfSale(ProjectCgv $termsOfSale): void
     {
         $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : Les CGV emprunteurs sont signées. ';
         $this->slackManager->sendMessage($message, '@' . $termsOfSale->getIdProject()->getIdCommercial()->getSlack());
