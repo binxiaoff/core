@@ -654,7 +654,7 @@ class transfertsController extends bootstrap
                     $invoiceManager->createFundsInvoice($project);
                 }
 
-                $directDebits = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(['idProject' => $project->getIdProject()]);
+                $directDebits = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')->findOneBy(['idProject' => $project]);
                 if (null === $directDebits) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
                     $borrowerManager   = $this->get('unilend.service.borrower_manager');
@@ -667,10 +667,10 @@ class transfertsController extends bootstrap
 
                         $directDebit = new Prelevements();
                         $directDebit
-                            ->setIdClient($project->getIdCompany()->getIdClientOwner()->getIdClient())
-                            ->setIdProject($project->getIdProject())
+                            ->setIdClient($project->getIdCompany()->getIdClientOwner())
+                            ->setIdProject($project)
                             ->setMotif($bankTransferLabel)
-                            ->setMontant($paymentSchedule->getMontant() + $paymentSchedule->getCommission() + $paymentSchedule->getTva())
+                            ->setMontant($paymentSchedule->getCapital() + $paymentSchedule->getInterets() + $paymentSchedule->getCommission() + $paymentSchedule->getTva())
                             ->setBic(str_replace(' ', '', $mandate->getBic()))
                             ->setIban(str_replace(' ', '', $mandate->getIban()))
                             ->setTypePrelevement(Prelevements::TYPE_RECURRENT)
@@ -730,14 +730,13 @@ class transfertsController extends bootstrap
                 }
 
                 $slackMessage = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
-
             } catch (\Exception $exception) {
                 $logger->error('Release funds failed for project : ' . $project->getIdProject() . ', but the process is recoverable, please try it again later. Error : ' . $exception->getMessage());
 
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Une erreur s\'est produit. Les fonds ne sont pas débloqués';
 
-                $slackMessage = $slackManager->getProjectName($project) . ' - Déblocage de fonds par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] . ' est échoué.';
+                $slackMessage = $slackManager->getProjectName($project) . ' - :warning: Une erreur est survenue lors du déblocage des fonds par  ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
             }
 
             try {

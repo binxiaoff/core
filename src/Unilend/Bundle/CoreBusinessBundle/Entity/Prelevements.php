@@ -7,7 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Prelevements
  *
- * @ORM\Table(name="prelevements")
+ * @ORM\Table(name="prelevements", indexes={
+ *     @ORM\Index(name="idx_prelevements_id_client", columns={"id_client"}),
+ *     @ORM\Index(name="idx_prelevements_id_project", columns={"id_project"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\PrelevementsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -25,16 +28,22 @@ class Prelevements
     const TYPE_RECURRENT = 1;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     * })
      */
     private $idProject;
 
@@ -138,16 +147,14 @@ class Prelevements
      */
     private $idPrelevement;
 
-
-
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return Prelevements
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient)
     {
         $this->idClient = $idClient;
 
@@ -157,7 +164,7 @@ class Prelevements
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
     public function getIdClient()
     {
@@ -167,11 +174,11 @@ class Prelevements
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return Prelevements
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject)
     {
         $this->idProject = $idProject;
 
@@ -181,7 +188,7 @@ class Prelevements
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
     public function getIdProject()
     {
