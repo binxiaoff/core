@@ -381,7 +381,7 @@
             <argument type="service" id="unilend.service.risk_data_altares_manager"/>
             <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
-            <argument type="service" id="logger"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
         </service>
 
         <service id="unilend.service.risk_data_altares_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\AltaresManager">
@@ -391,7 +391,7 @@
             <argument type="service" id="unilend.service.external_data_manager"/>
             <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
-            <argument type="service" id="logger"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
         </service>
 
         <service id="unilend.service.risk_data_euler_hermes_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager">
@@ -399,7 +399,7 @@
             <argument type="service" id="unilend.service.ws_client.euler_manager"/>
             <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
             <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
-            <argument type="service" id="logger"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
         </service>
 
         <service id="unilend.service.risk_monitoring_data_writer" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\DataWriter">
