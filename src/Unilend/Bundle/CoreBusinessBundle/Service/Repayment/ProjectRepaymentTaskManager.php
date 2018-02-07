@@ -525,6 +525,7 @@ class ProjectRepaymentTaskManager
 
         $projectRepaymentTask = $projectRepaymentTaskLog->getIdTask();
         $projectRepaymentTask->setStatus($projectRepaymentTaskStatus);
+
         $this->entityManager->flush($projectRepaymentTask);
     }
 

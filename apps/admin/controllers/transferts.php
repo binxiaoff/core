@@ -587,10 +587,10 @@ class transfertsController extends bootstrap
             /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
 
-            $onGoingRepaymentTask = $entityManager
+            $ongoingRepaymentTask = $entityManager
                 ->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')
                 ->findOneBy(['status' => ProjectRepaymentTask::STATUS_IN_PROGRESS]);
-            if (null !== $onGoingRepaymentTask) {
+            if (null !== $ongoingRepaymentTask) {
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';
                 header('Location: ' . $this->lurl . '/transferts/deblocage/');
@@ -614,6 +614,8 @@ class transfertsController extends bootstrap
             $notificationManager = $this->get('unilend.service.notification_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
             $operationManager = $this->get('unilend.service.operation_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\SlackManager $slackManager */
+            $slackManager = $this->container->get('unilend.service.slack_manager');
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = $this->loadData('accepted_bids');
 
@@ -627,7 +629,7 @@ class transfertsController extends bootstrap
 
                 $offset = 0;
                 $limit  = 50;
-                while ($allLoans = $loanRepository->findBy(['idProject' => $project], null, $limit, $offset)) {
+                while ($allLoans = $loanRepository->findBy(['idProject' => $project], ['idLoan' => 'ASC'], $limit, $offset)) {
                     foreach ($allLoans as $loan) {
                         $loanOperation = $operationRepository->findOneBy(['idLoan' => $loan, 'idType' => $loanOperationType]);
                         if (null === $loanOperation) {
@@ -727,19 +729,21 @@ class transfertsController extends bootstrap
                     }
                 }
 
-                try {
-                    $slackManager = $this->container->get('unilend.service.slack_manager');
-                    $message      = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
-                    $slackManager->sendMessage($message);
-                } catch (\Exception $exception) {
-                    $logger->error('Slack message for release funds failed. Error message : ' . $exception->getMessage());
-                }
+                $slackMessage = $slackManager->getProjectName($project) . ' - Fonds débloqués par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'];
 
             } catch (\Exception $exception) {
                 $logger->error('Release funds failed for project : ' . $project->getIdProject() . ', but the process is recoverable, please try it again later. Error : ' . $exception->getMessage());
 
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds impossible';
                 $_SESSION['freeow']['message'] = 'Une erreur s\'est produit. Les fonds ne sont pas débloqués';
+
+                $slackMessage = $slackManager->getProjectName($project) . ' - Déblocage de fonds par ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] . ' est échoué.';
+            }
+
+            try {
+                $slackManager->sendMessage($slackMessage);
+            } catch (\Exception $exception) {
+                $logger->error('Slack message for release funds failed. Error message : ' . $exception->getMessage());
             }
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
