@@ -1,8 +1,9 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Security;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,7 +27,8 @@ use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticato
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\LoginLog;
 use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -40,42 +42,38 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $securityPasswordEncoder;
     /** @var RouterInterface */
     private $router;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
+    /** @var EntityManager */
+    private $entityManager;
     /** @var SessionAuthenticationStrategyInterface */
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
-    /** @var Logger */
+    /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManager */
-    private $entityManager;
 
     /**
-     * @param UserPasswordEncoder $securityPasswordEncoder
-     * @param RouterInterface $router
-     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param UserPasswordEncoder                    $securityPasswordEncoder
+     * @param RouterInterface                        $router
+     * @param EntityManager                          $entityManager
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
-     * @param CsrfTokenManagerInterface $csrfTokenManager
-     * @param Logger $logger
-     * @param EntityManager $entityManager
+     * @param CsrfTokenManagerInterface              $csrfTokenManager
+     * @param LoggerInterface                        $logger
      */
     public function __construct(
         UserPasswordEncoder $securityPasswordEncoder,
         RouterInterface $router,
-        EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
-        Logger $logger,
-        EntityManager $entityManager
-    ) {
+        LoggerInterface $logger
+    )
+    {
         $this->securityPasswordEncoder = $securityPasswordEncoder;
         $this->router                  = $router;
-        $this->entityManagerSimulator  = $entityManagerSimulator;
+        $this->entityManager           = $entityManager;
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->logger                  = $logger;
-        $this->entityManager           = $entityManager;
     }
 
     /**
@@ -192,6 +190,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $request->getSession()->remove('captchaInformation');
         /** @var Clients $client */
         $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+
         // Update the password encoder if it's legacy
         if ($user instanceof EncoderAwareInterface && (null !== $encoderName = $user->getEncoderName())) {
             $user->useDefaultEncoder(); // force to use the default password encoder
@@ -220,22 +219,26 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        if ($exception instanceof LockedException || $exception instanceof DisabledException || $exception instanceof AccountExpiredException) {
+        // @todo supprimer traductions
+
+        if (
+            $exception instanceof LockedException
+            || $exception instanceof DisabledException
+            || $exception instanceof AccountExpiredException
+        ) {
             $customException = new CustomUserMessageAuthenticationException('closed-account');
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
         }
 
-        /** @var \login_log $loginLog */
-        $loginLog = $this->entityManagerSimulator->getRepository('login_log');
-
         if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
-            $oNowMinusTenMinutes = new \DateTime('NOW - 10 minutes');
-            $iPreviousTries      = $loginLog->counter('IP = "' . $request->server->get('REMOTE_ADDR') . '" AND date_action >= "' . $oNowMinusTenMinutes->format('Y-m-d H:i:s') . '"');
+            $loginLogRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoginLog');
+            $previousFailures   = $loginLogRepository->countFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
+
             $iWaitingPeriod      = 0;
             $iPreviousResult     = 1;
 
-            if ($iPreviousTries > 0 && $iPreviousTries < 1000) { // 1000 pour ne pas bloquer le site
-                for ($i = 1; $i <= $iPreviousTries; $i++) {
+            if ($previousFailures > 0 && $previousFailures < 1000) { // 1000 pour ne pas bloquer le site
+                for ($i = 1; $i <= $previousFailures; $i++) {
                     $iWaitingPeriod  = $iPreviousResult * 2;
                     $iPreviousResult = $iWaitingPeriod;
                 }
@@ -243,26 +246,28 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
             $aCaptchaInformation = [
                 'waitingPeriod'        => $iWaitingPeriod,
-                'displayWaitingPeriod' => $iPreviousTries > 1,
-                'displayCaptcha'       => $iPreviousTries > 5
+                'displayWaitingPeriod' => $previousFailures > 1,
+                'displayCaptcha'       => $previousFailures > 5
             ];
 
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
             $request->getSession()->set('captchaInformation', $aCaptchaInformation);
         }
 
-        $loginLog->pseudo      = $this->getCredentials($request)['username'];
-        $loginLog->IP          = $request->getClientIp();
-        $loginLog->date_action = date('Y-m-d H:i:s');
-        $loginLog->retour      = $exception->getMessage();
-        $loginLog->create();
+        $loginLog = new LoginLog();
+        $loginLog->setPseudo($this->getCredentials($request)['username']);
+        $loginLog->setIp($request->getClientIp());
+        $loginLog->setRetour($exception->getMessage());
+
+        $this->entityManager->persist($loginLog);
+        $this->entityManager->flush($loginLog);
 
         if ('wrong-security-token' === $exception->getMessage()) {
             $this->logger->warning('Invalid CSRF token', [
-                'login_log ID' => $loginLog->id_log_login,
+                'login_log ID' => $loginLog->getIdLogLogin(),
                 'server'       => exec('hostname'),
                 'token'        => $this->getCredentials($request)['csrfToken'],
-                'tries'        => $iPreviousTries,
+                'tries'        => $previousFailures,
                 'REMOTE_ADDR'  => $request->server->get('REMOTE_ADDR')
             ]);
         }
@@ -289,28 +294,37 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     private function saveLogin(Clients $client)
     {
-        $client->setLastlogin(new \DateTime('NOW'));
-        $this->entityManager->flush($client);
+        try {
+            $client->setLastlogin(new \DateTime('NOW'));
 
-        $isLender   = $client->isLender();
-        $isBorrower = $client->isBorrower();
-        $isPartner  = $client->isPartner();
+            $isLender   = $client->isLender();
+            $isBorrower = $client->isBorrower();
+            $isPartner  = $client->isPartner();
 
-        if ($isLender && $isBorrower) {
-            $type = \clients_history::TYPE_CLIENT_LENDER_BORROWER;
-        } elseif ($isLender) {
-            $type = \clients_history::TYPE_CLIENT_LENDER;
-        } elseif ($isBorrower) {
-            $type = \clients_history::TYPE_CLIENT_BORROWER;
-        } elseif ($isPartner) {
-            $type = \clients_history::TYPE_CLIENT_PARTNER;
+            if ($isLender && $isBorrower) {
+                $type = ClientsHistory::TYPE_CLIENT_LENDER_BORROWER;
+            } elseif ($isLender) {
+                $type = ClientsHistory::TYPE_CLIENT_LENDER;
+            } elseif ($isBorrower) {
+                $type = ClientsHistory::TYPE_CLIENT_BORROWER;
+            } elseif ($isPartner) {
+                $type = ClientsHistory::TYPE_CLIENT_PARTNER;
+            }
+
+            $clientHistory = new ClientsHistory();
+            $clientHistory->setIdClient($client);
+            $clientHistory->setType($type);
+            $clientHistory->setStatus(ClientsHistory::STATUS_ACTION_LOGIN);
+
+            $this->entityManager->persist($clientHistory);
+            $this->entityManager->flush();
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'An error occurred while logging user login: ' . $exception->getMessage(),
+                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
         }
-
-        /** @var \clients_history $clientHistory */
-        $clientHistory = $this->entityManagerSimulator->getRepository('clients_history');
-        $clientHistory->logClientAction($client->getIdClient(), \clients_history::STATUS_ACTION_LOGIN, $type);
     }
-
 
     /**
      * Remove the host part from URL to avoid the external redirection
