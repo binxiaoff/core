@@ -4,6 +4,29 @@
     <title>Unilend</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/pdf/style.css" type="text/css" media="all"/>
+    <style type="text/css">
+        @media print {
+            table {
+                page-break-after: auto
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto
+            }
+
+            td {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+
+        .doc-wrapper .shell {
+            width: 90%;
+            margin: 0 auto;
+            padding: 15px 0;
+        }
+    </style>
 </head>
 <body>
 <div class="doc-wrapper">
@@ -90,23 +113,34 @@
                     </li>
                 </ul>
             </div>
-
             <h5>donne pouvoir à</h5>
             <div class="list">
                 <ul>
                     <li>
                         <?= $this->lng['pdf-pouvoir']['adresse'] ?>
                     </li>
-                    <li>
-                        <h5>pour signer en mon nom et pour mon compte l'intégralité des contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes :</h5>
-                    </li>
+                </ul>
+            </div>
+            <h5>pour signer en mon nom et pour mon compte l'intégralité des contrats de prêt récapitulés ci-après et correspondant au total du financement recueilli sur Unilend.fr dont les caractéristiques sont les suivantes :</h5>
+            <div class="list">
+                <ul>
                     <li>
                         <div class="col-long">
                             Montant total
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
+                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?>&nbsp;€
                         </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">Commission de financement HT</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->commissionRateFunds, 2) ?>&nbsp;%</div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">Montant net</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->releasedNetAmount, 0) ?>&nbsp;€</div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
@@ -114,7 +148,7 @@
                             Taux d'intérêt annuel moyen
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->taux) ?> %
+                            <?= $this->ficelle->formatNumber($this->taux) ?>&nbsp;%
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -161,12 +195,12 @@
                             Montant des mensualités (principal et intérêts compris)
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->rembByMonth) ?> &euro;
+                            <?= $this->ficelle->formatNumber($this->rembByMonth) ?>&nbsp;€
                         </div>
                     </li>
                 </ul>
             </div>
-            <br/>
+            <br>
             <div class="list">
                 <ul>
                     <li>La signature des contrats de prêt par Unilend engage l'Emetteur, en contrepartie des sommes remises ce jour </li>
@@ -175,7 +209,7 @@
                             à rembourser aux Prêteurs la somme de
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
+                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?>&nbsp;€
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -184,7 +218,7 @@
                             assortie des intérêts à
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->taux) ?> %
+                            <?= $this->ficelle->formatNumber($this->taux) ?>&nbsp;%
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -200,201 +234,25 @@
                             Signature de l'Emetteur
                         </div>
                         <div class="col-small">
-                            <div style="background-color:white;border:1px solid #808080;height: 50px;width: 250px;"></div>
+                            <div style="background-color:white;height: 22mm;"></div>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
                 </ul>
             </div>
-            <br/>
-            <div class="list">
+            <br>
+            <br>
+            <br>
+            <div class="list" style="margin-top: 40px;">
                 <ul>
                     <li>Les contrats de prêt sont réalisés selon les dispositions légales prévues aux articles R548-6 et R558-8 du code monétaire et financier.</li>
                 </ul>
             </div>
         </div>
-        <?php if ($this->projects->period > 48): ?>
-            <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
-                <div class="dates-table">
-                    <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
-                        <tr>
-                            <th valign="bottom">DATE</th>
-                            <th valign="bottom">CAPITAL</th>
-                            <th valign="bottom">INTERETS</th>
-                            <th valign="bottom">COMMISSION<br/> UNILEND H.T.</th>
-                            <th valign="bottom">TVA</th>
-                            <th valign="bottom">TOTAL</th>
-                            <th valign="bottom">CAPITAL RESTANT DÛ</th>
-                        </tr>
-                        <?php
-                        $capRestant = $this->capital;
-                        foreach ($this->lRemb as $r) {
-                            if ($r['ordre'] <= 48) {
-                                $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
-
-                                $capRestant -= $r['capital'];
-                                if ($capRestant < 0) {
-                                    $capRestant = 0;
-                                }
-
-                                ?>
-                                <tr>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
-                                </tr>
-                                <?php
-                            }
-                        }
-                        ?>
-                    </table>
-                </div>
-            </div>
-            <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-                <div class="dates-table">
-                    <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
-                        <?php
-                        foreach ($this->lRemb as $r) {
-                            if ($r['ordre'] > 48) {
-                                $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
-
-                                $capRestant -= $r['capital'];
-                                if ($capRestant < 0) {
-                                    $capRestant = 0;
-                                }
-
-                                ?>
-                                <tr>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
-                                </tr>
-                                <?php
-                            }
-                        }
-                        ?>
-                    </table>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="pageBreakBefore">
-                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
-                <div class="dates-table">
-                    <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
-                        <tr>
-                            <th valign="bottom">DATE</th>
-                            <th valign="bottom">CAPITAL</th>
-                            <th valign="bottom">INTERETS</th>
-                            <th valign="bottom">COMMISSION<br/> UNILEND H.T.</th>
-                            <th valign="bottom">TVA</th>
-                            <th valign="bottom">TOTAL</th>
-                            <th valign="bottom">CAPITAL RESTANT DÛ</th>
-                        </tr>
-                        <?php
-
-                        $capRestant = $this->capital;
-                        foreach ($this->lRemb as $r) {
-                            $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
-
-                            $capRestant -= $r['capital'];
-                            if ($capRestant < 0) {
-                                $capRestant = 0;
-                            }
-
-                            ?>
-                            <tr>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?> &euro;</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
-                            </tr>
-                            <?
-                        }
-                        ?>
-                    </table>
-                </div>
-            </div>
-        <?php endif; ?>
-        <?php
-        $var = 0;
-        $nb  = intval((count($this->lLenders) / 26));
-        for ($a = 0; $a <= $nb; $a++) {
-            if ($var == count($this->lLenders)) {
-                break;
-            }
-            ?>
-            <div class="pageBreakBefore" style="padding-top: 30px;">
-                <?php if ($var == 0): ?>
-                    <h3>LISTE ET CARACTERISTIQUES DES CONTRATS DE PRET</h3>
-                <?php endif; ?>
-                <div class="dates-table">
-                    <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
-                        <?php if ($var == 0) : ?>
-                            <tr>
-                                <th>NOM ou<br/> Raison sociale</th>
-                                <th>PRENOM<br/> ou SIREN</th>
-                                <th>ADRESSE</th>
-                                <th>CODE<br/> POSTAL</th>
-                                <th>VILLE</th>
-                                <th>MONTANT</th>
-                                <th>TAUX<br/> D'INTERET</th>
-                            </tr>
-                        <?php endif; ?>
-                        <?php
-                        $i = 0;
-                        foreach ($this->lLenders as $key => $l) {
-                            if ($var == $key) {
-                                if ($i <= 26) {
-                                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-                                    $wallet = $this->walletRepository->find($l['id_lender']);
-                                    $this->clients->get($wallet->getIdClient()->getIdClient(), 'id_client');
-                                    $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-                                    $nom    = $this->clients->nom;
-                                    $prenom = $this->clients->prenom;
-
-                                    if ($this->clients->type == 2) {
-                                        $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-                                        $nom    = $this->companies->name;
-                                        $prenom = $this->companies->siren;
-                                    }
-
-                                    ?>
-                                    <tr>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $nom ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $prenom ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->adresse1 ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->cp ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->ville ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['amount'] / 100, 0) ?> &euro;</td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['rate'], 1) ?> %</td>
-                                    </tr>
-                                    <?php
-                                    $var++;
-                                    $i++;
-                                }
-                            }
-                        }
-                        ?>
-                    </table>
-                </div>
-            </div>
-            <?php
-        }
-        ?>
+        <?php $this->numberOfRowsPerPage = 27; ?>
+        <?= $this->fireView('proxy_schedule_table') ?>
+        <?php $this->sectionTitle = 'LISTE ET CARACTERISTIQUES DES CONTRATS DE PRET'; ?>
+        <?= $this->fireView('proxy_loans_table') ?>
     </div>
 </div>
 </body>

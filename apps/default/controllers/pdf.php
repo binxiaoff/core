@@ -156,8 +156,8 @@ class pdfController extends bootstrap
             && $this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')
             && $this->projects->status != ProjectsStatus::PRET_REFUSE
         ) {
-            $proxy                      = $this->commonProxy();
-            $mandate                    = $this->commonMandate();
+            $proxy   = $this->commonProxy();
+            $mandate = $this->commonMandate();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager $beneficialOwnerManager */
             $beneficialOwnerManager                 = $this->get('unilend.service.beneficial_owner_manager');
@@ -511,14 +511,16 @@ class pdfController extends bootstrap
         $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label');
         $minibonContractId = $contract->id_contract;
 
-        $this->montantPrete     = $this->projects->amount;
-        $this->taux             = $this->projects->getAverageInterestRate();
-        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansMinibon   = $this->oLoans->counter('id_type_contract = ' . $minibonContractId . ' AND id_project = ' . $this->projects->id_project);
-        $this->lRemb            = $this->loadData('echeanciers_emprunteur')->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-        $this->rembByMonth      = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
-        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
+        $this->montantPrete        = $this->projects->amount;
+        $this->commissionRateFunds = round(bcdiv($this->projects->commission_rate_funds, 100, 4), 2);
+        $this->releasedNetAmount   = round($this->projects->amount * bcsub(1, $this->commissionRateFunds, 2));
+        $this->taux                = $this->projects->getAverageInterestRate();
+        $this->nbLoansBDC          = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP          = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansMinibon      = $this->oLoans->counter('id_type_contract = ' . $minibonContractId . ' AND id_project = ' . $this->projects->id_project);
+        $this->lRemb               = $this->loadData('echeanciers_emprunteur')->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+        $this->rembByMonth         = bcdiv($this->lRemb[0]['montant'] + $this->lRemb[0]['commission'] + $this->lRemb[0]['tva'], 100, 2);
+        $this->dateLastEcheance    = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
 
         $this->capital = 0;
         foreach ($this->lRemb as $r) {
