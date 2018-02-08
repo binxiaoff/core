@@ -62,12 +62,14 @@ class transfertsController extends bootstrap
 
             $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-            $query  = $this->handleDataTablesRequest($this->request->query->all());
-            $start  = $query['start'];
-            $limit  = $query['length'];
-            $draw   = $query['draw'];
-            $search = $query['search'];
-            $sort   = $query['sort'];
+            $query    = $this->handleDataTablesRequest($this->request->query->all());
+            $start    = $query['start'];
+            $limit    = $query['length'];
+            $draw     = $query['draw'];
+            $search   = $query['search'];
+            $sort     = $query['sort'];
+            $dateFrom = null === $query['date_from'] ? $query['date_from'] : DateTime::createFromFormat('d/m/Y', $query['date_from']);
+            $dateTo   = null === $query['date_to'] ? $query['date_to'] : DateTime::createFromFormat('d/m/Y', $query['date_to']);
 
             $error                   = '';
             $receptionsCount         = 0;
@@ -77,12 +79,12 @@ class transfertsController extends bootstrap
             try {
                 if ($this->params[0] === 'preteur') {
                     $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search);
-                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search);
+                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search, $dateFrom, $dateTo);
+                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
                 } else {
                     $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search);
-                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search);
+                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search, $dateFrom, $dateTo);
+                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
                 }
 
                 foreach ($receptions as $reception) {
@@ -93,16 +95,17 @@ class transfertsController extends bootstrap
                     }
 
                     $affectedReceptions[] = [
-                        $reception->getIdReception(),
-                        $reception->getMotif(),
-                        $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
-                        $attribution,
-                        $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
-                        $reception->getAdded()->format('d/m/Y'),
-                        '',
-                        $reception->getComment(),
-                        $reception->getLigne(),
-                        Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
+                        0  => $reception->getIdReception(),
+                        1  => $reception->getMotif(),
+                        2  => $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
+                        3  => $attribution,
+                        4  => $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
+                        5  => $reception->getIdproject() ? $reception->getIdproject()->getIdproject() : '',
+                        6  => $reception->getAdded()->format('d/m/Y'),
+                        7  => '',
+                        8  => $reception->getComment(),
+                        9  => $reception->getLigne(),
+                        10 => Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
                     ];
                 }
             } catch (Exception $exception) {
@@ -160,11 +163,13 @@ class transfertsController extends bootstrap
         }
 
         return [
-            'start'  => $query['start'],
-            'length' => $query['length'],
-            'draw'   => $query['draw'],
-            'search' => $search,
-            'sort'   => $sort
+            'start'     => $query['start'],
+            'length'    => $query['length'],
+            'draw'      => $query['draw'],
+            'search'    => $search,
+            'sort'      => $sort,
+            'date_from' => false === empty($query['date_from']) ? $query['date_from'] : null,
+            'date_to'   => false === empty($query['date_to']) ? $query['date_to'] : null
         ];
     }
 

@@ -20,9 +20,9 @@
             serverSide: true,
             processing: true,
             columnDefs: [
-                {orderable: false, targets: [1, 3, 6]},
+                {orderable: false, targets: [1, 3, 7]},
                 {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8, 9]},
-                {visible: false, targets: [7, 8, 9]},
+                {visible: false, targets: [5, 8, 9, 10]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
@@ -38,9 +38,9 @@
             createdRow: function (row, data, index) {
                 var $row = $(row)
                 var receptionId = data[0]
-                var comment = data[7]
-                var line = data[8]
-                var rejection = data[9]
+                var comment = data[8]
+                var line = data[9]
+                var rejection = data[10]
 
                 var addCommentBtn = '<a class="add-comment table-action" data-comment="' + comment + '" title="Commenter l\'opération">' +
                     '<span class="fa fa-pencil"></span>' +
@@ -152,6 +152,7 @@
             <th style="width:150px">Montant</th>
             <th style="width:150px">Attribution</th>
             <th style="width:100px">ID client</th>
+            <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
         </tr>
@@ -163,6 +164,7 @@
             <th style="width:150px">Montant</th>
             <th style="width:150px">Attribution</th>
             <th style="width:100px">ID client</th>
+            <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
         </tr>
