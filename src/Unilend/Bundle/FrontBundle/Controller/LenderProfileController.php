@@ -1239,20 +1239,18 @@ class LenderProfileController extends Controller
                     $entityManager->flush($lenderTaxExemption);
 
                     $this->addFlash('exonerationSuccess', $translator->trans('lender-profile_fiscal-information-exoneration-validation-success'));
-                    $logger->info('The lender (id_lender=' . $wallet->getId() . ') requested to be exempted for the year: ' . $year,
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
                 }
             } else {
                 $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
-                $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
-                    '. Lender already exempted',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
+                $logger->warning('The tax exemption request was not processed for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
+                    '. Lender already exempted. Either declaration time has elapsed or declaration already done.',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId(), 'time' => $now->format('Y-m-d H:i:s')]);
             }
         } catch (\Exception $exception) {
             $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
             $logger->error('Could not register lender tax exemption request for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
                 ' Exception message : ' . $exception->getMessage(),
-                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_lender' => $wallet->getId()]
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_lender' => $wallet->getId()]
             );
         }
 

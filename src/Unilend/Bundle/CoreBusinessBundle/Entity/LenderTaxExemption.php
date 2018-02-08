@@ -77,7 +77,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setIsoCountry($isoCountry)
+    public function setIsoCountry(string $isoCountry): LenderTaxExemption
     {
         $this->isoCountry = $isoCountry;
 
@@ -89,7 +89,7 @@ class LenderTaxExemption
      *
      * @return string
      */
-    public function getIsoCountry()
+    public function getIsoCountry(): string
     {
         return $this->isoCountry;
     }
@@ -101,7 +101,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setYear($year)
+    public function setYear(int $year): LenderTaxExemption
     {
         $this->year = $year;
 
@@ -113,7 +113,7 @@ class LenderTaxExemption
      *
      * @return integer
      */
-    public function getYear()
+    public function getYear(): int
     {
         return $this->year;
     }
@@ -125,7 +125,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setIdUser(Users $idUser)
+    public function setIdUser(Users $idUser): LenderTaxExemption
     {
         $this->idUser = $idUser;
 
@@ -135,9 +135,9 @@ class LenderTaxExemption
     /**
      * Get idUser
      *
-     * @return Users
+     * @return Users|null
      */
-    public function getIdUser()
+    public function getIdUser(): ?Users
     {
         return $this->idUser;
     }
@@ -149,7 +149,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): LenderTaxExemption
     {
         $this->added = $added;
 
@@ -161,7 +161,7 @@ class LenderTaxExemption
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -173,7 +173,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setUpdated($updated)
+    public function setUpdated(\DateTime $updated): LenderTaxExemption
     {
         $this->updated = $updated;
 
@@ -183,9 +183,9 @@ class LenderTaxExemption
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -195,7 +195,7 @@ class LenderTaxExemption
      *
      * @return integer
      */
-    public function getIdLenderTaxExemption()
+    public function getIdLenderTaxExemption(): int
     {
         return $this->idLenderTaxExemption;
     }
@@ -207,7 +207,7 @@ class LenderTaxExemption
      *
      * @return LenderTaxExemption
      */
-    public function setIdLender(Wallet $idLender)
+    public function setIdLender(Wallet $idLender): LenderTaxExemption
     {
         $this->idLender = $idLender;
 
@@ -217,9 +217,9 @@ class LenderTaxExemption
     /**
      * Get idLender
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return Wallet
      */
-    public function getIdLender()
+    public function getIdLender(): Wallet
     {
         return $this->idLender;
     }
@@ -227,7 +227,7 @@ class LenderTaxExemption
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue() : void
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -237,7 +237,7 @@ class LenderTaxExemption
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue() : void
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

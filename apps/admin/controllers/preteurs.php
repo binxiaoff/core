@@ -311,8 +311,8 @@ class preteursController extends bootstrap
         $logger = $this->get('logger');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $this->conseil_externe        = json_decode($this->settings->value, true);
-        $this->aExemptionYears        = [];
+        $this->conseil_externe = json_decode($this->settings->value, true);
+        $this->exemptionYears  = [];
 
         if (
             $this->params[0]
@@ -342,7 +342,7 @@ class preteursController extends bootstrap
                 $this->zip_fiscal          = $this->clients_adresses->cp_fiscal;
 
                 foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet], ['year' => 'DESC']) as $taxExemption) {
-                    $this->aExemptionYears[] = $taxExemption->getYear();
+                    $this->exemptionYears[] = $taxExemption->getYear();
                 }
                 $this->iNextYear       = date('Y') + 1;
 
@@ -504,7 +504,7 @@ class preteursController extends bootstrap
 
                     if (isset($_POST['tax_exemption'])) {
                         foreach ($_POST['tax_exemption'] as $iExemptionYear => $iExemptionValue) {
-                            if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
+                            if (false === in_array($iExemptionYear, $this->exemptionYears)) {
                                 try {
                                     $lenderTaxExemptionEntity = new LenderTaxExemption();
                                     $lenderTaxExemptionEntity
@@ -525,7 +525,7 @@ class preteursController extends bootstrap
                             }
                         }
                     }
-                    if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
+                    if (in_array($this->iNextYear, $this->exemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
                         $taxExemptionToRemove = $lenderTaxExemptionRepository->findOneBy(['idLender' => $wallet, 'year' => $this->iNextYear, 'isoCountry' => 'FR']);
                         if (null !== $taxExemptionToRemove) {
                             try {
