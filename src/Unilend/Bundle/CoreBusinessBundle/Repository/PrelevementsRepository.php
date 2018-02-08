@@ -3,8 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class PrelevementsRepository extends EntityRepository
 {
@@ -31,7 +34,7 @@ class PrelevementsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'))
             ->setParameter('statusPending', \prelevements::STATUS_PENDING);
         $result = $qb->getQuery()->getResult();
-        $sums = [];
+        $sums   = [];
         foreach ($result as $row) {
             $sums[$row['date']] = $row['amount'];
         }
@@ -56,7 +59,7 @@ class PrelevementsRepository extends EntityRepository
             ->setParameter('year', $year)
             ->setParameter('statusPending', \prelevements::STATUS_PENDING);
         $result = $qb->getQuery()->getResult();
-        $sums = [];
+        $sums   = [];
         foreach ($result as $row) {
             $sums[$row['month']] = $row['amount'];
         }
@@ -64,6 +67,12 @@ class PrelevementsRepository extends EntityRepository
         return $sums;
     }
 
+    /**
+     * @param $project
+     *
+     * @return int
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function terminatePendingDirectDebits($project)
     {
         if ($project instanceof Projects) {
@@ -76,6 +85,7 @@ class PrelevementsRepository extends EntityRepository
 
     /**
      * @param int|Projects $projectId
+     *
      * @return array
      */
     public function findUpcomingDirectDebitsByProject($projectId)
@@ -90,6 +100,31 @@ class PrelevementsRepository extends EntityRepository
             ->setParameter('pending', Prelevements::STATUS_PENDING)
             ->andWhere('p.typePrelevement = 1')
             ->andWhere('p.dateExecutionDemandePrelevement > NOW()');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param int $daysInterval
+     *
+     * @return Prelevements[]
+     */
+    public function getUpcomingDirectDebits(int $daysInterval): array
+    {
+        $queryBuilder = $this->createQueryBuilder('pre');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'pro', Join::WITH, 'pre.idProject = pro.idProject')
+            ->innerJoin('UnilendCoreBusinessBundle:EcheanciersEmprunteur', 'ee', Join::WITH, 'pre.idProject = ee.idProject AND ee.ordre = pre.numPrelevement')
+            ->where('pro.status = :repayment')
+            ->andWhere('ee.statusEmprunteur = :pending')
+            ->andWhere('pre.type = :borrower')
+            ->andWhere('DATE(ee.dateEcheanceEmprunteur) = :date')
+            ->setParameters([
+                'repayment' => ProjectsStatus::REMBOURSEMENT,
+                'pending'   => EcheanciersEmprunteur::STATUS_PENDING,
+                'borrower'  => Prelevements::CLIENT_TYPE_BORROWER,
+                'date'      => (new \DateTime('+' . $daysInterval . ' days'))->format('Y-m-d')
+            ]);
 
         return $queryBuilder->getQuery()->getResult();
     }

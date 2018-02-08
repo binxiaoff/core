@@ -493,8 +493,9 @@ class ProjectRepaymentTaskManager
      * @param int                  $repaidLoanNb
      *
      * @return ProjectRepaymentTaskLog
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function start(ProjectRepaymentTask $projectRepaymentTask, $repaidAmount = 0.00, $repaidLoanNb = 0)
+    public function start(ProjectRepaymentTask $projectRepaymentTask, float $repaidAmount = 0.00, int $repaidLoanNb = 0) : ProjectRepaymentTaskLog
     {
         $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
         $this->entityManager->flush($projectRepaymentTask);
@@ -512,20 +513,36 @@ class ProjectRepaymentTaskManager
 
     /**
      * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
-     * @param float                   $repaidAmount
-     * @param int                     $repaidLoanNb
+     * @param int                     $projectRepaymentTaskStatus
      *
-     * @return ProjectRepaymentTaskLog
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function end(ProjectRepaymentTaskLog $projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb)
+    public function end(ProjectRepaymentTaskLog $projectRepaymentTaskLog, int $projectRepaymentTaskStatus) : void
     {
-        $projectRepaymentTaskLog->setRepaidAmount($repaidAmount)
-            ->setRepaymentNb($repaidLoanNb)
-            ->setEnded(new \DateTime());
+        $projectRepaymentTaskLog->setEnded(new \DateTime());
 
         $this->entityManager->flush($projectRepaymentTaskLog);
 
-        return $projectRepaymentTaskLog;
+        $projectRepaymentTask = $projectRepaymentTaskLog->getIdTask();
+        $projectRepaymentTask->setStatus($projectRepaymentTaskStatus);
+
+        $this->entityManager->flush($projectRepaymentTask);
+    }
+
+    /**
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
+     * @param float                   $repaidAmount
+     * @param int                     $repaidLoanNb
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function log(ProjectRepaymentTaskLog $projectRepaymentTaskLog, float $repaidAmount, int $repaidLoanNb) : void
+    {
+        $projectRepaymentTaskLog
+            ->setRepaidAmount($repaidAmount)
+            ->setRepaymentNb($repaidLoanNb);
+
+        $this->entityManager->flush($projectRepaymentTaskLog);
     }
 
     /**

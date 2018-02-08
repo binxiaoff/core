@@ -1718,12 +1718,14 @@ class dossiersController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
-        $this->prelevements            = $this->loadData('prelevements');
         /** @var \echeanciers_emprunteur $repaymentSchedule */
         $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->lRemb = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager                = $this->get('doctrine.orm.entity_manager');
+            $this->directDebitsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+            $this->lRemb                  = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
 
             $this->montantPreteur    = 0;
             $this->MontantEmprunteur = 0;
