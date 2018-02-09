@@ -2,7 +2,6 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
-use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -15,34 +14,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\LendersImpositionHistoryRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, Companies, GreenpointAttachment, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientEmailType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityProfileType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonProfileType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
+    BankAccountType, ClientEmailType, CompanyAddressType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonFiscalAddressType, PersonPhoneType, PersonProfileType, PostalAddressType, SecurityQuestionType
+};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderProfileController extends Controller
@@ -519,8 +499,6 @@ class LenderProfileController extends Controller
         if ($clientEntity->isNaturalPerson()) {
             /** @var \clients_adresses $clientAddress */
             $clientAddress = $this->getClientAddress();
-            /** @var \lender_tax_exemption $lenderTaxExemption */
-            $lenderTaxExemption = $this->get('unilend.service.entity_manager')->getRepository('lender_tax_exemption');
             /** @var \tax_type $taxType */
             $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
             $taxType->get(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
@@ -531,7 +509,7 @@ class LenderProfileController extends Controller
             $taxExemptionDateRange                        = $this->getTaxExemptionDateRange();
             $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
             $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
-            $taxExemptionHistory                          = $this->getExemptionHistory($lenderTaxExemption, $wallet);
+            $taxExemptionHistory                          = $this->getExemptionHistory($wallet);
             $templateData['exemptions']                   = $taxExemptionHistory;
             $isEligible                                   = $this->getTaxExemptionEligibility($wallet);
             $templateData['taxExemptionEligibility']      = $isEligible;
@@ -1227,18 +1205,17 @@ class LenderProfileController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
+     *
      * @return Response
      */
     public function requestTaxExemptionAction(Request $request)
     {
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        /** @var \lender_tax_exemption $lenderTaxExemption */
-        $lenderTaxExemption = $this->get('unilend.service.entity_manager')->getRepository('lender_tax_exemption');
-        $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $year               = date('Y') + 1;
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $translator                   = $this->get('translator');
+        $logger                       = $this->get('logger');
+        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+        $wallet                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $year                         = date('Y') + 1;
 
         $post = $request->request->all();
 
@@ -1248,38 +1225,33 @@ class LenderProfileController extends Controller
             $now = new \DateTime();
 
             if ($now >= $taxExemptionDateRange['taxExemptionRequestStartDate'] && $now <= $taxExemptionDateRange['taxExemptionRequestLimitDate']
-                && true === empty($lenderTaxExemption->getLenderExemptionHistory($wallet->getId(), $year))
+                && null === $lenderTaxExemptionRepository->findOneBy(['idLender' => $wallet, 'year' => $year])
             ) {
-
                 if (true === isset($post['agree']) && true === isset($post['attest'])
                     && 'agree-to-be-informed' === $post['agree'] && 'honor-attest' === $post['attest']
                 ) {
-                    $lenderTaxExemption->id_lender   = $wallet->getId();
-                    $lenderTaxExemption->iso_country = 'FR';
-                    $lenderTaxExemption->year        = $year;
-                    $lenderTaxExemption->create();
+                    $lenderTaxExemption = new LenderTaxExemption();
+                    $lenderTaxExemption
+                        ->setIdLender($wallet)
+                        ->setIsoCountry('FR')
+                        ->setYear($year);
+                    $entityManager->persist($lenderTaxExemption);
+                    $entityManager->flush($lenderTaxExemption);
 
-                    if (false === empty($lenderTaxExemption->id_lender_tax_exemption)) {
-                        $this->addFlash('exonerationSuccess', $translator->trans('lender-profile_fiscal-information-exoneration-validation-success'));
-                        $logger->info('The lender (id_lender=' . $wallet->getId() . ') requested to be exempted for the year: ' . $year,
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
-                    } else {
-                        $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
-                        $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year,
-                            ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
-                    }
+                    $this->addFlash('exonerationSuccess', $translator->trans('lender-profile_fiscal-information-exoneration-validation-success'));
                 }
             } else {
                 $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
-                $logger->info('The tax exemption request was not processed for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
-                    '. Lender already exempted',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
+                $logger->warning('The tax exemption request was not processed for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
+                    '. Lender already exempted. Either declaration time has elapsed or declaration already done.',
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId(), 'time' => $now->format('Y-m-d H:i:s')]);
             }
         } catch (\Exception $exception) {
             $this->addFlash('exonerationError', $translator->trans('lender-profile_fiscal-information-exoneration-validation-error'));
             $logger->error('Could not register lender tax exemption request for the lender: (id_lender=' . $wallet->getId() . ') for the year: ' . $year .
                 ' Exception message : ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
+                ['class' => __CLASS__, 'function' => __FUNCTION__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_lender' => $wallet->getId()]
+            );
         }
 
         return $this->redirectToRoute('lender_profile_fiscal_information');
@@ -1299,7 +1271,7 @@ class LenderProfileController extends Controller
         $outOfDate = $now < $taxExemptionDateRange['taxExemptionRequestStartDate'] || $now > $taxExemptionDateRange['taxExemptionRequestLimitDate'];
 
         if (false === empty($taxExemptionHistory)) {
-            $taxExemptionRequestDone = in_array(date('Y') + 1, array_column($taxExemptionHistory, 'year'));
+            $taxExemptionRequestDone = in_array(date('Y') + 1, $taxExemptionHistory);
         } else {
             $taxExemptionRequestDone = false;
         }
@@ -1314,9 +1286,7 @@ class LenderProfileController extends Controller
      */
     private function getTaxExemptionEligibility(Wallet $wallet)
     {
-        /** @var LendersImpositionHistoryRepository $lenderImpositionHistoryRepository */
         $lenderImpositionHistoryRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
-
         try {
             $lenderInfo = $lenderImpositionHistoryRepository->getLenderTypeAndFiscalResidence($wallet->getId());
             if (false === empty($lenderInfo)) {
@@ -1336,22 +1306,20 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param \lender_tax_exemption $lenderTaxExemption
      * @param Wallet                $wallet
-     * @param string|null           $year
      *
      * @return array
      */
-    private function getExemptionHistory(\lender_tax_exemption $lenderTaxExemption, Wallet $wallet, $year = null)
+    private function getExemptionHistory(Wallet $wallet)
     {
-        try {
-            $result = $lenderTaxExemption->getLenderExemptionHistory($wallet->getId(), $year);
-        } catch (\Exception $exception) {
-            /** @var \Psr\Log\LoggerInterface $logger */
-            $logger = $this->get('logger');
-            $logger->error('Could not get lender exemption history (id_lender (wallet) = ' . $wallet->getId() . ') Exception message : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender (wallet)' => $wallet->getId()]);
-            $result = [];
+        $result = [];
+        $lenderTaxExemptionRepository = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+        /** @var LenderTaxExemption $exemptionYear */
+        foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet]) as $exemptionYear) {
+            $result[] = $exemptionYear->getYear();
         }
+
         return $result;
     }
 

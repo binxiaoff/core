@@ -83,14 +83,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                         <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."> <label for="civilite2">Monsieur</label>
                     </td>
                     <td rowspan="6" style="vertical-align: top">
-                        <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
+                        <?php if (false === in_array($this->iNextYear, $this->exemptionYears)) : ?>
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
                             </a>
                             <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
                             <br>
                         <?php endif; ?>
-                        <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
+                        <?php foreach ($this->exemptionYears as $iExemptionYear) : ?>
                             <?php if ($this->iNextYear == $iExemptionYear) : ?>
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>

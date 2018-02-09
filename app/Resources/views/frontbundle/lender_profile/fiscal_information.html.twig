@@ -223,14 +223,13 @@ classNames: 'user-preter-profile'
                                     <p>{% trans %} lender-profile_fiscal-information-tax-exemption-introduction {% endtrans %}</p>
 
                                     {% if declarationIsPossible == true %}
-                                        <a href="javascript:;" data-target="#profile-fiscalite-exoneration-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-exoneration-section" class="btn-primary" aria-controls="#profile-fiscalite-exoneration-edit" aria-expanded="false">
-                                            <span class="label">{% trans %}lender-profile_fiscal-information-exonerations-modify-button{% endtrans %}</span>
-                                        </a>
+                                        <p>
+                                            <a href="javascript:;" data-target="#profile-fiscalite-exoneration-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-exoneration-section" class="btn-primary" aria-controls="#profile-fiscalite-exoneration-edit" aria-expanded="false">
+                                                <span class="label">{% trans %}lender-profile_fiscal-information-exonerations-modify-button{% endtrans %}</span>
+                                            </a>
+                                        </p>
                                     {% endif %}
-
-                                    {% for exemption in exemptions %}
-                                        {% trans with {'%date%' : exemption.added|localizeddate('medium', 'none'), '%year%' : exemption.year} %}lender-profile_fiscal-information-exonerations-list-sentence{% endtrans %}
-                                    {% endfor %}
+                                    {% transchoice exemptions|length with {'%yearList%': exemptions|join(', ') } %} lender-profile_fiscal-information-exonerations-list-sentence {% endtranschoice %}
                                 </section>
 
                                 {% if declarationIsPossible == true %}
