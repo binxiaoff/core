@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -39,7 +40,7 @@ class companyController extends bootstrap
         $this->client  = new Clients();
         $this->company = new Companies();
 
-        if ($this->request->isMethod('POST')) {
+        if ($this->request->isMethod(Request::METHOD_POST)) {
             if ($this->save()) {
                 $_SESSION['freeow']['title']   = 'Société créée.';
                 $_SESSION['freeow']['message'] = 'La Société est bien créée !';
@@ -128,7 +129,7 @@ class companyController extends bootstrap
             'idType'   => AttachmentType::RIB
         ]);
 
-        if ($this->request->isMethod('POST')) {
+        if ($this->request->isMethod(Request::METHOD_POST)) {
             if ($this->save()) {
                 $_SESSION['freeow']['title']   = 'Société sauvegardée.';
                 $_SESSION['freeow']['message'] = 'La Société est bien sauvegardée !';
@@ -178,7 +179,7 @@ class companyController extends bootstrap
             $this->client
                 ->setEmail($email)
                 ->setIdLangue('fr')
-                ->setStatus(Clients::STATUS_ONLINE)
+                ->setStatus(Clients::STATUS_OFFLINE)
                 ->setCivilite($title)
                 ->setNom($name)
                 ->setPrenom($firstName);

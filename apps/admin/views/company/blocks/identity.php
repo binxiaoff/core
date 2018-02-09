@@ -14,36 +14,36 @@
             </td>
         </tr>
         <tr>
-            <th><label for="corporate_name">Raison sociale*</label></th>
+            <th><label for="corporate_name">Raison sociale *</label></th>
             <td colspan="2"><input type="text" name="corporate_name" id="corporate_name" class="input_large" value="<?= $this->company->getName() ?>" required></td>
         </tr>
         <tr>
             <th>Civilite</th>
             <td colspan="3">
-                <input type="radio" name="title" id="title1" <?= $this->client->getCivilite() === 'Mme' ? 'checked' : '' ?> value="Mme"><label for="civilite1">Madame</label>
-                <input type="radio" name="title" id="title2" <?= $this->client->getCivilite() === 'M.' ? 'checked' : '' ?> value="M."><label for="civilite2">Monsieur</label>
+                <input type="radio" name="title" id="title1" <?= $this->client->getCivilite() === 'Mme' ? 'checked' : '' ?> value="Mme"> <label for="title1">Madame</label>
+                <input type="radio" name="title" id="title2" <?= $this->client->getCivilite() === 'M.' ? 'checked' : '' ?> value="M."> <label for="title2">Monsieur</label>
             </td>
         </tr>
         <tr>
-            <th><label for="name">Nom*</label></th>
+            <th><label for="name">Nom *</label></th>
             <td><input type="text" name="name" id="name" class="input_large" value="<?= $this->client->getNom() ?>" required></td>
-            <th><label for="firstName">Prénom*</label></th>
+            <th><label for="firstName">Prénom *</label></th>
             <td><input type="text" name="firstName" id="firstName" class="input_large" value="<?= $this->client->getPrenom() ?>" required></td>
         </tr>
         <tr>
-            <th><label for="email">Email*</label></th>
+            <th><label for="email">Email *</label></th>
             <td><input type="text" name="email" id="email" class="input_large" value="<?= $this->client->getEmail() ?>" required></td>
-            <th><label for="phone">Téléphone*</label></th>
+            <th><label for="phone">Téléphone *</label></th>
             <td><input type="text" name="phone" id="phone" class="input_large" value="<?= $this->company->getPhone() ?>" required></td>
         </tr>
         <tr>
-            <th><label for="address">Adresse*</label></th>
+            <th><label for="address">Adresse *</label></th>
             <td colspan="3"><input type="text" name="address" id="address" style="width: 610px;" class="input_big" value="<?= $this->company->getAdresse1() ?>" required></td>
         </tr>
         <tr>
-            <th><label for="postCode">Code postal*</label></th>
+            <th><label for="postCode">Code postal *</label></th>
             <td><input type="text" name="postCode" id="postCode" class="input_large" value="<?= $this->company->getZip() ?>" required></td>
-            <th><label for="city">Ville*</label></th>
+            <th><label for="city">Ville *</label></th>
             <td><input type="text" name="city" id="city" class="input_large" value="<?= $this->company->getCity() ?>" required></td>
         </tr>
         <tr>
@@ -51,23 +51,23 @@
             <td colspan="3"><input type="text" name="invoice_email" id="invoice_email" class="input_large" value="<?= $this->company->getEmailFacture() ?>"></td>
         </tr>
         <tr>
-            <th><label for="rib">RIB<?php if (! $this->company->getName()) : ?>*<?php endif;?></label></th>
-            <td colspan="3"><input type="file" name="rib" id="rib" <?php if (! $this->company->getName()) : ?>required<?php endif;?></td>
+            <th><label for="rib">RIB<?php if (! $this->company->getName()) : ?> *<?php endif;?></label></th>
+            <td colspan="3"><input type="file" name="rib" id="rib"<?php if (! $this->company->getName()) : ?> required<?php endif;?></td>
         </tr>
         <tr>
-            <th><label for="kbis">KBIS<?php if (! $this->company->getName()) : ?>*<?php endif;?></label></th>
-            <td colspan="3"><input type="file" name="kbis" id="kbis" <?php if (! $this->company->getName()) : ?>required<?php endif;?>></td>
+            <th><label for="kbis">KBIS<?php if (! $this->company->getName()) : ?> *<?php endif;?></label></th>
+            <td colspan="3"><input type="file" name="kbis" id="kbis"<?php if (! $this->company->getName()) : ?> required<?php endif;?>></td>
         </tr>
         <tr>
             <th colspan="4">
-                <input type="submit" value="Valider" title="Valider" class="btn"/>
+                <input type="submit" value="Valider" title="Valider" class="btn">
             </th>
         </tr>
     </table>
 </form>
-<br/><br/>
+<br><br>
 * Champs obligatoires
-<br/><br/>
+<br><br>
 <script>
   $('#fetch').click(function (event) {
     event.preventDefault();

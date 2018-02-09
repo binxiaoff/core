@@ -49,7 +49,7 @@ class LenderSubscriptionController extends Controller
     public function personalInformationAction(Request $request)
     {
         $response = $this->checkProgressAndRedirect($request);
-        if ($response instanceof RedirectResponse){
+        if ($response instanceof RedirectResponse) {
             return $response;
         }
 
@@ -319,7 +319,7 @@ class LenderSubscriptionController extends Controller
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
         }
 
-        if ($form->isValid()){
+        if ($form->isValid()) {
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -459,7 +459,7 @@ class LenderSubscriptionController extends Controller
     public function documentsAction($clientHash, Request $request)
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
-        if ($response instanceof RedirectResponse){
+        if ($response instanceof RedirectResponse) {
             return $response;
         }
 
@@ -578,7 +578,7 @@ class LenderSubscriptionController extends Controller
         if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
-        if (false === empty($form->get('housedByThirdPerson')->getData())){
+        if (false === empty($form->get('housedByThirdPerson')->getData())) {
             $files[AttachmentType::ATTESTATION_HEBERGEMENT_TIERS] = $fileBag->get('housed-by-third-person-declaration');
             $files[AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT] = $fileBag->get('id-third-person-housing');
         }
@@ -678,7 +678,7 @@ class LenderSubscriptionController extends Controller
     public function moneyDepositAction($clientHash, Request $request)
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
-        if ($response instanceof RedirectResponse){
+        if ($response instanceof RedirectResponse) {
             return $response;
         }
         /** @var \clients $client */
@@ -703,12 +703,13 @@ class LenderSubscriptionController extends Controller
      *
      * @param string  $clientHash
      * @param Request $request
+     *
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function moneyDepositFormAction($clientHash, Request $request)
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
-        if ($response instanceof RedirectResponse){
+        if ($response instanceof RedirectResponse) {
             return $response;
         }
         $post = $request->request->all();
@@ -876,7 +877,7 @@ class LenderSubscriptionController extends Controller
             $this->addFlash('landingPageErrors', $translator->trans('common-validator_first-name-empty'));
         }
 
-        if (isset($post['prospect_email'])){
+        if (isset($post['prospect_email'])) {
             $email = filter_var($post['prospect_email'], FILTER_VALIDATE_EMAIL);
             if (false === $email) {
                 $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
@@ -890,11 +891,11 @@ class LenderSubscriptionController extends Controller
 
         if (
             false === empty($email)
-            && $clientRepo->existEmail($email)
+            && $clientRepo->existEmail($email, Clients::STATUS_ONLINE)
             && $clients->get($email, 'email')
-        ){
+        ) {
             $response = $this->checkProgressAndRedirect($request, $clients->hash);
-            if ($response instanceof RedirectResponse){
+            if ($response instanceof RedirectResponse) {
                 return $response;
             }
         }
@@ -921,12 +922,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @param null    $clientHash
+     * @param Request     $request
+     * @param string|null $clientHash
      *
-     * @return RedirectResponse
+     * @return RedirectResponse|null
      */
-    private function checkProgressAndRedirect(Request $request, $clientHash = null)
+    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null): ?RedirectResponse
     {
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
 
@@ -971,6 +972,8 @@ class LenderSubscriptionController extends Controller
         if (null !== $redirectPath && $currentPath !== $redirectPath) {
             return $this->redirect($redirectPath);
         }
+
+        return null;
     }
 
     /**

@@ -1,12 +1,14 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Clients, Companies, CompanyStatus, Zones
+};
 
 class emprunteursController extends bootstrap
 {
+    /** @var \clients_adresses */
+    public $clients_adresses;
+
     public function initialize()
     {
         parent::initialize();
@@ -87,25 +89,38 @@ class emprunteursController extends bootstrap
             ]);
 
             if (isset($_POST['form_edit_emprunteur'])) {
-                $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
-                $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
+                $emailRegex = $entityManager
+                    ->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->findOneBy(['type' => 'Regex validation email'])
+                    ->getValue();
 
-                $checkEmailExistant = $this->clients->select('email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
-                if (count($checkEmailExistant) > 0) {
-                    $les_id_client_email_exist = '';
-                    foreach ($checkEmailExistant as $checkEmailEx) {
-                        $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
+                $email = trim($_POST['email']);
+                if (1 !== preg_match($emailRegex, $email)) {
+                    $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
+                } elseif ($email !== $this->clients->email) {
+                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+                    if (false === empty($duplicates)) {
+                        $_SESSION['error_email_exist'] = 'Cette adresse email est déjà utilisée par un autre compte';
                     }
-
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else {
-                    $this->clients->email = $_POST['email'];
                 }
 
-                $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
-                $this->companies->name          = $_POST['societe'];
-                $this->companies->sector        = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
-                $this->companies->email_facture = trim($_POST['email_facture']);
+                if (empty($_SESSION['error_email_exist'])) {
+                    $this->clients->email = $email;
+                }
+
+                $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
+                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
+                $this->clients->telephone = str_replace([' ', '.', ','], '', $_POST['telephone']);
+                $this->clients->update();
+
+                $billingEmail = trim($_POST['email_facture']);
+                if (1 !== preg_match($emailRegex, $billingEmail)) {
+                    $_SESSION['error_email_exist'] = 'Le format de l\'adresse email de facturation est invalide';
+                } else {
+                    $this->companies->email_facture = $billingEmail;
+                }
 
                 if ($this->companies->status_adresse_correspondance == 1) {
                     $this->companies->adresse1 = $_POST['adresse'];
@@ -113,22 +128,23 @@ class emprunteursController extends bootstrap
                     $this->companies->zip      = $_POST['cp'];
                 }
 
+                $this->companies->name   = $_POST['societe'];
+                $this->companies->sector = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
+                $this->companies->update();
+
                 $this->clients_adresses->adresse1 = $_POST['adresse'];
                 $this->clients_adresses->ville    = $_POST['ville'];
                 $this->clients_adresses->cp       = $_POST['cp'];
-
-                $this->companies->update();
-                $this->clients->update();
                 $this->clients_adresses->update();
 
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
+                $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST]);
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
 
-                $_SESSION['freeow']['title']   = 'emprunteur mis à jour';
+                $_SESSION['freeow']['title']   = 'Mise à jour emprunteur';
                 $_SESSION['freeow']['message'] = 'L\'emprunteur a été mis à jour';
 
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                die;
+                exit;
             }
             $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
 
@@ -148,8 +164,8 @@ class emprunteursController extends bootstrap
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
-            header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
-            die;
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion');
+            exit;
         }
     }
 

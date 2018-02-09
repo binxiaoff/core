@@ -129,6 +129,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
         font-weight: bold;
     }
 
+    .spinner_etape {
+        display: none;
+        height: 32px;
+        background: no-repeat center url('<?= $this->surl ?>/images/admin/ajax-loader.gif');
+    }
+
     .error_etape,
     .valid_etape {
         display: none;

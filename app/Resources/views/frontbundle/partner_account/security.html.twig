@@ -15,10 +15,10 @@
                             <article class="dashboard-tab-pane">
                                 <div class="panel">
                                     {% if expired %}
-                                        <div class="message-error">{{ 'partner-security_expired-link-error-message'|trans }}</div>
+                                        <div class="message-error">{% trans %} partner-security_expired-link-error-message {% endtrans %}</div>
                                     {% else %}
                                         <header class="panel-header">
-                                            <h3>{{ 'partner-security_title'|trans }}</h3>
+                                            <h3>{% trans %} partner-security_title {% endtrans %}</h3>
                                         </header>
                                         <div class="panel-content">
                                             {% if app.session.flashBag.has('error') %}
@@ -34,7 +34,7 @@
                                                     {% endfor %}
                                                 </div>
                                             {% endif %}
-                                            <form action="{{ path('partner_security', {'securityToken': token}) }}" method="post" id="form_mdp_question_emprunteur" name="form_mdp_question_emprunteur">
+                                            <form action="{{ path('partner_security', {'securityToken': token}) }}" method="post">
                                                 <div class="row row-multi-col">
                                                     <div class="col-lg-6 col-md-6 col-sm-4">
                                                         <div class="form-field">
@@ -62,7 +62,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="row">
-                                                    <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{{ 'partner-security_form-submit-button'|trans }}</button>
+                                                    <button type="submit" class="btn-primary ui-dialog-confirm" data-spinnerbutton>{% trans %} partner-security_form-submit-button {% endtrans %}</button>
                                                 </div>
                                             </form>
                                         </div><!-- /.panel-content -->

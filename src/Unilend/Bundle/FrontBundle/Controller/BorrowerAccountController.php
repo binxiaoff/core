@@ -625,6 +625,7 @@ class BorrowerAccountController extends Controller
         /** @var \temporary_links_login $temporaryLinks */
         $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
         $isLinkExpired  = false;
+        $displayForm    = true;
 
         if (false === $temporaryLinks->get($securityToken, 'token')) {
             return $this->redirectToRoute('home');
@@ -643,7 +644,11 @@ class BorrowerAccountController extends Controller
             $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
             $client->get($temporaryLinks->id_client);
 
-            if ($request->isMethod(Request::METHOD_POST)) {
+            if (Clients::STATUS_ONLINE != $client->status) {
+                $displayForm = false;
+                $translator  = $this->get('translator');
+                $this->addFlash('error', $translator->trans('borrower-profile_security-offline-account'));
+            } elseif ($request->isMethod(Request::METHOD_POST)) {
                 $translator = $this->get('translator');
                 $formData   = $request->request->get('borrower_security', []);
                 $error      = false;
@@ -672,7 +677,6 @@ class BorrowerAccountController extends Controller
                 }
 
                 if (false === $error) {
-                    $client->status           = Clients::STATUS_ONLINE;
                     $client->password         = $password;
                     $client->secrete_question = filter_var($formData['question'], FILTER_SANITIZE_STRING);
                     $client->secrete_reponse  = md5($formData['answer']);
@@ -685,7 +689,10 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return $this->render('borrower_account/security.html.twig', ['expired' => $isLinkExpired]);
+        return $this->render(
+            'borrower_account/security.html.twig',
+            ['securityToken' => $securityToken, 'expired' => $isLinkExpired, 'displayForm' => $displayForm]
+        );
     }
 
     /**

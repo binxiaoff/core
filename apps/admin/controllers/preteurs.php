@@ -448,9 +448,9 @@ class preteursController extends bootstrap
                     $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
                     $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email'], $this->clients)) {
-                        $this->clients->email = $_POST['email'];
+                    $email = trim($_POST['email']);
+                    if ($this->checkEmail($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $birthday = null;
@@ -601,9 +601,9 @@ class preteursController extends bootstrap
                     $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
                     $this->clients->fonction = $_POST['fonction_e'];
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
-                        $this->clients->email = $_POST['email_e'];
+                    $email = trim($_POST['email_e']);
+                    if ($this->checkEmail($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
@@ -1224,15 +1224,37 @@ class preteursController extends bootstrap
     private function changeClientOnlineOfflineStatus($client, $status, $origin)
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
         if ($client instanceof \clients) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $clientRepository->find($client->id_client);
         }
 
-        if (false === $client->isBorrower()) {
-            $client->setStatus($status);
-            $entityManager->flush($client);
+        if ($client->isLender()) {
+            try {
+                $duplicates = [];
+                if (Clients::STATUS_ONLINE == $status) {
+                    $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
+                }
+
+                if (empty($duplicates)) {
+                    $client->setStatus($status);
+                    $entityManager->flush($client);
+                } else {
+                    $_SESSION['freeow']['title']   = 'Modification statut prêteur';
+                    $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié car un compte en ligne existe déjà avec cette adresse email.';
+
+                    header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+                    exit;
+                }
+            } catch (\Doctrine\ORM\OptimisticLockException $exception) {
+                $_SESSION['freeow']['title']   = 'Modification statut prêteur';
+                $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié en raison d’une erreur technique : ' . $exception->getMessage();
+
+                header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+                exit;
+            }
 
             $serialize = serialize(['id_client' => $client->getIdClient(), 'status' => $client->getStatus()]);
             switch ($origin) {
@@ -1256,8 +1278,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
             $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
 
-
-            header('Location:  ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+            header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
             die;
         }
     }
@@ -1441,11 +1462,6 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-
         $action = empty($this->params[0]) ? null : filter_var($this->params[0], FILTER_SANITIZE_STRING);
         if (empty($action)) {
             header('Location: ' . $this->lurl . '/preteurs/search');
@@ -1456,17 +1472,22 @@ class preteursController extends bootstrap
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
         if (null === $client) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
         if (false === in_array($this->params[2], [Clients::STATUS_OFFLINE, Clients::STATUS_ONLINE])) {
-            header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
             die;
         }
 
-        if ($action == 'status' ) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
+
+        if ($action == 'status') {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
 
             switch ($this->params[2]) {
@@ -1491,7 +1512,7 @@ class preteursController extends bootstrap
             }
         }
 
-        if ($action == 'deactivate' ) {
+        if ($action == 'deactivate') {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             $this->sendEmailClosedAccount($client);
             $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
@@ -1597,23 +1618,34 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param string $email
-     * @param \clients $clientEntity
+     * @param string   $email
+     * @param \clients $client
+     *
      * @return bool
      */
-    private function isEmailUnique($email, \clients $clientEntity)
+    private function checkEmail(string $email, \clients $client): bool
     {
-        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . Clients::STATUS_ONLINE);
-        if (count($clientsWithSameEmailAddress) > 0) {
-            $ClientIdWithSameEmail = '';
-            foreach ($clientsWithSameEmailAddress as $client) {
-                $ClientIdWithSameEmail .= ' ' . $client['id_client'];
-            }
-            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $ClientIdWithSameEmail;
-            return false;
-        } else {
+        if ($email === $client->email) {
             return true;
         }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
+
+        if (1 !== preg_match($emailRegex, $email)) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Le format est incorrect';
+            return false;
+        }
+
+        $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+        if (count($duplicates) > 0) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisée par un autre compte';
+            return false;
+        }
+
+        return true;
     }
 
     /**

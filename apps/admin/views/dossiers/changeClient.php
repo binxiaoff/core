@@ -1,48 +1,46 @@
-<?php if (empty($this->params[0])) : ?>
+<?php if (empty($this->search)) : ?>
     <script>
         parent.$.colorbox.close();
     </script>
 <?php else : ?>
-    <div id="popup">
-        <a onclick="parent.$.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
+    <div id="popup" style="min-width: 300px; padding-bottom: 0;">
+        <a onclick="parent.$.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"></a>
         <h1>Recherche : <?= $this->search ?></h1>
         <?php if (empty($this->clients)) : ?>
             <p>Aucun résultat</p>
         <?php else : ?>
-            <table style="margin-bottom:15px;">
-                <?php foreach ($this->clients as $client) : ?>
-                    <tr>
-                        <td>
-                            <?= $client['id_client'] ?>
-                            <input type="hidden" id="prenom_change_<?= $client['id_client'] ?>" value="<?= $client['prenom'] ?>">
-                            <input type="hidden" id="nom_change_<?= $client['id_client'] ?>" value="<?= $client['nom'] ?>">
-                            <input class="radio" type="radio" name="clients" id="client_<?= $client['id_client'] ?>" value="<?= $client['id_client'] ?>">
-                            <label for="client_<?= $client['id_client'] ?>"><?= $client['prenom'] ?> <?= $client['nom'] ?></label>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </table>
-            <button id="valider_search" style="float:right" class="btn_link" onclick="parent.$.fn.colorbox.close();">Valider</button>
+            <form id="existing-client-form" action="<?= $this->lurl ?>/dossiers/add/client" method="post">
+                <fieldset class="form-group">
+                    <?php foreach ($this->clients as $client) : ?>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="id_client" id="client-<?= $client['id_client'] ?>" value="<?= $client['id_client'] ?>">
+                            <label class="form-check-label" for="client-<?= $client['id_client'] ?>">
+                                <?= $client['prenom'] ?> <?= $client['nom'] ?> (<a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $client['id_client'] ?>" target="_blank"><?= $client['projets'] ?> projet<?= $client['projets'] > 1 ? 's' : '' ?></a>)
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                </fieldset>
+                <div class="form-group row text-right" style="margin-bottom: 0;">
+                    <button type="submit" class="btn-primary">Valider</button>
+                </div>
+            </form>
         <?php endif; ?>
-        <div class="clear"></div>
     </div>
 
     <script>
-        $("#valider_search").click(function () {
-            var id = $('input[name=clients]:checked').val(),
-                prenom = $("#prenom_change_" + id).val(),
-                nom = $("#nom_change_" + id).val();
+        $(function () {
+            $('#existing-client-form').on('submit', function (event) {
+                var $form = $(this)
+                var $button = $form.find('[type=submit]')
 
-            $('#search_result').show();
-            $("#search").val('');
+                if (! $('[name=id_client]:checked').val()) {
+                    alert('Veuillez sélectionner un emprunteur')
+                    return
+                }
 
-            $("#id_client").val(id);
-            $("#id_clientHtml").html(id);
-            $("#prenom").val(prenom);
-            $("#prenomHtml").html(prenom);
-            $("#nom").val(nom);
-            $("#nomHtml").html(nom);
-        });
+                $button.after('<img src="<?= $this->surl ?>/images/admin/ajax-loader.gif">')
+                $button.hide()
+            })
+        })
     </script>
 <?php endif; ?>
-
