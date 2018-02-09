@@ -5,10 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
+use Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\
+{
+    Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\librairies\CacheKeys;
 
@@ -314,5 +315,114 @@ class WalletBalanceHistoryRepository extends EntityRepository
         }
 
         return $result;
+    }
+
+    /**
+     * @param \DateTime $month
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getMonthlyRepayments(\DateTime $month)
+    {
+        $firstDayOfThisMonth = (clone $month)->modify('first day of this month')->setTime(0, 0);
+        $lastDayOfThisMonth  = (clone $month)->modify('last day of this month')->setTime(23, 59, 59);
+
+        $query = '
+        SELECT
+          c.id_client,
+          CASE
+          WHEN c.type IN (1, 3)
+            THEN 1
+          WHEN c.type IN (2, 4)
+            THEN 2
+          ELSE "inconnu"
+          END                                                                               AS type,
+          (
+            SELECT p.iso
+            FROM lenders_imposition_history lih
+              JOIN pays_v2 p ON p.id_pays = lih.id_pays
+            WHERE lih.added <= o.added
+                  AND lih.id_lender = w.id
+            ORDER BY lih.added DESC
+            LIMIT 1
+          )                                                                                 AS resident_fiscal,
+          CASE
+          (IFNULL(
+               (SELECT resident_etranger
+                FROM lenders_imposition_history lih
+                WHERE lih.id_lender = w.id AND lih.added <= o.added
+                ORDER BY added DESC
+                LIMIT 1)
+               , 0) = 0 AND (1 = c.type OR 3 = c.type))
+          WHEN TRUE
+            THEN 0
+          ELSE 1
+          END                                                                               AS taxed_at_source,
+          CASE
+          WHEN lte.year IS NULL
+            THEN 0
+          ELSE 1
+          END                                                                               AS exonere,
+          (SELECT group_concat(lte.year SEPARATOR ", ")
+           FROM lender_tax_exemption lte
+           WHERE lte.id_lender = w.id)                                                      AS annees_exoneration,
+          o.id_project,
+          o.id_loan,
+          l.id_type_contract,
+          e.ordre,
+          REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\') AS capital,
+          REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\')  AS interets,
+          e.status,
+          e.date_echeance,
+          e.date_echeance_emprunteur,
+          IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')                        AS type_remboursement,
+          REPLACE(SUM(IF(o.id_type = 30, o.amount, IF(o.id_type = 107, -o.amount, 0))), \'.\', \',\') AS capital_rembourse,
+          REPLACE(SUM(IF(o.id_type = 33, o.amount, IF(o.id_type = 110, -o.amount, 0))), \'.\', \',\') AS interets_rembourse,
+          o.added                                                                                     AS date_rembourse,
+          e.date_echeance_emprunteur_reel,
+          REPLACE(SUM(IF(o.id_type = 60, o.amount, IF(o.id_type = 125, -o.amount, 0))), \'.\', \',\') AS prelevements_obligatoires,
+          REPLACE(SUM(IF(o.id_type = 72, o.amount, IF(o.id_type = 131, -o.amount, 0))), \'.\', \',\') AS retenues_source,
+          REPLACE(SUM(IF(o.id_type = 48, o.amount, IF(o.id_type = 119, -o.amount, 0))), \'.\', \',\') AS csg,
+          REPLACE(SUM(IF(o.id_type = 66, o.amount, IF(o.id_type = 128, -o.amount, 0))), \'.\', \',\') AS prelevements_sociaux,
+          REPLACE(SUM(IF(o.id_type = 36, o.amount, IF(o.id_type = 113, -o.amount, 0))), \'.\', \',\') AS contributions_additionnelles,
+          REPLACE(SUM(IF(o.id_type = 54, o.amount, IF(o.id_type = 122, -o.amount, 0))), \'.\', \',\') AS prelevements_de_solidarite,
+          REPLACE(SUM(IF(o.id_type = 42, o.amount, IF(o.id_type = 116, -o.amount, 0))), \'.\', \',\') AS crds
+        FROM wallet_balance_history wbh
+          INNER JOIN operation o ON wbh.id_operation = o.id
+          INNER JOIN operation_type ot ON o.id_type = ot.id
+          INNER JOIN loans l ON l.id_loan = o.id_loan
+          INNER JOIN wallet w ON w.id = wbh.id_wallet
+          INNER JOIN wallet_type wt ON w.id_type = wt.id
+          INNER JOIN clients c ON c.id_client = w.id_client
+          LEFT JOIN echeanciers e ON e.id_echeancier = o.id_repayment_schedule
+          LEFT JOIN lender_tax_exemption lte ON lte.id_lender = w.id AND lte.year = YEAR(wbh.added)
+        WHERE
+          wbh.added BETWEEN :startDate AND :endDate
+          AND ot.label IN (:repaymentAndTax)
+          AND e.status_ra = :notEarlyRepayment
+          AND wt.label = :lender
+        GROUP BY o.id_wire_transfer_in, o.id_loan';
+
+        return $this->getEntityManager()->getConnection()->executeQuery(
+            $query,
+            [
+                'startDate'         => $firstDayOfThisMonth->format('Y-m-d H:i:s'),
+                'endDate'           => $lastDayOfThisMonth->format('Y-m-d H:i:s'),
+                'repaymentAndTax'   => array_merge(
+                    [
+                        OperationType::CAPITAL_REPAYMENT,
+                        OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                        OperationType::GROSS_INTEREST_REPAYMENT,
+                        OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION
+                    ],
+                    OperationType::TAX_TYPES_FR,
+                    OperationType::TAX_TYPES_FR_REGULARIZATION
+                ),
+                'notEarlyRepayment' => Echeanciers::IS_NOT_EARLY_REPAID,
+                'lender'            => WalletType::LENDER
+            ],
+            ['repaymentAndTax' => Connection::PARAM_STR_ARRAY]
+        )->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
