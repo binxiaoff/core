@@ -585,9 +585,14 @@ class ExternalDataManager
      */
     public function getAnnouncements($siren, $publishedSinceYears = null)
     {
-        $id                  = [];
-        $announcementDetails = [];
-        $announcements       = $this->infolegaleManager->getAnnouncements($siren)->getAnnouncements();
+        $id                      = [];
+        $announcementDetails     = [];
+
+        $announcementsCollection = $this->infolegaleManager->getAnnouncements($siren);
+        if (null === $announcementsCollection) {
+            return [];
+        }
+        $announcements = $announcementsCollection->getAnnouncements();
 
         if (null !== $publishedSinceYears) {
             $dateLimit = (new \DateTime())->sub(new \DateInterval('P' . $publishedSinceYears . 'Y'))->setTime(0, 0, 0);
