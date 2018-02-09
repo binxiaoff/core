@@ -59,7 +59,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function userFormAction(Request $request) : Response
+    public function userFormAction(Request $request): Response
     {
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -241,7 +241,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function securityAction(string $securityToken, Request $request) : Response
+    public function securityAction(string $securityToken, Request $request): Response
     {
         $isLinkExpired = false;
         $entityManager = $this->get('doctrine.orm.entity_manager');

@@ -20,56 +20,54 @@
     </form>
     <br>
     <br>
-    <?php if (isset($this->companies)) : ?>
-        <?php if (false === empty($this->companies)) : ?>
-            <table class="tablesorter">
-                <thead>
-                <tr>
-                    <th>Raison sociale</th>
-                    <th>Adresse</th>
-                    <th>Code postale</th>
-                    <th>Ville</th>
-                    <th>Téléphone</th>
-                    <th>Action</th>
+    <?php if (false === empty($this->companies)) : ?>
+        <table class="tablesorter">
+            <thead>
+            <tr>
+                <th>Raison sociale</th>
+                <th>Adresse</th>
+                <th>Code postale</th>
+                <th>Ville</th>
+                <th>Téléphone</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php $i = 1; ?>
+            <?php
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
+            foreach ($this->companies as $company) : ?>
+                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <td><?= $company->getName() ?></td>
+                    <td><?= $company->getAdresse1() ?></td>
+                    <td><?= $company->getZip() ?></td>
+                    <td><?= $company->getCity() ?></td>
+                    <td><?= $company->getPhone() ?></td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/company/edit/<?= $company->getIdCompany() ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $company->getName() ?>">
+                        </a>
+                    </td>
                 </tr>
-                </thead>
-                <tbody>
-                <?php $i = 1; ?>
-                <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
-                foreach ($this->companies as $company) : ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $company->getName() ?></td>
-                        <td><?= $company->getAdresse1() ?></td>
-                        <td><?= $company->getZip() ?></td>
-                        <td><?= $company->getCity() ?></td>
-                        <td><?= $company->getPhone() ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/company/edit/<?= $company->getIdCompany() ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $company->getName() ?>">
-                            </a>
-                        </td>
-                    </tr>
-                    <?php $i++; ?>
-                <?php endforeach; ?>
-                </tbody>
+                <?php $i++; ?>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php if ($this->nb_lignes != '') : ?>
+            <table>
+                <tr>
+                    <td id="pager">
+                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first">
+                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev">
+                        <input type="text" class="pagedisplay">
+                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next">
+                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last">
+                        <select class="pagesize">
+                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                        </select>
+                    </td>
+                </tr>
             </table>
-            <?php if ($this->nb_lignes != '') : ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first">
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev">
-                            <input type="text" class="pagedisplay">
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next">
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last">
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
         <?php endif; ?>
     <?php endif; ?>
 </div>

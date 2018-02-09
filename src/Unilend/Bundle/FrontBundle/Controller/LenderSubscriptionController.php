@@ -927,7 +927,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return RedirectResponse|null
      */
-    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null) : ?RedirectResponse
+    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null): ?RedirectResponse
     {
         $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
 

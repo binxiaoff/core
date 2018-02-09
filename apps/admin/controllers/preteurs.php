@@ -1623,7 +1623,7 @@ class preteursController extends bootstrap
      *
      * @return bool
      */
-    private function checkEmail(string $email, \clients $client) : bool
+    private function checkEmail(string $email, \clients $client): bool
     {
         if ($email === $client->email) {
             return true;

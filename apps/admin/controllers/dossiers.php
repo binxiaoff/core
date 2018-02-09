@@ -1336,6 +1336,7 @@ class dossiersController extends bootstrap
         if (
             isset($this->params[0], $_POST['id_client'])
             && 'client' === $this->params[0]
+            && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
             && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
         ) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
@@ -1383,6 +1384,7 @@ class dossiersController extends bootstrap
             exit;
         } elseif (
             isset($this->params[0])
+            && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
             && $this->projects->get($this->params[0])
             && 0 == $this->projects->create_bo
         ) {
@@ -2097,7 +2099,7 @@ class dossiersController extends bootstrap
      *
      * @return array
      */
-    private function getEmailVarCompletude(\projects $project, \clients $client, \companies $company) : array
+    private function getEmailVarCompletude(\projects $project, \clients $client, \companies $company): array
     {
         /** @var \settings $settings */
         $settings = $this->loadData('settings');
