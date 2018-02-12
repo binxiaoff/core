@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Box\Spout\Common\Type;
+use Box\Spout\Writer\CSV\Writer;
 use Box\Spout\Writer\WriterFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -39,6 +40,8 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
             $month = new \DateTime();
             $month->modify('first day of last month');
         }
+
+        $monthFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/echeances_' . $month->format('Ym') . '.csv';
 
         $output->writeln('Generating repayment file for ' . $month->format('Y-m'));
 
@@ -77,14 +80,17 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
             'crds'
         ];
 
-        $sftpPath      = $this->getContainer()->getParameter('path.sftp');
-        $monthFilePath = $sftpPath . 'sfpmei/emissions/etat_fiscal/echeances_' . $month->format('Ym') . '.csv';
-
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-
         try {
-            $result = $walletBalanceHistoryRepository->getMonthlyRepayments($month);
+            $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+            $result        = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getMonthlyRepayments($month);
+
+            /** @var Writer $writer */
+            $writer = WriterFactory::create(Type::CSV);
+            $writer->setFieldDelimiter(';')
+                ->openToFile($monthFilePath)
+                ->addRow($header)
+                ->addRows($result)
+                ->close();
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');
@@ -92,11 +98,5 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
                 ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]);
             return;
         }
-
-        $writer = WriterFactory::create(Type::CSV);
-        $writer->openToFile($monthFilePath);
-        $writer->addRow($header);
-        $writer->addRows($result);
-        $writer->close();
     }
 }

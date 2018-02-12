@@ -322,7 +322,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getMonthlyRepayments(\DateTime $month)
+    public function getMonthlyRepayments(\DateTime $month): array
     {
         $firstDayOfThisMonth = (clone $month)->modify('first day of this month')->setTime(0, 0);
         $lastDayOfThisMonth  = (clone $month)->modify('last day of this month')->setTime(23, 59, 59);
@@ -441,7 +441,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 'notEarlyRepayment'                         => Echeanciers::IS_NOT_EARLY_REPAID,
                 'lender'                                    => WalletType::LENDER
             ],
-            ['person' => Connection::PARAM_STR_ARRAY, 'legalEntity' => Connection::PARAM_STR_ARRAY,'repaymentAndTax' => Connection::PARAM_STR_ARRAY]
+            ['person' => Connection::PARAM_STR_ARRAY, 'legalEntity' => Connection::PARAM_STR_ARRAY, 'repaymentAndTax' => Connection::PARAM_STR_ARRAY]
         )->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
