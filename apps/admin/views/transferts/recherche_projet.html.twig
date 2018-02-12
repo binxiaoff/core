@@ -1,5 +1,6 @@
 <br><br><br>
 <form method="post" enctype="multipart/form-data" action="{{ app.adminUrl }}/transferts/non_attribues">
+    <div class="btnDroite"><a href="#" id="new-search" class="btn btn-default">Nouvelle recherche</a></div>
     <input type="hidden" name="id_reception" value="{{ receptionId }}">
     <input type="hidden" name="id_project" value="{{ project.idProject }}">
     <input type="hidden" name="type_remb" value="{{ repaymentType }}">
@@ -30,3 +31,15 @@
         </tbody>
     </table>
 </form>
+<script type="text/javascript">
+    $(function () {
+        $('#new-search').click(function (e) {
+            e.preventDefault()
+            $('#response').hide(0)
+            $('#project-form-container').show(0, function () {
+                $.colorbox.resize()
+            })
+            $('#id_project').focus()
+        })
+    })
+</script>
