@@ -36,7 +36,7 @@ class UserLender extends BaseUser
      * @param string         $initials
      * @param string         $firstName
      * @param string         $lastName
-     * @param int            $clientStatus
+     * @param int|null       $clientStatus
      * @param bool           $hasAcceptedCurrentTerms
      * @param array          $notifications
      * @param int            $subscriptionStep
@@ -56,7 +56,7 @@ class UserLender extends BaseUser
         string $initials,
         string $firstName,
         string $lastName,
-        int $clientStatus,
+        ?int $clientStatus,
         bool $hasAcceptedCurrentTerms,
         array $notifications,
         int $subscriptionStep,
