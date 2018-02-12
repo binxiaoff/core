@@ -6,9 +6,8 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\
-{
-    Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\librairies\CacheKeys;
@@ -332,9 +331,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
         SELECT
           c.id_client,
           CASE
-          WHEN c.type IN (1, 3)
+          WHEN c.type IN (:person)
             THEN 1
-          WHEN c.type IN (2, 4)
+          WHEN c.type IN (:legalEntity)
             THEN 2
           ELSE "inconnu"
           END                                                                               AS type,
@@ -349,12 +348,12 @@ class WalletBalanceHistoryRepository extends EntityRepository
           )                                                                                 AS resident_fiscal,
           CASE
           (IFNULL(
-               (SELECT resident_etranger
+               (SELECT id_pays
                 FROM lenders_imposition_history lih
                 WHERE lih.id_lender = w.id AND lih.added <= o.added
                 ORDER BY added DESC
                 LIMIT 1)
-               , 0) = 0 AND (1 = c.type OR 3 = c.type))
+               , 0) IN (0, 1) AND c.type IN (:person))
           WHEN TRUE
             THEN 0
           ELSE 1
@@ -377,17 +376,17 @@ class WalletBalanceHistoryRepository extends EntityRepository
           e.date_echeance,
           e.date_echeance_emprunteur,
           IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')                        AS type_remboursement,
-          REPLACE(SUM(IF(o.id_type = 30, o.amount, IF(o.id_type = 107, -o.amount, 0))), \'.\', \',\') AS capital_rembourse,
-          REPLACE(SUM(IF(o.id_type = 33, o.amount, IF(o.id_type = 110, -o.amount, 0))), \'.\', \',\') AS interets_rembourse,
+          REPLACE(SUM(IF(ot.label = :capital, o.amount, IF(ot.label = :capitalRegularization, -o.amount, 0))), \'.\', \',\') AS capital_rembourse,
+          REPLACE(SUM(IF(ot.label = :interest, o.amount, IF(ot.label = :interestRegularization, -o.amount, 0))), \'.\', \',\') AS interets_rembourse,
           o.added                                                                                     AS date_rembourse,
           e.date_echeance_emprunteur_reel,
-          REPLACE(SUM(IF(o.id_type = 60, o.amount, IF(o.id_type = 125, -o.amount, 0))), \'.\', \',\') AS prelevements_obligatoires,
-          REPLACE(SUM(IF(o.id_type = 72, o.amount, IF(o.id_type = 131, -o.amount, 0))), \'.\', \',\') AS retenues_source,
-          REPLACE(SUM(IF(o.id_type = 48, o.amount, IF(o.id_type = 119, -o.amount, 0))), \'.\', \',\') AS csg,
-          REPLACE(SUM(IF(o.id_type = 66, o.amount, IF(o.id_type = 128, -o.amount, 0))), \'.\', \',\') AS prelevements_sociaux,
-          REPLACE(SUM(IF(o.id_type = 36, o.amount, IF(o.id_type = 113, -o.amount, 0))), \'.\', \',\') AS contributions_additionnelles,
-          REPLACE(SUM(IF(o.id_type = 54, o.amount, IF(o.id_type = 122, -o.amount, 0))), \'.\', \',\') AS prelevements_de_solidarite,
-          REPLACE(SUM(IF(o.id_type = 42, o.amount, IF(o.id_type = 116, -o.amount, 0))), \'.\', \',\') AS crds
+          REPLACE(SUM(IF(ot.label = :prelevementsObligatoires, o.amount, IF(ot.label = :prelevementsObligatoiresRegularization, -o.amount, 0))), \'.\', \',\') AS prelevements_obligatoires,
+          REPLACE(SUM(IF(ot.label = :retenuesSource, o.amount, IF(ot.label = :retenuesSourceRegularization, -o.amount, 0))), \'.\', \',\') AS retenues_source,
+          REPLACE(SUM(IF(ot.label = :csg, o.amount, IF(ot.label = :csgRegularization, -o.amount, 0))), \'.\', \',\') AS csg,
+          REPLACE(SUM(IF(ot.label = :prelevementsSociaux, o.amount, IF(ot.label = :prelevementsSociauxRegularization, -o.amount, 0))), \'.\', \',\') AS prelevements_sociaux,
+          REPLACE(SUM(IF(ot.label = :contributionsAdditionnelles, o.amount, IF(ot.label = :contributionsAdditionnellesRegularization, -o.amount, 0))), \'.\', \',\') AS contributions_additionnelles,
+          REPLACE(SUM(IF(ot.label = :prelevementsSolidarite, o.amount, IF(ot.label = :prelevementsSolidariteRegularization, -o.amount, 0))), \'.\', \',\') AS prelevements_de_solidarite,
+          REPLACE(SUM(IF(ot.label = :crds, o.amount, IF(ot.label = :crdsRegularization, -o.amount, 0))), \'.\', \',\') AS crds
         FROM wallet_balance_history wbh
           INNER JOIN operation o ON wbh.id_operation = o.id
           INNER JOIN operation_type ot ON o.id_type = ot.id
@@ -407,9 +406,29 @@ class WalletBalanceHistoryRepository extends EntityRepository
         return $this->getEntityManager()->getConnection()->executeQuery(
             $query,
             [
-                'startDate'         => $firstDayOfThisMonth->format('Y-m-d H:i:s'),
-                'endDate'           => $lastDayOfThisMonth->format('Y-m-d H:i:s'),
-                'repaymentAndTax'   => array_merge(
+                'person'                                    => [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER],
+                'legalEntity'                               => [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER],
+                'startDate'                                 => $firstDayOfThisMonth->format('Y-m-d H:i:s'),
+                'endDate'                                   => $lastDayOfThisMonth->format('Y-m-d H:i:s'),
+                'capital'                                   => OperationType::CAPITAL_REPAYMENT,
+                'capitalRegularization'                     => OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+                'interest'                                  => OperationType::GROSS_INTEREST_REPAYMENT,
+                'interestRegularization'                    => OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION,
+                'prelevementsObligatoires'                  => OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES,
+                'prelevementsObligatoiresRegularization'    => OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES_REGULARIZATION,
+                'retenuesSource'                            => OperationType::TAX_FR_RETENUES_A_LA_SOURCE,
+                'retenuesSourceRegularization'              => OperationType::TAX_FR_RETENUES_A_LA_SOURCE_REGULARIZATION,
+                'csg'                                       => OperationType::TAX_FR_CSG,
+                'csgRegularization'                         => OperationType::TAX_FR_CSG_REGULARIZATION,
+                'prelevementsSociaux'                       => OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX,
+                'prelevementsSociauxRegularization'         => OperationType::TAX_FR_PRELEVEMENTS_SOCIAUX_REGULARIZATION,
+                'contributionsAdditionnelles'               => OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES,
+                'contributionsAdditionnellesRegularization' => OperationType::TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_REGULARIZATION,
+                'prelevementsSolidarite'                    => OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE,
+                'prelevementsSolidariteRegularization'      => OperationType::TAX_FR_PRELEVEMENTS_DE_SOLIDARITE_REGULARIZATION,
+                'crds'                                      => OperationType::TAX_FR_CRDS,
+                'crdsRegularization'                        => OperationType::TAX_FR_CRDS_REGULARIZATION,
+                'repaymentAndTax'                           => array_merge(
                     [
                         OperationType::CAPITAL_REPAYMENT,
                         OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
@@ -419,10 +438,10 @@ class WalletBalanceHistoryRepository extends EntityRepository
                     OperationType::TAX_TYPES_FR,
                     OperationType::TAX_TYPES_FR_REGULARIZATION
                 ),
-                'notEarlyRepayment' => Echeanciers::IS_NOT_EARLY_REPAID,
-                'lender'            => WalletType::LENDER
+                'notEarlyRepayment'                         => Echeanciers::IS_NOT_EARLY_REPAID,
+                'lender'                                    => WalletType::LENDER
             ],
-            ['repaymentAndTax' => Connection::PARAM_STR_ARRAY]
+            ['person' => Connection::PARAM_STR_ARRAY, 'legalEntity' => Connection::PARAM_STR_ARRAY,'repaymentAndTax' => Connection::PARAM_STR_ARRAY]
         )->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
