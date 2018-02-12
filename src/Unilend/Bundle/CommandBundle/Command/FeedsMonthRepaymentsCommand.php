@@ -45,52 +45,20 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 
         $output->writeln('Generating repayment file for ' . $month->format('Y-m'));
 
-        $header = [
-            'id_client',
-            // fiscal information
-            'type',
-            'resident_fiscal',
-            'taxed_at_source',
-            'exonere',
-            'annees_exoneration',
-            // loan information
-            'id_project',
-            'id_loan',
-            'type_loan',
-            // theoretical repayment schedule information
-            'ordre',
-            'capital',
-            'interets',
-            'status_echeance',
-            'date_echeance',
-            'date_echeance_emprunteur',
-            //repayment information
-            'type_remboursement',
-            'capital_rembourse',
-            'interets_rembourse',
-            'date_rembourse',
-            'date_echeance_emprunteur_reel',
-            // tax
-            'prelevements_obligatoires',
-            'retenues_source',
-            'csg',
-            'prelevements_sociaux',
-            'contributions_additionnelles',
-            'prelevements_solidarite',
-            'crds'
-        ];
-
         try {
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
             $result        = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->getMonthlyRepayments($month);
 
-            /** @var Writer $writer */
-            $writer = WriterFactory::create(Type::CSV);
-            $writer->setFieldDelimiter(';')
-                ->openToFile($monthFilePath)
-                ->addRow($header)
-                ->addRows($result)
-                ->close();
+            if (false === empty($result)) {
+                $header = array_keys(current($result));
+                /** @var Writer $writer */
+                $writer = WriterFactory::create(Type::CSV);
+                $writer->setFieldDelimiter(';')
+                    ->openToFile($monthFilePath)
+                    ->addRow($header)
+                    ->addRows($result)
+                    ->close();
+            }
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getContainer()->get('monolog.logger.console');

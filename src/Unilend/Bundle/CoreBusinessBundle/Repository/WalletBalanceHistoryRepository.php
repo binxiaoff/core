@@ -372,7 +372,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
           e.ordre,
           REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\') AS capital,
           REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\')  AS interets,
-          e.status,
+          e.status AS status_echeance,
           e.date_echeance,
           e.date_echeance_emprunteur,
           IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')                        AS type_remboursement,
