@@ -23,6 +23,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
@@ -743,53 +744,58 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @Route("/inscription_preteur/payment/{clientHash}", name="lender_subscription_money_transfer")
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     *
+     * @return RedirectResponse
      */
-    public function paymentAction(Request $request, $clientHash)
+    public function paymentAction(Request $request, $clientHash): RedirectResponse
     {
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        /** @var LoggerInterface $logger */
-        $logger = $this->get('logger');
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $translator       = $this->get('translator');
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client           = $clientRepository->findOneBy(['hash' => $clientHash]);
 
-        if ($client->get($clientHash, 'hash')) {
-            $token = $request->get('token');
-            $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
-
-            if (true === empty($token)) {
-                $logger->error('Payline token not found, id_client=' . $client->id_client, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->id_client]);
-                return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
-            }
-
-            $paylineManager = $this->get('unilend.service.payline_manager');
-            $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
-
-            if (false !== $paidAmountInCent) {
-                /** @var \clients_history $clientHistory */
-                $clientHistory            = $this->get('unilend.service.entity_manager')->getRepository('clients_history');
-                $clientHistory->id_client = $client->id_client;
-                $clientHistory->status    = \clients_history::STATUS_ACTION_ACCOUNT_CREATION;
-                $clientHistory->create();
-
-                $paidAmount = bcdiv($paidAmountInCent, 100, 2);
-                $this->addFlash(
-                    'moneyTransferSuccess',
-                    $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
-                );
-            } else {
-                $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
-            }
-
-            return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->hash]);
+        if (null === $client) {
+            return $this->redirectToRoute('home_lender');
         }
 
-        return $this->redirectToRoute('home_lender');
-    }
+        $token   = $request->get('token');
+        $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
 
+        if (true === empty($token)) {
+            $this->get('logger')->error(
+                'Payline token not found for client ' . $client->getIdClient(),
+                ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+
+            return $this->redirectToRoute('lender_wallet', ['depositResult' => true]);
+        }
+
+        $paylineManager   = $this->get('unilend.service.payline_manager');
+        $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
+
+        if (false !== $paidAmountInCent) {
+            $clientHistory = new ClientsHistory();
+            $clientHistory->setIdClient($client);
+            $clientHistory->setType(ClientsHistory::TYPE_CLIENT_LENDER);
+            $clientHistory->setStatus(ClientsHistory::STATUS_ACTION_ACCOUNT_CREATION);
+
+            $entityManager->persist($clientHistory);
+            $entityManager->flush($clientHistory);
+
+            /** @var \ficelle $ficelle */
+            $ficelle    = Loader::loadLib('ficelle');
+            $paidAmount = bcdiv($paidAmountInCent, 100, 2);
+
+            $this->addFlash(
+                'moneyTransferSuccess',
+                $translator->trans('lender-subscription_money-transfer-success-message', ['%depositAmount%' => $ficelle->formatNumber($paidAmount, 2)])
+            );
+        } else {
+            $this->addFlash('moneyTransferError', $translator->trans('lender-subscription_money-transfer-error-message'));
+        }
+
+        return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
+    }
 
     /**
      * @Route("/devenir-preteur-lp", name="lender_landing_page")
@@ -802,7 +808,6 @@ class LenderSubscriptionController extends Controller
             'welcomeOfferAmount' => $this->get('unilend.service.welcome_offer_manager')->getWelcomeOfferAmount(OffresBienvenues::TYPE_LANDING_PAGE)
         ]);
     }
-
 
     /**
      * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
