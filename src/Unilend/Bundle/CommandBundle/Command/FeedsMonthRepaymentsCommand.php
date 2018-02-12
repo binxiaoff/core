@@ -37,8 +37,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         if (false === empty($month) && 1 === preg_match('/^[0-9]{4}-[0-9]{2}$/', $month)) {
             $month = \DateTime::createFromFormat('Y-m', $month);
         } else {
-            $month = new \DateTime();
-            $month->modify('first day of last month');
+            $month = new \DateTime('first day of last month');
         }
 
         $monthFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/echeances_' . $month->format('Ym') . '.csv';

@@ -368,14 +368,18 @@ class WalletBalanceHistoryRepository extends EntityRepository
            WHERE lte.id_lender = w.id)                                                      AS annees_exoneration,
           o.id_project,
           o.id_loan,
-          l.id_type_contract,
+          uc.label                                                                          AS type_contract,
           e.ordre,
-          REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\') AS capital,
-          REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\')  AS interets,
-          e.status AS status_echeance,
+          REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\')                                  AS capital,
+          REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\')                                 AS interets,
+          CASE e.status
+          WHEN :scheduleRepaid THEN \'complete\'
+          WHEN :schedulePartiallyRepaid THEN \'partielle\'
+          ELSE \'\'
+          END                                                                               AS status_echeance,
           e.date_echeance,
           e.date_echeance_emprunteur,
-          IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')                        AS type_remboursement,
+          IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')              AS type_remboursement,
           REPLACE(SUM(IF(ot.label = :capital, o.amount, IF(ot.label = :capitalRegularization, -o.amount, 0))), \'.\', \',\') AS capital_rembourse,
           REPLACE(SUM(IF(ot.label = :interest, o.amount, IF(ot.label = :interestRegularization, -o.amount, 0))), \'.\', \',\') AS interets_rembourse,
           o.added                                                                                     AS date_rembourse,
@@ -391,6 +395,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
           INNER JOIN operation o ON wbh.id_operation = o.id
           INNER JOIN operation_type ot ON o.id_type = ot.id
           INNER JOIN loans l ON l.id_loan = o.id_loan
+          INNER JOIN underlying_contract uc ON l.id_type_contract = uc.id_contract
           INNER JOIN wallet w ON w.id = wbh.id_wallet
           INNER JOIN wallet_type wt ON w.id_type = wt.id
           INNER JOIN clients c ON c.id_client = w.id_client
@@ -399,7 +404,7 @@ class WalletBalanceHistoryRepository extends EntityRepository
         WHERE
           wbh.added BETWEEN :startDate AND :endDate
           AND ot.label IN (:repaymentAndTax)
-          AND e.status_ra = :notEarlyRepayment
+          AND (e.status_ra = :notEarlyRepayment OR e.status_ra IS NULL)
           AND wt.label = :lender
         GROUP BY o.id_wire_transfer_in, o.id_loan';
 
@@ -439,7 +444,9 @@ class WalletBalanceHistoryRepository extends EntityRepository
                     OperationType::TAX_TYPES_FR_REGULARIZATION
                 ),
                 'notEarlyRepayment'                         => Echeanciers::IS_NOT_EARLY_REPAID,
-                'lender'                                    => WalletType::LENDER
+                'lender'                                    => WalletType::LENDER,
+                'scheduleRepaid' => Echeanciers::STATUS_REPAID,
+                'schedulePartiallyRepaid' => Echeanciers::STATUS_PARTIALLY_REPAID,
             ],
             ['person' => Connection::PARAM_STR_ARRAY, 'legalEntity' => Connection::PARAM_STR_ARRAY, 'repaymentAndTax' => Connection::PARAM_STR_ARRAY]
         )->fetchAll(\PDO::FETCH_ASSOC);
