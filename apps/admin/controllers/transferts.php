@@ -162,14 +162,32 @@ class transfertsController extends bootstrap
             $sort[$columnName] = $order['dir'];
         }
 
+        $dateValidatorRegex = '/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/';
+
+        $dateFrom = null;
+        if (false === empty($query['date_from'])
+            && 1 === preg_match($dateValidatorRegex, $query['date_from'], $matches)
+            && checkdate($matches[2], $matches[1], $matches[3])
+        ) {
+            $dateFrom = $query['date_from'];
+        }
+
+        $dateTo = null;
+        if (false === empty($query['date_to'])
+            && 1 === preg_match($dateValidatorRegex, $query['date_to'], $matches)
+            && checkdate($matches[2], $matches[1], $matches[3])
+        ) {
+            $dateTo = $query['date_to'];
+        }
+
         return [
             'start'     => $query['start'],
             'length'    => $query['length'],
             'draw'      => $query['draw'],
             'search'    => $search,
             'sort'      => $sort,
-            'date_from' => false === empty($query['date_from']) ? $query['date_from'] : null,
-            'date_to'   => false === empty($query['date_to']) ? $query['date_to'] : null
+            'date_from' => $dateFrom,
+            'date_to'   => $dateTo
         ];
     }
 
