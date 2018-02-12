@@ -135,11 +135,11 @@
                     </li>
                     <li>
                         <div class="col-long">Commission de financement HT</div>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->commissionRateFunds, 2) ?>&nbsp;%</div>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->projects->commission_rate_funds, 2) ?>&nbsp;%</div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
-                        <div class="col-long">Montant net</div>
+                        <div class="col-long">Montant net versé</div>
                         <div class="col-small"><?= $this->ficelle->formatNumber($this->releasedNetAmount, 0) ?>&nbsp;€</div>
                         <div class="cl">&nbsp;</div>
                     </li>
