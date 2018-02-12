@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\UnexpectedResultException;
 
 class LoginLogRepository extends EntityRepository
 {
@@ -12,17 +13,20 @@ class LoginLogRepository extends EntityRepository
      *
      * @return int
      */
-    public function countFailuresByIp(string $ipAddress, \DateInterval $period): int
+    public function countLastFailuresByIp(string $ipAddress, \DateInterval $period): int
     {
         $queryBuilder = $this->createQueryBuilder('ll');
         $queryBuilder
+            ->select('COUNT(ll)')
             ->where('ll.ip = :ip')
             ->andWhere('ll.added >= :period')
             ->setParameter('ip', $ipAddress)
             ->setParameter('period', (new \DateTime())->sub($period));
 
-        $failures = $queryBuilder->getQuery()->getResult();
-
-        return count($failures);
+        try {
+            return $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (UnexpectedResultException $exception) {
+            return 0;
+        }
     }
 }

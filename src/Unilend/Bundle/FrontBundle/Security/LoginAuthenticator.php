@@ -232,7 +232,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
             $loginLogRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoginLog');
-            $previousFailures   = $loginLogRepository->countFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
+            $previousFailures   = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
 
             $iWaitingPeriod      = 0;
             $iPreviousResult     = 1;
