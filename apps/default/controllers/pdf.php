@@ -513,7 +513,10 @@ class pdfController extends bootstrap
 
         $this->montantPrete        = $this->projects->amount;
         $this->commissionRateFunds = round(bcdiv($this->projects->commission_rate_funds, 100, 4), 2);
-        $this->releasedNetAmount   = round($this->projects->amount * bcsub(1, $this->commissionRateFunds, 2));
+        $commissionAmount          = round(bcmul($this->projects->amount, $this->commissionRateFunds, 4), 2);
+        $vatTax                    = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(\Unilend\Bundle\CoreBusinessBundle\Entity\TaxType::TYPE_VAT);
+        $vatAmount                 = round(bcmul($commissionAmount, $vatTax->getRate() / 100, 5), 2);
+        $this->releasedNetAmount   = bcsub(round($this->projects->amount * bcsub(1, $this->commissionRateFunds, 2)), $vatAmount, 2);
         $this->taux                = $this->projects->getAverageInterestRate();
         $this->nbLoansBDC          = $this->oLoans->counter('id_type_contract = ' . $BDCContractId . ' AND id_project = ' . $this->projects->id_project);
         $this->nbLoansIFP          = $this->oLoans->counter('id_type_contract = ' . $IFPContractId . ' AND id_project = ' . $this->projects->id_project);
