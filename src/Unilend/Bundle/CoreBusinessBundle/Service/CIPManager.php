@@ -645,7 +645,7 @@ class CIPManager
         $thresholdAmount = $this->getContractThresholdAmount();
         $lenderBids      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
             ->getSumByWalletAndProjectAndStatus($wallet, $project->id_project, [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
-        $totalAmount     = $bid->getAmount();
+        $totalAmount     = bcdiv($bid->getAmount(), 100, 2);
         $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);
 
         if (bccomp($totalAmount, $thresholdAmount, 2) <= 0) {
