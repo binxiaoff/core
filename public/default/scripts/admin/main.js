@@ -71,7 +71,8 @@ Memo.prototype.open = function () {
             width: '100%',
             toolbar: 'Basic',
             removePlugins: 'elementspath',
-            resize_enabled: false
+            resize_enabled: false,
+            startupFocus : true
         })
         self.track.open = true
     })
