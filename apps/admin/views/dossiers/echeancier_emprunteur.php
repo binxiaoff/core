@@ -82,7 +82,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
                     $sStatus                = '';
                     /** @var Prelevements $directDebits */
                     if ($directDebits = $this->directDebitsRepository->findOneBy(['idProject' => $r['id_project'], 'numPrelevement' => $r['ordre']])) {
-                        $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
+                        $date_envoi_prelevement = $directDebits->getDateExecutionDemandePrelevement()->format('d/m/Y');
 
                         switch ($directDebits->getStatus()) {
                             case Prelevements::STATUS_PENDING:
