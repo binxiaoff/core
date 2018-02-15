@@ -19,13 +19,13 @@ class MailQueueRepository extends EntityRepository
     {
         $qb = $this->createQueryBuilder('mq');
         $qb->where('mq.status = :pending')
-           ->setParameter('pending', MailQueue::STATUS_PENDING)
-           ->andWhere(
+            ->setParameter('pending', MailQueue::STATUS_PENDING)
+            ->andWhere(
                $qb->expr()->orX('mq.toSendAt <= :now', $qb->expr()->isNull('mq.toSendAt'))
-           )
-           ->setParameter('now', new \DateTime())
-           ->orderBy('mq.idQueue', 'ASC')
-           ->groupBy('mq.recipient');
+            )
+            ->setParameter('now', new \DateTime())
+            ->orderBy('mq.idQueue', 'ASC')
+            ->groupBy('mq.recipient');
 
         if (is_numeric($limit)) {
             $qb->setMaxResults($limit);
@@ -120,55 +120,21 @@ class MailQueueRepository extends EntityRepository
     }
 
     /**
-     * @param string $type
-     *
-     * @return mixed
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function getMailTemplateSendFrequency($type)
+    public function getMailTemplateSendFrequency(): array
     {
         $query = '
             SELECT
-              SUM(periods.day)   AS day,
-              SUM(periods.week)  AS week,
-              SUM(periods.month) AS month 
-            FROM (
-              SELECT
-                COUNT(mq.id_queue) AS day,
-                NULL               AS week,
-                NULL               AS month
-              FROM mail_queue mq
-              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)
-                
-              UNION ALL
+              id_mail_template,
+              SUM(IF(sent_at >= DATE_SUB(NOW(), INTERVAL 1 DAY), 1, 0))   AS day,
+              SUM(IF(sent_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK), 1, 0))  AS week,
+              SUM(IF(sent_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH), 1, 0)) AS month
+            FROM mail_queue
+            WHERE sent_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+            GROUP BY id_mail_template';
 
-              SELECT
-                NULL               AS day,
-                COUNT(mq.id_queue) AS week,
-                NULL               AS month
-              FROM mail_queue mq
-              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 WEEK)
-                
-              UNION ALL
-                
-              SELECT
-                NULL               AS day,
-                NULL               AS week,
-                COUNT(mq.id_queue) AS month
-              FROM mail_queue mq
-              INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
-              WHERE type = :type AND sent_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
-            ) periods';
-
-
-        $statement = $this->getEntityManager()->getConnection()->executeCacheQuery(
-            $query, ['type' => $type], ['type' => \PDO::PARAM_STR],
-            new QueryCacheProfile(CacheKeys::LONG_TIME * 6, md5(__METHOD__ . $type))
-        );
-        $result    = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-
-        return $result[0];
+        return $this->getEntityManager()->getConnection()->executeQuery($query)->fetchAll();
     }
 }
