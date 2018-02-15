@@ -182,16 +182,6 @@
             <th style="width: 120px">&nbsp;</th>
         </tr>
         </thead>
-        <tfoot>
-        <tr>
-            <th>ID</th>
-            <th>Motif</th>
-            <th>Montant</th>
-            <th>Date</th>
-            <th>Code *</th>
-            <th>&nbsp;</th>
-        </tr>
-        </tfoot>
     </table>
     <p>
         <strong>* Code interbancaire (Cfonb120) / Code BNPP</strong><br>
