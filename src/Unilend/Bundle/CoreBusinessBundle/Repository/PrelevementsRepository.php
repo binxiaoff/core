@@ -32,7 +32,7 @@ class PrelevementsRepository extends EntityRepository
             ->orderBy('DATE(p.addedXml)', 'ASC')
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'))
-            ->setParameter('statusPending', \prelevements::STATUS_PENDING);
+            ->setParameter('statusPending', Prelevements::STATUS_PENDING);
         $result = $qb->getQuery()->getResult();
         $sums   = [];
         foreach ($result as $row) {
@@ -57,7 +57,7 @@ class PrelevementsRepository extends EntityRepository
             ->groupBy('month')
             ->orderBy('MONTH(p.addedXml)', 'ASC')
             ->setParameter('year', $year)
-            ->setParameter('statusPending', \prelevements::STATUS_PENDING);
+            ->setParameter('statusPending', Prelevements::STATUS_PENDING);
         $result = $qb->getQuery()->getResult();
         $sums   = [];
         foreach ($result as $row) {
