@@ -90,12 +90,16 @@ class CIPManager
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         /** @var \lender_evaluation $evaluation */
-        $evaluation    = $this->entityManagerSimulator->getRepository('lender_evaluation');
-        $questionnaire = $this->getCurrentQuestionnaire();
+        $evaluation     = $this->entityManagerSimulator->getRepository('lender_evaluation');
+        $questionnaire  = $this->getCurrentQuestionnaire();
+        $lastEvaluation = $evaluation->select(
+            '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender = ' . $wallet->getId(),
+            'added DESC',
+            '',
+            1
+        );
 
-        if ($evaluation->get($wallet->getId(),
-            '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender')
-        ) {
+        if (isset($lastEvaluation[0]) && $evaluation->get($lastEvaluation[0]['id_lender_evaluation'])) {
             return $evaluation;
         }
 

@@ -48,12 +48,12 @@ class LenderCIPController extends Controller
     }
 
     /**
-     * @Route("/conseil-cip/commencer", name="cip_start_questionnaire")
+     * @Route("/conseil-cip/commencer/{start}", name="cip_start_questionnaire", defaults={"start"=null})
      *
-     * @param Request $request
+     * @param string|null $start
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function startQuestionnaireAction(Request $request)
+    public function startQuestionnaireAction(?string $start = null)
     {
         /** @var Clients $client */
         $client     = $this->getClient();
@@ -64,7 +64,7 @@ class LenderCIPController extends Controller
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
-        if (null !== $request->query->get('start')) {
+        if (null !== $start) {
             $cipManager->startEvaluation($client);
             return $this->redirectToRoute('cip_continue_questionnaire');
         }
