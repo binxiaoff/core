@@ -1,14 +1,17 @@
 {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
     <form action="{{ path('login-check') }}" method="post" id="project-single-login-form" class="project-single-form project-single-form-access" data-formvalidation>
+        <div class="form-notice">
+            {% trans %} project-detail_side-bar-login {% endtrans %}
+        </div><!-- /.form-notice -->
         <div class="form-field">
             <label for="form-access-email"><span class="sr-only">{% trans %} common_email {% endtrans %}</span></label>
             <div class="input-group set-left">
                 <div class="btn-group">
                     <span class="icon fa-envelope-o"></span>
                 </div>
-                <input id="form-access-email" type="email" data-login-name="_username" name="_username" autocomplete="off"
-                       placeholder="{% trans %} common_email {% endtrans %}" value="" class="input-field"
-                       data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-access-email" type="email" name="_username" value="" autocomplete="off"
+                       placeholder="{% trans %} common_email {% endtrans %}" class="input-field"
+                       data-formvalidation-input data-formvalidation-required="true">
             </div><!-- /.input-group -->
             <ul class="ui-formvalidation-messages"></ul>
         </div><!-- /.form-field -->
@@ -18,9 +21,9 @@
                 <div class="btn-group">
                     <span class="icon fa-lock-u32"></span>
                 </div>
-                <input id="form-access-password" type="password" data-login-name="_password" name="_password"
-                       placeholder="{% trans %} common_password {% endtrans %}"
-                       value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                <input id="form-access-password" type="password" name="_password" value=""
+                       placeholder="{% trans %} common_password {% endtrans %}" class="input-field"
+                       data-formvalidation-input data-formvalidation-required="true">
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
         <div class="form-field">
@@ -30,8 +33,13 @@
                 </a>
             </div>
         </div><!-- /.form-field -->
+        {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
+            <div class="form-field">
+                <div id="project-login-recaptcha" class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onProjectPageLoginSubmitRecaptchaCallback" data-expired-callback="onProjectPageLoginExpireRecaptchaCallback"></div>
+            </div><!-- /.form-field -->
+        {% endif %}
         <div class="btn-toolbar">
-            <input type="submit" class="btn-primary btn-size-full" value="{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}">
+            <button type="submit" class="btn-primary btn-size-full" data-spinnerbutton>{% trans %} project-detail_side-bar-login-submit-button {% endtrans %}</button>
             <input type="hidden" name="_target_path" value="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}">
             <p>
                 <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
@@ -39,6 +47,7 @@
         </div><!-- /.btn-toolbar -->
         <input type="hidden" name="_csrf_token">
     </form><!-- /.project-single-form-access -->
+
     {# Hidden text until made visible through the fancybox #}
     <div class="hide-accessible">
         {% include 'partials/popup_password_forgotten.html.twig' %}

@@ -4,19 +4,21 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, Request, Response
+};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
-
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsHistoryActions, WalletType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
+use Unilend\Bundle\FrontBundle\Security\{
+    BCryptPasswordEncoder, LoginAuthenticator
+};
 
 class SecurityController extends Controller
 {
@@ -25,7 +27,7 @@ class SecurityController extends Controller
      */
     public function loginAction(Request $request)
     {
-        if ($this->container->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('home');
         }
 
@@ -34,12 +36,12 @@ class SecurityController extends Controller
         $error               = $authenticationUtils->getLastAuthenticationError();
         $lastUsername        = $authenticationUtils->getLastUsername();
         $pageData            = [
-            'last_username'      => $lastUsername,
-            'error'              => $error,
-            'captchaInformation' => $request->getSession()->get('captchaInformation', [])
+            'last_username'          => $lastUsername,
+            'error'                  => $error,
+            'recaptchaKey'           => $this->getParameter('google.recaptcha_key'),
+            'displayLoginCaptcha'    => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false),
+            'displayPasswordCaptcha' => true
         ];
-
-        $request->getSession()->remove('captchaInformation');
 
         return $this->render('security/login.html.twig', $pageData);
     }
@@ -68,44 +70,6 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/captcha", name="show_captcha")
-     */
-    public function showCaptchaAction(Request $request)
-    {
-        $largeur  = 125;
-        $hauteur  = 28;
-        $longueur = 8;
-        $liste    = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $code     = '';
-
-        $image = imagecreate($largeur, $hauteur) or die('Impossible d\'initializer GD');
-
-        $img_create = imagecolorallocate($image, 214, 214, 214);
-        imagecolortransparent($image, $img_create);
-
-        for ($i = 0, $x = 0; $i < $longueur; $i++) {
-            $charactere = substr($liste, rand(0, strlen($liste) - 1), 1);
-            $x += 10 + mt_rand(0, 5);
-            imagechar($image, mt_rand(3, 5), $x, mt_rand(5, 10), $charactere, imagecolorallocate($image, 183, 183, 183));
-            $code .= strtolower($charactere);
-        }
-
-        ob_start();
-        imagepng($image);
-        $imageString = ob_get_clean();
-        imagedestroy($image);
-
-        $response = new Response($imageString);
-        $response->headers->set('Content-Type', 'image/png');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Cache-Control', 'no-cache');
-
-        $request->getSession()->set('captchaInformation/captchaCode', $code);
-
-        return $response;
-    }
-
-    /**
      * @Route("/pwd", name="pwd_forgotten")
      * @Method("POST")
      *
@@ -125,6 +89,10 @@ class SecurityController extends Controller
             return new JsonResponse('nok');
         }
 
+        if (false === $this->isPasswordCaptchaValid($request)) {
+            return new JsonResponse('nok');
+        }
+
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $clients           = $clientsRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
@@ -141,7 +109,7 @@ class SecurityController extends Controller
             }
 
             $slackManager = $this->get('unilend.service.slack_manager');
-            $slackManager->sendMessage('L’adresse email ' . $email . ' est en doublon (' . $clientsCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
+            $slackManager->sendMessage('[Mot de passe oublié] L’adresse email ' . $email . ' est en doublon (' . $clientsCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
 
             return new JsonResponse('nok');
         }
@@ -214,6 +182,23 @@ class SecurityController extends Controller
         }
 
         return new JsonResponse('ok');
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function isPasswordCaptchaValid(Request $request): bool
+    {
+        $token = $request->request->get(GoogleRecaptchaManager::FORM_FIELD_NAME);
+
+        if (empty($token)) {
+            return false;
+        }
+
+        $googleRecaptchaManager = $this->get('unilend.service.google_recaptcha_manager');
+        return $googleRecaptchaManager->isValid($token);
     }
 
     /**
@@ -403,5 +388,17 @@ class SecurityController extends Controller
         $token            = $csrfTokenManager->getToken($tokenId);
 
         return $this->json($token->getValue());
+    }
+
+    /**
+     * @Route("/security/recaptcha", name="security_recaptcha", condition="request.isXmlHttpRequest()")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function recaptchaAction(Request $request): JsonResponse
+    {
+        return $this->json($request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false));
     }
 }

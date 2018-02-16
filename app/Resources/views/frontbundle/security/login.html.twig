@@ -8,11 +8,11 @@
                 <h1>{% trans %} connect-subscribe-page_header-title {% endtrans %}</h1>
             </div><!-- /.site-wrap -->
         </header><!-- /.page-header -->
+
         <section class="page-content">
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <div class="row">
-
                         <div class="col-connect col-lg-4 col-md-4">
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
                             <form action="{{ path('login-check') }}" method="post" class="form-connect login-form" data-formvalidation data-formvalidation-shownotifications="false">
@@ -29,7 +29,8 @@
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
                                                 </div>
-                                                <input type="text" id="connect-access-email" data-login name="_username" value="" class="input-field" autocomplete="off" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                                <input type="text" id="connect-access-email" name="_username" value="" class="input-field" autocomplete="off"
+                                                       data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
 
@@ -39,28 +40,10 @@
                                                 <div class="btn-group">
                                                     <label for="connect-access-password"><span class="icon fa-lock-u"></span></label>
                                                 </div>
-                                                <input type="password" id="connect-access-password" data-login name="_password" value="" class="input-field" autocomplete="off" data-formvalidation-input data-formvalidation-required="true">
+                                                <input type="password" id="connect-access-password" name="_password" value="" class="input-field" autocomplete="off"
+                                                       data-formvalidation-input data-formvalidation-required="true">
                                             </div><!-- /.input-group -->
                                         </div><!-- /.form-field -->
-                                        {% if captchaInformation is defined and captchaInformation is not empty %}
-                                            {% if captchaInformation.displayCaptcha %}
-                                                <div class="captcha-wrapper" data-captcha>
-                                                    <iframe class="captcha_login" width="133" height="33"
-                                                            src="{{ path('show_captcha') }}">
-                                                    </iframe>
-                                                    <div id="captcha" class="form-field">
-                                                        <div class="input-group set-left">
-                                                            <div class="btn-group">
-                                                                <label for="connect-access-captcha"><span class="icon fa-lock-u"></span></label>
-                                                            </div>
-                                                            <input type="text" id="connect-access-captcha" autocomplete="off" required name="captcha" value="" class="input-field">
-                                                        </div>
-                                                        <label for="connect-access-catpcha">{% trans %} connect-subscribe-page_login-captcha-instructions {% endtrans %}</label>
-                                                    </div>
-                                                </div>
-                                            {%  endif %}
-                                        {% endif %}
-
                                         <div class="field-help">
                                             <p>
                                                 <a href="#dialog-conditions-content" class="fancybox-html">
@@ -68,21 +51,17 @@
                                                 </a>
                                             </p>
                                         </div>
-
-                                        {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha and captchaInformation.displayWaitingPeriod %}
-                                            <div id="form-connect-notifications-timer" data-captcha-timercomplete="hide">
-                                                {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %} connect-subscribe-page_waiting-period-message {% endtrans %}
-                                            </div>
-                                        {% endif %}
-
                                     </div><!-- /.panel-inner -->
-                                    <div class="btn-controls" {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha %} style="display: none;" data-captcha-timercomplete="show" {% endif %}>
-                                        <button type="submit" class="btn-primary" data-spinnerbutton {% if captchaInformation is defined and captchaInformation is not empty and captchaInformation.displayCaptcha %} disabled="disabled" data-captcha-timercomplete="enable" {% endif %}>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
+
+                                    <div class="btn-controls">
+                                        {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
+                                            <div class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onLoginPageLoginSubmitRecaptchaCallback" data-expired-callback="onLoginPageLoginExpireRecaptchaCallback"></div>
+                                        {% endif %}
+                                        <button type="submit" class="btn-primary" data-spinnerbutton{% if displayLoginCaptcha is defined and displayLoginCaptcha %} disabled{% endif %}>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
                                     </div>
                                 </div><!-- /.panel -->
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                             </form><!-- /.form-connect -->
-
                         </div><!-- /.col-connect -->
 
                         <div class="col-register col-lg-8 col-md-8">

@@ -18,7 +18,9 @@ parameters:
     desk_user:                      equipeit@unilend.fr
     desk_password:                  password
 
-    gtm_token:                      GTM-W2WQKW
+    google.gtm_token:               GTM-W2WQKW
+    google.recaptcha_key:           6LeLBB8UAAAAABqR-NE95tO55l8pTaAzFRAplm3J
+    google.recaptcha_secret:        ~
 
     url.universign:                 'https://equipeit@unilend.fr:7RM6X40A@sign.test.cryptolog.com/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO

@@ -139,6 +139,15 @@
                 {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
                     var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
                 {% endif %}
+
+                {# Variables must be created here in order to set their visibility before main.js #}
+                var onloadRecaptchaCallback = function () {}
+                var onProjectPageLoginSubmitRecaptchaCallback = function () {}
+                var onProjectPageLoginExpireRecaptchaCallback = function () {}
+                var onLoginPageLoginSubmitRecaptchaCallback = function () {}
+                var onLoginPageLoginExpireRecaptchaCallback = function () {}
+                var onPasswordSubmitRecaptchaCallback = function () {}
+                var onPasswordExpireRecaptchaCallback = function () {}
             </script>
 
             {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
@@ -148,9 +157,14 @@
 
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+
+            {% if displayLoginCaptcha is defined and displayLoginCaptcha or displayPasswordCaptcha is defined and displayPasswordCaptcha %}
+                <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
+            {% endif %}
         {% endblock %}
-        {% block pageScripts %}
-        {% endblock %}
+
+        {% block pageScripts %}{% endblock %}
+
         {{ google_tag_manager_body_end() }}
     </body>
 </html>

@@ -230,7 +230,7 @@ services:
 
 google_tag_manager:
     enabled: true
-    id: "%gtm_token%"
+    id: "%google.gtm_token%"
     autoAppend: false
 
 sonata_seo:
