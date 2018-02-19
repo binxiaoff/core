@@ -142,12 +142,8 @@
 
                 {# Variables must be created here in order to set their visibility before main.js #}
                 var onloadRecaptchaCallback = function () {}
-                var onProjectPageLoginSubmitRecaptchaCallback = function () {}
-                var onProjectPageLoginExpireRecaptchaCallback = function () {}
-                var onLoginPageLoginSubmitRecaptchaCallback = function () {}
-                var onLoginPageLoginExpireRecaptchaCallback = function () {}
-                var onPasswordSubmitRecaptchaCallback = function () {}
-                var onPasswordExpireRecaptchaCallback = function () {}
+                var onSubmitRecaptchaCallback = function () {}
+                var onExpireRecaptchaCallback = function () {}
             </script>
 
             {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}

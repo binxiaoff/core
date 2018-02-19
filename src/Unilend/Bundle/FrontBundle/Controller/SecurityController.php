@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
@@ -70,6 +71,9 @@ class SecurityController extends Controller
     }
 
     /**
+     * In order not to disclose personal information (existence of account on the platform),
+     * success message is always displayed, except for invalid email format or CSRF token
+     *
      * @Route("/pwd", name="pwd_forgotten")
      * @Method("POST")
      *
@@ -86,11 +90,23 @@ class SecurityController extends Controller
         $email = $request->request->get('client_email');
 
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'success' => false,
+                'error'   => $this->get('translator')->trans('password-forgotten_pop-up-error-invalid-email-format')
+            ]);
+        }
+
+        if (false === $this->isPasswordCSRFTokenValid($request)) {
+            return new JsonResponse([
+                'success' => false,
+                'error'   => $this->get('translator')->trans('password-forgotten_pop-up-error-invalid-security-token')
+            ]);
         }
 
         if (false === $this->isPasswordCaptchaValid($request)) {
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'success' => true
+            ]);
         }
 
         $entityManager     = $this->get('doctrine.orm.entity_manager');
@@ -99,7 +115,9 @@ class SecurityController extends Controller
         $clientsCount      = count($clients);
 
         if (0 === $clientsCount) {
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'success' => true
+            ]);
         }
 
         if ($clientsCount > 1) {
@@ -111,7 +129,9 @@ class SecurityController extends Controller
             $slackManager = $this->get('unilend.service.slack_manager');
             $slackManager->sendMessage('[Mot de passe oublié] L’adresse email ' . $email . ' est en doublon (' . $clientsCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
 
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'success' => true
+            ]);
         }
 
         /** @var \temporary_links_login $temporaryLink */
@@ -126,7 +146,9 @@ class SecurityController extends Controller
                 ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
 
-            return new JsonResponse('nok');
+            return new JsonResponse([
+                'success' => true
+            ]);
         }
 
         switch ($wallet->getIdType()->getLabel()) {
@@ -162,7 +184,9 @@ class SecurityController extends Controller
                     ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
 
-                return new JsonResponse('nok');
+                return new JsonResponse([
+                    'success' => true
+                ]);
         }
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -177,11 +201,28 @@ class SecurityController extends Controller
                 'Could not send email "' . $mailType . '" - Exception: ' . $exception->getMessage(),
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
-
-            return new JsonResponse('nok');
         }
 
-        return new JsonResponse('ok');
+        return new JsonResponse([
+            'success' => true
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return bool
+     */
+    private function isPasswordCSRFTokenValid(Request $request): bool
+    {
+        $token = $request->request->get('_csrf_token');
+
+        if (empty($token)) {
+            return false;
+        }
+
+        $csrfTokenManager = $this->get('security.csrf.token_manager');
+        return $csrfTokenManager->isTokenValid(new CsrfToken('password', $token));
     }
 
     /**

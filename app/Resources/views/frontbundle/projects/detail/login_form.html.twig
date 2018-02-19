@@ -1,5 +1,5 @@
 {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
-    <form action="{{ path('login-check') }}" method="post" id="project-single-login-form" class="project-single-form project-single-form-access" data-formvalidation>
+    <form action="{{ path('login-check') }}" method="post" id="project-single-login-form" class="project-single-form project-single-form-access secure-form" data-formvalidation>
         <div class="form-notice">
             {% trans %} project-detail_side-bar-login {% endtrans %}
         </div><!-- /.form-notice -->
@@ -28,14 +28,14 @@
         </div><!-- /.form-field -->
         <div class="form-field">
             <div class="field-help">
-                <a href="#dialog-conditions-content" class="fancybox-html">
+                <a href="#dialog-password-forgotten-content" class="fancybox-html">
                     {% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}
                 </a>
             </div>
         </div><!-- /.form-field -->
         {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
             <div class="form-field">
-                <div id="project-login-recaptcha" class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onProjectPageLoginSubmitRecaptchaCallback" data-expired-callback="onProjectPageLoginExpireRecaptchaCallback"></div>
+                <div id="project-login-recaptcha" class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onSubmitRecaptchaCallback" data-expired-callback="onExpireRecaptchaCallback"></div>
             </div><!-- /.form-field -->
         {% endif %}
         <div class="btn-toolbar">
@@ -45,7 +45,7 @@
                 <a href="{{ path('lender_subscription_personal_information') }}"><span class="icon fa-angle-right"></span> {% trans %} project-detail_side-bar-login-subscription-link {% endtrans %}</a>
             </p>
         </div><!-- /.btn-toolbar -->
-        <input type="hidden" name="_csrf_token">
+        <input type="hidden" name="_csrf_token" value="" data-token-name="authenticate">
     </form><!-- /.project-single-form-access -->
 
     {# Hidden text until made visible through the fancybox #}
