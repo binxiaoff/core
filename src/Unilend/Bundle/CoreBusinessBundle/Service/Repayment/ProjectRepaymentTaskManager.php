@@ -93,8 +93,6 @@ class ProjectRepaymentTaskManager
 
                 return true;
             }
-
-            $this->logger->warning('Trying to create a new task on the already repaid schedule of the project (id: ' . $project->getIdProject() . ') sequence ' . $sequence . '.');
         }
 
         if (
