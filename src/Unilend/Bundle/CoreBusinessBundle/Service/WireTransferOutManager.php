@@ -210,30 +210,23 @@ class WireTransferOutManager
             $bankAccount = $wireTransferOut->getBankAccount();
 
             if ($bankAccount) {
-                $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
-                $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
                 $universignLink = $this->router->generate(
                     'wire_transfer_out_request_pdf',
                     ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
                     UrlGeneratorInterface::ABSOLUTE_PATH
                 );
 
-                $varMail = array(
-                    'surl'              => $this->assetsPackages->getUrl(''),
-                    'url'               => $this->frontUrl,
-                    'first_name'        => $wireTransferOut->getClient()->getPrenom(),
-                    'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
-                    'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                    'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
-                    'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
-                    'universign_link'   => $this->frontUrl . $universignLink,
-                    'lien_fb'           => $facebook->getValue(),
-                    'lien_tw'           => $twitter->getValue(),
-                    'annee'             => date('Y')
-                );
+                $keywords = [
+                    'firstName'       => $wireTransferOut->getClient()->getPrenom(),
+                    'remainingFunds'  => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
+                    'amount'          => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                    'iban'            => chunk_split($bankAccount->getIban(), 4, ' '),
+                    'bankAccountName' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
+                    'universignLink'  => $this->frontUrl . $universignLink
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
+                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $keywords);
                 try {
                     $message->setTo($wireTransferOut->getClient()->getEmail());
                     $this->mailer->send($message);
@@ -254,7 +247,7 @@ class WireTransferOutManager
     {
         if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
 
-            $varMail = array(
+            $keywords = array(
                 'amount'  => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
                 'project' => $wireTransferOut->getProject()->getTitle(),
                 'url'     => $this->adminUrl
@@ -263,7 +256,7 @@ class WireTransferOutManager
             $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $varMail);
+            $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $keywords);
             try {
                 $message->setTo($settings->getValue());
                 $this->mailer->send($message);
