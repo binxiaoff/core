@@ -157,18 +157,6 @@
             <th style="width:100px">&nbsp;</th>
         </tr>
         </thead>
-        <tfoot>
-        <tr>
-            <th style="width:50px">ID</th>
-            <th>Motif</th>
-            <th style="width:150px">Montant</th>
-            <th style="width:150px">Attribution</th>
-            <th style="width:100px">ID client</th>
-            <th style="width:100px">ID projet</th>
-            <th style="width:100px">Date</th>
-            <th style="width:100px">&nbsp;</th>
-        </tr>
-        </tfoot>
     </table>
     <div class="hidden">
         <div id="modal-line" style="padding: 10px; min-width: 500px;">
