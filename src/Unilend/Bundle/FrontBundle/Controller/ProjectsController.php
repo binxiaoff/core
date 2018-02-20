@@ -283,12 +283,11 @@ class ProjectsController extends Controller
         $user                  = $this->getUser();
 
         $template = [
-            'project'                => $projectDisplayManager->getProjectData($project, $user),
-            'bidToken'               => sha1('tokenBid-' . time() . '-' . uniqid()),
-            'suggestAutolend'        => false,
-            'recaptchaKey'           => $this->getParameter('google.recaptcha_key'),
-            'displayLoginCaptcha'    => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false),
-            'displayPasswordCaptcha' => true
+            'project'             => $projectDisplayManager->getProjectData($project, $user),
+            'bidToken'            => sha1('tokenBid-' . time() . '-' . uniqid()),
+            'suggestAutolend'     => false,
+            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 
         if (isset($template['project']['bids'])) {

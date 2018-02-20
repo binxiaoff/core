@@ -154,7 +154,7 @@
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
 
-            {% if displayLoginCaptcha is defined and displayLoginCaptcha or displayPasswordCaptcha is defined and displayPasswordCaptcha %}
+            {% if recaptchaKey is defined and recaptchaKey is not empty %}
                 <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
             {% endif %}
         {% endblock %}

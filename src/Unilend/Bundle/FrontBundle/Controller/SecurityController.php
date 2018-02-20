@@ -37,11 +37,10 @@ class SecurityController extends Controller
         $error               = $authenticationUtils->getLastAuthenticationError();
         $lastUsername        = $authenticationUtils->getLastUsername();
         $pageData            = [
-            'last_username'          => $lastUsername,
-            'error'                  => $error,
-            'recaptchaKey'           => $this->getParameter('google.recaptcha_key'),
-            'displayLoginCaptcha'    => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false),
-            'displayPasswordCaptcha' => true
+            'last_username'       => $lastUsername,
+            'error'               => $error,
+            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 
         return $this->render('security/login.html.twig', $pageData);
