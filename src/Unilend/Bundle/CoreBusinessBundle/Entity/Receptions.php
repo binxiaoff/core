@@ -347,7 +347,7 @@ class Receptions
      *
      * @return Receptions
      */
-    public function setRejectionIsoCode(SepaRejectionReason $rejectionIsoCode)
+    public function setRejectionIsoCode(?SepaRejectionReason $rejectionIsoCode = null)
     {
         $this->rejectionIsoCode = $rejectionIsoCode;
 
