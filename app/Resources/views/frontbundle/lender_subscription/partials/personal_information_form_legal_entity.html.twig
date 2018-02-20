@@ -1,16 +1,11 @@
 {# Set this to 'legal-entity' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'legal-entity' %}
-{% set formClass = 'form-preter-create form-preter-create-info-person' %}
-
-{% if recaptchaKey is defined and recaptchaKey is not empty %}
-    {% set formClass = formClass ~ ' secure-form' %}
-{% endif %}
 
 {% form_theme identityForm '/frontbundle/forms/fields.html.twig' %}
 
 {{ form_start(companyIdentityForm, {
     'attr' :  {
-        'class' : formClass,
+        'class' : 'form-preter-create form-preter-create-info-person secure-form',
         'data-formvalidation data-formvalidation-notificationselem' : 'form-preter-legal-entity-1-notifications',
         'autocomplete' : 'off',
         'novalidate' : 'novalidate'
@@ -723,7 +718,7 @@
         </div>
     </fieldset>
 
-    {% if recaptchaKey is defined and recaptchaKey is not empty %}
+    {% if displayLenderSubscriptionCaptcha is defined and displayLenderSubscriptionCaptcha %}
         <fieldset class="panel">
             <div class="row">
                 {% for message in app.flashes('lenderSubscriptionCaptchaError') %}
@@ -739,7 +734,7 @@
     <div class="row btn-controls tab-footer">
         <div class="col-back col-lg-6 col-md-6">&nbsp;</div>
         <div class="col-next col-lg-6 col-md-6">
-            <button type="submit" class="btn-primary" data-spinnerbutton{% if recaptchaKey is defined and recaptchaKey is not empty %} disabled{% endif %}>
+            <button type="submit" class="btn-primary" data-spinnerbutton{% if displayLenderSubscriptionCaptcha is defined and displayLenderSubscriptionCaptcha %} disabled{% endif %}>
                 {% trans %} lender-subscription_part1-validate-button {% endtrans %}
                 <span class="icon fa-angle-right"></span>
             </button>

@@ -108,7 +108,10 @@ class LenderSubscriptionController extends Controller
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
                     }
+
                     $this->get('session')->remove('originLandingPage');
+                    $this->get('session')->remove('displayLenderSubscriptionCaptcha');
+
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -121,7 +124,10 @@ class LenderSubscriptionController extends Controller
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
                     }
+
                     $this->get('session')->remove('originLandingPage');
+                    $this->get('session')->remove('displayLenderSubscriptionCaptcha');
+
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
             }
@@ -135,8 +141,8 @@ class LenderSubscriptionController extends Controller
         ];
 
         if ($this->get('session')->get('displayLenderSubscriptionCaptcha', false)) {
-            $this->get('session')->remove('displayLenderSubscriptionCaptcha');
-            $template['recaptchaKey'] = $this->getParameter('google.recaptcha_key');
+            $template['recaptchaKey']                     = $this->getParameter('google.recaptcha_key');
+            $template['displayLenderSubscriptionCaptcha'] = true;
         }
 
         return $this->render('lender_subscription/personal_information.html.twig', $template);
@@ -843,9 +849,11 @@ class LenderSubscriptionController extends Controller
      */
     public function sponsorshipLandingPageAction(Request $request)
     {
-        $sponsorshipManager          = $this->get('unilend.service.sponsorship_manager');
-        $template['isSponsorship']   = false;
-        $template['currentCampaign'] = $sponsorshipManager->getCurrentSponsorshipCampaign();
+        $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
+        $template           = [
+            'isSponsorship'   => false,
+            'currentCampaign' => $sponsorshipManager->getCurrentSponsorshipCampaign()
+        ];
 
         if (null === $template['currentCampaign']) {
             return $this->redirectToRoute('lender_landing_page');
@@ -883,12 +891,13 @@ class LenderSubscriptionController extends Controller
      * Scheme and host are absolute to make partners LPs work
      * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form")
      * @Method("POST")
+     *
+     * @param Request $request
+     *
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
     public function landingPageFormAction(Request $request)
     {
-        /** @var \clients $clients */
-        $clients = $this->get('unilend.service.entity_manager')->getRepository('clients');
         /** @var \prospects $prospect */
         $prospect    = $this->get('unilend.service.entity_manager')->getRepository('prospects');
         $translator  = $this->get('translator');;
@@ -916,19 +925,6 @@ class LenderSubscriptionController extends Controller
             }
         } else {
             $this->addFlash('landingPageErrors', $translator->trans('lender-landing-page_error-email'));
-        }
-
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-
-        if (
-            false === empty($email)
-            && $clientRepository->existEmail($email, Clients::STATUS_ONLINE)
-            && $clients->get($email, 'email')
-        ) {
-            $response = $this->checkProgressAndRedirect($request, $clients->hash);
-            if ($response instanceof RedirectResponse) {
-                return $response;
-            }
         }
 
         if (false === $this->get('session')->getFlashBag()->has('landingPageErrors')) {

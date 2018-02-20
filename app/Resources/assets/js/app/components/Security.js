@@ -29,8 +29,10 @@ onloadRecaptchaCallback = function () {
                         var recaptchaWidth = $recaptcha.children().width()
                         var scale = 1 - (recaptchaWidth - containerWidth) / recaptchaWidth
 
-                        $recaptcha.css('transform', 'scale(' + scale + ')')
-                        $recaptcha.css('transform-origin', '0 0')
+                        if (scale < 1) {
+                            $recaptcha.css('transform', 'scale(' + scale + ')')
+                            $recaptcha.css('transform-origin', '0 0')
+                        }
                     }
                 }
             })
