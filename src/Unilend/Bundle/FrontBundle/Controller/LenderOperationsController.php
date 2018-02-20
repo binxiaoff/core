@@ -46,7 +46,11 @@ class LenderOperationsController extends Controller
         'repayment'      => [LenderOperationsManager::LOAN_STATUS_DISPLAY_IN_PROGRESS],
         'repaid'         => [LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED],
         'late-repayment' => [LenderOperationsManager::LOAN_STATUS_DISPLAY_LATE],
-        'incidents'      => [LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING, LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC, LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC],
+        'incidents'      => [
+            LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING,
+            LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC,
+            LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC
+        ],
         'loss'           => [LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS]
     ];
 
@@ -353,8 +357,8 @@ class LenderOperationsController extends Controller
 
         foreach ($lenderLoans as $projectLoans) {
             if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
-                $loanData               = [];
-                $projectEntity          = $projectRepository->find($projectLoans['id_project']);
+                $loanData       = [];
+                $projectEntity  = $projectRepository->find($projectLoans['id_project']);
                 $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($projectEntity);
 
                 if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
@@ -723,8 +727,11 @@ class LenderOperationsController extends Controller
             'idSubType'        => null
         ]);
         foreach ($scheduledRepayments as $repayment) {
-
-            $title   = $translator->trans('lender-notifications_repayment-title');
+            $title             = $translator->trans('lender-notifications_repayment-title');
+            $repaymentSchedule = $repayment->getRepaymentSchedule();
+            if (null !== $repaymentSchedule) {
+                $title = $translator->trans('lender-notifications_repayment-with-repayment-schedule-title', ['%scheduleSequence%' => $repaymentSchedule->getOrdre()]);
+            }
             $content = $translator->trans('lender-notifications_repayment-content', [
                 '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
@@ -755,7 +762,11 @@ class LenderOperationsController extends Controller
 
         foreach ($regularizedRepayments as $repayment) {
 
-            $title   = $translator->trans('lender-notifications_repayment-regularization-title');
+            $title             = $translator->trans('lender-notifications_repayment-regularization-title');
+            $repaymentSchedule = $repayment->getRepaymentSchedule();
+            if (null !== $repaymentSchedule) {
+                $title = $translator->trans('lender-notifications_repayment-regularization-with-repayment-schedule-title', ['%scheduleSequence%' => $repaymentSchedule->getOrdre()]);
+            }
             $content = $translator->trans('lender-notifications_repayment-regularization-content', [
                 '%amount%'     => $numberFormatter->format($operationRepository->getNetAmountByRepaymentScheduleId($repayment->getRepaymentSchedule())),
                 '%projectUrl%' => $this->generateUrl('project_detail', ['projectSlug' => $project->getSlug()]),
@@ -913,7 +924,6 @@ class LenderOperationsController extends Controller
             'company'           => empty($company) ? null : $company,
             'available_balance' => $wallet->getAvailableBalance()
         ]);
-
 
         /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
