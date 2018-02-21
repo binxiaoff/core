@@ -299,15 +299,27 @@ class bids extends bids_crud
         return $bids;
     }
 
-    public function countLendersOnProject($projectId)
+    /**
+     * @param int $projectId
+     *
+     * @return int
+     *
+     * @throws Exception
+     */
+    public function countLendersOnProject(int $projectId): int
     {
-        $aBind = array('projectId' => $projectId);
-        $aType = array('section' => \PDO::PARAM_INT);
+        $query = '
+            SELECT COUNT(DISTINCT id_lender_account) 
+            FROM bids 
+            WHERE status IN (:status) AND id_project = :projectId';
 
-        $sQuery     = 'SELECT COUNT(DISTINCT id_lender_account) FROM `bids` WHERE id_project = :projectId';
-        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+        $statement = $this->bdd->executeQuery(
+            $query,
+            ['projectId' => $projectId, 'status' => [BidsEntity::STATUS_PENDING, BidsEntity::STATUS_ACCEPTED]],
+            ['section' => \PDO::PARAM_INT, 'status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY]
+        );
 
-        return $oStatement->fetchColumn(0);
+        return (int) $statement->fetchColumn(0);
     }
 
     public function getNumberActiveBidsByRate($projectId)
