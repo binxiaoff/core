@@ -2154,7 +2154,7 @@ class dossiersController extends bootstrap
     public function _status()
     {
         if (false === empty($this->request->query->all())) {
-            $url = '/dossiers/status/' . $this->request->query->get('status');
+            $url = '/dossiers/status/' . $this->request->query->getInt('status');
 
             $fistRangeStart   = $this->request->query->get('first-range-start');
             $fistRangeEnd     = $this->request->query->get('first-range-end');
