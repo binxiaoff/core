@@ -19,40 +19,28 @@ class WireTransferOutManager
 {
     /** @var EntityManager */
     private $entityManager;
-
     /** @var ProjectManager */
     private $projectManager;
-
     /** @var \NumberFormatter */
     private $currencyFormatter;
-
     /** @var TemplateMessageProvider */
     private $messageProvider;
-
     /** @var \Swift_Mailer */
     private $mailer;
-
     /** @var RouterInterface */
     private $router;
-
     /** @var Packages */
     private $assetsPackages;
-
     /** @var OperationManager */
     private $operationManager;
-
     /** @var string */
     private $frontUrl;
-
     /** @var string */
     private $adminUrl;
-
     /** @var  LoggerInterface */
     private $logger;
 
     /**
-     * WireTransferOutManager constructor.
-     *
      * @param EntityManager           $entityManager
      * @param ProjectManager          $projectManager
      * @param \NumberFormatter        $currencyFormatter
@@ -77,7 +65,8 @@ class WireTransferOutManager
         $frontUrl,
         $adminUrl,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->entityManager     = $entityManager;
         $this->projectManager    = $projectManager;
         $this->currencyFormatter = $currencyFormatter;
@@ -101,6 +90,7 @@ class WireTransferOutManager
      * @param \DateTime     $transferAt
      *
      * @return Virements
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function createTransfer(
         Wallet $wallet,
@@ -133,15 +123,16 @@ class WireTransferOutManager
         $pattern = $wireTransferPattern ? $wireTransferPattern : $wallet->getWireTransferPattern();
 
         $wireTransferOut = new Virements();
-        $wireTransferOut->setClient($wallet->getIdClient())
-                        ->setProject($project)
-                        ->setMontant(bcmul($amount, 100))
-                        ->setMotif($pattern)
-                        ->setType($type)
-                        ->setBankAccount($bankAccount)
-                        ->setUserRequest($requestUser)
-                        ->setTransferAt($transferAt)
-                        ->setStatus(Virements::STATUS_PENDING);
+        $wireTransferOut
+            ->setClient($wallet->getIdClient())
+            ->setProject($project)
+            ->setMontant(bcmul($amount, 100))
+            ->setMotif($pattern)
+            ->setType($type)
+            ->setBankAccount($bankAccount)
+            ->setUserRequest($requestUser)
+            ->setTransferAt($transferAt)
+            ->setStatus(Virements::STATUS_PENDING);
 
         $this->entityManager->persist($wireTransferOut);
 
@@ -168,6 +159,8 @@ class WireTransferOutManager
 
     /**
      * @param Virements $wireTransferOut
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function clientValidateTransfer(Virements $wireTransferOut)
     {
@@ -178,6 +171,8 @@ class WireTransferOutManager
 
     /**
      * @param Virements $wireTransferOut
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function clientDeniedTransfer(Virements $wireTransferOut)
     {
@@ -188,12 +183,15 @@ class WireTransferOutManager
     /**
      * @param Virements  $wireTransferOut
      * @param Users|null $validationUser
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function validateTransfer(Virements $wireTransferOut, Users $validationUser = null)
     {
-        $wireTransferOut->setStatus(Virements::STATUS_VALIDATED)
-                        ->setUserValidation($validationUser)
-                        ->setValidated(new \DateTime());
+        $wireTransferOut
+            ->setStatus(Virements::STATUS_VALIDATED)
+            ->setUserValidation($validationUser)
+            ->setValidated(new \DateTime());
 
         $this->entityManager->flush($wireTransferOut);
 
@@ -210,38 +208,33 @@ class WireTransferOutManager
             $bankAccount = $wireTransferOut->getBankAccount();
 
             if ($bankAccount) {
-                $facebook       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Facebook']);
-                $twitter        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Twitter']);
-                $universignLink = $this->router->generate(
-                    'wire_transfer_out_request_pdf',
-                    ['clientHash' => $wireTransferOut->getClient()->getHash(), 'wireTransferOutId' => $wireTransferOut->getIdVirement()],
-                    UrlGeneratorInterface::ABSOLUTE_PATH
-                );
+                $universignLink = $this->router->generate('wire_transfer_out_request_pdf', ['clientHash'        => $wireTransferOut->getClient()->getHash(),
+                                                                                            'wireTransferOutId' => $wireTransferOut->getIdVirement()
+                    ], UrlGeneratorInterface::ABSOLUTE_PATH);
 
-                $varMail = array(
-                    'surl'              => $this->assetsPackages->getUrl(''),
-                    'url'               => $this->frontUrl,
-                    'first_name'        => $wireTransferOut->getClient()->getPrenom(),
-                    'rest_funds'        => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
-                    'amount'            => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
-                    'iban'              => chunk_split($bankAccount->getIban(), 4, ' '),
-                    'bank_account_name' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
-                    'universign_link'   => $this->frontUrl . $universignLink,
-                    'lien_fb'           => $facebook->getValue(),
-                    'lien_tw'           => $twitter->getValue(),
-                    'annee'             => date('Y')
-                );
+                $keywords = [
+                    'firstName'       => $wireTransferOut->getClient()->getPrenom(),
+                    'remainingFunds'  => $this->currencyFormatter->formatCurrency($restFunds, 'EUR'),
+                    'amount'          => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
+                    'iban'            => chunk_split($bankAccount->getIban(), 4, ' '),
+                    'bankAccountName' => $bankAccount->getIdClient()->getPrenom() . ' ' . $bankAccount->getIdClient()->getNom(),
+                    'universignLink'  => $this->frontUrl . $universignLink
+                ];
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $varMail);
+                $message = $this->messageProvider->newMessage('wire-transfer-out-borrower-notification', $keywords);
                 try {
                     $message->setTo($wireTransferOut->getClient()->getEmail());
                     $this->mailer->send($message);
                 } catch (\Exception $exception) {
-                    $this->logger->warning(
-                        'Could not send email : wire-transfer-out-borrower-notification - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wireTransferOut->getClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
+                    $this->logger->error('Could not send email : wire-transfer-out-borrower-notification - Exception: ' . $exception->getMessage(), [
+                        'id_mail_template' => $message->getTemplateId(),
+                        'id_client'        => $wireTransferOut->getClient()->getIdClient(),
+                        'class'            => __CLASS__,
+                        'function'         => __FUNCTION__,
+                        'exceptionFile'    => $exception->getFile(),
+                        'exceptionLine'    => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -254,24 +247,28 @@ class WireTransferOutManager
     {
         if ($wireTransferOut->getProject() && Virements::TYPE_BORROWER === $wireTransferOut->getType()) {
 
-            $varMail = array(
+            $keywords = [
                 'amount'  => $this->currencyFormatter->formatCurrency(bcdiv($wireTransferOut->getMontant(), 100, 4), 'EUR'),
                 'project' => $wireTransferOut->getProject()->getTitle(),
                 'url'     => $this->adminUrl
-            );
+            ];
 
             $settings = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse controle interne']);
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $varMail);
+            $message = $this->messageProvider->newMessage('wire-transfer-out-to-validate-staff-notification', $keywords);
             try {
                 $message->setTo($settings->getValue());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
-                $this->logger->warning(
-                    'Could not send email : wire-transfer-out-to-validate-staff-notification - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'email_address' => $settings->getValue(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->logger->error('Could not send email : wire-transfer-out-to-validate-staff-notification - Exception: ' . $exception->getMessage(), [
+                        'id_mail_template' => $message->getTemplateId(),
+                        'email_address'    => $settings->getValue(),
+                        'class'            => __CLASS__,
+                        'function'         => __FUNCTION__,
+                        'exceptionFile'    => $exception->getFile(),
+                        'exceptionLine'    => $exception->getLine()
+                    ]);
             }
         }
     }
