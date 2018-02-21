@@ -27,7 +27,8 @@ class RiskDataMonitoringStartCommand extends ContainerAwareCommand
             $this->activateMonitoringForNewSiren();
             $this->activateMonitoringForProjectsBeingReactivated();
         } catch (\Exception $exception) {
-            $this->getContainer()->get('logger')->error('Could not activate/reactivate monitoring. Message: ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+            $this->getContainer()->get('logger')->error('Could not activate/reactivate monitoring. Message: ' . $exception->getMessage(),
+                ['exceptionFile' => $exception->getFile(), 'exceptionLine' => $exception->getLine(), 'file' => __FILE__]);
         }
     }
 
@@ -52,7 +53,7 @@ class RiskDataMonitoringStartCommand extends ContainerAwareCommand
         $sirenToBeActivated             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getSirenWithActiveProjectsAndNoMonitoring();
 
         foreach ($sirenToBeActivated as $siren) {
-            $riskDataMonitoringCycleManager->activateMonitoringForSiren($siren['siren']);
+            $riskDataMonitoringCycleManager->reactivateMonitoringForSiren($siren['siren']);
         }
     }
 }

@@ -81,37 +81,50 @@ class AltaresManager
      */
     private function saveMonitoringEvent(string $siren): void
     {
-        if (null === $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME)) {
-            $monitoring = $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
-        }
-
-        $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
-        $monitoringTypes    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => self::PROVIDER_NAME]);
-
-        $this->refreshData($siren);
-
-        /** @var Companies $company */
-        foreach ($monitoredCompanies as $company) {
-            $companyRatingHistory = $this->dataWriter->createCompanyRatingHistory($company);
-            $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
-
-            $this->saveRefreshedDataInCompanyRatingHistory($companyRatingHistory);
-
-            foreach ($monitoringTypes as $type) {
-                if (null !== $type->getIdProjectEligibilityRule()) {
-                    $result     = $this->companyValidator->checkRule($type->getIdProjectEligibilityRule()->getLabel(), $siren);
-                    $assessment = empty($result) ? true : $result[0];
-                    $this->dataWriter->saveAssessment($type, $monitoringCallLog, $assessment);
-
-                } else {
-                    $this->logger->warning('Altares risk data monitoring type has no corresponding project eligibility rule and is not supported by code', [
-                        'file'   => __CLASS__,
-                        'line'   => __LINE__,
-                        'idType' => $type->getId()
-                    ]);
-                }
+        $this->entityManager->beginTransaction();
+        try {
+            if (null === $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME)) {
+                $monitoring = $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
             }
-            $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+
+            $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
+            $monitoringTypes    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => self::PROVIDER_NAME]);
+
+            $this->refreshData($siren);
+
+            /** @var Companies $company */
+            foreach ($monitoredCompanies as $company) {
+                $companyRatingHistory = $this->dataWriter->createCompanyRatingHistory($company);
+                $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
+
+                $this->saveRefreshedDataInCompanyRatingHistory($companyRatingHistory);
+
+                foreach ($monitoringTypes as $type) {
+                    if (null !== $type->getIdProjectEligibilityRule()) {
+                        $result     = $this->companyValidator->checkRule($type->getIdProjectEligibilityRule()->getLabel(), $siren);
+                        $assessment = empty($result) ? true : $result[0];
+                        $this->dataWriter->saveAssessment($type, $monitoringCallLog, $assessment);
+
+                    } else {
+                        $this->logger->warning('Altares risk data monitoring type has no corresponding project eligibility rule and is not supported by code', [
+                            'class'  => __CLASS__,
+                            'line'   => __LINE__,
+                            'idType' => $type->getId()
+                        ]);
+                    }
+                }
+                $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+            }
+            $this->entityManager->commit();
+
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            $this->logger->error('An error occurred while saving Altares monitoring event: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'exceptionFile' => $exception->getFile(),
+                'exceptionLine' => $exception->getLine()
+            ]);
         }
     }
 
@@ -176,22 +189,25 @@ class AltaresManager
     {
         $lastEvent               = $this->monitoringManager->getLastMonitoringEventDate(self::PROVIDER_NAME);
         $now                     = new \DateTime('NOW');
-        $numberOfNotReadEvents   = $this->getNumberOfNotReadNotReadNotifications($lastEvent, $now);
-        $notificationInformation = $this->altaresWsManager->getMonitoringEvents($lastEvent, $now, $numberOfNotReadEvents);
+        $numberOfNotReadEvents   = $this->getNumberOfNotReadNotifications($lastEvent, $now);
 
-        $eventAffectsEligibility = false;
-        /** @var Notification $notification */
-        foreach ($notificationInformation->getNotificationList() as $notification) {
-            /** @var EventDetail $event */
-            foreach ($notification->getEventList() as $event) {
-                if (in_array($event->getEventCode(), self::EVENT_CODES_IMPACTING_ELIGIBILITY)) {
-                    $eventAffectsEligibility = true;
+        if (0 < $numberOfNotReadEvents) {
+            $notificationInformation = $this->altaresWsManager->getMonitoringEvents($lastEvent, $now, $numberOfNotReadEvents);
+
+            $eventAffectsEligibility = false;
+            /** @var Notification $notification */
+            foreach ($notificationInformation->getNotificationList() as $notification) {
+                /** @var EventDetail $event */
+                foreach ($notification->getEventList() as $event) {
+                    if (in_array($event->getEventCode(), self::EVENT_CODES_IMPACTING_ELIGIBILITY)) {
+                        $eventAffectsEligibility = true;
+                    }
                 }
-            }
 
-            if ($eventAffectsEligibility) {
-                $this->saveMonitoringEvent($notification->getSiren());
-                $this->setNotificationAsRead($notification);
+                if ($eventAffectsEligibility) {
+                    $this->saveMonitoringEvent($notification->getSiren());
+                    $this->setNotificationAsRead($notification);
+                }
             }
         }
     }
@@ -214,10 +230,13 @@ class AltaresManager
     }
 
     /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     *
      * @return mixed
      * @throws \Exception
      */
-    public function getNumberOfNotReadNotReadNotifications(\DateTime $start, \DateTime $end)
+    public function getNumberOfNotReadNotifications(\DateTime $start, \DateTime $end)
     {
         /** @var NotificationInformation $notificationInformation */
         $notificationInformation = $this->altaresWsManager->getMonitoringEvents($start, $end, 1);

@@ -470,7 +470,7 @@ class AltaresManager
             ]
         ]);
 
-        if (null !== $response) {
+        if (null !== $response && isset($response->return)) {
             if ($response->return->correct && false === empty($response->return->myInfo)) {
                 if (false === is_array($response->return->myInfo->alerteList)) {
                     $response->return->myInfo->alerteList = [$response->return->myInfo->alerteList];

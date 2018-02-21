@@ -42,11 +42,12 @@ class MonitoringCycleManager
     private $logger;
 
     /**
-     * @param EntityManager           $entityManager
-     * @param EulerHermesManager      $eulerHermesManager
-     * @param AltaresManager          $altaresManager
-     * @param DataWriter              $dataWriter
-     * @param LoggerInterface         $logger
+     * @param EntityManager      $entityManager
+     * @param EulerHermesManager $eulerHermesManager
+     * @param AltaresManager     $altaresManager
+     * @param DataWriter         $dataWriter
+     * @param MonitoringManger   $monitoringManager
+     * @param LoggerInterface    $logger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -55,7 +56,8 @@ class MonitoringCycleManager
         DataWriter $dataWriter,
         MonitoringManger $monitoringManager,
         LoggerInterface $logger
-    ) {
+    )
+    {
         $this->entityManager      = $entityManager;
         $this->eulerHermesManager = $eulerHermesManager;
         $this->altaresManager     = $altaresManager;
@@ -136,10 +138,11 @@ class MonitoringCycleManager
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error(
-                'Could not stop monitoring for siren: ' . $siren . ' Error: ' . $exception->getMessage(),
-                ['file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->error('Could not stop monitoring for siren: ' . $siren . ' Error: ' . $exception->getMessage(), [
+                    'exceptionFile' => $exception->getFile(),
+                    'exceptionLine' => $exception->getLine(),
+                    'function'      => __FUNCTION__
+                ]);
         }
     }
 
@@ -158,9 +161,10 @@ class MonitoringCycleManager
                 }
             } catch (\Exception $exception) {
                 $this->logger->error('Risk data monitoring could not be re-activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
-                    'file'  => $exception->getFile(),
-                    'line'  => $exception->getLine(),
-                    'siren' => $siren
+                    'exceptionFile' => $exception->getFile(),
+                    'exceptionLine' => $exception->getLine(),
+                    'function'      => __FUNCTION__,
+                    'siren'         => $siren
                 ]);
             }
         }

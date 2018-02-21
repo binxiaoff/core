@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * RiskDataMonitoringType
  *
  * @ORM\Table(name="risk_data_monitoring_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_label", columns={"label"})}, indexes={@ORM\Index(name="idx_risk_data_monitoring_type_provider", columns={"provider"})})
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringTypeRepository")
+ * @ORM\Entity
  */
 class RiskDataMonitoringType
 {

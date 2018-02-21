@@ -94,7 +94,7 @@ class DataWriter
      *
      * @return string
      */
-    public function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider): string
+    private function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider): string
     {
         $memoContent             = '';
         $providerMonitoringTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findBy(['provider' => $provider]);
@@ -160,11 +160,8 @@ class DataWriter
             ->findBy(['idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory()]);
 
         $html = '';
-
-        if (false === empty($companyRatings)) {
-            foreach ($companyRatings as $rating) {
-                $html .= $this->translator->trans('company-rating_' . $rating->getType()) . ' : ' . $rating->getValue() . '<br>';
-            }
+        foreach ($companyRatings as $rating) {
+            $html .= $this->translator->trans('company-rating_' . $rating->getType()) . ' : ' . $rating->getValue() . '<br>';
         }
 
         return $html;
@@ -176,14 +173,9 @@ class DataWriter
      *
      * @return RiskDataMonitoring
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Exception
      */
     public function startMonitoringPeriod(string $siren, string $provider): RiskDataMonitoring
     {
-        if ($this->monitoringManager->isSirenMonitored($siren, $provider)) {
-            throw new \Exception('Siren ' . $siren . ' is already monitored. Can not start monitoring period for provider ' . $provider);
-        }
-
         $monitoring = new RiskDataMonitoring();
         $monitoring->setSiren($siren)
             ->setProvider($provider)

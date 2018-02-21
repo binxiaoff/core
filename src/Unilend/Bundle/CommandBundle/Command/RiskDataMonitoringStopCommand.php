@@ -5,7 +5,6 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class RiskDataMonitoringStopCommand extends ContainerAwareCommand
 {
@@ -28,7 +27,6 @@ class RiskDataMonitoringStopCommand extends ContainerAwareCommand
         $finishedSiren        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getSirenWithProjectOrCompanyStatusNotToBeMonitored();
         $riskDataCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');
 
-        /** @var Projects $project */
         foreach ($finishedSiren as $siren) {
             $riskDataCycleManager->stopMonitoringForSiren($siren['siren']);
         }

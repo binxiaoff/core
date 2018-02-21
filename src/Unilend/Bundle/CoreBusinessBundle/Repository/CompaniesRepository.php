@@ -196,15 +196,15 @@ class CompaniesRepository extends EntityRepository
     public function getSirenWithActiveProjectsAndNoMonitoring()
     {
         $query = '
-          SELECT DISTINCT(co.siren) AS siren 
+          SELECT
+            DISTINCT(co.siren) AS siren 
           FROM companies co 
             INNER JOIN projects p ON co.id_company = p.id_company 
             INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren 
           WHERE p.status > ' . ProjectsStatus::ABANDONED . ' 
             AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
             AND rdm.end <= NOW() 
-            AND (NOT EXISTS(SELECT * FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren)
-                    OR (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL)';
+            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL';
 
         return $this->getEntityManager()
             ->getConnection()

@@ -18,6 +18,7 @@ class RiskDataMonitoringRepository extends EntityRepository
         $query = '
           SELECT
           rdm.siren,
+          co.id_client_owner,
           co.name,
           p.id_project,
           p.title,

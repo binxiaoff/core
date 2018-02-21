@@ -37,7 +37,7 @@
         <service id="unilend.service.ws_client.soap_client.altares_risk_monitoring" class="SoapClient">
             <argument>%altares.wsdl_url_risk_monitoring%</argument>
             <argument type="collection">
-                <argument key="exception">0</argument>
+                <argument key="exception">1</argument>
                 <argument key="trace">1</argument>
             </argument>
         </service>

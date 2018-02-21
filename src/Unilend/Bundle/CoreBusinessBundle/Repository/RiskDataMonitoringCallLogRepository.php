@@ -9,36 +9,44 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoringCallLog;
 class RiskDataMonitoringCallLogRepository extends EntityRepository
 {
     /**
-     * @param $siren
+     * @param string $siren
      *
-     * @return array
+     * @return string
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findCallLogsForSiren(string $siren): array
+    public function getCountCallLogsForSiren(string $siren): string
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
+        $queryBuilder
+            ->select('COUNT(DISTINCT rdmcl.id)')
+            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
             ->where('rdm.siren = :siren')
             ->setParameter('siren', $siren);
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
      * @param string    $siren
      * @param \DateTime $date
      *
-     * @return array
+     * @return string
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findCallLogsForSirenAfterDate(string $siren, \DateTime $date): array
+    public function getCountCallLogsForSirenAfterDate(string $siren, \DateTime $date): string
     {
         $queryBuilder = $this->createQueryBuilder('rdmcl');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
+        $queryBuilder
+            ->select('COUNT(DISTINCT rdmcl.id)')
+            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'rdmcl.idRiskDataMonitoring =  rdm.id')
             ->where('rdm.siren = :siren')
             ->andWhere('rdmcl.added > :date')
             ->setParameter('siren', $siren)
             ->setParameter('date', $date);
 
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**

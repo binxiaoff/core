@@ -41,11 +41,11 @@ class EulerHermesManager
         LoggerInterface $logger
     )
     {
-        $this->entityManager          = $entityManager;
-        $this->eulerHermesManager     = $eulerHermesManager;
-        $this->dataWriter             = $dataWriter;
-        $this->monitoringManager = $monitoringManager;
-        $this->logger                 = $logger;
+        $this->entityManager      = $entityManager;
+        $this->eulerHermesManager = $eulerHermesManager;
+        $this->dataWriter         = $dataWriter;
+        $this->monitoringManager  = $monitoringManager;
+        $this->logger             = $logger;
     }
 
     /**
@@ -66,7 +66,7 @@ class EulerHermesManager
             $eulerHermesGrade = 'ok';
         }
 
-        if (null !== $eulerHermesGrade) {
+        if (null !== $eulerHermesGrade && false === $this->monitoringManager->isSirenMonitored($siren, self::PROVIDER_NAME)) {
             $this->dataWriter->startMonitoringPeriod($siren, self::PROVIDER_NAME);
         }
     }
@@ -85,25 +85,26 @@ class EulerHermesManager
         $this->eulerHermesManager->setReadFromCache(false);
         try {
             $eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr', false);
+
+            if (null !== $eulerGrade) {
+                /** @var Companies $company */
+                foreach ($monitoredCompanies as $company) {
+                    $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
+                    $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
+
+                    $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
+                    $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+                }
+                $this->entityManager->flush();
+            }
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
                 ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'siren', $monitoring->getSiren()]
             );
         }
+
         $this->eulerHermesManager->setReadFromCache(true);
-
-        if (null !== $eulerGrade) {
-            /** @var Companies $company */
-            foreach ($monitoredCompanies as $company) {
-                $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
-                $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
-
-                $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
-                $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
-            }
-            $this->entityManager->flush();
-        }
     }
 
     /**
@@ -137,9 +138,10 @@ class EulerHermesManager
      */
     public function eligibleForEulerLongTermMonitoring(Companies $company) : bool
     {
-        if (in_array($company->getIdStatus()->getLabel(), MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
+        if (null === $company->getIdStatus() || in_array($company->getIdStatus()->getLabel(), MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
             return false;
         }
+
         foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]) as $project) {
             if (false === in_array($project->getStatus(), MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS )) {
                 return true;

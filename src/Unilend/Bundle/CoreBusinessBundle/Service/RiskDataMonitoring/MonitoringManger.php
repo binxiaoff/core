@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\NoResultException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring;
 
@@ -28,7 +29,7 @@ class MonitoringManger
      *
      * @return array
      */
-    public function getMonitoredCompanies(string $siren, string $provider, bool $isOngoing = true) : array
+    public function getMonitoredCompanies(string $siren, string $provider, bool $isOngoing = true): array
     {
         $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySiren($siren, $provider, $isOngoing);
 
@@ -41,21 +42,23 @@ class MonitoringManger
      *
      * @return null|RiskDataMonitoring
      */
-    public function getMonitoringForSiren(string $siren, string $provider) : ?RiskDataMonitoring
+    public function getMonitoringForSiren(string $siren, string $provider): ?RiskDataMonitoring
     {
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'provider' => $provider, 'end' => null]);
     }
 
     /**
-     * @param string $siren
+     * @param $siren
      *
      * @return bool
+     * @throws NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function hasMonitoringEvent($siren) : bool
+    public function hasMonitoringEvent($siren): bool
     {
-        $callLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findCallLogsForSiren($siren);
+        $countCallLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->getCountCallLogsForSiren($siren);
 
-        return count($callLogs) > 0;
+        return $countCallLogs > 0;
     }
 
     /**
@@ -64,7 +67,7 @@ class MonitoringManger
      *
      * @return bool
      */
-    public function isSirenMonitored(string $siren, string $provider) : bool
+    public function isSirenMonitored(string $siren, string $provider): bool
     {
         $monitoring = $this->getMonitoringForSiren($siren, $provider);
 
@@ -79,19 +82,23 @@ class MonitoringManger
      * @param Projects $project
      *
      * @return bool
+     * @throws NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function projectHasMonitoringEvents(Projects $project) : bool
+    public function projectHasMonitoringEvents(Projects $project): bool
     {
-        $callLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findCallLogsForSirenAfterDate($project->getIdCompany()->getSiren(), $project->getAdded());
+        $countCallLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->getCountCallLogsForSirenAfterDate($project->getIdCompany()->getSiren(), $project->getAdded());
 
-        return count($callLogs) > 0;
+        return $countCallLogs > 0;
     }
 
     /**
+     * @param string $provider
+     *
      * @return \DateTime
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getLastMonitoringEventDate(string $provider) : \DateTime
+    public function getLastMonitoringEventDate(string $provider): \DateTime
     {
         $lastEvent = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->findLastCallLogForProvider($provider);
         if (null === $lastEvent) {

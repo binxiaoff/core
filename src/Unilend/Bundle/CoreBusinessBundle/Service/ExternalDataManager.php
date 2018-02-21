@@ -259,7 +259,7 @@ class ExternalDataManager
      * @return EulerCompanyRating|null
      * @throws \Exception
      */
-    public function getEulerHermesGrade(string $siren)
+    public function getEulerHermesGrade(string $siren): ?EulerCompanyRating
     {
         $eulerHermesGrade = $this->eulerHermesManager->getGrade($siren, 'fr');
 

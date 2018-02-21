@@ -29,11 +29,11 @@ class CompanyManager
     private $logger;
 
     /**
-     * @param EntityManager                  $entityManager
-     * @param ProjectStatusManager           $projectStatusManager
-     * @param WalletCreationManager          $walletCreationManager
-     * @param TranslatorInterface            $translator
-     * @param LoggerInterface                $logger
+     * @param EntityManager         $entityManager
+     * @param ProjectStatusManager  $projectStatusManager
+     * @param WalletCreationManager $walletCreationManager
+     * @param TranslatorInterface   $translator
+     * @param LoggerInterface       $logger
      */
     public function __construct(
         EntityManager $entityManager,
@@ -43,11 +43,11 @@ class CompanyManager
         LoggerInterface $logger
     )
     {
-        $this->entityManager                  = $entityManager;
-        $this->projectStatusManager           = $projectStatusManager;
-        $this->walletCreationManager          = $walletCreationManager;
-        $this->translator                     = $translator;
-        $this->logger                         = $logger;
+        $this->entityManager         = $entityManager;
+        $this->projectStatusManager  = $projectStatusManager;
+        $this->walletCreationManager = $walletCreationManager;
+        $this->translator            = $translator;
+        $this->logger                = $logger;
     }
 
     /**

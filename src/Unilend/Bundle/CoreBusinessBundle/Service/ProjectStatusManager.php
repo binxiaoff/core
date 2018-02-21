@@ -32,14 +32,14 @@ class ProjectStatusManager
     private $mailerManager;
 
     /**
-     * @param EntityManagerSimulator          $entityManagerSimulator
-     * @param EntityManager                   $entityManager
-     * @param TranslatorInterface             $translator
-     * @param LoggerInterface                 $logger
-     * @param SlackManager                    $slackManager
-     * @param UniversignManager               $universignManager
-     * @param ProjectRepaymentTaskManager     $projectRepaymentTaskManager
-     * @param MailerManager                   $mailerManager
+     * @param EntityManagerSimulator      $entityManagerSimulator
+     * @param EntityManager               $entityManager
+     * @param TranslatorInterface         $translator
+     * @param LoggerInterface             $logger
+     * @param SlackManager                $slackManager
+     * @param UniversignManager           $universignManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
+     * @param MailerManager               $mailerManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -52,14 +52,14 @@ class ProjectStatusManager
         MailerManager $mailerManager
     )
     {
-        $this->entityManagerSimulator         = $entityManagerSimulator;
-        $this->entityManager                  = $entityManager;
-        $this->translator                     = $translator;
-        $this->logger                         = $logger;
-        $this->slackManager                   = $slackManager;
-        $this->universignManager              = $universignManager;
-        $this->projectRepaymentTaskManager    = $projectRepaymentTaskManager;
-        $this->mailerManager                  = $mailerManager;
+        $this->entityManagerSimulator      = $entityManagerSimulator;
+        $this->entityManager               = $entityManager;
+        $this->translator                  = $translator;
+        $this->logger                      = $logger;
+        $this->slackManager                = $slackManager;
+        $this->universignManager           = $universignManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
+        $this->mailerManager               = $mailerManager;
     }
 
     /**

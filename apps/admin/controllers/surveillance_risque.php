@@ -24,8 +24,7 @@ class surveillance_risqueController extends bootstrap
         $this->currencyFormatter = $this->get('currency_formatter');
         $this->translator        = $this->get('translator');
 
-        $start = new \DateTime('NOW');
-        $start->modify('-3 month');
+        $start = new \DateTime('3 months ago');
 
         /** @var RiskDataMonitoringRepository $riskDataMonitoringRepository */
         $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
@@ -47,7 +46,7 @@ class surveillance_risqueController extends bootstrap
                 'file' => $exception->getFile(),
                 'line' => $exception->getLine()
             ]);
-            $this->eligibilityEventss = [];
+            $this->eligibilityEvents = [];
         }
     }
 
@@ -93,7 +92,7 @@ class surveillance_risqueController extends bootstrap
                     $formattedEvents[$event['siren']]['activeSiren'] = true;
                 }
 
-                if (empty($event['company_rating']) && empty($event['previous_value']) && false === is_numeric($event['value'])) {
+                if (empty($event['previous_value']) && false === is_numeric($event['value'])) {
                     $event['value'] = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($event['value']);
                 }
 

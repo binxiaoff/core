@@ -97,7 +97,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setIdProjectEligibilityRuleSet(? ProjectEligibilityRuleSet $idProjectEligibilityRuleSet): RiskDataMonitoringAssessment
+    public function setIdProjectEligibilityRuleSet(?ProjectEligibilityRuleSet $idProjectEligibilityRuleSet): RiskDataMonitoringAssessment
     {
         $this->idProjectEligibilityRuleSet = $idProjectEligibilityRuleSet;
 
@@ -155,7 +155,7 @@ class RiskDataMonitoringAssessment
      *
      * @return RiskDataMonitoringAssessment
      */
-    public function setIdRiskDataMonitoringCallLog(? RiskDataMonitoringCallLog $idRiskDataMonitoringCallLog): RiskDataMonitoringAssessment
+    public function setIdRiskDataMonitoringCallLog(?RiskDataMonitoringCallLog $idRiskDataMonitoringCallLog): RiskDataMonitoringAssessment
     {
         $this->idRiskDataMonitoringCallLog = $idRiskDataMonitoringCallLog;
 
