@@ -2161,11 +2161,8 @@ class dossiersController extends bootstrap
             $secondRangeStart = $this->request->query->get('second-range-start');
             $secondRangeEnd   = $this->request->query->get('second-range-end');
 
-            if (
-                false === empty($fistRangeStart)
-                && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeStart, $matches)
+            if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeStart, $matches)
                 && checkdate($matches[2], $matches[1], $matches[3])
-                && false === empty($fistRangeEnd)
                 && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeEnd, $matches)
                 && checkdate($matches[2], $matches[1], $matches[3])
             ) {
@@ -2173,11 +2170,8 @@ class dossiersController extends bootstrap
                 $end   = DateTime::createFromFormat('d/m/Y', $fistRangeEnd);
                 $url   .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
 
-                if (
-                    false === empty($secondRangeStart)
-                    && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeStart, $matches)
+                if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeStart, $matches)
                     && checkdate($matches[2], $matches[1], $matches[3])
-                    && false === empty($secondRangeEnd)
                     && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeEnd, $matches)
                     && checkdate($matches[2], $matches[1], $matches[3])
                 ) {
