@@ -57,15 +57,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function onMetAjourTVA($taux)
-    {
-        $sql = '
-            UPDATE echeanciers_emprunteur 
-            SET tva = ROUND(commission * ' . $taux . ') 
-            WHERE status_emprunteur = ' . EcheanciersEmprunteurEntity::STATUS_PENDING;
-        $this->bdd->query($sql);
-    }
-
     public function onMetAjourLesDatesEcheancesE($id_project, $ordre, $date_echeance_emprunteur)
     {
         $sql = '

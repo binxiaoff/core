@@ -32,21 +32,12 @@
                         <td><?= $s['type'] ?></td>
                         <td style="overflow: auto; max-width: 700px;"><?= $s['value'] ?></td>
                         <td align="center">
-                            <?php if ($s['status'] != \settings::STATUS_BLOCKED) : ?>
-                                <a href="<?= $this->lurl ?>/settings/status/<?= $s['id_setting'] ?>/<?= $s['status'] ?>" title="<?= ($s['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>">
-                                    <img src="<?= $this->surl ?>/images/admin/<?= ($s['status'] == 1 ? 'offline' : 'online') ?>.png" alt="<?= ($s['status'] == 1 ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
-                                </a>
-                                <a href="<?= $this->lurl ?>/settings/edit/<?= $s['id_setting'] ?>" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $s['type'] ?>"/>
-                                </a>
-                                <a href="<?= $this->lurl ?>/settings/delete/<?= $s['id_setting'] ?>" title="Supprimer <?= $s['type'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $s['type'] ?> ?')">
-                                    <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $s['type'] ?>"/>
-                                </a>
-                            <?php else : ?>
-                                <a href="<?= $this->lurl ?>/settings/edit/<?= $s['id_setting'] ?>" class="thickbox">
-                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $s['type'] ?>"/>
-                                </a>
-                            <?php endif; ?>
+                            <a href="<?= $this->lurl ?>/settings/edit/<?= $s['id_setting'] ?>" class="thickbox">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $s['type'] ?>"/>
+                            </a>
+                            <a href="<?= $this->lurl ?>/settings/delete/<?= $s['id_setting'] ?>" title="Supprimer <?= $s['type'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $s['type'] ?> ?')">
+                                <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $s['type'] ?>"/>
+                            </a>
                         </td>
                     </tr>
                     <?php $i++; ?>
