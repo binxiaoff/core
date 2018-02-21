@@ -66,7 +66,6 @@ class SlackController extends Controller
         }
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        /** @var EntityManager $entityManager */
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
         $user           = $userRepository->findOneBy([
@@ -108,14 +107,25 @@ class SlackController extends Controller
         }
 
         if (is_array($riskCheck) && false === empty($riskCheck)) {
-            $eligibility     = 'Non éligible';
-            $color           = 'danger';
-            $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($riskCheck[0]);
-            $fields[]        = [
-                'title' => 'Motif de rejet',
-                'value' => $rejectionReason,
-                'short' => false
-            ];
+            if (ProjectsStatus::UNEXPECTED_RESPONSE === substr($riskCheck[0], 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE))) {
+                $eligibility     = 'Vérification impossible';
+                $color           = 'warning';
+                $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($riskCheck[0]);
+                $fields[]        = [
+                    'title' => 'WS indisponible',
+                    'value' => $rejectionReason,
+                    'short' => false
+                ];
+            } else {
+                $eligibility     = 'Non éligible';
+                $color           = 'danger';
+                $rejectionReason = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($riskCheck[0]);
+                $fields[]        = [
+                    'title' => 'Motif de rejet',
+                    'value' => $rejectionReason,
+                    'short' => false
+                ];
+            }
         }
 
         $client = new Client();
