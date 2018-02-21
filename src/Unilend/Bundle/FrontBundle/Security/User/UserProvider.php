@@ -77,7 +77,7 @@ class UserProvider implements UserProviderInterface
                         $ids[] = $user->getIdClient();
                     }
 
-                    $this->slackManager->sendMessage('L’adresse email ' . $username . ' est en doublon (' . $usersCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
+                    $this->slackManager->sendMessage('[Connexion] L’adresse email ' . $username . ' est en doublon (' . $usersCount . ' occurrences : ' . implode(', ', $ids) . ')', '#doublons-email');
                 }
 
                 return $this->setUser($clientEntity);

@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * LoginLog
  *
  * @ORM\Table(name="login_log", indexes={@ORM\Index(name="pseudo", columns={"pseudo"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LoginLogRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class LoginLog
 {
@@ -27,20 +28,6 @@ class LoginLog
     private $ip;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="date_action", type="datetime", nullable=false)
-     */
-    private $dateAction;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="statut", type="integer", nullable=false)
-     */
-    private $statut;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="retour", type="string", length=191, nullable=false)
@@ -55,14 +42,7 @@ class LoginLog
     private $added;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
-
-    /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_log_login", type="integer")
      * @ORM\Id
@@ -79,7 +59,7 @@ class LoginLog
      *
      * @return LoginLog
      */
-    public function setPseudo($pseudo)
+    public function setPseudo(string $pseudo): LoginLog
     {
         $this->pseudo = $pseudo;
 
@@ -91,7 +71,7 @@ class LoginLog
      *
      * @return string
      */
-    public function getPseudo()
+    public function getPseudo(): string
     {
         return $this->pseudo;
     }
@@ -103,7 +83,7 @@ class LoginLog
      *
      * @return LoginLog
      */
-    public function setIp($ip)
+    public function setIp(string $ip): LoginLog
     {
         $this->ip = $ip;
 
@@ -115,57 +95,9 @@ class LoginLog
      *
      * @return string
      */
-    public function getIp()
+    public function getIp(): string
     {
         return $this->ip;
-    }
-
-    /**
-     * Set dateAction
-     *
-     * @param \DateTime $dateAction
-     *
-     * @return LoginLog
-     */
-    public function setDateAction($dateAction)
-    {
-        $this->dateAction = $dateAction;
-
-        return $this;
-    }
-
-    /**
-     * Get dateAction
-     *
-     * @return \DateTime
-     */
-    public function getDateAction()
-    {
-        return $this->dateAction;
-    }
-
-    /**
-     * Set statut
-     *
-     * @param integer $statut
-     *
-     * @return LoginLog
-     */
-    public function setStatut($statut)
-    {
-        $this->statut = $statut;
-
-        return $this;
-    }
-
-    /**
-     * Get statut
-     *
-     * @return integer
-     */
-    public function getStatut()
-    {
-        return $this->statut;
     }
 
     /**
@@ -175,7 +107,7 @@ class LoginLog
      *
      * @return LoginLog
      */
-    public function setRetour($retour)
+    public function setRetour(string $retour): LoginLog
     {
         $this->retour = $retour;
 
@@ -187,7 +119,7 @@ class LoginLog
      *
      * @return string
      */
-    public function getRetour()
+    public function getRetour(): string
     {
         return $this->retour;
     }
@@ -199,7 +131,7 @@ class LoginLog
      *
      * @return LoginLog
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): LoginLog
     {
         $this->added = $added;
 
@@ -211,42 +143,28 @@ class LoginLog
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return LoginLog
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idLogLogin
      *
-     * @return integer
+     * @return int
      */
-    public function getIdLogLogin()
+    public function getIdLogLogin(): int
     {
         return $this->idLogLogin;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }

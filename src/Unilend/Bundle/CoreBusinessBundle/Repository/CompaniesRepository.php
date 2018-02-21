@@ -22,7 +22,7 @@ class CompaniesRepository extends EntityRepository
     {
         $operationType = $this->getEntityManager()->getRepository('UnilendCoreBusinessBundle:OperationType');
         $queryBuilder  = $this->createQueryBuilder('c')
-            ->select('c.idClientOwner AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
+             ->select('IDENTITY(c.idClientOwner) AS idClient, c.capital, SUM(o.amount) AS depositAmount, GROUP_CONCAT(o.id) AS operation')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClientOwner = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWalletCreditor = w.id')
             ->where('o.idType = :operation_type')

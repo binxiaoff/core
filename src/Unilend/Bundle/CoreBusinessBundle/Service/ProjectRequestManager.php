@@ -158,7 +158,10 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
         }
 
-        $email = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($formData['email']) ? $formData['email'] . '-' . time() : $formData['email'];
+        $email = $formData['email'];
+        if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email, Clients::STATUS_ONLINE)) {
+            $email .= '-' . time();
+        }
 
         $client = new Clients();
         $client

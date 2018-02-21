@@ -32,8 +32,8 @@ class mailsController extends bootstrap
         $mailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager          = $this->get('doctrine.orm.entity_manager');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
             $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
             $mailTemplate           = $mailTemplateRepository->findOneBy([
                 'type'   => $this->params[1],
@@ -51,21 +51,20 @@ class mailsController extends bootstrap
             die;
         }
 
-        $externalEmails     = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
-        $internalEmails     = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
-        $externalEmailUsage = $mailTemplateManager->getMailTemplateUsage($externalEmails);
-        $internalEmailUsage = $mailTemplateManager->getMailTemplateUsage($internalEmails);
+        $externalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_EXTERNAL);
+        $internalEmails = $mailTemplateManager->getActiveMailTemplates(MailTemplates::RECIPIENT_TYPE_INTERNAL);
+        $emailUsage     = $mailTemplateManager->getMailTemplateUsage();
 
         $this->sections = [
             [
                 'title'  => 'Emails externes',
                 'emails' => $externalEmails,
-                'stats'  => $externalEmailUsage
+                'stats'  => $emailUsage
             ],
             [
                 'title'  => 'Emails internes',
                 'emails' => $internalEmails,
-                'stats'  => $internalEmailUsage
+                'stats'  => $emailUsage
             ]
         ];
 

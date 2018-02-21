@@ -175,6 +175,8 @@ class ajaxController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
+        $errors = [];
+
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');
 
@@ -247,16 +249,48 @@ class ajaxController extends bootstrap
                 ]);
                 return;
             } elseif ($_POST['etape'] == 2) {
-                $project->balance_count = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
-                $project->update();
+                /** @var EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $emailRegex    = $entityManager
+                    ->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->findOneBy(['type' => 'Regex validation email'])
+                    ->getValue();
 
                 /** @var \companies $company */
                 $company = $this->loadData('companies');
                 $company->get($project->id_company, 'id_company');
+
+                /** @var \clients_adresses $address */
+                $address = $this->loadData('clients_adresses');
+                $address->get($company->id_client_owner, 'id_client');
+
+                /** @var \clients $client */
+                $client = $this->loadData('clients');
+                $client->get($company->id_client_owner, 'id_client');
+
+                $email = isset($_POST['email_etape2']) ? trim($_POST['email_etape2']) : null;
+                if (1 !== preg_match($emailRegex, $email)) {
+                    $errors[] = 'Le format de l\'adresse email est invalide';
+                } elseif ($email !== $client->email) {
+                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+                    if (false === empty($duplicates)) {
+                        $errors[] = 'Cette adresse email est déjà utilisée par un autre compte';
+                    }
+                }
+
+                if (false === empty($_POST['creation_date_etape2']) && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['creation_date_etape2'])) {
+                    $errors[] = 'Date de création invalide';
+                } elseif (false === empty($_POST['creation_date_etape2'])) {
+                    $creationDate           = \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2']);
+                    $project->balance_count = empty($project->balance_count) ? $creationDate->diff(new \DateTime())->y : $project->balance_count;
+                }
+
                 $company->name                          = $_POST['raison_sociale_etape2'];
                 $company->forme                         = $_POST['forme_juridique_etape2'];
                 $company->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $company->date_creation                 = empty($_POST['creation_date_etape2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
+                $company->date_creation                 = isset($creationDate) ? $creationDate->format('Y-m-d') : $company->date_creation;
                 $company->adresse1                      = $_POST['address_etape2'];
                 $company->city                          = $_POST['ville_etape2'];
                 $company->zip                           = $_POST['postal_etape2'];
@@ -264,11 +298,6 @@ class ajaxController extends bootstrap
                 $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
                 $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
                 $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
-                $company->update();
-
-                /** @var \clients_adresses $address */
-                $address = $this->loadData('clients_adresses');
-                $address->get($company->id_client_owner, 'id_client');
 
                 if ($company->status_adresse_correspondance == 0) {
                     $address->adresse1  = $_POST['adresse_correspondance_etape2'];
@@ -281,18 +310,21 @@ class ajaxController extends bootstrap
                     $address->cp        = $_POST['postal_etape2'];
                     $address->telephone = $_POST['phone_etape2'];
                 }
-                $address->update();
 
-                $this->clients = $this->loadData('clients');
-                $this->clients->get($company->id_client_owner, 'id_client');
-                $this->clients->email     = $_POST['email_etape2'];
-                $this->clients->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $this->clients->civilite;
-                $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction  = $_POST['fonction_etape2'];
-                $this->clients->telephone = $_POST['phone_new_etape2'];
-                $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
-                $this->clients->update();
+                $client->email     = $email;
+                $client->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $client->civilite;
+                $client->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
+                $client->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $client->fonction  = $_POST['fonction_etape2'];
+                $client->telephone = $_POST['phone_new_etape2'];
+                $client->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
+
+                if (empty($errors)) {
+                    $project->update();
+                    $company->update();
+                    $address->update();
+                    $client->update();
+                }
             } elseif ($_POST['etape'] == 3) {
                 if (isset($_FILES['photo_projet']) && false === empty($_FILES['photo_projet']['name'])) {
                     $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
@@ -373,6 +405,8 @@ class ajaxController extends bootstrap
                 die;
             }
         }
+
+        $this->sendAjaxResponse(empty($errors), null, $errors);
     }
 
     /**
@@ -483,7 +517,7 @@ class ajaxController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
-        $bidManger = $this->get('unilend.serbvice.bid_manager');
+        $bidManger = $this->get('unilend.service.bid_manager');
 
         if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);

@@ -186,6 +186,10 @@ class bootstrap extends Controller
                 [
                     'title' => 'Opérations atypiques',
                     'uri'   => 'client_atypical_operation'
+                ],
+                [
+                    'title' => 'Comptes doublons',
+                    'uri'   => 'comptes/doublons'
                 ]
             ]
         ],
@@ -232,6 +236,10 @@ class bootstrap extends Controller
                 [
                     'title' => 'Partenaires',
                     'uri'   => 'partenaires'
+                ],
+                [
+                    'title' => 'Comptes doublons',
+                    'uri'   => 'comptes/doublons'
                 ],
                 [
                     'title' => 'Surveillance données risque',

@@ -118,8 +118,10 @@ class DevRegularisationTaxRetenuALaSourceCommand extends ContainerAwareCommand
                 } catch (\Exception $exception) {
                     $entityManager->getConnection()->rollBack();
                     if ($repaidCount > 0) {
-                        $projectRepaymentTaskManager->end($regularisationRepaymentLog, -$repaidAmount, $repaidCount);
-                        $projectRepaymentTaskManager->end($newRepaymentLog, $repaidAmount, $repaidCount);
+                        $projectRepaymentTaskManager->log($regularisationRepaymentLog, -$repaidAmount, $repaidCount);
+                        $projectRepaymentTaskManager->end($regularisationRepaymentLog, ProjectRepaymentTask::STATUS_ERROR);
+                        $projectRepaymentTaskManager->log($newRepaymentLog, $repaidAmount, $repaidCount);
+                        $projectRepaymentTaskManager->end($newRepaymentLog, ProjectRepaymentTask::STATUS_ERROR);
                     } else {
                         $entityManager->remove($regularisationRepaymentLog);
                         $entityManager->remove($newRepaymentLog);
@@ -130,8 +132,10 @@ class DevRegularisationTaxRetenuALaSourceCommand extends ContainerAwareCommand
             }
 
             if ($repaidCount > 0) {
-                $projectRepaymentTaskManager->end($regularisationRepaymentLog, -$repaidAmount, $repaidCount);
-                $projectRepaymentTaskManager->end($newRepaymentLog, $repaidAmount, $repaidCount);
+                $projectRepaymentTaskManager->log($regularisationRepaymentLog, -$repaidAmount, $repaidCount);
+                $projectRepaymentTaskManager->end($regularisationRepaymentLog, ProjectRepaymentTask::STATUS_REPAID);
+                $projectRepaymentTaskManager->log($newRepaymentLog, $repaidAmount, $repaidCount);
+                $projectRepaymentTaskManager->end($newRepaymentLog, ProjectRepaymentTask::STATUS_REPAID);
             } else {
                 $entityManager->remove($regularisationRepaymentLog);
                 $entityManager->remove($newRepaymentLog);

@@ -9,18 +9,30 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="clients_history", indexes={@ORM\Index(name="id_client", columns={"id_client"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsHistory
 {
+    const TYPE_CLIENT_LENDER          = 1;
+    const TYPE_CLIENT_BORROWER        = 2;
+    const TYPE_CLIENT_LENDER_BORROWER = 3;
+    const TYPE_CLIENT_PARTNER         = 4;
+
+    const STATUS_ACTION_LOGIN            = 1;
+    const STATUS_ACTION_ACCOUNT_CREATION = 2;
+
     /**
-     * @var integer
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client", nullable=false)
+     * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
@@ -41,13 +53,6 @@ class ClientsHistory
     private $added;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
-
-    /**
      * @var integer
      *
      * @ORM\Column(name="id_history", type="integer")
@@ -61,11 +66,11 @@ class ClientsHistory
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return ClientsHistory
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient): ClientsHistory
     {
         $this->idClient = $idClient;
 
@@ -75,9 +80,9 @@ class ClientsHistory
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
-    public function getIdClient()
+    public function getIdClient(): Clients
     {
         return $this->idClient;
     }
@@ -85,11 +90,11 @@ class ClientsHistory
     /**
      * Set type
      *
-     * @param integer $type
+     * @param int $type
      *
      * @return ClientsHistory
      */
-    public function setType($type)
+    public function setType(int $type): ClientsHistory
     {
         $this->type = $type;
 
@@ -99,9 +104,9 @@ class ClientsHistory
     /**
      * Get type
      *
-     * @return integer
+     * @return int
      */
-    public function getType()
+    public function getType(): int
     {
         return $this->type;
     }
@@ -109,11 +114,11 @@ class ClientsHistory
     /**
      * Set status
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return ClientsHistory
      */
-    public function setStatus($status)
+    public function setStatus(int $status): ClientsHistory
     {
         $this->status = $status;
 
@@ -123,9 +128,9 @@ class ClientsHistory
     /**
      * Get status
      *
-     * @return integer
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -137,7 +142,7 @@ class ClientsHistory
      *
      * @return ClientsHistory
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ClientsHistory
     {
         $this->added = $added;
 
@@ -149,42 +154,28 @@ class ClientsHistory
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return ClientsHistory
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idHistory
      *
-     * @return integer
+     * @return int
      */
-    public function getIdHistory()
+    public function getIdHistory(): int
     {
         return $this->idHistory;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }

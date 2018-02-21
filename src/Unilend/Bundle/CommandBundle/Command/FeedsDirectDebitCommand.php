@@ -1,10 +1,11 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
 
 class FeedsDirectDebitCommand extends ContainerAwareCommand
 {
@@ -23,41 +24,36 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-
-        /** @var \prelevements $directDebit */
-        $directDebit = $entityManager->getRepository('prelevements');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
+        $entityMangerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \compteur_transferts $counter */
-        $counter = $entityManager->getRepository('compteur_transferts');
-        /** @var \clients_mandats $mandate */
-        $mandate = $entityManager->getRepository('clients_mandats');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-
-        $settings->get('Virement - BIC', 'type');
-        $bic = $settings->value;
-
-        $settings->get('Virement - IBAN', 'type');
-        $iban = str_replace(' ', '', $settings->value);
-
-        $settings->get('titulaire du compte', 'type');
-        $accountHolder = utf8_decode($settings->value);
-
-        $settings->get('ICS de SFPMEI', 'type');
-        $ics = $settings->value;
-
-        $borrowerDirectDebits      = $directDebit->select('status = ' . \prelevements::STATUS_PENDING . ' AND type = ' . \prelevements::CLIENT_TYPE_BORROWER . ' AND type_prelevement = 1 AND date_execution_demande_prelevement = CURDATE()');
-        $borrowerDirectDebitsCount = count($borrowerDirectDebits);
-        $borrowerTotalAmount       = bcdiv($directDebit->sum('status = ' . \prelevements::STATUS_PENDING . ' AND type = ' . \prelevements::CLIENT_TYPE_BORROWER . ' AND type_prelevement = 1 AND date_execution_demande_prelevement = CURDATE()'), 100, 2);
-        $counterId                 = $counter->counter('type = 2') + 1;
-        $date                      = date('Ymd');
-
+        $counter        = $entityMangerSimulator->getRepository('compteur_transferts');
+        $counterId      = $counter->counter('type = 2') + 1;
         $counter->type  = 2;
         $counter->ordre = $counterId;
         $counter->create();
+
+        $entityManger = $this->getContainer()->get('doctrine.orm.entity_manager');
+
+        $directDebitRepository = $entityManger->getRepository('UnilendCoreBusinessBundle:Prelevements');
+        $mandateRepository     = $entityManger->getRepository('UnilendCoreBusinessBundle:ClientsMandats');
+        $settingsRepository    = $entityManger->getRepository('UnilendCoreBusinessBundle:Settings');
+
+        $now           = new \DateTime();
+        $bic           = $settingsRepository->findOneBy(['type' => 'Virement - BIC'])->getValue();
+        $iban          = str_replace(' ', '', $settingsRepository->findOneBy(['type' => 'Virement - IBAN'])->getValue());
+        $accountHolder = utf8_decode($settingsRepository->findOneBy(['type' => 'titulaire du compte'])->getValue());
+        $ics           = $settingsRepository->findOneBy(['type' => 'ICS de SFPMEI'])->getValue();
+
+        /** @var Prelevements[] $borrowerDirectDebits */
+        $borrowerDirectDebits      = $directDebitRepository->findBy([
+            'status'                          => Prelevements::STATUS_PENDING,
+            'type'                            => Prelevements::CLIENT_TYPE_BORROWER,
+            'typePrelevement'                 => Prelevements::TYPE_RECURRENT,
+            'dateExecutionDemandePrelevement' => $now
+        ]);
+        $borrowerDirectDebitsCount = count($borrowerDirectDebits);
+        $borrowerTotalAmount       = 0;
+        $date                      = $now->format('Ymd');
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>
 <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02">
@@ -66,7 +62,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
             <MsgId>SFPMEI/' . $accountHolder . '/' . $date . '/' . $counterId . '</MsgId>
             <CreDtTm>' . date('Y-m-d\TH:i:s', mktime(date('H'), date('i'), 0, date('m'), date('d') + 1, date('Y'))) . '</CreDtTm>
             <NbOfTxs>' . $borrowerDirectDebitsCount . '</NbOfTxs>
-            <CtrlSum>' . $borrowerTotalAmount . '</CtrlSum>
+            <CtrlSum>[#borrowerTotalAmount#]</CtrlSum>
             <InitgPty>
                 <Nm>' . $accountHolder . '-SFPMEI' . '</Nm>
             </InitgPty>
@@ -74,49 +70,57 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 
         foreach ($borrowerDirectDebits as $borrowerDirectDebit) {
             $sequence = 'RCUR';
-            // @todo Revert after 2016-06-30 (TMA-724)
-            // if ($borrowerDirectDebit['num_prelevement'] > 1) {
-            if ($borrowerDirectDebit['num_prelevement'] > 2 || $borrowerDirectDebit['num_prelevement'] == 2 && $borrowerDirectDebit['id_project'] != 33794) {
-                $lastDirectDebit = $directDebit->select('status = ' . \prelevements::STATUS_SENT . ' AND type = ' . \prelevements::CLIENT_TYPE_BORROWER . ' AND type_prelevement = 1 AND id_project = ' . $borrowerDirectDebit['id_project'], 'num_prelevement DESC', 0, 1);
-                $lastIban        = $lastDirectDebit[0]['iban'];
-                $lastBic         = $lastDirectDebit[0]['bic'];
 
-                if ($lastIban != $borrowerDirectDebit['iban'] || $lastBic != $borrowerDirectDebit['bic']) {
+            if ($borrowerDirectDebit->getNumPrelevement() > 1) {
+                /** @var Prelevements $lastDirectDebit */
+                $lastDirectDebit = $directDebitRepository->findOneBy([
+                    'idProject'       => $borrowerDirectDebit->getIdProject(),
+                    'status'          => Prelevements::STATUS_PENDING,
+                    'type'            => Prelevements::CLIENT_TYPE_BORROWER,
+                    'typePrelevement' => Prelevements::TYPE_RECURRENT,
+                ], ['numPrelevement' => 'DESC']);
+
+                if ($lastDirectDebit->getIban() != $borrowerDirectDebit->getIban() || $lastDirectDebit->getBic() != $borrowerDirectDebit->getBic()) {
                     $sequence = 'FRST';
                 }
             } else {
                 $sequence = 'FRST';
             }
 
-            $client->get($borrowerDirectDebit['id_client'], 'id_client');
-            $mandate->get($borrowerDirectDebit['id_project'], 'id_project');
+            $directDebitAmount   = round(bcdiv($borrowerDirectDebit->getMontant(), 100, 4), 2);
+            $borrowerTotalAmount = round(bcadd($borrowerTotalAmount, $directDebitAmount, 4), 2);
+            $client              = $borrowerDirectDebit->getIdClient();
+            $mandate             = $mandateRepository->findOneBy(['idProject' => $borrowerDirectDebit->getIdProject()]);
 
-            $xml .= $this->getXMLElement(array(
+            $xml .= $this->getXMLElement([
                 'iban'             => $iban,
                 'bic'              => $bic,
                 'ics'              => $ics,
-                'id'               => $accountHolder . '/' . $date . '/' . $borrowerDirectDebit['id_prelevement'],
+                'id'               => $accountHolder . '/' . $date . '/' . $borrowerDirectDebit->getIdPrelevement(),
                 'sequence'         => $sequence,
-                'amount'           => bcdiv($borrowerDirectDebit['montant'], 100, 2),
-                'completionDate'   => $borrowerDirectDebit['date_echeance_emprunteur'],
-                'mandateReference' => $borrowerDirectDebit['motif'],
-                'mandateDate'      => date('Y-m-d', strtotime($mandate->updated)),
-                'debitBic'         => $borrowerDirectDebit['bic'],
-                'debitIban'        => $borrowerDirectDebit['iban'],
-                'lastname'         => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->nom),
-                'firstname'        => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->prenom),
-                'reference'        => $borrowerDirectDebit['motif']
-            ));
+                'amount'           => $directDebitAmount,
+                'completionDate'   => $borrowerDirectDebit->getDateEcheanceEmprunteur()->format('Y-m-d'),
+                'mandateReference' => $borrowerDirectDebit->getMotif(),
+                'mandateDate'      => $mandate->getUpdated()->format('Y-m-d'),
+                'debitBic'         => $borrowerDirectDebit->getBic(),
+                'debitIban'        => $borrowerDirectDebit->getIban(),
+                'lastname'         => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getNom()),
+                'firstname'        => str_replace(array('"', '\'', '\\', '>', '<', '&'), '', $client->getPrenom()),
+                'reference'        => $borrowerDirectDebit->getMotif()
+            ]);
 
-            $directDebit->get($borrowerDirectDebit['id_prelevement'], 'id_prelevement');
-            $directDebit->status    = \prelevements::STATUS_SENT;
-            $directDebit->added_xml = date('Y-m-d H:i') . ':00';
-            $directDebit->update();
+            $borrowerDirectDebit
+                ->setStatus(Prelevements::STATUS_SENT)
+                ->setAddedXml(new \DateTime());
+
+            $entityManger->flush($borrowerDirectDebit);
         }
 
         $xml .= '
     </CstmrDrctDbtInitn>
 </Document>';
+
+        $xml = str_replace('[#borrowerTotalAmount#]', $borrowerTotalAmount, $xml);
 
         if (false === empty($borrowerDirectDebits)) {
             file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
@@ -125,7 +129,9 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 
     /**
      * Help factorize if we have several direct debit types (lender/borrower)
+     *
      * @param array $directDebit
+     *
      * @return string
      */
     private function getXMLElement(array $directDebit)

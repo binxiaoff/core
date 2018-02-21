@@ -1,24 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\MailTemplates;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectNotification;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Attachment, AttachmentType, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
+};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
@@ -189,9 +173,11 @@ class preteursController extends bootstrap
             $this->attachments     = $wallet->getIdClient()->getAttachments();
             $this->attachmentTypes = $attachmentManager->getAllTypesForLender();
 
-            /** @var \lender_tax_exemption $lenderTaxExemption */
-            $lenderTaxExemption   = $this->loadData('lender_tax_exemption');
-            $this->exemptionYears = array_column($lenderTaxExemption->select('id_lender = ' . $wallet->getId(), 'year DESC'), 'year');
+            $this->exemptionYears         = [];
+            $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+            foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet], ['year' => 'DESC']) as $taxExemption) {
+                $this->exemptionYears[] = $taxExemption->getYear();
+            }
 
             $this->solde        = $wallet->getAvailableBalance();
             $this->soldeRetrait = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]);
@@ -319,11 +305,15 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
         $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager       = $this->get('unilend.service.translation_manager');
-        $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
+        $translationManager           = $this->get('unilend.service.translation_manager');
+        $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
+        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+        /** @var \Psr\Log\LoggerInterface $logger */
+        $logger = $this->get('logger');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
+        $this->exemptionYears  = [];
 
         if (
             $this->params[0]
@@ -353,10 +343,9 @@ class preteursController extends bootstrap
                 $this->city_fiscal         = $this->clients_adresses->ville_fiscal;
                 $this->zip_fiscal          = $this->clients_adresses->cp_fiscal;
 
-                /** @var \lender_tax_exemption $oLenderTaxExemption */
-                $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
-                $this->taxExemption    = $oLenderTaxExemption->getLenderExemptionHistory($wallet->getId());
-                $this->aExemptionYears = array_column($this->taxExemption, 'year');
+                foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $wallet], ['year' => 'DESC']) as $taxExemption) {
+                    $this->exemptionYears[] = $taxExemption->getYear();
+                }
                 $this->iNextYear       = date('Y') + 1;
 
                 $this->settings->get("Liste deroulante origine des fonds", 'type');
@@ -448,9 +437,9 @@ class preteursController extends bootstrap
                     $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
                     $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email'], $this->clients)) {
-                        $this->clients->email = $_POST['email'];
+                    $email = trim($_POST['email']);
+                    if ($this->checkEmail($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $birthday = null;
@@ -517,30 +506,49 @@ class preteursController extends bootstrap
 
                     if (isset($_POST['tax_exemption'])) {
                         foreach ($_POST['tax_exemption'] as $iExemptionYear => $iExemptionValue) {
-                            if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
-                                /** @var \lender_tax_exemption $oLenderTaxExemption */
-                                $oLenderTaxExemption              = $this->loadData('lender_tax_exemption');
-                                $oLenderTaxExemption->id_lender   = $wallet->getId();
-                                $oLenderTaxExemption->iso_country = 'FR';
-                                $oLenderTaxExemption->year        = $iExemptionYear;
-                                $oLenderTaxExemption->id_user     = $this->userEntity->getIdUser();
-                                $oLenderTaxExemption->create();
-                                $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'adding'];
+                            if (false === in_array($iExemptionYear, $this->exemptionYears)) {
+                                try {
+                                    $lenderTaxExemptionEntity = new LenderTaxExemption();
+                                    $lenderTaxExemptionEntity
+                                        ->setIdLender($wallet)
+                                        ->setIsoCountry('FR')
+                                        ->setYear($iExemptionYear)
+                                        ->setIdUser($this->userEntity);
+                                    $entityManager->persist($lenderTaxExemptionEntity);
+                                    $entityManager->flush($lenderTaxExemptionEntity);
+
+                                    $taxExemptionHistory[] = ['year' => $iExemptionYear, 'action' => 'adding'];
+                                } catch (\Exception $exception) {
+                                    $logger->error(
+                                        'Could not save tax exemption request for lender: ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
+                                        ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_client' => $wallet->getIdClient()->getIdClient()]
+                                    );
+                                }
                             }
                         }
                     }
-
-                    if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
-                        $oLenderTaxExemption->get($wallet->getId() . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
-                        $taxExemptionHistory[] = ['year' => $oLenderTaxExemption->year, 'action' => 'deletion'];
-                        $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
+                    if (in_array($this->iNextYear, $this->exemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
+                        $taxExemptionToRemove = $lenderTaxExemptionRepository->findOneBy(['idLender' => $wallet, 'year' => $this->iNextYear, 'isoCountry' => 'FR']);
+                        if (null !== $taxExemptionToRemove) {
+                            try {
+                                $entityManager->remove($taxExemptionToRemove);
+                                $entityManager->flush();
+                                $taxExemptionHistory[] = ['year' => $this->iNextYear, 'action' => 'deletion'];
+                            } catch (\Exception $exception) {
+                                $logger->error(
+                                    'Could not remove the tax exemption entry (year: ' . $this->iNextYear . ') for lender : ' . $wallet->getId() . ' Error: ' . $exception->getMessage(),
+                                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                                );
+                            }
+                        }
                     }
-
                     if (false === empty($taxExemptionHistory)) {
-                        $this->users_history->histo(\users_history::FORM_ID_LENDER, \users_history::FORM_NAME_TAX_EXEMPTION, $this->userEntity->getIdUser(), serialize([
-                            'id_client'     => $this->clients->id_client,
-                            'modifications' => $taxExemptionHistory
-                        ]));
+                        $this->users_history->histo(
+                            \users_history::FORM_ID_LENDER,
+                            \users_history::FORM_NAME_TAX_EXEMPTION,
+                            $this->userEntity->getIdUser(),
+                            serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory])
+                        );
                     }
 
                     $this->clients_adresses->update();
@@ -601,9 +609,9 @@ class preteursController extends bootstrap
                     $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
                     $this->clients->fonction = $_POST['fonction_e'];
 
-                    //// check doublon mail ////
-                    if ($this->isEmailUnique($_POST['email_e'], $this->clients)) {
-                        $this->clients->email = $_POST['email_e'];
+                    $email = trim($_POST['email_e']);
+                    if ($this->checkEmail($email, $this->clients)) {
+                        $this->clients->email = $email;
                     }
 
                     $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
@@ -1224,15 +1232,37 @@ class preteursController extends bootstrap
     private function changeClientOnlineOfflineStatus($client, $status, $origin)
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
         if ($client instanceof \clients) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $clientRepository->find($client->id_client);
         }
 
-        if (false === $client->isBorrower()) {
-            $client->setStatus($status);
-            $entityManager->flush($client);
+        if ($client->isLender()) {
+            try {
+                $duplicates = [];
+                if (Clients::STATUS_ONLINE == $status) {
+                    $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
+                }
+
+                if (empty($duplicates)) {
+                    $client->setStatus($status);
+                    $entityManager->flush($client);
+                } else {
+                    $_SESSION['freeow']['title']   = 'Modification statut prêteur';
+                    $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié car un compte en ligne existe déjà avec cette adresse email.';
+
+                    header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+                    exit;
+                }
+            } catch (\Doctrine\ORM\OptimisticLockException $exception) {
+                $_SESSION['freeow']['title']   = 'Modification statut prêteur';
+                $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié en raison d’une erreur technique : ' . $exception->getMessage();
+
+                header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+                exit;
+            }
 
             $serialize = serialize(['id_client' => $client->getIdClient(), 'status' => $client->getStatus()]);
             switch ($origin) {
@@ -1256,8 +1286,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
             $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
 
-
-            header('Location:  ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
+            header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
             die;
         }
     }
@@ -1441,11 +1470,6 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-
         $action = empty($this->params[0]) ? null : filter_var($this->params[0], FILTER_SANITIZE_STRING);
         if (empty($action)) {
             header('Location: ' . $this->lurl . '/preteurs/search');
@@ -1456,17 +1480,22 @@ class preteursController extends bootstrap
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
-        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
         if (null === $client) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
         if (false === in_array($this->params[2], [Clients::STATUS_OFFLINE, Clients::STATUS_ONLINE])) {
-            header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
             die;
         }
 
-        if ($action == 'status' ) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        $clientStatusManager = $this->get('unilend.service.client_status_manager');
+
+        if ($action == 'status') {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
 
             switch ($this->params[2]) {
@@ -1491,7 +1520,7 @@ class preteursController extends bootstrap
             }
         }
 
-        if ($action == 'deactivate' ) {
+        if ($action == 'deactivate') {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             $this->sendEmailClosedAccount($client);
             $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
@@ -1597,23 +1626,34 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param string $email
-     * @param \clients $clientEntity
+     * @param string   $email
+     * @param \clients $client
+     *
      * @return bool
      */
-    private function isEmailUnique($email, \clients $clientEntity)
+    private function checkEmail(string $email, \clients $client): bool
     {
-        $clientsWithSameEmailAddress = $clientEntity->select('email = "' . $email . '" AND id_client != ' . $clientEntity->id_client . ' AND status = ' . Clients::STATUS_ONLINE);
-        if (count($clientsWithSameEmailAddress) > 0) {
-            $ClientIdWithSameEmail = '';
-            foreach ($clientsWithSameEmailAddress as $client) {
-                $ClientIdWithSameEmail .= ' ' . $client['id_client'];
-            }
-            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $ClientIdWithSameEmail;
-            return false;
-        } else {
+        if ($email === $client->email) {
             return true;
         }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
+
+        if (1 !== preg_match($emailRegex, $email)) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Le format est incorrect';
+            return false;
+        }
+
+        $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+        if (count($duplicates) > 0) {
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisée par un autre compte';
+            return false;
+        }
+
+        return true;
     }
 
     /**

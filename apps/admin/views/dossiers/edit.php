@@ -129,6 +129,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
         font-weight: bold;
     }
 
+    .spinner_etape {
+        display: none;
+        height: 32px;
+        background: no-repeat center url('<?= $this->surl ?>/images/admin/ajax-loader.gif');
+    }
+
     .error_etape,
     .valid_etape {
         display: none;
@@ -602,7 +608,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <select id="source" name="source" class="select">
                                         <option value=""></option>
                                         <?php foreach ($this->sources as $source) : ?>
-                                            <option value="<?= stripslashes($source) ?>"<?= $this->clients->source === $source ? ' selected' : '' ?>><?= $source ?></option>
+                                            <option value="<?= htmlspecialchars(stripslashes($source)) ?>"<?= $this->clients->source === $source ? ' selected' : '' ?>><?= $source ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 <?php else : ?>
@@ -667,19 +673,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         </tr>
                         <tr>
                             <th><label for="title">Titre du projet</label></th>
-                            <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"></td>
+                            <td><input type="text" name="title" id="title" class="input_large" value="<?= htmlspecialchars($this->projects->title) ?>"></td>
                         </tr>
                         <tr>
                             <th><label for="societe">Raison sociale</label></th>
-                            <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"></td>
+                            <td><input type="text" name="societe" id="societe" class="input_large" value="<?= htmlspecialchars($this->companies->name) ?>"></td>
                         </tr>
                         <tr>
                             <th><label for="tribunal_com">Tribunal de commerce</label></th>
-                            <td><input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"></td>
+                            <td><input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= htmlspecialchars($this->companies->tribunal_com) ?>"></td>
                         </tr>
                         <tr>
                             <th><label for="activite">Activité</label></th>
-                            <td><input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : $this->xerfi->label) : $this->companies->activite ?>"></td>
+                            <td><input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : htmlspecialchars($this->xerfi->label)) : htmlspecialchars($this->companies->activite) ?>"></td>
                         </tr>
                     </table>
                     <br><br>

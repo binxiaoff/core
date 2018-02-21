@@ -201,10 +201,6 @@ class TemplateMessage extends \Swift_Message
      */
     private static function normalizeEmail($emails)
     {
-        if (is_string($emails)) {
-            return self::removeTimeStampSuffix($emails);
-        }
-
         $normalizedEmails = [];
 
         $emails = self::emailAddressToArray($emails);

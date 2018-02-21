@@ -403,6 +403,8 @@
                 <td colspan="3"><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"></td>
             </tr>
         </table>
+        <div id="spinner_etape2" class="spinner_etape"></div>
+        <div id="error_etape2" class="error_etape"></div>
         <div id="valid_etape2" class="valid_etape">Données sauvegardées</div>
         <div class="btnDroite">
             <button type="submit" class="btn-primary">Sauvegarder</button>

@@ -632,3 +632,6 @@ table.dataTable thead .sorting_desc:after {
     color: #d9534f;
     background-color: #ffffff;
 }
+.ui-widget-content a {
+    color: inherit;
+}

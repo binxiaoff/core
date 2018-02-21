@@ -15,32 +15,40 @@
     }
 </style>
 <script>
-    $(function() {
+    $(function () {
         var dt = $('#receptions-table').DataTable({
             serverSide: true,
             processing: true,
             columnDefs: [
-                {orderable: false, targets: [1, 3, 6]},
-                {searchable: false, targets: [1, 2, 3, 5, 6, 7, 8, 9]},
-                {visible: false, targets: [7, 8, 9]},
+                {orderable: false, targets: [1, 3, 7]},
+                {searchable: false, targets: [1, 3, 7, 8, 9, 10]},
+                {visible: false, targets: [4, 8, 9, 10]},
                 {name: "idReception", "targets": 0},
                 {name: "motif", "targets": 1},
                 {name: "montant", "targets": 2},
                 {name: "attribution", "targets": 3},
-                {name: "idProject", "targets": 4},
-                {name: "added", "targets": 5}
+                {name: "idProject", "targets": 5},
+                {name: "added", "targets": 6}
             ],
-            order: [[ 0, "desc" ]],
-            ajax: '/transferts/attribues/emprunteur',
-            language: {
-                url: '<?= $this->lurl ?>/'
+            order: [[0, "desc"]],
+            ajax: {
+                url: '/transferts/attribues/emprunteur',
+                "data": function (d) {
+                    return $.extend({}, d, {
+                        date_from: $('#datepik_from').val(),
+                        date_to: $('#datepik_to').val()
+                    });
+                }
             },
-            createdRow: function ( row, data, index ) {
+            language: {
+                url: '<?= $this->lurl ?>/oneui/js/plugins/datatables/localisation/fr_FR.json'
+            },
+            createdRow: function (row, data, index) {
                 var $row = $(row)
                 var receptionId = data[0]
-                var comment = data[7]
-                var line = data[8]
-                var rejection = data[9]
+                var comment = data[8]
+                var line = data[9]
+                var rejection = data[10]
 
                 var addCommentBtn = '<a class="add-comment table-action" data-comment="' + comment + '" title="Commenter l\'opération">' +
                     '<span class="fa fa-pencil"></span>' +
@@ -55,10 +63,10 @@
 
                 if (comment !== null) {
                     addCommentBtn = '<a class="add-comment modify-comment table-action" data-comment="' + comment + '" title="Modifier le commentaire">' +
-                    '<span class="fa fa-pencil-square"></span>' +
-                    '</a>'
+                        '<span class="fa fa-pencil-square"></span>' +
+                        '</a>'
 
-                    if (! rejection) {
+                    if (!rejection) {
                         $row.css('background', '#fdeec6')
                     }
                 }
@@ -66,11 +74,11 @@
                 $row.find('td:last-child').append(showReceptionBtn + addCommentBtn)
             }
         })
-        dt.on('preDraw', function() {
+        dt.on('preDraw', function () {
             var $filter = $('#receptions-table_filter input')
-            $filter.attr('placeholder', 'ID projet ou reception')
+            $filter.attr('placeholder', 'ID reception, projet ou montant')
         })
-        dt.on('draw', function() {
+        dt.on('draw', function () {
             $('.table-action').tooltip({
                 position: {my: 'left top', at: 'right top'},
                 content: function () {
@@ -78,7 +86,7 @@
                 }
             })
         })
-        $(document).on('click', '.table-action', function(){
+        $(document).on('click', '.table-action', function () {
             var $modal
             if ($(this).is('.add-comment') || $(this).is('.modify-comment')) {
                 $modal = $('#modal-comment')
@@ -96,7 +104,7 @@
                 $modal = $('#modal-line')
                 $modal.find('.line').html($(this).data('line'))
             }
-            $.colorbox({html:$modal.html(), width: '50%'})
+            $.colorbox({html: $modal.html(), width: '50%'})
         })
 
         $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
@@ -132,6 +140,30 @@
                 $form.find('[name=comment]').css('border-color', 'red')
             }
         })
+
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']))
+
+        $('#datepik_from').datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            maxDate: '0'
+        }).change(function () {
+            dt.draw()
+        })
+
+        $('#datepik_to').datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            maxDate: '0'
+        }).change(function () {
+            dt.draw()
+        })
     })
 </script>
 
@@ -144,6 +176,20 @@
             <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn-primary pull-right">Export CSV</a>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="datepik_from">Date début</label>
+                <input type="text" name="date_from" id="datepik_from" class="form-control input-sm">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="datepik_to">Date fin</label>
+                <input type="text" name="date_to" id="datepik_to" class="form-control input-sm">
+            </div>
+        </div>
+    </div>
     <table id="receptions-table" class="table table-bordered table-striped">
         <thead>
         <tr>
@@ -151,22 +197,12 @@
             <th>Motif</th>
             <th style="width:150px">Montant</th>
             <th style="width:150px">Attribution</th>
+            <th style="width:100px">ID Client</th>
             <th style="width:100px">ID projet</th>
             <th style="width:100px">Date</th>
             <th style="width:100px">&nbsp;</th>
         </tr>
         </thead>
-        <tfoot>
-        <tr>
-            <th style="width:50px">ID</th>
-            <th>Motif</th>
-            <th style="width:150px">Montant</th>
-            <th style="width:150px">Attribution</th>
-            <th style="width:100px">ID projet</th>
-            <th style="width:100px">Date</th>
-            <th style="width:100px">&nbsp;</th>
-        </tr>
-        </tfoot>
     </table>
     <div class="hidden">
         <div id="modal-line" style="padding: 10px; min-width: 500px;">
