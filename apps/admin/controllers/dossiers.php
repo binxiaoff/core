@@ -161,9 +161,6 @@ class dossiersController extends bootstrap
 
             $this->aBorrowingMotives = $borrowingMotive->select('rank');
 
-            $this->settings->get('Cabinet de recouvrement', 'type');
-            $this->cab = $this->settings->value;
-
             /** @var \tax_type $taxType */
             $taxType = $this->loadData('tax_type');
 
