@@ -12,6 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Ifu
 {
+    const STATUS_ACTIVE = 1;
+
     /**
      * @var integer
      *

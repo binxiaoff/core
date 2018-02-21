@@ -517,7 +517,7 @@ class ajaxController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
-        $bidManger = $this->get('unilend.serbvice.bid_manager');
+        $bidManger = $this->get('unilend.service.bid_manager');
 
         if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);

@@ -274,19 +274,19 @@ class MailTemplateManager
     }
 
     /**
-     * @param array $mailTemplates
-     *
      * @return array
      */
-    public function getMailTemplateUsage(array $mailTemplates)
+    public function getMailTemplateUsage()
     {
         $mailQueueRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailQueue');
-        $mailTemplatesUsage  = [];
+        $formattedMailTemplatesUsage  = [];
 
-        foreach ($mailTemplates as $mailTemplate) {
-            $mailTemplatesUsage[$mailTemplate->getType()] = $mailQueueRepository->getMailTemplateSendFrequency($mailTemplate->getType());
+        $mailTemplateUsage = $mailQueueRepository->getMailTemplateSendFrequency();
+
+        foreach ($mailTemplateUsage as $usage) {
+            $formattedMailTemplatesUsage[$usage['id_mail_template']] = $usage;
         }
 
-        return $mailTemplatesUsage;
+        return $formattedMailTemplatesUsage;
     }
 }

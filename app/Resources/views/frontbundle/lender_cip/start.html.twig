@@ -23,7 +23,7 @@
                 <div class="panel">
                     <p>{% trans with {'%firstname%' : app.user.firstname} %} lender-evaluation_risk-introduction-text-questionnaire-start {% endtrans %}</p>
                     <div class="row text-align-center">
-                        <a href="{{ path('cip_start_questionnaire') }}?start" class="btn-primary">
+                        <a href="{{ path('cip_start_questionnaire') }}/start" class="btn-primary">
                             <span class="label">{% trans %} lender-evaluation_questionnaire-start-button {% endtrans %}</span>
                         </a>
                     </div>

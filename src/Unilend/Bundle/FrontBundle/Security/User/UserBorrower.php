@@ -15,7 +15,7 @@ class UserBorrower extends BaseUser
 
     /**
      * @param string         $username
-     * @param string         $password
+     * @param string|null    $password
      * @param string         $email
      * @param string         $salt
      * @param array          $roles
@@ -30,7 +30,7 @@ class UserBorrower extends BaseUser
      */
     public function __construct(
         string $username,
-        string $password,
+        ?string $password,
         string $email,
         string $salt,
         array $roles,

@@ -2,10 +2,8 @@
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ {
-    AttachmentType, Bids, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType,
-    Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface,
-    Virements, Wallet, WalletType, Zones
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Bids, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -215,7 +213,6 @@ class transfertsController extends bootstrap
                         ->setIdProject($project)
                         ->setIdClient($project->getIdCompany()->getIdClientOwner())
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
-                        ->setRemb(1)
                         ->setIdUser($user)
                         ->setAssignmentDate(new \DateTime());
                     $operationManager->provisionBorrowerWallet($reception);
@@ -424,7 +421,6 @@ class transfertsController extends bootstrap
                 $reception
                     ->setIdClient($wallet->getIdClient())
                     ->setStatusBo(Receptions::STATUS_ASSIGNED_MANUAL)
-                    ->setRemb(1)
                     ->setIdUser($user)
                     ->setAssignmentDate(new \DateTime());
                 $entityManager->flush();
@@ -485,32 +481,6 @@ class transfertsController extends bootstrap
                     }
 
                     echo $reception->getIdClient()->getIdClient();
-                }
-            }
-        }
-    }
-
-    public function _annuler_attribution_preteur()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        if (isset($_POST['id_reception'])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var Receptions $reception */
-            $reception = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->find($_POST['id_reception']);
-            if ($reception) {
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($reception->getIdClient()->getIdClient(), WalletType::LENDER);
-                $amount = round(bcdiv($reception->getMontant(), 100, 4), 2);
-                if ($wallet) {
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
-                    $operationManager = $this->get('unilend.service.operation_manager');
-                    $operationManager->cancelProvisionLenderWallet($wallet, $amount, $reception);
-                    $reception->setIdClient(null)
-                        ->setStatusBo(Receptions::STATUS_PENDING)
-                        ->setRemb(0); // todo: delete the field
-                    $entityManager->flush();
                 }
             }
         }

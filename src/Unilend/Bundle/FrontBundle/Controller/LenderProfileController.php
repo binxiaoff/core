@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, Companies, GreenpointAttachment, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
@@ -480,15 +480,15 @@ class LenderProfileController extends Controller
         }
 
         /** @var \ifu $ifu */
-        $ifu          = $this->get('unilend.service.entity_manager')->getRepository('ifu');
-        $templateData = [
+        $ifuRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Ifu');
+        $templateData  = [
             'client'      => $clientEntity,
             'bankAccount' => $bankAccount,
             'isCIPActive' => $this->isCIPActive(),
             'bankForm'    => $form->createView(),
-            'lender' => [
+            'lender'      => [
                 'fiscal_info' => [
-                    'documents'   => $ifu->select('id_client =' . $client->id_client . ' AND statut = 1', 'annee ASC'),
+                    'documents'   => $ifuRepository->findBy(['idClient' => $client->id_client, 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
                     'rib'         => $bankAccount->getAttachment(),
                     'fundsOrigin' => $this->getFundsOrigin($clientEntity->getType())
@@ -496,25 +496,23 @@ class LenderProfileController extends Controller
             ]
         ];
 
-        if ($clientEntity->isNaturalPerson()) {
-            /** @var \clients_adresses $clientAddress */
-            $clientAddress = $this->getClientAddress();
-            /** @var \tax_type $taxType */
-            $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
-            $taxType->get(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
-            $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
-            $templateData['currentYear']                  = date('Y');
-            $templateData['lastYear']                     = $templateData['currentYear'] - 1;
-            $templateData['nextYear']                     = $templateData['currentYear'] + 1;
-            $taxExemptionDateRange                        = $this->getTaxExemptionDateRange();
-            $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
-            $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
-            $taxExemptionHistory                          = $this->getExemptionHistory($wallet);
-            $templateData['exemptions']                   = $taxExemptionHistory;
-            $isEligible                                   = $this->getTaxExemptionEligibility($wallet);
-            $templateData['taxExemptionEligibility']      = $isEligible;
-            $templateData['declarationIsPossible']        = $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible);
-        }
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->getClientAddress();
+        /** @var \tax_type $taxType */
+        $taxType = $this->get('unilend.service.entity_manager')->getRepository('tax_type');
+        $taxType->get(TaxType::TYPE_STATUTORY_CONTRIBUTIONS);
+        $templateData['clientAddress']                = $clientAddress->select('id_client = ' . $client->id_client)[0];
+        $templateData['currentYear']                  = date('Y');
+        $templateData['lastYear']                     = $templateData['currentYear'] - 1;
+        $templateData['nextYear']                     = $templateData['currentYear'] + 1;
+        $taxExemptionDateRange                        = $this->getTaxExemptionDateRange();
+        $templateData['taxExemptionRequestLimitDate'] = strftime('%d %B %Y', $taxExemptionDateRange['taxExemptionRequestLimitDate']->getTimestamp());
+        $templateData['rateOfTaxDeductionAtSource']   = $taxType->rate;
+        $taxExemptionHistory                          = $this->getExemptionHistory($wallet);
+        $templateData['exemptions']                   = $taxExemptionHistory;
+        $isEligible                                   = $this->getTaxExemptionEligibility($wallet);
+        $templateData['taxExemptionEligibility']      = $isEligible;
+        $templateData['declarationIsPossible']        = $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible);
 
         return $this->render('lender_profile/fiscal_information.html.twig', $templateData);
     }
