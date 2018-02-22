@@ -60,12 +60,18 @@ class StatisticsManager
     }
 
     /**
-     * @param string $name
+     * @param           $name
      * @param \DateTime $date
+     *
      * @return mixed
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getStatistic($name, \DateTime $date)
     {
+        if ($name === 'incidenceRate') {
+            return $this->getIncidenceRateAtDate($date);
+        }
+
         $statistics = $this->getStatisticsAtDate($date);
 
         return $statistics[lcfirst($name)];
@@ -73,7 +79,9 @@ class StatisticsManager
 
     /**
      * @param \DateTime $date
-     * @return mixed|null
+     *
+     * @return mixed
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getStatisticsAtDate(\DateTime $date)
     {
@@ -97,15 +105,17 @@ class StatisticsManager
         }
     }
 
-    public function calculateStatistics()
+    /**
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function calculateStatistics(): array
     {
         /** @var \projects $projects */
         $projects = $this->entityManagerSimulator->getRepository('projects');
         /** @var \loans $loans */
-        $loans = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \DateTime $startDate voluntarily on last 6 Months except for average funding time which is on 4 month */
-        $startDate = new \DateTime('NOW - 6 MONTHS');
-
+        $loans            = $this->entityManagerSimulator->getRepository('loans');
+        $startDate        = new \DateTime('NOW - 6 MONTHS');
         $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
         $statistics = [
@@ -130,7 +140,6 @@ class StatisticsManager
         $statistics['percentageOfAcceptedProjects']        = $this->getPercentageOfAcceptedProjects($statistics['numberOfProjectRequests']);
         $statistics['percentageOfProjectsFundedIn24Hours'] = $this->getPercentageOfProjectsFundedIn24Hours($startDate);
         $statistics['regulatoryData']                      = $this->calculateRegulatoryData();
-        $statistics['incidenceRate']                       = $this->calculateIncidenceRateOnIFPContracts();
         $statistics['amountBorrowed']                      = $statistics['regulatoryData']['borrowed-capital']['total'];
         $statistics['amountBorrowedInMillions']            = round(bcdiv($statistics['amountBorrowed'], 1000000, 2), 1);
         $statistics['totalRepaidCapital']                  = $statistics['regulatoryData']['repaid-capital']['total'];
@@ -155,7 +164,10 @@ class StatisticsManager
         return $percentageOfAcceptedProjects;
     }
 
-    private function getLendersByType()
+    /**
+     * @return array
+     */
+    private function getLendersByType(): array
     {
         /** @var ClientsRepository $clientRepository */
         $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
@@ -182,6 +194,7 @@ class StatisticsManager
 
     /**
      * @param \DateTime $startDate
+     *
      * @return int|string
      */
     private function getPercentageOfProjectsFundedIn24Hours(\DateTime $startDate)
@@ -195,7 +208,10 @@ class StatisticsManager
         return $percentageFunded24h;
     }
 
-    private function getSecondsForBid()
+    /**
+     * @return string
+     */
+    private function getSecondsForBid(): string
     {
         /** @var \bids $bids */
         $bids               = $this->entityManagerSimulator->getRepository('bids');
@@ -206,7 +222,11 @@ class StatisticsManager
         return $secondsForBid;
     }
 
-    private function calculateRegulatoryData()
+    /**
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function calculateRegulatoryData(): array
     {
         $years = array_merge(['2013-2014'], range(2015, date('Y')));
 
@@ -290,7 +310,13 @@ class StatisticsManager
         return $data;
     }
 
-    private function formatCohortQueryResult($datas, $years)
+    /**
+     * @param array $datas
+     * @param array $years
+     *
+     * @return array
+     */
+    private function formatCohortQueryResult(array $datas, array $years): array
     {
         $dataByCohort = [];
 
@@ -334,7 +360,10 @@ class StatisticsManager
         return $data;
     }
 
-    private function calculateIncidenceRateOnIFPContracts()
+    /**
+     * @return mixed
+     */
+    public function calculateIncidenceRate()
     {
         /** @var \echeanciers $paymentSchedule */
         $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
@@ -360,8 +389,10 @@ class StatisticsManager
      * @param \DateTime $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function calculatePerformanceIndicators(\DateTime $date)
+    public function calculatePerformanceIndicators(\DateTime $date): array
     {
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
@@ -490,7 +521,8 @@ class StatisticsManager
     /**
      * @param \DateTime $date
      *
-     * @return mixed|null
+     * @return mixed
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function getPerformanceIndicatorAtDate(\DateTime $date)
     {
@@ -517,7 +549,7 @@ class StatisticsManager
     /**
      * @return array
      */
-    public function getAvailableDatesForFPFStatistics()
+    public function getAvailableDatesForFPFStatistics(): array
     {
         $availableDates = [];
 
@@ -526,5 +558,34 @@ class StatisticsManager
         }
 
         return $availableDates;
+    }
+
+    /**
+     * @param \DateTime $date
+     *
+     * @return array
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function getIncidenceRateAtDate(\DateTime $date): array
+    {
+        $today    = new \DateTime('NOW');
+        $cacheKey = $date->format('Y-m-d') == $today->format('Y-m-d') ? CacheKeys::UNILEND_INCIDENCE_RATE : CacheKeys::UNILEND_INCIDENCE_RATE . '_' . $date->format('Y-m-d');
+
+        $cachedItem = $this->cachePool->getItem($cacheKey);
+        if (false === $cachedItem->isHit()) {
+            if ($date->format('Y-m-d') == $today->format('Y-m-d')) {
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findOneBy(['typeStat' => UnilendStats::TYPE_INCIDENCE_RATE], ['added' => 'DESC']);
+            } else {
+                $statsEntry = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getStatisticAtDate($date, UnilendStats::TYPE_INCIDENCE_RATE);
+            }
+            $statistics = json_decode($statsEntry->getValue(), true);
+            $cachedItem->set($statistics)->expiresAfter(CacheKeys::DAY);
+            $this->cachePool->save($cachedItem);
+
+            return $statistics;
+        } else {
+            return $cachedItem->get();
+        }
+
     }
 }

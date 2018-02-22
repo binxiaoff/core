@@ -17,6 +17,7 @@ class UnilendStats
     const TYPE_STAT_MAX_IRR         = 'max_IRR';
     const TYPE_STAT_FRONT_STATISTIC = 'unilend_front_statistics';
     const TYPE_FPF_FRONT_STATISTIC  = 'fpf_front_statistic';
+    const TYPE_INCIDENCE_RATE       = 'incidence_rate';
 
     const DAYS_AFTER_LAST_PROBLEM_STATUS_FOR_STATISTIC_LOSS = 180;
 
