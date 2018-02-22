@@ -25,6 +25,8 @@ class StatisticsManager
      */
     const START_FRONT_STATISTICS_HISTORY = '2016-11-17';
     const START_FPF_STATISTIC_HISTORY    = '2017-10-30';
+    const START_INCIDENCE_RATE_IFP       = '2015-12-31';
+    const START_INCIDENCE_RATE_CIP       = '2016-11-30';
 
     /** Constants to make method calls more readable */
     const GROUP_FIRST_YEAR_COHORT = false;

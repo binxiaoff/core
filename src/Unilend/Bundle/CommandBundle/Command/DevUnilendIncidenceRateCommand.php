@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
 {
@@ -31,6 +32,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         foreach ($unilendStatistics as $statistic) {
             $this->separateIncidenceRateFromUnilendFrontStatistic($statistic);
         }
+
+        $this->createMissingIncidenceRateData();
     }
 
     /**
@@ -56,5 +59,35 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
 
         $entityManager->persist($incidenceRateStat);
         $entityManager->flush($incidenceRateStat);
+    }
+
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createMissingIncidenceRateData()
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $startIFP      = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_IFP);
+        $end           = new \DateTime(StatisticsManager::START_FRONT_STATISTICS_HISTORY);
+        $interval      = \DateInterval::createFromDateString('1 day');
+        $period        = new \DatePeriod($startIFP, $interval, $end);
+
+        $incidenceRate = [
+            'amountIFP'   => 0,
+            'projectsIFP' => 0,
+            'ratioIFP'    => 0
+        ];
+
+        foreach ($period as $day) {
+            $incidenceRateStat = new UnilendStats();
+            $incidenceRateStat
+                ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
+                ->setValue(json_encode($incidenceRate))
+                ->setAdded($day)
+                ->setUpdated(new \DateTime('NOW'));
+
+            $entityManager->persist($incidenceRateStat);
+            $entityManager->flush($incidenceRateStat);
+        }
     }
 }
