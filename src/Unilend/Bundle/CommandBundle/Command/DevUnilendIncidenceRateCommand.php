@@ -74,8 +74,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
 
         $incidenceRate = [
             'amountIFP'   => 0,
-            'projectsIFP' => 0,
-            'ratioIFP'    => 0
+            'projectsIFP' => 0
         ];
 
         foreach ($period as $day) {

@@ -5,8 +5,6 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class UnilendStatisticsCommand extends ContainerAwareCommand
 {
@@ -30,9 +28,16 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         try {
-            $this->saveFrontStatistics();
-            $this->savePerformanceIndicators();
-            $this->saveIncidenceRate();
+            $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
+
+            $statisticsManager->saveFrontStatistics();
+            $statisticsManager->savePerformanceIndicators();
+            $statisticsManager->saveIncidenceRate();
+
+            if ($this->isEndOfTrimester()) {
+                $statisticsManager->saveTrimesterIncidenceRate();
+            }
+
         } catch (\Exception $exception) {
             $this->getContainer()->get('logger')->error('Could not calculate unilend statistics. Exception: ' . $exception->getMessage(), [
                 'exceptionFile' => $exception->getFile(),
@@ -43,60 +48,15 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
         }
     }
 
-    /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function saveFrontStatistics(): void
-    {
-        /** @var StatisticsManager $statisticsManager */
-        $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
-        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
 
-        $statistics = $statisticsManager->calculateStatistics();
-        $frontStats = new UnilendStats();
-        $frontStats
-            ->setTypeStat(UnilendStats::TYPE_STAT_FRONT_STATISTIC)
-            ->setValue(json_encode($statistics));
-
-        $entityManager->persist($frontStats);
-        $entityManager->flush($frontStats);
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\DBALException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Psr\Cache\InvalidArgumentException
-     */
-    private function savePerformanceIndicators(): void
+    private function isEndOfTrimester()
     {
         $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
-        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $today             = new \DateTime('NOW');
+        $trimesterEnd      = $statisticsManager->getTrimesterFromDate($today);
+        $today->setTime(0, 0, 0);
+        $trimesterEnd->setTime(0, 0, 0);
 
-        $fpfStatistics = $statisticsManager->calculatePerformanceIndicators(new \DateTime('NOW'));
-        $fpfStats      = new UnilendStats();
-        $fpfStats
-            ->setTypeStat(UnilendStats::TYPE_FPF_FRONT_STATISTIC)
-            ->setValue(json_encode($fpfStatistics));
-
-        $entityManager->persist($fpfStats);
-        $entityManager->flush($fpfStats);
-    }
-
-    /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function saveIncidenceRate(): void
-    {
-        $statisticsManager = $this->getContainer()->get('unilend.service.statistics_manager');
-        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
-
-        $incidenceRate      = $statisticsManager->calculateIncidenceRate();
-        $incidenceRateStats = new UnilendStats();
-        $incidenceRateStats
-            ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
-            ->setValue(json_encode($incidenceRate));
-
-        $entityManager->persist($incidenceRateStats);
-        $entityManager->flush($incidenceRateStats);
+        return $today === $trimesterEnd;
     }
 }

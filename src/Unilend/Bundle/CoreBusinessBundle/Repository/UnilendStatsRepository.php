@@ -419,8 +419,9 @@ class UnilendStatsRepository extends EntityRepository
      * @param $typeStat
      *
      * @return null|UnilendStats
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getStatisticAtDate(\DateTime $date, $typeStat)
+    public function findStatisticAtDate(\DateTime $date, string $typeStat): ?UnilendStats
     {
         $qb = $this->createQueryBuilder('us');
         $qb->where('DATE(us.added) = :date')
