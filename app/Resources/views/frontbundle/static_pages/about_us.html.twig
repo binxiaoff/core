@@ -21,78 +21,24 @@
 <section id="section-team">
     <div class="mosaic">
         <div class="site-wrap">
+            {# First row #}
+            {# Blank space md/lg #}
             <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
 
+            {# Text #}
             <header class="mosaic-header bg-p2">
-                <h2 class="mosaic-item-title c-white">{% trans %} about-us-people_team-section-title {% endtrans %}</h2>
+                <h2 class="mosaic-item-title c-white">
+                    {% trans %} about-us-people_team-section-title {% endtrans %}
+                </h2>
             </header>
 
+            {# Blank space sm #}
             <div class="mosaic-spacer show-sm">&nbsp;</div>
 
-            {#Sabine#}
-            <article class="mosaic-item">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/sabine-fillias-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/sabine-fillias-800x800.jpg') }}" alt=""/>
-                </div><!-- /.mosaic-image -->
-                <div class="mosaic-item-info">
-                    <div class="mosaic-item-info-inner">
-                        <div class="mosaic-item-links">
-                            <ul class="list-sociallinks">
-                                {% if 'about-us-people_deputy-managing-director-linkedin-link'|trans|trim is not empty %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_deputy-managing-director-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                    </li>
-                                {% endif %}
-                                {% if 'about-us-people_deputy-managing-director-twitter-link'|trans|trim is not empty %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_deputy-managing-director-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                    </li>
-                                {% endif %}
-                            </ul><!-- /.list-sociallinks -->
-                        </div><!-- /.mosaic-item-links -->
-                        <h3 class="mosaic-item-title">{% trans %} about-us-people_deputy-managing-director-name {% endtrans %}</h3>
-                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_deputy-managing-director-title {% endtrans %}</h4>
-                        <div class="mosaic-item-details">
-                            <p>{% trans %} about-us-people_deputy-managing-director-description {% endtrans %}</p>
-                        </div><!-- /.mosaic-item-details -->
-                    </div><!-- mosaic-item-info-inner -->
-                </div><!-- /.mosaic-item-info -->
-            </article><!-- /.mosaic-item -->
-            {#Nicolas#}
-            <article class="mosaic-item mosaic-item-double-height mosaic-item-float-right">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}" alt=""/>
-                </div><!-- /.mosaic-image -->
-                <div class="mosaic-item-info">
-                    <div class="mosaic-item-info-inner">
-                        <div class="mosaic-item-links">
-                            <ul class="list-sociallinks">
-                                {% if 'about-us-people_managing-director-linkedin-link'|trans|trim is not empty %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_managing-director-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                    </li>
-                                {% endif %}
-                                {% if 'about-us-people_managing-director-twitter-link'|trans|trim is not empty %}
-                                    <li>
-                                        <a href="{% trans %} about-us-people_managing-director-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                    </li>
-                                {% endif %}
-                            </ul><!-- /.list-sociallinks -->
-                        </div><!-- /.mosaic-item-links -->
-                        <h3 class="mosaic-item-title">{% trans %} about-us-people_managing-director-name {% endtrans %}</h3>
-                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_managing-director-title {% endtrans %}</h4>
-                        <div class="mosaic-item-details">
-                            <p>{% trans %} about-us-people_managing-director-description {% endtrans %}</p>
-                        </div><!-- /.mosaic-item-details -->
-                    </div><!-- mosaic-item-info-inner -->
-                </div><!-- /.mosaic-item-info -->
-            </article><!-- /.mosaic-item -->
-            {#David#}
+            {# David #}
             <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/david-raux-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/david-raux-800x800.jpg') }}" alt=""/>
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/david-raux-800x800.jpg') }}" alt="David Raux">
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
@@ -101,13 +47,15 @@
                                 {% if 'about-us-people_cto-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_cto-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                                 {% if 'about-us-people_cto-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_cto-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
@@ -120,10 +68,44 @@
                     </div>
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-            {#Alain#}
+
+            {# Nicolas #}
+            <article class="mosaic-item mosaic-item-double-height mosaic-item-float-right">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/nicolas-lesur-800x800.jpg') }}" alt="Nicolas Lesur">
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_managing-director-linkedin-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_managing-director-linkedin-link {% endtrans %}"><span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_managing-director-twitter-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_managing-director-twitter-link {% endtrans %}"><span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_managing-director-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_managing-director-title {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_managing-director-description {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
+
+            {# Second row #}
+            {# Alain #}
             <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}" alt=""/>
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/alain-elkaim-800x800.jpg') }}" alt="Alain Elkaim">
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
@@ -132,13 +114,15 @@
                                 {% if 'about-us-people_director-risk-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-risk-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                                 {% if 'about-us-people_director-risk-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-risk-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
@@ -152,16 +136,10 @@
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
 
-            <article class="mosaic-header bg-p2">
-                <p class="mosaic-item-details c-white">
-                    {% trans %} about-us-people_quote-text {% endtrans %}
-                </p>
-            </article>
-
-            {#Arnaud#}
+            {# Arnaud #}
             <article class="mosaic-item">
                 <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/arnaud-schwartz-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/arnaud-schwartz-800x800.jpg') }}" alt=""/>
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/arnaud-schwartz-800x800.jpg') }}" alt="Arnaud Schwartz">
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
@@ -170,13 +148,15 @@
                                 {% if 'about-us-people_director-sales-linkedin-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-sales-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                                 {% if 'about-us-people_director-sales-twitter-link'|trans|trim is not empty %}
                                     <li>
                                         <a href="{% trans %} about-us-people_director-sales-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
@@ -189,279 +169,227 @@
                     </div><!-- mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-            {#Emmanuel#}
+
+            {# Text #}
+            <article class="mosaic-header bg-p2 hide-xs">
+                <p class="mosaic-item-details c-white">
+                    {% trans %} about-us-people_quote-text {% endtrans %}
+                </p>
+            </article>
+
+            {# Text #}
+            <header class="mosaic-header bg-p2">
+                <h2 class="mosaic-item-title c-white">
+                    {% trans %} about-us-people_strategy-committee-section-title {% endtrans %}
+                </h2>
+            </header>
+
+            {# Ventech (Jean Bourcerau) #}
             <article class="mosaic-item">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/emmanuel-perez-duarte-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/emmanuel-perez-duarte-800x800.jpg') }}" alt=""/>
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/jean-bourcereau-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/jean-bourcereau-300x300.jpg') }}" alt="Jean Bourcereau">
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-administration-linkedin-link'|trans|trim is not empty %}
+                                {% if 'about-us-people_ventech-linkedin-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_director-administration-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                        <a href="{% trans %} about-us-people_ventech-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-administration-twitter-link'|trans|trim is not empty %}
+                                {% if 'about-us-people_ventech-twitter-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_director-administration-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                        <a href="{% trans %} about-us-people_ventech-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
                         </div><!-- /.mosaic-item-links -->
-                        <h3 class="mosaic-item-title">{% trans %} about-us-people_director-administration-name {% endtrans %}</h3>
-                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_director-administration-title {% endtrans %}</h4>
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_ventech-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_ventech-role {% endtrans %}</h4>
                         <div class="mosaic-item-details">
-                            <p>{% trans %} about-us-people_director-administration-description {% endtrans %}</p>
+                            <p>{% trans %} about-us-people_ventech-details {% endtrans %}</p>
                         </div><!-- /.mosaic-item-details -->
-                    </div><!-- /.mosaic-item-info-inner -->
+                    </div><!-- mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
-            {#Damien#}
+
+            {# 360CP (Emmanuel Levi) #}
             <article class="mosaic-item">
-                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/team/damien-duchene-800x800.jpg') }}');">
-                    <img src="{{ siteurlmedia('apropos/quisommesnous/team/damien-duchene-800x800.jpg') }}" alt=""/>
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}" alt="Emmanuel Lévi">
                 </div><!-- /.mosaic-image -->
                 <div class="mosaic-item-info">
                     <div class="mosaic-item-info-inner">
                         <div class="mosaic-item-links">
                             <ul class="list-sociallinks">
-                                {% if 'about-us-people_director-marketing-linkedin-link'|trans|trim is not empty %}
+                                {% if 'about-us-people_360cp-linkedin-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_director-marketing-linkedin-link {% endtrans %}">
-                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
+                                        <a href="{% trans %} about-us-people_360cp-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
                                     </li>
                                 {% endif %}
-                                {% if 'about-us-people_director-marketing-twitter-link'|trans|trim is not empty %}
+                                {% if 'about-us-people_360cp-twitter-link'|trans|trim is not empty %}
                                     <li>
-                                        <a href="{% trans %} about-us-people_director-marketing-twitter-link {% endtrans %}">
-                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
+                                        <a href="{% trans %} about-us-people_360cp-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
                                     </li>
                                 {% endif %}
                             </ul><!-- /.list-sociallinks -->
                         </div><!-- /.mosaic-item-links -->
-                        <h3 class="mosaic-item-title">{% trans %} about-us-people_director-marketing-name {% endtrans %}</h3>
-                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_director-marketing-title {% endtrans %}</h4>
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_360cp-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_360cp-role {% endtrans %}</h4>
                         <div class="mosaic-item-details">
-                            <p>{% trans %} about-us-people_director-marketing-description {% endtrans %}</p>
+                            <p>{% trans %} about-us-people_360cp-details {% endtrans %}</p>
                         </div><!-- /.mosaic-item-details -->
-                    </div><!-- /.mosaic-item-info-inner -->
+                    </div><!-- mosaic-item-info-inner -->
                 </div><!-- /.mosaic-item-info -->
             </article><!-- /.mosaic-item -->
 
-            <div class="mosaic-spacer show-md show-lg">&nbsp;</div>
+            {# BPI (Xavier Deleplace) #}
+            <article class="mosaic-item">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-deleplace-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-deleplace-300x300.jpg') }}" alt="Xavier Deleplace">
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_bpi-linkedin-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_bpi-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_bpi-twitter-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_bpi-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_bpi-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_bpi-role {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_bpi-details {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
 
+            {# NewAlpha (Lior Derhy) #}
+            <article class="mosaic-item">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/lior-derhy-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/lior-derhy-300x300.jpg') }}" alt="Lior Derhy">
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_new-alpha-linkedin-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_new-alpha-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_new-alpha-twitter-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_new-alpha-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_new-alpha-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_new-alpha-role {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_new-alpha-details {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
+
+            {# François Prioux #}
+            <article class="mosaic-item">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}" alt="François Prioux">
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_fprioux-linkedin-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_fprioux-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_fprioux-twitter-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_fprioux-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_fprioux-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_fprioux-role {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_fprioux-details {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
+
+            {# Pierre-Henri Cassou #}
+            <article class="mosaic-item">
+                <div class="mosaic-item-image" style="background-image: url('{{ siteurlmedia('apropos/quisommesnous/strategy/pierre-henri-cassou-300x300.jpg') }}');">
+                    <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/pierre-henri-cassou-300x300.jpg') }}" alt="Pierre-Henri Cassou">
+                </div><!-- /.mosaic-image -->
+                <div class="mosaic-item-info">
+                    <div class="mosaic-item-info-inner">
+                        <div class="mosaic-item-links">
+                            <ul class="list-sociallinks">
+                                {% if 'about-us-people_phcassou-linkedin-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_phcassou-linkedin-link {% endtrans %}">
+                                            <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% if 'about-us-people_phcassou-twitter-link'|trans|trim is not empty %}
+                                    <li>
+                                        <a href="{% trans %} about-us-people_phcassou-twitter-link {% endtrans %}">
+                                            <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul><!-- /.list-sociallinks -->
+                        </div><!-- /.mosaic-item-links -->
+                        <h3 class="mosaic-item-title">{% trans %} about-us-people_phcassou-name {% endtrans %}</h3>
+                        <h4 class="mosaic-item-subtitle">{% trans %} about-us-people_phcassou-role {% endtrans %}</h4>
+                        <div class="mosaic-item-details">
+                            <p>{% trans %} about-us-people_phcassou-details {% endtrans %}</p>
+                        </div><!-- /.mosaic-item-details -->
+                    </div><!-- mosaic-item-info-inner -->
+                </div><!-- /.mosaic-item-info -->
+            </article><!-- /.mosaic-item -->
         </div><!-- /.site-wrap -->
     </div><!-- /.mosaic -->
 </section>
-
-<section id="section-strategy" class="page-section block-no-top-spacing-md block-no-top-spacing-lg">
-    <div class="site-wrap">
-        <div class="row">
-            <div class="col-lg-6 col-md-6">
-                <header class="block-header">
-                    <h1 class="h4">{% trans %} about-us-people_strategy-committee-section-title {% endtrans %}</h1>
-                </header>
-            </div>
-            <div class="col-lg-6 col-md-6">
-                <div class="block-people block-no-bottom-spacing">
-                    <div class="row">
-                        {#Ventech (Jean Bourcerau) #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/jean-bourcereau-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_ventech-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_ventech-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_ventech-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_ventech-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_ventech-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_ventech-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_ventech-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                        {#360CP (Emmanuel Levi) #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/emmanuel-levi-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_360cp-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_360cp-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_360cp-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_360cp-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_360cp-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_360cp-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_360cp-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                        {#BPI (Xavier Delaplace) #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/xavier-delaplace-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_bpi-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_bpi-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_bpi-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_bpi-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_bpi-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_bpi-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_bpi-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                        {#NewAlpha (Lior Derhy) #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                {#<img src="" alt=""/>#}
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/lior-derhy-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_new-alpha-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_new-alpha-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_new-alpha-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_new-alpha-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_new-alpha-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_new-alpha-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_new-alpha-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                        {#François Prioux #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/francois-prioux-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_fprioux-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_fprioux-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_fprioux-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_fprioux-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="strategy-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_fprioux-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_fprioux-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_fprioux-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                        {#Pierre-Henri Cassou #}
-                        <article class="person col-lg-4 col-md-4 col-sm-4" data-equal-height="sm md lg" data-equal-height-group="strategy">
-                            <div class="person-image">
-                                <img src="{{ siteurlmedia('apropos/quisommesnous/strategy/pierre-henri-cassou-300x300.jpg') }}" alt=""/>
-                                <div class="person-links">
-                                    <ul class="list-sociallinks">
-                                        {% if 'about-us-people_phcassou-linkedin-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_phcassou-linkedin-link {% endtrans %}">
-                                                    <span class="icon fa-linkedin"></span><span class="sr-only">LinkedIn</span></a>
-                                            </li>
-                                        {% endif %}
-                                        {% if 'about-us-people_phcassou-twitter-link'|trans|trim is not empty %}
-                                            <li>
-                                                <a href="{% trans %} about-us-people_phcassou-twitter-link {% endtrans %}">
-                                                    <span class="icon fa-twitter"></span><span class="sr-only">Twitter</span></a>
-                                            </li>
-                                        {% endif %}
-                                    </ul><!-- /.list-sociallinks -->
-                                </div><!-- /.person-links -->
-                            </div><!-- /.person-image -->
-                            <div class="person-info">
-                                <header class="person-header" data-equal-height data-equal-height-group="direction-header">
-                                    <h3 class="person-name">{% trans %} about-us-people_phcassou-name {% endtrans %}</h3>
-                                    <h4 class="person-role">{% trans %} about-us-people_phcassou-role {% endtrans %}</h4>
-                                </header>
-                                <div class="person-details">
-                                    <p>{% trans %} about-us-people_phcassou-details {% endtrans %}</p>
-                                </div>
-                            </div><!-- /.person-info -->
-                        </article><!-- /.person -->
-                    </div>
-                </div><!-- /.block-people -->
-            </div>
-        </div>
-    </div><!-- /.site-wrap -->
-</section><!-- /.page-section -->
 
 <section id="section-stats" class="bg-bg3 page-section">
     <div class="site-wrap">
