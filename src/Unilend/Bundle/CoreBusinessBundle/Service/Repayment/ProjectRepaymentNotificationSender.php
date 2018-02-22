@@ -83,36 +83,6 @@ class ProjectRepaymentNotificationSender
     /**
      * @param Echeanciers $repaymentSchedule
      */
-    public function sendDebtCollectionRepaymentMailToLender(Echeanciers $repaymentSchedule)
-    {
-        $lenderWallet  = $repaymentSchedule->getIdLoan()->getIdLender();
-        $lender        = $lenderWallet->getIdClient();
-        $debtCollector = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Cabinet de recouvrement'])->getValue();
-
-        $keywords = [
-            'firstName'     => $lender->getPrenom(),
-            'debtCollector' => $debtCollector,
-            'companyName'   => $repaymentSchedule->getIdLoan()->getProject()->getIdCompany()->getName(),
-            'lenderPattern' => $lenderWallet->getWireTransferPattern()
-        ];
-
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('preteur-dossier-recouvre', $keywords);
-
-        try {
-            $message->setTo($lender->getEmail());
-            $this->mailer->send($message);
-        } catch (\Exception $exception) {
-            $this->logger->warning(
-                'Could not send email: preteur-dossier-recouvre - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $lender->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
-        }
-    }
-
-    /**
-     * @param Echeanciers $repaymentSchedule
-     */
     public function sendRegularisationRepaymentMailToLender(Echeanciers $repaymentSchedule)
     {
         $lenderWallet   = $repaymentSchedule->getIdLoan()->getIdLender();
