@@ -944,17 +944,26 @@ class dossiersController extends bootstrap
         // This will be displayed on lender loans notifications table
         if (false === empty($_POST['site_content'])) {
             $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $firstNotRepaidRepaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
+                'idProject' => $project,
+                'status'    => [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]
+            ], ['ordre' => 'ASC']);
+
+            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            $translator = $this->get('translator');
+            $subject = $translator->trans('lender-notifications_later-repayment-title');
+            if (null !== $firstNotRepaidRepaymentSchedule && $firstNotRepaidRepaymentSchedule->getDateEcheance() < new DateTime()) {
+                $subject = $translator->trans('lender-notifications_later-repayment-with-repayment-schedule-title', ['%scheduleSequence%' => $firstNotRepaidRepaymentSchedule->getOrdre()]);
+            }
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)
-                ->setSubject('Remboursement en retard')
+                ->setSubject($subject)
                 ->setContent($_POST['site_content'])
                 ->setIdUser($user);
 
             $entityManager->persist($projectNotification);
             $entityManager->flush($projectNotification);
         }
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-        $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $errors               = [];
 
         if (false === empty($_POST['send_email_borrower'])) {
