@@ -277,12 +277,12 @@ class ProjectStatusNotificationSender
                 $mailType         = 'preteur-projet-statut-procedure-sauvegarde';
                 break;
             case CompanyStatus::STATUS_RECEIVERSHIP:
-                $notificationType     = Notifications::TYPE_PROJECT_RECEIVERSHIP;
-                $mailType             = 'preteur-projet-statut-redressement-judiciaire';
+                $notificationType = Notifications::TYPE_PROJECT_RECEIVERSHIP;
+                $mailType         = 'preteur-projet-statut-redressement-judiciaire';
                 break;
             case CompanyStatus::STATUS_COMPULSORY_LIQUIDATION:
-                $notificationType     = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
-                $mailType             = 'preteur-projet-statut-liquidation-judiciaire';
+                $notificationType = Notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
+                $mailType         = 'preteur-projet-statut-liquidation-judiciaire';
                 break;
             default:
                 throw new \Exception('Company is not in proceeding status');
@@ -310,9 +310,11 @@ class ProjectStatusNotificationSender
      */
     private function sendLenderNotifications(Projects $project, $notificationType, $mailTypePerson, $mailTypeLegalEntity, array $keywords = [], $forceNotification = false)
     {
-        $walletRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $operationRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $lenderRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $walletRepository                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $operationRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $lenderRepaymentRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+
         /** @var \notifications $notificationsData */
         $notificationsData = $this->entityManagerSimulator->getRepository('notifications');
         /** @var \clients_gestion_notifications $clientsGestionNotifications */
@@ -334,11 +336,12 @@ class ProjectStatusNotificationSender
                 /** @var Wallet $wallet */
                 $wallet = $walletRepository->find($aLoans['id_lender']);
 
-                $netRepayment  = 0.0;
-                $loansAmount   = round(bcdiv($aLoans['amount'], 100, 4), 2);
-                $repaidCapital = $operationRepository->getRepaidCapitalByProjectAndWallet($project, $wallet);
-                $repaidLoans   = $lenderRepaymentRepository->findBy([
-                    'idLoan' => explode(',', $aLoans['loans']),
+                $netRepayment     = 0.0;
+                $loansAmount      = round(bcdiv($aLoans['amount'], 100, 4), 2);
+                $allLoans         = explode(',', $aLoans['loans']);
+                $remainingCapital = round(bcadd($lenderRepaymentRepository->getRemainingCapitalByLoan($allLoans), $closeOutNettingRepaymentRepository->getRemainingCapitalByLoan($allLoans), 4), 2);
+                $repaidLoans      = $lenderRepaymentRepository->findBy([
+                    'idLoan' => $allLoans,
                     'status' => [Echeanciers::STATUS_PARTIALLY_REPAID, Echeanciers::STATUS_REPAID]
                 ]);
 
@@ -370,7 +373,7 @@ class ProjectStatusNotificationSender
                             'loansAmount'       => $this->numberFormatter->format($loansAmount),
                             'companyName'       => $project->getIdCompany()->getName(),
                             'repaidAmount'      => $this->currencyFormatter->formatCurrency($netRepayment, 'EUR'),
-                            'owedCapitalAmount' => $this->currencyFormatter->formatCurrency(round(bcsub($loansAmount, $repaidCapital, 4), 2), 'EUR'),
+                            'owedCapitalAmount' => $this->currencyFormatter->formatCurrency($remainingCapital, 'EUR'),
                             'lenderPattern'     => $wallet->getWireTransferPattern(),
                         ];
 
@@ -392,5 +395,4 @@ class ProjectStatusNotificationSender
             }
         }
     }
-
 }
