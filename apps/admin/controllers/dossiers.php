@@ -2153,17 +2153,30 @@ class dossiersController extends bootstrap
 
     public function _status()
     {
-        if (false === empty($_POST)) {
-            $url = '/dossiers/status/' . $_POST['status'];
+        if (false === empty($this->request->query->all())) {
+            $url = '/dossiers/status/' . $this->request->query->getInt('status');
 
-            if (false === empty($_POST['first-range-start']) && false === empty($_POST['first-range-end'])) {
-                $start = new \DateTime(str_replace('/', '-', $_POST['first-range-start']));
-                $end   = new \DateTime(str_replace('/', '-', $_POST['first-range-end']));
+            $fistRangeStart   = $this->request->query->get('first-range-start');
+            $fistRangeEnd     = $this->request->query->get('first-range-end');
+            $secondRangeStart = $this->request->query->get('second-range-start');
+            $secondRangeEnd   = $this->request->query->get('second-range-end');
+
+            if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeStart, $matches)
+                && checkdate($matches[2], $matches[1], $matches[3])
+                && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeEnd, $matches)
+                && checkdate($matches[2], $matches[1], $matches[3])
+            ) {
+                $start = DateTime::createFromFormat('d/m/Y', $fistRangeStart);
+                $end   = DateTime::createFromFormat('d/m/Y', $fistRangeEnd);
                 $url   .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
 
-                if (false === empty($_POST['second-range-start']) && false === empty($_POST['second-range-end'])) {
-                    $start = new \DateTime(str_replace('/', '-', $_POST['second-range-start']));
-                    $end   = new \DateTime(str_replace('/', '-', $_POST['second-range-end']));
+                if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeStart, $matches)
+                    && checkdate($matches[2], $matches[1], $matches[3])
+                    && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeEnd, $matches)
+                    && checkdate($matches[2], $matches[1], $matches[3])
+                ) {
+                    $start = DateTime::createFromFormat('d/m/Y', $secondRangeStart);
+                    $end   = DateTime::createFromFormat('d/m/Y', $secondRangeEnd);
                     $url   .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
                 }
             }
@@ -2175,38 +2188,36 @@ class dossiersController extends bootstrap
         $this->loadJs('admin/vis/vis.min');
         $this->loadCss('../scripts/admin/vis/vis.min');
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus  = $this->loadData('projects_status');
-        $this->statuses = $projectStatus->select('', 'status ASC');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (
-            isset($this->params[0], $this->params[1])
-            && false === empty($this->params[0])
-            && $this->params[0] == (int) $this->params[0]
-            && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[1], $matches)
+        $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $this->statuses          = $projectStatusRepository->findBy([], ['status' => 'ASC']);
+
+        if (false === empty($this->params[0]) && false === empty($this->params[1])
+            && 1 === preg_match('/(([0-9]{4})-([0-9]{2})-([0-9]{2}))_(([0-9]{4})-([0-9]{2})-([0-9]{2}))/', $this->params[1], $matches)
+            && checkdate($matches[3], $matches[4], $matches[2]) && checkdate($matches[7], $matches[8], $matches[6])
         ) {
-            $this->baseStatus      = $this->params[0];
+            $this->baseStatus      = (int) $this->params[0];
             $this->firstRangeStart = new \DateTime($matches[1]);
-            $this->firstRangeEnd   = new \DateTime($matches[2]);
-
-            $today = new \DateTime('NOW');
-
+            $this->firstRangeEnd   = new \DateTime($matches[5]);
+            $today                 = new \DateTime('NOW');
+            $projectStatus         = $projectStatusRepository->findOneBy(['status' => $this->baseStatus]);
             if (
-                $projectStatus->get($this->baseStatus)
-                && $this->firstRangeStart->getTimestamp() <= $today->getTimestamp()
-                && $this->firstRangeEnd->getTimestamp() <= $today->getTimestamp()
-                && $this->firstRangeStart->getTimestamp() <= $this->firstRangeEnd->getTimestamp()
+                $projectStatus
+                && $this->firstRangeStart <= $today
+                && $this->firstRangeEnd <= $today
+                && $this->firstRangeStart <= $this->firstRangeEnd
             ) {
-                /** @var \projects_status_history $projectStatusHistory */
-                $projectStatusHistory = $this->loadData('projects_status_history');
-                $baseStatus           = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
+                $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+                $baseStatus                     = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
                 if (false === empty($baseStatus)) {
                     $this->history = [
-                        'label'    => $baseStatus[0]['label'],
+                        'label'    => $projectStatus->getLabel(),
                         'count'    => count($baseStatus),
-                        'status'   => $projectStatus->status,
-                        'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                        'status'   => $projectStatus->getStatus(),
+                        'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
                     ];
 
                     foreach ($this->history['children'] as $childStatus => &$child) {
@@ -2215,23 +2226,26 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $matches)) {
+                    if (false === empty($this->params[2])
+                        && 1 === preg_match('/(([0-9]{4})-([0-9]{2})-([0-9]{2}))_(([0-9]{4})-([0-9]{2})-([0-9]{2}))/', $this->params[2], $matches)
+                        && checkdate($matches[3], $matches[4], $matches[2]) && checkdate($matches[7], $matches[8], $matches[6])
+                    ) {
                         $this->secondRangeStart = new \DateTime($matches[1]);
-                        $this->secondRangeEnd   = new \DateTime($matches[2]);
+                        $this->secondRangeEnd   = new \DateTime($matches[5]);
 
                         if (
-                            $this->secondRangeStart->getTimestamp() <= $today->getTimestamp()
-                            && $this->secondRangeEnd->getTimestamp() <= $today->getTimestamp()
-                            && $this->secondRangeStart->getTimestamp() <= $this->secondRangeEnd->getTimestamp()
+                            $this->secondRangeStart <= $today
+                            && $this->secondRangeEnd <= $today
+                            && $this->secondRangeStart <= $this->secondRangeEnd
                         ) {
-                            $baseStatus = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->secondRangeStart, $this->secondRangeEnd);
+                            $baseStatus = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
                             if (false === empty($baseStatus)) {
                                 $this->compareHistory = [
-                                    'label'    => $baseStatus[0]['label'],
+                                    'label'    => $projectStatus->getLabel(),
                                     'count'    => count($baseStatus),
-                                    'status'   => $projectStatus->status,
-                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                                    'status'   => $projectStatus->getStatus(),
+                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
                                 ];
 
                                 foreach ($this->compareHistory['children'] as $childStatus => &$child) {

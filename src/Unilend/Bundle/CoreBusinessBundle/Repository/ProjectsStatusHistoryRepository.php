@@ -123,4 +123,24 @@ class ProjectsStatusHistoryRepository extends EntityRepository
 
         return $result;
     }
+
+    /**
+     * @param int      $status
+     * @param DateTime $started
+     * @param DateTime $ended
+     *
+     * @return array
+     */
+    public function getStatusByDates(int $status, \DateTime $started, \DateTime $ended): array
+    {
+        $queryBuilder = $this->createQueryBuilder('psh');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ProjectsStatus', 'ps', Join::WITH, 'ps.idProjectStatus = psh.idProjectStatus')
+            ->where('ps.status = :status')
+            ->andWhere('psh.added >= :started')
+            ->andWhere('psh.added <= :ended')
+            ->groupBy('psh.idProject, ps.status')
+            ->setParameters(['status' => $status, 'started' => $started, 'ended' => $ended]);
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
 }
