@@ -11,7 +11,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * Clients
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_client_spe", columns={"status_pre_emp"})})
+ * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -205,13 +205,6 @@ class Clients
      * @ORM\Column(name="status_inscription_preteur", type="integer", nullable=true)
      */
     private $statusInscriptionPreteur;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status_pre_emp", type="integer", nullable=true)
-     */
-    private $statusPreEmp;
 
     /**
      * @var string
@@ -866,30 +859,6 @@ class Clients
     public function getStatusInscriptionPreteur()
     {
         return $this->statusInscriptionPreteur;
-    }
-
-    /**
-     * Set statusPreEmp
-     *
-     * @param integer $statusPreEmp
-     *
-     * @return Clients
-     */
-    public function setStatusPreEmp($statusPreEmp)
-    {
-        $this->statusPreEmp = $statusPreEmp;
-
-        return $this;
-    }
-
-    /**
-     * Get statusPreEmp
-     *
-     * @return integer
-     */
-    public function getStatusPreEmp()
-    {
-        return $this->statusPreEmp;
     }
 
     /**
