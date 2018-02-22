@@ -21,6 +21,7 @@ parameters:
     google.gtm_token:               GTM-W2WQKW
     google.recaptcha_key:           6LeLBB8UAAAAABqR-NE95tO55l8pTaAzFRAplm3J
     google.recaptcha_secret:        ~
+    google.recaptcha_url:           'https://www.google.com/recaptcha/api/siteverify'
 
     url.universign:                 'https://equipeit@unilend.fr:7RM6X40A@sign.test.cryptolog.com/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO

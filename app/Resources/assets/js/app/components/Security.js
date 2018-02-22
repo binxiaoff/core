@@ -38,6 +38,8 @@ onloadRecaptchaCallback = function () {
             })
         } else {
             grecaptcha.render(this)
+
+            $(this).closest('.secure-form').find('[type=submit]').prop('disabled', true)
         }
     })
 }

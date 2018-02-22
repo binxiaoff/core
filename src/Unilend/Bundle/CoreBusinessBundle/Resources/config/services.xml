@@ -492,12 +492,9 @@
         </service>
 
         <service id="unilend.service.google_recaptcha_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager">
-            <argument type="service" id="guzzle.client"/>
+            <argument type="service" id="eight_points_guzzle.client.google_recaptcha"/>
             <argument>%google.recaptcha_secret%</argument>
             <argument type="service" id="logger"/>
-        </service>
-
-        <service id="guzzle.client" class="GuzzleHttp\Client" public="false">
         </service>
     </services>
 </container>

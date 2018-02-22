@@ -34,7 +34,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Users,
     WalletType
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    GoogleRecaptchaManager, SponsorshipManager
+};
 use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\Bundle\FrontBundle\Service\{
     DataLayerCollector,
@@ -44,6 +46,8 @@ use Unilend\core\Loader;
 
 class LenderSubscriptionController extends Controller
 {
+    const SESSION_NAME_CAPTCHA = 'displayLenderSubscriptionCaptcha';
+
     /**
      * @Route("/inscription_preteur/etape1", name="lender_subscription_personal_information")
      *
@@ -110,7 +114,7 @@ class LenderSubscriptionController extends Controller
                     }
 
                     $this->get('session')->remove('originLandingPage');
-                    $this->get('session')->remove('displayLenderSubscriptionCaptcha');
+                    $this->get('session')->remove(self::SESSION_NAME_CAPTCHA);
 
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
@@ -126,7 +130,7 @@ class LenderSubscriptionController extends Controller
                     }
 
                     $this->get('session')->remove('originLandingPage');
-                    $this->get('session')->remove('displayLenderSubscriptionCaptcha');
+                    $this->get('session')->remove(self::SESSION_NAME_CAPTCHA);
 
                     return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                 }
@@ -140,9 +144,8 @@ class LenderSubscriptionController extends Controller
             'companyIdentityForm'   => $companyIdentityForm->createView()
         ];
 
-        if ($this->get('session')->get('displayLenderSubscriptionCaptcha', false)) {
-            $template['recaptchaKey']                     = $this->getParameter('google.recaptcha_key');
-            $template['displayLenderSubscriptionCaptcha'] = true;
+        if ($this->get('session')->get(self::SESSION_NAME_CAPTCHA, false)) {
+            $template['recaptchaKey'] = $this->getParameter('google.recaptcha_key');
         }
 
         return $this->render('lender_subscription/personal_information.html.twig', $template);
@@ -208,13 +211,14 @@ class LenderSubscriptionController extends Controller
             $this->checkPostalAddressSection($clientAddress, $form);
         }
 
+        $isValidCaptcha = $this->isValidCaptcha($request);
         $this->checkSecuritySection($client, $form);
 
         if (false === $form->get('tos')->getData()) {
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
         }
 
-        if ($this->isValidCaptcha($request) && $form->isValid()) {
+        if ($isValidCaptcha && $form->isValid()) {
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -400,11 +404,11 @@ class LenderSubscriptionController extends Controller
      */
     private function isValidCaptcha(Request $request): bool
     {
-        if (false === $this->get('session')->get('displayLenderSubscriptionCaptcha', false)) {
+        if (false === $this->get('session')->get(self::SESSION_NAME_CAPTCHA, false)) {
             return true;
         }
 
-        $response = $request->get('g-recaptcha-response');
+        $response = $request->request->get(GoogleRecaptchaManager::FORM_FIELD_NAME);
 
         if (empty($response)) {
             $this->addFlash('lenderSubscriptionCaptchaError', $this->get('translator')->trans('lender-subscription_invalid-captcha-error'));
@@ -456,7 +460,7 @@ class LenderSubscriptionController extends Controller
 
         if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail(), Clients::STATUS_ONLINE)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
-            $this->get('session')->set('displayLenderSubscriptionCaptcha', true);
+            $this->get('session')->set(self::SESSION_NAME_CAPTCHA, true);
         }
 
         if (false === BCryptPasswordEncoder::isPasswordSafe($clientEntity->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)

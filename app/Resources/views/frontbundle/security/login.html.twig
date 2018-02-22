@@ -55,9 +55,10 @@
 
                                     <div class="btn-controls">
                                         {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
-                                            <div class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onSubmitRecaptchaCallback" data-expired-callback="onExpireRecaptchaCallback"></div>
+                                            {% import '/partials/form_elements.html.twig' as forms %}
+                                            {{ forms.recaptcha(recaptchaKey) }}
                                         {% endif %}
-                                        <button type="submit" class="btn-primary" data-spinnerbutton{% if displayLoginCaptcha is defined and displayLoginCaptcha %} disabled{% endif %}>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
+                                        <button type="submit" class="btn-primary" data-spinnerbutton>{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
                                     </div>
                                 </div><!-- /.panel -->
                                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">

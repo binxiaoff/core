@@ -34,8 +34,9 @@
             </div>
         </div><!-- /.form-field -->
         {% if displayLoginCaptcha is defined and displayLoginCaptcha %}
+            {% import '/partials/form_elements.html.twig' as forms %}
             <div class="form-field">
-                <div id="project-login-recaptcha" class="g-recaptcha" data-sitekey="{{ recaptchaKey }}" data-callback="onSubmitRecaptchaCallback" data-expired-callback="onExpireRecaptchaCallback"></div>
+                {{ forms.recaptcha(recaptchaKey, 'project-login-recaptcha') }}
             </div><!-- /.form-field -->
         {% endif %}
         <div class="btn-toolbar">

@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class GoogleRecaptchaManager
 {
-    const API_REQUEST_URI = 'https://www.google.com/recaptcha/api/siteverify';
     const FORM_FIELD_NAME = 'g-recaptcha-response';
 
     const ERROR_CODE_MISSING_SECRET        = 'missing-input-secret';
@@ -46,7 +45,7 @@ class GoogleRecaptchaManager
      */
     public function verify(string $captchaResponse, ?string $remoteIp = null): ResponseInterface
     {
-        $response = $this->client->post(self::API_REQUEST_URI, [
+        $response = $this->client->post('', [
             RequestOptions::FORM_PARAMS => [
                 'secret'   => $this->secret,
                 'response' => $captchaResponse,
