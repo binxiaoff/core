@@ -3,6 +3,7 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers as EcheanciersEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class echeanciers extends echeanciers_crud
 {
@@ -631,37 +632,58 @@ class echeanciers extends echeanciers_crud
 
     /**
      * @param string $contractType
-     * @param int    $delay
+     * @param int|null    $delay
      *
-     * @return mixed
+     * @return array
+     * @throws Exception
      */
-    public function getProblematicOwedCapitalByProjects($contractType, $delay)
+    public function getProblematicOwedCapitalByProjects(string $contractType, ?int $delay = null): array
     {
-        $query     = '  SELECT l.id_project, SUM(e.capital - e.capital_rembourse) / 100 AS amount
-                    FROM echeanciers e
-                      INNER JOIN loans l ON l.id_loan = e.id_loan
-                      INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
-                    WHERE c.label = :contractType
-                      AND e.status != :repaid
-                      AND l.id_project IN
-                        (
-                          SELECT p.id_project
-                          FROM projects p
-                            INNER JOIN echeanciers e ON e.id_project = p.id_project
-                            INNER JOIN loans l ON e.id_loan = l.id_loan
-                            INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
-                          WHERE c.label = :contractType
-                            AND e.status != :repaid
-                            AND l.status = :accepted
-                            AND p.status >= :problem
-                            AND DATEDIFF(NOW(), e.date_echeance) >= :delay
-                          GROUP BY p.id_project
-                        )
-                    GROUP BY l.id_project';
-        $statement = $this->bdd->executeQuery(
-            $query,
-            ['problem' => projects_status::PROBLEME, 'contractType' => $contractType, 'repaid' => EcheanciersEntity::STATUS_REPAID, 'delay' => $delay, 'accepted' => Loans::STATUS_ACCEPTED]
-        );
+        $delayQuery = '';
+        $params     = [
+            'problem'      => projects_status::PROBLEME,
+            'contractType' => $contractType,
+            'repaid'       => EcheanciersEntity::STATUS_REPAID,
+            'accepted'     => Loans::STATUS_ACCEPTED
+        ];
+
+        if (null !== $delay) {
+            $delayQuery      = 'AND TIMESTAMPDIFF(MONTH, NOW(), e.date_echeance) >= :delay ';
+            $params['delay'] = $delay;
+        }
+
+        $query = '
+          SELECT
+            l.id_project, 
+            SUM(e.capital - e.capital_rembourse) / 100 AS amount
+          FROM echeanciers e
+            INNER JOIN loans l ON l.id_loan = e.id_loan
+            INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
+          WHERE c.label = :contractType
+            AND e.status != :repaid
+            AND l.id_project IN
+              (
+                SELECT p.id_project
+                FROM projects p
+                  INNER JOIN echeanciers e ON e.id_project = p.id_project
+                  INNER JOIN loans l ON e.id_loan = l.id_loan
+                  INNER JOIN underlying_contract c ON c.id_contract = l.id_type_contract
+                WHERE c.label = :contractType
+                  AND e.status != :repaid
+                  AND l.status = :accepted
+                  AND p.status >= :problem
+                  AND TIMESTAMPDIFF(MONTH, NOW(),(SELECT added FROM projects_status_history
+                        INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+                        WHERE  projects_status.status = ' . \projects_status::REMBOURSEMENT . '
+                          AND e.id_project = projects_status_history.id_project
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1)) = ' . StatisticsManager::ACPR_CALCULATION_PERIOD_MONTHS . ' 
+                  ' . $delayQuery . '
+                GROUP BY p.id_project
+              )
+          GROUP BY l.id_project';
+
+        $statement = $this->bdd->executeQuery($query, $params);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
