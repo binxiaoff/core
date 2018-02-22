@@ -3,15 +3,15 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
-use Symfony\Component\Translation\TranslatorInterface;
-use Symfony\Component\Routing\RouterInterface;
 use Unilend\core\Loader;
 
 class NotificationDisplayManager
@@ -113,8 +113,7 @@ class NotificationDisplayManager
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         /** @var \accepted_bids $acceptedBid */
         $acceptedBid = $this->entityManagerSimulator->getRepository('accepted_bids');
-        /** @var \autobid $autobid */
-        $autobid = $this->entityManagerSimulator->getRepository('autobid');
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \bids $bid */
         $bid = $this->entityManagerSimulator->getRepository('bids');
         /** @var \companies $company */
@@ -199,10 +198,10 @@ class NotificationDisplayManager
                     $content = 'placed-bid-content';
 
                     if ($bid->id_autobid > 0) {
-                        $autobid->get($bid->id_autobid);
+                        $autobidEntity    = $autobidRepository->find($bid->id_autobid);
                         $content          = 'placed-autobid-content';
                         $projectRateRange = $this->bidManager->getProjectRateRange($project);
-                        $appliedMinRate   = max($autobid->rate_min, $projectRateRange['rate_min']);
+                        $appliedMinRate   = max($autobidEntity->getRateMin(), $projectRateRange['rate_min']);
                     }
 
                     $content = $this->translator->trans('lender-notifications_' . $content, [

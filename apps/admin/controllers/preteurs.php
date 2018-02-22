@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
+    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -1187,7 +1187,15 @@ class preteursController extends bootstrap
             $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($wallet->getIdClient());
             $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
             if (0 < count($this->aSettingsDates)) {
-                $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($wallet->getIdClient())->format('d/m/Y');
+                try {
+                    $this->sValidationDate = $oAutoBidSettingsManager->getValidationDate($wallet->getIdClient())->format('d/m/Y');
+                } catch (\Exception $exception) {
+                    $this->sValidationDate = '';
+                    $this->get('logger')->error(
+                        'Could not get the last autobid settings validation date for the client: ' . $wallet->getIdClient() . '. Error: ' . $exception->getMessage(),
+                        ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                    );
+                }
             }
             $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
             $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
@@ -1195,9 +1203,8 @@ class preteursController extends bootstrap
             $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
             $startingDate           = $this->settings->value;
             $this->aAutoBidSettings = [];
-            /** @var autobid $autobid */
-            $autobid          = $this->loadData('autobid');
-            $aAutoBidSettings = $autobid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+            $autobidRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+            $aAutoBidSettings       = $autobidRepository->getSettings($wallet, null, null, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
             foreach ($aAutoBidSettings as $aSetting) {
                 $aSetting['AverageRateUnilend']                                          = $this->projects->getAvgRate($aSetting['evaluation'], $aSetting['period_min'], $aSetting['period_max'], $startingDate);
                 $this->aAutoBidSettings[$aSetting['id_period']][$aSetting['evaluation']] = $aSetting;

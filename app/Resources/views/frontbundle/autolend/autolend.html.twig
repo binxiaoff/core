@@ -134,7 +134,7 @@
                                             {% for settings in autoBidSettings %}
                                                 {% for setting in settings %}
                                                     {% set classEnabled = '' %}
-                                                    {% if setting.status == constant('\\autobid::STATUS_ACTIVE') %}
+                                                    {% if setting.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Autobid::STATUS_ACTIVE') %}
                                                         {% set classEnabled = 'ui-autolend-cell-enabled'%}
                                                     {% endif %}
                                                     {% if setting.cellAverageRateUnilend is not empty and (setting.rate_min < setting.project_rate_min or setting.rate_min > setting.project_rate_max) %}
