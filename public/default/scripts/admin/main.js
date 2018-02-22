@@ -72,7 +72,7 @@ Memo.prototype.open = function () {
             toolbar: 'Basic',
             removePlugins: 'elementspath',
             resize_enabled: false,
-            startupFocus : true
+            startupFocus: true
         })
         self.track.open = true
     })

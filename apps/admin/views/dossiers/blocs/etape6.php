@@ -87,7 +87,7 @@
                         <?php if ($isEditable) : ?>
                             <label for="avis" style="text-align:left;display: block;">Avis</label><br>
                             <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"><?= $this->projects_notes->avis ?></textarea>
-                            <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
+                            <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700, startupFocus: true});</script>
                         <?php else : ?>
                             <div style="color:black;"><?= $this->projects_notes->avis ?></div>
                         <?php endif; ?>
