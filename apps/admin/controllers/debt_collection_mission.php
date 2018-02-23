@@ -83,7 +83,7 @@ class debt_collection_missionController extends bootstrap
             }
             if (empty($_POST['debt-collection-type'])
                 || false === ($debtCollectionType = filter_var($_POST['debt-collection-type'], FILTER_VALIDATE_INT))
-                || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION,])
+                || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION, DebtCollectionMission::TYPE_PRE_LITIGATION])
             ) {
                 $errors[] = 'Le type de mission est incorrect: valeures possibles (1, 2). Fournit: ' . $debtCollectionType;
             }
