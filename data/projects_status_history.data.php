@@ -84,27 +84,6 @@ class projects_status_history extends projects_status_history_crud
         return $oResult;
     }
 
-    public function getStatusByDates($iStatus, \DateTime $oStartDate, \DateTime $oEndDate)
-    {
-        $sQuery = '
-            SELECT psh.*, ps.label, ps.status
-            FROM projects_status_history psh
-            INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-            WHERE ps.id_project_status = ' . $iStatus . '
-                AND psh.added >= "' . $oStartDate->format('Y-m-d') . '"
-                AND psh.added <= "' . $oEndDate->format('Y-m-d') . '"
-            GROUP BY psh.id_project, ps.status';
-
-        $aResult = array();
-        $rResult = $this->bdd->query($sQuery);
-
-        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
-            $aResult[] = $aRow;
-        }
-
-        return $aResult;
-    }
-
     public function getFollowingStatus(array $aBaseStatusId)
     {
         $sQuery = '
@@ -164,33 +143,6 @@ class projects_status_history extends projects_status_history_crud
             $aStatusAmounts[$aRow['status']] = (int)$aRow['amount'];
         }
         return $aStatusAmounts;
-    }
-
-    /**
-     * @param int $projectId
-     * @param array $status
-     * @return mixed
-     */
-    public function loadStatusForJudgementDate($projectId, array $status)
-    {
-        $query = 'SELECT id_project_status_history
-                  FROM projects_status_history psh
-                  INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                  WHERE ps.status IN (:status)
-                  AND psh.id_project = :project_id
-                  ORDER BY psh.added ASC, psh.id_project_status_history ASC
-                  LIMIT 1';
-
-        $bind = array('status' => $status, 'project_id' => $projectId);
-        $type = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
-        $statement = $this->bdd->executeQuery($query, $bind, $type);
-        $historyId = $statement->fetchColumn();
-
-        if ($historyId && $this->get($historyId)) {
-            return $this;
-        }
-
-        return false;
     }
 
     /**

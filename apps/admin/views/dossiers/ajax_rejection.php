@@ -69,7 +69,8 @@
             width: '500px',
             toolbar: 'Basic',
             removePlugins: 'elementspath',
-            resize_enabled: false
+            resize_enabled: false,
+            startupFocus: true
         })
 
         CKEDITOR.on('instanceReady', function () {

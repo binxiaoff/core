@@ -360,10 +360,12 @@ class ajaxController extends bootstrap
                         'error'   => true,
                         'message' => $error
                     ]);
+                    return;
                 } else {
                     echo json_encode([
                         'success' => true
                     ]);
+                    return;
                 }
             } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::COMITY_REVIEW) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
