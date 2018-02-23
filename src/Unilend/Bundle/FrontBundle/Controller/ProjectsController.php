@@ -4,34 +4,39 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Security, Template
+};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, RedirectResponse, Request, Response
+};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType,
+    Bids,
+    Clients,
+    ClientsHistoryActions,
+    Loans,
+    Product,
+    Projects,
+    ProjectsStatus,
+    UnderlyingContractAttributeType,
+    WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BidManager, CIPManager
+};
+use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
+use Unilend\Bundle\FrontBundle\Service\{
+    LenderAccountDisplayManager, ProjectDisplayManager
+};
 use Unilend\core\Loader;
 
 class ProjectsController extends Controller
@@ -278,9 +283,11 @@ class ProjectsController extends Controller
         $user                  = $this->getUser();
 
         $template = [
-            'project'         => $projectDisplayManager->getProjectData($project, $user),
-            'bidToken'        => sha1('tokenBid-' . time() . '-' . uniqid()),
-            'suggestAutolend' => false
+            'project'             => $projectDisplayManager->getProjectData($project, $user),
+            'bidToken'            => sha1('tokenBid-' . time() . '-' . uniqid()),
+            'suggestAutolend'     => false,
+            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 
         if (isset($template['project']['bids'])) {
