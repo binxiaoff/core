@@ -125,7 +125,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <h2>Projets avec des modifications des notations (derniers 3 mois)</h2>
+            <h2>Projets avec des modifications des notations (3 derniers mois)</h2>
         </div>
     </div>
     <section id="company-rating-events">

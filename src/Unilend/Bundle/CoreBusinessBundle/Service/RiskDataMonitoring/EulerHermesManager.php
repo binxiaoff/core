@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Companies, CompanyRating, CompanyRatingHistory
@@ -73,8 +72,6 @@ class EulerHermesManager
 
     /**
      * @param string $siren
-     *
-     * @throws OptimisticLockException
      */
     public function saveEulerHermesGradeMonitoringEvent(string $siren) : void
     {

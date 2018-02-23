@@ -76,7 +76,7 @@ class AltaresManager
     /**
      * @param string $siren
      *
-     * @throws OptimisticLockException
+     * @throws \Doctrine\DBAL\ConnectionException
      * @throws \Exception
      */
     private function saveMonitoringEvent(string $siren): void
@@ -125,6 +125,7 @@ class AltaresManager
                 'exceptionFile' => $exception->getFile(),
                 'exceptionLine' => $exception->getLine()
             ]);
+            throw $exception;
         }
     }
 
