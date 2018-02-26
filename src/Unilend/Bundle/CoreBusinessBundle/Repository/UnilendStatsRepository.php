@@ -647,4 +647,24 @@ class UnilendStatsRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getResult();
     }
+
+    /**
+     * @param \DateTime $end
+     * @param int       $months
+     *
+     * @return array
+     */
+    public function getTrimesterIncidenceRate(\DateTime $end, int $months): array
+    {
+        $queryBuilder = $this->createQueryBuilder('us');
+        $queryBuilder
+            ->where('us.typeStat = :trimesterType')
+            ->andWhere('TIMESTAMPDIFF(MONTH, us.added, :end) <= :months')
+            ->orderBy('us.added', 'ASC')
+            ->setParameter('trimesterType', UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+            ->setParameter('months', $months)
+            ->setParameter('end', $end);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }

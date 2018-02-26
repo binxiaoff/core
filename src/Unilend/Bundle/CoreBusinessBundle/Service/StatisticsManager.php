@@ -207,11 +207,16 @@ class StatisticsManager
         $lastDayLastMonthData     = json_decode($lastDayLastMonthStat->getValue(), true);
         $lastDayOfTwoMonthAgoData = json_decode($lastDayOfTwoMonthAgoStat->getValue(), true);
 
-        $todayData['trimesterRatioIFP'] = round(bcdiv(bcadd(bcadd($todayData['ratioIFP'], $lastDayLastMonthData['ratioIFP'], 4), $lastDayOfTwoMonthAgoData['ratioIfp'], 4), 3, 4), 2);
+        $todayData['trimesterRatioIFP'] = round(bcdiv(bcadd(bcadd($todayData['ratioIFP'], $lastDayLastMonthData['ratioIFP'], 4), $lastDayOfTwoMonthAgoData['ratioIFP'], 4), 3, 4), 2);
         $todayData['trimesterRatioCIP'] = round(bcdiv(bcadd(bcadd($todayData['ratioCIP'], $lastDayLastMonthData['ratioCIP'], 4), $lastDayOfTwoMonthAgoData['ratioCIP'], 4), 3, 4), 2);
 
-        $todayStat->setValue(json_encode($todayData));
-        $this->entityManager->flush($todayStat);
+        $trimesterStat = new UnilendStats();
+        $trimesterStat
+            ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+            ->setValue(json_encode($todayData));
+
+        $this->entityManager->persist($trimesterStat);
+        $this->entityManager->flush($trimesterStat);
     }
 
     /**
@@ -694,31 +699,18 @@ class StatisticsManager
     /**
      * @param \DateTime $date
      *
-     * @return \DateTime
+     * @return array
      */
-    public function getTrimesterFromDate(\DateTime $date): \DateTime
+    public function getIncidenceRatesOfLast36Months(\DateTime $date): array
     {
-        switch ($date->format('n')) {
-            case 1:
-            case 2:
-            case 3:
-                $trimester = new \DateTime('Last day of March ' . $date->format('Y'));
-                break;
-            case 4:
-            case 5:
-            case 6:
-                $trimester = new \DateTime('Last day of June ' . $date->format('Y'));
-                break;
-            case 7:
-            case 8:
-            case 9:
-                $trimester = new \DateTime('Last day of September ' . $date->format('Y'));
-                break;
-            default:
-                $trimester = new \DateTime('Last day of ' . $date->format('Y'));
-                break;
+        $data          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getTrimesterIncidenceRate($date, self::ACPR_CALCULATION_PERIOD_MONTHS);
+        $trimesterData = [];
+
+        /** @var UnilendStats $stat */
+        foreach ($data as $stat) {
+            $trimesterData[$stat->getAdded()->format('Y-m-d')] = json_decode($stat->getValue(), true);
         }
 
-        return $trimester;
+       return $trimesterData;
     }
 }
