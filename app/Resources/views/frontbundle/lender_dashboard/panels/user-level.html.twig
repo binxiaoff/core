@@ -37,7 +37,7 @@
                     {% elseif app.user.level == 0 and lenderDetails.hasBids %}
                         {{ "lender-dashboard_irr-not-calculated-yet"|trans|raw }}
                     {% elseif app.user.level == 0 %}
-                        {{ "lender-dashboard_irr-level-0"|trans|raw }}}
+                        {{ "lender-dashboard_irr-level-0"|trans|raw }}
                     {% else %}
                         {{ "lender-dashboard_irr-#{ irrData.irrTranslation }level-#{ app.user.level }"|trans({'%url%': app.request.getSchemeAndHttpHost()})|raw }}
                     {% endif %}
