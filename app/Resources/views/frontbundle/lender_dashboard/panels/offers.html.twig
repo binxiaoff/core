@@ -11,19 +11,12 @@
             <p>{% transchoice ongoingBids with {'%count%' : ongoingBids} %} lender-dashboard-offers_pending-offers-legend {% endtranschoice %}</p>
         </div><!-- /.message -->
         {% if ongoingBids|length > 0 %}
-            <ul class="list-myoffers">
+            <ul class="list-myoffers list-projects">
                 {% for project in ongoingProjects %}
                     {% if project.pending_bids|length %}
-                        <li class="myoffer">
+                        <li class="myoffer project">
                             <div class="myoffer-project-name">{{ project.title }}</div>
                             <div class="myoffer-project-cost">{{ project.amount|localizednumber }}&nbsp;€</div>
-                            <div class="myoffer-project-period">
-                                {% if project.days_left <= 2 %}
-                                    <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('c') }}"></span>
-                                {% else %}
-                                    {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
-                                {% endif %}
-                            </div>
                             {% for bid in project.pending_bids %}
                                 <div class="myoffer-amount">
                                     {% set transParams = {
@@ -33,7 +26,17 @@
                                     {% if bid.id_autobid != 0 %}<span class="icon fa-autolend-u"></span> {% trans with transParams %} lender-dashboard-offers_autolend-bid-legend {% endtrans %}{% endif %}
                                     {% trans with transParams %} lender-dashboard-offers_bid-description {% endtrans %}
                                 </div>
+                                {% if loop.first %}
+                                    <div class="myoffer-project-period">
+                                        {% if project.days_left <= 2 %}
+                                            <span class="ui-has-timecount" data-timecount-to="{{ project.end_date|date('c') }}"></span>
+                                        {% else %}
+                                            {% trans with {'%remainingDays%' : project.days_left} %} project-list_remaining-days {% endtrans %}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             {% endfor %}
+                            <a href="{{ path('project_detail', {'projectSlug' : project.slug}) }}" class="project-hotspot">&nbsp;</a>
                         </li>
                     {% endif %}
                 {% endfor %}

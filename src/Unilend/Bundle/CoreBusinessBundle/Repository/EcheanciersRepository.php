@@ -488,7 +488,7 @@ class EcheanciersRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getRemainingCapitalByLoan($loans)
+    public function getRemainingCapitalByLoan($loans): float
     {
         if (false === is_array($loans)) {
             $loans = array($loans);
@@ -498,7 +498,7 @@ class EcheanciersRepository extends EntityRepository
             ->where('e.idLoan in (:loan)')
             ->setParameter('loan', $loans);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return (float) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
@@ -616,7 +616,7 @@ class EcheanciersRepository extends EntityRepository
      * @return Echeanciers
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findFirstOverdueScheduleByProject($project) : Echeanciers
+    public function findFirstOverdueScheduleByProject($project): Echeanciers
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder

@@ -72,16 +72,16 @@ class CloseOutNettingRepaymentRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getRemainingCapitalByLoan($loans)
+    public function getRemainingCapitalByLoan($loans): float
     {
         if (false === is_array($loans)) {
-            $loans[] = $loans;
+            $loans = [$loans];
         }
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder->select('SUM(c.capital - c.repaidCapital)')
             ->where('c.idLoan in (:loan)')
             ->setParameter('loan', $loans);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return (float) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
