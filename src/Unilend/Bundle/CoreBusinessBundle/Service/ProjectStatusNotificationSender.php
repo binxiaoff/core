@@ -332,6 +332,12 @@ class ProjectStatusNotificationSender
                 throw new \Exception('There is no pending repayment on the project ' . $project->getIdProject());
             }
 
+            if (null === $project->getCloseOutNettingDate()) {
+                $repaymentRepository = $lenderRepaymentRepository;
+            } else {
+                $repaymentRepository = $closeOutNettingRepaymentRepository;
+            }
+
             foreach ($aLenderLoans as $aLoans) {
                 /** @var Wallet $wallet */
                 $wallet = $walletRepository->find($aLoans['id_lender']);
@@ -339,7 +345,7 @@ class ProjectStatusNotificationSender
                 $netRepayment     = 0.0;
                 $loansAmount      = round(bcdiv($aLoans['amount'], 100, 4), 2);
                 $allLoans         = explode(',', $aLoans['loans']);
-                $remainingCapital = round(bcadd($lenderRepaymentRepository->getRemainingCapitalByLoan($allLoans), $closeOutNettingRepaymentRepository->getRemainingCapitalByLoan($allLoans), 4), 2);
+                $remainingCapital = $repaymentRepository->getRemainingCapitalByLoan($allLoans);
                 $repaidLoans      = $lenderRepaymentRepository->findBy([
                     'idLoan' => $allLoans,
                     'status' => [Echeanciers::STATUS_PARTIALLY_REPAID, Echeanciers::STATUS_REPAID]
