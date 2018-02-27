@@ -11,8 +11,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
-                    <th><label for="performance_fianciere_comite">Performance financière</label></th>
-                    <td><span id="performance_fianciere_comite"><?= $this->projects_notes->performance_fianciere_comite ?></span> / 10</td>
+                    <th><label for="performance_financiere_comite">Performance financière</label></th>
+                    <td><span id="performance_financiere_comite"><?= $this->projects_notes->performance_financiere_comite ?></span> / 10</td>
                     <th style="vertical-align:top;"><label for="marche_opere_comite">Marché opéré</label></th>
                     <td style="vertical-align:top;"><span id="marche_opere_comite"><?= $this->projects_notes->marche_opere_comite ?></span> / 10</td>
                     <th><label for="dirigeance_comite">Dirigeance</label></th>
@@ -128,8 +128,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
                 global      = Math.round(global * 10) / 10;
                 individuel  = Math.round(individuel * 10) / 10;
 
-                var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
-                performance_fianciere = Math.round(performance_fianciere * 10) / 10;
+                var performance_financiere = (structure + rentabilite + tresorerie) / 3;
+                performance_financiere = Math.round(performance_financiere * 10) / 10;
 
                 var marche_opere = (global + individuel) / 2;
                 marche_opere = Math.round(marche_opere * 10) / 10;
@@ -140,10 +140,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
                 dirigeance = Math.round(dirigeance * 10) / 10;
                 indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
+                moyenne = Math.round((performance_financiere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                 $("#marche_opere_comite").html(marche_opere);
-                $("#performance_fianciere_comite").html(performance_fianciere);
+                $("#performance_financiere_comite").html(performance_financiere);
                 var start = '';
                 if (moyenne >= 0) {
                     start = '2 étoiles';
