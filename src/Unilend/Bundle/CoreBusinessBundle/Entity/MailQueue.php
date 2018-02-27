@@ -7,7 +7,13 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * MailQueue
  *
- * @ORM\Table(name="mail_queue", indexes={@ORM\Index(name="status", columns={"status"}), @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}), @ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_message_mailjet", columns={"id_message_mailjet"})})
+ * @ORM\Table(name="mail_queue", indexes={
+ *     @ORM\Index(name="status", columns={"status"}),
+ *     @ORM\Index(name="recipient", columns={"recipient", "id_mail_template"}),
+ *     @ORM\Index(name="id_client", columns={"id_client"}),
+ *     @ORM\Index(name="idx_mail_queue_sent_at", columns={"sent_at"}),
+ *     @ORM\Index(name="id_message_mailjet", columns={"id_message_mailjet"})
+ * })
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\MailQueueRepository")
  */
