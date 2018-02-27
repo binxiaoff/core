@@ -50,6 +50,9 @@
                 <section class="panel panel-autolend-config" data-formvalidation data-formvalidation-shownotifications="false">
 
                     <div class="message-info" id="settings-last-updated">
+                        {% if validation_date %}
+                            {% set validation_date = validation_date|localizeddate('long', 'none') %}
+                        {% endif %}
                         {% trans with {'%date%' : validation_date } %} autolend_settings-last-updated-text {% endtrans %}
                     </div>
 

@@ -265,15 +265,18 @@ class AutoBidSettingsManager
             if (null !== $autobidRepository->findOneBy(['idLender' => $wallet, 'status' => Autobid::STATUS_INACTIVE])) {
                 $bIsNovice = false;
             } else {
-                $autobidSettings     = $autobidRepository->getSettings($wallet);
-                $firstAutobidSetting = array_shift($autobidSettings);
-                $fRate               = $firstAutobidSetting['rate_min'];
-                $iAmount             = $firstAutobidSetting['amount'];
+                $autobidSettings     = $autobidRepository->findBy(['idLender' => $wallet]);
 
-                foreach ($autobidSettings as $autobidSetting) {
-                    if ($fRate !== $autobidSetting['rate_min'] || $iAmount !== $autobidSetting['amount']) {
-                        $bIsNovice = false;
-                        break;
+                if (count($autobidSettings)) {
+                    $firstAutobidSetting = array_shift($autobidSettings);
+                    $fRate               = $firstAutobidSetting->getRateMin();
+                    $iAmount             = $firstAutobidSetting->getAmount();
+
+                    foreach ($autobidSettings as $autobidSetting) {
+                        if ($fRate !== $autobidSetting->getRateMin() || $iAmount !== $autobidSetting->getAmount()) {
+                            $bIsNovice = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -303,10 +306,10 @@ class AutoBidSettingsManager
         $this->entityManager->getConnection()->beginTransaction();
 
         try {
-            foreach ($projectPeriodRepository->findBy(['status' => \project_period::STATUS_ACTIVE]) as $projectPeriodEntity) {
+            foreach ($projectPeriodRepository->findBy(['status' => \project_period::STATUS_ACTIVE]) as $projectPeriod) {
                 foreach ($riskEvaluations as $riskEvaluation) {
-                    $this->saveSetting($client, $riskEvaluation, $projectPeriodEntity, $rate, $amount);
-                    $this->activateDeactivateSetting($client, $riskEvaluation, $projectPeriodEntity->getIdPeriod(), Autobid::STATUS_ACTIVE);
+                    $this->saveSetting($client, $riskEvaluation, $projectPeriod, $rate, $amount);
+                    $this->activateDeactivateSetting($client, $riskEvaluation, $projectPeriod->getIdPeriod(), Autobid::STATUS_ACTIVE);
                 }
             }
             $this->entityManager->getConnection()->commit();
@@ -515,11 +518,11 @@ class AutoBidSettingsManager
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
-        $settings          = $autoBidRepository->getSettings($wallet, null, null, [Autobid::STATUS_ACTIVE], [], 1);
+        $autobidSetting    = $autoBidRepository->findOneBy(['idLender' => $wallet, 'status' => Autobid::STATUS_ACTIVE]);
         $amount            = null;
 
-        if (false === empty($settings)) {
-            $amount = array_shift($settings)['amount'];
+        if (null !== $autobidSetting) {
+            $amount = $autobidSetting->getAmount();
         }
 
         return $amount;

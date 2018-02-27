@@ -269,7 +269,7 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function bidAllAutoBid(\projects $project) : void
+    private function bidAllAutoBid(\projects $project): void
     {
         $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriods */
@@ -280,16 +280,13 @@ class ProjectLifecycleManager
             $rateRange = $this->bidManager->getProjectRateRange($project);
             $iOffset   = 0;
             $iLimit    = 100;
-            while ($aAutoBidList = $autoBidRepository->getSettings(null, $project->risk, $projectPeriods->id_period, [Autobid::STATUS_ACTIVE], ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
+            while ($autoBidSettings = $autoBidRepository->findBy(['evaluation' => $project->risk, 'idPeriod' => $projectPeriods->id_period, 'status' => Autobid::STATUS_ACTIVE], ['idAutobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-                foreach ($aAutoBidList as $aAutoBidSetting) {
-                    $autobid = $autoBidRepository->find($aAutoBidSetting['id_autobid']);
-                    if ($autobid) {
-                        try {
-                            $this->bidManager->bidByAutoBidSettings($autobid, $projectEntity, $rateRange['rate_max'], false);
-                        } catch (\Exception $exception) {
-                            continue;
-                        }
+                foreach ($autoBidSettings as $autoBidSetting) {
+                    try {
+                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max'], false);
+                    } catch (\Exception $exception) {
+                        continue;
                     }
                 }
             }

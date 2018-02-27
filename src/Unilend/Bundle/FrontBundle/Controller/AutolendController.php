@@ -112,8 +112,7 @@ class AutolendController extends Controller
         }
 
         try {
-            $validateTime                = $autoBidSettingsManager->getValidationDate($client);
-            $template['validation_date'] = strftime('%d %B %G', $validateTime->format('U'));
+            $template['validation_date'] = $autoBidSettingsManager->getValidationDate($client);
         } catch (\Exception $exception) {
             $template['validation_date'] = '';
             $this->get('logger')->error(
@@ -310,7 +309,8 @@ class AutolendController extends Controller
                     ]);
                 }
             } else {
-                return ['error' => [$translator->trans('autolend_error-message-invalid-expert-form-data')]];
+                $errorMsg[] = $translator->trans('autolend_error-message-invalid-expert-form-data');
+                break;
             }
         }
 
