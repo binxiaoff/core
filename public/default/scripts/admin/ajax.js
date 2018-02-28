@@ -186,7 +186,8 @@ function activeUserZone(id_user, id_zone, zone) {
 }
 
 function valid_etape1(id_project) {
-    $('#dossier_etape1').find('.btn_link').hide();
+    $('#dossier_etape1').find('[type=submit]').hide();
+    $('#loader_etape1').show();
 
     var val = {
         montant_etape1: $('#montant_etape1').val(),
@@ -206,7 +207,8 @@ function valid_etape1(id_project) {
             return;
         }
 
-        $('#dossier_etape1').find('.btn_link').show();
+        $('#loader_etape1').hide();
+        $('#dossier_etape1').find('[type=submit]').show();
         $('#error_etape1').html(response.error ? response.error : 'Erreur inconnue');
         $('#error_etape1').slideDown();
 
