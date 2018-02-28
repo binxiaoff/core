@@ -20,25 +20,25 @@ $activeSheet->setCellValueByColumnAndRow(5, 1, 'Date');
 
 foreach ($this->receptions as $index => $reception) {
     $colIndex = 0;
-    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdReception());
-    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getMotif());
-    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, str_replace('.', ',', bcdiv($reception->getMontant(), 100, 2)));
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['idReception']);
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['motif']);
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, str_replace('.', ',', bcdiv($reception['montant'], 100, 2)));
 
-    if (1 == $reception->getStatusBo() && $reception->getIdUser()) {
-        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . ' - ' . $reception->getAssignmentDate()->format('d/m/Y à H:i:s'));
+    if (1 == $reception['statusBo'] && $reception['idUser']) {
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['idUser'] . ' - ' . $reception['assigned']->format('d/m/Y à H:i:s'));
     } else {
-        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception->getStatusBo()]);
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $this->statusOperations[$reception['statusBo']]);
     }
 
-    if (null === $reception->getIdProject()) {
+    if (null === $reception['idProject']) {
         $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID client');
-        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdClient()->getIdClient());
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['idClient']);
     } else {
         $activeSheet->setCellValueByColumnAndRow(4, 1, 'ID projet');
-        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getIdProject()->getIdProject());
+        $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['idProject']);
     }
 
-    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception->getAdded()->format('d/m/Y'));
+    $activeSheet->setCellValueByColumnAndRow($colIndex++, $index + 2, $reception['added']->format('d/m/Y'));
 }
 
 /** @var \PHPExcel_Writer_CSV $writer */

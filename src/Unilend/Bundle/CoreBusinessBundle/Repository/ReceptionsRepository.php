@@ -5,9 +5,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 
 class ReceptionsRepository extends EntityRepository
 {
@@ -30,6 +32,7 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
+     * @param WalletType     $walletType
      * @param int|null       $limit
      * @param int|null       $offset
      * @param array          $sorts
@@ -39,10 +42,35 @@ class ReceptionsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getBorrowerAttributions(?int $limit = null, ?int $offset = null, array $sorts = [], array $search = [], ?\DateTime $from = null, \DateTime $to = null): array
+    public function getAttributions(
+        WalletType $walletType,
+        ?int $limit = null,
+        ?int $offset = null,
+        array $sorts = [],
+        array $search = [],
+        ?\DateTime $from = null,
+        \DateTime $to = null
+    ): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->where('r.idProject IS NOT NULL');
+        $queryBuilder
+            ->select('
+                r.idReception, r.motif, r.montant, r.type, r.statusVirement, r.statusPrelevement, r.statusBo, r.ligne,
+                IDENTITY(r.idClient) AS idClient, IDENTITY(r.idProject) AS idProject, IDENTITY(r.idUser) AS idUser,
+                r.comment, r.added,  o.added as assigned
+            ')
+            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
+            ->where('r.idClient IS NOT NULL')
+            ->andWhere('ot.label in (:provisionOrReject)')
+            ->andWhere('w.idType = :walletType')
+            ->setParameter('provisionOrReject', [OperationType::BORROWER_PROVISION, OperationType::BORROWER_PROVISION_CANCEL])
+            ->setParameter('walletType', $walletType);
+
+        if (WalletType::LENDER === $walletType->getLabel()) {
+            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL]);
+        }
 
         if (null !== $limit) {
             $queryBuilder->setMaxResults($limit);
@@ -54,34 +82,34 @@ class ReceptionsRepository extends EntityRepository
 
         if (false === empty($sorts)) {
             foreach ($sorts as $sort => $order) {
-                $queryBuilder->addOrderBy('r.' . $sort, $order);
+                $queryBuilder->addOrderBy($sort, $order);
             }
         }
 
         if (false === empty($search)) {
             $orClause = [];
             foreach ($search as $column => $value) {
-                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+                $orClause[] = $queryBuilder->expr()->eq($column, $value);
             }
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
         }
 
         if ($from) {
             $from->setTime(0, 0, 0);
-            $queryBuilder->andWhere('r.added >= :from')
+            $queryBuilder->andWhere('r.added >= :from OR o.added >= :from')
                 ->setParameter('from', $from);
         }
 
         if ($to) {
             $to->setTime(23, 59, 59);
-            $queryBuilder->andWhere('r.added <= :to')
+            $queryBuilder->andWhere('r.added <= :to OR o.added <= :to')
                 ->setParameter('to', $to);
         }
-
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getArrayResult();
     }
 
     /**
+     * @param WalletType     $walletType
      * @param array          $search
      * @param \DateTime|null $from
      * @param \DateTime|null $to
@@ -90,126 +118,41 @@ class ReceptionsRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getBorrowerAttributionsCount(array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
+    public function getAttributionsCount(WalletType $walletType, array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
     {
         $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->select('count(r)')
-            ->andWhere('r.idProject IS NOT NULL');
+        $queryBuilder
+            ->select('count(r)')
+            ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
+            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
+            ->where('r.idProject IS NOT NULL')
+            ->andWhere('ot.label in (:provisionOrReject)')
+            ->andWhere('w.idType = :walletType')
+            ->setParameter('provisionOrReject', [OperationType::BORROWER_PROVISION, OperationType::BORROWER_PROVISION_CANCEL])
+            ->setParameter('walletType', $walletType);
+
+        if (WalletType::LENDER === $walletType->getLabel()) {
+            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL]);
+        }
 
         if (false === empty($search)) {
             $orClause = [];
             foreach ($search as $column => $value) {
-                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
+                $orClause[] = $queryBuilder->expr()->eq($column, $value);
             }
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
         }
 
         if ($from) {
             $from->setTime(0, 0, 0);
-            $queryBuilder->andWhere('r.added >= :from')
+            $queryBuilder->andWhere('r.added >= :from OR o.added >= :from')
                 ->setParameter('from', $from);
         }
 
         if ($to) {
             $to->setTime(23, 59, 59);
-            $queryBuilder->andWhere('r.added <= :to')
-                ->setParameter('to', $to);
-        }
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
-    }
-
-    /**
-     * @param int|null       $limit
-     * @param int|null       $offset
-     * @param array          $sorts
-     * @param array          $search
-     * @param \DateTime|null $from
-     * @param \DateTime|null $to
-     *
-     * @return array
-     */
-    public function getLenderAttributions(?int $limit = null, ?int $offset = null, array $sorts = [], array $search = [], ?\DateTime $from = null, \DateTime $to = null): array
-    {
-        $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->andWhere('r.idClient IS NOT NULL')
-            ->andWhere('r.idProject IS NULL');
-
-        if (null !== $limit) {
-            $queryBuilder->setMaxResults($limit);
-        }
-
-        if (null !== $offset) {
-            $queryBuilder->setFirstResult($offset);
-        }
-
-        if (false === empty($sorts)) {
-            foreach ($sorts as $sort => $order) {
-                $queryBuilder->addOrderBy('r.' . $sort, $order);
-            }
-        }
-
-        if (false === empty($search)) {
-            $orClause = [];
-            foreach ($search as $column => $value) {
-                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
-            }
-            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
-        }
-
-        if ($from) {
-            $from->setTime(0, 0, 0);
-            $queryBuilder->andWhere('r.added >= :from')
-                ->setParameter('from', $from);
-        }
-
-        if ($to) {
-            $to->setTime(23, 59, 59);
-            $queryBuilder->andWhere('r.added <= :to')
-                ->setParameter('to', $to);
-        }
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
-     * @param array          $search
-     * @param \DateTime|null $from
-     * @param \DateTime|null $to
-     *
-     * @return int
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function getLenderAttributionsCount(array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
-    {
-        $queryBuilder = $this->createQueryBuilder('r');
-        $queryBuilder->select('count(r)')
-            ->andWhere('r.idClient IS NOT NULL')
-            ->andWhere('r.idProject IS NULL')
-            ->andWhere('r.type = :directDebit AND r.statusPrelevement = :directDebitSent OR r.type = :wireTransfer AND r.statusVirement = :wireTransferReceived')
-            ->setParameter('directDebit', Receptions::TYPE_DIRECT_DEBIT)
-            ->setParameter('directDebitSent', Receptions::DIRECT_DEBIT_STATUS_SENT)
-            ->setParameter('wireTransfer', Receptions::TYPE_WIRE_TRANSFER)
-            ->setParameter('wireTransferReceived', Receptions::WIRE_TRANSFER_STATUS_RECEIVED);
-
-        if (false === empty($search)) {
-            $orClause = [];
-            foreach ($search as $column => $value) {
-                $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
-            }
-            $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
-        }
-
-        if ($from) {
-            $from->setTime(0, 0, 0);
-            $queryBuilder->andWhere('r.added >= :from')
-                ->setParameter('from', $from);
-        }
-
-        if ($to) {
-            $to->setTime(23, 59, 59);
-            $queryBuilder->andWhere('r.added <= :to')
+            $queryBuilder->andWhere('r.added <= :to OR o.added <= :to')
                 ->setParameter('to', $to);
         }
 
