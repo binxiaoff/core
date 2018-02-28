@@ -426,7 +426,8 @@ class projects extends projects_crud
             WHERE p.status = ' . $status . '
                 AND DATE_SUB(CURDATE(), INTERVAL ' . $daysInterval . ' DAY) = DATE(psh.added)
                 AND psh.numero_relance = ' . $previousReminderIndex . '
-                AND a.id IS NULL';
+                AND a.id IS NULL
+            GROUP BY id_project';
 
         $statement = $this->bdd->query($query);
 
