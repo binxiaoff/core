@@ -661,9 +661,9 @@ class LenderProfileController extends Controller
      */
     public function updateNotificationAction(Request $request)
     {
-        $sendingPeriod = $request->request->get('period');
-        $typeId        = $request->request->get('type_id');
-        $active        = $request->request->get('active');
+        $sendingPeriod = $request->request->filter('period', FILTER_SANITIZE_STRING);
+        $typeId        = $request->request->getInt('type_id');
+        $active        = $request->request->getBoolean('active');
         $type          = null;
 
         /* Put it temporary here, because we don't need it after the project refectory notification  */
@@ -697,29 +697,30 @@ class LenderProfileController extends Controller
             \clients_gestion_type_notif::TYPE_REPAYMENT
         ];
 
-        $error        = false;
+        $error = false;
+
         switch ($sendingPeriod) {
-            case 'immediate' :
+            case 'immediate':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE;
-                if (false === in_array($typeId, $immediateTypes)) {
+                if (false === in_array($typeId, $immediateTypes, true)) {
                     $error = true;
                 }
                 break;
-            case 'daily' :
+            case 'daily':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY;
-                if (false === in_array($typeId, $dailyTypes)) {
+                if (false === in_array($typeId, $dailyTypes, true)) {
                     $error = true;
                 }
                 break;
-            case 'weekly' :
+            case 'weekly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY;
-                if (false === in_array($typeId, $weeklyTypes)) {
+                if (false === in_array($typeId, $weeklyTypes, true)) {
                     $error = true;
                 }
                 break;
-            case 'monthly' :
+            case 'monthly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY;
-                if (false === in_array($typeId, $monthlyTypes)) {
+                if (false === in_array($typeId, $monthlyTypes, true)) {
                     $error = true;
                 }
                 break;
@@ -733,7 +734,7 @@ class LenderProfileController extends Controller
             $client               = $this->getClient();
 
             $notificationSettings->get(['id_client' => $client->id_client, 'id_notif' => $typeId]);
-            $notificationSettings->$type = $active === 'true' ? 1 : 0;
+            $notificationSettings->$type = $active ? 1 : 0;
             $notificationSettings->update(['id_client' => $client->id_client, 'id_notif' => $typeId]);
             return $this->json('ok');
         }

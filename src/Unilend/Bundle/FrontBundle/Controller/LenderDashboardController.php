@@ -82,6 +82,7 @@ class LenderDashboardController extends Controller
             if (0 < $bid->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $wallet->getId())) {
                 $ongoingBidsByProject[$iKey] = [
                     'title'            => $aProject['title'],
+                    'slug'             => $aProject['slug'],
                     'amount'           => $aProject['amount'],
                     'publication_date' => $aProject['date_publication'],
                     'days_left'        => $aProject['daysLeft'],

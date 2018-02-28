@@ -230,7 +230,7 @@ services:
 
 google_tag_manager:
     enabled: true
-    id: "%gtm_token%"
+    id: "%google.gtm_token%"
     autoAppend: false
 
 sonata_seo:
@@ -292,6 +292,10 @@ eight_points_guzzle:
                 http_errors: false
         ellisphere:
             base_url: "%ellisphere.url%"
+            options:
+                http_errors: false
+        google_recaptcha:
+            base_url: "%google.recaptcha_url%"
             options:
                 http_errors: false
 
