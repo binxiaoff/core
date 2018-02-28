@@ -116,7 +116,6 @@ EOF
 
                 $reception = new Receptions();
                 $reception
-                    ->setRemb(0)
                     ->setStatusBo($status)
                     ->setMotif($motif)
                     ->setMontant($aRow['montant'])
@@ -292,8 +291,7 @@ EOF
                         ->setIdProject($project)
                         ->setIdClient($project->getIdCompany()->getIdClientOwner())
                         ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
-                        ->setAssignmentDate(new \DateTime())
-                        ->setRemb(1);
+                        ->setAssignmentDate(new \DateTime());
                     $entityManager->flush();
 
                     $operationManager->provisionBorrowerWallet($reception);
@@ -322,8 +320,7 @@ EOF
             ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_EARLY)
-            ->setAssignmentDate(new \DateTime())
-            ->setRemb(1);
+            ->setAssignmentDate(new \DateTime());
         $entityManager->flush();
 
         $operationManager->provisionBorrowerWallet($reception);
@@ -346,7 +343,6 @@ EOF
             ->setIdClient($project->getIdCompany()->getIdClientOwner())
             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
             ->setTypeRemb(Receptions::REPAYMENT_TYPE_REGULARISATION)
-            ->setRemb(1)
             ->setAssignmentDate(new \DateTime());
         $entityManager->flush();
 
@@ -386,9 +382,9 @@ EOF
                     $lenderPattern = str_replace(' ', '', $wallet->getWireTransferPattern());
 
                     if (false !== strpos($pattern, $lenderPattern)) {
-                        $reception->setIdClient($wallet->getIdClient())
-                            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
-                            ->setRemb(1); // todo: delete the field
+                        $reception
+                            ->setIdClient($wallet->getIdClient())
+                            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO);
                         $entityManager->flush();
 
                         $this->getContainer()->get('unilend.service.operation_manager')->provisionLenderWallet($wallet, $reception);
@@ -478,7 +474,6 @@ EOF
                             ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
                             ->setIdProject($project)
                             ->setIdClient($wallet->getIdClient())
-                            ->setRemb(0)
                             ->setRejectionIsoCode($this->getRejectionIsoCode($aRow))
                             ->setIdReceptionRejected($originalRejectedDirectDebit);
                         $entityManager->flush();

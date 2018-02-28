@@ -4,39 +4,47 @@ namespace Unilend\Bundle\FrontBundle\Security;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\{
+    Cookie, RedirectResponse, Request
+};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoder;
-use Symfony\Component\Security\Core\Exception\AccountExpiredException;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Exception\BadCredentialsException;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-use Symfony\Component\Security\Core\Exception\DisabledException;
-use Symfony\Component\Security\Core\Exception\LockedException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
+use Symfony\Component\Security\Core\Encoder\{
+    EncoderAwareInterface, UserPasswordEncoder
+};
+use Symfony\Component\Security\Core\Exception\{
+    AccountExpiredException,
+    AuthenticationException,
+    BadCredentialsException,
+    CustomUserMessageAuthenticationException,
+    DisabledException,
+    LockedException,
+    UsernameNotFoundException
+};
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Csrf\CsrfToken;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Security\Core\User\{
+    UserInterface, UserProviderInterface
+};
+use Symfony\Component\Security\Csrf\{
+    CsrfToken, CsrfTokenManagerInterface
+};
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LoginLog;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsHistory, LoginLog
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
 {
     use TargetPathTrait;
 
-    const COOKIE_NO_CF = 'uld-nocf';
+    const COOKIE_NO_CF               = 'uld-nocf';
+    const SESSION_NAME_LOGIN_CAPTCHA = 'displayLoginCaptcha';
 
     /** @var UserPasswordEncoder */
     private $securityPasswordEncoder;
@@ -48,6 +56,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $sessionStrategy;
     /** @var CsrfTokenManagerInterface */
     private $csrfTokenManager;
+    /** @var GoogleRecaptchaManager */
+    private $googleRecaptchaManager;
     /** @var LoggerInterface */
     private $logger;
 
@@ -57,6 +67,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param EntityManager                          $entityManager
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
      * @param CsrfTokenManagerInterface              $csrfTokenManager
+     * @param GoogleRecaptchaManager                 $googleRecaptchaManager
      * @param LoggerInterface                        $logger
      */
     public function __construct(
@@ -65,6 +76,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         EntityManager $entityManager,
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
+        GoogleRecaptchaManager $googleRecaptchaManager,
         LoggerInterface $logger
     )
     {
@@ -73,6 +85,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->entityManager           = $entityManager;
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
+        $this->googleRecaptchaManager  = $googleRecaptchaManager;
         $this->logger                  = $logger;
     }
 
@@ -124,11 +137,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             return null;
         }
 
-        $username           = $request->request->get('_username');
-        $password           = $request->request->get('_password');
-        $captcha            = $request->request->get('captcha');
-        $captchaInformation = $request->getSession()->get('captchaInformation');
-        $csrfToken          = $request->get('_csrf_token');
+        $username       = $request->request->get('_username');
+        $password       = $request->request->get('_password');
+        $csrfToken      = $request->request->get('_csrf_token');
+        $captchaCode    = $request->request->get(GoogleRecaptchaManager::FORM_FIELD_NAME);
+        $displayCaptcha = $request->getSession()->get(self::SESSION_NAME_LOGIN_CAPTCHA, false);
 
         if (false === filter_var($username, FILTER_VALIDATE_EMAIL)) {
             throw new CustomUserMessageAuthenticationException('invalid-username-format');
@@ -137,11 +150,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $request->getSession()->set(Security::LAST_USERNAME, $username);
 
         return [
-            'username'           => $username,
-            'password'           => $password,
-            'captcha'            => $captcha,
-            'captchaInformation' => $captchaInformation,
-            'csrfToken'          => $csrfToken
+            'username'       => $username,
+            'password'       => $password,
+            'csrfToken'      => $csrfToken,
+            'captchaCode'    => $captchaCode,
+            'captchaDisplay' => $displayCaptcha
         ];
     }
 
@@ -169,7 +182,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             throw new CustomUserMessageAuthenticationException('wrong-password');
         }
 
-        if (false === $this->checkCaptcha($credentials)) {
+        if (false === $this->isCaptchaValid($credentials)) {
             throw new CustomUserMessageAuthenticationException('wrong-captcha');
         }
 
@@ -185,10 +198,10 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
+        $request->getSession()->remove(self::SESSION_NAME_LOGIN_CAPTCHA);
+
         /** @var BaseUser $user */
-        $user = $token->getUser();
-        $request->getSession()->remove('captchaInformation');
-        /** @var Clients $client */
+        $user   = $token->getUser();
         $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
 
         // Update the password encoder if it's legacy
@@ -219,8 +232,6 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        // @todo supprimer traductions
-
         if (
             $exception instanceof LockedException
             || $exception instanceof DisabledException
@@ -230,28 +241,22 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $customException);
         }
 
-        if ($exception instanceof CustomUserMessageAuthenticationException && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong captcha', 'wrong-security-token'])) {
-            $loginLogRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoginLog');
-            $previousFailures   = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
+        $previousFailures = 0;
 
-            $iWaitingPeriod      = 0;
-            $iPreviousResult     = 1;
-
-            if ($previousFailures > 0 && $previousFailures < 1000) { // 1000 pour ne pas bloquer le site
-                for ($i = 1; $i <= $previousFailures; $i++) {
-                    $iWaitingPeriod  = $iPreviousResult * 2;
-                    $iPreviousResult = $iWaitingPeriod;
-                }
-            }
-
-            $aCaptchaInformation = [
-                'waitingPeriod'        => $iWaitingPeriod,
-                'displayWaitingPeriod' => $previousFailures > 1,
-                'displayCaptcha'       => $previousFailures > 5
-            ];
+        if (
+            $exception instanceof CustomUserMessageAuthenticationException
+            && in_array($exception->getMessage(), ['wrong-password', 'login-unknown', 'wrong-captcha', 'wrong-security-token'])
+        ) {
+            $failuresBeforeCaptcha = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:Settings')
+                ->findOneBy(['type' => 'Echecs login avant affichage captcha'])
+                ->getValue();
+            $loginLogRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LoginLog');
+            $previousFailures      = $loginLogRepository->countLastFailuresByIp($request->server->get('REMOTE_ADDR'), new \DateInterval('PT10M'));
+            $displayCaptcha        = $previousFailures + 1 >= $failuresBeforeCaptcha;
 
             $request->getSession()->set(Security::AUTHENTICATION_ERROR, $exception);
-            $request->getSession()->set('captchaInformation', $aCaptchaInformation);
+            $request->getSession()->set(self::SESSION_NAME_LOGIN_CAPTCHA, $displayCaptcha);
         }
 
         $loginLog = new LoginLog();
@@ -280,10 +285,13 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      *
      * @return bool
      */
-    private function checkCaptcha(array $credentials)
+    private function isCaptchaValid(array $credentials)
     {
-        if (isset($credentials['captchaInformation']['captchaCode']) && isset($credentials['captcha'])) {
-            return $credentials['captchaInformation']['captchaCode'] == strtolower($credentials['captcha']);
+        if (
+            isset($credentials['captchaDisplay'], $credentials['captchaCode'])
+            && true === $credentials['captchaDisplay']
+        ) {
+            return $this->googleRecaptchaManager->isValid($credentials['captchaCode']);
         }
 
         return true;

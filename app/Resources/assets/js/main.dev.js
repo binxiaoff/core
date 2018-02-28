@@ -75,6 +75,7 @@ var BidsDetail = require('./app/components/BidsDetail')
 var ProgressBar = require('ProgressBar')
 var Paginate = require('./app/components/Paginate')
 var DataTable = require('./app/components/DataTable')
+var Security = require('./app/components/Security')
 // @debug
 // CacheData.clearAll()
 
@@ -106,7 +107,6 @@ require('./app/controllers/Site')
 require('./app/controllers/Fancybox')
 require('./app/controllers/Pikaday')
 require('./app/controllers/Swipers')
-require('./app/controllers/Login')
 require('./app/controllers/Promos')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/BorrowerOperations')
@@ -118,7 +118,6 @@ require('./app/controllers/Projects')
 require('./app/controllers/BidConfirmation')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
-require('./app/controllers/ProjectDetails')
 require('./app/controllers/PartnerDashboard')
 
 $doc.ready(function ($) {

@@ -178,13 +178,6 @@ class bootstrap extends Controller
         $this->lng['footer'] = $aElements['TradFooter'];
         $this->lng['home']   = $aElements['TradHome'];
 
-
-        //gestion du captcha --> moved to LoginAuthenticator
-
-        $this->bAccountClosed      = false;
-        $this->displayCaptchaError = null;
-
-
         if ($this->clients->checkAccess()) {
             $this->addDataLayer('uid', md5($this->clients->email));
         }

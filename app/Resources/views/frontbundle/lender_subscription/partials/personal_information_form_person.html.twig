@@ -1,11 +1,13 @@
 {# Set this to 'person' to make included partials' JS UX functionality compatible with this form #}
 {% set idClientType = 'person' %}
+
 {% form_theme identityForm '/frontbundle/forms/fields.html.twig' %}
+
 {% do identityForm.fiscalAddress.housedByThirdPerson.setRendered %}
 
 {{ form_start(identityForm, {
     'attr' : {
-        'class' : 'form-preter-create form-preter-create-info-person',
+        'class' : 'form-preter-create form-preter-create-info-person secure-form',
         'data-formvalidation data-formvalidation-notificationselem' : '#form-preter-person-1-notifications',
         'data-cacheform' : true
     }
@@ -116,7 +118,7 @@
     <fieldset class="panel">
         <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
         <div id="form-preter-person-fiscal-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
-            <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+            <div class="message-error">{% trans %} lender-subscription_fiscal-address-autocomplete-error {% endtrans %}</div>
         </div>
 
         <div class="row">
@@ -246,7 +248,7 @@
         </div>
 
         <div id="form-preter-person-birth-place-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
-            <div class="message-error">{% trans %}lender-subscription_birth-place-autocomplete-error{% endtrans %}</div>
+            <div class="message-error">{% trans %} lender-subscription_birth-place-autocomplete-error {% endtrans %}</div>
         </div>
 
         <div class="row row-multi-col-computer">
@@ -295,7 +297,7 @@
         </div>
 
         <div class="message-alert" id="error-message-selected-nationality-other" style="display: none;">
-            {% trans %}lender-subscription_error-message-selected-nationality-other{% endtrans %}
+            {% trans %} lender-subscription_error-message-selected-nationality-other {% endtrans %}
         </div>
 
         <div class="row row-multi-col-computer">
@@ -362,7 +364,7 @@
         </div>
 
         <div class="row">
-            <div class="form-field form-field-single-checkbox {% if identityForm.fiscalAddress.noUsPerson.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox{% if identityForm.fiscalAddress.noUsPerson.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label>
                     {{ form_widget(identityForm.fiscalAddress.noUsPerson) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
@@ -371,10 +373,25 @@
         </div>
     </fieldset>
 
+    {% if app.session.get(constant('Unilend\\Bundle\\FrontBundle\\Controller\\LenderSubscriptionController::SESSION_NAME_CAPTCHA')) %}
+        {% import 'partials/form_elements.html.twig' as forms %}
+        <fieldset class="panel">
+            <div class="row">
+                {# As long as personal_information_form_legal_entity.html.twig is included after, we only peek data here in order not to reset it before displaying other form #}
+                {% for message in app.session.flashBag.peek('lenderSubscriptionCaptchaError') %}
+                    <div class="message-error">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+                {{ forms.recaptcha(recaptchaKey) }}
+            </div>
+        </fieldset>
+    {% endif %}
+
     <div class="row btn-controls tab-footer">
         <div class="col-back col-lg-6 col-md-6">&nbsp;</div>
         <div class="col-next col-lg-6 col-md-6">
-            <button class="btn-primary" data-spinnerbutton>
+            <button type="submit" class="btn-primary" data-spinnerbutton>
                 {% trans %} lender-subscription_part1-validate-button {% endtrans %}
                 <span class="icon fa-angle-right"></span>
             </button>

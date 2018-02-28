@@ -74,7 +74,7 @@
     text-transform: uppercase;
   }
 
-  #form-connect-notifications, #form-connect-notifications-timer{
+  #form-connect-notifications{
     color:#DE2F4C;
   }
 
@@ -134,5 +134,13 @@
         vertical-align: middle;
       }
     }
+  }
+}
+
+#password-forgotten-form .g-recaptcha {
+  margin-top: 20px;
+
+  > div {
+    margin: auto;
   }
 }

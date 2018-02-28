@@ -33,7 +33,6 @@
         <link rel="shortcut icon" href="{{ asset('favicons/favicon.ico', 'gulp') }}">
         <meta name="msapplication-config" content="{{ asset('favicons/browserconfig.xml', 'gulp') }}">
         <meta name="theme-color" content="#ffffff">
-        {% include 'partials/vwo_script.html.twig' %}
     </head>
     <body class="{% if app.user is defined and app.user is not empty %} ui-user-level-{{ app.user.level|default(0) }}{% if is_granted('ROLE_LENDER') %} ui-user-type-lender{% endif %}{% if is_granted('ROLE_BORROWER') %} ui-user-type-borrower{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_DEFAULT')) %} ui-user-type-partner{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %} ui-user-type-partner-admin{% endif %}{% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_USER')) %} ui-user-type-partner-user{% endif %}{% else %} ui-no-user{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
         {{ google_tag_manager_body() }}
@@ -139,6 +138,11 @@
                 {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
                     var MAPVIEW_LANG = JSON.parse('{{ dictionary('mapview')|json_encode|escape('js')|raw }}')
                 {% endif %}
+
+                {# Variables must be created here in order to set their visibility before main.js #}
+                var onloadRecaptchaCallback = function () {}
+                var onSubmitRecaptchaCallback = function () {}
+                var onExpireRecaptchaCallback = function () {}
             </script>
 
             {% if app.request.attributes.get('_route') in ['project_detail', 'projects_list', 'lender_projects'] %}
@@ -148,9 +152,14 @@
 
             <script type="text/javascript" src="{{ asset('js/dependencies.js', 'gulp') }}"></script>
             <script type="text/javascript" src="{{ asset('js/main.js', 'gulp') }}"></script>
+
+            {% if recaptchaKey is defined and recaptchaKey is not empty %}
+                <script src="https://www.google.com/recaptcha/api.js?onload=onloadRecaptchaCallback&render=explicit" async defer></script>
+            {% endif %}
         {% endblock %}
-        {% block pageScripts %}
-        {% endblock %}
+
+        {% block pageScripts %}{% endblock %}
+
         {{ google_tag_manager_body_end() }}
     </body>
 </html>

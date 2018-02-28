@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\FrontBundle\Service;
-
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -26,16 +24,14 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionTy
 
 class FormManager
 {
-
-    /** @var FormFactory  */
+    /** @var FormFactory */
     private $formFactory;
-    /** @var TranslatorInterface  */
+    /** @var TranslatorInterface */
     private $translator;
     /** EntityManager */
     private $entityMananger;
 
     /**
-     * FormManager constructor.
      * @param FormFactory         $formFactory
      * @param TranslatorInterface $translator
      * @param EntityManager       $entityMananger
@@ -44,7 +40,8 @@ class FormManager
         FormFactory $formFactory,
         TranslatorInterface $translator,
         EntityManager $entityMananger
-    ) {
+    )
+    {
         $this->formFactory    = $formFactory;
         $this->translator     = $translator;
         $this->entityMananger = $entityMananger;
@@ -89,19 +86,19 @@ class FormManager
      */
     public function getLenderSubscriptionPersonIdentityForm(Clients $client, ClientsAdresses $clientAddress)
     {
-        $form= $this->formFactory->createBuilder()
+        $form = $this->formFactory->createBuilder()
             ->add('client', PersonType::class, ['data' => $client])
             ->add('fiscalAddress', PersonFiscalAddressType::class, ['data' => $clientAddress])
             ->add('postalAddress', PostalAddressType::class, ['data' => $clientAddress])
             ->add('security', SecurityQuestionType::class, ['data' => $client])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
-                    $this->translator->trans('lender-subscription_identity-client-type-person-label') => 'person',
-                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label')   => 'legalEntity'
+                    $this->translator->trans('lender-subscription_identity-client-type-person-label')       => 'person',
+                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label') => 'legalEntity'
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                'data' => 'person'
+                'data'     => 'person'
             ])
             ->add('tos', CheckboxType::class)
             ->getForm();
@@ -126,12 +123,12 @@ class FormManager
             ->add('security', SecurityQuestionType::class, ['data' => $client])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
-                    $this->translator->trans('lender-subscription_identity-client-type-person-label') => 'person',
-                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label')   => 'legalEntity'
+                    $this->translator->trans('lender-subscription_identity-client-type-person-label')       => 'person',
+                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label') => 'legalEntity'
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                'data' => 'legalEntity'
+                'data'     => 'legalEntity'
             ])
             ->add('tos', CheckboxType::class)
             ->getForm();

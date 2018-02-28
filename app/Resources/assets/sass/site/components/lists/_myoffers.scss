@@ -5,10 +5,25 @@
 // Structural styles
 @mixin list-myoffer-sm {
   padding: 20px;
+
+  .myoffer-project-cost,
+  .myoffer-project-period {
+    padding-right: 40px;
+  }
 }
 
 @mixin list-myoffer-lg {
   padding: 20px 30px;
+
+  .myoffer-project-cost,
+  .myoffer-project-period {
+    padding-right: 50px;
+  }
+
+  .project-hotspot:after {
+    margin-right: 30px;
+    margin-bottom: 30px;
+  }
 }
 
 // Non-structural styles below
@@ -50,7 +65,15 @@
     font-size: $fs-base;
     line-height: 1.3em;
 
-    .myoffer-project-name,
+    .myoffer-project-name {
+      clear: both;
+      display: block;
+      width: 100%;
+      margin-bottom: 5px;
+      color: $c-t1;
+      font-size: $fs-base * 1.2;
+    }
+
     .myoffer-amount {
       float: left;
       clear: left;
@@ -58,11 +81,11 @@
 
     .myoffer-project-cost,
     .myoffer-project-period {
+      padding-right: 40px;
       float: right;
       clear: right;
     }
 
-    .myoffer-project-name,
     .myoffer-project-cost {
       margin-bottom: 6px;
     }

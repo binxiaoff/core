@@ -35,11 +35,12 @@
         </service>
 
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">
-            <argument type="service" id="security.password_encoder"/>
+            <argument type="service" id="security.password_encoder" />
             <argument type="service" id="router" />
             <argument type="service" id="doctrine.orm.entity_manager" />
             <argument type="service" id="security.authentication.session_strategy" />
             <argument type="service" id="security.csrf.token_manager" />
+            <argument type="service" id="unilend.service.google_recaptcha_manager" />
             <argument type="service" id="logger" />
         </service>
 

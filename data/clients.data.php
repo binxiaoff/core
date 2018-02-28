@@ -181,7 +181,8 @@ class clients extends clients_crud
         $query     = '
             SELECT 
                 c.*,
-                co.*
+                co.*, 
+                COUNT(p.id_project) AS projets
             FROM clients c
             INNER JOIN companies co ON c.id_client = co.id_client_owner
             INNER JOIN projects p ON co.id_company = p.id_company

@@ -20,7 +20,6 @@
     {% endspaceless %}
 {% endblock form_errors %}
 
-
 {% block choice_widget_collapsed %}
     {% if required and placeholder is none and not placeholder_in_choices and not multiple and (attr.size is not defined or attr.size <= 1) %}
         {% set required = false %}
@@ -50,7 +49,7 @@
             </optgroup>
         {% else %}
             {% set attr = choice.attr %}
-            <option value="{{ choice.value }}" {{ block('attributes') }}{% if choice is selectedchoice(value) %} selected="selected"{% endif %}>{{  choice.label  }}</option>
+            <option value="{{ choice.value }}" {{ block('attributes') }}{% if choice is selectedchoice(value) %} selected="selected"{% endif %}>{{ choice.label }}</option>
         {% endif %}
     {% endfor %}
 {% endblock choice_widget_options %}
