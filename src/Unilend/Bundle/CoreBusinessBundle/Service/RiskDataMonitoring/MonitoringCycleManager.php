@@ -138,7 +138,7 @@ class MonitoringCycleManager
                 }
             }
         } catch (\Exception $exception) {
-            $this->logger->error('Could not stop monitoring for siren: ' . $siren . ' Error: ' . $exception->getMessage(), [
+            $this->logger->warning('Could not stop monitoring for siren: ' . $siren . ' Error: ' . $exception->getMessage(), [
                     'exceptionFile' => $exception->getFile(),
                     'exceptionLine' => $exception->getLine(),
                     'function'      => __FUNCTION__

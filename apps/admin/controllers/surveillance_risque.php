@@ -3,6 +3,7 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
+use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
 class surveillance_risqueController extends bootstrap
 {
@@ -24,7 +25,7 @@ class surveillance_risqueController extends bootstrap
         $this->currencyFormatter = $this->get('currency_formatter');
         $this->translator        = $this->get('translator');
 
-        $start = new \DateTime('3 months ago');
+        $start = new \DateTime('2 months ago');
 
         /** @var RiskDataMonitoringRepository $riskDataMonitoringRepository */
         $riskDataMonitoringRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
@@ -92,7 +93,7 @@ class surveillance_risqueController extends bootstrap
                     $formattedEvents[$event['siren']]['activeSiren'] = true;
                 }
 
-                if (empty($event['previous_value']) && false === is_numeric($event['value'])) {
+                if (empty($event['previous_value']) && false === is_numeric($event['value']) && EulerCompanyRating::GRADE_UNKNOWN !== $event['value']) {
                     $event['value'] = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($event['value']);
                 }
 

@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\librairies\CacheKeys;
 
 class RiskDataMonitoringRepository extends EntityRepository
 {
@@ -52,9 +54,11 @@ class RiskDataMonitoringRepository extends EntityRepository
         GROUP BY p.status, p.id_company, p.id_project, rdmt.id
         ORDER BY rdma.added DESC, p.status DESC, p.id_project DESC';
 
+        $qcProfile = new QueryCacheProfile(CacheKeys::LONG_TIME, md5(__METHOD__));
+
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, ['date' => $start->format('Y-m-d H:i:s')])
+            ->executeCacheQuery($query, ['date' => $start->format('Y-m-d H:i:s')], ['date' => \PDO::PARAM_STR], $qcProfile)
             ->fetchAll(\PDO::FETCH_ASSOC);
     }
 

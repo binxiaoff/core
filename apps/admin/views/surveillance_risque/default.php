@@ -102,10 +102,10 @@
                             <tr>
                                 <td class="e-date"><?= $this->dateFormatter->format(strtotime($project['added'])) ?></td>
                                 <td class="e-id">
-                                    <a href="/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
+                                    <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
                                 </td>
                                 <td class="e-raison">
-                                    <a href="/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
+                                    <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
                                 </td>
                                 <td class="e-remaining-capital">
                                     <?= isset($project['remainingDueCapital']) ? $this->currencyFormatter->format($project['remainingDueCapital']) : '' ?>
@@ -125,7 +125,7 @@
 
     <div class="row">
         <div class="col-md-12">
-            <h2>Projets avec des modifications des notations (3 derniers mois)</h2>
+            <h2>Projets avec des modifications des notations (2 derniers mois)</h2>
         </div>
     </div>
     <section id="company-rating-events">
@@ -151,10 +151,10 @@
                                 <tr <?php if (false === $events['activeSiren']) : ?> style="display: none;"<?php endif; ?>>
                                     <td class="e-date"><?= $this->dateFormatter->format(strtotime($project['added'])) ?></td>
                                     <td class="e-id">
-                                        <a href="/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
+                                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
                                     </td>
                                     <td class="e-raison">
-                                        <a href="/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
+                                        <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
                                     </td>
                                     <td class="e-remaining-capital">
                                         <?= isset($project['remainingDueCapital']) ? $this->currencyFormatter->format($project['remainingDueCapital']) : '' ?>
