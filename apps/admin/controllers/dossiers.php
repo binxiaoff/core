@@ -1326,8 +1326,6 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
-        /** @var \clients_adresses clients_adresses */
-        $this->clients_adresses = $this->loadData('clients_adresses');
         /** @var \companies companies */
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
@@ -1399,6 +1397,10 @@ class dossiersController extends bootstrap
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             exit;
+        }
+
+        if (false === empty($this->projects->id_company)) {
+            $this->companies->get($this->projects->id_company);
         }
 
         $this->settings->get('Durée des prêts autorisées', 'type');

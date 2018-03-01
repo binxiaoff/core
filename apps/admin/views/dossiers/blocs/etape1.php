@@ -40,6 +40,7 @@
             </tr>
         </table>
         <div id="error_etape1" class="error_etape"></div>
+        <img id="loader_etape1" src="<?= $this->surl ?>/images/admin/ajax-loader.gif" alt="Chargement" style="float: right; display: none;">
         <button type="submit" class="btn-primary pull-right">Sauvegarder</button>
         <div class="clear"></div>
     </form>

@@ -112,7 +112,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     'stopReminderEmails'         => $sUrl . '/depot_de_dossier/emails/' . $project->hash,
                                     'fundingPercentage'          => $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100),
                                     'borrowerServicePhoneNumber' => $sBorrowerPhoneNumber,
-                                    'borrowerServicePhoneEmail'  => $sBorrowerEmail,
+                                    'borrowerServiceEmail'       => $sBorrowerEmail,
                                     'amount'                     => $ficelle->formatNumber($project->amount, 0)
                                 ];
 
