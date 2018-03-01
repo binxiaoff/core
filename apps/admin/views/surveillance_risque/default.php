@@ -80,7 +80,7 @@
     <?php if (false === empty($this->eligibilityEvents)) : ?>
         <div class="row">
             <div class="col-md-6">
-                <h2>Projets avec des modifications de l'eligibilité </h2>
+                <h2>Projets avec des modifications de l'eligibilité</h2>
             </div>
         </div>
         <section id="company-eligibility-events">
@@ -93,7 +93,7 @@
                         <th class="e-raison header">Raison Sociale</th>
                         <th class="e-remaining-capital">CRD</th>
                         <th class="e-statut header">Statut</th>
-                        <th class="e-change header">Changement</th>
+                        <th class="e-change header">Raison de non éligibilité</th>
                     </tr>
                     </thead>
                     <tbody>
