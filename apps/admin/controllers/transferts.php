@@ -58,7 +58,7 @@ class transfertsController extends bootstrap
             $this->hideDecoration();
             $this->view = 'csv';
         } else {
-            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER]);
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => false]);
         }
     }
 
@@ -72,7 +72,7 @@ class transfertsController extends bootstrap
             $this->hideDecoration();
             $this->view = 'csv';
         } else {
-            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER]);
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => false]);
         }
     }
 

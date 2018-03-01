@@ -9,7 +9,7 @@ $(function () {
             {searchable: false, targets: [6, 7, 8, 9, 10, 11]},
             {visible: false, targets: [9, 10, 11]},
             {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
-                {visible: false, targets: [2]},
+            {visible: false, targets: [2]},
             {% endif %}
             {name: "r.idReception", "targets": 0},
             {name: "r.idClient", "targets": 1},
@@ -57,7 +57,11 @@ $(function () {
                     '</a>'
             }
             $row.attr('data-reception-id', receptionId)
-            $row.find('td:last-child').append(showReceptionBtn + '&nbsp;' + addCommentBtn)
+            var $lastColumn = $row.find('td:last-child');
+            $lastColumn.append(showReceptionBtn)
+            {% if false == readOnly %}
+            $lastColumn.append('&nbsp;' + addCommentBtn)
+            {% endif %}
         }
     })
     dt.on('draw', function () {

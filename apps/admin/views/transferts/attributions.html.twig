@@ -1,9 +1,11 @@
 {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
     {% set type = 'preteurs' %}
-    {% set title = 'Opérations prêteurs' %}
+    {% set pageTitle = 'Opérations prêteurs' %}
+    {% set idClientTitle = 'ID prêteur' %}
 {% else %}
     {% set type = 'emprunteurs' %}
-    {% set title = 'Opérations emprunteurs' %}
+    {% set pageTitle = 'Opérations emprunteurs' %}
+    {% set idClientTitle = 'ID emprunteur' %}
 {% endif %}
 
 {% extends 'layout.html.twig' %}
@@ -20,7 +22,7 @@
 
 {% block pageScripts %}
     <script>
-        {% include 'transferts/blocks/emprunteurs/attributions.js.twig' %}
+        {% include 'transferts/blocks/attributions/attributions.js.twig' %}
     </script>
 {% endblock %}
 
@@ -28,8 +30,7 @@
     <div class="row items-push">
         <div class="col-sm-7">
             <h1 class="page-heading">
-
-                {{ title }}
+                {{ pageTitle }}
             </h1>
         </div>
     </div>
@@ -62,7 +63,7 @@
                     <thead>
                     <tr>
                         <th style="width:5%">ID réception</th>
-                        <th style="width:10%">ID client</th>
+                        <th style="width:10%">{{ idClientTitle }}</th>
                         <th style="width:10%">ID projet</th>
                         <th style="width:26%">Motif</th>
                         <th style="width:12%">Montant</th>
@@ -73,7 +74,9 @@
                     </tr>
                     </thead>
                 </table>
-                <p><i class="fa fa-pencil-square" style="color: #b20066"></i> Commentaire existant </p>
+                {% if false == readOnly %}
+                    <p><i class="fa fa-pencil-square" style="color: #b20066"></i> Commentaire existant </p>
+                {% endif %}
                 <p><i class="fa fa-square" style="color: #f9adb3"></i> Rejet </p>
             </div>
         </div>
