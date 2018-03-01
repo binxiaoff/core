@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="client_address", indexes={@ORM\Index(name="idx_client_address_id_client", columns={"id_client"}), @ORM\Index(name="idx_client_address_pays_v2_id_country", columns={"id_country"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class ClientAddress
 {
