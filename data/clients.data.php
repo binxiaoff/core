@@ -1,8 +1,11 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients as ClientEntity;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients as ClientEntity,
+    ClientsStatus,
+    PaysV2,
+    WalletType
+};
 
 class clients extends clients_crud
 {
@@ -352,63 +355,50 @@ class clients extends clients_crud
         return $statement->fetchColumn(0);
     }
 
-    public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
+    /**
+     * @param int|string $clients
+     *
+     * @return array
+     */
+    public function getClientsWithNoWelcomeOffer($clients): array
     {
-        if (null === $sStartDate) {
-            $sStartDate = '2013-01-01';
+        if (1 !== preg_match('/^[1-9]+[, ]*[0-9]*$/', $clients)) {
+            return [];
         }
 
-        if (null === $sEndDate) {
-            $sEndDate = 'NOW()';
-        } else {
-            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
-        }
-
-        if (false === is_null($iClientId)) {
-            $sWhereID = 'AND c.id_client IN (' . $iClientId . ')';
-        } else {
-            $sWhereID = '';
-        }
-
-        $sql = 'SELECT
-                    c.id_client,
-                    c.nom,
-                    c.prenom,
-                    c.email,
-                    companies.name,
-                    DATE(c.added) AS date_creation,
-                    (
-                        SELECT MAX(csh.added)
-                        FROM
-                            clients_status_history csh
-                            INNER JOIN clients ON clients.id_client = csh.id_client
-                            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-                        WHERE
-                            cs.status = '. \clients_status::VALIDATED . '
-                            AND c.id_client = csh.id_client
-                        ORDER BY
-                            csh.added DESC
-                        LIMIT
-                            1
-                    ) AS date_validation
-                FROM
-                    clients c
-                    INNER JOIN wallet w ON w.id_client = c.id_client
-                    LEFT JOIN companies ON c.id_client = companies.id_client_owner
+        $query = '
+            SELECT
+                c.id_client,
+                c.nom,
+                c.prenom,
+                c.email,
+                companies.name,
+                DATE(c.added) AS date_creation,
+                (
+                    SELECT MAX(csh.added)
+                    FROM clients_status_history csh
+                    INNER JOIN clients ON clients.id_client = csh.id_client
+                    INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+                    WHERE cs.status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
+                    ORDER BY csh.added DESC
+                    LIMIT 1
+                ) AS date_validation
+                FROM clients c
+                INNER JOIN wallet w ON w.id_client = c.id_client
+                LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
-                    DATE(c.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
+                    c.id_client IN (' . $clients . ')
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = \'' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '\') AND o.id_wallet_creditor = w.id)
-                    ' . $sWhereID;
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '") AND o.id_wallet_creditor = w.id)';
 
-        $resultat = $this->bdd->query($sql);
+        $result = $this->bdd->query($query);
 
-        $aClientsWithoutWelcomeOffer = array();
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $aClientsWithoutWelcomeOffer[] = $record;
+        $clientsWithoutWelcomeOffer = [];
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $clientsWithoutWelcomeOffer[] = $record;
         }
 
-        return $aClientsWithoutWelcomeOffer;
+        return $clientsWithoutWelcomeOffer;
     }
 
     /**

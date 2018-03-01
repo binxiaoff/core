@@ -5,12 +5,17 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Security, Template
+    Method,
+    Security,
+    Template
 };
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{
-    JsonResponse, RedirectResponse, Request, Response
+    JsonResponse,
+    RedirectResponse,
+    Request,
+    Response
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -19,6 +24,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Bids,
     Clients,
     ClientsHistoryActions,
+    ClientsStatus,
     Loans,
     Product,
     Projects,
@@ -28,14 +34,17 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BidManager, CIPManager
+    BidManager,
+    CIPManager
 };
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
+    BaseUser,
+    UserLender
 };
 use Unilend\Bundle\FrontBundle\Service\{
-    LenderAccountDisplayManager, ProjectDisplayManager
+    LenderAccountDisplayManager,
+    ProjectDisplayManager
 };
 use Unilend\core\Loader;
 
@@ -534,7 +543,7 @@ class ProjectsController extends Controller
             $user = $this->getUser();
 
             if (false === ($user instanceof UserLender)
-                || $user->getClientStatus() < \clients_status::VALIDATED
+                || $user->getClientStatus() < ClientsStatus::VALIDATED
             ) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);

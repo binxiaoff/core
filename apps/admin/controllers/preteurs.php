@@ -1,7 +1,26 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
+    Attachment,
+    AttachmentType,
+    BankAccount,
+    Bids,
+    Clients,
+    ClientsAdresses,
+    ClientsStatus,
+    Companies,
+    LenderStatistic,
+    LenderTaxExemption,
+    Loans,
+    MailTemplates,
+    OffresBienvenues,
+    OperationType,
+    ProjectNotification,
+    ProjectsStatus,
+    UniversignEntityInterface,
+    VigilanceRule,
+    WalletType,
+    Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -397,7 +416,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
-                $clientStatusManager->addClientStatus($this->clients, $this->userEntity->getIdUser(), \clients_status::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
+                $clientStatusManager->addClientStatus($this->clients, $this->userEntity->getIdUser(), ClientsStatus::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
 
                 unset($_SESSION['content_email_completude'][$this->clients->id_client]);
                 $_SESSION['email_completude_confirm'] = true;
@@ -714,15 +733,15 @@ class preteursController extends bootstrap
 
     public function _activation()
     {
-        $this->clients      = $this->loadData('clients');
-        $this->companies    = $this->loadData('companies');
+        $this->clients   = $this->loadData('clients');
+        $this->companies = $this->loadData('companies');
 
         $statusOrderedByPriority = [
-            \clients_status::TO_BE_CHECKED,
-            \clients_status::MODIFICATION,
-            \clients_status::COMPLETENESS_REPLY,
-            \clients_status::COMPLETENESS,
-            \clients_status::COMPLETENESS_REMINDER
+            ClientsStatus::TO_BE_CHECKED,
+            ClientsStatus::MODIFICATION,
+            ClientsStatus::COMPLETENESS_REPLY,
+            ClientsStatus::COMPLETENESS,
+            ClientsStatus::COMPLETENESS_REMINDER
         ];
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -864,7 +883,8 @@ class preteursController extends bootstrap
             $clientData = $this->loadData('clients');
 
             if (false === empty($_POST['id_client'])) {
-                $this->clientsWithoutWelcomeOffer                             = $clientData->getClientsWithNoWelcomeOffer($_POST['id_client']);
+                $this->clientsWithoutWelcomeOffer = $clientData->getClientsWithNoWelcomeOffer($_POST['id_client']);
+
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id_client'] = $_POST['id_client'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez la liste des ID clients';
@@ -1361,7 +1381,7 @@ class preteursController extends bootstrap
             case ClientsStatus::TO_BE_CHECKED :
                 $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $creationTime) . '</div>';
                 break;
-            case ClientsStatus::COMPLETENESS :
+            case ClientsStatus::COMPLETENESS:
             case ClientsStatus::COMPLETENESS_REMINDER:
             case ClientsStatus::COMPLETENESS_REPLY:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';

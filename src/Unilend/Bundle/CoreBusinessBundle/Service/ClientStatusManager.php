@@ -64,7 +64,7 @@ class ClientStatusManager
             $client->update();
         }
 
-        $this->addClientStatus($client, $userId, \clients_status::CLOSED_DEFINITELY, $comment);
+        $this->addClientStatus($client, $userId, ClientsStatus::CLOSED_DEFINITELY, $comment);
     }
 
     /**
@@ -98,11 +98,11 @@ class ClientStatusManager
     }
 
     /**
-     * @param \clients|Clients    $client
-     * @param int                 $userId
-     * @param int                 $clientStatus
-     * @param string|null         $comment
-     * @param int|null            $reminder
+     * @param \clients|Clients $client
+     * @param int              $userId
+     * @param int              $clientStatus
+     * @param string|null      $comment
+     * @param int|null         $reminder
      */
     public function addClientStatus($client, $userId, $clientStatus, $comment = null, $reminder = null)
     {

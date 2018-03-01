@@ -5,12 +5,15 @@ namespace Unilend\Bundle\FrontBundle\Security;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\{
-    Cookie, RedirectResponse, Request
+    Cookie,
+    RedirectResponse,
+    Request
 };
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Encoder\{
-    EncoderAwareInterface, UserPasswordEncoder
+    EncoderAwareInterface,
+    UserPasswordEncoder
 };
 use Symfony\Component\Security\Core\Exception\{
     AccountExpiredException,
@@ -23,20 +26,26 @@ use Symfony\Component\Security\Core\Exception\{
 };
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\{
-    UserInterface, UserProviderInterface
+    UserInterface,
+    UserProviderInterface
 };
 use Symfony\Component\Security\Csrf\{
-    CsrfToken, CsrfTokenManagerInterface
+    CsrfToken,
+    CsrfTokenManagerInterface
 };
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Session\SessionAuthenticationStrategyInterface;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsHistory, LoginLog
+    Clients,
+    ClientsHistory,
+    ClientsStatus,
+    LoginLog
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
+    BaseUser,
+    UserLender
 };
 
 class LoginAuthenticator extends AbstractFormLoginAuthenticator
@@ -372,7 +381,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if (
             $user instanceof UserLender
-            && in_array($user->getClientStatus(), [\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER])
+            && in_array($user->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])
         ) {
             $targetPath = $this->router->generate('lender_completeness');
         }
