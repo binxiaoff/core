@@ -53,6 +53,20 @@ class CompanyAddress
     private $idAttachment;
 
     /**
+     * @var float
+     *
+     * @ORM\Column(name="latitude", type="float", precision=10, scale=0, nullable=true)
+     */
+    private $latitude;
+
+    /**
+     * @var float
+     *
+     * @ORM\Column(name="longitude", type="float", precision=10, scale=0, nullable=true)
+     */
+    private $longitude;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="date_pending", type="datetime", nullable=false)
@@ -212,6 +226,54 @@ class CompanyAddress
     public function getIdAttachment(): ?Attachment
     {
         return $this->idAttachment;
+    }
+
+    /**
+     * Set latitude
+     *
+     * @param float|null $latitude
+     *
+     * @return CompanyAddress
+     */
+    public function setLatitude(?float $latitude): CompanyAddress
+    {
+        $this->latitude = $latitude;
+
+        return $this;
+    }
+
+    /**
+     * Get latitude
+     *
+     * @return float|null
+     */
+    public function getLatitude(): ?float
+    {
+        return $this->latitude;
+    }
+
+    /**
+     * Set longitude
+     *
+     * @param float|null $longitude
+     *
+     * @return CompanyAddress
+     */
+    public function setLongitude(?float $longitude): CompanyAddress
+    {
+        $this->longitude = $longitude;
+
+        return $this;
+    }
+
+    /**
+     * Get longitude
+     *
+     * @return float|null
+     */
+    public function getLongitude(): ?float
+    {
+        return $this->longitude;
     }
 
     /**
