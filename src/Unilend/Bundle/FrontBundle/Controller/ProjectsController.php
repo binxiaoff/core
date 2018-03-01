@@ -15,16 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType,
-    Bids,
-    Clients,
-    ClientsHistoryActions,
-    Loans,
-    Product,
-    Projects,
-    ProjectsStatus,
-    UnderlyingContractAttributeType,
-    WalletType
+    AttachmentType, Bids, Clients, ClientsHistoryActions, Loans, Product, Projects, ProjectsStatus, UnderlyingContractAttributeType, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -1051,7 +1042,10 @@ class ProjectsController extends Controller
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
-        $response         = ['validation' => $validationNeeded];
+        $response         = [
+            'validation'      => $validationNeeded,
+            'isNaturalPerson' => $client->isNaturalPerson()
+        ];
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($client);
