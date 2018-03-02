@@ -176,7 +176,6 @@
             <argument type="service" id="unilend.service.ws_client.infogreffe_manager"/>
             <argument type="service" id="unilend.service.ws_client.ellisphere_manager"/>
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="logger"/>
         </service>
 
@@ -234,7 +233,6 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.service.slack_manager"/>
             <argument type="service" id="unilend.frontbundle.service.universign_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_task_manager"/>
             <argument type="service" id="unilend.service.email_manager"/>
         </service>
@@ -379,11 +377,42 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
         </service>
 
-        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoringManager">
+        <service id="unilend.service.risk_data_monitoring_cycle_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringCycleManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.risk_data_euler_hermes_manager"/>
+            <argument type="service" id="unilend.service.risk_data_altares_manager"/>
+            <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
+        </service>
+
+        <service id="unilend.service.risk_data_altares_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\AltaresManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.ws_client.altares_manager"/>
+            <argument type="service" id="unilend.service.eligibility.company_validator"/>
+            <argument type="service" id="unilend.service.external_data_manager"/>
+            <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+            <argument type="service" id="monolog.logger.wsclient"/>
+        </service>
+
+        <service id="unilend.service.risk_data_euler_hermes_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.ws_client.euler_manager"/>
+            <argument type="service" id="unilend.service.risk_monitoring_data_writer"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="monolog.logger.wsclient"/>
+        </service>
+
+        <service id="unilend.service.risk_monitoring_data_writer" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\DataWriter">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator"/>
+            <argument type="service" id="unilend.service.project_status_manager"/>
+            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
+        </service>
+
+        <service id="unilend.service.risk_data_monitoring_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\MonitoringManger">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
         </service>
 
         <service id="unilend.service.sponsorship_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager">
@@ -420,7 +449,6 @@
         <service id="unilend.service.company_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
-            <argument type="service" id="unilend.service.risk_data_monitoring_manager"/>
             <argument type="service" id="unilend.service.wallet_creation_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="logger"/>

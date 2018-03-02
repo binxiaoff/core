@@ -21,8 +21,6 @@ class CompanyManager
     private $entityManager;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
-    /** @var  RiskDataMonitoringManager */
-    private $riskDataMonitoringManger;
     /** @var WalletCreationManager */
     private $walletCreationManager;
     /** @var TranslatorInterface */
@@ -31,28 +29,25 @@ class CompanyManager
     private $logger;
 
     /**
-     * @param EntityManager             $entityManager
-     * @param ProjectStatusManager      $projectStatusManager
-     * @param RiskDataMonitoringManager $riskDataMonitoringManager
-     * @param WalletCreationManager     $walletCreationManager
-     * @param TranslatorInterface       $translator
-     * @param LoggerInterface           $logger
+     * @param EntityManager         $entityManager
+     * @param ProjectStatusManager  $projectStatusManager
+     * @param WalletCreationManager $walletCreationManager
+     * @param TranslatorInterface   $translator
+     * @param LoggerInterface       $logger
      */
     public function __construct(
         EntityManager $entityManager,
         ProjectStatusManager $projectStatusManager,
-        RiskDataMonitoringManager $riskDataMonitoringManager,
         WalletCreationManager $walletCreationManager,
         TranslatorInterface $translator,
         LoggerInterface $logger
     )
     {
-        $this->entityManager            = $entityManager;
-        $this->projectStatusManager     = $projectStatusManager;
-        $this->riskDataMonitoringManger = $riskDataMonitoringManager;
-        $this->walletCreationManager    = $walletCreationManager;
-        $this->translator               = $translator;
-        $this->logger                   = $logger;
+        $this->entityManager         = $entityManager;
+        $this->projectStatusManager  = $projectStatusManager;
+        $this->walletCreationManager = $walletCreationManager;
+        $this->translator            = $translator;
+        $this->logger                = $logger;
     }
 
     /**
@@ -119,7 +114,6 @@ class CompanyManager
             $this->entityManager->flush($companyStatusHistory);
 
             if (in_array($newStatus->getLabel(), [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION])) {
-                $this->riskDataMonitoringManger->stopMonitoringForSiren($company->getSiren());
                 $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findFundedButNotRepaidProjectsByCompany($company);
 
                 foreach ($companyProjects as $project) {

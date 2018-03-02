@@ -292,7 +292,7 @@ class dossiersController extends bootstrap
             $needs                           = $projectNeed->getTree();
             $this->needs                     = $needs;
             $this->isTakeover                = $this->isTakeover();
-            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
+            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->projectHasMonitoringEvents($this->projectEntity);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($this->projectEntity);
@@ -1326,8 +1326,6 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
-        /** @var \clients_adresses clients_adresses */
-        $this->clients_adresses = $this->loadData('clients_adresses');
         /** @var \companies companies */
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
@@ -1399,6 +1397,10 @@ class dossiersController extends bootstrap
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
             exit;
+        }
+
+        if (false === empty($this->projects->id_company)) {
+            $this->companies->get($this->projects->id_company);
         }
 
         $this->settings->get('Durée des prêts autorisées', 'type');

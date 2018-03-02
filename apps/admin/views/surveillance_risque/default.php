@@ -33,13 +33,6 @@
     .e-statut, .e-raison {
         width: 16%;
     }
-    .e-action {
-        text-align: right;
-    }
-    .e-action .btn-default {
-        padding: 0;
-        width: 22px;
-    }
     .details {
         list-style: none;
         padding: 0; margin: 0;
@@ -78,41 +71,90 @@
     }
 </style>
 <div id="contenu">
-
     <div class="row">
         <div class="col-md-6">
-            <h1>Monitoring</h1>
+            <h1>Surveillance de l'eligibilité</h1>
         </div>
     </div>
 
-    <section id="monitoring-events">
+    <?php if (false === empty($this->eligibilityEvents)) : ?>
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Projets avec des modifications de l'eligibilité</h2>
+            </div>
+        </div>
+        <section id="company-eligibility-events">
+            <div>
+                <table class="table table-striped table-events">
+                    <thead>
+                    <tr>
+                        <th class="e-date header">Date</th>
+                        <th class="e-id header">ID Projet</th>
+                        <th class="e-raison header">Raison Sociale</th>
+                        <th class="e-remaining-capital">CRD</th>
+                        <th class="e-statut header">Statut</th>
+                        <th class="e-change header">Raison de non éligibilité</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->eligibilityEvents as $siren => $events): ?>
+                        <?php foreach ($events['events'] as $project) : ?>
+                            <tr>
+                                <td class="e-date"><?= $this->dateFormatter->format(strtotime($project['added'])) ?></td>
+                                <td class="e-id">
+                                    <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
+                                </td>
+                                <td class="e-raison">
+                                    <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
+                                </td>
+                                <td class="e-remaining-capital">
+                                    <?= isset($project['remainingDueCapital']) ? $this->currencyFormatter->format($project['remainingDueCapital']) : '' ?>
+                                </td>
+                                <td class="e-statut">
+                                    <?= $project['label'] ?>
+                                </td>
+                                <td class="value"><?= $project['value']?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <?php endif; ?>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Projets avec des modifications des notations (2 derniers mois)</h2>
+        </div>
+    </div>
+    <section id="company-rating-events">
         <article class="block">
             <div class="block-content">
                 <table class="table table-striped table-events">
                     <thead>
                     <tr>
                         <th class="e-date header">Date</th>
-                        <th class="e-id header">ID</th>
+                        <th class="e-id header">ID Projet</th>
                         <th class="e-raison header">Raison Sociale</th>
                         <th class="e-remaining-capital">CRD</th>
                         <th class="e-statut header">Statut</th>
                         <th class="e-change header">Changement</th>
-                        <th class="e-action">&nbsp;</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($this->events as $siren => $events): ?>
+                    <?php foreach ($this->companyRatingEvents as $siren => $events): ?>
                         <tr class="siren-line<?php if ($events['activeSiren']) : ?> expand<?php endif; ?>">
-                            <td colspan="7"><span class="sign"></span> <?= $siren . ' ' . $events['label'] ?> (<?= $events['count'] ?>)</td>
+                            <td colspan="6"><span class="sign"></span> <?= $siren . ' ' . $events['label'] ?> (<?= $events['count'] ?>)</td>
                         </tr>
                             <?php foreach ($events['events'] as $project) : ?>
                                 <tr <?php if (false === $events['activeSiren']) : ?> style="display: none;"<?php endif; ?>>
                                     <td class="e-date"><?= $this->dateFormatter->format(strtotime($project['added'])) ?></td>
                                     <td class="e-id">
-                                        <?= $project['id_project'] ?>
+                                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>"><?= $project['id_project'] ?></a>
                                     </td>
                                     <td class="e-raison">
-                                        <?= $project['name'] ?>
+                                        <a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $project['id_client_owner'] ?>"><?= $project['name'] ?></a>
                                     </td>
                                     <td class="e-remaining-capital">
                                         <?= isset($project['remainingDueCapital']) ? $this->currencyFormatter->format($project['remainingDueCapital']) : '' ?>
@@ -123,15 +165,13 @@
                                     <td class="e-change negative" data-change="0">
                                         <table class="details">
                                             <tr>
-                                                <td class="label"><?= $project['type'] ?></td>
-                                                <td class="value"><?= $project['value'] < $project['previous_value'] ? '↓' : '↑' ?> <?= $project['value'] ?></td>
+                                                <td class="label"><?= $this->translator->trans('company-rating_' . $project['company_rating']) ?></td>
+                                                <td class="value"><?= false === empty($project['previous_value']) ? $project['value'] < $project['previous_value'] ? '↓' : '↑'  : ''?>
+                                                    <?= $project['value'] ?></td>
                                                 <td class="label">Précédent</td>
                                                 <td class="value"> <?= $project['previous_value'] ?></td>
                                             </tr>
                                         </table>
-                                    </td>
-                                    <td class="e-action">
-                                        <a href="/dossiers/edit/<?= $project['id_project'] ?>" class="btn-default"><span>></span></a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

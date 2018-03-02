@@ -33,6 +33,12 @@ class CompanyRating
         self::TYPE_EULER_HERMES_TRAFFIC_LIGHT
     ];
 
+    const ALTARES_RATING_TYPES = [
+        self::TYPE_ALTARES_SCORE_20,
+        self::TYPE_ALTARES_SECTORAL_SCORE_100,
+        self::TYPE_ALTARES_VALUE_DATE
+    ];
+
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory
      *

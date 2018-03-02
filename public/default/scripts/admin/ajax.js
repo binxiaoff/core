@@ -186,7 +186,8 @@ function activeUserZone(id_user, id_zone, zone) {
 }
 
 function valid_etape1(id_project) {
-    $('#dossier_etape1').find('.btn_link').hide();
+    $('#dossier_etape1').find('[type=submit]').hide();
+    $('#loader_etape1').show();
 
     var val = {
         montant_etape1: $('#montant_etape1').val(),
@@ -206,7 +207,8 @@ function valid_etape1(id_project) {
             return;
         }
 
-        $('#dossier_etape1').find('.btn_link').show();
+        $('#loader_etape1').hide();
+        $('#dossier_etape1').find('[type=submit]').show();
         $('#error_etape1').html(response.error ? response.error : 'Erreur inconnue');
         $('#error_etape1').slideDown();
 
@@ -390,7 +392,7 @@ function valid_rejete_etape6(status, id_project) {
             tresorerie                      = parseFloat($('#tresorerie').val().replace(',', '.')),
             individuel                      = parseFloat($('#individuel').val().replace(',', '.')),
             global                          = parseFloat($('#global').val().replace(',', '.')),
-            performance_fianciere           = parseFloat($('#performance_fianciere').html().replace(',', '.')),
+            performance_financiere          = parseFloat($('#performance_financiere').html().replace(',', '.')),
             marche_opere                    = parseFloat($('#marche_opere').html().replace(',', '.')),
             dirigeance                      = parseFloat($('#dirigeance').val().replace(',', '.')),
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
@@ -399,11 +401,11 @@ function valid_rejete_etape6(status, id_project) {
             send_email                      = $('[name=send_email]:checked').val(),
             form_ok                         = true;
 
-        if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
+        if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_financiere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
-        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
+        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_financiere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_financiere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
             if (status == 1) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -439,7 +441,7 @@ function valid_rejete_etape6(status, id_project) {
                 structure: structure,
                 rentabilite: rentabilite,
                 tresorerie: tresorerie,
-                performance_fianciere: performance_fianciere,
+                performance_financiere: performance_financiere,
                 global: global,
                 individuel: individuel,
                 marche_opere: marche_opere,
@@ -498,7 +500,7 @@ function valid_rejete_etape7(status, id_project) {
             tresorerie                    = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
             global                        = parseFloat($('#global_comite').val().replace(',', '.')),
             individuel                    = parseFloat($('#individuel_comite').val().replace(',', '.')),
-            performance_fianciere         = parseFloat($('#performance_fianciere_comite').html().replace(',', '.')),
+            performance_financiere        = parseFloat($('#performance_financiere_comite').html().replace(',', '.')),
             marche_opere                  = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
             dirigeance                    = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
             indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
@@ -508,11 +510,11 @@ function valid_rejete_etape7(status, id_project) {
             suspensive_conditions_comment = $('#suspensive-conditions-memo-textarea').length ? $('#suspensive-conditions-memo-textarea').val() : '',
             form_ok = true;
 
-        if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
+        if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_financiere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
-        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
+        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_financiere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_financiere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
             if (status == 1 || status == 4) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -545,7 +547,7 @@ function valid_rejete_etape7(status, id_project) {
                 structure_comite: structure,
                 rentabilite_comite: rentabilite,
                 tresorerie_comite: tresorerie,
-                performance_fianciere_comite: performance_fianciere,
+                performance_financiere_comite: performance_financiere,
                 global_comite: global,
                 individuel_comite: individuel,
                 marche_opere_comite: marche_opere,

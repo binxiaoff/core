@@ -34,6 +34,14 @@
             </argument>
         </service>
 
+        <service id="unilend.service.ws_client.soap_client.altares_risk_monitoring" class="SoapClient">
+            <argument>%altares.wsdl_url_risk_monitoring%</argument>
+            <argument type="collection">
+                <argument key="exception">1</argument>
+                <argument key="trace">1</argument>
+            </argument>
+        </service>
+
         <service id="unilend.service.ws_client.resource_manager" class="Unilend\Bundle\WSClientBundle\Service\ResourceManager">
             <call method="setEntityManager">
                 <argument type="service" id="doctrine.orm.entity_manager"/>
@@ -91,6 +99,7 @@
             <argument type="service" id="unilend.service.ws_client.call_history_handler"/>
             <argument type="service" id="unilend.service.ws_client.soap_client.altares_identity"/>
             <argument type="service" id="unilend.service.ws_client.soap_client.altares_risque"/>
+            <argument type="service" id="unilend.service.ws_client.soap_client.altares_risk_monitoring"/>
             <argument type="service" id="jms_serializer"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>
         </service>

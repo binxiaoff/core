@@ -14,8 +14,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class DebtCollectionMission
 {
-    const TYPE_LITIGATION = 1;
-    const TYPE_AMICABLE   = 2;
+    const TYPE_LITIGATION     = 1;
+    const TYPE_AMICABLE       = 2;
+    const TYPE_PRE_LITIGATION = 3;
 
     /**
      * @var integer
