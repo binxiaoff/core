@@ -157,9 +157,9 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
             return
           }
           // Show the CIP questionnaire
-          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && !data.isNaturalPerson && $modalCipLegalEntityQuestionnaire.length > 0) {
+          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && false === data.isNaturalPerson && $modalCipLegalEntityQuestionnaire.length > 0) {
               // @debug
-              console.log('Asking CIP questionnaire...')
+              // console.log('Asking CIP questionnaire...')
 
               // Show the CIP questionnare confirmation prompt modal
               $modalCipLegalEntityQuestionnaire.uiModal('open')
