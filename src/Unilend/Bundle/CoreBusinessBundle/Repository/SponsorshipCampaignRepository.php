@@ -8,16 +8,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
 class SponsorshipCampaignRepository extends EntityRepository
 {
     /**
-     * @return null|SponsorshipCampaign
+     * @return SponsorshipCampaign|Null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findCurrentCampaign()
+    public function findCurrentCampaign(): ?SponsorshipCampaign
     {
         $queryBuilder = $this->createQueryBuilder('sc');
         $queryBuilder->where('sc.status = :valid')
-            ->andWhere('sc.start <= :now')
-            ->andWhere('sc.end >= :now')
-            ->setParameter('valid', SponsorshipCampaign::STATUS_VALID)
-            ->setParameter('now', new \DateTime('now'));
+            ->andWhere('sc.start <= CURRENT_DATE()')
+            ->andWhere('sc.end >= CURRENT_DATE()')
+            ->setParameter('valid', SponsorshipCampaign::STATUS_VALID);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
@@ -25,9 +25,10 @@ class SponsorshipCampaignRepository extends EntityRepository
     /**
      * @param \DateTime $date
      *
-     * @return mixed
+     * @return SponsorshipCampaign|Null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findCampaignValidAtDate(\DateTime $date)
+    public function findCampaignValidAtDate(\DateTime $date): ?SponsorshipCampaign
     {
         $queryBuilder = $this->createQueryBuilder('sc');
         $queryBuilder->where('sc.start <= :date')
