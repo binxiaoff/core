@@ -1,7 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies
+};
 
 ?>
 <script type="text/javascript">
@@ -622,7 +623,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                             $this->users->get($historyEntry['id_user'], 'id_user');
 
                             switch ($this->clientsStatusForHistory->status) {
-                                case \clients_status::TO_BE_CHECKED: ?>
+                                case ClientsStatus::TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
                                             <?php if (empty($historyEntry['content'])) : ?>
@@ -634,7 +635,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS: ?>
+                                case ClientsStatus::COMPLETENESS: ?>
                                     <tr>
                                         <td>
                                             Complétude le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -643,7 +644,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS_REMINDER: ?>
+                                case ClientsStatus::COMPLETENESS_REMINDER: ?>
                                     <tr>
                                         <td>
                                             Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -651,7 +652,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS_REPLY: ?>
+                                case ClientsStatus::COMPLETENESS_REPLY: ?>
                                     <tr>
                                         <td>
                                             Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -659,7 +660,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::MODIFICATION: ?>
+                                case ClientsStatus::MODIFICATION: ?>
                                     <tr>
                                         <td>
                                             Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -667,7 +668,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::VALIDATED: ?>
+                                case ClientsStatus::VALIDATED: ?>
                                     <tr>
                                         <td>
                                             <?php if ($this->users->id_user > 0) : ?>
@@ -679,14 +680,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_LENDER_REQUEST : ?>
+                                case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
                                     <tr>
                                         <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
                                             le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />
                                             par <?= $this->users->name ?></td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_BY_UNILEND : ?>
+                                case ClientsStatus::CLOSED_BY_UNILEND: ?>
                                     <tr>
                                         <td>Compte clôturé par Unilend (mis hors ligne) <br />
                                             le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?> <br />
@@ -695,7 +696,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_DEFINITELY: ?>
+                                case ClientsStatus::CLOSED_DEFINITELY: ?>
                                     <tr>
                                         <td>
                                             Compte definitvement fermé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
@@ -732,7 +733,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <?php endif; ?>
             </div>
             <div class="droite">
-                <?php if($this->clients_status->status != \clients_status::CLOSED_DEFINITELY) : ?>
+                <?php if ($this->clients_status->status != ClientsStatus::CLOSED_DEFINITELY) : ?>
                 <table class="tabLesStatuts">
                     <tr>
                         <td>
@@ -752,15 +753,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (clients_status::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                            <?php if (ClientsStatus::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
                             <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
-                            <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
+                            <?php if (false === in_array($this->clients_status->status, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                                <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -768,7 +769,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                         <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
+                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) : ?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
                                        class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
@@ -783,10 +784,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
-                            <input type="button"
-                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
-                                   class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
+                            <?php if ($this->clients_status->status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
+                                <input type="button"
+                                       onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
+                                       class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
                             <?php endif; ?>
                         </td>
                     </tr>

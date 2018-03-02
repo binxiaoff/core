@@ -12,8 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Users
 {
-    const USER_ID_CRON  = -1;
-    const USER_ID_FRONT = -2;
+    const USER_ID_CRON       = -1;
+    const USER_ID_FRONT      = -2;
+    const USER_ID_WEBSERVICE = -3;
     // @todo useful because users can't belong to several groups for the moment
     const USER_ID_ALAIN_ELKAIM    = 28;
     const USER_ID_ARNAUD_SCHWARTZ = 23;
