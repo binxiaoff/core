@@ -397,8 +397,13 @@ class AutolendController extends Controller
      */
     private function fillMissingAutolendSettings(array $userSettings, array $projectPeriods, \projects $project, \project_rate_settings $projectRateSettings)
     {
+        $autobidUserSettings = [];
+        foreach ($userSettings as $userSetting) {
+            $autobidUserSettings[$userSetting['period_min'] . $userSetting['evaluation']] = $userSetting;
+        }
+
         $settings           = [];
-        $fakeSettingsStatus = empty($userSettings) ? Autobid::STATUS_ACTIVE : Autobid::STATUS_INACTIVE;
+        $fakeSettingsStatus = empty($autobidUserSettings) ? Autobid::STATUS_ACTIVE : Autobid::STATUS_INACTIVE;
         $availableRisks     = $project->getAvailableRisks();
         rsort($availableRisks);
 
@@ -409,7 +414,7 @@ class AutolendController extends Controller
                 $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
                 $key         = $period['min'] . $risk;
 
-                if (false === array_key_exists($key, $userSettings)) {
+                if (false === array_key_exists($key, $autobidUserSettings)) {
                     $rate           = array_shift($rateSetting);
                     $averageRate    = bcdiv(bcadd($rate['rate_min'], $rate['rate_max']), 2, 1);
                     $settings[$key] = [
@@ -428,7 +433,7 @@ class AutolendController extends Controller
                         ['method' => __METHOD__, 'id_client' => $this->getClient()->getIdClient()]
                     );
                 } else {
-                    $settings[$key] = $userSettings[$key];
+                    $settings[$key] = $autobidUserSettings[$key];
                 }
             }
         }

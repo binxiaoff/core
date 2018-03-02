@@ -131,17 +131,6 @@ class AutobidRepository extends EntityRepository
             $queryBuilder->setFirstResult($offset);
         }
 
-        // @todo temporary patch
-        if (null === $lenderId) {
-            return $queryBuilder->getQuery()->getScalarResult();
-        }
-
-        $settings = [];
-
-        foreach ($queryBuilder->getQuery()->getScalarResult() as $setting) {
-            $settings[$setting['period_min'] . $setting['evaluation']] = $setting;
-        }
-
-        return $settings;
+        return $queryBuilder->getQuery()->getScalarResult();
     }
 }

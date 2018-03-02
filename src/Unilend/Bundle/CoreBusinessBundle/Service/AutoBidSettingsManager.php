@@ -579,19 +579,19 @@ class AutoBidSettingsManager
             $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
         }
 
-        $autoBidSettings = $autoBidRepository->getSettings($wallet);
+        $autoBidSettings = $autoBidRepository->findBy(['idLender' => $wallet]);
         $badSettings     = [];
         foreach ($autoBidSettings as $setting) {
-            if (false === isset($projectMaxRate[$setting['id_period']][$setting['evaluation']])) {
+            if (false === isset($projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()])) {
                 continue;
             }
-            if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
+            if (bccomp($setting->getRateMin(), $projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()], 1) > 0) {
                 $badSettings[] = [
-                    'period_min'       => $setting['period_min'],
-                    'period_max'       => $setting['period_max'],
-                    'evaluation'       => $setting['evaluation'],
-                    'rate_min_autobid' => $setting['rate_min'],
-                    'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],
+                    'period_min'       => $setting->getIdPeriod()->getMin(),
+                    'period_max'       => $setting->getIdPeriod()->getMax(),
+                    'evaluation'       => $setting->getEvaluation(),
+                    'rate_min_autobid' => $setting->getRateMin(),
+                    'rate_max_project' => $projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()],
                 ];
             }
         }
