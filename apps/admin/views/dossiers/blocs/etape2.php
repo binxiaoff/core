@@ -374,7 +374,7 @@
                     <td style="background-color: #ececec;"><?= $this->projectEntity->getIdCompanySubmitter()->getName() ?></td>
                 <?php elseif ($this->hasAdvisor) : ?>
                     <th style="background-color: #ececec;">Raison sociale</th>
-                    <td style="background-color: #ececec;"><?= $this->companies_prescripteurs->name ?><?= empty($this->companies_prescripteurs->siren) ? '' : ' (' . $this->companies_prescripteurs->siren ?></td>
+                    <td style="background-color: #ececec;"><?= $this->companies_prescripteurs->name ?><?= empty($this->companies_prescripteurs->siren) ? '' : ' (' . $this->companies_prescripteurs->siren . ')' ?></td>
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>

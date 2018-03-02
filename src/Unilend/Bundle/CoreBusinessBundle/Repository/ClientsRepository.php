@@ -576,7 +576,7 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getDuplicates($lastName, $firstName, \DateTime $birthdate)
+    public function getDuplicatesByName($lastName, $firstName, \DateTime $birthdate)
     {
         $charactersToReplace = [' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@'];
 
@@ -599,7 +599,7 @@ class ClientsRepository extends EntityRepository
                           FROM clients_status cs
                         LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
                         WHERE csh.id_client = c.id_client
-                        ORDER BY csh.added DESC LIMIT 1) = ' . \clients_status::VALIDATED;
+                        ORDER BY csh.added DESC LIMIT 1) = ' . ClientsStatus::VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()
