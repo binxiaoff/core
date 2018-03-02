@@ -33,9 +33,9 @@ class transfertsController extends bootstrap
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
             Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
-            Receptions::STATUS_ASSIGNED_AUTO   => 'Platform',
+            Receptions::STATUS_ASSIGNED_AUTO   => 'Plateforme',
             Receptions::STATUS_IGNORED_MANUAL  => 'Ignoré manu',
-            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré platform'
+            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré plateforme'
         ];
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
@@ -126,7 +126,7 @@ class transfertsController extends bootstrap
                         3  => $reception['motif'],
                         4  => $currencyFormatter->formatCurrency(round(bcdiv($reception['montant'], 100, 4), 2), 'EUR'),
                         5  => $attribution,
-                        6  => $reception['assigned'] instanceof DateTime ? $reception['assigned']->format('H:i:s d/m/Y') : '',
+                        6  => $reception['assigned'] instanceof DateTime ? $reception['assigned']->format('d/m/Y à H:i:s') : '',
                         7  => $reception['added']->format('d/m/Y'),
                         8  => '',
                         9  => $reception['comment'],
@@ -135,7 +135,7 @@ class transfertsController extends bootstrap
                     ];
                 }
             } catch (Exception $exception) {
-                $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+                $error = 'Une erreur est survenue lors de la récupération des réceptions attribuées.';
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
                 $logger->warning($error . ' Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);

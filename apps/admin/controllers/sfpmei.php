@@ -439,14 +439,12 @@ class sfpmeiController extends bootstrap
         $entityManager        = $this->get('doctrine.orm.entity_manager');
         $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
 
-        $walletType = WalletType::BORROWER;
-
         switch ($this->params[0]) {
             case 'preteurs':
-                $walletType = WalletType::LENDER;
-                // no break
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true]);
+                break;
             case 'emprunteurs':
-                $this->render('transferts/attributions.html.twig', ['walletType' => $walletType, 'readOnly' => true]);
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true]);
                 break;
             case 'non_attribues':
                 $this->receptions = $receptionsRepository->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);

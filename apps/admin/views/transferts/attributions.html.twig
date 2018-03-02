@@ -13,6 +13,15 @@
 {% block pluginsCSS %}
     <link href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
     <link href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.css" type="text/css" rel="stylesheet">
+    <style>
+        .rejected-legend {
+            color: #f9adb3;
+        }
+
+        .rejected-row {
+            background: #f9adb3;
+        }
+    </style>
 {% endblock %}
 
 {% block pluginsJS %}
@@ -27,29 +36,23 @@
 {% endblock %}
 
 {% block pageHeader %}
-    <div class="row items-push">
-        <div class="col-sm-7">
-            <h1 class="page-heading">
-                {{ pageTitle }}
-            </h1>
-        </div>
-    </div>
+    <h1 class="page-heading push">
+        {{ pageTitle }}
+    </h1>
 {% endblock %}
 
 {% block content %}
     <div class="content">
         <div class="block">
-            <div class="block-header">
-                <div class="block-options-simple">
-                    <a href="{{ app.adminUrl }}/transferts/{{ type }}/csv"><i class="fa fa-file-excel-o"></i> Export CSV</a>
-                </div>
-            </div>
             <div class="block-content">
+                <div class="block-options-simple">
+                    <a href="{{ app.adminUrl }}/transferts/{{ type }}/csv" class="btn btn-default push-5-r push-10"><i class="fa fa-file-excel-o"></i> Export CSV</a>
+                </div>
                 <div class="row">
                     <div class="col-md-2">
                         <div class="form-group">
                             <label for="datepik_from">Date début</label>
-                            <input type="text" name="date_from" id="datepik_from" class="js-datepicker form-control " placeholder="dd/mm/yyyy">
+                            <input type="text" name="date_from" id="datepik_from" class="js-datepicker form-control" placeholder="dd/mm/yyyy">
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -59,7 +62,7 @@
                         </div>
                     </div>
                 </div>
-                <table id="receptions-table" class="table table-bordered table-striped js-dataTable-full">
+                <table id="receptions-table" class="table table-bordered table-striped">
                     <thead>
                     <tr>
                         <th style="width:5%">ID réception</th>
@@ -75,9 +78,9 @@
                     </thead>
                 </table>
                 {% if false == readOnly %}
-                    <p><i class="fa fa-pencil-square" style="color: #b20066"></i> Commentaire existant </p>
+                    <p><i class="fa fa-pencil-square"></i> Commentaire existant</p>
                 {% endif %}
-                <p><i class="fa fa-square" style="color: #f9adb3"></i> Rejet </p>
+                <p><i class="fa fa-square rejected-legend"></i> Rejet</p>
             </div>
         </div>
     </div>
@@ -89,7 +92,7 @@
             <div class="modal-content">
                 <div class="block block-themed block-transparent remove-margin-b">
                     <div class="block-header bg-primary">
-                        <h5 class="block-title">Operation</h5>
+                        <h5 class="block-title">Opération</h5>
                     </div>
                     <div class="block-content">
                         <div class="line"></div>
@@ -113,13 +116,13 @@
                             <input type="hidden" name="reception">
                             <div class="form-group">
                                 <label>Commentaire</label>
-                                <textarea name="comment" class="form-control required" rows="5"></textarea>
+                                <textarea name="comment" class="form-control" required rows="5"></textarea>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-sm btn-primary">Valider</button>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-sm btn-primary">Valider</button>
+                        </div>
                     </div>
                 </form>
             </div>

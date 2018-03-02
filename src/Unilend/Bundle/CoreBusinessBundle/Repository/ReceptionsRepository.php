@@ -55,15 +55,26 @@ class ReceptionsRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder
             ->select('
-                r.idReception, r.motif, r.montant, r.type, r.statusVirement, r.statusPrelevement, r.statusBo, r.ligne,
-                IDENTITY(r.idClient) AS idClient, IDENTITY(r.idProject) AS idProject, IDENTITY(r.idUser) AS idUser,
-                r.comment, r.added,  o.added as assigned
+                r.idReception,
+                r.motif,
+                r.montant,
+                r.type,
+                r.statusVirement,
+                r.statusPrelevement,
+                r.statusBo,
+                r.ligne,
+                IDENTITY(r.idClient) AS idClient,
+                IDENTITY(r.idProject) AS idProject,
+                IDENTITY(r.idUser) AS idUser,
+                r.comment,
+                r.added,
+                o.added AS assigned
             ')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
             ->where('r.idClient IS NOT NULL')
-            ->andWhere('ot.label in (:provisionOrReject)')
+            ->andWhere('ot.label IN (:provisionOrReject)')
             ->andWhere('w.idType = :walletType')
             ->setParameter('provisionOrReject', [OperationType::BORROWER_PROVISION, OperationType::BORROWER_PROVISION_CANCEL])
             ->setParameter('walletType', $walletType);
@@ -89,6 +100,9 @@ class ReceptionsRepository extends EntityRepository
         if (false === empty($search)) {
             $orClause = [];
             foreach ($search as $column => $value) {
+                if (false === is_numeric($value)) {
+                    $value = '\'' . $value . '\'';
+                }
                 $orClause[] = $queryBuilder->expr()->eq($column, $value);
             }
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
@@ -122,12 +136,12 @@ class ReceptionsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder
-            ->select('count(r)')
+            ->select('COUNT(r)')
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
             ->where('r.idProject IS NOT NULL')
-            ->andWhere('ot.label in (:provisionOrReject)')
+            ->andWhere('ot.label IN (:provisionOrReject)')
             ->andWhere('w.idType = :walletType')
             ->setParameter('provisionOrReject', [OperationType::BORROWER_PROVISION, OperationType::BORROWER_PROVISION_CANCEL])
             ->setParameter('walletType', $walletType);
@@ -139,6 +153,9 @@ class ReceptionsRepository extends EntityRepository
         if (false === empty($search)) {
             $orClause = [];
             foreach ($search as $column => $value) {
+                if (false === is_numeric($value)) {
+                    $value = '\'' . $value . '\'';
+                }
                 $orClause[] = $queryBuilder->expr()->eq($column, $value);
             }
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));

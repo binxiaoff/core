@@ -22,8 +22,8 @@ $(function () {
         ],
         order: [[0, "desc"]],
         ajax: {
-            url: '/transferts/attribues/{{ type }}',
-            "data": function (d) {
+            url: '{{ app.adminUrl }}/transferts/attribues/{{ type }}',
+            data: function (d) {
                 return $.extend({}, d, {
                     date_from: $('#datepik_from').val(),
                     date_to: $('#datepik_to').val()
@@ -39,6 +39,22 @@ $(function () {
             var comment = data[9]
             var line = data[10]
             var rejection = data[11]
+            var clientId = data[1]
+            var projectId = data[2]
+            var clientIdColum = $row.find('td:eq(1)')
+            var projectIdColum = $row.find('td:eq(2)')
+            var amountColumn = $row.find('td:eq(4)')
+
+            {% if false == readOnly %}
+                {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+            clientIdColum.html('<a href="{{ app.adminUrl }}/preteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+                {% else %}
+            clientIdColum.html('<a href="{{ app.adminUrl }}/emprunteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+            projectIdColum.html('<a href="{{ app.adminUrl }}/dossiers/edit/' + projectId + '" target="_blank">' + projectId + '</a>')
+                {% endif %}
+            {% endif %}
+
+            amountColumn.addClass('text-right')
 
             var addCommentBtn = '<a class="table-action add-comment" data-comment="' + comment + '" data-toggle="modal" data-target="#modal-reception-comment" title="Commenter l\'opération">' +
                 '<span class="fa fa-pencil"></span>' +
@@ -48,7 +64,7 @@ $(function () {
                 '</a>'
 
             if (rejection) {
-                $row.css('background', '#f9adb3')
+                $row.addClass('rejected-row')
             }
 
             if (comment !== null) {
@@ -83,18 +99,21 @@ $(function () {
         var $modal = $(this)
         var $invoker = $(e.relatedTarget)
         $modal.find('[name=reception]').val($invoker.closest('tr').data('reception-id'))
-        $modal.find('[name=comment]').html($invoker.data('comment'))
+        $modal.find('[name=comment]').val($invoker.data('comment'))
     })
 
     $(document).on('hidden.bs.modal', '#modal-reception-comment', function () {
-        $(this).find('[name=comment]').html('')
+        $(this).find('[name=comment]').val('')
     })
 
     $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
         e.preventDefault()
         var $form = $(this)
+
         if ($form.find('[name=comment]').val() !== '') {
             var $reception = $form.find('[name=reception]')
+            var $blockContainer = $form.find('.block')
+            $blockContainer.addClass('block-opt-refresh')
             $.ajax({
                 url: $form.attr('action'),
                 method: $form.attr('method'),
@@ -102,7 +121,7 @@ $(function () {
                 dataType: 'json',
                 success: function (response) {
                     if (response.success) {
-                        jQuery('#modal-reception-comment').modal('hide');
+                        $('#modal-reception-comment').modal('hide');
                         var $row = $('[data-reception-id="' + $reception.val() + '"]')
                         $row.find('.add-comment')
                             .data('comment', response.data.comment)
@@ -113,10 +132,11 @@ $(function () {
                 },
                 error: function () {
                     alert('Une erreur est survenue')
+                },
+                complete: function () {
+                    $blockContainer.removeClass('block-opt-refresh')
                 }
             })
-        } else {
-            $form.find('[name=comment]').css('border-color', 'red')
         }
     })
 
