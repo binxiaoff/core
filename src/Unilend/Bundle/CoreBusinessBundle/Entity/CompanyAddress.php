@@ -54,16 +54,16 @@ class CompanyAddress
     private $idAttachment;
 
     /**
-     * @var float
+     * @var string
      *
-     * @ORM\Column(name="latitude", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=0, nullable=true)
      */
     private $latitude;
 
     /**
-     * @var float
+     * @var string
      *
-     * @ORM\Column(name="longitude", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="longitude", type="decimal", precision=10, scale=0, nullable=true)
      */
     private $longitude;
 
@@ -232,11 +232,11 @@ class CompanyAddress
     /**
      * Set latitude
      *
-     * @param float|null $latitude
+     * @param string|null $latitude
      *
      * @return CompanyAddress
      */
-    public function setLatitude(?float $latitude): CompanyAddress
+    public function setLatitude(?string $latitude): CompanyAddress
     {
         $this->latitude = $latitude;
 
@@ -246,9 +246,9 @@ class CompanyAddress
     /**
      * Get latitude
      *
-     * @return float|null
+     * @return string|null
      */
-    public function getLatitude(): ?float
+    public function getLatitude(): ?string
     {
         return $this->latitude;
     }
@@ -256,11 +256,11 @@ class CompanyAddress
     /**
      * Set longitude
      *
-     * @param float|null $longitude
+     * @param string|null $longitude
      *
      * @return CompanyAddress
      */
-    public function setLongitude(?float $longitude): CompanyAddress
+    public function setLongitude(?string $longitude): CompanyAddress
     {
         $this->longitude = $longitude;
 
@@ -270,9 +270,9 @@ class CompanyAddress
     /**
      * Get longitude
      *
-     * @return float|null
+     * @return string|null
      */
-    public function getLongitude(): ?float
+    public function getLongitude(): ?string
     {
         return $this->longitude;
     }
