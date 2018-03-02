@@ -56,14 +56,14 @@ class CompanyAddress
     /**
      * @var string
      *
-     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="latitude", type="decimal", precision=10, scale=8, nullable=true)
      */
     private $latitude;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="longitude", type="decimal", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="longitude", type="decimal", precision=11, scale=8, nullable=true)
      */
     private $longitude;
 
