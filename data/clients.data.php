@@ -1,10 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients as ClientEntity,
-    ClientsStatus,
-    PaysV2,
-    WalletType
+    Clients as ClientEntity, ClientsStatus, PaysV2, WalletType
 };
 
 class clients extends clients_crud

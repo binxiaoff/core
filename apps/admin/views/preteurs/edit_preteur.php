@@ -1,9 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients,
-    ClientsStatus,
-    Companies
+    Clients, ClientsStatus, Companies
 };
 
 ?>
@@ -786,7 +784,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, [ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                            <?php if ($this->clients_status->status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
                                        class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
