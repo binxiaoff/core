@@ -5,17 +5,22 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ClientsStatus, Users
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\core\Loader;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 {
-    /** @var  EntityManager */
-    private $oEntityManager;
-    /** @var  \dates */
-    private $oDate;
+    const REMINDER_DELAY_DAYS_FIRST  = 8;
+    const REMINDER_DELAY_DAYS_SECOND = 30;
+
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+
+    /** @var \dates */
+    private $dates;
 
     /**
      * @see Command
@@ -27,74 +32,59 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             ->setDescription('Sends an email to potential lenders reminding them of missing documents');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        $this->oDate          = Loader::loadLib('dates');
+        $this->entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        $this->dates                  = Loader::loadLib('dates');
         /** @var \clients $clients */
-        $clients = $this->oEntityManager->getRepository('clients');
-        $this->oEntityManager->getRepository('clients_status');
-        /** @var \clients_status_history $clients_status_history */
-        $clients_status_history = $this->oEntityManager->getRepository('clients_status_history');
-        /** @var ClientStatusManager $clientStatusManager */
+        $clients = $this->entityManagerSimulator->getRepository('clients');
+        /** @var \clients_status_history $clientStatusHistory */
+        $clientStatusHistory = $this->entityManagerSimulator->getRepository('clients_status_history');
         $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
 
-        $iTimeMinus8D = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
-        $aLenders     = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS, '', 'added_status DESC');
-        $logger = $this->getContainer()->get('monolog.logger.console');
+        $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
+        $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);
 
-        foreach ($aLenders as $aLender) {
-            $timestamp_date = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
-            $clients->get($aLender['id_client']);
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS, '', 'added_status DESC');
+        foreach ($lenders as $lender) {
+            $statusDate = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
-            if ($timestamp_date <= $iTimeMinus8D) {
-                $clients_status_history->get($aLender['id_client_status_history'], 'id_client_status_history');
-                try {
-                    $this->sendReminderEmail($clients, $aLender, $clients_status_history->content);
-                    $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $clients_status_history->content);
-                } catch (\Exception $exception) {
-                    $logger->warning(
-                        'Could not send email: completude - Exception: ' . $exception->getMessage(),
-                        ['mail_type' => 'completude', 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
+            if ($statusDate <= $firstReminderDate) {
+                $clientStatusHistory->get($lender['id_client_status_history'], 'id_client_status_history');
+                $clients->get($lender['id_client']);
+                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->content);
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->content);
             }
         }
 
-        $aLenders = $clients->selectPreteursByStatus(\clients_status::COMPLETENESS_REMINDER, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS_REMINDER, '', 'added_status DESC');
+        foreach ($lenders as $lender) {
+            $clientStatusHistory->get($lender['id_client_status_history'], 'id_client_status_history');
 
-        $iTimeMinus8D  = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
-        $iTimeMinus30D = mktime(0, 0, 0, date("m"), date("d") - 30, date("Y"));
+            $sendReminder   = false;
+            $reminder       = null;
+            $reminderNumber = $clientStatusHistory->numero_relance;
+            $statusDate     = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
-        foreach ($aLenders as $aLender) {
-            $bSendReminder     = false;
-            $reminder          = null;
-            $aClientLastStatus = $clients_status_history->get_last_statut($aLender['id_client']);
-            $iRevivalNumber    = $aClientLastStatus['numero_relance'];
-            $timestamp_date    = $this->oDate->formatDateMySqlToTimeStamp($aLender['added_status']);
-            $clients->get($aLender['id_client']);
-
-            if ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 0) {// Reminder D+15
-                $bSendReminder = true;
-                $reminder      = 2;
-            } elseif ($timestamp_date <= $iTimeMinus8D && $iRevivalNumber == 2) {// Reminder D+30
-                $bSendReminder = true;
-                $reminder      = 3;
-            } elseif ($timestamp_date <= $iTimeMinus30D && $iRevivalNumber == 3) {// Reminder D+60
-                $bSendReminder = true;
-                $reminder      = 4;
+            if ($statusDate <= $firstReminderDate && $reminderNumber == 0) {
+                $sendReminder = true;
+                $reminder     = 2;
+            } elseif ($statusDate <= $firstReminderDate && $reminderNumber == 2) {
+                $sendReminder = true;
+                $reminder     = 3;
+            } elseif ($statusDate <= $secondReminderDate && $reminderNumber == 3) {
+                $sendReminder = true;
+                $reminder     = 4;
             }
 
-            if (true === $bSendReminder) {
-                try {
-                    $this->sendReminderEmail($clients, $aLender, $aClientLastStatus['content']);
-                    $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $aClientLastStatus['content'], $reminder);
-                } catch (\Exception $exception) {
-                    $logger->warning(
-                        'Could not send email: completude - Reminder #' . $reminder . ' - Exception: ' . $exception->getMessage(),
-                        ['mail_type' => 'completude', 'id_client' => $aLender['id_client'], 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
+            if (true === $sendReminder) {
+                $clients->get($lender['id_client']);
+                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->content);
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->content, $reminder);
             }
         }
     }
@@ -104,10 +94,10 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
      * @param array    $lender
      * @param string   $content
      */
-    private function sendReminderEmail(\clients $client, array $lender, $content)
+    private function sendReminderEmail(\clients $client, array $lender, string $content): void
     {
         $timeCreate = strtotime($lender['added_status']);
-        $month      = $this->oDate->tableauMois['fr'][date('n', $timeCreate)];
+        $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
         $keywords   = [
             'firstName'        => $client->prenom,
             'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
@@ -116,10 +106,17 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             'lenderPattern'    => $client->getLenderPattern($client->id_client)
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
-        $message->setTo($client->email);
-        $mailer = $this->getContainer()->get('mailer');
-        $mailer->send($message);
+        try {
+            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
+            $message->setTo($client->email);
+
+            $mailer = $this->getContainer()->get('mailer');
+            $mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->warning(
+                'Could not send email: "completude" - Exception: ' . $exception->getMessage(),
+                ['mail_type' => 'completude', 'id_client' => $lender['id_client'], 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
     }
 }

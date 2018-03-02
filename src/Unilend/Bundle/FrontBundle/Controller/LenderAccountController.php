@@ -4,8 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
-
 
 class LenderAccountController extends Controller
 {
@@ -18,7 +18,7 @@ class LenderAccountController extends Controller
         $template = [
             'route'                      => $route,
             'isAutobidQualified'         => $this->get('unilend.service.autobid_settings_manager')->isQualified($this->getClient()),
-            'isValidatedClient'          => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED,
+            'isValidatedClient'          => $this->getUser()->getClientStatus() >= ClientsStatus::VALIDATED,
             'currentSponsorshipCampaign' => $this->get('unilend.service.sponsorship_manager')->getCurrentSponsorshipCampaign(),
             'isBlacklisted'              => $this->get('unilend.service.sponsorship_manager')->isClientCurrentlyBlacklisted($this->getClient())
         ];
