@@ -26,23 +26,20 @@ class ProjectStatusManager
     private $slackManager;
     /** @var UniversignManager */
     private $universignManager;
-    /** @var RiskDataMonitoringManager */
-    private $riskDataMonitoringManager;
     /** @var ProjectRepaymentTaskManager */
     private $projectRepaymentTaskManager;
     /** @var MailerManager */
     private $mailerManager;
 
     /**
-     * @param EntityManagerSimulator          $entityManagerSimulator
-     * @param EntityManager                   $entityManager
-     * @param TranslatorInterface             $translator
-     * @param LoggerInterface                 $logger
-     * @param SlackManager                    $slackManager
-     * @param UniversignManager               $universignManager
-     * @param RiskDataMonitoringManager       $riskDataMonitoringManager
-     * @param ProjectRepaymentTaskManager     $projectRepaymentTaskManager
-     * @param MailerManager                   $mailerManager
+     * @param EntityManagerSimulator      $entityManagerSimulator
+     * @param EntityManager               $entityManager
+     * @param TranslatorInterface         $translator
+     * @param LoggerInterface             $logger
+     * @param SlackManager                $slackManager
+     * @param UniversignManager           $universignManager
+     * @param ProjectRepaymentTaskManager $projectRepaymentTaskManager
+     * @param MailerManager               $mailerManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -51,7 +48,6 @@ class ProjectStatusManager
         LoggerInterface $logger,
         SlackManager $slackManager,
         UniversignManager $universignManager,
-        RiskDataMonitoringManager $riskDataMonitoringManager,
         ProjectRepaymentTaskManager $projectRepaymentTaskManager,
         MailerManager $mailerManager
     )
@@ -62,7 +58,6 @@ class ProjectStatusManager
         $this->logger                      = $logger;
         $this->slackManager                = $slackManager;
         $this->universignManager           = $universignManager;
-        $this->riskDataMonitoringManager   = $riskDataMonitoringManager;
         $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
         $this->mailerManager               = $mailerManager;
     }
@@ -351,10 +346,6 @@ class ProjectStatusManager
                 break;
             case ProjectsStatus::PRET_REFUSE:
                 $this->universignManager->cancelProxyAndMandate($project);
-                break;
-            case ProjectsStatus::REMBOURSE:
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-                $this->riskDataMonitoringManager->stopMonitoringForSiren($project->getIdCompany()->getSiren());
                 break;
             case ProjectsStatus::PROBLEME:
                 $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);

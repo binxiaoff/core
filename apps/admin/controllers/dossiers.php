@@ -292,7 +292,7 @@ class dossiersController extends bootstrap
             $needs                           = $projectNeed->getTree();
             $this->needs                     = $needs;
             $this->isTakeover                = $this->isTakeover();
-            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
+            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->projectHasMonitoringEvents($this->projectEntity);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($this->projectEntity);
