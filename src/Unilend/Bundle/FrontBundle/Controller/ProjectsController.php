@@ -1042,7 +1042,10 @@ class ProjectsController extends Controller
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
-        $response         = ['validation' => $validationNeeded];
+        $response         = [
+            'validation'      => $validationNeeded,
+            'isNaturalPerson' => $client->isNaturalPerson()
+        ];
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($client);
