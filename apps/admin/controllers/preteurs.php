@@ -1528,7 +1528,7 @@ class preteursController extends bootstrap
             $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
         }
 
-        header('Location:  ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
         die;
     }
 
