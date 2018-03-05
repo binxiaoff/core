@@ -153,12 +153,16 @@ class ProjectLifecycleManager
     public function prePublish(\projects $project) : void
     {
         $this->autoBid($project);
+        $isFunded = $this->projectManager->isFunded($project);
 
-        if ($this->projectManager->isFunded($project)) {
+        if ($isFunded) {
             $this->markAsFunded($project);
         }
-
         $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
+
+        if ($isFunded) {
+            $this->mailerManager->sendFundedToBorrower($project);
+        }
         $this->insertNewProjectEmails($project);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $project);
     }
