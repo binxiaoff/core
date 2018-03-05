@@ -419,8 +419,9 @@ class UnilendStatsRepository extends EntityRepository
      * @param $typeStat
      *
      * @return null|UnilendStats
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getStatisticAtDate(\DateTime $date, $typeStat)
+    public function findStatisticAtDate(\DateTime $date, string $typeStat): ?UnilendStats
     {
         $qb = $this->createQueryBuilder('us');
         $qb->where('DATE(us.added) = :date')
@@ -643,6 +644,26 @@ class UnilendStatsRepository extends EntityRepository
             ->groupBy('availableDate')
             ->orderBy('us.added', 'DESC')
             ->setParameter('type', $type);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param \DateTime $end
+     * @param int       $months
+     *
+     * @return array
+     */
+    public function getQuarterIncidenceRate(\DateTime $end, int $months): array
+    {
+        $queryBuilder = $this->createQueryBuilder('us');
+        $queryBuilder
+            ->where('us.typeStat = :quarterType')
+            ->andWhere('TIMESTAMPDIFF(MONTH, us.added, :end) <= :months')
+            ->orderBy('us.added', 'ASC')
+            ->setParameter('quarterType', UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+            ->setParameter('months', $months)
+            ->setParameter('end', $end);
 
         return $queryBuilder->getQuery()->getResult();
     }
