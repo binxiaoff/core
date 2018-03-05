@@ -25,7 +25,7 @@ class SponsorshipCampaignRepository extends EntityRepository
     /**
      * @param \DateTime $date
      *
-     * @return SponsorshipCampaign|Null
+     * @return SponsorshipCampaign|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function findCampaignValidAtDate(\DateTime $date): ?SponsorshipCampaign
