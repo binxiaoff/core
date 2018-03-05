@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Documents\Address;
 
 /**
  * CompanyAddress
@@ -122,6 +123,15 @@ class CompanyAddress
      */
     private $idCountry;
 
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AddressType
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AddressType")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     * })
+     */
+    private $idType;
 
     /**
      * Get id
@@ -465,5 +475,25 @@ class CompanyAddress
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param AddressType $idType
+     *
+     * @return CompanyAddress
+     */
+    public function setIdType(AddressType $idType): CompanyAddress
+    {
+        $this->idType = $idType;
+
+        return $this;
+    }
+
+    /**
+     * @return AddressType
+     */
+    public function getIdType(): AddressType
+    {
+        return $this->idType;
     }
 }
