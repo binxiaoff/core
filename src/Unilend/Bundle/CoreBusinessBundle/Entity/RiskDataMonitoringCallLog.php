@@ -8,7 +8,6 @@ use Doctrine\ORM\Mapping as ORM;
  * RiskDataMonitoringCallLog
  *
  * @ORM\Table(name="risk_data_monitoring_call_log", indexes={@ORM\Index(name="idx_risk_data_monitoring_call_log_risk_data_monitoring", columns={"id_risk_data_monitoring"}), @ORM\Index(name="idx_risk_data_monitoring_call_log_company_rating_history", columns={"id_company_rating_history"})})
- * @ORM\Entity
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringCallLogRepository")
  * @ORM\HasLifecycleCallbacks()
  */
@@ -66,7 +65,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): RiskDataMonitoringCallLog
     {
         $this->added = $added;
 
@@ -78,7 +77,7 @@ class RiskDataMonitoringCallLog
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -90,7 +89,7 @@ class RiskDataMonitoringCallLog
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): RiskDataMonitoringCallLog
     {
         $this->updated = $updated;
 
@@ -102,7 +101,7 @@ class RiskDataMonitoringCallLog
      *
      * @return \DateTime
      */
-    public function getUpdated()
+    public function getUpdated(): \DateTime
     {
         return $this->updated;
     }
@@ -112,7 +111,7 @@ class RiskDataMonitoringCallLog
      *
      * @return integer
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -120,11 +119,11 @@ class RiskDataMonitoringCallLog
     /**
      * Set idRiskDataMonitoring
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring $idRiskDataMonitoring
+     * @param RiskDataMonitoring $idRiskDataMonitoring
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setIdRiskDataMonitoring(RiskDataMonitoring $idRiskDataMonitoring)
+    public function setIdRiskDataMonitoring(RiskDataMonitoring $idRiskDataMonitoring): RiskDataMonitoringCallLog
     {
         $this->idRiskDataMonitoring = $idRiskDataMonitoring;
 
@@ -134,9 +133,9 @@ class RiskDataMonitoringCallLog
     /**
      * Get idRiskDataMonitoring
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\RiskDataMonitoring
+     * @return RiskDataMonitoring
      */
-    public function getIdRiskDataMonitoring()
+    public function getIdRiskDataMonitoring(): RiskDataMonitoring
     {
         return $this->idRiskDataMonitoring;
     }
@@ -144,11 +143,11 @@ class RiskDataMonitoringCallLog
     /**
      * Set idCompanyRatingHistory
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory $idCompanyRatingHistory
+     * @param CompanyRatingHistory $idCompanyRatingHistory
      *
      * @return RiskDataMonitoringCallLog
      */
-    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory = null)
+    public function setIdCompanyRatingHistory(CompanyRatingHistory $idCompanyRatingHistory): RiskDataMonitoringCallLog
     {
         $this->idCompanyRatingHistory = $idCompanyRatingHistory;
 
@@ -158,9 +157,9 @@ class RiskDataMonitoringCallLog
     /**
      * Get idCompanyRatingHistory
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory
+     * @return CompanyRatingHistory
      */
-    public function getIdCompanyRatingHistory()
+    public function getIdCompanyRatingHistory(): CompanyRatingHistory
     {
         return $this->idCompanyRatingHistory;
     }
@@ -168,7 +167,7 @@ class RiskDataMonitoringCallLog
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -178,7 +177,7 @@ class RiskDataMonitoringCallLog
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

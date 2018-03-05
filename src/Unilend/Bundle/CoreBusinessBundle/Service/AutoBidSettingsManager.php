@@ -1,11 +1,12 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Autobid, Clients, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -19,16 +20,16 @@ class AutoBidSettingsManager
     const CGV_AUTOBID = 53;
 
     /** @var ClientSettingsManager */
-    private $oClientSettingsManager;
+    private $clientSettingsManager;
 
     /** @var ClientManager */
-    private $oClientManager;
+    private $clientManager;
 
     /** @var NotificationManager */
-    private $oNotificationManager;
+    private $notificationManager;
 
     /** @var LenderManager */
-    private $oLenderManager;
+    private $lenderManager;
 
     /** @var  ProductManager */
     private $productManager;
@@ -42,59 +43,64 @@ class AutoBidSettingsManager
     /** @var  EntityManager */
     private $entityManager;
 
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * AutoBidSettingsManager constructor.
+     *
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
-     * @param ClientSettingsManager  $oClientSettingsManager
-     * @param ClientManager          $oClientManager
-     * @param NotificationManager    $oNotificationManager
-     * @param LenderManager          $oLenderManager
+     * @param ClientSettingsManager  $clientSettingsManager
+     * @param ClientManager          $clientManager
+     * @param NotificationManager    $notificationManager
+     * @param LenderManager          $lenderManager
      * @param ProductManager         $productManager
      * @param ContractManager        $contractManager
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
-        ClientSettingsManager $oClientSettingsManager,
-        ClientManager $oClientManager,
-        NotificationManager $oNotificationManager,
-        LenderManager $oLenderManager,
+        ClientSettingsManager $clientSettingsManager,
+        ClientManager $clientManager,
+        NotificationManager $notificationManager,
+        LenderManager $lenderManager,
         ProductManager $productManager,
-        ContractManager $contractManager
+        ContractManager $contractManager,
+        LoggerInterface $logger
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
-        $this->oClientSettingsManager = $oClientSettingsManager;
-        $this->oClientManager         = $oClientManager;
-        $this->oNotificationManager   = $oNotificationManager;
-        $this->oLenderManager         = $oLenderManager;
+        $this->clientSettingsManager  = $clientSettingsManager;
+        $this->clientManager          = $clientManager;
+        $this->notificationManager    = $notificationManager;
+        $this->lenderManager          = $lenderManager;
         $this->productManager         = $productManager;
         $this->contractManager        = $contractManager;
+        $this->logger                 = $logger;
     }
 
     /**
      * @param Clients $client
      *
      * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function on(Clients $client)
+    public function on(Clients $client): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $wallet            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
 
-        if (false === empty($client) && $this->isQualified($client)
-            && $this->oLenderManager->canBid($client)
-        ) {
-            $this->oClientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON);
+        if (false === empty($client) && $this->isQualified($client) && $this->lenderManager->canBid($client)) {
+            $this->clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON);
 
-            if (0 == $oAutoBid->counter('id_lender = ' . $wallet->getId())) {
-                $this->oNotificationManager->create(
+            if (null === $autobidRepository->findOneBy(['idLender' => $wallet])) {
+                $this->notificationManager->create(
                     Notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
                     \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
                     $client->getIdClient(),
@@ -108,6 +114,7 @@ class AutoBidSettingsManager
      * @param Clients $client
      *
      * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function off(Clients $client)
     {
@@ -115,7 +122,7 @@ class AutoBidSettingsManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $this->oClientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF);
+        $this->clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF);
     }
 
     /**
@@ -123,7 +130,7 @@ class AutoBidSettingsManager
      *
      * @return bool
      */
-    public function isQualified(Clients $client)
+    public function isQualified(Clients $client): bool
     {
         if (false === $client->isLender()) {
             return false;
@@ -144,7 +151,7 @@ class AutoBidSettingsManager
             }
         }
 
-        if ($settings->value && $this->oClientManager->isAcceptedCGV($client, self::CGV_AUTOBID) || $this->oClientManager->isBetaTester($client)) {
+        if ($settings->value && $this->clientManager->isAcceptedCGV($client, self::CGV_AUTOBID) || $this->clientManager->isBetaTester($client)) {
             return true;
         }
 
@@ -152,91 +159,91 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param Clients $client
-     * @param string  $sEvaluation
-     * @param int     $iAutoBidPeriodId
-     * @param float   $fRate
-     * @param int     $iAmount
+     * @param Clients       $client
+     * @param string        $evaluation
+     * @param ProjectPeriod $autobidPeriodId
+     * @param string        $rate
+     * @param int           $amount
      *
-     * @return bool
      * @throws \Exception
      */
-    public function saveSetting(Clients $client, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
+    public function saveSetting(Clients $client, string $evaluation, ProjectPeriod $autobidPeriodId, string $rate, int $amount): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        /** @var \settings $oSettings */
-        $oSettings = $this->entityManagerSimulator->getRepository('settings');
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
-        /** @var \bids $oBid */
-        $oBid = $this->entityManagerSimulator->getRepository('bids');
+        $settingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $autobidRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $bidsRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $oSettings->get('Pret min', 'type');
-        $iAmountMin = (int) $oSettings->value;
+        $amountSetting = $settingsRepository->findOneBy(['type' => 'Pret min']);
+        if (null === $amountSetting) {
+            throw new \Exception('Error while calling ' . __METHOD__ . ' Autobid minimum amount setting not found');
+        }
+        $amountMin = (int) $amountSetting->getValue();
 
-        if ($iAmount < $iAmountMin) {
-            return false;
+        if ($amount < $amountMin) {
+            throw new \Exception('Error while calling ' . __METHOD__ . ' Amount must be >= ' . $amountMin . ': ' . $amount . ' given');
         }
 
-        if (false === $this->isRateValid($fRate)) {
-            return false;
+        if (false === $this->isRateValid($rate)) {
+            throw new \Exception('Error while calling ' . __METHOD__ . ' Interest rate is not valid : ' . $rate);
         }
 
-        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $wallet->getId());
+        /** @var Autobid[] $autobidEntities */
+        $autobidEntities = $autobidRepository->findBy(['evaluation' => $evaluation, 'idPeriod' => $autobidPeriodId, 'status' => [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE], 'idLender' => $wallet]);
 
-        if (empty($aAutoBids)) {
-            $this->createSetting($wallet->getId(), $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
+        if (empty($autobidEntities)) {
+            $this->createSetting($wallet, $evaluation, $autobidPeriodId, $rate, $amount);
         } else {
-            $aAutoBidActive = array_shift($aAutoBids);
+            $autoBidActiveEntity = array_shift($autobidEntities);
 
-            if ($oBid->exist($aAutoBidActive['id_autobid'], 'id_autobid')) {
-                $oAutoBid->get($aAutoBidActive['id_autobid']);
-                $oAutoBid->status = \autobid::STATUS_ARCHIVED;
-                $oAutoBid->update();
-                $this->createSetting($wallet->getId(), $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
+            if ($bidsRepository->findOneBy(['idAutobid' => $autoBidActiveEntity])) {
+                $autoBidActiveEntity->setStatus(Autobid::STATUS_ARCHIVED);
+                $this->entityManager->flush($autoBidActiveEntity);
+
+                $this->createSetting($wallet, $evaluation, $autobidPeriodId, $rate, $amount);
             } else {
-                $oAutoBid->get($aAutoBidActive['id_autobid']);
-                $oAutoBid->rate_min = $fRate;
-                $oAutoBid->amount   = $iAmount;
-                $oAutoBid->update();
+                $autoBidActiveEntity
+                    ->setRateMin($rate)
+                    ->setAmount($amount);
+                $this->entityManager->flush($autoBidActiveEntity);
             }
 
             // It shouldn't have more than one autobid settings for each category, but if we have, archive them all.
-            if (false === empty($aAutoBids)) {
-                foreach ($aAutoBids as $aBid) {
-                    $oAutoBid->get($aBid['id_autobid']);
-                    $oAutoBid->status = \autobid::STATUS_ARCHIVED;
-                    $oAutoBid->update();
+            if (false === empty($autobidEntities)) {
+                foreach ($autobidEntities as $autobidEntity) {
+                    $autobidEntity->setStatus(Autobid::STATUS_ARCHIVED);
+                    $this->entityManager->flush($autobidEntity);
                 }
             }
         }
-
-        return true;
     }
 
     /**
-     * @param int    $iLenderId
-     * @param string $sEvaluation
-     * @param int    $iAutoBidPeriodId
-     * @param float  $fRate
-     * @param int    $iAmount
+     * @param Wallet        $wallet
+     * @param string        $evaluation
+     * @param ProjectPeriod $autobidPeriodId
+     * @param string        $rate
+     * @param int           $amount
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
+    private function createSetting(Wallet $wallet, string $evaluation, ProjectPeriod $autobidPeriodId, string $rate, int $amount): void
     {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $autobid = new Autobid();
+        $autobid
+            ->setIdLender($wallet)
+            ->setStatus(Autobid::STATUS_ACTIVE)
+            ->setEvaluation($evaluation)
+            ->setIdPeriod($autobidPeriodId)
+            ->setRateMin($rate)
+            ->setAmount($amount);
 
-        $oAutoBid->id_lender  = $iLenderId;
-        $oAutoBid->status     = \autobid::STATUS_ACTIVE;
-        $oAutoBid->evaluation = $sEvaluation;
-        $oAutoBid->id_period  = $iAutoBidPeriodId;
-        $oAutoBid->rate_min   = $fRate;
-        $oAutoBid->amount     = $iAmount;
-        $oAutoBid->create();
+        $this->entityManager->persist($autobid);
+        $this->entityManager->flush($autobid);
     }
 
     /**
@@ -250,25 +257,26 @@ class AutoBidSettingsManager
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $wallet            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $bIsNovice         = true;
 
-        /** @var \autobid $oAutobid */
-        $oAutobid  = $this->entityManagerSimulator->getRepository('autobid');
-        $bIsNovice = true;
-
-        if ($this->hasAutoBidActivationHistory($client) && $oAutobid->counter('id_lender = ' . $wallet->getId()) > 0) {
-            if ($oAutobid->exist($wallet->getId() . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
+        if ($this->hasAutoBidActivationHistory($client) && null !== $autobidRepository->findOneBy(['idLender' => $wallet])) {
+            if (null !== $autobidRepository->findOneBy(['idLender' => $wallet, 'status' => Autobid::STATUS_INACTIVE])) {
                 $bIsNovice = false;
             } else {
-                $aAutobids           = $oAutobid->getSettings($wallet->getId());
-                $firstAutobidSetting = array_shift($aAutobids);
-                $fRate               = $firstAutobidSetting['rate_min'];
-                $iAmount             = $firstAutobidSetting['amount'];
+                $autobidSettings     = $autobidRepository->findBy(['idLender' => $wallet]);
 
-                foreach ($aAutobids as $aAutobid) {
-                    if ($fRate !== $aAutobid['rate_min'] || $iAmount !== $aAutobid['amount']) {
-                        $bIsNovice = false;
-                        break;
+                if (count($autobidSettings)) {
+                    $firstAutobidSetting = array_shift($autobidSettings);
+                    $fRate               = $firstAutobidSetting->getRateMin();
+                    $iAmount             = $firstAutobidSetting->getAmount();
+
+                    foreach ($autobidSettings as $autobidSetting) {
+                        if ($fRate !== $autobidSetting->getRateMin() || $iAmount !== $autobidSetting->getAmount()) {
+                            $bIsNovice = false;
+                            break;
+                        }
                     }
                 }
             }
@@ -279,67 +287,83 @@ class AutoBidSettingsManager
 
     /**
      * @param Clients $client
-     * @param float   $fRate
-     * @param int     $iAmount
+     * @param string  $rate
+     * @param int     $amount
      *
      * @throws \Exception
      */
-    public function saveNoviceSetting(Clients $client, $fRate, $iAmount)
+    public function saveNoviceSetting(Clients $client, string $rate, int $amount): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        /** @var \project_period $oAutoBidPeriods */
-        $oAutoBidPeriods = $this->entityManagerSimulator->getRepository('project_period');
-        /** @var \projects $oProject */
-        $oProject        = $this->entityManagerSimulator->getRepository('projects');
-        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \project_period::STATUS_ACTIVE);
-        $aRiskValues     = $oProject->getAvailableRisks();
 
-        foreach ($aAutoBidPeriods as $aPeriod) {
-            foreach ($aRiskValues as $sEvaluation) {
-                $this->saveSetting($client, $sEvaluation, $aPeriod['id_period'], $fRate, $iAmount);
-                $this->activateDeactivateSetting($client, $sEvaluation, $aPeriod['id_period'], \autobid::STATUS_ACTIVE);
+        $projectPeriodRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectPeriod');
+        /** @var \projects $projectData */
+        $projectData     = $this->entityManagerSimulator->getRepository('projects');
+        $riskEvaluations = $projectData->getAvailableRisks();
+
+        $this->entityManager->getConnection()->beginTransaction();
+
+        try {
+            foreach ($projectPeriodRepository->findBy(['status' => \project_period::STATUS_ACTIVE]) as $projectPeriod) {
+                foreach ($riskEvaluations as $riskEvaluation) {
+                    $this->saveSetting($client, $riskEvaluation, $projectPeriod, $rate, $amount);
+                    $this->activateDeactivateSetting($client, $riskEvaluation, $projectPeriod->getIdPeriod(), Autobid::STATUS_ACTIVE);
+                }
             }
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollback();
+
+            $this->logger->error(
+                'Could not save autobid novice settings for client ' . $client->getIdClient() . ', using rate=' . $rate . ' and amount=' . $amount . '. Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+            throw $exception;
         }
     }
 
     /**
-     * @param string $sEvaluation
-     * @param int    $iDuration
+     * @param string $evaluation
+     * @param int    $duration
      *
      * @return int
      */
-    public function predictAmount($sEvaluation, $iDuration)
+    public function predictAmount(string $evaluation, int $duration): int
     {
-        return $this->entityManagerSimulator->getRepository('autobid')->sumAmount($sEvaluation, $iDuration);
+        try {
+            return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid')->getSumAmount($evaluation, $duration);
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not calculate average amount of project from autobid settings. Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'evaluation' => $evaluation, 'duration' => $duration, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+
+            return 0;
+        }
     }
 
     /**
-     * @param Clients $client
-     * @param string  $sEvaluation
-     * @param int     $iAutoBidPeriodId
-     * @param int     $iNewStatus
+     * @param Clients           $client
+     * @param string            $evaluation
+     * @param int|ProjectPeriod $autoBidPeriodId
+     * @param int               $newStatus
      *
      * @throws \Exception
      */
-    public function activateDeactivateSetting(Clients $client, $sEvaluation, $iAutoBidPeriodId, $iNewStatus)
+    public function activateDeactivateSetting(Clients $client, string $evaluation, $autoBidPeriodId, int $newStatus): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $wallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $autobidEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid')
+            ->findOneBy(['idLender' => $wallet, 'status' => [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE], 'evaluation' => $evaluation, 'idPeriod' => $autoBidPeriodId]);
 
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
-        $oAutoBid->get(
-            $wallet->getId(),
-            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_period = '
-            . $iAutoBidPeriodId . ' AND id_lender'
-        );
-
-        if (in_array($iNewStatus, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE))) {
-            $oAutoBid->status = $iNewStatus;
-            $oAutoBid->update();
+        if (null !== $autobidEntity && in_array($newStatus, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE])) {
+            $autobidEntity->setStatus($newStatus);
+            $this->entityManager->flush($autobidEntity);
         }
     }
 
@@ -349,16 +373,17 @@ class AutoBidSettingsManager
      *
      * @return array
      */
-    public function getLastDateOnOff($clientId)
+    public function getLastDateOnOff($clientId): array
     {
         $autoBidHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsHistoryActions')
-            ->findBy(['idClient' => $clientId, 'nomForm'  => ClientsHistoryActions::AUTOBID_SWITCH], ['added' => 'DESC'], 2);
+            ->findBy(['idClient' => $clientId, 'nomForm' => ClientsHistoryActions::AUTOBID_SWITCH], ['added' => 'DESC'], 2);
         $dates          = [];
 
         foreach ($autoBidHistory as $historyAction) {
             $action                           = unserialize($historyAction->getSerialize());
             $dates[$action['autobid_switch']] = $historyAction->getAdded();
         }
+
         return $dates;
     }
 
@@ -368,16 +393,16 @@ class AutoBidSettingsManager
      * @return \DateTime
      * @throws \Exception
      */
-    public function getValidationDate(Clients $client)
+    public function getValidationDate(Clients $client): \DateTime
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $wallet             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $autobidRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $lastValidationDate = $autobidRepository->getLastValidationDate($wallet);
 
-        return new \DateTime($oAutoBid->getValidationDate($wallet->getId()));
+        return new \DateTime($lastValidationDate);
     }
 
     /**
@@ -386,13 +411,13 @@ class AutoBidSettingsManager
      * @return bool
      * @throws \Exception
      */
-    public function isOn(Clients $client)
+    public function isOn(Clients $client): bool
     {
         if (false === $client->isLender()) {
             return false;
         }
 
-        return (bool) $this->oClientSettingsManager->getSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
     }
 
     /**
@@ -401,7 +426,7 @@ class AutoBidSettingsManager
      * @return \DateTime
      * @throws \Exception
      */
-    public function getActivationTime(Clients $client)
+    public function getActivationTime(Clients $client): \DateTime
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -415,6 +440,7 @@ class AutoBidSettingsManager
         } else {
             $oActivationTime = new \DateTime();
         }
+
         return $oActivationTime;
     }
 
@@ -424,7 +450,7 @@ class AutoBidSettingsManager
      * @return bool
      * @throws \Exception
      */
-    public function hasAutoBidActivationHistory(Clients $client)
+    public function hasAutoBidActivationHistory(Clients $client): bool
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -439,7 +465,7 @@ class AutoBidSettingsManager
      *
      * @return mixed
      */
-    public function getRateRange($evaluation = null, $periodId = null)
+    public function getRateRange(?string $evaluation = null, ?int $periodId = null)
     {
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
@@ -447,7 +473,7 @@ class AutoBidSettingsManager
         if ($evaluation === null || $periodId === null) {
             $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
         } else {
-            $projectRates = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectRates      = $projectRateSettings->getSettings($evaluation, $periodId);
             $projectMinMaxRate = array_shift($projectRates);
             if (empty($projectMinMaxRate)) {
                 $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
@@ -458,19 +484,20 @@ class AutoBidSettingsManager
     }
 
     /**
-     * Check if a autobid settings rate is valid (don't use it for a bid on a particular project. in this case, use getProjectRateRange() of bid manager)
+     * Check if a autobid settings rate is valid (don't use it for a bid on a particular project. in this case, use
+     * getProjectRateRange() of bid manager)
      *
-     * @param      $fRate
-     * @param null $evaluation
-     * @param null $periodId
+     * @param string      $rate
+     * @param string|null $evaluation
+     * @param int|null    $periodId
      *
      * @return bool
      */
-    public function isRateValid($fRate, $evaluation = null, $periodId = null)
+    public function isRateValid(string $rate, ?string $evaluation = null, ?int $periodId = null): bool
     {
         $projectRate = $this->getRateRange($evaluation, $periodId);
 
-        if (bccomp($fRate, $projectRate['rate_min'], 1) >= 0 && bccomp($fRate, $projectRate['rate_max'], 1) <= 0) {
+        if (bccomp($rate, $projectRate['rate_min'], 1) >= 0 && bccomp($rate, $projectRate['rate_max'], 1) <= 0) {
             return true;
         }
 
@@ -483,20 +510,19 @@ class AutoBidSettingsManager
      * @return int|null
      * @throws \Exception
      */
-    public function getAmount(Clients $client)
+    public function getAmount(Clients $client): ?int
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
-        $settings = $oAutoBid->getSettings($wallet->getId(), null, null, [\autobid::STATUS_ACTIVE], [], 1);
-        $amount   = null;
+        $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+        $autobidSetting    = $autoBidRepository->findOneBy(['idLender' => $wallet, 'status' => Autobid::STATUS_ACTIVE]);
+        $amount            = null;
 
-        if (false === empty($settings)) {
-            $amount = array_shift($settings)['amount'];
+        if (null !== $autobidSetting) {
+            $amount = $autobidSetting->getAmount();
         }
 
         return $amount;
@@ -508,7 +534,7 @@ class AutoBidSettingsManager
      * @return int|null
      * @throws \Exception
      */
-    public function getMaxAmountPossible(Clients $client)
+    public function getMaxAmountPossible(Clients $client): ?int
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -528,21 +554,19 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param Clients $client
-     * @param null    $projectRates optional, for optimize the performance.
+     * @param Clients    $client
+     * @param array|null $projectRates optional, for optimize the performance.
      *
      * @return array
      * @throws \Exception
      */
-    public function getBadAutoBidSettings(Clients $client, $projectRates = null)
+    public function getBadAutoBidSettings(Clients $client, ?array $projectRates = null): array
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-
-        /** @var \autobid $autoBid */
-        $autoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $wallet            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
 
         if ($projectRates == null) {
             /** @var \project_rate_settings $projectRateSettings */
@@ -555,19 +579,19 @@ class AutoBidSettingsManager
             $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
         }
 
-        $autoBidSettings = $autoBid->getSettings($wallet->getId());
+        $autoBidSettings = $autoBidRepository->findBy(['idLender' => $wallet]);
         $badSettings     = [];
         foreach ($autoBidSettings as $setting) {
-            if (false === isset($projectMaxRate[$setting['id_period']][$setting['evaluation']])) {
+            if (false === isset($projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()])) {
                 continue;
             }
-            if (bccomp($setting['rate_min'], $projectMaxRate[$setting['id_period']][$setting['evaluation']], 1) > 0) {
+            if (bccomp($setting->getRateMin(), $projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()], 1) > 0) {
                 $badSettings[] = [
-                    'period_min'       => $setting['period_min'],
-                    'period_max'       => $setting['period_max'],
-                    'evaluation'       => $setting['evaluation'],
-                    'rate_min_autobid' => $setting['rate_min'],
-                    'rate_max_project' => $projectMaxRate[$setting['id_period']][$setting['evaluation']],
+                    'period_min'       => $setting->getIdPeriod()->getMin(),
+                    'period_max'       => $setting->getIdPeriod()->getMax(),
+                    'evaluation'       => $setting->getEvaluation(),
+                    'rate_min_autobid' => $setting->getRateMin(),
+                    'rate_max_project' => $projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()],
                 ];
             }
         }

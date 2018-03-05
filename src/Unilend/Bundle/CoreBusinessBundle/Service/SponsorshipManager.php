@@ -148,8 +148,9 @@ class SponsorshipManager
 
     /**
      * @return null|SponsorshipCampaign
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getCurrentSponsorshipCampaign()
+    public function getCurrentSponsorshipCampaign(): ?SponsorshipCampaign
     {
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipCampaign')->findCurrentCampaign();
     }
