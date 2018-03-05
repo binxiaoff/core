@@ -50,6 +50,9 @@
                 <section class="panel panel-autolend-config" data-formvalidation data-formvalidation-shownotifications="false">
 
                     <div class="message-info" id="settings-last-updated">
+                        {% if validation_date %}
+                            {% set validation_date = validation_date|localizeddate('long', 'none') %}
+                        {% endif %}
                         {% trans with {'%date%' : validation_date } %} autolend_settings-last-updated-text {% endtrans %}
                     </div>
 
@@ -134,7 +137,7 @@
                                             {% for settings in autoBidSettings %}
                                                 {% for setting in settings %}
                                                     {% set classEnabled = '' %}
-                                                    {% if setting.status == constant('\\autobid::STATUS_ACTIVE') %}
+                                                    {% if setting.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Autobid::STATUS_ACTIVE') %}
                                                         {% set classEnabled = 'ui-autolend-cell-enabled'%}
                                                     {% endif %}
                                                     {% if setting.cellAverageRateUnilend is not empty and (setting.rate_min < setting.project_rate_min or setting.rate_min > setting.project_rate_max) %}
