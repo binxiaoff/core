@@ -4,25 +4,26 @@ namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
+use Symfony\Component\Security\Core\Exception\{
+    UnsupportedUserException, UsernameNotFoundException
+};
+use Symfony\Component\Security\Core\User\{
+    UserInterface, UserProviderInterface
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Wallet, WalletType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ClientManager, LenderManager, SlackManager, TermsOfSaleManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\SlackManager;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
     /** @var ClientManager */
     private $clientManager;
@@ -32,23 +33,26 @@ class UserProvider implements UserProviderInterface
     private $lenderManager;
     /** @var SlackManager */
     private $slackManager;
+    /** @var TermsOfSaleManager */
+    private $termsOfSaleManager;
 
     /**
-     * UserProvider constructor.
      * @param EntityManagerSimulator     $entityManagerSimulator
      * @param EntityManager              $entityManager
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
      * @param SlackManager               $slackManager
+     * @param TermsOfSaleManager         $termsOfSaleManager
      */
     public function __construct(
-        EntityManager $entityManager,
         EntityManagerSimulator $entityManagerSimulator,
+        EntityManager $entityManager,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
-        SlackManager $slackManager
+        SlackManager $slackManager,
+        TermsOfSaleManager $termsOfSaleManager
     )
     {
         $this->entityManagerSimulator     = $entityManagerSimulator;
@@ -57,6 +61,7 @@ class UserProvider implements UserProviderInterface
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
         $this->slackManager               = $slackManager;
+        $this->termsOfSaleManager         = $termsOfSaleManager;
     }
 
     /**
@@ -112,80 +117,76 @@ class UserProvider implements UserProviderInterface
     }
 
     /**
-     * @param Clients $clientEntity
+     * @param Clients $client
      *
      * @return UserBorrower|UserLender|UserPartner
      */
-    private function setUser(Clients $clientEntity)
+    private function setUser(Clients $client)
     {
-        /** @var \clients $client */
-        $client = $this->entityManagerSimulator->getRepository('clients');
-        $client->get($clientEntity->getIdClient());
-
-        $initials = $this->clientManager->getClientInitials($client);
+        $initials = $this->clientManager->getInitials($client);
         $isActive = $this->clientManager->isActive($client);
         $roles    = ['ROLE_USER'];
 
-        if ($clientEntity->isLender()) {
+        if ($client->isLender()) {
             /** @var Wallet $wallet */
-            $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity, WalletType::LENDER);
+            $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
             /** @var ClientsStatus $clientStatusEntity */
-            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->id_client);
-            $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
-            $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($clientEntity);
-            $userLevel               = $this->lenderManager->getDiversificationLevel($clientEntity);
+            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->getIdClient());
+            $hasAcceptedCurrentTerms = $this->termsOfSaleManager->hasAcceptedCurrentVersion($client);
+            $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($client);
+            $userLevel               = $this->lenderManager->getDiversificationLevel($client);
             $roles[]                 = 'ROLE_LENDER';
 
             return new UserLender(
-                $clientEntity->getEmail(),
-                $clientEntity->getPassword(),
-                $clientEntity->getEmail(),
+                $client->getEmail(),
+                $client->getPassword(),
+                $client->getEmail(),
                 '',
                 $roles,
                 $isActive,
-                $clientEntity->getIdClient(),
-                $clientEntity->getHash(),
+                $client->getIdClient(),
+                $client->getHash(),
                 $wallet->getAvailableBalance(),
                 $initials,
-                $clientEntity->getPrenom(),
-                $clientEntity->getNom(),
+                $client->getPrenom(),
+                $client->getNom(),
                 (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
-                $clientEntity->getEtapeInscriptionPreteur(),
+                $client->getEtapeInscriptionPreteur(),
                 $userLevel,
-                $clientEntity->getLastlogin()
+                $client->getLastlogin()
             );
         }
 
-        if ($clientEntity->isBorrower()) {
+        if ($client->isBorrower()) {
             /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientEntity, WalletType::BORROWER);
+            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
             /** @var \companies $company */
             $company = $this->entityManagerSimulator->getRepository('companies');
-            $company->get($clientEntity->getIdClient(), 'id_client_owner');
+            $company->get($client->getIdClient(), 'id_client_owner');
             $roles[] = 'ROLE_BORROWER';
 
             return new UserBorrower(
-                $clientEntity->getEmail(),
-                $clientEntity->getPassword(),
-                $clientEntity->getEmail(),
+                $client->getEmail(),
+                $client->getPassword(),
+                $client->getEmail(),
                 '',
                 $roles,
                 $isActive,
-                $clientEntity->getIdClient(),
-                $clientEntity->getHash(),
-                $clientEntity->getPrenom(),
-                $clientEntity->getNom(),
+                $client->getIdClient(),
+                $client->getHash(),
+                $client->getPrenom(),
+                $client->getNom(),
                 $company->siren,
                 $wallet->getAvailableBalance(),
-                $clientEntity->getLastlogin()
+                $client->getLastlogin()
             );
         }
 
         if (
-            $clientEntity->isPartner()
-            && ($partnerRole = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $clientEntity]))
+            $client->isPartner()
+            && ($partnerRole = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $client]))
         ) {
             $roles[] = UserPartner::ROLE_DEFAULT;
             $roles[] = $partnerRole->getRole();
@@ -199,19 +200,19 @@ class UserProvider implements UserProviderInterface
             $partner = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['idCompany' => $rootCompany->getIdCompany()]);
 
             return new UserPartner(
-                $clientEntity->getEmail(),
-                $clientEntity->getPassword(),
-                $clientEntity->getEmail(),
+                $client->getEmail(),
+                $client->getPassword(),
+                $client->getEmail(),
                 '',
                 $roles,
                 $isActive,
-                $clientEntity->getIdClient(),
-                $clientEntity->getHash(),
-                $clientEntity->getPrenom(),
-                $clientEntity->getNom(),
+                $client->getIdClient(),
+                $client->getHash(),
+                $client->getPrenom(),
+                $client->getNom(),
                 $partnerRole->getIdCompany(),
                 $partner,
-                $clientEntity->getLastlogin()
+                $client->getLastlogin()
             );
         }
     }

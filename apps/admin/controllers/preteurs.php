@@ -1200,7 +1200,7 @@ class preteursController extends bootstrap
                 }
             }
             $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
-            $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
+            $this->bIsBetaTester       = $oClientManager->isBetaTester($wallet->getIdClient());
 
             $this->settings->get('date-premier-projet-tunnel-de-taux', 'type');
             $startingDate           = $this->settings->value;
@@ -1461,15 +1461,23 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oClientSettingsManager = $this->get('unilend.service.client_settings_manager');
-        $oClient                = $this->loadData('clients');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if (isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], ['on', 'off'])) {
-            $oClient->get($this->params[0]);
-            $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
-            $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
+        if (
+            isset($this->params[0], $this->params[1])
+            && is_numeric($this->params[0])
+            && in_array($this->params[1], ['on', 'off'])
+            && ($client = $clientRepository->find($this->params[0]))
+        ) {
+            $value = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
 
-            header('Location:  ' . $this->lurl . '/preteurs/portefeuille/' . $oClient->id_client);
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager $clientSettingsManager */
+            $clientSettingsManager = $this->get('unilend.service.client_settings_manager');
+            $clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_BETA_TESTER, $value);
+
+            header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $client->getIdClient());
             die;
         }
     }

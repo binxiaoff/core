@@ -2,180 +2,85 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\{
+    RedirectResponse, Request
+};
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptationsLegalDocs;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
-/**
- * Class ClientManager
- * @package Unilend\Bundle\CoreBusinessBundle\Service
- */
 class ClientManager
 {
-    const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
+    /** @var EntityManager */
+    private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
-    /** @var TokenStorageInterface */
-    private $tokenStorage;
-    /** @var RequestStack */
-    private $requestStack;
-    /** @var RouterInterface */
-    private $router;
     /** @var WalletCreationManager */
     private $walletCreationManager;
-    /** @var EntityManager*/
-    private $entityManager;
+    /** @var TermsOfSaleManager */
+    private $termsOfSaleManager;
+    /** @var TokenStorageInterface */
+    private $tokenStorage;
+    /** @var RouterInterface */
+    private $router;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * ClientManager constructor.
-     *
      * @param EntityManagerSimulator $entityManagerSimulator
-     * @param ClientSettingsManager  $clientSettingsManager
-     * @param TokenStorageInterface  $tokenStorage
-     * @param RequestStack           $requestStack
-     * @param WalletCreationManager  $walletCreationManager
      * @param EntityManager          $entityManager
-     * @param LoggerInterface        $logger
+     * @param ClientSettingsManager  $clientSettingsManager
+     * @param WalletCreationManager  $walletCreationManager
+     * @param TermsOfSaleManager     $termsOfSaleManager
+     * @param TokenStorageInterface  $tokenStorage
      * @param RouterInterface        $router
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
-        ClientSettingsManager $clientSettingsManager,
-        TokenStorageInterface $tokenStorage,
-        RequestStack $requestStack,
-        WalletCreationManager $walletCreationManager,
         EntityManager $entityManager,
-        LoggerInterface $logger,
-        RouterInterface $router
+        ClientSettingsManager $clientSettingsManager,
+        WalletCreationManager $walletCreationManager,
+        TermsOfSaleManager $termsOfSaleManager,
+        TokenStorageInterface $tokenStorage,
+        RouterInterface $router,
+        LoggerInterface $logger
     )
     {
-        $this->entityManagerSimulator  = $entityManagerSimulator;
-        $this->clientSettingsManager   = $clientSettingsManager;
-        $this->tokenStorage            = $tokenStorage;
-        $this->requestStack            = $requestStack;
-        $this->walletCreationManager   = $walletCreationManager;
-        $this->entityManager           = $entityManager;
-        $this->logger                  = $logger;
-        $this->router                  = $router;
+        $this->entityManagerSimulator = $entityManagerSimulator;
+        $this->entityManager          = $entityManager;
+        $this->clientSettingsManager  = $clientSettingsManager;
+        $this->walletCreationManager  = $walletCreationManager;
+        $this->termsOfSaleManager     = $termsOfSaleManager;
+        $this->tokenStorage           = $tokenStorage;
+        $this->router                 = $router;
+        $this->logger                 = $logger;
     }
 
-
     /**
-     * @param Clients|\clients $client
+     * @param Clients $client
      *
      * @return bool
      */
-    public function isBetaTester($client)
+    public function isBetaTester(Clients $client): bool
     {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
-        return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
-    }
-
-    /**
-     * @param \clients|Clients $client
-     * @param int              $legalDocId
-     *
-     * @return bool
-     */
-    public function isAcceptedCGV($client, $legalDocId)
-    {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
-        /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = $this->entityManagerSimulator->getRepository('acceptations_legal_docs');
-
-        return $oAcceptationLegalDocs->exist($client->getIdClient(), 'id_legal_doc = ' . $legalDocId . ' AND id_client ');
-    }
-
-    /**
-     * If the lender has accepted the last TOS, the session will not be set, and we check if there is a new TOS all the time
-     * Otherwise, the session will be set with accepted = false. We check no longer the now TOS, but we read the value from the session.
-     */
-    public function checkLastTOSAccepted()
-    {
-        $session = $this->requestStack->getCurrentRequest()->getSession();
-
-        if ($session->has(self::SESSION_KEY_TOS_ACCEPTED)) {
-            return; // already checked and not accepted
-        }
-
-        $token = $this->tokenStorage->getToken();
-
-        if ($token) {
-            $user = $token->getUser();
-
-            if ($user instanceof UserLender) {
-                /** @var \clients $client */
-                $client = $this->entityManagerSimulator->getRepository('clients');
-
-                if ($client->get($user->getClientId()) && false === $user->hasAcceptedCurrentTerms()) {
-                    $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
-                }
-            }
-        }
-    }
-
-    /**
-     * @param \clients|Clients $client
-     *
-     * @return string
-     */
-    public function getLastTosId($client)
-    {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
-        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $type = 'Lien conditions generales inscription preteur particulier';
-        } else {
-            $type = 'Lien conditions generales inscription preteur societe';
-        }
-
-        /** @var Settings $settingsEntity */
-        $settingsEntity =  $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $type]);
-        return $settingsEntity->getValue();
-    }
-
-    /**
-     * @param \clients|Clients $client
-     */
-    public function acceptLastTos($client)
-    {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
-        if (false === empty($client)) {
-            $termsOfUse = new AcceptationsLegalDocs();
-            $termsOfUse->setIdLegalDoc($this->getLastTosId($client));
-            $termsOfUse->setIdClient($client->getIdClient());
-
-            $this->entityManager->persist($termsOfUse);
-            $this->entityManager->flush($termsOfUse);
-
-            $session = $this->requestStack->getCurrentRequest()->getSession();
-            $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
+        try {
+            return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
+        } catch (InvalidArgumentException $exception) {
+            $this->logger->warning(
+                'Invalid argument exception while retrieving beta tester status: ' . $exception->getMessage(),
+                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+            return false;
         }
     }
 
@@ -184,7 +89,7 @@ class ClientManager
      *
      * @return bool
      */
-    public function isLender($client)
+    public function isLender($client): bool
     {
         if ($client instanceof Clients) {
             $lenderWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
@@ -206,7 +111,7 @@ class ClientManager
      *
      * @return bool
      */
-    public function isBorrower($client)
+    public function isBorrower($client): bool
     {
         if ($client instanceof Clients) {
             $borrowerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::BORROWER);
@@ -228,53 +133,33 @@ class ClientManager
      *
      * @return bool
      */
-    public function isPartner(Clients $client)
+    public function isPartner(Clients $client): bool
     {
         $partnerWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::PARTNER);
         return null !== $partnerWallet;
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      *
      * @return string
      */
-    public function getClientInitials(\clients $client)
+    public function getInitials(Clients $client): string
     {
-        $initials = substr($client->prenom, 0, 1) . substr($client->nom, 0, 1);
+        $initials = substr($client->getPrenom(), 0, 1) . substr($client->getNom(), 0, 1);
         //TODO decide which initials to use in case of company
 
         return $initials;
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      *
      * @return bool
      */
-    public function isActive(\clients $client)
+    public function isActive(Clients $client): bool
     {
-        return (bool) $client->status;
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return bool
-     */
-    public function hasAcceptedCurrentTerms(\clients $client)
-    {
-        return $this->isAcceptedCGV($client, $this->getLastTosId($client));
-    }
-
-    /**
-     * @param \clients $client
-     *
-     * @return mixed
-     */
-    public function getClientSubscriptionStep(\clients $client)
-    {
-        return $client->etape_inscription_preteur;
+        return Clients::STATUS_ONLINE === $client->getStatus();
     }
 
     /**
@@ -282,7 +167,7 @@ class ClientManager
      *
      * @return RedirectResponse|null
      */
-    public function checkProgressAndRedirect(Request $request)
+    public function checkProgressAndRedirect(Request $request): ?RedirectResponse
     {
         $currentPath = $request->getPathInfo();
         $token       = $this->tokenStorage->getToken();
@@ -307,7 +192,7 @@ class ClientManager
      *
      * @return string
      */
-    public function getSubscriptionStepRedirectRoute(Clients $client)
+    public function getSubscriptionStepRedirectRoute(Clients $client): string
     {
         switch ($client->getEtapeInscriptionPreteur()) {
             case Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
