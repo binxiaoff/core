@@ -34,7 +34,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         }
 
         $this->createMissingIncidenceRateData();
-        $this->createTrimesterEntries();
+        $this->createQuarterEntries();
     }
 
     /**
@@ -96,57 +96,57 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    private function createTrimesterEntries()
+    private function createQuarterEntries(): void
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
         $unilendStatRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
         $years = [2015, 2016, 2017];
 
         foreach ($years as $year) {
-            $firstTrimester  = new \DateTime('Last day of March ' . $year);
-            $secondTrimester = new \DateTime('Last day of June ' . $year);
-            $thirdTrimester  = new \DateTime('Last day of September ' . $year);
-            $fourthTrimester = new \DateTime('Last day of December ' . $year);
+            $firstQuarter  = new \DateTime('Last day of March ' . $year);
+            $secondQuarter = new \DateTime('Last day of June ' . $year);
+            $thirdQuarter  = new \DateTime('Last day of September ' . $year);
+            $fourthQuarter = new \DateTime('Last day of December ' . $year);
 
-            $firstTrimesterStats  = $unilendStatRepository->findStatisticAtDate($firstTrimester, UnilendStats::TYPE_INCIDENCE_RATE);
-            $secondTrimesterStats = $unilendStatRepository->findStatisticAtDate($secondTrimester, UnilendStats::TYPE_INCIDENCE_RATE);
-            $thirdTrimesterStats  = $unilendStatRepository->findStatisticAtDate($thirdTrimester, UnilendStats::TYPE_INCIDENCE_RATE);
-            $fourthTrimesterStats = $unilendStatRepository->findStatisticAtDate($fourthTrimester, UnilendStats::TYPE_INCIDENCE_RATE);
+            $firstQuarterStats  = $unilendStatRepository->findStatisticAtDate($firstQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $secondQuarterStats = $unilendStatRepository->findStatisticAtDate($secondQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $thirdQuarterStats  = $unilendStatRepository->findStatisticAtDate($thirdQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $fourthQuarterStats = $unilendStatRepository->findStatisticAtDate($fourthQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
 
-            if (null !== $firstTrimesterStats) {
-                $incidenceRateStatT1 = clone $firstTrimesterStats;
+            if (null !== $firstQuarterStats) {
+                $incidenceRateStatT1 = clone $firstQuarterStats;
                 $incidenceRateStatT1
-                    ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
                     ->setUpdated(new \DateTime('NOW'));
 
                 $entityManager->persist($incidenceRateStatT1);
                 $entityManager->flush($incidenceRateStatT1);
             }
 
-            if (null !== $secondTrimesterStats) {
-                $incidenceRateStatT2 = clone $secondTrimesterStats;
+            if (null !== $secondQuarterStats) {
+                $incidenceRateStatT2 = clone $secondQuarterStats;
                 $incidenceRateStatT2
-                    ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
                     ->setUpdated(new \DateTime('NOW'));
 
                 $entityManager->persist($incidenceRateStatT2);
                 $entityManager->flush($incidenceRateStatT2);
             }
 
-            if (null !== $thirdTrimesterStats) {
-                $incidenceRateStatT3 = clone $thirdTrimesterStats;
+            if (null !== $thirdQuarterStats) {
+                $incidenceRateStatT3 = clone $thirdQuarterStats;
                 $incidenceRateStatT3
-                    ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
                     ->setUpdated(new \DateTime('NOW'));
 
                 $entityManager->persist($incidenceRateStatT3);
                 $entityManager->flush($incidenceRateStatT3);
             }
 
-            if (null !== $fourthTrimesterStats) {
-                $incidenceRateStatT4 = clone $fourthTrimesterStats;
+            if (null !== $fourthQuarterStats) {
+                $incidenceRateStatT4 = clone $fourthQuarterStats;
                 $incidenceRateStatT4
-                    ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
                     ->setUpdated(new \DateTime('NOW'));
 
                 $entityManager->persist($incidenceRateStatT4);

@@ -654,14 +654,14 @@ class UnilendStatsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getTrimesterIncidenceRate(\DateTime $end, int $months): array
+    public function getQuarterIncidenceRate(\DateTime $end, int $months): array
     {
         $queryBuilder = $this->createQueryBuilder('us');
         $queryBuilder
-            ->where('us.typeStat = :trimesterType')
+            ->where('us.typeStat = :quarterType')
             ->andWhere('TIMESTAMPDIFF(MONTH, us.added, :end) <= :months')
             ->orderBy('us.added', 'ASC')
-            ->setParameter('trimesterType', UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+            ->setParameter('quarterType', UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
             ->setParameter('months', $months)
             ->setParameter('end', $end);
 

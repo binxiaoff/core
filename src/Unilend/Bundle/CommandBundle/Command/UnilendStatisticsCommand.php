@@ -34,8 +34,8 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
             $statisticsManager->savePerformanceIndicators();
             $statisticsManager->saveIncidenceRate();
 
-            if ($this->isEndOfTrimester()) {
-                $statisticsManager->saveTrimesterIncidenceRate();
+            if ($this->isEndOfQuarter()) {
+                $statisticsManager->saveQuarterIncidenceRate();
             }
 
         } catch (\Exception $exception) {
@@ -48,15 +48,17 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
         }
     }
 
-
-    private function isEndOfTrimester()
+    /**
+     * @return bool
+     */
+    private function isEndOfQuarter(): bool
     {
-        $today             = new \DateTime('2017-12-31');
-        $trimesterEnd      = $this->getTrimesterFromDate($today);
+        $today      = new \DateTime('NOW');
+        $quarterEnd = $this->getQuarterFromDate($today);
         $today->setTime(0, 0, 0);
-        $trimesterEnd->setTime(0, 0, 0);
+        $quarterEnd->setTime(0, 0, 0);
 
-        return $today === $trimesterEnd;
+        return $today === $quarterEnd;
     }
 
     /**
@@ -64,29 +66,29 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
      *
      * @return \DateTime
      */
-    private function getTrimesterFromDate(\DateTime $date): \DateTime
+    private function getQuarterFromDate(\DateTime $date): \DateTime
     {
         switch ($date->format('n')) {
             case 1:
             case 2:
             case 3:
-                $trimester = new \DateTime('Last day of March ' . $date->format('Y'));
+                $quarter = new \DateTime('Last day of March ' . $date->format('Y'));
                 break;
             case 4:
             case 5:
             case 6:
-                $trimester = new \DateTime('Last day of June ' . $date->format('Y'));
+                $quarter = new \DateTime('Last day of June ' . $date->format('Y'));
                 break;
             case 7:
             case 8:
             case 9:
-                $trimester = new \DateTime('Last day of September ' . $date->format('Y'));
+                $quarter = new \DateTime('Last day of September ' . $date->format('Y'));
                 break;
             default:
-                $trimester = new \DateTime('Last day of ' . $date->format('Y'));
+                $quarter = new \DateTime('Last day of ' . $date->format('Y'));
                 break;
         }
 
-        return $trimester;
+        return $quarter;
     }
 }

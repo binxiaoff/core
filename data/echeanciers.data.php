@@ -4,6 +4,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers as EcheanciersEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class echeanciers extends echeanciers_crud
 {
@@ -640,11 +641,13 @@ class echeanciers extends echeanciers_crud
     public function getProblematicOwedCapitalByProjects(string $contractType, ?int $delay = null): array
     {
         $delayQuery = '';
-        $params     = [
-            'problem'      => projects_status::PROBLEME,
+        $params = [
+            'problem'      => ProjectsStatus::PROBLEME,
+            'repayment'    => ProjectsStatus::REMBOURSEMENT,
             'contractType' => $contractType,
             'repaid'       => EcheanciersEntity::STATUS_REPAID,
-            'accepted'     => Loans::STATUS_ACCEPTED
+            'accepted'     => Loans::STATUS_ACCEPTED,
+            'period'       => StatisticsManager::ACPR_CALCULATION_PERIOD_MONTHS
         ];
 
         if (null !== $delay) {
@@ -674,9 +677,9 @@ class echeanciers extends echeanciers_crud
                   AND p.status >= :problem
                   AND TIMESTAMPDIFF(MONTH, NOW(),(SELECT added FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-                        WHERE  projects_status.status = ' . \projects_status::REMBOURSEMENT . '
+                        WHERE  projects_status.status = :repayment
                           AND e.id_project = projects_status_history.id_project
-                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1)) = ' . StatisticsManager::ACPR_CALCULATION_PERIOD_MONTHS . ' 
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1)) = :period 
                   ' . $delayQuery . '
                 GROUP BY p.id_project
               )

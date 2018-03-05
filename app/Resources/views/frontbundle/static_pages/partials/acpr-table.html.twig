@@ -7,8 +7,8 @@
         <thead>
             <tr>
                 <th class="table-stats-unilend-item-label">&nbsp;</th>
-                {% for trimester, value in data.incidenceRate %}
-                    <th class="table-stats-unilend-item-value">{{ trimester|localizeddate('medium', 'none') }}</th>
+                {% for quarter, value in data.incidenceRate %}
+                    <th class="table-stats-unilend-item-value">{{ quarter|localizeddate('medium', 'none') }}</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -18,7 +18,7 @@
             </tr>
             <tr>
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">{{ value.amountIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
                 {% endfor %}
             </tr>
@@ -27,7 +27,7 @@
             </tr>
             <tr class="alt">
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">{{ value.projectsIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
                 {% endfor %}
             </tr>
@@ -36,7 +36,7 @@
             </tr>
             <tr>
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">
                         {% if value.ratioIFP is defined %}
                             {{ value.ratioIFP|localizednumberwithprecision(2) }}&nbsp;%
@@ -49,7 +49,7 @@
             </tr>
             <tr class="alt">
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">
                         {% if value.amountCIP is defined %}
                             {{ value.amountCIP|localizednumberwithprecision(2) }}&nbsp;%
@@ -62,7 +62,7 @@
             </tr>
             <tr>
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">
                         {% if value.projectsCIP is defined %}
                             {{ value.projectsCIP|localizednumberwithprecision(2) }}&nbsp;%
@@ -74,7 +74,7 @@
             </tr>
             <tr class="alt">
                 <td class="table-stats-unilend-item-label">&nbsp;</td>
-                {% for trimester, value in data.incidenceRate %}
+                {% for quarter, value in data.incidenceRate %}
                     <td class="table-stats-unilend-item-value">
                         {% if value.ratioCIP is defined %}
                             {{ value.ratioCIP|localizednumberwithprecision(2) }}&nbsp;%

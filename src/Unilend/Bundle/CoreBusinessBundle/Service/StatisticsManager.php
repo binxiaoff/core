@@ -192,7 +192,7 @@ class StatisticsManager
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveTrimesterIncidenceRate()
+    public function saveQuarterIncidenceRate(): void
     {
         $unilendStatRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
         $today                 = new \DateTime('NOW');
@@ -207,16 +207,16 @@ class StatisticsManager
         $lastDayLastMonthData     = json_decode($lastDayLastMonthStat->getValue(), true);
         $lastDayOfTwoMonthAgoData = json_decode($lastDayOfTwoMonthAgoStat->getValue(), true);
 
-        $todayData['trimesterRatioIFP'] = round(bcdiv(bcadd(bcadd($todayData['ratioIFP'], $lastDayLastMonthData['ratioIFP'], 4), $lastDayOfTwoMonthAgoData['ratioIFP'], 4), 3, 4), 2);
-        $todayData['trimesterRatioCIP'] = round(bcdiv(bcadd(bcadd($todayData['ratioCIP'], $lastDayLastMonthData['ratioCIP'], 4), $lastDayOfTwoMonthAgoData['ratioCIP'], 4), 3, 4), 2);
+        $todayData['quarterRatioIFP'] = round(bcdiv(bcadd(bcadd($todayData['ratioIFP'], $lastDayLastMonthData['ratioIFP'], 4), $lastDayOfTwoMonthAgoData['ratioIFP'], 4), 3, 4), 2);
+        $todayData['quarterRatioCIP'] = round(bcdiv(bcadd(bcadd($todayData['ratioCIP'], $lastDayLastMonthData['ratioCIP'], 4), $lastDayOfTwoMonthAgoData['ratioCIP'], 4), 3, 4), 2);
 
-        $trimesterStat = new UnilendStats();
-        $trimesterStat
-            ->setTypeStat(UnilendStats::TYPE_TRIMESTER_INCIDENCE_RATE)
+        $quarterStat = new UnilendStats();
+        $quarterStat
+            ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
             ->setValue(json_encode($todayData));
 
-        $this->entityManager->persist($trimesterStat);
-        $this->entityManager->flush($trimesterStat);
+        $this->entityManager->persist($quarterStat);
+        $this->entityManager->flush($quarterStat);
     }
 
     /**
@@ -703,14 +703,14 @@ class StatisticsManager
      */
     public function getIncidenceRatesOfLast36Months(\DateTime $date): array
     {
-        $data          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getTrimesterIncidenceRate($date, self::ACPR_CALCULATION_PERIOD_MONTHS);
-        $trimesterData = [];
+        $data        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->getQuarterIncidenceRate($date, self::ACPR_CALCULATION_PERIOD_MONTHS);
+        $quarterData = [];
 
         /** @var UnilendStats $stat */
         foreach ($data as $stat) {
-            $trimesterData[$stat->getAdded()->format('Y-m-d')] = json_decode($stat->getValue(), true);
+            $quarterData[$stat->getAdded()->format('Y-m-d')] = json_decode($stat->getValue(), true);
         }
 
-       return $trimesterData;
+       return $quarterData;
     }
 }
