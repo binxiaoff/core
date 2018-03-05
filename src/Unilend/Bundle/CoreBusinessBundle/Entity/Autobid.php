@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Autobid
  *
- * @ORM\Table(name="autobid", indexes={@ORM\Index(name="idx_autobid_eval_period", columns={"evaluation", "id_period", "status"}), @ORM\Index(name="idx_autobid_id_lender", columns={"id_lender"})})
+ * @ORM\Table(name="autobid", indexes={@ORM\Index(name="idx_autobid_eval_period", columns={"evaluation", "id_period", "status"}), @ORM\Index(name="idx_autobid_id_lender", columns={"id_lender"}), @ORM\Index(name="idx_autobid_id_period", columns={"id_period"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AutobidRepository")
  * @ORM\HasLifecycleCallbacks
  */

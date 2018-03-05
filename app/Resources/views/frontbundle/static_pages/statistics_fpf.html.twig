@@ -232,33 +232,6 @@
                             {% endfor %}
                         </tr>
                         <!-- /average-interest-ratio -->
-
-                        <tr><th class="bg-bg2 c-t2" colspan="{{ maxColSpan }}">{{ "fpf-statistics_table-section-legal-indicators"|trans|raw }}</th></tr>
-                        {% set incidenceRate = getStatistic('incidenceRate', date|date('Y-m-d')) %}
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_ifp-incidence-rate-amount {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr class="alt">
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_ifp-incidence-rate-project {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_ifp-incidence-rate-no-month-limit {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['ratioIFP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr class="alt">
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_cip-incidence-rate-amount {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountCIP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_cip-incidence-rate-project {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsCIP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr class="alt">
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} fpf-statistics_cip-incidence-rate-no-month-limit {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['ratioCIP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -273,6 +246,9 @@
                 <p>{% trans %} fpf-statistics_table-index-7 {% endtrans %}</p>
                 <p>{% trans %} fpf-statistics_table-index-8 {% endtrans %}</p>
                 <p>{% trans %} fpf-statistics_table-index-9 {% endtrans %}</p>
+            </div>
+            <div>
+                {% include ':frontbundle/static_pages/partials:acpr-table.html.twig' %}
             </div>
         </div>
     </section>
