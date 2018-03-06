@@ -4,34 +4,30 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Security, Template
+};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, RedirectResponse, Request, Response
+};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContractAttributeType, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BidManager, CIPManager
+};
+use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
+use Unilend\Bundle\FrontBundle\Service\{
+    LenderAccountDisplayManager, ProjectDisplayManager
+};
 use Unilend\core\Loader;
 
 class ProjectsController extends Controller
@@ -278,9 +274,11 @@ class ProjectsController extends Controller
         $user                  = $this->getUser();
 
         $template = [
-            'project'         => $projectDisplayManager->getProjectData($project, $user),
-            'bidToken'        => sha1('tokenBid-' . time() . '-' . uniqid()),
-            'suggestAutolend' => false
+            'project'             => $projectDisplayManager->getProjectData($project, $user),
+            'bidToken'            => sha1('tokenBid-' . time() . '-' . uniqid()),
+            'suggestAutolend'     => false,
+            'recaptchaKey'        => $this->getParameter('google.recaptcha_key'),
+            'displayLoginCaptcha' => $request->getSession()->get(LoginAuthenticator::SESSION_NAME_LOGIN_CAPTCHA, false)
         ];
 
         if (isset($template['project']['bids'])) {
@@ -527,7 +525,7 @@ class ProjectsController extends Controller
             $user = $this->getUser();
 
             if (false === ($user instanceof UserLender)
-                || $user->getClientStatus() < \clients_status::VALIDATED
+                || $user->getClientStatus() < ClientsStatus::VALIDATED
             ) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
@@ -1003,24 +1001,19 @@ class ProjectsController extends Controller
             ]);
         }
 
-        /** @var \bids $bid */
-        $bid                    = $entityManagerSimulator->getRepository('bids');
-        $bid->id_lender_account = $wallet->getId();
-        $bid->id_project        = $project->id_project;
-        $bid->amount            = $amount * 100;
-        $bid->rate              = $rate;
 
-        //necessary as some methods need an entity and some a data. And as the bid is not persisted yet it can't be selected from the database
-        $bidEntity = new Bids();
-        $bidEntity->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project));
-        $bidEntity->setIdLenderAccount($wallet);
-        $bidEntity->setAmount($amount * 100);
-        $bidEntity->setRate($rate);
+        $bid = new Bids();
+        $bid
+            ->setProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project))
+            ->setIdLenderAccount($wallet)
+            ->setAmount($amount * 100)
+            ->setRate($rate);
 
-        $reasons = $productManager->checkBidEligibility($bidEntity);
+        $reasons = $productManager->checkBidEligibility($bid);
 
         if (false === empty($reasons)) {
-            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getSumByWalletAndProjectAndStatus($wallet, $bidEntity->getProject(), Bids::STATUS_PENDING);
+            $pendingBidAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+                ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject(), [Bids::STATUS_PENDING]);
 
             $product = $entityManagerSimulator->getRepository('product');
             $product->get($project->id_product);
@@ -1049,7 +1042,10 @@ class ProjectsController extends Controller
         $this->addFlash('cipBid', ['amount' => $amount, 'rate' => $rate, 'project' => $project->id_project]);
 
         $validationNeeded = $cipManager->isCIPValidationNeeded($bid);
-        $response         = ['validation' => $validationNeeded];
+        $response         = [
+            'validation'      => $validationNeeded,
+            'isNaturalPerson' => $client->isNaturalPerson()
+        ];
 
         if ($validationNeeded) {
             $evaluation = $cipManager->getCurrentEvaluation($client);

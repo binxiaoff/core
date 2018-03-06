@@ -23,25 +23,45 @@ class UserLender extends BaseUser
     /** @var int */
     private $level;
 
+    /**
+     * @param string         $username
+     * @param string         $password
+     * @param string         $email
+     * @param string         $salt
+     * @param array          $roles
+     * @param bool           $isActive
+     * @param int            $clientId
+     * @param string         $hash
+     * @param float          $balance
+     * @param string         $initials
+     * @param string         $firstName
+     * @param string         $lastName
+     * @param int|null       $clientStatus
+     * @param bool           $hasAcceptedCurrentTerms
+     * @param array          $notifications
+     * @param int            $subscriptionStep
+     * @param int            $level
+     * @param \DateTime|null $lastLoginDate
+     */
     public function __construct(
-        $username,
-        $password,
-        $email,
-        $salt,
+        string $username,
+        string $password,
+        string $email,
+        string $salt,
         array $roles,
-        $isActive,
-        $clientId,
-        $hash,
-        $balance,
-        $initials,
-        $firstName,
-        $lastName,
-        $clientStatus,
-        $hasAcceptedCurrentTerms,
+        bool $isActive,
+        int $clientId,
+        string $hash,
+        float $balance,
+        string $initials,
+        string $firstName,
+        string $lastName,
+        ?int $clientStatus,
+        bool $hasAcceptedCurrentTerms,
         array $notifications,
-        $subscriptionStep,
-        $level,
-        $lastLoginDate = null
+        int $subscriptionStep,
+        int $level,
+        ?\DateTime $lastLoginDate = null
     )
     {
         parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);

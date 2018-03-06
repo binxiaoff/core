@@ -31,7 +31,7 @@
     }
 </style>
 <div id="contenu">
-    <form method="post" action="<?= $this->lurl ?>/dossiers/status">
+    <form method="get" action="<?= $this->lurl ?>/dossiers/status">
         <fieldset class="search-box">
             <legend>Recherche</legend>
             <table>
@@ -48,7 +48,7 @@
                             <select id="status" name="status" class="select">
                                 <option></option>
                                 <?php foreach ($this->statuses as $status) : ?>
-                                    <option value="<?= $status['id_project_status'] ?>"<?= isset($this->baseStatus) && $this->baseStatus == $status['id_project_status'] ? 'selected="selected"' : '' ?>><?= $status['label'] ?></option>
+                                    <option value="<?= $status->getStatus() ?>"<?= isset($this->baseStatus) && $this->baseStatus == $status->getStatus() ? 'selected="selected"' : '' ?>><?= $status->getLabel() ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </td>

@@ -10,7 +10,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -763,6 +762,7 @@ class MainController extends Controller
             'data'  => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
                 'regulatoryTable'                => $statistics['regulatoryData'],
+                'incidenceRate'                  => $statisticsManager->getIncidenceRatesOfLast36Months($date)
             ],
             'years' => array_merge($years, ['total']),
             'date'  => $date->format('Y-m-d')
@@ -815,9 +815,10 @@ class MainController extends Controller
             $requestedDate  = $now;
         }
 
-        $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $years             = range(2013, $requestedDate->format('Y'));
-        $data              = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
+        $statisticsManager     = $this->get('unilend.service.statistics_manager');
+        $years                 = range(2013, $requestedDate->format('Y'));
+        $data                  = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
+        $data['incidenceRate'] = $statisticsManager->getIncidenceRatesOfLast36Months($requestedDate);
 
         $template = [
             'data'           => $data,
@@ -911,9 +912,7 @@ class MainController extends Controller
      */
     public function lastTermsOfServiceAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var UserLender $user */
         $user = $this->getUser();
@@ -922,7 +921,7 @@ class MainController extends Controller
         $tosDetails = '';
 
         if ($client->get($user->getClientId())) {
-            if ($request->isMethod('GET')) {
+            if ($request->isMethod(Request::METHOD_GET)) {
                 /** @var \blocs $block */
                 $block = $entityManagerSimulator->getRepository('blocs');
                 $block->get('cgv', 'slug');
@@ -962,10 +961,10 @@ class MainController extends Controller
                 } else {
                     $this->get('logger')->error('The element slug : ' . $elementSlug . ' doesn\'t exist');
                 }
-            } elseif ($request->isMethod('POST')) {
+            } elseif ($request->isMethod(Request::METHOD_POST)) {
                 if ('true' === $request->request->get('terms')) {
-                    $clientManager = $this->get('unilend.service.client_manager');
-                    $clientManager->acceptLastTos($client);
+                    $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                    $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($clientEntity);
                 }
                 return $this->json([]);
             }

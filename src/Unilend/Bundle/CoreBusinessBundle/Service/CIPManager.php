@@ -90,12 +90,16 @@ class CIPManager
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         /** @var \lender_evaluation $evaluation */
-        $evaluation    = $this->entityManagerSimulator->getRepository('lender_evaluation');
-        $questionnaire = $this->getCurrentQuestionnaire();
+        $evaluation     = $this->entityManagerSimulator->getRepository('lender_evaluation');
+        $questionnaire  = $this->getCurrentQuestionnaire();
+        $lastEvaluation = $evaluation->select(
+            '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender = ' . $wallet->getId(),
+            'added DESC',
+            '',
+            1
+        );
 
-        if ($evaluation->get($wallet->getId(),
-            '(expiry_date = "0000-00-00" OR expiry_date > NOW()) AND id_lender_questionnaire = ' . $questionnaire->id_lender_questionnaire . ' AND id_lender')
-        ) {
+        if (isset($lastEvaluation[0]) && $evaluation->get($lastEvaluation[0]['id_lender_evaluation'])) {
             return $evaluation;
         }
 
@@ -614,15 +618,17 @@ class CIPManager
     }
 
     /**
-     * @param \bids $bid
+     * @param Bids $bid
      *
      * @return bool
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function isCIPValidationNeeded(\bids $bid)
+    public function isCIPValidationNeeded(Bids $bid) : bool
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
-        $project->get($bid->id_project);
+        $project->get($bid->getProject()->getIdProject());
 
         /** @var \product $product */
         $product = $this->entityManagerSimulator->getRepository('product');
@@ -634,22 +640,17 @@ class CIPManager
             return false;
         }
 
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($bid->id_lender_account);
+        $wallet = $bid->getIdLenderAccount();
 
         if (false === $wallet->getIdClient()->isNaturalPerson()) {
             return true;
         }
 
         $thresholdAmount = $this->getContractThresholdAmount();
-        $lenderBids      = $bid->sum('
-                id_lender_account = ' . $bid->id_lender_account . ' 
-                AND id_project = ' . $project->id_project . ' 
-                AND status IN (' . Bids::STATUS_PENDING . ', ' . Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID . ')',
-            'ROUND(amount / 100)'
-        );
-
-        $totalAmount = bcdiv($bid->amount, 100, 2);
-        $totalAmount = bcadd($totalAmount, (string) $lenderBids, 2);
+        $lenderBids      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getSumByWalletAndProjectAndStatus($wallet, $project->id_project, [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
+        $totalAmount     = bcdiv($bid->getAmount(), 100, 2);
+        $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);
 
         if (bccomp($totalAmount, $thresholdAmount, 2) <= 0) {
             return false;

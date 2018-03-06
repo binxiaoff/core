@@ -4,6 +4,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class prescripteursController extends bootstrap
 {
+    /** @var \clients_adresses */
+    public $clients_adresses;
+    /** @var \prescripteurs */
+    public $prescripteurs;
+
     public function initialize()
     {
         parent::initialize();
@@ -70,7 +75,7 @@ class prescripteursController extends bootstrap
             $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
             $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
             $this->clients->email     = trim($_POST['email']);
-            $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
+            $this->clients->telephone = str_replace([' ', '.', ','], '', $_POST['telephone']);
             $this->clients->id_langue = 'fr';
             $this->clients->update();
 

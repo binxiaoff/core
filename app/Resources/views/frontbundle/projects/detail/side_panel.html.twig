@@ -66,7 +66,7 @@
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
-                {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\clients_status::VALIDATED') %}
+                {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::VALIDATED') %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
                     {% if isLenderEligible is defined and isLenderEligible == false %}
@@ -106,7 +106,7 @@
                                                         {% set max = (project.maxValidRate - 0.1)|round(1) %}
                                                     {% endif %}
                                                     {#
-                                                        0.0999 is a trick for fixing an issue wit floats
+                                                        0.0999 is a trick for fixing an issue with floats
                                                          If max value is 5.1 and project.minRate is 5, there is a warning "range(): step exceeds the specified range"
                                                     #}
                                                     {% for rate in range(max, project.minRate, 0.0999) %}
@@ -158,9 +158,6 @@
                     {% endif %}
                 {% endif %}
             {% else %}
-                <div class="form-notice">
-                    {% trans %} project-detail_side-bar-login {% endtrans %}
-                </div><!-- /.form-notice -->
                 {% include 'projects/detail/login_form.html.twig' %}
             {% endif %}
         </div><!-- /.project-single-info -->

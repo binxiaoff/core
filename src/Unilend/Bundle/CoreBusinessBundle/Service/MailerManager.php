@@ -475,10 +475,14 @@ class MailerManager
             $project->get($bid->getProject()->getIdProject());
 
             $now          = new \DateTime();
-            $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : $bid->getProject()->getDateFin();
+            /**
+             * We use: new \DateTime($project->date_fin) instead of: $bid->getProject()->getDateFin() because
+             * it seems like that the $bid->getProject() returns a not up-to-date entity data, while $project->date_fin is updated in another process
+             */
+            $endDate      = '0000-00-00 00:00:00' === $project->date_fin ? $bid->getProject()->getDateRetrait() : new \DateTime($project->date_fin);
 
             if (false === $endDate instanceof \DateTime) {
-                $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait(), 'getDateFin' => $bid->getProject()->getDateFin()];
+                $datesUsed = ['endDate' => $endDate, 'date_fin' => $project->date_fin, 'getDateRetrait' => $bid->getProject()->getDateRetrait()];
                 $this->oLogger->warning(
                     'Could not determine the project end date using following values: ' . json_encode($datesUsed) .
                     ' No mail will be sent to the client ' . $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
@@ -527,7 +531,7 @@ class MailerManager
                 if ($endDate <= $now) {
                     $mailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
                     $keyWords     += [
-                        'bidDate'          => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidDate'          => $bid->getAdded()->format('%d %B %G'),
                         'bidTime'          => $bid->getAdded()->format('H\hi'),
                         'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
                         'projectsListLink' => $this->sFUrl . '/projects-a-financer'
@@ -540,7 +544,7 @@ class MailerManager
                 } else {
                     $mailTemplate = 'preteur-bid-ko-minimum-rate';
                     $keyWords     += [
-                        'bidDate' => strftime('%d-%B-%G', $bid->getAdded()->getTimestamp()),
+                        'bidDate' => $bid->getAdded()->format('%d %B %G'),
                         'bidTime' => $bid->getAdded()->format('H\hi'),
                     ];
                 }

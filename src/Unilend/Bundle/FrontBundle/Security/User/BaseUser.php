@@ -9,40 +9,49 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
-    /** @var  string */
+    /** @var string */
     private $username;
-    /** @var  string  */
+    /** @var string */
     private $password;
-    /** @var  string  */
+    /** @var string */
     private $email;
-    /** @var  array  */
+    /** @var string */
+    private $salt;
+    /** @var array */
     private $roles;
-    /** @var  bool  */
+    /** @var bool */
     private $isActive;
     /** @var int */
     private $clientId;
-    /** @var  string  */
-    private $hash;
-    /** @var string|\DateTime  */
-    private $lastLoginDate;
-    /** @var  string  */
-    private $encoderName;
     /** @var string */
-    private $salt;
+    private $hash;
+    /** @var string|\DateTime */
+    private $lastLoginDate;
+    /** @var string */
+    private $encoderName;
 
     /**
-     * BaseUser constructor.
-     * @param string $username
-     * @param string $password
-     * @param string $email
-     * @param string $salt
-     * @param array  $roles
-     * @param bool   $isActive
-     * @param int    $clientId
-     * @param string $hash
-     * @param null   $lastLoginDate
+     * @param string         $username
+     * @param string|null    $password
+     * @param string         $email
+     * @param string         $salt
+     * @param array          $roles
+     * @param bool           $isActive
+     * @param int            $clientId
+     * @param string         $hash
+     * @param \DateTime|null $lastLoginDate
      */
-    public function __construct($username, $password, $email, $salt, array $roles, $isActive, $clientId, $hash, \DateTime $lastLoginDate = null)
+    public function __construct(
+        string $username,
+        ?string $password,
+        string $email,
+        string $salt,
+        array $roles,
+        bool $isActive,
+        int $clientId,
+        string $hash,
+        ?\DateTime $lastLoginDate = null
+    )
     {
         $this->username      = $username;
         $this->password      = $password;

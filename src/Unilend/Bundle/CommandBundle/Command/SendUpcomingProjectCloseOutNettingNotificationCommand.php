@@ -84,17 +84,18 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
                     ['method' => __METHOD__, 'id_project' => $project->getIdProject(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
             }
-            if (false === empty($rows)) {
-                $this->sendEmail($rows, $interval);
-                $this->sendSlack($projectNames);
-            }
+        }
+        if (false === empty($rows)) {
+            $this->sendEmail($rows, $interval);
+            $this->sendSlack($projectNames, $interval);
         }
     }
 
     /**
-     * @param $projectNames
+     * @param array $projectNames
+     * @param int   $interval
      */
-    private function sendSlack($projectNames)
+    private function sendSlack(array $projectNames, int $interval): void
     {
         $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
         $logger       = $this->getContainer()->get('monolog.logger.console');
@@ -102,10 +103,10 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         try {
             /** @var Settings $slackListSetting */
             $slackListSetting = $this->getContainer()->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:ClientSettings')->findOneBy(['type' => $settingType]);
+                ->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => $settingType]);
             if (null !== $slackListSetting) {
                 foreach (explode(',', $slackListSetting->getValue()) as $slackChannel) {
-                    $slackManager->sendMessage(implode(', ', $projectNames), $slackChannel);
+                    $slackManager->sendMessage('Projets à déchoir sous ' . $interval . ' jours: ' . implode(', ', $projectNames), $slackChannel);
                 }
             } else {
                 $logger->error('Could not send slack notification, no configured slack channels found.', ['method' => __METHOD__, 'setting_type' => $settingType]);
@@ -122,15 +123,16 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
      * @param string $projectsList
      * @param int    $interval
      */
-    private function sendEmail(string $projectsList, int $interval)
+    private function sendEmail(string $projectsList, int $interval): void
     {
         $settingTypes = ['Adresse analystes risque', 'Adresse controle interne'];
         $emails       = [];
 
-        $mailType = 'notification-decheance-du-terme-a-venir';
-        $keywords = [
+        $mailType                 = 'notification-decheance-du-terme-a-venir';
+        $debtCollectionChangeDate = \DateTime::createFromFormat('Y-m-d', DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE);
+        $keywords                 = [
             'projectList' => $projectsList,
-            'changeDate'  => $debtCollectionChangeDate = \DateTime::createFromFormat('Y-m-d', DebtCollectionMissionManager::DEBT_COLLECTION_CONDITION_CHANGE_DATE),
+            'changeDate'  => $debtCollectionChangeDate->format('d/m/Y'),
             'interval'    => $interval
         ];
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -138,7 +140,7 @@ class SendUpcomingProjectCloseOutNettingNotificationCommand extends ContainerAwa
         try {
             /** @var Settings[] $recipients */
             $recipients = $this->getContainer()->get('doctrine.orm.entity_manager')
-                ->getRepository('UnilendCoreBusinessBundle:ClientSettings')->findBy(['type' => $settingTypes]);
+                ->getRepository('UnilendCoreBusinessBundle:Settings')->findBy(['type' => $settingTypes]);
             foreach ($recipients as $recipient) {
                 $emails[] = $recipient->getValue();
             }

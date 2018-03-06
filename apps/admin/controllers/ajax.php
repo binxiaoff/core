@@ -175,6 +175,8 @@ class ajaxController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
+        $errors = [];
+
         /** @var \Symfony\Component\Translation\Translator translator */
         $this->translator = $this->get('translator');
 
@@ -247,16 +249,48 @@ class ajaxController extends bootstrap
                 ]);
                 return;
             } elseif ($_POST['etape'] == 2) {
-                $project->balance_count = empty($project->balance_count) && false === empty($_POST['creation_date_etape2']) ? \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->diff(new \DateTime())->y : $project->balance_count;
-                $project->update();
+                /** @var EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+                $emailRegex    = $entityManager
+                    ->getRepository('UnilendCoreBusinessBundle:Settings')
+                    ->findOneBy(['type' => 'Regex validation email'])
+                    ->getValue();
 
                 /** @var \companies $company */
                 $company = $this->loadData('companies');
                 $company->get($project->id_company, 'id_company');
+
+                /** @var \clients_adresses $address */
+                $address = $this->loadData('clients_adresses');
+                $address->get($company->id_client_owner, 'id_client');
+
+                /** @var \clients $client */
+                $client = $this->loadData('clients');
+                $client->get($company->id_client_owner, 'id_client');
+
+                $email = isset($_POST['email_etape2']) ? trim($_POST['email_etape2']) : null;
+                if (1 !== preg_match($emailRegex, $email)) {
+                    $errors[] = 'Le format de l\'adresse email est invalide';
+                } elseif ($email !== $client->email) {
+                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+
+                    if (false === empty($duplicates)) {
+                        $errors[] = 'Cette adresse email est déjà utilisée par un autre compte';
+                    }
+                }
+
+                if (false === empty($_POST['creation_date_etape2']) && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $_POST['creation_date_etape2'])) {
+                    $errors[] = 'Date de création invalide';
+                } elseif (false === empty($_POST['creation_date_etape2'])) {
+                    $creationDate           = \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2']);
+                    $project->balance_count = empty($project->balance_count) ? $creationDate->diff(new \DateTime())->y : $project->balance_count;
+                }
+
                 $company->name                          = $_POST['raison_sociale_etape2'];
                 $company->forme                         = $_POST['forme_juridique_etape2'];
                 $company->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $company->date_creation                 = empty($_POST['creation_date_etape2']) ? '' : \DateTime::createFromFormat('d/m/Y', $_POST['creation_date_etape2'])->format('Y-m-d');
+                $company->date_creation                 = isset($creationDate) ? $creationDate->format('Y-m-d') : $company->date_creation;
                 $company->adresse1                      = $_POST['address_etape2'];
                 $company->city                          = $_POST['ville_etape2'];
                 $company->zip                           = $_POST['postal_etape2'];
@@ -264,11 +298,6 @@ class ajaxController extends bootstrap
                 $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
                 $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
                 $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
-                $company->update();
-
-                /** @var \clients_adresses $address */
-                $address = $this->loadData('clients_adresses');
-                $address->get($company->id_client_owner, 'id_client');
 
                 if ($company->status_adresse_correspondance == 0) {
                     $address->adresse1  = $_POST['adresse_correspondance_etape2'];
@@ -281,18 +310,21 @@ class ajaxController extends bootstrap
                     $address->cp        = $_POST['postal_etape2'];
                     $address->telephone = $_POST['phone_etape2'];
                 }
-                $address->update();
 
-                $this->clients = $this->loadData('clients');
-                $this->clients->get($company->id_client_owner, 'id_client');
-                $this->clients->email     = $_POST['email_etape2'];
-                $this->clients->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $this->clients->civilite;
-                $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction  = $_POST['fonction_etape2'];
-                $this->clients->telephone = $_POST['phone_new_etape2'];
-                $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
-                $this->clients->update();
+                $client->email     = $email;
+                $client->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $client->civilite;
+                $client->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
+                $client->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $client->fonction  = $_POST['fonction_etape2'];
+                $client->telephone = $_POST['phone_new_etape2'];
+                $client->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
+
+                if (empty($errors)) {
+                    $project->update();
+                    $company->update();
+                    $address->update();
+                    $client->update();
+                }
             } elseif ($_POST['etape'] == 3) {
                 if (isset($_FILES['photo_projet']) && false === empty($_FILES['photo_projet']['name'])) {
                     $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
@@ -328,10 +360,12 @@ class ajaxController extends bootstrap
                         'error'   => true,
                         'message' => $error
                     ]);
+                    return;
                 } else {
                     echo json_encode([
                         'success' => true
                     ]);
+                    return;
                 }
             } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::COMITY_REVIEW) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
@@ -373,6 +407,8 @@ class ajaxController extends bootstrap
                 die;
             }
         }
+
+        $this->sendAjaxResponse(empty($errors), null, $errors);
     }
 
     /**
@@ -483,7 +519,7 @@ class ajaxController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BidManager $bidManger */
-        $bidManger = $this->get('unilend.serbvice.bid_manager');
+        $bidManger = $this->get('unilend.service.bid_manager');
 
         if (isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid')) {
             $serialize = serialize($_POST);
@@ -612,7 +648,7 @@ class ajaxController extends bootstrap
                 empty($_POST['structure']) || $_POST['structure'] > 10
                 || empty($_POST['rentabilite']) || $_POST['rentabilite'] > 10
                 || empty($_POST['tresorerie']) || $_POST['tresorerie'] > 10
-                || empty($_POST['performance_fianciere']) || $_POST['performance_fianciere'] > 10
+                || empty($_POST['performance_financiere']) || $_POST['performance_financiere'] > 10
                 || empty($_POST['individuel']) || $_POST['individuel'] > 10
                 || empty($_POST['global']) || $_POST['global'] > 10
                 || empty($_POST['marche_opere']) || $_POST['marche_opere'] > 10
@@ -648,19 +684,19 @@ class ajaxController extends bootstrap
         $projectRating->setStructure(round(str_replace(',', '.', $_POST['structure']), 1));
         $projectRating->setRentabilite(round(str_replace(',', '.', $_POST['rentabilite']), 1));
         $projectRating->setTresorerie(round(str_replace(',', '.', $_POST['tresorerie']), 1));
-        $projectRating->setPerformanceFianciere(round(str_replace(',', '.', $_POST['performance_fianciere']), 1));
+        $projectRating->setPerformanceFinanciere(round(str_replace(',', '.', $_POST['performance_financiere']), 1));
         $projectRating->setIndividuel(round(str_replace(',', '.', $_POST['individuel']), 1));
         $projectRating->setGlobal(round(str_replace(',', '.', $_POST['global']), 1));
         $projectRating->setMarcheOpere(round(str_replace(',', '.', $_POST['marche_opere']), 1));
         $projectRating->setDirigeance(round(str_replace(',', '.', $_POST['dirigeance']), 1));
         $projectRating->setIndicateurRisqueDynamique(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique']), 1));
-        $projectRating->setNote(round($projectRating->getPerformanceFianciere() * 0.2 + $projectRating->getMarcheOpere() * 0.2 + $projectRating->getDirigeance() * 0.2 + $projectRating->getIndicateurRisqueDynamique() * 0.4, 1));
+        $projectRating->setNote(round($projectRating->getPerformanceFinanciere() * 0.2 + $projectRating->getMarcheOpere() * 0.2 + $projectRating->getDirigeance() * 0.2 + $projectRating->getIndicateurRisqueDynamique() * 0.4, 1));
         $projectRating->setAvis($_POST['avis']);
 
         $projectRating->setStructureComite(empty($projectRating->getStructureComite()) ? $projectRating->getStructure() : $projectRating->getStructureComite());
         $projectRating->setRentabiliteComite(empty($projectRating->getRentabiliteComite()) ? $projectRating->getRentabilite() : $projectRating->getRentabiliteComite());
         $projectRating->setTresorerieComite(empty($projectRating->getTresorerieComite()) ? $projectRating->getTresorerie() : $projectRating->getTresorerieComite());
-        $projectRating->setPerformanceFianciereComite(empty($projectRating->getPerformanceFianciereComite()) ? $projectRating->getPerformanceFianciere() : $projectRating->getPerformanceFianciereComite());
+        $projectRating->setPerformanceFinanciereComite(empty($projectRating->getPerformanceFinanciereComite()) ? $projectRating->getPerformanceFinanciere() : $projectRating->getPerformanceFinanciereComite());
         $projectRating->setIndividuelComite(empty($projectRating->getIndividuelComite()) ? $projectRating->getIndividuel() : $projectRating->getIndividuelComite());
         $projectRating->setGlobalComite(empty($projectRating->getGlobalComite()) ? $projectRating->getGlobal() : $projectRating->getGlobalComite());
         $projectRating->setMarcheOpereComite(empty($projectRating->getMarcheOpereComite()) ? $projectRating->getMarcheOpere() : $projectRating->getMarcheOpereComite());
@@ -733,7 +769,7 @@ class ajaxController extends bootstrap
                 empty($_POST['structure_comite']) || $_POST['structure_comite'] > 10
                 || empty($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] > 10
                 || empty($_POST['tresorerie_comite']) || $_POST['tresorerie_comite'] > 10
-                || empty($_POST['performance_fianciere_comite']) || $_POST['performance_fianciere_comite'] > 10
+                || empty($_POST['performance_financiere_comite']) || $_POST['performance_financiere_comite'] > 10
                 || empty($_POST['individuel_comite']) || $_POST['individuel_comite'] > 10
                 || empty($_POST['global_comite']) || $_POST['global_comite'] > 10
                 || empty($_POST['marche_opere_comite']) || $_POST['marche_opere_comite'] > 10
@@ -762,13 +798,13 @@ class ajaxController extends bootstrap
         $projectRating->setStructureComite(round(str_replace(',', '.', $_POST['structure_comite']), 1));
         $projectRating->setRentabiliteComite(round(str_replace(',', '.', $_POST['rentabilite_comite']), 1));
         $projectRating->setTresorerieComite(round(str_replace(',', '.', $_POST['tresorerie_comite']), 1));
-        $projectRating->setPerformanceFianciereComite(round(str_replace(',', '.', $_POST['performance_fianciere_comite']), 1));
+        $projectRating->setPerformanceFinanciereComite(round(str_replace(',', '.', $_POST['performance_financiere_comite']), 1));
         $projectRating->setIndividuelComite(round(str_replace(',', '.', $_POST['individuel_comite']), 1));
         $projectRating->setGlobalComite(round(str_replace(',', '.', $_POST['global_comite']), 1));
         $projectRating->setMarcheOpereComite(round(str_replace(',', '.', $_POST['marche_opere_comite']), 1));
         $projectRating->setDirigeanceComite(round(str_replace(',', '.', $_POST['dirigeance_comite']), 1));
         $projectRating->setIndicateurRisqueDynamiqueComite(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique_comite']), 1));
-        $projectRating->setNoteComite(round($projectRating->getPerformanceFianciereComite() * 0.2 + $projectRating->getMarcheOpereComite() * 0.2 + $projectRating->getDirigeanceComite() * 0.2 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4, 1));
+        $projectRating->setNoteComite(round($projectRating->getPerformanceFinanciereComite() * 0.2 + $projectRating->getMarcheOpereComite() * 0.2 + $projectRating->getDirigeanceComite() * 0.2 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4, 1));
         $projectRating->setAvisComite($_POST['avis_comite']);
 
         $entityManager->flush($projectRating);

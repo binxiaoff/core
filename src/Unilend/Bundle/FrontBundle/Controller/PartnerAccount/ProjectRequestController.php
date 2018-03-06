@@ -132,7 +132,7 @@ class ProjectRequestController extends Controller
         $client = new Clients();
         $client
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_INACTIVE)
+            ->setStatus(Clients::STATUS_OFFLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
@@ -503,7 +503,7 @@ class ProjectRequestController extends Controller
         }
         if (isset($request->request->get('contact')['email'])) {
             $email = $request->request->get('contact')['email'];
-            if ($clientRepository->existEmail($email)) {
+            if ($clientRepository->existEmail($email, Clients::STATUS_ONLINE)) {
                 if ($this->removeEmailSuffix($client->getEmail()) === $email) {
                     $email = $client->getEmail();
                 } else {

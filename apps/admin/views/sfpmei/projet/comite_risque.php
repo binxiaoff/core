@@ -5,7 +5,7 @@
                 <thead>
                 <tr>
                     <th>Performance financière</th>
-                    <th><?= $this->ficelle->formatNumber($this->projects_notes->performance_fianciere_comite, 1) ?> / 10</th>
+                    <th><?= $this->ficelle->formatNumber($this->projects_notes->performance_financiere_comite, 1) ?> / 10</th>
                     <th>Marché opéré</label></th>
                     <th><?= $this->ficelle->formatNumber($this->projects_notes->marche_opere_comite, 1) ?> / 10</th>
                     <th>Dirigeance</th>

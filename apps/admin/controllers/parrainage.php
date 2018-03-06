@@ -474,7 +474,11 @@ class parrainageController extends bootstrap
 
             $toBeCheckedStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->findOneBy(['status' => ClientsStatus::TO_BE_CHECKED]);
             $firstToBeCheckedStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
-                ->findOneBy(['idClient'=> $sponsee->getIdClient(),'idClientStatus' => $toBeCheckedStatus->getIdClientStatus()], ['added' => 'ASC']);
+                ->findOneBy(
+                    ['idClient' => $sponsee->getIdClient(), 'idClientStatus' => $toBeCheckedStatus->getIdClientStatus()],
+                    ['added' => 'ASC']
+                );
+
             if (null === $firstToBeCheckedStatus) {
                 $_SESSION['create_sponsorship']['errors'][] = 'L\'insciription du filleul n\'est pas terminée';
                 header('Location: ' . $this->lurl . '/parrainage');
@@ -507,9 +511,11 @@ class parrainageController extends bootstrap
             $sponsorshipManager->createSponsorship($sponsee, $sponsor->getSponsorCode(), $campaign);
 
             $sponsorship = $entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
-            $sponsorship->setIdCampaign($campaign)
+            $sponsorship
+                ->setIdCampaign($campaign)
                 ->setStatus($status);
             $entityManager->flush($sponsorship);
+
             $_SESSION['create_sponsorship']['success'] = 'Le parrainage entre parrain (' . $sponsor->getIdClient() . ') et filleul (' . $sponsee->getIdClient() . ') a été créé';
         }
 

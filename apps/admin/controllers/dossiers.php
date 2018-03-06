@@ -161,9 +161,6 @@ class dossiersController extends bootstrap
 
             $this->aBorrowingMotives = $borrowingMotive->select('rank');
 
-            $this->settings->get('Cabinet de recouvrement', 'type');
-            $this->cab = $this->settings->value;
-
             /** @var \tax_type $taxType */
             $taxType = $this->loadData('tax_type');
 
@@ -295,7 +292,7 @@ class dossiersController extends bootstrap
             $needs                           = $projectNeed->getTree();
             $this->needs                     = $needs;
             $this->isTakeover                = $this->isTakeover();
-            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($this->companies->siren);
+            $this->projectHasMonitoringEvent = $this->get('unilend.service.risk_data_monitoring_manager')->projectHasMonitoringEvents($this->projectEntity);
 
             if (isset($_POST['problematic_status']) && $this->projects->status != $_POST['problematic_status']) {
                 $this->problematicStatusForm($this->projectEntity);
@@ -944,17 +941,26 @@ class dossiersController extends bootstrap
         // This will be displayed on lender loans notifications table
         if (false === empty($_POST['site_content'])) {
             $user                = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
+            $firstNotRepaidRepaymentSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findOneBy([
+                'idProject' => $project,
+                'status'    => [Echeanciers::STATUS_PENDING, Echeanciers::STATUS_PARTIALLY_REPAID]
+            ], ['ordre' => 'ASC']);
+
+            /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
+            $translator = $this->get('translator');
+            $subject = $translator->trans('lender-notifications_later-repayment-title');
+            if (null !== $firstNotRepaidRepaymentSchedule && $firstNotRepaidRepaymentSchedule->getDateEcheance() < new DateTime()) {
+                $subject = $translator->trans('lender-notifications_later-repayment-with-repayment-schedule-title', ['%scheduleSequence%' => $firstNotRepaidRepaymentSchedule->getOrdre()]);
+            }
             $projectNotification = new ProjectNotification();
             $projectNotification->setIdProject($project)
-                ->setSubject('Remboursement en retard')
+                ->setSubject($subject)
                 ->setContent($_POST['site_content'])
                 ->setIdUser($user);
 
             $entityManager->persist($projectNotification);
             $entityManager->flush($projectNotification);
         }
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-        $projectStatusManager = $this->get('unilend.service.project_status_manager');
         $errors               = [];
 
         if (false === empty($_POST['send_email_borrower'])) {
@@ -1154,11 +1160,10 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->search = urldecode(filter_var($this->params[0], FILTER_SANITIZE_STRING));
-
         if (false === empty($this->params[0])) {
             /** @var \clients $clients */
             $clients       = $this->loadData('clients');
+            $this->search  = urldecode(filter_var($this->params[0], FILTER_SANITIZE_STRING));
             $this->clients = $clients->searchEmprunteurs('OR', $this->search, $this->search, '', '', str_replace(' ', '', $this->search));
         }
     }
@@ -1321,8 +1326,6 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \clients clients */
         $this->clients = $this->loadData('clients');
-        /** @var \clients_adresses clients_adresses */
-        $this->clients_adresses = $this->loadData('clients_adresses');
         /** @var \companies companies */
         $this->companies = $this->loadData('companies');
         /** @var projects projects */
@@ -1334,43 +1337,47 @@ class dossiersController extends bootstrap
         $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
         $this->partnerList = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-        $clientManager = $this->get('unilend.service.client_manager');
+        if (
+            isset($this->params[0], $_POST['id_client'])
+            && 'client' === $this->params[0]
+            && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
+            && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
+            $clientManager = $this->get('unilend.service.client_manager');
 
-        if (isset($_POST['send_create_etape1'])) {
-            if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-                header('Location: ' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
-                die;
-            } else {
-                header('Location: ' . $this->lurl . '/dossiers/add/create_etape2');
-                die;
-            }
-        }
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
-        $companyManager = $this->get('unilend.service.company_manager');
+            if (false === $clientManager->isBorrower($clientEntity)) {
+                $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
+                $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur';
 
-        if (isset($this->params[0]) && $this->params[0] === 'create_etape2') {
-            if (isset($this->params[1]) && is_numeric($this->params[1])) {
-                /** @var Clients $clientEntity */
-                $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[1]);
-                if (null !== $clientEntity && $clientManager->isBorrower($clientEntity)) {
-                    $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
-                } else {
-                    $_SESSION['freeow']['title']   = 'Erreur';
-                    $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur.';
-                    header('Location: ' . $this->lurl . '/dossiers/add/create');
-                    die;
-                }
-            } else {
-                $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
+                header('Location: ' . $this->lurl . '/dossiers/add/create');
+                exit;
             }
 
+            $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
-            die;
-        } elseif (isset($this->params[0], $this->params[1]) && $this->params[0] === 'siren' && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])) {
-            $companyEntity = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
+            exit;
+        } elseif (
+            isset($this->params[0])
+            && 'nouveau' === $this->params[0]
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
+            $this->createProject($companyEntity, $defaultPartner->getId());
+
+            header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+            exit;
+        } elseif (
+            isset($this->params[0], $this->params[1])
+            && 'siren' === $this->params[0]
+            && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
+        ) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
+            $companyEntity  = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
             $this->createProject($companyEntity, $defaultPartner->getId());
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
@@ -1378,25 +1385,22 @@ class dossiersController extends bootstrap
             $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
 
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-            die;
-        } elseif (isset($this->params[0])) {
-            if ($this->projects->get($this->params[0])) {
-                if ($this->projects->create_bo) {
-                    $this->companies->get($this->projects->id_company, 'id_company');
-                    $this->clients->get($this->companies->id_client_owner, 'id_client');
+            exit;
+        } elseif (
+            isset($this->params[0])
+            && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
+            && $this->projects->get($this->params[0])
+            && 0 == $this->projects->create_bo
+        ) {
+            $_SESSION['freeow']['title']   = 'Création de dossier';
+            $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
 
-                    // additional safeguard to avoid duplicate email when taking an existing lender as borrower, will be replaced by the borrower account checks when doing balance project
-                    if ($clientManager->isLender($this->clients)) {
-                        $this->clients->email = '';
-                    }
-                } elseif (0 == $this->projects->create_bo) {
-                    $_SESSION['freeow']['title']   = 'Création de dossier';
-                    $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            exit;
+        }
 
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                    die;
-                }
-            }
+        if (false === empty($this->projects->id_company)) {
+            $this->companies->get($this->projects->id_company);
         }
 
         $this->settings->get('Durée des prêts autorisées', 'type');
@@ -1718,12 +1722,14 @@ class dossiersController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
-        $this->prelevements            = $this->loadData('prelevements');
         /** @var \echeanciers_emprunteur $repaymentSchedule */
         $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            $this->lRemb = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager                = $this->get('doctrine.orm.entity_manager');
+            $this->directDebitsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
+            $this->lRemb                  = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
 
             $this->montantPreteur    = 0;
             $this->MontantEmprunteur = 0;
@@ -2096,41 +2102,47 @@ class dossiersController extends bootstrap
         }
     }
 
-    private function getEmailVarCompletude($oProjects, $oClients, $oCompanies)
+    /**
+     * @param \projects  $project
+     * @param \clients   $client
+     * @param \companies $company
+     *
+     * @return array
+     */
+    private function getEmailVarCompletude(\projects $project, \clients $client, \companies $company): array
     {
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        /** @var \settings $settings */
+        $settings = $this->loadData('settings');
 
-        $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings->value;
+        $settings->get('Facebook', 'type');
+        $facebookLink = $settings->value;
 
-        $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings->value;
+        $settings->get('Twitter', 'type');
+        $twitterLink = $settings->value;
 
-        $oSettings->get('Adresse emprunteur', 'type');
-        $sBorrowerEmail = $oSettings->value;
+        $settings->get('Adresse emprunteur', 'type');
+        $borrowerEmail = $settings->value;
 
-        $oSettings->get('Téléphone emprunteur', 'type');
-        $sBorrowerPhoneNumber = $oSettings->value;
+        $settings->get('Téléphone emprunteur', 'type');
+        $borrowerPhoneNumber = $settings->value;
 
         /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
 
-        return array(
+        return [
+            'prenom'                 => $client->prenom,
+            'raison_sociale'         => $company->name,
+            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][$project->id_project]) ? $_SESSION['project_submission_files_list'][$project->id_project] : '',
+            'lien_reprise_dossier'   => $this->furl . '/depot_de_dossier/fichiers/' . $project->hash,
+            'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $project->hash,
+            'link_compte_emprunteur' => $this->surl . '/espace-emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+            'adresse_emprunteur'     => $borrowerEmail,
+            'telephone_emprunteur'   => $borrowerPhoneNumber,
             'furl'                   => $this->furl,
             'surl'                   => $this->surl,
-            'adresse_emprunteur'     => $sBorrowerEmail,
-            'telephone_emprunteur'   => $sBorrowerPhoneNumber,
-            'prenom'                 => $oClients->prenom,
-            'raison_sociale'         => $oCompanies->name,
-            'lien_reprise_dossier'   => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
-            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? $_SESSION['project_submission_files_list'][$oProjects->id_project] : '',
-            'lien_fb'                => $lien_fb,
-            'lien_tw'                => $lien_tw,
-            'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
-            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client,
-                    \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG)
-        );
+            'lien_fb'                => $facebookLink,
+            'lien_tw'                => $twitterLink,
+        ];
     }
 
     private function selectEmailCompleteness($iClientId)
@@ -2138,6 +2150,8 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         $oClients->get($iClientId);
 
+        // @todo If client is an advisor, is it normal to send email with password
+        // @todo Is the check right? Shouldn't it be 'empty' instead of 'isset'
         if (isset($oClients->secrete_question, $oClients->secrete_reponse)) {
             return 'depot-dossier-completude';
         } else {
@@ -2147,17 +2161,30 @@ class dossiersController extends bootstrap
 
     public function _status()
     {
-        if (false === empty($_POST)) {
-            $url = '/dossiers/status/' . $_POST['status'];
+        if (false === empty($this->request->query->all())) {
+            $url = '/dossiers/status/' . $this->request->query->getInt('status');
 
-            if (false === empty($_POST['first-range-start']) && false === empty($_POST['first-range-end'])) {
-                $start = new \DateTime(str_replace('/', '-', $_POST['first-range-start']));
-                $end   = new \DateTime(str_replace('/', '-', $_POST['first-range-end']));
+            $fistRangeStart   = $this->request->query->get('first-range-start');
+            $fistRangeEnd     = $this->request->query->get('first-range-end');
+            $secondRangeStart = $this->request->query->get('second-range-start');
+            $secondRangeEnd   = $this->request->query->get('second-range-end');
+
+            if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeStart, $matches)
+                && checkdate($matches[2], $matches[1], $matches[3])
+                && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $fistRangeEnd, $matches)
+                && checkdate($matches[2], $matches[1], $matches[3])
+            ) {
+                $start = DateTime::createFromFormat('d/m/Y', $fistRangeStart);
+                $end   = DateTime::createFromFormat('d/m/Y', $fistRangeEnd);
                 $url   .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
 
-                if (false === empty($_POST['second-range-start']) && false === empty($_POST['second-range-end'])) {
-                    $start = new \DateTime(str_replace('/', '-', $_POST['second-range-start']));
-                    $end   = new \DateTime(str_replace('/', '-', $_POST['second-range-end']));
+                if (1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeStart, $matches)
+                    && checkdate($matches[2], $matches[1], $matches[3])
+                    && 1 === preg_match('/^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/', $secondRangeEnd, $matches)
+                    && checkdate($matches[2], $matches[1], $matches[3])
+                ) {
+                    $start = DateTime::createFromFormat('d/m/Y', $secondRangeStart);
+                    $end   = DateTime::createFromFormat('d/m/Y', $secondRangeEnd);
                     $url   .= '/' . $start->format('Y-m-d') . '_' . $end->format('Y-m-d');
                 }
             }
@@ -2169,38 +2196,36 @@ class dossiersController extends bootstrap
         $this->loadJs('admin/vis/vis.min');
         $this->loadCss('../scripts/admin/vis/vis.min');
 
-        /** @var \projects_status $projectStatus */
-        $projectStatus  = $this->loadData('projects_status');
-        $this->statuses = $projectStatus->select('', 'status ASC');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (
-            isset($this->params[0], $this->params[1])
-            && false === empty($this->params[0])
-            && $this->params[0] == (int) $this->params[0]
-            && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[1], $matches)
+        $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
+        $this->statuses          = $projectStatusRepository->findBy([], ['status' => 'ASC']);
+
+        if (false === empty($this->params[0]) && false === empty($this->params[1])
+            && 1 === preg_match('/(([0-9]{4})-([0-9]{2})-([0-9]{2}))_(([0-9]{4})-([0-9]{2})-([0-9]{2}))/', $this->params[1], $matches)
+            && checkdate($matches[3], $matches[4], $matches[2]) && checkdate($matches[7], $matches[8], $matches[6])
         ) {
-            $this->baseStatus      = $this->params[0];
+            $this->baseStatus      = (int) $this->params[0];
             $this->firstRangeStart = new \DateTime($matches[1]);
-            $this->firstRangeEnd   = new \DateTime($matches[2]);
-
-            $today = new \DateTime('NOW');
-
+            $this->firstRangeEnd   = new \DateTime($matches[5]);
+            $today                 = new \DateTime('NOW');
+            $projectStatus         = $projectStatusRepository->findOneBy(['status' => $this->baseStatus]);
             if (
-                $projectStatus->get($this->baseStatus)
-                && $this->firstRangeStart->getTimestamp() <= $today->getTimestamp()
-                && $this->firstRangeEnd->getTimestamp() <= $today->getTimestamp()
-                && $this->firstRangeStart->getTimestamp() <= $this->firstRangeEnd->getTimestamp()
+                $projectStatus
+                && $this->firstRangeStart <= $today
+                && $this->firstRangeEnd <= $today
+                && $this->firstRangeStart <= $this->firstRangeEnd
             ) {
-                /** @var \projects_status_history $projectStatusHistory */
-                $projectStatusHistory = $this->loadData('projects_status_history');
-                $baseStatus           = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
+                $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+                $baseStatus                     = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
                 if (false === empty($baseStatus)) {
                     $this->history = [
-                        'label'    => $baseStatus[0]['label'],
+                        'label'    => $projectStatus->getLabel(),
                         'count'    => count($baseStatus),
-                        'status'   => $projectStatus->status,
-                        'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                        'status'   => $projectStatus->getStatus(),
+                        'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
                     ];
 
                     foreach ($this->history['children'] as $childStatus => &$child) {
@@ -2209,23 +2234,26 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $matches)) {
+                    if (false === empty($this->params[2])
+                        && 1 === preg_match('/(([0-9]{4})-([0-9]{2})-([0-9]{2}))_(([0-9]{4})-([0-9]{2})-([0-9]{2}))/', $this->params[2], $matches)
+                        && checkdate($matches[3], $matches[4], $matches[2]) && checkdate($matches[7], $matches[8], $matches[6])
+                    ) {
                         $this->secondRangeStart = new \DateTime($matches[1]);
-                        $this->secondRangeEnd   = new \DateTime($matches[2]);
+                        $this->secondRangeEnd   = new \DateTime($matches[5]);
 
                         if (
-                            $this->secondRangeStart->getTimestamp() <= $today->getTimestamp()
-                            && $this->secondRangeEnd->getTimestamp() <= $today->getTimestamp()
-                            && $this->secondRangeStart->getTimestamp() <= $this->secondRangeEnd->getTimestamp()
+                            $this->secondRangeStart <= $today
+                            && $this->secondRangeEnd <= $today
+                            && $this->secondRangeStart <= $this->secondRangeEnd
                         ) {
-                            $baseStatus = $projectStatusHistory->getStatusByDates($this->baseStatus, $this->secondRangeStart, $this->secondRangeEnd);
+                            $baseStatus = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
 
                             if (false === empty($baseStatus)) {
                                 $this->compareHistory = [
-                                    'label'    => $baseStatus[0]['label'],
+                                    'label'    => $projectStatus->getLabel(),
                                     'count'    => count($baseStatus),
-                                    'status'   => $projectStatus->status,
-                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'id_project_status_history'))
+                                    'status'   => $projectStatus->getStatus(),
+                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
                                 ];
 
                                 foreach ($this->compareHistory['children'] as $childStatus => &$child) {

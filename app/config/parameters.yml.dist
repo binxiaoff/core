@@ -18,7 +18,10 @@ parameters:
     desk_user:                      equipeit@unilend.fr
     desk_password:                  password
 
-    gtm_token:                      GTM-W2WQKW
+    google.gtm_token:               GTM-W2WQKW
+    google.recaptcha_key:           6LeLBB8UAAAAABqR-NE95tO55l8pTaAzFRAplm3J
+    google.recaptcha_secret:        ~
+    google.recaptcha_url:           'https://www.google.com/recaptcha/api/siteverify'
 
     url.universign:                 'https://equipeit@unilend.fr:7RM6X40A@sign.test.cryptolog.com/sign/rpc/'
     url.host_admin:                 'admin.local.unilend.fr' # for Front to know the url BO
@@ -56,6 +59,7 @@ parameters:
     altares.password:               6e0f641ab06a4cc8eb998c9108b63d423e9f837c
     altares.wsdl_url_identity:      'https://intuiz.altares.fr/iws-v3.13/services/CallistoIdentite?wsdl'
     altares.wsdl_url_risk:          'https://intuiz.altares.fr/iws-v3.13/services/CallistoRisque?wsdl'
+    altares.wsdl_url_risk_monitoring: 'https://intuiz.altares.fr/iws-v3.13/services/CallistoAlerte?wsdl'
 
     ellisphere.contract_id:         ~
     ellisphere.user_prefix:         ~

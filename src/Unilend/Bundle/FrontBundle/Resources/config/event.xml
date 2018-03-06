@@ -15,8 +15,8 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="unilend.frontbundle.event.tos_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\TermsOfServiceSubscriber">
-            <argument type="service" id="unilend.service.client_manager" />
+        <service id="unilend.frontbundle.event.tos_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\TermsOfSaleSubscriber">
+            <argument type="service" id="unilend.service.terms_of_sale_manager" />
             <tag name="kernel.event_subscriber" />
         </service>
 

@@ -592,8 +592,18 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $status = 'activate' === $request->request->get('action') ? Clients::STATUS_ONLINE : Clients::STATUS_OFFLINE;
-        $companyClient->getIdClient()->setStatus($status);
+        if ('activate' === $request->request->get('action') && Clients::STATUS_ONLINE !== $companyClient->getIdClient()->getStatus()) {
+            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $duplicates        = $clientsRepository->findBy(['email' => $companyClient->getIdClient()->getEmail(), 'status' => Clients::STATUS_ONLINE]);
+
+            if (count($duplicates)) {
+                $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
+            } else {
+                $companyClient->getIdClient()->setStatus(Clients::STATUS_ONLINE);
+            }
+        } elseif ('deactivate' === $request->request->get('action')) {
+            $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
+        }
 
         try {
             $entityManager->flush($companyClient->getIdClient());
@@ -627,6 +637,11 @@ class partenairesController extends bootstrap
 
         if (null === $companyClient) {
             $errors[] = 'Utilisateur inconnu';
+            return null;
+        }
+
+        if (Clients::STATUS_ONLINE !== $companyClient->getIdClient()->getStatus()) {
+            $errors[] = 'Cet utilisateur est désactivé. Vous devez d’abord le passer en ligne pour lui envoyer le mail de réinitialisation de mot de passe.';
             return null;
         }
 
@@ -690,14 +705,10 @@ class partenairesController extends bootstrap
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
-        try {
-            $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $existingEmail     = $clientsRepository->existEmail($email, Clients::STATUS_ONLINE);
-        } catch (UnexpectedResultException $exception) {
-            $existingEmail = true;
-        }
+        $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $existingEmail     = $clientsRepository->existEmail($email, Clients::STATUS_ONLINE);
         if ($existingEmail && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
-            $errors[] = 'Il existe déjà un compte avec cette adresse email';
+            $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
         }
         if (empty($agency)) {
             $errors[] = 'Vous devez renseigner une agence de rattachement';

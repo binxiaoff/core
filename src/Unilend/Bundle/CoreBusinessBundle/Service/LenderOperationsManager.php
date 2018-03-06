@@ -111,8 +111,6 @@ class LenderOperationsManager
     private $translator;
 
     /**
-     * LenderOperationsManager constructor.
-     *
      * @param EntityManager $entityManager
      * @param Translator    $translator
      */
@@ -126,7 +124,7 @@ class LenderOperationsManager
      * @param Wallet     $wallet
      * @param \DateTime  $start
      * @param \DateTime  $end
-     * @param int| null  $idProject
+     * @param int|null   $idProject
      * @param array|null $operations
      *
      * @return array
@@ -189,16 +187,7 @@ class LenderOperationsManager
                 }
             }
 
-            // When a bid is partially rejected, as long as we update bid amount, we loose its initial amount. This is a (dirty) workaround to find out initial amount
-            if (
-                $previousHistoryLineIndex !== null
-                && in_array($lenderOperations[$previousHistoryLineIndex]['label'], [self::OP_BID, self::OP_AUTOBID, self::OP_REFUSED_BID, self::OP_REFUSED_AUTOBID])
-            ) {
-                $lenderOperations[$previousHistoryLineIndex]['amount'] = round(bcsub($historyLine['committed_balance'], $walletHistory[$previousHistoryLineIndex]['committed_balance'], 4), 2);
-            }
-
             $lenderOperations[$index] = $historyLine;
-            $previousHistoryLineIndex = $index;
         }
 
         if (null !== $idProject || null !== $operations) {

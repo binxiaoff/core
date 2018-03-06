@@ -13,6 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 class LendersImpositionHistory
 {
     /**
+     * A lender can live outside of France but with a resident of France for tax purposes. Vise versa.
+     *
+     *
      * @var integer
      *
      * @ORM\Column(name="resident_etranger", type="integer", nullable=false)

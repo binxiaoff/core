@@ -171,9 +171,13 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getCountry($countryId)
     {
+        if (empty($countryId)) {
+            $countryId = PaysV2::COUNTRY_FRANCE;
+        }
+
         $countryList = $this->locationManager->getCountries();
 
-        return $countryList[$countryId];
+        return isset($countryList[$countryId]) ? $countryList[$countryId] : '';
     }
 
     public function getNationality($nationalityId)

@@ -1,6 +1,8 @@
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Compte <?= $this->params[0] ?> innconu</div>
+    <?php elseif (empty($this->wallet)) : ?>
+        <div class="attention">Attention : ce compte n’est pas un compte prêteur</div>
     <?php else : ?>
         <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
@@ -87,7 +89,7 @@
                                 <tr>
                                     <th scope="row"><?= $this->translator->trans('autobid_autobid-period-' . array_values($aPeriodSettings)[0]['id_period'], ['[#SEPARATOR#]' => '<br>']); ?></th>
                                     <?php foreach ($aPeriodSettings as $aSetting) : ?>
-                                        <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
+                                        <td class="<?= (\Unilend\Bundle\CoreBusinessBundle\Entity\Autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                                         <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                             <div class="cell-inner">
                                                 <label class="param-advanced-label"><?= empty($aSetting['rate_min']) ? 'off' : $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>

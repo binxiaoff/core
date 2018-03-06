@@ -33,7 +33,6 @@ class bootstrap extends Controller
         $this->ln                      = $this->loadData('translations');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->clients_history         = $this->loadData('clients_history');
         $this->villes                  = $this->loadData('villes');
         $this->clients_status          = $this->loadData('clients_status');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -178,13 +177,6 @@ class bootstrap extends Controller
         $this->lng['header'] = $aElements['TradHeader'];
         $this->lng['footer'] = $aElements['TradFooter'];
         $this->lng['home']   = $aElements['TradHome'];
-
-
-        //gestion du captcha --> moved to LoginAuthenticator
-
-        $this->bAccountClosed      = false;
-        $this->displayCaptchaError = null;
-
 
         if ($this->clients->checkAccess()) {
             $this->addDataLayer('uid', md5($this->clients->email));

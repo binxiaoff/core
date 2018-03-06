@@ -20,17 +20,6 @@
                     href: "<?= $this->lurl ?>/thickbox/<?= $_SESSION['msgErreur'] ?>"
                 });
             <?php endif; ?>
-
-            <?php if (isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5)) : ?>
-                $('#bloc_action').hide();
-                $('#load_bloc').show();
-
-                setTimeout(function () {
-                        $('#load_bloc').hide();
-                        $('#bloc_action').show();
-                    }, <?= ($_SESSION['login_user']['duree_waiting'] * 1000) ?>
-                );
-            <?php endif; ?>
         });
     </script>
     <div id="logo_site">
@@ -62,9 +51,7 @@
 
                     <tr>
                         <td colspan="2" class="center">
-                            <div id="bloc_action">
-                                <button type="submit" name="connect" value="1" class="btn-primary">Se connecter</button>
-                            </div>
+                            <button type="submit" name="connect" value="1" class="btn-primary">Se connecter</button>
                         </td>
                     </tr>
                 </table>

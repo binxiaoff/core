@@ -47,7 +47,7 @@ class LenderWalletController extends Controller
             'minDepositAmount' => self::MIN_DEPOSIT_AMOUNT,
             'client'           => $this->getClient(),
             'lenderBankMotif'  => $this->getWallet()->getWireTransferPattern(),
-            'showNavigation'   => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
+            'showNavigation'   => $this->getUser()->getClientStatus() >= ClientsStatus::VALIDATED
         ];
 
         return $this->render('lender_wallet/deposit.html.twig', $template);
@@ -61,7 +61,7 @@ class LenderWalletController extends Controller
      *
      * @return Response
      */
-    public function depositResultAction(string $paymentToken) : Response
+    public function depositResultAction(string $paymentToken): Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $backPayline   = $entityManager->getRepository('UnilendCoreBusinessBundle:Backpayline')->findOneBy(['token' => $paymentToken]);
@@ -73,7 +73,7 @@ class LenderWalletController extends Controller
                 return $this->render('lender_wallet/deposit_result.html.twig', [
                     'depositAmount'  => round(bcdiv($backPayline->getAmount(), 100, 4), 2),
                     'depositCode'    => $backPayline->getCode(),
-                    'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
+                    'showNavigation' => $this->getUser()->getClientStatus() >= ClientsStatus::VALIDATED
                 ]);
             }
         }
@@ -91,7 +91,7 @@ class LenderWalletController extends Controller
     {
         return $this->render('lender_wallet/deposit_result.html.twig', [
             'depositCode'    => 'X',
-            'showNavigation' => $this->getUser()->getClientStatus() >= \clients_status::VALIDATED
+            'showNavigation' => $this->getUser()->getClientStatus() >= ClientsStatus::VALIDATED
         ]);
     }
 
@@ -104,19 +104,15 @@ class LenderWalletController extends Controller
      */
     public function withdrawalAction(Request $request)
     {
-        if (\clients_status::VALIDATED > $this->getUser()->getClientStatus()) {
+        if (ClientsStatus::VALIDATED > $this->getUser()->getClientStatus()) {
             return $this->redirectToRoute('lender_completeness');
         }
-        $client = $this->getClient();
-        /** @var TranslatorInterface $translator */
-        $translator = $this->get('translator');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var BankAccount $bankAccount */
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-        $form        = $this->createForm(LenderWithdrawalType::class);
 
-        $template = [
+        $client        = $this->getClient();
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $form          = $this->createForm(LenderWithdrawalType::class);
+        $template      = [
             'balance'         => $this->getUser()->getBalance(),
             'client'          => $client,
             'bankAccount'     => $bankAccount,
@@ -134,7 +130,7 @@ class LenderWalletController extends Controller
                 $post = $form->getData();
                 $this->handleWithdrawalPost($request, $post);
             } else {
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+                $this->addFlash('withdrawalErrors', $this->get('translator')->trans('lender-wallet_withdrawal-error-message'));
             }
 
             //Redirection is needed to refresh the token in the form which is already generated above

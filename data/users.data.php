@@ -76,7 +76,7 @@ class users extends users_crud
             $this->update();
             $this->checkExpiredPassword();
 
-            if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
+            if (false === empty($_SESSION['request_url']) && false === in_array($_SESSION['request_url'], ['login'])) {
                 header('Location: ' . $_SESSION['request_url']);
                 die;
             } else {

@@ -27,13 +27,6 @@ class Settings
     private $value;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status = '0';
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -104,30 +97,6 @@ class Settings
     public function getValue()
     {
         return $this->value;
-    }
-
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return Settings
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
     }
 
     /**

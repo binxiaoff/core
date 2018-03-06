@@ -576,7 +576,7 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getDuplicates($lastName, $firstName, \DateTime $birthdate)
+    public function getDuplicatesByName($lastName, $firstName, \DateTime $birthdate)
     {
         $charactersToReplace = [' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@'];
 
@@ -599,7 +599,7 @@ class ClientsRepository extends EntityRepository
                           FROM clients_status cs
                         LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
                         WHERE csh.id_client = c.id_client
-                        ORDER BY csh.added DESC LIMIT 1) = ' . \clients_status::VALIDATED;
+                        ORDER BY csh.added DESC LIMIT 1) = ' . ClientsStatus::VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()
@@ -781,16 +781,18 @@ class ClientsRepository extends EntityRepository
     public function findBeneficialOwnerByName($name)
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->select('c.idClient,
-                               c.nom,
-                               c.prenom,
-                               c.naissance,
-                               c.villeNaissance,
-                               c.idPaysNaissance,
-                               ca.idPaysFiscal,
-                               a.id AS attachmentId,
-                               a.originalName AS attachmentOriginalName,
-                               a.path AS attachmentPath')
+        $queryBuilder->select('
+                c.idClient,
+                c.nom,
+                c.prenom,
+                c.naissance,
+                c.villeNaissance,
+                c.idPaysNaissance,
+                ca.idPaysFiscal,
+                a.id AS attachmentId,
+                a.originalName AS attachmentOriginalName,
+                a.path AS attachmentPath'
+            )
             ->leftJoin('UnilendCoreBusinessBundle:Attachment', 'a', Join::WITH, 'a.idClient = c.idClient AND a.idType = ' . AttachmentType::CNI_PASSPORTE)
             ->leftJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
             ->where('c.nom LIKE :name')
@@ -821,5 +823,47 @@ class ClientsRepository extends EntityRepository
             ->setParameter('company', $companyClient->getIdCompany()->getIdCompany())
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return array
+     */
+    public function findDuplicatesByEmail(string $email) : array
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder->select('
+                c.idClient,
+                c.email,
+                c.nom,
+                c.prenom,
+                c.type AS clientType,
+                c.status,
+                c.added AS creationDate,
+                wt.label AS walletType,
+                co.idCompany,
+                co.name AS companyName,
+                COUNT(wbh.id) AS operations,
+                pa.id AS idPartner,
+                cp.name AS partnerName,
+                COUNT(DISTINCT bo.id) AS beneficialOwner,
+                pr.idPrescripteur'
+            )
+            ->leftJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->leftJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
+            ->leftJoin('UnilendCoreBusinessBundle:BeneficialOwner', 'bo', Join::WITH, 'c.idClient = bo.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'coc', Join::WITH, 'cc.idCompany = coc.idCompany')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'cp', Join::WITH, 'coc.idParentCompany = cp.idCompany')
+            ->leftJoin('UnilendCoreBusinessBundle:Partner', 'pa', Join::WITH, 'cp.idCompany = pa.idCompany')
+            ->leftJoin('UnilendCoreBusinessBundle:Prescripteurs', 'pr', Join::WITH, 'c.idClient = pr.idClient')
+            ->where('c.email LIKE :email')
+            ->setParameter('email', $email . '%', \PDO::PARAM_STR)
+            ->groupBy('c.idClient');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

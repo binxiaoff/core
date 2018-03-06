@@ -1,4 +1,4 @@
-<?php $isRiskUser = true;$this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
+<?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
 <script>
     var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
 
@@ -108,7 +108,7 @@
 <div id="contenu">
     <div class="row">
         <div class="col-md-12">
-            <a href="<?= $this->lurl ?>/dossiers/add/create" class="btn-primary pull-right">Créer un projet</a>
+            <a href="<?= $this->lurl ?>/dossiers/add" class="btn-primary pull-right">Créer un projet</a>
         </div>
     </div>
 

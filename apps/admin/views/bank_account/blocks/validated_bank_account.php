@@ -1,4 +1,4 @@
-<h2>RIB en vigueur</h2>
+<h3>RIB en vigueur</h3>
 <?php if ($this->bankAccount) : ?>
     <table class="tablesorter" style="width: 775px;margin:auto;">
         <tr>
@@ -9,7 +9,7 @@
                         <?= empty($this->bankAccount->getAttachment()->getOriginalName()) ? $this->bankAccount->getAttachment()->getPath() : $this->bankAccount->getAttachment()->getOriginalName() ?>
                     </a>
                 <?php else : ?>
-                    pas de document fourni.
+                    Aucun document fourni
                 <?php endif; ?>
             </td>
         </tr>
@@ -25,6 +25,6 @@
         </tr>
     </table>
 <?php else : ?>
-    Pas de RIB en vigueur.
+    Aucun RIB en vigueur
 <?php endif; ?>
 <br><br>

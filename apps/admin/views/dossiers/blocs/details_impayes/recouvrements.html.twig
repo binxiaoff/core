@@ -10,19 +10,19 @@
                 <th style="width: 5%">
                     Statut
                 </th>
-                <th style="width: 7.5%">
+                <th style="width: 8%">
                     Recouvreur
                 </th>
                 <th style="width: 55%">
                     Composition
                 </th>
-                <th style="width: 7.5%">
+                <th style="width: 10%">
                     Type
                 </th>
-                <th style="width: 7.5%">
+                <th style="width: 8%">
                     Taux
                 </th>
-                <th style="width: 2.5%">
+                <th style="width: 4%">
                     Action
                 </th>
             </tr>
@@ -61,8 +61,12 @@
                     <td>
                         {% if mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_AMICABLE') %}
                             Amiable
-                        {% else %}
+                        {% elseif mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_LITIGATION') %}
                             Contentieux
+                        {% elseif mission.type == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\DebtCollectionMission::TYPE_PRE_LITIGATION') %}
+                            Pré-contentieux
+                         {% else %}
+                            Inconnu
                         {% endif %}
                     </td>
                     <td>{{ (mission.getFeesRate() * 100)|localizednumber }}&nbsp;%</td>

@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, Sponsorship, TaxType, UnderlyingContractAttributeType, Users, WalletType
+    AcceptedBids, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, TaxType, UnderlyingContractAttributeType, Users, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
@@ -45,8 +45,6 @@ class ProjectLifecycleManager
     private $workingDay;
     /** @var LoggerInterface */
     private $logger;
-    /** @var SponsorshipManager */
-    private $sponsorshipManager;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
     /** @var ProjectManager */
@@ -78,7 +76,6 @@ class ProjectLifecycleManager
      * @param ProjectRateSettingsManager $projectRateSettingsManager
      * @param ProductManager             $productManager
      * @param ContractAttributeManager   $contractAttributeManager
-     * @param SponsorshipManager         $sponsorshipManager
      * @param ProjectStatusManager       $projectStatusManager
      * @param ProjectManager             $projectManager
      * @param AutoBidSettingsManager     $autobidSettingsManager
@@ -101,7 +98,6 @@ class ProjectLifecycleManager
         ProjectRateSettingsManager $projectRateSettingsManager,
         ProductManager $productManager,
         ContractAttributeManager $contractAttributeManager,
-        SponsorshipManager $sponsorshipManager,
         ProjectStatusManager $projectStatusManager,
         ProjectManager $projectManager,
         AutoBidSettingsManager $autobidSettingsManager,
@@ -123,7 +119,6 @@ class ProjectLifecycleManager
         $this->projectRateSettingsManager = $projectRateSettingsManager;
         $this->productManager             = $productManager;
         $this->contractAttributeManager   = $contractAttributeManager;
-        $this->sponsorshipManager         = $sponsorshipManager;
         $this->projectStatusManager       = $projectStatusManager;
         $this->projectManager             = $projectManager;
         $this->autobidSettingsManager     = $autobidSettingsManager;
@@ -150,9 +145,12 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function prePublish(\projects $project)
+    public function prePublish(\projects $project) : void
     {
         $this->autoBid($project);
 
@@ -168,7 +166,7 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    public function publish(\projects $project)
+    public function publish(\projects $project) : void
     {
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::EN_FUNDING, $project);
         $this->insertNewProjectNotification($project);
@@ -186,9 +184,12 @@ class ProjectLifecycleManager
      * @param \projects $project
      * @param bool      $sendNotification
      *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function checkBids(\projects $project, bool $sendNotification)
+    public function checkBids(\projects $project, bool $sendNotification) : void
     {
         /** @var \bids $legacyBid */
         $legacyBid = $this->entityManagerSimulator->getRepository('bids');
@@ -250,8 +251,13 @@ class ProjectLifecycleManager
 
     /**
      * @param \projects $project
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function autoBid(\projects $project)
+    public function autoBid(\projects $project) : void
     {
         if ($project->status == \projects_status::A_FUNDER) {
             $this->bidAllAutoBid($project);
@@ -263,29 +269,24 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function bidAllAutoBid(\projects $project)
+    private function bidAllAutoBid(\projects $project): void
     {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->entityManagerSimulator->getRepository('project_period');
-        $autobidRepo    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         $projectEntity  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
         if ($projectPeriods->getPeriod($project->period)) {
             $rateRange = $this->bidManager->getProjectRateRange($project);
             $iOffset   = 0;
             $iLimit    = 100;
-            while ($aAutoBidList = $oAutoBid->getSettings(null, $project->risk, $projectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
+            while ($autoBidSettings = $autoBidRepository->findBy(['evaluation' => $project->risk, 'idPeriod' => $projectPeriods->id_period, 'status' => Autobid::STATUS_ACTIVE], ['idAutobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-                foreach ($aAutoBidList as $aAutoBidSetting) {
-                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                    if ($autobid) {
-                        try {
-                            $this->bidManager->bidByAutoBidSettings($autobid, $projectEntity, $rateRange['rate_max'], false);
-                        } catch (\Exception $exception) {
-                            continue;
-                        }
+                foreach ($autoBidSettings as $autoBidSetting) {
+                    try {
+                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max'], false);
+                    } catch (\Exception $exception) {
+                        continue;
                     }
                 }
             }
@@ -300,8 +301,13 @@ class ProjectLifecycleManager
      * @param \projects $project
      * @param int       $mode
      * @param bool      $sendNotification
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function reBidAutoBid(\projects $project, int $mode, bool $sendNotification)
+    private function reBidAutoBid(\projects $project, int $mode, bool $sendNotification) : void
     {
         /** @var \settings $oSettings */
         $oSettings = $this->entityManagerSimulator->getRepository('settings');
@@ -328,9 +334,12 @@ class ProjectLifecycleManager
      * @param int       $mode
      * @param bool      $sendNotification
      *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function reBidAutoBidDeeply(\projects $project, int $mode, bool $sendNotification)
+    private function reBidAutoBidDeeply(\projects $project, int $mode, bool $sendNotification) : void
     {
         /** @var \bids $oBid */
         $oBid = $this->entityManagerSimulator->getRepository('bids');
@@ -346,64 +355,18 @@ class ProjectLifecycleManager
      * @param \projects $project
      *
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    public function buildLoans(\projects $project)
+    public function buildLoans(\projects $project) : void
     {
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::BID_TERMINATED, $project);
         $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $project);
-
-        if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info('Project ' . $project->id_project . ' is now changed to status funded', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-        }
-
-        $criteria     = ['idProject' => $project->id_project, 'status' => Bids::STATUS_PENDING];
-        $bids         = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
-        $iBidNbTotal  = $bidRepository->countBy($criteria);
-        $iBidBalance  = 0;
-        $treatedBidNb = 0;
-
-        if ($this->logger instanceof LoggerInterface) {
-            $this->logger->info($iBidNbTotal . ' bids created (project ' . $project->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-        }
-
-        foreach ($bids as $bid) {
-            if ($bid) {
-                if ($iBidBalance < $project->amount) {
-                    $iBidBalance = bcadd($iBidBalance, round(bcdiv($bid->getAmount(), 100, 4), 2), 2);
-                    if ($iBidBalance > $project->amount) {
-                        $fAmountToCredit = $iBidBalance - $project->amount;
-                        $this->bidManager->rejectPartially($bid, $fAmountToCredit);
-                    } else {
-                        $bid->setStatus(Bids::STATUS_ACCEPTED);
-                        $this->entityManager->flush($bid);
-
-                        if (null !== $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $bid->getIdLenderAccount()->getIdClient(), 'status' => Sponsorship::STATUS_SPONSEE_PAID])) {
-                            try {
-                                $this->sponsorshipManager->attributeSponsorReward($bid->getIdLenderAccount()->getIdClient());
-                            } catch (\Exception $exception) {
-                                $this->logger->info('Sponsor reward could not be attributed for bid ' . $bid->getIdBid() . '. Reason: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-                            }
-                        }
-                    }
-                } else {
-                    $this->bidManager->reject($bid, true);
-                }
-
-                $treatedBidNb++;
-
-                if ($this->logger instanceof LoggerInterface) {
-                    $this->logger->info($treatedBidNb . '/' . $iBidNbTotal . ' bids treated (project ' . $project->id_project . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
-                }
-            }
-        }
+        $this->acceptBids($project);
 
         /** @var \product $product */
         $product = $this->entityManagerSimulator->getRepository('product');
         $product->get($project->id_product);
-
         $contractTypes = array_column($this->productManager->getAvailableContracts($product), 'label');
 
         if (in_array(\underlying_contract::CONTRACT_IFP, $contractTypes) && in_array(\underlying_contract::CONTRACT_BDC, $contractTypes)) {
@@ -417,198 +380,187 @@ class ProjectLifecycleManager
 
     /**
      * @param \projects $project
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function buildLoanIFPAndMinibon(\projects $project)
+    private function acceptBids(\projects $project)
+    {
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $criteria      = ['idProject' => $project->id_project, 'status' => Bids::STATUS_PENDING];
+        $bids          = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
+        $bidBalance    = 0;
+
+        foreach ($bids as $bid) {
+            if ($bid) {
+                if ($bidBalance < $project->amount) {
+                    $bidAmount      = round(bcdiv($bid->getAmount(), 100, 4), 2);
+                    $bidBalance     = round(bcadd($bidBalance, $bidAmount, 4), 2);
+                    $acceptedAmount = null;
+
+                    if ($bidBalance > $project->amount) {
+                        $cutAmount      = round(bcsub($bidBalance, $project->amount, 4), 2);
+                        $acceptedAmount = round(bcsub($bidAmount, $cutAmount, 4));
+                    }
+                    $this->bidManager->accept($bid, $acceptedAmount);
+
+                } else {
+                    $this->bidManager->reject($bid, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function buildLoanIFPAndMinibon(\projects $project) : void
     {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_MINIBON);
     }
 
     /**
      * @param \projects $project
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function buildLoanIFPAndBDC(\projects $project)
+    private function buildLoanIFPAndBDC(\projects $project) : void
     {
         $this->buildIFPBasedMixLoan($project, \underlying_contract::CONTRACT_BDC);
     }
 
     /**
      * @param \projects $project
-     * @param string    $additionalContract
+     * @param string    $additionalContractLabel
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function buildIFPBasedMixLoan(\projects $project, string $additionalContract)
+    private function buildIFPBasedMixLoan(\projects $project, string $additionalContractLabel) : void
     {
-        /** @var \bids $legacyBid */
-        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
-        /** @var \loans $loan */
-        $loan = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \underlying_contract $contract */
-        $contract      = $this->entityManagerSimulator->getRepository('underlying_contract');
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-
-        $aLenderList = $legacyBid->getLenders($project->id_project, [Bids::STATUS_ACCEPTED]);
-
-        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+        $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => \underlying_contract::CONTRACT_IFP]);
+        if (null === $ifpContract) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
-        $IFPContractId = $contract->id_contract;
 
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($ifpContract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         } else {
             $IFPLoanAmountMax = $contractAttrVars[0];
         }
 
-        if (false === $contract->get($additionalContract, 'label')) {
+        $additionalContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => $additionalContractLabel]);
+        if (null === $additionalContract) {
             throw new \InvalidArgumentException('The contract ' . $additionalContract . 'does not exist.');
         }
-        $additionalContractId = $contract->id_contract;
 
-        foreach ($aLenderList as $aLender) {
-            $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($aLender['id_lender_account']);
-            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet, 'idProject' => $project->id_project, 'status' => Bids::STATUS_ACCEPTED], ['rate' => 'DESC']);
+        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
+        /** @var Wallet $wallet */
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project->id_project) as $wallet) {
+            $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
+            $loansLenderSum = 0;
+            $isIfpContract  = true;
+            $ifpBids        = [];
+
+            /** @var AcceptedBids $acceptedBid */
+            foreach ($acceptedBids as $acceptedBid) {
+                if (false === $wallet->getIdClient()->isNaturalPerson()) {
+                    $this->loanManager->create([$acceptedBid], $additionalContract);
+                    continue;
+                }
+
+                $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
+                if (true === $isIfpContract && bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
+                    $loansLenderSum += $bidAmount;
+                    $ifpBids[]      = $acceptedBid;
+                    continue;
+                }
+
+                if (false === $isIfpContract || bccomp($loansLenderSum, $IFPLoanAmountMax) == 0) {
+                    $this->loanManager->create([$acceptedBid], $additionalContract);
+                    continue;
+                }
+
+                // Greater than IFP max amount ? create additional contract loan, split it if needed. Duplicate accepted bid, as there are two loans for one accepted bid
+                $isIfpContract     = false;
+                $notIfpAmount      = bcsub(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2);
+
+                $clonedAcceptedBid = clone $acceptedBid;
+                $clonedAcceptedBid->setAmount(bcmul($notIfpAmount, 100));
+                $this->entityManager->persist($clonedAcceptedBid);
+                $this->entityManager->flush($clonedAcceptedBid);
+
+                $this->loanManager->create([$clonedAcceptedBid], $additionalContract);
+
+                $remainingAmount = bcsub($bidAmount, $notIfpAmount, 2);
+                if (0 < $remainingAmount) {
+                    $acceptedBid->setAmount(bcmul($remainingAmount, 100));
+                    $this->entityManager->flush($acceptedBid);
+                    $ifpBids[] = $acceptedBid;
+                }
+
+                $loansLenderSum = $IFPLoanAmountMax;
+            }
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
-                $fLoansLenderSum = 0;
-                $fInterests      = 0;
-                $bIFPContract    = true;
-                $aBidIFP         = array();
-
-                foreach ($lenderBids as $bid) {
-                    $fBidAmount = round(bcdiv($bid->getAmount(), 100, 4), 2);
-
-                    if (true === $bIFPContract && bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
-                        $fInterests      = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
-                        $fLoansLenderSum += $fBidAmount;
-                        $aBidIFP[]       = array(
-                            'bid_id' => $bid->getIdBid(),
-                            'amount' => $fBidAmount
-                        );
-                    } else {
-                        // Greater than IFP max amount ? create additional contract loan, split it if needed.
-                        $bIFPContract = false;
-                        $fDiff        = bcsub(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2);
-
-                        $loan->unsetData();
-                        $loan->addAcceptedBid($bid->getIdBid(), $fDiff);
-                        $loan->id_lender        = $wallet->getId();
-                        $loan->id_project       = $project->id_project;
-                        $loan->amount           = $fDiff * 100;
-                        $loan->rate             = $bid->getRate();
-                        $loan->id_type_contract = $additionalContractId;
-                        $this->loanManager->create($loan);
-
-                        $fRest = bcsub($fBidAmount, $fDiff, 2);
-                        if (0 < $fRest) {
-                            $fInterests = bcadd($fInterests, bcmul($bid->getRate(), $fRest, 2), 2);
-                            $aBidIFP[]  = array(
-                                'bid_id' => $bid->getIdBid(),
-                                'amount' => $fRest
-                            );
-                        }
-                        $fLoansLenderSum = $IFPLoanAmountMax;
-                    }
-                }
-
-                // Create IFP loan from the grouped bids
-                $loan->unsetData();
-                foreach ($aBidIFP as $aAcceptedBid) {
-                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
-                }
-                $loan->id_lender        = $wallet->getId();
-                $loan->id_project       = $project->id_project;
-                $loan->amount           = $fLoansLenderSum * 100;
-                $loan->rate             = round($fInterests / $fLoansLenderSum, 2);
-                $loan->id_type_contract = $IFPContractId;
-                $this->loanManager->create($loan);
-            } else {
-                foreach ($lenderBids as $bid) {
-                    $loan->unsetData();
-                    $loan->addAcceptedBid($bid->getIdBid(), round(bcdiv($bid->getAmount(), 100, 4), 2));
-                    $loan->id_lender        = $wallet->getId();
-                    $loan->id_project       = $project->id_project;
-                    $loan->amount           = $bid->getAmount();
-                    $loan->rate             = $bid->getRate();
-                    $loan->id_type_contract = $additionalContractId;
-                    $this->loanManager->create($loan);
-                }
+                $this->loanManager->create($ifpBids, $ifpContract);
             }
         }
     }
 
     /**
      * @param \projects $project
+     *
+     * @throws OptimisticLockException
+     * @throws \Exception
      */
-    private function buildLoanIFP(\projects $project)
+    private function buildLoanIFP(\projects $project) : void
     {
-        /** @var \bids $legacyBid */
-        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
-        /** @var \loans $loan */
-        $loan = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \underlying_contract $contract */
-        $contract      = $this->entityManagerSimulator->getRepository('underlying_contract');
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-
-        $aLenderList = $legacyBid->getLenders($project->id_project, [Bids::STATUS_ACCEPTED]);
-
-        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
+        $ifpContract = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->findOneBy(['label' => \underlying_contract::CONTRACT_IFP]);
+        if (null === $ifpContract) {
             throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
         }
-        $IFPContractId = $contract->id_contract;
 
-        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+        $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($ifpContract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
         if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
             throw new \UnexpectedValueException('The IFP contract max amount is not set');
         } else {
             $IFPLoanAmountMax = $contractAttrVars[0];
         }
 
-        foreach ($aLenderList as $aLender) {
-            $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($aLender['id_lender_account']);
-            $lenderBids = $bidRepository->findBy(['idLenderAccount' => $wallet->getId(), 'idProject' => $project->id_project, 'status' => Bids::STATUS_ACCEPTED], ['rate' => 'DESC']);
+        $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
+        $lenderWallets          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findLendersWithAcceptedBidsByProject($project->id_project);
 
-            if ($wallet->getIdClient()->isNaturalPerson()) {
-                $fLoansLenderSum = 0;
-                $fInterests      = 0;
-                $aBidIFP         = [];
+        /** @var Wallet $wallet */
+        foreach ($lenderWallets as $wallet) {
+            if (false === $wallet->getIdClient()->isNaturalPerson()) {
+                throw new \InvalidArgumentException('Bids of legal entity have been accepted. This is not allowed for IFP contracts');
+            }
 
-                /** @var Bids $bid */
-                foreach ($lenderBids as $bid) {
-                    $fBidAmount = round(bcdiv($bid->getAmount(), 100, 4), 2);
+            $acceptedBids   = $acceptedBidsRepository->findAcceptedBidsByLenderAndProject($wallet, $project->id_project);
+            $loansLenderSum = 0;
 
-                    if (bccomp(bcadd($fLoansLenderSum, $fBidAmount, 2), $IFPLoanAmountMax, 2) <= 0) {
-                        $fInterests      = bcadd($fInterests, bcmul($bid->getRate(), $fBidAmount, 2), 2);
-                        $fLoansLenderSum = bcadd($fLoansLenderSum, $fBidAmount, 2);
-                        $aBidIFP[]       = [
-                            'bid_id' => $bid->getIdBid(),
-                            'amount' => $fBidAmount
-                        ];
-                    } else {
-                        $this->bidManager->reject($bid);
-                    }
-                }
-
-                // Create IFP loan from the grouped bids
-                $loan->unsetData();
-                foreach ($aBidIFP as $aAcceptedBid) {
-                    $loan->addAcceptedBid($aAcceptedBid['bid_id'], $aAcceptedBid['amount']);
-                }
-                $loan->id_lender        = $wallet->getId();
-                $loan->id_project       = $project->id_project;
-                $loan->amount           = bcmul($fLoansLenderSum, 100);
-                $loan->rate             = round(bcdiv($fInterests, $fLoansLenderSum, 4), 2);
-                $loan->id_type_contract = $IFPContractId;
-                $this->loanManager->create($loan);
-            } else {
-                foreach ($lenderBids as $bid) {
-                    $this->bidManager->reject($bid);
+            /** @var AcceptedBids $acceptedBid */
+            foreach ($acceptedBids as $acceptedBid) {
+                $bidAmount = round(bcdiv($acceptedBid->getAmount(), 100, 4), 2);
+                if (bccomp(bcadd($loansLenderSum, $bidAmount, 2), $IFPLoanAmountMax, 2) > 0) {
+                    throw new \InvalidArgumentException('Sum of bids for client ' . $wallet->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
                 }
             }
+
+            $this->loanManager->create($acceptedBids, $ifpContract);
         }
     }
 
     /**
      * @param \projects $project
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function treatFundFailed(\projects $project)
     {
@@ -958,12 +910,11 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function insertNewProjectEmails(\projects $project) : void
+    private function insertNewProjectEmails(\projects $project): void
     {
         /** @var \clients $clientData */
         $clientData = $this->entityManagerSimulator->getRepository('clients');
-        /** @var \autobid $autobidData */
-        $autobidData = $this->entityManagerSimulator->getRepository('autobid');
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriodData */
         $projectPeriodData = $this->entityManagerSimulator->getRepository('project_period');
 
@@ -981,7 +932,7 @@ class ProjectLifecycleManager
             'projectLink'     => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->slug])
         ];
 
-        $autoBidSettings  = $autobidData->getSettings(null, $project->risk, $projectPeriodData->id_period, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+        $autoBidSettings  = $autobidRepository->getSettings(null, $project->risk, $projectPeriodData->id_period, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
         $autoBidsAmount   = array_column($autoBidSettings, 'amount', 'id_lender');
         $autoBidsMinRate  = array_column($autoBidSettings, 'rate_min', 'id_lender');
         $autoBidsStatus   = array_column($autoBidSettings, 'status', 'id_lender');
@@ -1052,10 +1003,10 @@ class ProjectLifecycleManager
                         if (true === $hasAutolendOn) {
                             if (isset($autoBidsStatus[$wallet->getId()])) {
                                 switch ($autoBidsStatus[$wallet->getId()]) {
-                                    case \autobid::STATUS_INACTIVE:
+                                    case Autobid::STATUS_INACTIVE:
                                         $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%' => $autolendUrl]);
                                         break;
-                                    case \autobid::STATUS_ACTIVE:
+                                    case Autobid::STATUS_ACTIVE:
                                         if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
                                             $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
                                         }
@@ -1161,7 +1112,7 @@ class ProjectLifecycleManager
         $limit  = 100;
         $this->logger->info('Insert new project notification for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
-        while ($lenders = $clientData->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
+        while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
             $notificationsCount = 0;
             $offset             += $limit;
             $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);

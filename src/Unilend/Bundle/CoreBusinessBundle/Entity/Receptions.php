@@ -100,13 +100,6 @@ class Receptions
     private $statusBo;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="remb", type="integer", nullable=false)
-     */
-    private $remb;
-
-    /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
@@ -354,7 +347,7 @@ class Receptions
      *
      * @return Receptions
      */
-    public function setRejectionIsoCode(SepaRejectionReason $rejectionIsoCode)
+    public function setRejectionIsoCode(?SepaRejectionReason $rejectionIsoCode = null)
     {
         $this->rejectionIsoCode = $rejectionIsoCode;
 
@@ -391,30 +384,6 @@ class Receptions
     public function getStatusBo()
     {
         return $this->statusBo;
-    }
-
-    /**
-     * Set remb
-     *
-     * @param integer $remb
-     *
-     * @return Receptions
-     */
-    public function setRemb($remb)
-    {
-        $this->remb = $remb;
-
-        return $this;
-    }
-
-    /**
-     * Get remb
-     *
-     * @return integer
-     */
-    public function getRemb()
-    {
-        return $this->remb;
     }
 
     /**

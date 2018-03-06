@@ -1,3 +1,6 @@
+<?php
+use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
+?>
 <script type="text/javascript">
     $(function() {
         jQuery.tablesorter.addParser({id: "fancyNumber", is: function (s) {
@@ -77,24 +80,24 @@
                     //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
                     $date_envoi_prelevement = '';
                     $sStatus                = '';
+                    /** @var Prelevements $directDebits */
+                    if ($directDebits = $this->directDebitsRepository->findOneBy(['idProject' => $r['id_project'], 'numPrelevement' => $r['ordre']])) {
+                        $date_envoi_prelevement = $directDebits->getDateExecutionDemandePrelevement()->format('d/m/Y');
 
-                    if ($this->prelevements->get($r['id_project'], 'num_prelevement = ' . $r['ordre'] . ' AND id_project')) {
-                        $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
-
-                        switch ($this->prelevements->status) {
-                            case \prelevements::STATUS_PENDING:
+                        switch ($directDebits->getStatus()) {
+                            case Prelevements::STATUS_PENDING:
                                 $sStatus = 'A venir';
                                 break;
-                            case \prelevements::STATUS_SENT:
+                            case Prelevements::STATUS_SENT:
                                 $sStatus = 'Envoyé';
                                 break;
-                            case \prelevements::STATUS_VALID:
+                            case Prelevements::STATUS_VALID:
                                 $sStatus = 'Validé';
                                 break;
-                            case \prelevements::STATUS_TERMINATED:
+                            case Prelevements::STATUS_TERMINATED:
                                 $sStatus = 'Terminé';
                                 break;
-                            case \prelevements::STATUS_TEMPORARILY_BLOCKED:
+                            case Prelevements::STATUS_TEMPORARILY_BLOCKED:
                                 $sStatus = 'Bloqué temporairement';
                                 break;
                             default:

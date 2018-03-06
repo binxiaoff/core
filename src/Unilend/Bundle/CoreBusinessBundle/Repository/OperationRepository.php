@@ -1351,37 +1351,6 @@ class OperationRepository extends EntityRepository
     }
 
     /**
-     * @param int|Projects $project
-     * @param int|Wallet   $wallet
-     *
-     * @return float
-     */
-    public function getRepaidCapitalByProjectAndWallet($project, $wallet)
-    {
-        $queryBuilder = $this->createQueryBuilder('o');
-        $queryBuilder->select('
-            SUM(CASE 
-                WHEN ot.label = :capital THEN IFNULL(o.amount, 0)
-                WHEN ot.label = :capitalRegularization THEN IFNULL(-o.amount, 0)
-                ELSE 0
-            END) as capital
-        ')
-            ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'o.idType = ot.id')
-            ->where('o.idWalletDebtor = :wallet OR o.idWalletCreditor = :wallet')
-            ->andWhere('o.idProject = :project')
-            ->andWhere('ot.label in (:capitalRepaymentTypes)')
-            ->setParameters([
-                'wallet'                => $wallet,
-                'project'               => $project,
-                'capital'               => OperationType::CAPITAL_REPAYMENT,
-                'capitalRegularization' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
-                'capitalRepaymentTypes' => [OperationType::CAPITAL_REPAYMENT, OperationType::CAPITAL_REPAYMENT_REGULARIZATION],
-            ]);
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
-    }
-
-    /**
      * @param Wallet|integer $wallet
      *
      * @return array

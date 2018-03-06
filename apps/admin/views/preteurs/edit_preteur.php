@@ -1,7 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies
+};
 
 ?>
 <script type="text/javascript">
@@ -48,9 +49,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 <div id="contenu">
     <?php if (empty($this->clients->id_client)) : ?>
         <div class="attention">Attention : Client <?= $this->params[0] ?> innconu</div>
+    <?php elseif (empty($this->wallet)) : ?>
+        <div class="attention">Attention : ce compte n’est pas un compte prêteur</div>
     <?php else : ?>
     <div><?= $this->clientStatusMessage ?></div>
-    <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
+    <h1>Prêteur</h1>
+    <h2><?= $this->clients->prenom . ' ' . $this->clients->nom ?></h2>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
@@ -66,7 +70,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <table class="form" style="margin: auto;">
             <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) : ?>
                 <tr class="particulier">
-                    <th>ID Client :</th>
+                    <th>ID client :</th>
                     <td>
                         <span><?= $this->clients->id_client ?></span>
                     </td>
@@ -74,20 +78,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <td><h3>Informations MRZ</h3></td>
                 </tr>
                 <tr class="particulier">
-                    <th>Civilite :</th>
+                    <th>Civilité :</th>
                     <td>
-                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
-                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
+                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"> <label for="civilite1">Madame</label>
+                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."> <label for="civilite2">Monsieur</label>
                     </td>
                     <td rowspan="6" style="vertical-align: top">
-                        <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
+                        <?php if (false === in_array($this->iNextYear, $this->exemptionYears)) : ?>
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $this->iNextYear ?>/check" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $this->iNextYear ?>" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
                             </a>
                             <label for="tax_exemption_<?= $this->iNextYear ?>"><?= $this->iNextYear ?></label>
                             <br>
                         <?php endif; ?>
-                        <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
+                        <?php foreach ($this->exemptionYears as $iExemptionYear) : ?>
                             <?php if ($this->iNextYear == $iExemptionYear) : ?>
                             <a id="confirm_exemption" href="<?= $this->lurl ?>/thickbox/confirm_tax_exemption/<?= $iExemptionYear ?>/uncheck" class="thickbox cboxElement">
                                 <input type="checkbox" id="tax_exemption_<?= $iExemptionYear ?>" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked>
@@ -163,8 +167,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <tr class="particulier">
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="success">mdp envoyé</span>
+                        <input style="font-size: 11px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')">
+                        <span style="margin-left:5px;color:green; display:none;" class="success">Email envoyé</span>
                         <span style="margin-left:5px;color:orange; display:none;" class="warning">Email non envoyé</span>
                         <span style="margin-left:5px;color:red; display:none;" class="error">Erreur</span>
                     </td>
@@ -205,8 +209,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <td></td>
                     <th></th>
                     <td>
-                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
-                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                        <input style="font-size: 11px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">Mot de passe généré</span>
                     </td>
                 </tr>
             <?php endif; ?>
@@ -619,7 +623,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                             $this->users->get($historyEntry['id_user'], 'id_user');
 
                             switch ($this->clientsStatusForHistory->status) {
-                                case \clients_status::TO_BE_CHECKED: ?>
+                                case ClientsStatus::TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
                                             <?php if (empty($historyEntry['content'])) : ?>
@@ -631,7 +635,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS: ?>
+                                case ClientsStatus::COMPLETENESS: ?>
                                     <tr>
                                         <td>
                                             Complétude le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -640,7 +644,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS_REMINDER: ?>
+                                case ClientsStatus::COMPLETENESS_REMINDER: ?>
                                     <tr>
                                         <td>
                                             Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -648,7 +652,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::COMPLETENESS_REPLY: ?>
+                                case ClientsStatus::COMPLETENESS_REPLY: ?>
                                     <tr>
                                         <td>
                                             Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -656,7 +660,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::MODIFICATION: ?>
+                                case ClientsStatus::MODIFICATION: ?>
                                     <tr>
                                         <td>
                                             Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br/>
@@ -664,7 +668,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::VALIDATED: ?>
+                                case ClientsStatus::VALIDATED: ?>
                                     <tr>
                                         <td>
                                             <?php if ($this->users->id_user > 0) : ?>
@@ -676,14 +680,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_LENDER_REQUEST : ?>
+                                case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
                                     <tr>
                                         <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
                                             le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br />
                                             par <?= $this->users->name ?></td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_BY_UNILEND : ?>
+                                case ClientsStatus::CLOSED_BY_UNILEND: ?>
                                     <tr>
                                         <td>Compte clôturé par Unilend (mis hors ligne) <br />
                                             le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?> <br />
@@ -692,7 +696,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                                         </td>
                                     </tr>
                                     <?php break;
-                                case \clients_status::CLOSED_DEFINITELY: ?>
+                                case ClientsStatus::CLOSED_DEFINITELY: ?>
                                     <tr>
                                         <td>
                                             Compte definitvement fermé le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?>
@@ -729,7 +733,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <?php endif; ?>
             </div>
             <div class="droite">
-                <?php if($this->clients_status->status != \clients_status::CLOSED_DEFINITELY) : ?>
+                <?php if ($this->clients_status->status != ClientsStatus::CLOSED_DEFINITELY) : ?>
                 <table class="tabLesStatuts">
                     <tr>
                         <td>
@@ -749,15 +753,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (clients_status::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                            <?php if (ClientsStatus::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
                             <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
-                            <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
+                            <?php if (false === in_array($this->clients_status->status, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                                <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -765,7 +769,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                         <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) :?>
+                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) : ?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
                                        class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
@@ -780,10 +784,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
-                            <input type="button"
-                                   onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
-                                   class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
+                            <?php if ($this->clients_status->status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
+                                <input type="button"
+                                       onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
+                                       class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
                             <?php endif; ?>
                         </td>
                     </tr>

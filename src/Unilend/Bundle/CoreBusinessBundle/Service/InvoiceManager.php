@@ -22,26 +22,30 @@ class InvoiceManager
     private $twig;
     /** @var string */
     private $protectedPath;
+    /** @var ProjectManager */
+    private $projectManager;
 
     /**
      * @param EntityManager      $entityManager
      * @param GeneratorInterface $snappy
      * @param Twig_Environment   $twig
      * @param string             $protectedPath
+     * @param ProjectManager     $projectManager
      */
-    public function __construct(EntityManager $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, $protectedPath)
+    public function __construct(EntityManager $entityManager, GeneratorInterface $snappy, Twig_Environment $twig, ProjectManager $projectManager, string $protectedPath)
     {
-        $this->entityManager = $entityManager;
-        $this->snappy        = $snappy;
-        $this->twig          = $twig;
-        $this->protectedPath = $protectedPath;
+        $this->entityManager  = $entityManager;
+        $this->snappy         = $snappy;
+        $this->twig           = $twig;
+        $this->protectedPath  = $protectedPath;
+        $this->projectManager = $projectManager;
     }
 
     /**
      * @param Projects $project
      * @param int|null $order
      *
-     * @return null||Factures
+     * @return null|Factures
      * @throws \Exception
      */
     public function getBorrowerInvoice(Projects $project, $order = null)
@@ -102,7 +106,7 @@ class InvoiceManager
             'margin-left'   => 15
         ];
 
-        $filePath = $this->getBorrowerInvoiceFilePath($invoice);
+        $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
             'client'      => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
             'project'     => $invoice->getIdProject(),
@@ -154,28 +158,50 @@ class InvoiceManager
         $project = $paymentSchedule->getIdProject();
         $now     = new \DateTime();
 
-        $this->entityManager->getConnection()->beginTransaction();
-        try {
-            $invoice = new Factures();
-            $invoice->setIdProject($project)
-                ->setNumFacture($this->getInvoiceNumber($project, $now))
-                ->setDate($now)
-                ->setOrdre($paymentSchedule->getOrdre())
-                ->setIdCompany($project->getIdCompany()->getIdCompany())
-                ->setTypeCommission(Factures::TYPE_COMMISSION_REPAYMENT)
-                ->setCommission($project->getCommissionRateRepayment())
-                ->setMontantHt($paymentSchedule->getCommission())
-                ->setTva($paymentSchedule->getTva())
-                ->setMontantTtc(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2));
+        $invoice = new Factures();
+        $invoice
+            ->setIdProject($project)
+            ->setNumFacture($this->getInvoiceNumber($project, $now))
+            ->setDate($now)
+            ->setOrdre($paymentSchedule->getOrdre())
+            ->setIdCompany($project->getIdCompany()->getIdCompany())
+            ->setTypeCommission(Factures::TYPE_COMMISSION_REPAYMENT)
+            ->setCommission($project->getCommissionRateRepayment())
+            ->setMontantHt($paymentSchedule->getCommission())
+            ->setTva($paymentSchedule->getTva())
+            ->setMontantTtc(bcadd($paymentSchedule->getCommission(), $paymentSchedule->getTva(), 2));
 
-            $this->entityManager->persist($invoice);
-            $this->entityManager->flush($invoice);
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush($invoice);
+    }
 
-            $this->entityManager->getConnection()->commit();
-        } catch (\Exception $exception) {
-            $this->entityManager->getConnection()->rollBack();
-            throw $exception;
-        }
+    /**
+     * @param Projects $project
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function createFundsInvoice(Projects $project)
+    {
+        $now               = new \DateTime();
+        $commissionInclTax = $this->projectManager->getCommissionFunds($project, true);
+        $commissionExclTax = $this->projectManager->getCommissionFunds($project, false);
+        $vat               = round(bcsub($commissionInclTax, $commissionExclTax, 4), 2);
+
+        $invoice = new Factures();
+        $invoice
+            ->setIdProject($project)
+            ->setNumFacture($this->getInvoiceNumber($project, $now))
+            ->setDate($now)
+            ->setIdCompany($project->getIdCompany()->getIdCompany())
+            ->setOrdre(0)
+            ->setTypeCommission(Factures::TYPE_COMMISSION_FUNDS)
+            ->setCommission($project->getCommissionRateFunds())
+            ->setMontantTtc(bcmul($commissionInclTax, 100))
+            ->setMontantHt(bcmul($commissionExclTax, 100))
+            ->setTva(bcmul($vat, 100));
+
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush($invoice);
     }
 
     /**

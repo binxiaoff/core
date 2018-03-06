@@ -68,9 +68,15 @@
                                     <em><?= $mailTemplate->getSenderEmail() ?></em>
                                 </td>
                                 <td data-order="<?= $updateDate->getTimestamp() ?>"><?= $updateDate->format('d/m/Y H:i') ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['day'] ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['week'] ?></td>
-                                <td><?= $section['stats'][$mailTemplate->getType()]['month'] ?></td>
+                                <?php if (empty($section['stats'][$mailTemplate->getIdMailTemplate()])) : ?>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                <?php else : ?>
+                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['day'] ?></td>
+                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['week'] ?></td>
+                                    <td><?= $section['stats'][$mailTemplate->getIdMailTemplate()]['month'] ?></td>
+                                <?php endif; ?>
                                 <td align="center">
                                     <a href="<?= $this->lurl ?>/mails/edit/<?= $mailTemplate->getType() ?>" title="Modifier <?= $mailTemplate->getType() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $mailTemplate->getType() ?>"/>

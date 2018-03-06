@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+
+?>
 <div class="row">
     <div class="col-md-12">
         <h3>Statut</h3>
@@ -17,7 +22,7 @@
                     $this->users->get($historyEntry['id_user'], 'id_user');
                     ?>
                     <?php switch ($this->clients_status->status) :
-                        case \clients_status::TO_BE_CHECKED: ?>
+                        case ClientsStatus::TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
                                     <?php if (empty($historyEntry['content'])) : ?>
@@ -31,7 +36,7 @@
                                 <td></td>
                             </tr>
                             <?php break;
-                        case \clients_status::COMPLETENESS: ?>
+                        case ClientsStatus::COMPLETENESS: ?>
                             <tr>
                                 <td>
                                     Complétude<br>
@@ -41,7 +46,7 @@
                                 <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                             </tr>
                             <?php break;
-                        case \clients_status::COMPLETENESS_REMINDER: ?>
+                        case ClientsStatus::COMPLETENESS_REMINDER: ?>
                             <tr>
                                 <td>
                                     Complétude relance<br>
@@ -51,7 +56,7 @@
                                 <td></td>
                             </tr>
                             <?php break;
-                        case \clients_status::COMPLETENESS_REPLY: ?>
+                        case ClientsStatus::COMPLETENESS_REPLY: ?>
                             <tr>
                                 <td>
                                     Complétude réponse<br>
@@ -61,7 +66,7 @@
                                 <td></td>
                             </tr>
                             <?php break;
-                        case \clients_status::MODIFICATION: ?>
+                        case ClientsStatus::MODIFICATION: ?>
                             <tr>
                                 <td>
                                     Compte modifié<br>
@@ -71,7 +76,7 @@
                                 <td></td>
                             </tr>
                             <?php break;
-                        case \clients_status::VALIDATED: ?>
+                        case ClientsStatus::VALIDATED: ?>
                             <tr>
                                 <td>
                                     <?php if (empty($historyEntry['content'])) : ?>
@@ -84,14 +89,14 @@
                                 <td class="text-nowrap"><?= (-1 == $historyEntry['id_user']) ? 'Validation automatique Greenpoint' : $this->users->firstname . ' ' . $this->users->name ?></td>
                             </tr>
                             <?php break;
-                        case \clients_status::CLOSED_LENDER_REQUEST : ?>
+                        case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
                             <tr>
                                 <td>Compte clôturé à la demande du prêteur</td>
                                 <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
                                 <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                             </tr>
                             <?php break;
-                        case \clients_status::CLOSED_BY_UNILEND : ?>
+                        case ClientsStatus::CLOSED_BY_UNILEND: ?>
                             <tr>
                                 <td>
                                     Compte clôturé par Unilend<br>
@@ -101,7 +106,7 @@
                                 <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                             </tr>
                             <?php break;
-                        case \clients_status::CLOSED_DEFINITELY: ?>
+                        case ClientsStatus::CLOSED_DEFINITELY: ?>
                             <tr>
                                 <td>
                                     Compte définitvement fermé<br>

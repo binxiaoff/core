@@ -2,12 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionFeeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\OperationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectChargeManager;
@@ -89,17 +89,17 @@ class ProjectCloseOutNettingRepaymentManager
         }
 
         try {
+            $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
             $this->projectChargeManager->processProjectCharge($projectRepaymentTask->getIdWireTransferIn());
 
-            $projectRepaymentTaskLog = $this->processRepayment($projectRepaymentTask);
+            $this->processRepayment($projectRepaymentTaskLog);
+
+            $projectRepaymentTaskStatus = ProjectRepaymentTask::STATUS_REPAID;
 
             $totalTaskPlannedAmount = round(bcadd($projectRepaymentTask->getCapital(), $projectRepaymentTask->getInterest(), 4), 2);
             $totalTaskRepaidAmount  = $this->projectRepaymentTaskManager->getRepaidAmount($projectRepaymentTask);
 
-            if (0 === bccomp($totalTaskPlannedAmount, $totalTaskRepaidAmount, 2)) {
-                $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_REPAID);
-                $this->entityManager->flush($projectRepaymentTask);
-            } else {
+            if (0 !== bccomp($totalTaskPlannedAmount, $totalTaskRepaidAmount, 2)) {
                 $this->projectRepaymentNotificationSender->sendIncompleteRepaymentNotification($projectRepaymentTask->getIdProject(), $projectRepaymentTask->getSequence());
 
                 throw new \Exception('The amount (' . $totalTaskPlannedAmount . ') of the project repayment task (id: ' . $projectRepaymentTask->getId() . ') is different from the repaid amount (' . $totalTaskRepaidAmount . '). The task may not been completely done');
@@ -110,28 +110,28 @@ class ProjectCloseOutNettingRepaymentManager
             $this->operationManager->repaymentCommission($projectRepaymentTaskLog);
 
         } catch (\Exception $exception) {
-            $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
-            $this->entityManager->flush($projectRepaymentTask);
+            $projectRepaymentTaskStatus = ProjectRepaymentTask::STATUS_ERROR;
 
             throw $exception;
+        } finally {
+            $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $projectRepaymentTaskStatus);
         }
 
         return $projectRepaymentTaskLog;
     }
 
     /**
-     * @param ProjectRepaymentTask $projectRepaymentTask
+     * @param ProjectRepaymentTaskLog $projectRepaymentTaskLog
      *
-     * @return ProjectRepaymentTaskLog
      * @throws \Exception
      */
-    private function processRepayment(ProjectRepaymentTask $projectRepaymentTask)
+    private function processRepayment(ProjectRepaymentTaskLog $projectRepaymentTaskLog)
     {
+        $projectRepaymentTask = $projectRepaymentTaskLog->getIdTask();
+
         $this->projectRepaymentTaskManager->prepare($projectRepaymentTask);
 
         $this->projectRepaymentTaskManager->checkPreparedRepayments($projectRepaymentTask);
-
-        $projectRepaymentTaskLog = $this->projectRepaymentTaskManager->start($projectRepaymentTask);
 
         $repaidLoanNb      = 0;
         $repaidAmount      = 0;
@@ -157,6 +157,8 @@ class ProjectCloseOutNettingRepaymentManager
 
             $this->entityManager->getConnection()->beginTransaction();
             try {
+                $this->entityManager->getConnection()->setTransactionIsolation(Connection::TRANSACTION_READ_COMMITTED);
+
                 $closeOutNettingRepayment = $closeOutNettingRepaymentRepository->findOneBy(['idLoan' => $projectRepaymentDetail->getIdLoan()]);
                 if (null === $closeOutNettingRepayment) {
                     throw new \Exception('Cannot found close out netting repayment for loan (id: ' . $projectRepaymentDetail->getIdLoan()->getIdLoan() .
@@ -187,16 +189,15 @@ class ProjectCloseOutNettingRepaymentManager
 
                 $this->entityManager->rollback();
 
-                $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_ERROR);
-                $this->entityManager->flush($projectRepaymentTask);
-
                 $this->projectRepaymentNotificationSender->sendIncompleteRepaymentNotification($project, $repaymentSequence);
+
+                $this->projectRepaymentTaskManager->log($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
 
                 throw $exception;
                 break;
             }
         }
 
-        return $this->projectRepaymentTaskManager->end($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
+        $this->projectRepaymentTaskManager->log($projectRepaymentTaskLog, $repaidAmount, $repaidLoanNb);
     }
 }

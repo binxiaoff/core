@@ -278,16 +278,17 @@ class sfpmeiController extends bootstrap
                 $firstProvision   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $this->wallet, 'idType' => $provisionType], ['id' => 'ASC']);
                 $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
 
-                /** @var \lender_tax_exemption $lenderTaxExemption */
-                $lenderTaxExemption = $this->loadData('lender_tax_exemption');
-
-                $this->lenderStatusMessage = $this->getLenderStatusMessage();
-                $this->cipEnabled          = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
-                $this->birthCountry        = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
-                $this->exemptionYears      = array_column($lenderTaxExemption->getLenderExemptionHistory($this->wallet->getId()), 'year');
-                $this->availableBalance    = $this->wallet->getAvailableBalance();
-                $this->firstDepositAmount  = null === $firstProvision ? 0 : $firstProvision->getAmount();
-                $this->totalDepositsAmount = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
+                $this->lenderStatusMessage    = $this->getLenderStatusMessage();
+                $this->cipEnabled             = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->wallet->getIdClient());
+                $this->birthCountry           = empty($this->clients->id_pays_naissance) ? '' : $paysV2Repository->find($this->clients->id_pays_naissance)->getFr();
+                $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+                $this->exemptionYears         = [];
+                foreach ($lenderTaxExemptionRepository->findBy(['idLender' => $this->wallet], ['year' => 'DESC']) as $taxExemption) {
+                    $this->exemptionYears[] = $taxExemption->getYear();
+                }
+                $this->availableBalance               = $this->wallet->getAvailableBalance();
+                $this->firstDepositAmount             = null === $firstProvision ? 0 : $firstProvision->getAmount();
+                $this->totalDepositsAmount            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
                 $this->totalWithdrawsAmount           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_WITHDRAW]);
                 $this->totalRepaymentsAmount          = $this->echeanciers->getRepaidAmount(['id_lender' => $this->wallet->getId()]);
                 $this->totalGrowthInterestsAmount     = $this->echeanciers->getRepaidInterests(['id_lender' => $this->wallet->getId()]);

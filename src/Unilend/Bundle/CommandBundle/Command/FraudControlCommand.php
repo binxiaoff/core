@@ -20,7 +20,7 @@ class FraudControlCommand extends ContainerAwareCommand
         $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
         $vigilanceRuleManager = $this->getContainer()->get('unilend.service.vigilance_rule_manager');
         $stopWatch            = $this->getContainer()->get('debug.stopwatch');
-        $logger               = $this->getContainer()->get('logger');
+        $logger               = $this->getContainer()->get('monolog.logger.console');
         /** @var VigilanceRule[] $vigilanceRules */
         $vigilanceRules = $entityManager->getRepository('UnilendCoreBusinessBundle:VigilanceRule')->findAll();
 

@@ -33,9 +33,9 @@ class ProjectsNotes
     /**
      * @var float
      *
-     * @ORM\Column(name="performance_fianciere", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="performance_financiere", type="float", precision=10, scale=0, nullable=true)
      */
-    private $performanceFianciere;
+    private $performanceFinanciere;
 
     /**
      * @var float
@@ -110,9 +110,9 @@ class ProjectsNotes
     /**
      * @var float
      *
-     * @ORM\Column(name="performance_fianciere_comite", type="float", precision=10, scale=0, nullable=true)
+     * @ORM\Column(name="performance_financiere_comite", type="float", precision=10, scale=0, nullable=true)
      */
-    private $performanceFianciereComite;
+    private $performanceFinanciereComite;
 
     /**
      * @var float
@@ -258,27 +258,27 @@ class ProjectsNotes
     }
 
     /**
-     * Set performanceFianciere
+     * Set performanceFinanciere
      *
-     * @param float $performanceFianciere
+     * @param float $performanceFinanciere
      *
      * @return ProjectsNotes
      */
-    public function setPerformanceFianciere($performanceFianciere)
+    public function setPerformanceFinanciere($performanceFinanciere)
     {
-        $this->performanceFianciere = $performanceFianciere;
+        $this->performanceFinanciere = $performanceFinanciere;
 
         return $this;
     }
 
     /**
-     * Get performanceFianciere
+     * Get performanceFinanciere
      *
      * @return float
      */
-    public function getPerformanceFianciere()
+    public function getPerformanceFinanciere()
     {
-        return $this->performanceFianciere;
+        return $this->performanceFinanciere;
     }
 
     /**
@@ -522,27 +522,27 @@ class ProjectsNotes
     }
 
     /**
-     * Set performanceFianciereComite
+     * Set performanceFinanciereComite
      *
-     * @param float $performanceFianciereComite
+     * @param float $performanceFinanciereComite
      *
      * @return ProjectsNotes
      */
-    public function setPerformanceFianciereComite($performanceFianciereComite)
+    public function setPerformanceFinanciereComite($performanceFinanciereComite)
     {
-        $this->performanceFianciereComite = $performanceFianciereComite;
+        $this->performanceFinanciereComite = $performanceFinanciereComite;
 
         return $this;
     }
 
     /**
-     * Get performanceFianciereComite
+     * Get performanceFinanciereComite
      *
      * @return float
      */
-    public function getPerformanceFianciereComite()
+    public function getPerformanceFinanciereComite()
     {
-        return $this->performanceFianciereComite;
+        return $this->performanceFinanciereComite;
     }
 
     /**

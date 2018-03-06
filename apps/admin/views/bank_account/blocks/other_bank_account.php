@@ -1,5 +1,5 @@
 <?php use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount; ?>
-<h2>Autre RIBs</h2>
+<h3>Autres RIB</h3>
 <?php if (false === empty($this->bankAccountDocuments)) : ?>
     <table class="tablesorter">
         <thead>
@@ -7,7 +7,7 @@
             <th>Document</th>
             <th>IBAN</th>
             <th>BIC</th>
-            <th>ACTION</th>
+            <th>&nbsp;</th>
         </tr>
         </thead>
         <tbody>
@@ -18,7 +18,7 @@
             <?php if (null === $bankAccount || BankAccount::STATUS_PENDING === $bankAccount->getStatus() || BankAccount::STATUS_ARCHIVED === $bankAccount->getStatus()) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td style="padding-bottom:20px">
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                        <a href="<?= $this->lurl ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
                             <?= empty($attachment->getOriginalName()) ? $attachment->getPath() : $attachment->getOriginalName() ?>
                         </a>
                     </td>
@@ -34,9 +34,9 @@
                     </td>
                     <td>
                         <?php if ($bankAccount) : ?>
-                            <a href="/bank_account/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="thickbox cboxElement">Mettre en vigueur</a>
+                            <a href="<?= $this->lurl ?>/bank_account/validate_rib_lightbox/<?= $bankAccount->getId(); ?>" class="thickbox cboxElement">Mettre en vigueur</a>
                         <?php else : ?>
-                            <a href="/bank_account/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="extract_rib_btn">Extraire</a>
+                            <a href="<?= $this->lurl ?>/bank_account/extraction_rib_lightbox/<?= $attachment->getId(); ?>" class="extract_rib_btn">Extraire</a>
                         <?php endif; ?>
                     </td>
                 </tr>

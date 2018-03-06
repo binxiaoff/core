@@ -30,16 +30,16 @@ class ReceptionsRepository extends EntityRepository
     }
 
     /**
-     * Get all assigned the direct debts or wire transfers to borrowers
+     * @param int|null       $limit
+     * @param int|null       $offset
+     * @param array          $sorts
+     * @param array          $search
+     * @param \DateTime|null $from
+     * @param \DateTime|null $to
      *
-     * @param int   $limit
-     * @param int   $offset
-     * @param array $sorts
-     * @param array $search
-     *
-     * @return Receptions[]
+     * @return array
      */
-    public function getBorrowerAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
+    public function getBorrowerAttributions(?int $limit = null, ?int $offset = null, array $sorts = [], array $search = [], ?\DateTime $from = null, \DateTime $to = null): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->where('r.idProject IS NOT NULL');
@@ -66,15 +66,31 @@ class ReceptionsRepository extends EntityRepository
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
         }
 
+        if ($from) {
+            $from->setTime(0, 0, 0);
+            $queryBuilder->andWhere('r.added >= :from')
+                ->setParameter('from', $from);
+        }
+
+        if ($to) {
+            $to->setTime(23, 59, 59);
+            $queryBuilder->andWhere('r.added <= :to')
+                ->setParameter('to', $to);
+        }
+
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param array $search
+     * @param array          $search
+     * @param \DateTime|null $from
+     * @param \DateTime|null $to
      *
      * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getBorrowerAttributionsCount(array $search = [])
+    public function getBorrowerAttributionsCount(array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->select('count(r)')
@@ -88,20 +104,32 @@ class ReceptionsRepository extends EntityRepository
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
         }
 
+        if ($from) {
+            $from->setTime(0, 0, 0);
+            $queryBuilder->andWhere('r.added >= :from')
+                ->setParameter('from', $from);
+        }
+
+        if ($to) {
+            $to->setTime(23, 59, 59);
+            $queryBuilder->andWhere('r.added <= :to')
+                ->setParameter('to', $to);
+        }
+
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * Get all assigned the direct debts or wire transfers to lenders
+     * @param int|null       $limit
+     * @param int|null       $offset
+     * @param array          $sorts
+     * @param array          $search
+     * @param \DateTime|null $from
+     * @param \DateTime|null $to
      *
-     * @param int   $limit
-     * @param int   $offset
-     * @param array $sorts
-     * @param array $search
-     *
-     * @return Receptions[]
+     * @return array
      */
-    public function getLenderAttributions($limit = null, $offset = null, array $sorts = [], array $search = [])
+    public function getLenderAttributions(?int $limit = null, ?int $offset = null, array $sorts = [], array $search = [], ?\DateTime $from = null, \DateTime $to = null): array
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->andWhere('r.idClient IS NOT NULL')
@@ -129,15 +157,31 @@ class ReceptionsRepository extends EntityRepository
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
         }
 
+        if ($from) {
+            $from->setTime(0, 0, 0);
+            $queryBuilder->andWhere('r.added >= :from')
+                ->setParameter('from', $from);
+        }
+
+        if ($to) {
+            $to->setTime(23, 59, 59);
+            $queryBuilder->andWhere('r.added <= :to')
+                ->setParameter('to', $to);
+        }
+
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param array $search
+     * @param array          $search
+     * @param \DateTime|null $from
+     * @param \DateTime|null $to
      *
      * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getLenderAttributionsCount(array $search = [])
+    public function getLenderAttributionsCount(array $search = [], ?\DateTime $from = null, \DateTime $to = null): int
     {
         $queryBuilder = $this->createQueryBuilder('r');
         $queryBuilder->select('count(r)')
@@ -155,6 +199,18 @@ class ReceptionsRepository extends EntityRepository
                 $orClause[] = $queryBuilder->expr()->eq('r.' . $column, $value);
             }
             $queryBuilder->andWhere($queryBuilder->expr()->orX(...$orClause));
+        }
+
+        if ($from) {
+            $from->setTime(0, 0, 0);
+            $queryBuilder->andWhere('r.added >= :from')
+                ->setParameter('from', $from);
+        }
+
+        if ($to) {
+            $to->setTime(23, 59, 59);
+            $queryBuilder->andWhere('r.added <= :to')
+                ->setParameter('to', $to);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
