@@ -184,7 +184,7 @@ class CompaniesRepository extends EntityRepository
             ->where('cs.label != :inBonis')
             ->orWhere('p.status IN (:finalStatus)')
             ->setParameter('inBonis', CompanyStatus::STATUS_IN_BONIS)
-            ->setParameter('finalStatus', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE]);
+            ->setParameter('finalStatus', [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::NOT_ELIGIBLE]);
 
         return $queryBuilder->getQuery()->getResult();
     }
