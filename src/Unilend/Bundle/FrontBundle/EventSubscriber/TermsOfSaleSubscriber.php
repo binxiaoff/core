@@ -31,6 +31,6 @@ class TermsOfSaleSubscriber implements EventSubscriberInterface
 
     public function checkLegalDoc(): void
     {
-        $this->termsOfSaleManager->checkLastVersionAccepted();
+        $this->termsOfSaleManager->checkCurrentVersionAccepted();
     }
 }

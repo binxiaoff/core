@@ -61,7 +61,7 @@ class TermsOfSaleManager
      * If the lender has accepted the last TOS, the session will not be set, and we check if there is a new TOS all the time
      * Otherwise, the session will be set with accepted = false. We check no longer the now TOS, but we read the value from the session.
      */
-    public function checkLastVersionAccepted(): void
+    public function checkCurrentVersionAccepted(): void
     {
         $session = $this->requestStack->getCurrentRequest()->getSession();
 
@@ -104,7 +104,7 @@ class TermsOfSaleManager
      *
      * @return int
      */
-    public function getLastVersionId(Clients $client): int
+    private function getCurrentVersionId(Clients $client): int
     {
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
             $type = 'Lien conditions generales inscription preteur particulier';
@@ -122,11 +122,11 @@ class TermsOfSaleManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function acceptLastVersion(Clients $client): void
+    public function acceptCurrentVersion(Clients $client): void
     {
         if (false === empty($client)) {
             $termsOfUse = new AcceptationsLegalDocs();
-            $termsOfUse->setIdLegalDoc($this->getLastVersionId($client));
+            $termsOfUse->setIdLegalDoc($this->getCurrentVersionId($client));
             $termsOfUse->setIdClient($client->getIdClient());
 
             $this->entityManager->persist($termsOfUse);
@@ -144,7 +144,7 @@ class TermsOfSaleManager
      */
     public function hasAcceptedCurrentVersion(Clients $client): bool
     {
-        return $this->isAcceptedVersion($client, $this->getLastVersionId($client));
+        return $this->isAcceptedVersion($client, $this->getCurrentVersionId($client));
     }
 
     /**

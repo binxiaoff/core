@@ -131,7 +131,7 @@ class UserProvider implements UserProviderInterface
             /** @var Wallet $wallet */
             $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
             /** @var ClientsStatus $clientStatusEntity */
-            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client->getIdClient());
+            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $hasAcceptedCurrentTerms = $this->termsOfSaleManager->hasAcceptedCurrentVersion($client);
             $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($client);
             $userLevel               = $this->lenderManager->getDiversificationLevel($client);

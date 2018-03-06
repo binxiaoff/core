@@ -963,7 +963,7 @@ class MainController extends Controller
             } elseif ($request->isMethod(Request::METHOD_POST)) {
                 if ('true' === $request->request->get('terms')) {
                     $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-                    $this->get('unilend.service.terms_of_sale_manager')->acceptLastVersion($clientEntity);
+                    $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($clientEntity);
                 }
                 return $this->json([]);
             }

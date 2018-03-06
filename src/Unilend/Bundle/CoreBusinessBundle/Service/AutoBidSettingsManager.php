@@ -131,8 +131,7 @@ class AutoBidSettingsManager
         }
 
         $autobidGlobalSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => 'Auto-bid global switch'])
-            ->getValue();
+            ->findOneBy(['type' => 'Auto-bid global switch']);
 
         if (null === $autobidGlobalSetting) {
             return false;
@@ -148,7 +147,7 @@ class AutoBidSettingsManager
         }
 
         if (
-            $autobidGlobalSetting && $this->termsOfSaleManager->isAcceptedVersion($client, self::AUTOBID_TERMS_OF_SALES)
+            $autobidGlobalSetting->getValue() && $this->termsOfSaleManager->isAcceptedVersion($client, self::AUTOBID_TERMS_OF_SALES)
             || $this->clientManager->isBetaTester($client)
         ) {
             return true;
