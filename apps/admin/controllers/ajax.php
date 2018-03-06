@@ -269,7 +269,7 @@ class ajaxController extends bootstrap
                 $client->get($company->id_client_owner, 'id_client');
 
                 $email = isset($_POST['email_etape2']) ? trim($_POST['email_etape2']) : null;
-                if (1 !== preg_match($emailRegex, $email)) {
+                if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $errors[] = 'Le format de l\'adresse email est invalide';
                 } elseif ($email !== $client->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
