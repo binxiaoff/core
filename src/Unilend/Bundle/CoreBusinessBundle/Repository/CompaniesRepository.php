@@ -201,7 +201,7 @@ class CompaniesRepository extends EntityRepository
           FROM companies co 
             INNER JOIN projects p ON co.id_company = p.id_company 
             INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren 
-          WHERE p.status > ' . ProjectsStatus::ABANDONED . ' 
+          WHERE p.status >= ' . ProjectsStatus::COMPLETE_REQUEST . ' 
             AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
             AND rdm.end <= NOW() 
             AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL';
