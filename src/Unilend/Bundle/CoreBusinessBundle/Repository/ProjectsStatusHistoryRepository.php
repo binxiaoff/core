@@ -158,16 +158,17 @@ class ProjectsStatusHistoryRepository extends EntityRepository
             SELECT
               COUNT(DISTINCT psh2.id_project)
             FROM (
-                   SELECT MAX(id_project_status_history) AS max_psh
+                   SELECT id_project, MAX(id_project_status_history) AS max_psh
                    FROM projects_status_history psh
+                   GROUP BY id_project
                  ) AS t
               INNER JOIN projects_status_history psh2 ON t.max_psh
-              INNER JOIN projects_status ps ON psh2.id_project_status = ps.id_project_status
-              INNER JOIN loans l ON psh2.id_project = l.id_project
-              INNER JOIN underlying_contract c ON l.id_type_contract = c.id_contract
-            WHERE ps.status = :problem
-              AND c.label = :contractType
-              AND psh2.added <= :date';
+              INNER JOIN projects_status ps ON ps.id_project_status = psh2.id_project_status
+              INNER JOIN (SELECT DISTINCT id_project, id_type_contract FROM loans l) l_distinct ON psh2.id_project = l_distinct.id_project
+              INNER JOIN underlying_contract c ON l_distinct.id_type_contract = c.id_contract
+            WHERE c.label = :contractType
+            AND ps.status = :problem
+            AND psh2.added <= :date';
 
         $result = $this->getEntityManager()
             ->getConnection()
@@ -190,16 +191,17 @@ class ProjectsStatusHistoryRepository extends EntityRepository
             SELECT
               COUNT(DISTINCT psh2.id_project)
             FROM (
-                   SELECT MAX(id_project_status_history) AS max_psh
+                   SELECT id_project, MAX(id_project_status_history) AS max_psh
                    FROM projects_status_history psh
+                    GROUP BY id_project
                  ) AS t
               INNER JOIN projects_status_history psh2 ON t.max_psh
               INNER JOIN projects_status ps ON psh2.id_project_status = ps.id_project_status
-              INNER JOIN loans l ON psh2.id_project = l.id_project
-              INNER JOIN underlying_contract c ON l.id_type_contract = c.id_contract
+              INNER JOIN (SELECT DISTINCT id_project, id_type_contract FROM loans l) l_distinct ON psh2.id_project = l_distinct.id_project
+              INNER JOIN underlying_contract c ON l_distinct.id_type_contract = c.id_contract
             WHERE ps.status >= :repayment AND ps.status NOT IN (:repaid)
-              AND c.label = :contractType
-              AND psh2.added <= :date';
+                  AND c.label = :contractType
+                  AND psh2.added <= :date';
 
         $result = $this->getEntityManager()
             ->getConnection()

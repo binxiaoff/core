@@ -55,6 +55,14 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         $frontStatistic->setValue(json_encode($content));
         $entityManager->flush($frontStatistic);
 
+        if (isset($incidenceRate['ratioIFP'])) {
+            unset($incidenceRate['ratioIFP']);
+        }
+
+        if (isset($incidenceRate['ratioCIP'])) {
+            unset($incidenceRate['ratioCIP']);
+        }
+
         $incidenceRateStat = new UnilendStats();
         $incidenceRateStat
             ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
