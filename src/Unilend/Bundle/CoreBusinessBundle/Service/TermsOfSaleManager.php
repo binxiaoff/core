@@ -3,13 +3,18 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface
+    AcceptationsLegalDocs, Clients, Companies, Elements, ProjectCgv, Projects, UniversignEntityInterface
 };
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
 class TermsOfSaleManager
 {
+    const SESSION_KEY_TOS_ACCEPTED = 'user_legal_doc_accepted';
+
     const EXCEPTION_CODE_INVALID_EMAIL        = 1;
     const EXCEPTION_CODE_INVALID_PHONE_NUMBER = 2;
     const EXCEPTION_CODE_PDF_FILE_NOT_FOUND   = 3;
@@ -18,23 +23,128 @@ class TermsOfSaleManager
     private $entityManager;
     /** @var MailerManager */
     private $mailerManager;
+    /** @var TokenStorageInterface */
+    private $tokenStorage;
+    /** @var RequestStack */
+    private $requestStack;
     /** @var string */
     private $rootDirectory;
     /** @var string */
     private $locale;
 
     /**
-     * @param EntityManager $entityManager
-     * @param MailerManager $mailerManager
-     * @param string        $rootDirectory
-     * @param string        $locale
+     * @param EntityManager         $entityManager
+     * @param MailerManager         $mailerManager
+     * @param TokenStorageInterface $tokenStorage
+     * @param RequestStack          $requestStack
+     * @param string                $rootDirectory
+     * @param string                $locale
      */
-    public function __construct(EntityManager $entityManager, MailerManager $mailerManager, $rootDirectory, $locale)
+    public function __construct(
+        EntityManager $entityManager,
+        MailerManager $mailerManager,
+        TokenStorageInterface $tokenStorage,
+        RequestStack $requestStack,
+        string $rootDirectory,
+        string $locale
+    )
     {
         $this->entityManager = $entityManager;
         $this->mailerManager = $mailerManager;
+        $this->tokenStorage  = $tokenStorage;
+        $this->requestStack  = $requestStack;
         $this->rootDirectory = $rootDirectory;
         $this->locale        = $locale;
+    }
+
+    /**
+     * If the lender has accepted the last TOS, the session will not be set, and we check if there is a new TOS all the time
+     * Otherwise, the session will be set with accepted = false. We check no longer the now TOS, but we read the value from the session.
+     */
+    public function checkCurrentVersionAccepted(): void
+    {
+        $session = $this->requestStack->getCurrentRequest()->getSession();
+
+        if ($session->has(self::SESSION_KEY_TOS_ACCEPTED)) {
+            return; // already checked and not accepted
+        }
+
+        $token = $this->tokenStorage->getToken();
+
+        if ($token) {
+            $user = $token->getUser();
+
+            if ($user instanceof UserLender) {
+                $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
+                    ->find($user->getClientId());
+
+                if (null !== $client && false === $user->hasAcceptedCurrentTerms()) {
+                    $session->set(self::SESSION_KEY_TOS_ACCEPTED, false);
+                }
+            }
+        }
+    }
+
+    /**
+     * @param Clients $client
+     * @param int     $legalDocId
+     *
+     * @return bool
+     */
+    public function isAcceptedVersion(Clients $client, int $legalDocId): bool
+    {
+        $legalDocsAcceptance = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')
+            ->findOneBy(['idClient' => $client->getIdClient(), 'idLegalDoc' => $legalDocId]);
+
+        return null !== $legalDocsAcceptance;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return int
+     */
+    private function getCurrentVersionId(Clients $client): int
+    {
+        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+            $type = 'Lien conditions generales inscription preteur particulier';
+        } else {
+            $type = 'Lien conditions generales inscription preteur societe';
+        }
+
+        return (int) $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => $type])
+            ->getValue();
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function acceptCurrentVersion(Clients $client): void
+    {
+        if (false === empty($client)) {
+            $termsOfUse = new AcceptationsLegalDocs();
+            $termsOfUse->setIdLegalDoc($this->getCurrentVersionId($client));
+            $termsOfUse->setIdClient($client->getIdClient());
+
+            $this->entityManager->persist($termsOfUse);
+            $this->entityManager->flush($termsOfUse);
+
+            $session = $this->requestStack->getCurrentRequest()->getSession();
+            $session->remove(self::SESSION_KEY_TOS_ACCEPTED);
+        }
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function hasAcceptedCurrentVersion(Clients $client): bool
+    {
+        return $this->isAcceptedVersion($client, $this->getCurrentVersionId($client));
     }
 
     /**
@@ -43,7 +153,7 @@ class TermsOfSaleManager
      *
      * @throws \Exception
      */
-    public function sendBorrowerEmail(Projects $project, Companies $companySubmitter = null)
+    public function sendBorrowerEmail(Projects $project, Companies $companySubmitter = null): void
     {
         /** @var \ficelle $stringManager */
         $stringManager = Loader::loadLib('ficelle');

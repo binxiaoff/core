@@ -912,9 +912,7 @@ class MainController extends Controller
      */
     public function lastTermsOfServiceAction(Request $request)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var UserLender $user */
         $user = $this->getUser();
@@ -923,7 +921,7 @@ class MainController extends Controller
         $tosDetails = '';
 
         if ($client->get($user->getClientId())) {
-            if ($request->isMethod('GET')) {
+            if ($request->isMethod(Request::METHOD_GET)) {
                 /** @var \blocs $block */
                 $block = $entityManagerSimulator->getRepository('blocs');
                 $block->get('cgv', 'slug');
@@ -963,10 +961,10 @@ class MainController extends Controller
                 } else {
                     $this->get('logger')->error('The element slug : ' . $elementSlug . ' doesn\'t exist');
                 }
-            } elseif ($request->isMethod('POST')) {
+            } elseif ($request->isMethod(Request::METHOD_POST)) {
                 if ('true' === $request->request->get('terms')) {
-                    $clientManager = $this->get('unilend.service.client_manager');
-                    $clientManager->acceptLastTos($client);
+                    $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                    $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($clientEntity);
                 }
                 return $this->json([]);
             }
