@@ -761,8 +761,7 @@ class MainController extends Controller
         $template = [
             'data'  => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
-                'regulatoryTable'                => $statistics['regulatoryData'],
-                'incidenceRate'                  => $statisticsManager->getIncidenceRatesOfLast36Months($date)
+                'regulatoryTable'                => $statistics['regulatoryData']
             ],
             'years' => array_merge($years, ['total']),
             'date'  => $date->format('Y-m-d')

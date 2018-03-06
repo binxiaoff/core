@@ -252,21 +252,21 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-1-amount-ifp'|trans|raw }}</td>
+                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-1-number-ifp'|trans|raw }}</td>
                     </tr>
                     <tr>
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
-                            <td class="table-stats-unilend-item-value">{{ value.amountIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
+                            <td class="table-stats-unilend-item-value">{{ value.projectsIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
                         {% endfor %}
                     </tr>
                     <tr class="alt">
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-2-project-ifp'|trans|raw }}</td>
+                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-2-amount-ifp'|trans|raw }}</td>
                     </tr>
                     <tr class="alt">
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
-                            <td class="table-stats-unilend-item-value">{{ value.projectsIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
+                            <td class="table-stats-unilend-item-value">{{ value.amountIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
                         {% endfor %}
                     </tr>
                     <tr>
@@ -276,34 +276,34 @@
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
                             <td class="table-stats-unilend-item-value">
-                                {% if value.ratioIFP is defined %}
-                                    {{ value.ratioIFP|localizednumberwithprecision(2) }}&nbsp;%
+                                {% if value.quarterRatioIFP is defined %}
+                                    {{ value.quarterRatioIFP|localizednumberwithprecision(2) }}&nbsp;%
                                 {% endif %}
                             </td>
                         {% endfor %}
                     </tr>
                     <tr class="alt">
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-1-amount-cip'|trans|raw }}</td>
+                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-1-number-cip'|trans|raw }}</td>
                     </tr>
                     <tr class="alt">
-                        <td class="table-stats-unilend-item-label">&nbsp;</td>
-                        {% for quarter, value in data.incidenceRate %}
-                            <td class="table-stats-unilend-item-value">
-                                {% if value.amountCIP is defined %}
-                                    {{ value.amountCIP|localizednumberwithprecision(2) }}&nbsp;%
-                                {% endif %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-2-project-cip'|trans|raw }}</td>
-                    </tr>
-                    <tr>
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
                             <td class="table-stats-unilend-item-value">
                                 {% if value.projectsCIP is defined %}
                                     {{ value.projectsCIP|localizednumberwithprecision(2) }}&nbsp;%
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-2-amount-cip'|trans|raw }}</td>
+                    </tr>
+                    <tr>
+                        <td class="table-stats-unilend-item-label">&nbsp;</td>
+                        {% for quarter, value in data.incidenceRate %}
+                            <td class="table-stats-unilend-item-value">
+                                {% if value.amountCIP is defined %}
+                                    {{ value.amountCIP|localizednumberwithprecision(2) }}&nbsp;%
                                 {% endif %}
                             </td>
                         {% endfor %}
@@ -314,8 +314,8 @@
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
                             <td class="table-stats-unilend-item-value">
-                                {% if value.ratioCIP is defined %}
-                                    {{ value.ratioCIP|localizednumberwithprecision(2) }}&nbsp;%
+                                {% if value.quarterRatioCIP is defined %}
+                                    {{ value.quarterRatioCIP|localizednumberwithprecision(2) }}&nbsp;%
                                 {% endif %}
                             </td>
                         {% endfor %}

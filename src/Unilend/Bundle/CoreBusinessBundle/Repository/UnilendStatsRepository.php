@@ -429,7 +429,7 @@ class UnilendStatsRepository extends EntityRepository
             ->orderBy('us.added', 'DESC')
             ->setMaxResults(1)
             ->setParameter('typeStat', $typeStat)
-            ->setParameter('date', $date->format('y-m-d'));
+            ->setParameter('date', $date->format('Y-m-d'));
 
         return $qb->getQuery()->getOneOrNullResult();
     }
