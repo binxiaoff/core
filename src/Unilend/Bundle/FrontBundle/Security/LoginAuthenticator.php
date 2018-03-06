@@ -281,10 +281,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      */
     private function isCaptchaValid(array $credentials)
     {
-        if (
-            isset($credentials['captchaDisplay'], $credentials['captchaCode'])
-            && true === $credentials['captchaDisplay']
-        ) {
+        if (isset($credentials['captchaDisplay']) && true === $credentials['captchaDisplay']) {
+            if (false === isset($credentials['captchaCode'])) {
+                return false;
+            }
+
             return $this->googleRecaptchaManager->isValid($credentials['captchaCode']);
         }
 
