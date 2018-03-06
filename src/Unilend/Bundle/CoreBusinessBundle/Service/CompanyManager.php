@@ -51,29 +51,6 @@ class CompanyManager
     }
 
     /**
-     * @param Companies $company
-     *
-     * @return array|CompanyStatus[]
-     */
-    public function getPossibleStatus(Companies $company)
-    {
-        $companyStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
-
-        switch ($company->getIdStatus()->getLabel()) {
-            case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
-                $possibleStatus = [CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
-                break;
-            case CompanyStatus::STATUS_RECEIVERSHIP:
-                $possibleStatus = [CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
-                break;
-            default:
-                $possibleStatus = [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
-        }
-
-        return $companyStatus->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
-    }
-
-    /**
      * @param string $statusLabel
      * @return string
      */
