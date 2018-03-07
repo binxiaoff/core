@@ -14,9 +14,9 @@
         </div>
         <?php if (1 == $this->step) : ?>
             <div class="form-group row">
-                <label for="rejection-comment" class="col-md-3 col-form-label">Commentaire (mémo)</label>
+                <label for="rejectionComment" class="col-md-3 col-form-label">Commentaire (mémo)</label>
                 <div class="col-md-9">
-                    <textarea id="rejection-comment" name="comment" class="textarea form-control"></textarea>
+                    <textarea id="rejectionComment" name="comment" class="textarea form-control"></textarea>
                 </div>
             </div>
             <fieldset class="form-group">
@@ -65,7 +65,12 @@
 
 <script>
     <?php if (1 == $this->step) : ?>
-        CKEDITOR.replace('rejection-comment', {
+    $(document).on('cbox_complete', function () {
+        if (CKEDITOR.instances.hasOwnProperty('rejectionComment')) {
+            CKEDITOR.instances.rejectionComment.destroy(true)
+        }
+
+        CKEDITOR.replace('rejectionComment', {
             width: '500px',
             toolbar: 'Basic',
             removePlugins: 'elementspath',
@@ -76,6 +81,7 @@
         CKEDITOR.on('instanceReady', function () {
             $.colorbox.resize()
         })
+    })
     <?php endif; ?>
 
     $('#rejection-reason-form').on('submit', function (e) {
@@ -89,7 +95,7 @@
         }
 
         <?php if (1 == $this->step) : ?>
-            var comment = CKEDITOR.instances['rejection-comment'].getData()
+            var comment = CKEDITOR.instances['rejectionComment'].getData()
 
             if ('' === comment) {
                 alert('Veuillez saisir un commentaire')
