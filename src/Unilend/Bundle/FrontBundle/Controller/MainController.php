@@ -10,7 +10,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -762,7 +761,7 @@ class MainController extends Controller
         $template = [
             'data'  => [
                 'projectCountForCategoryTreeMap' => $this->getProjectCountForCategoryTreeMap($statistics['projectCountByCategory']),
-                'regulatoryTable'                => $statistics['regulatoryData'],
+                'regulatoryTable'                => $statistics['regulatoryData']
             ],
             'years' => array_merge($years, ['total']),
             'date'  => $date->format('Y-m-d')
@@ -815,9 +814,10 @@ class MainController extends Controller
             $requestedDate  = $now;
         }
 
-        $statisticsManager = $this->get('unilend.service.statistics_manager');
-        $years             = range(2013, $requestedDate->format('Y'));
-        $data              = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
+        $statisticsManager     = $this->get('unilend.service.statistics_manager');
+        $years                 = range(2013, $requestedDate->format('Y'));
+        $data                  = $statisticsManager->getPerformanceIndicatorAtDate($requestedDate);
+        $data['incidenceRate'] = $statisticsManager->getIncidenceRatesOfLast36Months($requestedDate);
 
         $template = [
             'data'           => $data,

@@ -1,0 +1,341 @@
+<?php
+
+namespace Unilend\Bundle\CommandBundle\Command;
+
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+
+class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
+{
+    /**
+     * @inheritdoc
+     */
+    protected function configure()
+    {
+        $this
+            ->setName('unilend:dev_tools:statistics:incidence_rate')
+            ->setDescription('Separate incidence rate from front statistics');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $unilendStatistics = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findBy(['typeStat' => UnilendStats::TYPE_STAT_FRONT_STATISTIC]);
+
+        /** @var UnilendStats $statistic */
+        foreach ($unilendStatistics as $statistic) {
+            $this->separateIncidenceRateFromUnilendFrontStatistic($statistic);
+        }
+
+        $this->createMissingIFPIncidenceRateData();
+        $this->createMissingCIPIncidenceRateData();
+//        $this->saveRatioIFP();
+//        $this->saveRatioCIP();
+        $this->createQuarterEntries();
+    }
+
+    /**
+     * @param UnilendStats $frontStatistic
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function separateIncidenceRateFromUnilendFrontStatistic(UnilendStats $frontStatistic)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $content       = json_decode($frontStatistic->getValue(), true);
+        $incidenceRate = $content['incidenceRate'];
+        unset ($content['incidenceRate']);
+
+        $frontStatistic->setValue(json_encode($content));
+        $entityManager->flush($frontStatistic);
+
+        if (isset($incidenceRate['ratioIFP'])) {
+            unset($incidenceRate['ratioIFP']);
+        }
+
+        if (isset($incidenceRate['ratioCIP'])) {
+            unset($incidenceRate['ratioCIP']);
+        }
+
+        $incidenceRateStat = new UnilendStats();
+        $incidenceRateStat
+            ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
+            ->setValue(json_encode($incidenceRate))
+            ->setAdded($frontStatistic->getAdded())
+            ->setUpdated(new \DateTime('NOW'));
+
+        $entityManager->persist($incidenceRateStat);
+        $entityManager->flush($incidenceRateStat);
+    }
+
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createMissingIFPIncidenceRateData()
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $startIFP      = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_IFP);
+        $end           = new \DateTime(StatisticsManager::START_FRONT_STATISTICS_HISTORY);
+        $interval      = \DateInterval::createFromDateString('1 day');
+        $period        = new \DatePeriod($startIFP, $interval, $end);
+
+        $incidenceRate = [
+            'amountIFP'   => 0.00,
+            'projectsIFP' => 0.00
+        ];
+
+        foreach ($period as $day) {
+            $incidenceRateStat = new UnilendStats();
+            $incidenceRateStat
+                ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
+                ->setValue(json_encode($incidenceRate))
+                ->setAdded($day)
+                ->setUpdated(new \DateTime('NOW'));
+
+            $entityManager->persist($incidenceRateStat);
+            $entityManager->flush($incidenceRateStat);
+        }
+    }
+
+    /**
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createMissingCIPIncidenceRateData()
+    {
+        $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $unilendStatisticsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        $startCIP = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_CIP);
+        $end      = new \DateTime('NOW');
+        $interval = \DateInterval::createFromDateString('1 day');
+        $period   = new \DatePeriod($startCIP, $interval, $end);
+
+        $incidenceRate = [
+            'amountCIP'   => 0.00,
+            'projectsCIP' => 0.00
+        ];
+
+        foreach ($period as $day) {
+            /** @var UnilendStats $incidenceRateStat */
+            $incidenceRateStat = $unilendStatisticsRepository->findStatisticAtDate($day, UnilendStats::TYPE_INCIDENCE_RATE);
+            if (null !== $incidenceRateStat) {
+                $incidenceRateData = json_decode($incidenceRateStat->getValue(), true);
+
+                if (false === isset($incidenceRateData['amountCIP'])) {
+                    $incidenceRateStat->setValue(json_encode(array_merge($incidenceRate, $incidenceRateData)));
+
+                    $entityManager->flush($incidenceRateStat);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function saveRatioIFP()
+    {
+        $start         = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_IFP);
+        $end           = new \DateTime('Last day of last month');
+        $monthInterval = \DateInterval::createFromDateString('1 month');
+        $period        = new \DatePeriod($start, $monthInterval, $end);
+
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $unilendStatisticsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        foreach ($period as $month) {
+            $lastDayOfMonth = new \DateTime('Last day of ' . $month->format('F Y'));
+            /** @var UnilendStats $incidenceRateStats */
+            $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
+            if (null !== $incidenceRateStats) {
+                $data               = json_decode($incidenceRateStats->getValue(), true);
+                $countLateProjects  = $projectStatusHistoryRepository->getCountProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
+                $countAllProjects   = $projectStatusHistoryRepository->getCountProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
+
+                $data['ratioIFP'] = 0 == $countAllProjects ? 0.00 : round(bcmul(bcdiv($countLateProjects, $countAllProjects, 6), 100, 4), 2);
+                $incidenceRateStats->setValue(json_encode($data));
+
+                $entityManager->flush($incidenceRateStats);
+            }
+        }
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function saveRatioCIP()
+    {
+        $start         = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_CIP);
+        $end           = new \DateTime('Last day of last month');
+        $monthInterval = \DateInterval::createFromDateString('1 month');
+        $period        = new \DatePeriod($start, $monthInterval, $end);
+
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+        $unilendStatisticsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        foreach ($period as $month) {
+            $lastDayOfMonth = new \DateTime('Last day of ' . $month->format('F Y'));
+            /** @var UnilendStats $incidenceRateStats */
+            $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
+            if (null !== $incidenceRateStats) {
+                $data              = json_decode($incidenceRateStats->getValue(), true);
+                $countLateProjects = $projectStatusHistoryRepository->getCountProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
+                $countAllProjects  = $projectStatusHistoryRepository->getCountProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
+
+                $data['ratioCIP'] = 0 == $countAllProjects ? 0.00 : round(bcmul(bcdiv($countLateProjects, $countAllProjects, 6), 100, 4), 2);
+                $incidenceRateStats->setValue(json_encode($data));
+
+                $entityManager->flush($incidenceRateStats);
+            }
+        }
+    }
+
+    /**
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    private function createQuarterEntries(): void
+    {
+        $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $unilendStatRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+        $years                 = [2015, 2016, 2017];
+
+        foreach ($years as $year) {
+            $firstQuarter  = new \DateTime('Last day of March ' . $year);
+            $secondQuarter = new \DateTime('Last day of June ' . $year);
+            $thirdQuarter  = new \DateTime('Last day of September ' . $year);
+            $fourthQuarter = new \DateTime('Last day of December ' . $year);
+
+            $firstQuarterStats  = $unilendStatRepository->findStatisticAtDate($firstQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $secondQuarterStats = $unilendStatRepository->findStatisticAtDate($secondQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $thirdQuarterStats  = $unilendStatRepository->findStatisticAtDate($thirdQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $fourthQuarterStats = $unilendStatRepository->findStatisticAtDate($fourthQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+
+            if (null !== $firstQuarterStats) {
+                $incidenceRateStatT1 = clone $firstQuarterStats;
+                $incidenceRateStatT1
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+                    ->setUpdated(new \DateTime('NOW'));
+
+                $entityManager->persist($incidenceRateStatT1);
+                $entityManager->flush($incidenceRateStatT1);
+
+//                $entityManager->refresh($incidenceRateStatT1);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
+            }
+
+            if (null !== $secondQuarterStats) {
+                $incidenceRateStatT2 = clone $secondQuarterStats;
+                $incidenceRateStatT2
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+                    ->setUpdated(new \DateTime('NOW'));
+
+                $entityManager->persist($incidenceRateStatT2);
+                $entityManager->flush($incidenceRateStatT2);
+
+//                $entityManager->refresh($incidenceRateStatT2);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
+            }
+
+            if (null !== $thirdQuarterStats) {
+                $incidenceRateStatT3 = clone $thirdQuarterStats;
+                $incidenceRateStatT3
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+                    ->setUpdated(new \DateTime('NOW'));
+
+                $entityManager->persist($incidenceRateStatT3);
+                $entityManager->flush($incidenceRateStatT3);
+
+//                $entityManager->refresh($incidenceRateStatT3);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
+            }
+
+            if (null !== $fourthQuarterStats) {
+                $incidenceRateStatT4 = clone $fourthQuarterStats;
+                $incidenceRateStatT4
+                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+                    ->setUpdated(new \DateTime('NOW'));
+
+                $entityManager->persist($incidenceRateStatT4);
+                $entityManager->flush($incidenceRateStatT4);
+
+//                $entityManager->refresh($incidenceRateStatT4);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
+            }
+        }
+    }
+
+    /**
+     * @param UnilendStats $quarterStat
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function saveQuarterIncidenceRate(UnilendStats $quarterStat): void
+    {
+        $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $unilendStatRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        $quarterData = json_decode($quarterStat->getValue(), true);
+
+        if (isset($quarterData['ratioIFP'])) {
+            unset($quarterData['ratioIFP']);
+        }
+
+        if (isset($quarterData['ratioCIP'])) {
+            unset($quarterData['ratioCIP']);
+        }
+
+        if ($quarterStat->getAdded()->format('Y-m-d') > StatisticsManager::START_INCIDENCE_RATE_IFP) {
+            $endOfQuarterStat = $unilendStatRepository->findStatisticAtDate($quarterStat->getAdded(), UnilendStats::TYPE_INCIDENCE_RATE);
+            $todayData        = json_decode($endOfQuarterStat->getValue(), true);
+
+            $lastDayLastMonth     = new \DateTime('Last day of previous month ' . $quarterStat->getAdded()->format('F Y'));
+            $lastDayLastMonthStat = $unilendStatRepository->findStatisticAtDate($lastDayLastMonth, UnilendStats::TYPE_INCIDENCE_RATE);
+            $lastDayLastMonthData = json_decode($lastDayLastMonthStat->getValue(), true);
+
+            $lastDayOfTwoMonthAgo     = new \DateTime('Last day of previous month ' . $lastDayLastMonth->format('F Y'));
+            $lastDayOfTwoMonthAgoStat = $unilendStatRepository->findStatisticAtDate($lastDayOfTwoMonthAgo, UnilendStats::TYPE_INCIDENCE_RATE);
+            $lastDayOfTwoMonthAgoData = json_decode($lastDayOfTwoMonthAgoStat->getValue(), true);
+
+            if ($quarterStat->getAdded()->format('Y-m-d') >= StatisticsManager::START_INCIDENCE_RATE_IFP) {
+                $ratioIFP1                      = isset($todayData['ratioIFP']) ? $todayData['ratioIFP'] : 0.00;
+                $ratioIFP2                      = isset($lastDayLastMonthData['ratioIFP']) ? $lastDayLastMonthData['ratioIFP'] : 0.00;
+                $ratioIFP3                      = isset($lastDayOfTwoMonthAgoData['ratioIFP']) ? $lastDayOfTwoMonthAgoData['ratioIFP'] : 0.00;
+                $quarterData['quarterRatioIFP'] = round(bcdiv(bcadd(bcadd($ratioIFP1, $ratioIFP2, 4), $ratioIFP3, 4), 3, 4), 2);
+            }
+
+            if ($quarterStat->getAdded()->format('Y-m-d') >= StatisticsManager::START_INCIDENCE_RATE_CIP) {
+                $ratioCIP1                      = isset($todayData['ratioCIP']) ? $todayData['ratioCIP'] : 0.00;
+                $ratioCIP2                      = isset($lastDayLastMonthData['ratioCIP']) ? $lastDayLastMonthData['ratioCIP'] : 0.00;
+                $ratioCIP3                      = isset($lastDayOfTwoMonthAgoData['ratioCIP']) ? $lastDayOfTwoMonthAgoData['ratioCIP'] : 0.00;
+                $quarterData['quarterRatioCIP'] = round(bcdiv(bcadd(bcadd($ratioCIP1, $ratioCIP2, 4), $ratioCIP3, 4), 3, 4), 2);
+            }
+
+            $quarterStat->setValue(json_encode($quarterData));
+            $entityManager->flush(($quarterStat));
+        }
+
+        if ($quarterStat->getAdded()->format('Y-m-d') === StatisticsManager::START_INCIDENCE_RATE_IFP) {
+            $quarterData['quarterRatioIFP'] = 0.00;
+            $quarterStat->setValue(json_encode($quarterData));
+            $entityManager->flush(($quarterStat));
+        }
+    }
+}

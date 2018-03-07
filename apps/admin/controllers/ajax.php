@@ -269,9 +269,9 @@ class ajaxController extends bootstrap
                 $client->get($company->id_client_owner, 'id_client');
 
                 $email = isset($_POST['email_etape2']) ? trim($_POST['email_etape2']) : null;
-                if (1 !== preg_match($emailRegex, $email)) {
+                if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $errors[] = 'Le format de l\'adresse email est invalide';
-                } elseif ($email !== $client->email) {
+                } elseif (false === empty($email) && $email !== $client->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
                     $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
 
@@ -648,7 +648,7 @@ class ajaxController extends bootstrap
                 empty($_POST['structure']) || $_POST['structure'] > 10
                 || empty($_POST['rentabilite']) || $_POST['rentabilite'] > 10
                 || empty($_POST['tresorerie']) || $_POST['tresorerie'] > 10
-                || empty($_POST['performance_fianciere']) || $_POST['performance_fianciere'] > 10
+                || empty($_POST['performance_financiere']) || $_POST['performance_financiere'] > 10
                 || empty($_POST['individuel']) || $_POST['individuel'] > 10
                 || empty($_POST['global']) || $_POST['global'] > 10
                 || empty($_POST['marche_opere']) || $_POST['marche_opere'] > 10
@@ -684,19 +684,19 @@ class ajaxController extends bootstrap
         $projectRating->setStructure(round(str_replace(',', '.', $_POST['structure']), 1));
         $projectRating->setRentabilite(round(str_replace(',', '.', $_POST['rentabilite']), 1));
         $projectRating->setTresorerie(round(str_replace(',', '.', $_POST['tresorerie']), 1));
-        $projectRating->setPerformanceFianciere(round(str_replace(',', '.', $_POST['performance_fianciere']), 1));
+        $projectRating->setPerformanceFinanciere(round(str_replace(',', '.', $_POST['performance_financiere']), 1));
         $projectRating->setIndividuel(round(str_replace(',', '.', $_POST['individuel']), 1));
         $projectRating->setGlobal(round(str_replace(',', '.', $_POST['global']), 1));
         $projectRating->setMarcheOpere(round(str_replace(',', '.', $_POST['marche_opere']), 1));
         $projectRating->setDirigeance(round(str_replace(',', '.', $_POST['dirigeance']), 1));
         $projectRating->setIndicateurRisqueDynamique(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique']), 1));
-        $projectRating->setNote(round($projectRating->getPerformanceFianciere() * 0.2 + $projectRating->getMarcheOpere() * 0.2 + $projectRating->getDirigeance() * 0.2 + $projectRating->getIndicateurRisqueDynamique() * 0.4, 1));
+        $projectRating->setNote(round($projectRating->getPerformanceFinanciere() * 0.2 + $projectRating->getMarcheOpere() * 0.2 + $projectRating->getDirigeance() * 0.2 + $projectRating->getIndicateurRisqueDynamique() * 0.4, 1));
         $projectRating->setAvis($_POST['avis']);
 
         $projectRating->setStructureComite(empty($projectRating->getStructureComite()) ? $projectRating->getStructure() : $projectRating->getStructureComite());
         $projectRating->setRentabiliteComite(empty($projectRating->getRentabiliteComite()) ? $projectRating->getRentabilite() : $projectRating->getRentabiliteComite());
         $projectRating->setTresorerieComite(empty($projectRating->getTresorerieComite()) ? $projectRating->getTresorerie() : $projectRating->getTresorerieComite());
-        $projectRating->setPerformanceFianciereComite(empty($projectRating->getPerformanceFianciereComite()) ? $projectRating->getPerformanceFianciere() : $projectRating->getPerformanceFianciereComite());
+        $projectRating->setPerformanceFinanciereComite(empty($projectRating->getPerformanceFinanciereComite()) ? $projectRating->getPerformanceFinanciere() : $projectRating->getPerformanceFinanciereComite());
         $projectRating->setIndividuelComite(empty($projectRating->getIndividuelComite()) ? $projectRating->getIndividuel() : $projectRating->getIndividuelComite());
         $projectRating->setGlobalComite(empty($projectRating->getGlobalComite()) ? $projectRating->getGlobal() : $projectRating->getGlobalComite());
         $projectRating->setMarcheOpereComite(empty($projectRating->getMarcheOpereComite()) ? $projectRating->getMarcheOpere() : $projectRating->getMarcheOpereComite());
@@ -769,7 +769,7 @@ class ajaxController extends bootstrap
                 empty($_POST['structure_comite']) || $_POST['structure_comite'] > 10
                 || empty($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] > 10
                 || empty($_POST['tresorerie_comite']) || $_POST['tresorerie_comite'] > 10
-                || empty($_POST['performance_fianciere_comite']) || $_POST['performance_fianciere_comite'] > 10
+                || empty($_POST['performance_financiere_comite']) || $_POST['performance_financiere_comite'] > 10
                 || empty($_POST['individuel_comite']) || $_POST['individuel_comite'] > 10
                 || empty($_POST['global_comite']) || $_POST['global_comite'] > 10
                 || empty($_POST['marche_opere_comite']) || $_POST['marche_opere_comite'] > 10
@@ -798,13 +798,13 @@ class ajaxController extends bootstrap
         $projectRating->setStructureComite(round(str_replace(',', '.', $_POST['structure_comite']), 1));
         $projectRating->setRentabiliteComite(round(str_replace(',', '.', $_POST['rentabilite_comite']), 1));
         $projectRating->setTresorerieComite(round(str_replace(',', '.', $_POST['tresorerie_comite']), 1));
-        $projectRating->setPerformanceFianciereComite(round(str_replace(',', '.', $_POST['performance_fianciere_comite']), 1));
+        $projectRating->setPerformanceFinanciereComite(round(str_replace(',', '.', $_POST['performance_financiere_comite']), 1));
         $projectRating->setIndividuelComite(round(str_replace(',', '.', $_POST['individuel_comite']), 1));
         $projectRating->setGlobalComite(round(str_replace(',', '.', $_POST['global_comite']), 1));
         $projectRating->setMarcheOpereComite(round(str_replace(',', '.', $_POST['marche_opere_comite']), 1));
         $projectRating->setDirigeanceComite(round(str_replace(',', '.', $_POST['dirigeance_comite']), 1));
         $projectRating->setIndicateurRisqueDynamiqueComite(round(str_replace(',', '.', $_POST['indicateur_risque_dynamique_comite']), 1));
-        $projectRating->setNoteComite(round($projectRating->getPerformanceFianciereComite() * 0.2 + $projectRating->getMarcheOpereComite() * 0.2 + $projectRating->getDirigeanceComite() * 0.2 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4, 1));
+        $projectRating->setNoteComite(round($projectRating->getPerformanceFinanciereComite() * 0.2 + $projectRating->getMarcheOpereComite() * 0.2 + $projectRating->getDirigeanceComite() * 0.2 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4, 1));
         $projectRating->setAvisComite($_POST['avis_comite']);
 
         $entityManager->flush($projectRating);

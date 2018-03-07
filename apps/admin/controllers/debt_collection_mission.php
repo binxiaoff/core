@@ -83,9 +83,9 @@ class debt_collection_missionController extends bootstrap
             }
             if (empty($_POST['debt-collection-type'])
                 || false === ($debtCollectionType = filter_var($_POST['debt-collection-type'], FILTER_VALIDATE_INT))
-                || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION,])
+                || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION, DebtCollectionMission::TYPE_PRE_LITIGATION])
             ) {
-                $errors[] = 'Le type de mission est incorrect: valeures possibles (1, 2). Fournit: ' . $debtCollectionType;
+                $errors[] = 'Le type de mission fourni (id type : ' . $debtCollectionType . ') n\'est pas valable.';
             }
             if (empty($_POST['debt-collection-rate'])
                 || false === ($feesRate = filter_var(str_replace(',', '.', $_POST['debt-collection-rate']), FILTER_VALIDATE_FLOAT))

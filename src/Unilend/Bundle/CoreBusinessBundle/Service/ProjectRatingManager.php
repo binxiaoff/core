@@ -70,7 +70,7 @@ class ProjectRatingManager
 
         if ($projectRating) {
             return round(
-                $projectRating->getPerformanceFianciereComite() * 0.2
+                $projectRating->getPerformanceFinanciereComite() * 0.2
                 + $projectRating->getMarcheOpereComite() * 0.2
                 + $projectRating->getDirigeanceComite() * 0.2
                 + $projectRating->getIndicateurRisqueDynamiqueComite() * 0.4

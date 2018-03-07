@@ -692,18 +692,6 @@
                             </tr>
                             <!-- /total-owed-problematic-capital -->
 
-                            {#<!-- total-owed-problematic-capital-late -->#}
-                            {#<tr>#}
-                                {#<td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-total-owed-problematic-capital-late"|trans|raw }}</td>#}
-                            {#</tr>#}
-                            {#<tr>#}
-                                {#<td class="table-stats-unilend-item-label">&nbsp;</td>#}
-                                {#{% for value in data.regulatoryTable['total-owed-problematic-capital-late'] %}#}
-                                    {#<td class="table-stats-unilend-item-value">{{ value|round|localizednumber }}€</td>#}
-                                {#{% endfor %}#}
-                            {#</tr>#}
-                            {#<!-- /total-owed-problematic-capital-late -->#}
-
                             <!-- pct.owed-problematic-over-borrowed-capital -->
                             <tr class="alt">
                                 <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ "about-us-statistics_regulatory-table-owed-problematic-over-borrowed-capital"|trans|raw }}</td>
@@ -754,50 +742,10 @@
                         </tbody>
                     </table>
                 </div><!-- /.table-scroll -->
-
-                {% set incidenceRate = getStatistic('incidenceRate', date) %}
-                <div class="table-scroll">
-                    <table class="table table-stats-unilend-interest">
-                        <tbody>
-                        <tr>
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} about-us-statistics_regulatory-table-ifp-incidence-rate-amount {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['amountIFP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        <tr class="alt">
-                            <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} about-us-statistics_regulatory-table-ifp-incidence-rate-project {% endtrans %}</td>
-                            <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsIFP']|localizednumberwithprecision(2) }}%</td>
-                        </tr>
-                        {% if  incidenceRate['ratioIFP'] is defined %}
-                            {% set nextLineAlt = true %}
-                            <tr>
-                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} about-us-statistics_regulatory-table-ifp-incidence-rate-no-month-limit {% endtrans %}</td>
-                                <td class="table-stats-unilend-item-value">{{ incidenceRate['ratioIFP']|localizednumberwithprecision(2) }}%</td>
-                            </tr>
-                        {% endif %}
-                        {# for display of historic statistics page #}
-                        {% if incidenceRate['amountCIP'] is defined %}
-                            <tr {% if nextLineAlt is defined and nextLineAlt == true %}class="alt"{% endif %}>
-                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}" >{% trans %} about-us-statistics_regulatory-table-cip-incidence-rate-amount {% endtrans %}</td>
-                                <td class="table-stats-unilend-item-value">{{ incidenceRate['amountCIP']|localizednumberwithprecision(2) }}%</td>
-                            </tr>
-                            <tr {% if nextLineAlt is not defined or nextLineAlt == false %}class="alt"{% endif %}>
-                                <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} about-us-statistics_regulatory-table-cip-incidence-rate-project {% endtrans %}</td>
-                                <td class="table-stats-unilend-item-value">{{ incidenceRate['projectsCIP']|localizednumberwithprecision(2) }}%</td>
-                            </tr>
-                            {% if incidenceRate['ratioCIP'] is defined %}
-                                <tr {% if nextLineAlt is defined and nextLineAlt == true %}class="alt"{% endif %}>
-                                    <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan-1 }}">{% trans %} about-us-statistics_regulatory-table-cip-incidence-rate-no-month-limit {% endtrans %}</td>
-                                    <td class="table-stats-unilend-item-value">{{ incidenceRate['ratioCIP']|localizednumberwithprecision(2) }}%</td>
-                                </tr>
-                            {% endif %}
-                        {% endif %}
-                        </tbody>
-                    </table>
-                </div><!-- /.table-scroll -->
-
-                <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
-
             </article>
+            <div class="row">
+                <p class="field-help text-align-left">{% trans %} about-us-statistics_regulatory-table-default-explanation {% endtrans %}</p>
+            </div>
         </div><!-- /.block-stats -->
 
         <div class="btn-toolbar">

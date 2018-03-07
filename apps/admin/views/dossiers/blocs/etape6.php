@@ -7,13 +7,13 @@
         $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $isRiskUser;
     ?>
     <div id="content_etape6">
-        <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
+        <?php $moyenne  = round($this->projects_notes->performance_financiere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
-                    <th><label for="performance_fianciere">Performance financière</label></th>
-                    <td><span id="performance_fianciere"><?= $this->projects_notes->performance_fianciere ?></span> / 10</td>
+                    <th><label for="performance_financiere">Performance financière</label></th>
+                    <td><span id="performance_financiere"><?= $this->projects_notes->performance_financiere ?></span> / 10</td>
                     <th><label for="marche_opere">Marché opéré</label></th>
                     <td><span id="marche_opere"><?= $this->projects_notes->marche_opere ?></span> / 10</td>
                     <th><label for="dirigeance">Dirigeance</label></th>
@@ -117,8 +117,8 @@
                 global      = Math.round(global * 10) / 10;
                 individuel  = Math.round(individuel * 10) / 10;
 
-                var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
-                performance_fianciere = Math.round(performance_fianciere * 10) / 10;
+                var performance_financiere = (structure + rentabilite + tresorerie) / 3;
+                performance_financiere = Math.round(performance_financiere * 10) / 10;
 
                 var marche_opere = (global + individuel) / 2;
                 marche_opere = Math.round(marche_opere * 10) / 10;
@@ -129,10 +129,10 @@
                 dirigeance = Math.round(dirigeance * 10) / 10;
                 indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
+                moyenne = Math.round((performance_financiere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                 $("#marche_opere").html(marche_opere);
-                $("#performance_fianciere").html(performance_fianciere);
+                $("#performance_financiere").html(performance_financiere);
                 $(".moyenneNote").html(moyenne + " / 10");
             });
         </script>

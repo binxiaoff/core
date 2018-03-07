@@ -154,22 +154,19 @@ class LenderValidationManager
     }
 
     /**
-     * @param Clients|\clients $client
+     * @param Clients $client
+     * @param Users  $user
      *
      * @return int|bool
      */
-    private function checkLenderUniqueness($client, Users $user)
+    private function checkLenderUniqueness(Clients $client, Users $user)
     {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
         $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $existingClient   = $clientRepository->getDuplicates($client->getNom(), $client->getPrenom(), $client->getNaissance());
+        $existingClient   = $clientRepository->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
         $existingClient   = array_shift($existingClient);
 
         if (false === empty($existingClient) && $existingClient['id_client'] != $client->getIdClient()) {
-            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), \clients_status::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $existingClient['id_client']);
+            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $existingClient['id_client']);
 
             return $existingClient['id_client'];
         }

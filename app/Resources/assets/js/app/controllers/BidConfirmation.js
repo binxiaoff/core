@@ -94,6 +94,7 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
   var bidData = getBidData($form)
   var $modalCipAdvices = $('#modal-cip-advices-prompt')
   var $modalCipQuestionnaire = $('#modal-cip-questionnaire-prompt')
+  var $modalCipLegalEntityQuestionnaire = $('#modal-cip-legal-entity-questionnaire-prompt')
 
   // @debug
   // console.log($form.attr('action'))
@@ -147,13 +148,22 @@ $doc.on('submit', 'form[data-bid-confirmation]', function (event, options) {
             return
           }
           // Show the CIP questionnaire
-          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && $modalCipQuestionnaire.length > 0) {
+          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && data.isNaturalPerson && $modalCipQuestionnaire.length > 0) {
             // @debug
             // console.log('Asking CIP questionnaire...')
 
             // Show the CIP questionnare confirmation prompt modal
             $modalCipQuestionnaire.uiModal('open')
             return
+          }
+          // Show the CIP questionnaire
+          else if (data.hasOwnProperty('questionnaire') && data.questionnaire && false === data.isNaturalPerson && $modalCipLegalEntityQuestionnaire.length > 0) {
+              // @debug
+              // console.log('Asking CIP questionnaire...')
+
+              // Show the CIP questionnare confirmation prompt modal
+              $modalCipLegalEntityQuestionnaire.uiModal('open')
+              return
           }
         }
 
