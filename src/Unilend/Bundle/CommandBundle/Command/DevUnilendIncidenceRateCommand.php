@@ -35,8 +35,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
 
         $this->createMissingIFPIncidenceRateData();
         $this->createMissingCIPIncidenceRateData();
-        $this->saveRatioIFP();
-        $this->saveRatioCIP();
+//        $this->saveRatioIFP();
+//        $this->saveRatioCIP();
         $this->createQuarterEntries();
     }
 
@@ -236,8 +236,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT1);
                 $entityManager->flush($incidenceRateStatT1);
 
-                $entityManager->refresh($incidenceRateStatT1);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
+//                $entityManager->refresh($incidenceRateStatT1);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
             }
 
             if (null !== $secondQuarterStats) {
@@ -249,8 +249,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT2);
                 $entityManager->flush($incidenceRateStatT2);
 
-                $entityManager->refresh($incidenceRateStatT2);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
+//                $entityManager->refresh($incidenceRateStatT2);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
             }
 
             if (null !== $thirdQuarterStats) {
@@ -262,8 +262,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT3);
                 $entityManager->flush($incidenceRateStatT3);
 
-                $entityManager->refresh($incidenceRateStatT3);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
+//                $entityManager->refresh($incidenceRateStatT3);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
             }
 
             if (null !== $fourthQuarterStats) {
@@ -275,8 +275,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT4);
                 $entityManager->flush($incidenceRateStatT4);
 
-                $entityManager->refresh($incidenceRateStatT4);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
+//                $entityManager->refresh($incidenceRateStatT4);
+//                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
             }
         }
     }

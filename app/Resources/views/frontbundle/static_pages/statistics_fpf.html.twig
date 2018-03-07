@@ -269,23 +269,23 @@
                             <td class="table-stats-unilend-item-value">{{ value.amountIFP|localizednumberwithprecision(2) }}&nbsp;%</td>
                         {% endfor %}
                     </tr>
+                    {#<tr>#}
+                        {#<td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-3-ratio-ifp'|trans|raw }}</td>#}
+                    {#</tr>#}
+                    {#<tr>#}
+                        {#<td class="table-stats-unilend-item-label">&nbsp;</td>#}
+                        {#{% for quarter, value in data.incidenceRate %}#}
+                            {#<td class="table-stats-unilend-item-value">#}
+                                {#{% if value.quarterRatioIFP is defined %}#}
+                                    {#{{ value.quarterRatioIFP|localizednumberwithprecision(2) }}&nbsp;%#}
+                                {#{% endif %}#}
+                            {#</td>#}
+                        {#{% endfor %}#}
+                    {#</tr>#}
                     <tr>
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-3-ratio-ifp'|trans|raw }}</td>
-                    </tr>
-                    <tr>
-                        <td class="table-stats-unilend-item-label">&nbsp;</td>
-                        {% for quarter, value in data.incidenceRate %}
-                            <td class="table-stats-unilend-item-value">
-                                {% if value.quarterRatioIFP is defined %}
-                                    {{ value.quarterRatioIFP|localizednumberwithprecision(2) }}&nbsp;%
-                                {% endif %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                    <tr class="alt">
                         <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-1-number-cip'|trans|raw }}</td>
                     </tr>
-                    <tr class="alt">
+                    <tr>
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
                             <td class="table-stats-unilend-item-value">
@@ -295,10 +295,10 @@
                             </td>
                         {% endfor %}
                     </tr>
-                    <tr>
+                    <tr class="alt">
                         <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-2-amount-cip'|trans|raw }}</td>
                     </tr>
-                    <tr>
+                    <tr class="alt">
                         <td class="table-stats-unilend-item-label">&nbsp;</td>
                         {% for quarter, value in data.incidenceRate %}
                             <td class="table-stats-unilend-item-value">
@@ -307,19 +307,19 @@
                                 {% endif %}
                             </td>
                         {% endfor %}
-                    <tr class="alt">
-                        <td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-3-ratio-cip'|trans|raw }}</td>
-                    </tr>
-                    <tr class="alt">
-                        <td class="table-stats-unilend-item-label">&nbsp;</td>
-                        {% for quarter, value in data.incidenceRate %}
-                            <td class="table-stats-unilend-item-value">
-                                {% if value.quarterRatioCIP is defined %}
-                                    {{ value.quarterRatioCIP|localizednumberwithprecision(2) }}&nbsp;%
-                                {% endif %}
-                            </td>
-                        {% endfor %}
-                    </tr>
+                    {#<tr class="alt">#}
+                        {#<td class="table-stats-unilend-item-label" colspan="{{ maxColSpan }}">{{ 'acpr-statistics_rate-3-ratio-cip'|trans|raw }}</td>#}
+                    {#</tr>#}
+                    {#<tr class="alt">#}
+                        {#<td class="table-stats-unilend-item-label">&nbsp;</td>#}
+                        {#{% for quarter, value in data.incidenceRate %}#}
+                            {#<td class="table-stats-unilend-item-value">#}
+                                {#{% if value.quarterRatioCIP is defined %}#}
+                                    {#{{ value.quarterRatioCIP|localizednumberwithprecision(2) }}&nbsp;%#}
+                                {#{% endif %}#}
+                            {#</td>#}
+                        {#{% endfor %}#}
+                    {#</tr>#}
                     </tbody>
                 </table>
             </div><!-- /.table-scroll -->
@@ -335,7 +335,7 @@
                 <p>{% trans %} fpf-statistics_table-index-8 {% endtrans %}</p>
                 <p>{% trans %} fpf-statistics_table-index-9 {% endtrans %}</p>
                 <p>{% trans %} acpr-statistics_table-index-1 {% endtrans %}</p>
-                <p>{% trans %} acpr-statistics_table-index-2 {% endtrans %}</p>
+                {#<p>{% trans %} acpr-statistics_table-index-2 {% endtrans %}</p>#}
             </div>
         </div>
     </section>
