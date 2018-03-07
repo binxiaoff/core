@@ -212,7 +212,10 @@ class LenderSubscriptionController extends Controller
         }
 
         $isValidCaptcha = $this->isValidCaptcha($request);
-        $this->checkSecuritySection($client, $form);
+
+        if ($isValidCaptcha) {
+            $this->checkSecuritySection($client, $form);
+        }
 
         if (false === $form->get('tos')->getData()) {
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
@@ -327,13 +330,17 @@ class LenderSubscriptionController extends Controller
             $this->checkPostalAddressSection($clientAddress, $form);
         }
 
-        $this->checkSecuritySection($client, $form);
+        $isValidCaptcha = $this->isValidCaptcha($request);
+
+        if ($isValidCaptcha) {
+            $this->checkSecuritySection($client, $form);
+        }
 
         if (false === $form->get('tos')->getData()) {
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
         }
 
-        if ($this->isValidCaptcha($request) && $form->isValid()) {
+        if ($isValidCaptcha && $form->isValid()) {
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());

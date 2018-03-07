@@ -21,6 +21,7 @@ class EulerHermesManager
     const RESOURCE_EULER_GRADE_MONITORING_END                = 'end_euler_grade_monitoring';
     const EULER_ERROR_CODE_FREE_MONITORING_ALREADY_REQUESTED = 3000;
     const EULER_ERROR_CODE_UNKNOWN_TRAFFIC_LIGHT_VALUE       = 4301;
+    const EULER_ERROR_CODE_NO_LONG_TERM_MONITORING_ACTIVE    = 3008;
 
     /** @var Client */
     private $client;
@@ -393,10 +394,9 @@ class EulerHermesManager
      * @param string $countryCode
      *
      * @return bool
-     *
      * @throws \Exception
      */
-    public function stopMonitoring($siren, $countryCode)
+    public function stopMonitoring(string $siren, string $countryCode): bool
     {
         /** @var CompanyIdentity $company */
         $company = $this->searchCompany($siren, $countryCode);
@@ -406,10 +406,14 @@ class EulerHermesManager
             $response   = $this->client->post($wsResource->getResourceName() . $company->getSingleInvoiceId(), ['headers' => ['apikey' => $this->getMonitoringApiKey()]]);
 
             if (200 === $response->getStatusCode()) {
-                $this->logger->info('Euler grade long term monitoring has been stopped for siren ' . $siren);
-
                 return true;
             } else {
+                if (409 === $response->getStatusCode()) {
+                    $content = json_decode($response->getBody()->getContents(), true);
+                    if (self::EULER_ERROR_CODE_NO_LONG_TERM_MONITORING_ACTIVE == $content['Code']) {
+                        return true;
+                    }
+                }
                 $this->logger->warning('Long term monitoring could not be stopped for siren ' . $siren . ' Status Code: ' . $response->getStatusCode() . ' / Reason: ' . $response->getReasonPhrase() . ' / Content: ' . $response->getBody()->getContents());
             }
         }
