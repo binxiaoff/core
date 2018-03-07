@@ -2,9 +2,13 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
@@ -28,15 +32,15 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
         $unilendStatistics = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findBy(['typeStat' => UnilendStats::TYPE_STAT_FRONT_STATISTIC]);
 
-        /** @var UnilendStats $statistic */
-        foreach ($unilendStatistics as $statistic) {
-            $this->separateIncidenceRateFromUnilendFrontStatistic($statistic);
-        }
-
-        $this->createMissingIFPIncidenceRateData();
-        $this->createMissingCIPIncidenceRateData();
-//        $this->saveRatioIFP();
-//        $this->saveRatioCIP();
+//        /** @var UnilendStats $statistic */
+//        foreach ($unilendStatistics as $statistic) {
+//            $this->separateIncidenceRateFromUnilendFrontStatistic($statistic);
+//        }
+//
+//        $this->createMissingIFPIncidenceRateData();
+//        $this->createMissingCIPIncidenceRateData();
+        $this->saveRatioIFP();
+        $this->saveRatioCIP();
         $this->createQuarterEntries();
     }
 
@@ -152,7 +156,6 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         $period        = new \DatePeriod($start, $monthInterval, $end);
 
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $unilendStatisticsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
 
         foreach ($period as $month) {
@@ -160,14 +163,23 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             /** @var UnilendStats $incidenceRateStats */
             $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
             if (null !== $incidenceRateStats) {
-                $data               = json_decode($incidenceRateStats->getValue(), true);
-                $countLateProjects  = $projectStatusHistoryRepository->getCountProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
-                $countAllProjects   = $projectStatusHistoryRepository->getCountProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
+                $lateProjectsIFP = $this->getProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
+                $allProjectsIFP  = $this->getProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
 
-                $data['ratioIFP'] = 0 == $countAllProjects ? 0.00 : round(bcmul(bcdiv($countLateProjects, $countAllProjects, 6), 100, 4), 2);
+                $result['lateProjectsIFP'] = implode(',', $lateProjectsIFP);
+                $result['allProjectsIFP']  = implode(',', $allProjectsIFP);
+                $result['countLateIFP']    = count($lateProjectsIFP);
+                $result['countAllIFP']     = count($allProjectsIFP);
+
+                $data             = json_decode($incidenceRateStats->getValue(), true);
+                $data['ratioIFP'] = 0 == $result['countAllIFP'] ? 0.00 : round(bcmul(bcdiv($result['countLateIFP'], $result['countAllIFP'], 6), 100, 4), 2);
+
                 $incidenceRateStats->setValue(json_encode($data));
 
                 $entityManager->flush($incidenceRateStats);
+
+                $this->saveIntermediateDataInUnilendStatistics($result, $lastDayOfMonth);
+
             }
         }
     }
@@ -185,7 +197,6 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         $period        = new \DatePeriod($start, $monthInterval, $end);
 
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
         $unilendStatisticsRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
 
         foreach ($period as $month) {
@@ -193,16 +204,45 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             /** @var UnilendStats $incidenceRateStats */
             $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
             if (null !== $incidenceRateStats) {
-                $data              = json_decode($incidenceRateStats->getValue(), true);
-                $countLateProjects = $projectStatusHistoryRepository->getCountProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
-                $countAllProjects  = $projectStatusHistoryRepository->getCountProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
+                $lateProjectsCIP = $this->getProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
+                $allProjectsCIP  = $this->getProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
 
-                $data['ratioCIP'] = 0 == $countAllProjects ? 0.00 : round(bcmul(bcdiv($countLateProjects, $countAllProjects, 6), 100, 4), 2);
+                $result['lateProjectsCIP'] = implode(',', $lateProjectsCIP);
+                $result['allProjectsCIP']  = implode(',', $allProjectsCIP);
+                $result['countLateCIP']    = count($lateProjectsCIP);
+                $result['countAllCIP']     = count($allProjectsCIP);
+
+                $data             = json_decode($incidenceRateStats->getValue(), true);
+                $data['ratioCIP'] = 0 == $result['countAllCIP'] ? 0.00 : round(bcmul(bcdiv($result['countLateCIP'], $result['countAllCIP'], 6), 100, 4), 2);
+
                 $incidenceRateStats->setValue(json_encode($data));
 
                 $entityManager->flush($incidenceRateStats);
+
+                $this->saveIntermediateDataInUnilendStatistics($result, $lastDayOfMonth);
             }
         }
+    }
+
+    /**
+     * @param array     $projects
+     * @param \DateTime $added
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function saveIntermediateDataInUnilendStatistics(array $projects, \DateTime $added)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+
+        $unilendStats = new UnilendStats();
+        $unilendStats
+            ->setValue(json_encode($projects))
+            ->setTypeStat('incidence_rate_ratio_raw_data')
+            ->setAdded($added)
+            ->setUpdated(new \DateTime('NOW'));
+
+        $entityManager->persist($unilendStats);
+        $entityManager->flush($unilendStats);
     }
 
     /**
@@ -236,8 +276,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT1);
                 $entityManager->flush($incidenceRateStatT1);
 
-//                $entityManager->refresh($incidenceRateStatT1);
-//                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
+                $entityManager->refresh($incidenceRateStatT1);
+                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
             }
 
             if (null !== $secondQuarterStats) {
@@ -249,8 +289,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT2);
                 $entityManager->flush($incidenceRateStatT2);
 
-//                $entityManager->refresh($incidenceRateStatT2);
-//                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
+                $entityManager->refresh($incidenceRateStatT2);
+                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
             }
 
             if (null !== $thirdQuarterStats) {
@@ -262,8 +302,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT3);
                 $entityManager->flush($incidenceRateStatT3);
 
-//                $entityManager->refresh($incidenceRateStatT3);
-//                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
+                $entityManager->refresh($incidenceRateStatT3);
+                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
             }
 
             if (null !== $fourthQuarterStats) {
@@ -275,8 +315,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $entityManager->persist($incidenceRateStatT4);
                 $entityManager->flush($incidenceRateStatT4);
 
-//                $entityManager->refresh($incidenceRateStatT4);
-//                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
+                $entityManager->refresh($incidenceRateStatT4);
+                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
             }
         }
     }
@@ -337,5 +377,85 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             $quarterStat->setValue(json_encode($quarterData));
             $entityManager->flush(($quarterStat));
         }
+    }
+
+    /**
+     * @param string    $contractType
+     * @param \DateTime $date
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getProjectInProblemWithContractOnDate(string $contractType, \DateTime $date): array
+    {
+        $query = '
+            SELECT
+              e.id_project
+            FROM echeanciers e
+              INNER JOIN loans l ON e.id_loan = l.id_loan
+            WHERE date_echeance <= :date
+                  AND (date_echeance_reel > :date OR e.status != :repaid)
+                  AND l.id_type_contract = (SELECT id_contract FROM underlying_contract WHERE label = :contractType)
+            GROUP BY e.id_project';
+
+        $result = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getConnection()
+            ->executeQuery($query, ['problem' => ProjectsStatus::PROBLEME, 'contractType' => $contractType, 'date' => $date->format('Y-m-d H:i:s'), 'repaid' => Echeanciers::STATUS_REPAID])
+            ->fetchAll();
+
+        $projects = [];
+        foreach ($result as $project) {
+            $projects[] = $project['id_project'];
+        }
+
+        return $projects;
+    }
+
+    /**
+     * @param string    $contractType
+     * @param \DateTime $date
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getProjectInRepaymentWithContractOnDate(string $contractType, \DateTime $date): array
+    {
+        $query = '
+            SELECT
+              l.id_project
+            FROM loans l
+              INNER JOIN (
+                           SELECT id_project, MAX(id_project_status_history) AS max_psh
+                           FROM projects_status_history
+                           WHERE added <= :date
+                           GROUP BY id_project
+                         ) AS ps ON ps.id_project = l.id_project
+              INNER JOIN projects_status_history psh ON ps.max_psh = psh.id_project_status_history
+              INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+            WHERE id_type_contract = (SELECT id_contract FROM underlying_contract WHERE label = :contractType) 
+              AND l.status = :accepted 
+              AND ps.status >= :repayment 
+              AND ps.status NOT IN (:repaid)
+            GROUP BY l.id_project';
+
+        $result = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getConnection()
+            ->executeQuery($query, ['repayment'    => ProjectsStatus::REMBOURSEMENT,
+                                    'repaid'       => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
+                                    'contractType' => $contractType,
+                                    'date'         => $date->format('Y-m-d H:i:s'),
+                                    'accepted'     => Loans::STATUS_ACCEPTED
+            ], ['repayment'    => \PDO::PARAM_INT,
+                'repaid'       => Connection::PARAM_INT_ARRAY,
+                'contractType' => \PDO::PARAM_STR,
+                'date'         => \PDO::PARAM_STR
+            ])->fetchAll();
+
+        $projects = [];
+        foreach ($result as $project) {
+            $projects[] = $project['id_project'];
+        }
+
+        return $projects;
     }
 }
