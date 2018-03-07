@@ -150,7 +150,7 @@ class ProjectLifecycleManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function prePublish(\projects $project) : void
+    public function prePublish(\projects $project): void
     {
         $this->autoBid($project);
         $isFunded = $this->projectManager->isFunded($project);
@@ -160,12 +160,24 @@ class ProjectLifecycleManager
         }
         $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
 
-        $currentDate = new \DateTime();
-        if (
-            $isFunded &&
-            $this->projectManager->getProjectEndDate($project) > $currentDate &&
-            false === $this->projectManager->isRateMinReached($project)
-        ) {
+        $currentDate      = new \DateTime();
+        $projectEndDate   = $this->projectManager->getProjectEndDate($project);
+        $isRateMinReached = $this->projectManager->isRateMinReached($project);
+
+        /**
+         * We are trying to set the date_fin here to be sure that the call of sendBidRejected in sendAcceptedOrRejectedBidNotifications
+         * when publishing the project will use the same date for all bid rejection emails.
+         * In fact, it may happens that this function uses date_retrait on the begin, and date_fin once funding cron is launched
+         */
+        if ($projectEndDate <= $currentDate || true === $isRateMinReached) {
+            $project->date_fin = $currentDate->format('Y-m-d H:i:s');
+            $project->update();
+        }
+        /**
+         * Change of behaviour: send it only if the rate min is not reached,
+         * to avoid calling sendFundedAndFinishedToBorrower immediately after this one in funding cron
+         */
+        if (true === $isFunded && false === $isRateMinReached) {
             $this->mailerManager->sendFundedToBorrower($project);
         }
 
