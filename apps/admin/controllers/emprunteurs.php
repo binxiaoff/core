@@ -159,10 +159,10 @@ class emprunteursController extends bootstrap
             $end                       = new \DateTime('NOW');
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
-            $this->companyManager = $this->get('unilend.service.company_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus[] possibleCompanyStatus */
+            $this->companyManager        = $this->get('unilend.service.company_manager');
+            $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
-            $this->companyStatusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             exit;
