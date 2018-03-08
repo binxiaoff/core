@@ -30,7 +30,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $unilendStatistics = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findBy(['typeStat' => UnilendStats::TYPE_STAT_FRONT_STATISTIC]);
+//        $unilendStatistics = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findBy(['typeStat' => UnilendStats::TYPE_STAT_FRONT_STATISTIC]);
 
 //        /** @var UnilendStats $statistic */
 //        foreach ($unilendStatistics as $statistic) {
@@ -396,11 +396,12 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             WHERE date_echeance <= :date
                   AND (date_echeance_reel > :date OR e.status != :repaid)
                   AND l.id_type_contract = (SELECT id_contract FROM underlying_contract WHERE label = :contractType)
+                  AND l.status = :accepted
             GROUP BY e.id_project';
 
         $result = $this->getContainer()->get('doctrine.orm.entity_manager')
             ->getConnection()
-            ->executeQuery($query, ['problem' => ProjectsStatus::PROBLEME, 'contractType' => $contractType, 'date' => $date->format('Y-m-d H:i:s'), 'repaid' => Echeanciers::STATUS_REPAID])
+            ->executeQuery($query, ['accepted' => Loans::STATUS_ACCEPTED, 'contractType' => $contractType, 'date' => $date->format('Y-m-d H:i:s'), 'repaid' => Echeanciers::STATUS_REPAID])
             ->fetchAll();
 
         $projects = [];
