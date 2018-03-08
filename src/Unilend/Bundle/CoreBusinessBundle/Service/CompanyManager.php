@@ -51,7 +51,24 @@ class CompanyManager
     }
 
     /**
+     * @param Companies $company
+     *
+     * @return array|CompanyStatus[]
+     */
+    public function getPossibleStatus(Companies $company)
+    {
+        $possibleStatus = [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
+
+        if (CompanyStatus::STATUS_IN_BONIS === $company->getIdStatus()->getLabel()) {
+            $possibleStatus[] = CompanyStatus::STATUS_IN_BONIS;
+        }
+
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
+    }
+
+    /**
      * @param string $statusLabel
+     *
      * @return string
      */
     public function getCompanyStatusNameByLabel($statusLabel)

@@ -161,7 +161,7 @@ class emprunteursController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
             $this->companyManager        = $this->get('unilend.service.company_manager');
             $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
-            $this->possibleCompanyStatus = $companyStatusRepository->findAll();
+            $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
