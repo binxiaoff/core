@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCharge;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
@@ -63,7 +64,7 @@ class debt_collection_missionController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity)) {
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity) && $this->request->isMethod(Request::METHOD_POST)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager      = $this->get('doctrine.orm.entity_manager');
             $projectId          = filter_var($this->params[0], FILTER_VALIDATE_INT);
@@ -75,25 +76,30 @@ class debt_collection_missionController extends bootstrap
             if (null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId))) {
                 $errors[] = 'Le projet n\'existe pas.';
             }
-            if (false === empty($_POST['debt-collector-hash'])) {
-                $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $_POST['debt-collector-hash']]);
+            if (false === empty($this->request->request->get('debt-collector-hash'))) {
+                $debtCollector = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $this->request->request->get('debt-collector-hash')]);
             }
             if (null === $debtCollector) {
                 $errors[] = 'Le recouvreur n\'existe pas.';
             }
-            if (empty($_POST['debt-collection-type'])
-                || false === ($debtCollectionType = filter_var($_POST['debt-collection-type'], FILTER_VALIDATE_INT))
+            if (empty($this->request->request->get('debt-collection-type'))
+                || false === ($debtCollectionType = filter_var($this->request->request->get('debt-collection-type'), FILTER_VALIDATE_INT))
                 || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION, DebtCollectionMission::TYPE_PRE_LITIGATION])
             ) {
                 $errors[] = 'Le type de mission fourni (id type : ' . $debtCollectionType . ') n\'est pas valable.';
             }
-            if (empty($_POST['debt-collection-rate'])
-                || false === ($feesRate = filter_var(str_replace(',', '.', $_POST['debt-collection-rate']), FILTER_VALIDATE_FLOAT))
-                || $feesRate < 0
+            if (false === $this->request->request->getBoolean('debt-collection-zero-rate')
+                && (empty($this->request->request->get('debt-collection-rate'))
+                    || false === ($feesRate = filter_var(str_replace(',', '.', $this->request->request->get('debt-collection-rate')), FILTER_VALIDATE_FLOAT))
+                    || $feesRate < 0)
             ) {
                 $errors[] = 'Le taux d\'honoraires est incorrect.';
             }
+
             $feesRate = round(bcdiv($feesRate, 100, 6), 4);
+            if ($this->request->request->getBoolean('debt-collection-zero-rate')) {
+                $feesRate = 0;
+            }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
             $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');

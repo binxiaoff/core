@@ -34,7 +34,47 @@
             // Pre-fill tax-rate
             $('#debt-collection-mission').change(function () {
                 var rate = $(this).find('option:selected').data('tax-rate')
-                $('#debt-collection-rate').val(rate)
+                var $rateTextInput = $('#debt-collection-rate')
+                var $zeroRateCheckBox = $('input[name=debt-collection-zero-rate]')
+                if (typeof rate === 'undefined'){
+                    $rateTextInput.val('')
+                    $rateTextInput.prop('disabled', false)
+                    $rateTextInput.prop('required', true)
+                    $rateTextInput.addClass('required')
+                    $zeroRateCheckBox.prop( "checked", false)
+                } else {
+                    if (0 !== parseFloat(rate)) {
+                        $rateTextInput.val(rate)
+                        $rateTextInput.prop('disabled', false)
+                        $rateTextInput.prop('required', true)
+                        $rateTextInput.addClass('required')
+                        $zeroRateCheckBox.prop( "checked", false)
+                    } else {
+                        $rateTextInput.val('')
+                        $rateTextInput.prop('disabled', true)
+                        $rateTextInput.prop('required', false)
+                        $rateTextInput.removeClass('required')
+                        $zeroRateCheckBox.prop( "checked", true)
+                    }
+                }
+            })
+
+            $(document).on('change', 'input[name=debt-collection-zero-rate]', function () {
+                var $rateTextInput =  $('#debt-collection-rate')
+                if (this.checked) {
+                    $rateTextInput.val('')
+                    $rateTextInput.prop('disabled', true)
+                    $rateTextInput.prop('required', false)
+                    $rateTextInput.removeClass('required')
+                } else {
+                    var rate = $('#debt-collection-mission').find('option:selected').data('tax-rate')
+                    if (0 !== parseFloat(rate)) {
+                        $rateTextInput.val(rate)
+                    }
+                    $rateTextInput.prop('disabled', false)
+                    $rateTextInput.prop('required', true)
+                    $rateTextInput.addClass('required')
+                }
             })
         })
     </script>
@@ -140,7 +180,7 @@
                             <h4 class="font-w400 push-20">Saisir la mission et le taux d'honoraire de recouvrement ? </h4>
                             {% if missions|length > 0 %}
                                 <div class="row">
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <select id="debt-collection-mission" class="form-control required" name="mission">
                                             <option value="0">Selectionner une mission</option>
                                             {% for mission in missions %}
@@ -149,11 +189,16 @@
                                             {% endfor %}
                                         </select>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <div class="input-group">
-                                            <input id="debt-collection-rate" class="form-control" name="fee_rate" type="text" placeholder="Taux">
+                                            <input id="debt-collection-rate" class="form-control required" name="fee_rate" type="text" placeholder="Taux" required>
                                             <span class="input-group-addon">%</span>
                                         </div>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label class="css-input css-checkbox css-checkbox-primary">
+                                            <input type="checkbox" name="debt-collection-zero-rate"><span></span> Pas d'honoraire
+                                        </label>
                                     </div>
                                 </div>
                             {% else %}
@@ -163,7 +208,7 @@
                             <h4 class="font-w400 push-20">Date du remboursement</h4>
                             <div class="row">
                                 <div class="form-group col-md-12">
-                                    <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy">
+                                    <input id="repayment-date" class="form-control required push-10" type="text" name="repay_on" data-date-format="dd/mm/yyyy" placeholder="dd/mm/yyyy" required>
                                     {% if reception.type == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Receptions::TYPE_DIRECT_DEBIT') %}
                                         <p class="bg-warning font-s12" style="padding: 10px 15px;">
                                             S'agissant d'un prélèvement emprunteur pendant un recouvrement, un délai de 8 semaines s'impose, pendant lequel aucun rejet ne devra avoir eu lieu.

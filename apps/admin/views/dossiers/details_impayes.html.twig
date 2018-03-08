@@ -86,6 +86,20 @@
                 $modal.find('.messages').html('')
                 $modal.find('.amount-error').remove()
             })
+
+            $(document).on('change', 'input[name=debt-collection-zero-rate]', function () {
+                var $rateTextInput = $('input[name=debt-collection-rate]')
+                if (this.checked) {
+                    $rateTextInput.val('')
+                    $rateTextInput.prop('disabled', true)
+                    $rateTextInput.prop('required', false)
+                    $rateTextInput.removeClass('required')
+                } else {
+                    $rateTextInput.prop('disabled', false)
+                    $rateTextInput.prop('required', true)
+                    $rateTextInput.addClass('required')
+                }
+            })
         })
     </script>
 {% endblock %}
@@ -191,8 +205,14 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Taux (Pourcentage)</label>
-                            <input class="form-control required" name="debt-collection-rate" type="text" placeholder="13">
+                            <label>Taux d'honoraire (Pourcentage)</label>
+                            <div class="input-group">
+                                <input class="form-control required" name="debt-collection-rate" type="text" placeholder="ex. 13" required>
+                                <span class="input-group-addon">%</span>
+                            </div>
+                            <label class="css-input css-checkbox css-checkbox-primary">
+                                <input type="checkbox" name="debt-collection-zero-rate"><span></span> Pas d'honoraire
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -284,7 +304,7 @@
                         </div>
                         <div class="col-md-2">
                             <div class="font-s12 font-w600 text-uppercase">Confié au recouvreur</div>
-                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector > 0 ? projectData.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €'}}</a>
+                            <a class="h2 font-w300 text-primary">{{ projectData.entrustedToDebtCollector > 0 ? projectData.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</a>
                         </div>
                         <div class="col-md-2">
                             <div class="font-s12 font-w600 text-uppercase">Réceptions à traiter</div>
