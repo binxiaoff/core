@@ -16,6 +16,7 @@
 
             <div class="readable-wrap">
                 <p>{% trans %} autolend_autolend-introduction-text {% endtrans %}</p>
+                {# @TODO resolve this #todo link #}
                 <p><a href="#todo" class="link">{% trans %} autolend_link-to-autolend-faq-title {% endtrans %}</a></p>
             </div><!-- /.readable-wrap -->
 
@@ -136,9 +137,11 @@
                                             {% set i = 0 %}
                                             {% for settings in autoBidSettings %}
                                                 {% for setting in settings %}
+                                                    {% set row = (i / 5)|round(0, 'floor') + 1 %}
+                                                    {% set column = i % 5 %}
                                                     {% set classEnabled = '' %}
                                                     {% if setting.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Autobid::STATUS_ACTIVE') %}
-                                                        {% set classEnabled = 'ui-autolend-cell-enabled'%}
+                                                        {% set classEnabled = 'ui-autolend-cell-enabled' %}
                                                     {% endif %}
                                                     {% if setting.cellAverageRateUnilend is not empty and (setting.rate_min < setting.project_rate_min or setting.rate_min > setting.project_rate_max) %}
                                                         {% set classAverage = 'ui-autolend-out-of-range' %}
@@ -147,8 +150,32 @@
                                                     {% else %}
                                                         {% set classAverage = 'ui-autolend-average-exceeds' %}
                                                     {% endif %}
+                                                    {# Show the header at the start of each group #}
+                                                    {% if column == 0 %}
+                                                        <div class="cell cell-header">
+                                                            {{ "autolend_expert-settings-project-period-#{ row }"|trans }}
+                                                        </div>
+                                                    {% endif %}
                                                     <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled }} {{ classAverage }}">
-                                                        <div class="cell-input" data-autolendtable-cell="{{ i }}">
+                                                        <div class="cell-label">
+                                                            <div class="cell-period">
+                                                                {{ "autolend_expert-settings-project-period-#{ row }"|trans }}
+                                                            </div>
+                                                            <div class="cell-rating">
+                                                                {% if column == 0 %}
+                                                                    <span class="rating rating-3"><span class="sr-only">{% trans %} common_sr-only-rating-3-of-5 {% endtrans %}</span></span>
+                                                                {% elseif column == 1 %}
+                                                                    <span class="rating rating-3-5"><span class="sr-only">{% trans %} common_sr-only-rating-3.5-of-5 {% endtrans %}</span></span>
+                                                                {% elseif column == 2 %}
+                                                                    <span class="rating rating-4"><span class="sr-only">{% trans %} common_sr-only-rating-4-of-5 {% endtrans %}</span></span>
+                                                                {% elseif column == 3 %}
+                                                                    <span class="rating rating-4-5"><span class="sr-only">{% trans %} common_sr-only-rating-4.5-of-5 {% endtrans %}</span></span>
+                                                                {% elseif column == 4 %}
+                                                                    <span class="rating rating-5"><span class="sr-only">{% trans %} common_sr-only-rating-5-of-5 {% endtrans %}</span></span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="cell-input">
                                                             <span class="icon fa-ban-u"></span>
                                                             <a class="btn-cell-minus" tabindex="-1" href="javascript:;"><span class="sr-only">Minus 0.1</span></a>
                                                             {# Inputs containing values for calculations / JS / to be submittes #}
@@ -178,6 +205,12 @@
                                                                    id="{{ i }}-param-advanced-unilend-rate">
                                                             <a class="btn-cell-plus" tabindex="-1" href="javascript:;"><span class="sr-only">Plus 0.1</span></a>
                                                         </div>
+                                                        <div class="cell-controls">
+                                                            <label class="custom-input-switch custom-input-switch-sm btn-cell-disable-toggle">
+                                                                <input type="checkbox" {% if setting.status == 1 %} checked="checked" {% endif %} value="true" data-autolend-cell-disable-switch>
+                                                                <span class="label"><span class="sr-only">{% trans %} autolend_expert-settings-sidebar-enable-setting-switch {% endtrans %}</span></span>
+                                                            </label>
+                                                        </div>
                                                         <a class="btn-cell-enable" href="javascript:;">
                                                             <span class="sr-only">{% trans %} autolend_expert-settings-sidebar-activate-cell-switch-label {% endtrans %}</span>
                                                         </a>
@@ -188,7 +221,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-info" data-autolend-table-cell="">
+                                <div class="col-info">
                                     <div class="info-intro">
                                         <h4 class="info-title">{% trans %} autolend_expert-settings-sidebar-title {% endtrans %}</h4>
                                         <div class="info-icon"><span class="icon icon-huge fa-autolend-u64"></span></div>
@@ -238,8 +271,9 @@
                                             </p>
                                             <div class="info-cell-disable">
                                                 <label class="custom-input-switch custom-input-switch-sm btn-cell-disable-toggle" id="autolend-cell-disable-switch-label">
-                                                    <input type="checkbox" checked="checked" value="true" id="autolend-cell-disable-switch">
-                                                    <span class="label"><span class="sr-only">Switch off/on</span></span></label>
+                                                    <input type="checkbox" checked="checked" value="true" id="autolend-cell-disable-switch" data-autolend-cell-disable-switch>
+                                                    <span class="label"><span class="sr-only">Switch off/on</span></span>
+                                                </label>
                                                 <label for="autolend-cell-disable-switch">{% trans %} autolend_expert-settings-sidebar-enable-setting-switch {% endtrans %}</label>
                                             </div>
                                         </div>
@@ -247,12 +281,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div id="autolend-save-settings" class="row">
                             <div class="col-lg-9 col-md-9">
                                 <div class="ui-autolend-table-use-average-interest"></div>
                             </div>
                             <div class="btn-controls col-lg-3 col-md-3">
-                                <button type="submit" id="validate-expert-settings" name="validate-expert-settings" class="btn-primary">{% trans %} autolend_expert-settings-submit-button {% endtrans %}</button>
+                                <button type="submit" id="validate-expert-settings" name="validate-expert-settings" class="btn-primary">
+                                    {% trans %} autolend_expert-settings-submit-button {% endtrans %}
+                                </button>
                             </div>
                         </div>
                     </section><!-- /#autolend-config -->
