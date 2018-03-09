@@ -6,9 +6,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
@@ -50,6 +52,8 @@ class ExternalDataManager
     private $companyBalanceSheetManager;
     /** @var CompanyRatingHistory */
     private $companyRatingHistory;
+    /** @var AddressManager */
+    private $addressManager;
     /** @var LoggerInterface */
     private $logger;
 
@@ -62,6 +66,7 @@ class ExternalDataManager
      * @param InfogreffeManager          $infogreffeManager
      * @param EllisphereManager          $ellisphereManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
+     * @param AddressManager             $addressManager
      * @param LoggerInterface            $logger
      */
     public function __construct(
@@ -73,6 +78,7 @@ class ExternalDataManager
         InfogreffeManager $infogreffeManager,
         EllisphereManager $ellisphereManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
+        AddressManager $addressManager,
         LoggerInterface $logger
     )
     {
@@ -84,6 +90,7 @@ class ExternalDataManager
         $this->infogreffeManager          = $infogreffeManager;
         $this->ellisphereManager          = $ellisphereManager;
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
+        $this->addressManager             = $addressManager;
         $this->logger                     = $logger;
     }
 
@@ -120,15 +127,24 @@ class ExternalDataManager
                     $company->setForme($company->getForme() ? : $identity->getCompanyForm());
                     $company->setCapital($company->getCapital() ? : $identity->getCapital());
                     $company->setCodeNaf($company->getCodeNaf() ? : $identity->getNAFCode());
-                    $company->setAdresse1($company->getAdresse1() ? : $identity->getAddress());
-                    $company->setCity($company->getCity() ? : $identity->getCity());
-                    $company->setZip($company->getZip() ? : $identity->getPostCode());
                     $company->setSiret($company->getSiret() ? : $identity->getSiret());
                     $company->setDateCreation($company->getDateCreation() ? : $identity->getCreationDate());
                     $company->setRcs($company->getRcs() ? : $identity->getRcs());
                     $company->setTribunalCom($company->getTribunalCom() ? : $identity->getCommercialCourt());
 
                     $this->entityManager->flush($company);
+
+                    if (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS)) {
+                        $this->addressManager->saveBorrowerCompanyAddress(
+                            $identity->getAddress(),
+                            $identity->getCity(),
+                            $identity->getPostCode(),
+                            PaysV2::COUNTRY_FRANCE,
+                            null,
+                            $company->getIdCompany(),
+                            AddressType::TYPE_MAIN_ADDRESS
+                        );
+                    }
                 }
             }
 

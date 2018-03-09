@@ -10,7 +10,7 @@ use Documents\Address;
  *
  * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_v2_id_country", columns={"id_country"})})
  * @ORM\HasLifecycleCallbacks()
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
  */
 class CompanyAddress
 {

@@ -69,6 +69,7 @@ class ProjectValidator
      * @param ProductAttributeType $productAttributeType
      *
      * @return bool|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function check(Projects $project, Product $product, ProductAttributeType $productAttributeType)
     {
@@ -101,7 +102,7 @@ class ProjectValidator
                 $checkResult = $this->isEligibleForMaxPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
                 break;
             case ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION:
-                $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
+                $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
                 break;
             case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);

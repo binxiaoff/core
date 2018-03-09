@@ -215,27 +215,28 @@ class companies extends companies_crud
 
     public function getCompaniesSalesForce()
     {
-        $sQuery = "SELECT
-                    co.id_company AS 'IDCompany',
-                    REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
-                    CASE REPLACE(co.name,',','')
-                      WHEN '' THEN 'A renseigner'
-                      ELSE REPLACE(co.name,',','')
-                    END AS 'RaisonSociale',
-                    REPLACE(co.adresse1,',','') AS 'Adresse1',
-                    REPLACE(co.zip,',','') AS 'CP',
-                    REPLACE(co.city,',','') AS 'Ville',
-                    acountry.fr AS 'Pays',
-                    REPLACE(co.email_facture,',','') AS 'EmailFacturation',
-                    co.id_client_owner AS 'IDClient',
-                    co.forme as 'FormeSociale',
-                    '012240000002G4U' as 'Sfcompte'
-                  FROM
-                    companies co
-                  LEFT JOIN
-                    pays_v2 acountry ON (co.id_pays = acountry.id_pays)";
+        $query = "
+          SELECT
+            co.id_company AS 'IDCompany',
+            REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
+            CASE REPLACE(co.name,',','')
+              WHEN '' THEN 'A renseigner'
+              ELSE REPLACE(co.name,',','')
+            END AS 'RaisonSociale',
+            REPLACE(ca.address,',','') AS 'Adresse1',
+            REPLACE(ca.zip,',','') AS 'CP',
+            REPLACE(ca.city,',','') AS 'Ville',
+            acountry.fr AS 'Pays',
+            REPLACE(co.email_facture,',','') AS 'EmailFacturation',
+            co.id_client_owner AS 'IDClient',
+            co.forme as 'FormeSociale',
+            '012240000002G4U' as 'Sfcompte'
+          FROM
+            companies co
+            LEFT JOIN company_address ca ON co.id_company = ca.id_company
+            LEFT JOIN pays_v2 acountry ON (ca.id_country = acountry.id_pays)";
 
-        return $this->bdd->executeQuery($sQuery);
+        return $this->bdd->executeQuery($query);
     }
 
     /**

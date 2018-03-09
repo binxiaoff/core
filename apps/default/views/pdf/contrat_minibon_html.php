@@ -34,17 +34,17 @@
                     </li>
                     <li>
                         <div class="col-long">Adresse du siège social</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->adresse1 ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getAddress() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Code postal</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->zip ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getZip() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Ville</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getCity() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
@@ -64,7 +64,7 @@
                     </li>
                     <li>
                         <div class="col-long">Lieu d’exploitation</div>
-                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getCity() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                 </ul>

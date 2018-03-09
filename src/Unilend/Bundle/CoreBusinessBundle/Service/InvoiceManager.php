@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompteurFactures;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
@@ -94,6 +95,11 @@ class InvoiceManager
     /**
      * @param Factures       $invoice
      * @param \DateTime|null $paymentDate
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      */
     private function generateInvoice(Factures $invoice, \DateTime $paymentDate = null)
     {
@@ -108,11 +114,12 @@ class InvoiceManager
 
         $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
-            'client'      => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
-            'project'     => $invoice->getIdProject(),
-            'invoice'     => $invoice,
-            'paymentDate' => null === $paymentDate ? $invoice->getDate() : $paymentDate,
-            'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
+            'client'         => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
+            'companyAddress' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($invoice->getIdProject()->getIdCompany()->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS),
+            'project'        => $invoice->getIdProject(),
+            'invoice'        => $invoice,
+            'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,
+            'vat'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
         ]);
 
         $this->snappy->generateFromHtml($pdfContent, $filePath, $options, true);

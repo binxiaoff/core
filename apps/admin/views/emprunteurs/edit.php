@@ -104,20 +104,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                             <input type="text" name="telephone" id="telephone" value="<?= $this->clients->telephone ?>" class="form-control">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="adresse">Adresse</label>
-                        <input type="text" name="adresse" id="adresse" value="<?= $this->clients_adresses->adresse1 ?>" class="form-control">
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="cp">Code postal</label>
-                            <input type="text" name="cp" id="cp" value="<?= $this->clients_adresses->cp ?>" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="ville">Ville</label>
-                            <input type="text" name="ville" id="ville" value="<?= $this->clients_adresses->ville ?>" class="form-control">
-                        </div>
-                    </div>
+
             </div>
             <div class="col-md-6">
                 <h1>Société</h1>
@@ -141,6 +128,22 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                         <?php else : ?>
                             <div><?= $this->translator->trans('company-sector_sector-' . $this->companies->sector) ?></div>
                         <?php endif; ?>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-12">
+                        <label for="adresse">Adresse</label>
+                        <input type="text" name="adresse" id="adresse" value="<?= null !== $this->companyAddress ? $this->companyAddress->getAddress() : '' ?>" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="cp">Code postal</label>
+                        <input type="text" name="cp" id="cp" value="<?= null !== $this->companyAddress ? $this->companyAddress->getZip() : '' ?>" class="form-control">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="ville">Ville</label>
+                        <input type="text" name="ville" id="ville" value="<?= null !== $this->companyAddress ? $this->companyAddress->getCity() : '' ?>" class="form-control">
                     </div>
                 </div>
                 <div class="row">

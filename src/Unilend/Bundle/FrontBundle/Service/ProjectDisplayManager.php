@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
@@ -131,12 +132,14 @@ class ProjectDisplayManager
      * @param \projects $project
      *
      * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getBaseData(\projects $project)
     {
         /** @var \companies $company */
         $company = $this->entityManagerSimulator->getRepository('companies');
         $company->get($project->id_company);
+        $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         $now = new \DateTime('NOW');
         $end = $this->projectManager->getProjectEndDate($project);
@@ -159,8 +162,8 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $company->city,
-                'zip'       => $company->zip,
+                'city'      => $companyAddress->getCity(),
+                'zip'       => $companyAddress->getZip(),
                 'sectorId'  => $company->sector,
                 'latitude'  => (float) $company->latitude,
                 'longitude' => (float) $company->longitude

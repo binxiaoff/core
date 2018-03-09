@@ -249,8 +249,8 @@
             <tr>
                 <th><label for="address_etape2">Adresse</label></th>
                 <td>
-                    <input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= $this->companies->adresse1 ?>">
-                    <?php if (false === empty($this->companies->adresse1)) : ?>
+                    <input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= null !== $this->companyMainAddress ? $this->companyMainAddress->getAddress() : '' ?>">
+                    <?php if (null !== $this->companyMainAddress) : ?>
                         <a id="streetview_open" class="btn-small btn_link">Voir Streetview</a>
                         <div style="display: none;">
                             <div id="popup-streetview-error" style="width: 300px; text-align: center">
@@ -273,40 +273,41 @@
             </tr>
             <tr>
                 <th><label for="postal_etape2">Code postal</label></th>
-                <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"></td>
+                <td>
+                    <input type="text" name="postal_etape2" id="postal_etape2" class="input_court"
+                           value="<?= null !== $this->companyMainAddress ? $this->companyMainAddress->getZip() : '' ?>">
+                </td>
                 <th><label for="latitude">Latitude</label></th>
                 <td><input type="text" name="latitude" id="latitude" class="input_court" value="<?php if (false === empty($this->latitude)) : ?><?= $this->latitude ?><?php endif; ?>"> N</td>
             </tr>
             <tr>
                 <th><label for="ville_etape2">Ville</label></th>
-                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"></td>
+                <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large"
+                           value="<?= null !== $this->companyMainAddress ? $this->companyMainAddress->getCity() : '' ?>"></td>
                 <th><label for="longitude">Longitude</label></th>
                 <td><input type="text" name="longitude" id="longitude" class="input_court" value="<?php if (false === empty($this->longitude)) : ?><?= $this->longitude ?><?php endif; ?>"> E</td>
             </tr>
             <tr>
                 <td colspan="4" style="padding-top: 15px">
-                    <input<?= ($this->companies->status_adresse_correspondance == 1 ? ' checked' : '') ?> type="checkbox" name="same_address_etape2" id="same_address_etape2">
+                    <input<?= (null === $this->companyPostalAddress ? ' checked' : '') ?> type="checkbox" name="same_address_etape2" id="same_address_etape2">
                     <label for="same_address_etape2">L'adresse de correspondance est la même que l'adresse du siège social </label>
                 </td>
             </tr>
-            <tr<?= ($this->companies->status_adresse_correspondance == 0 ? '' : ' style="display:none;"') ?> class="same_adresse">
+            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
                 <th colspan="4" style="text-align:left;"><br>Coordonnées de l'adresse de correspondance</th>
             </tr>
-            <tr<?= ($this->companies->status_adresse_correspondance == 0 ? '' : ' style="display:none;"') ?> class="same_adresse">
+            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
                 <th><label for="adresse_correspondance_etape2">Adresse</label></th>
-                <td><input type="text" name="adresse_correspondance_etape2" id="adresse_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->adresse1 ?>"></td>
-                <th><label for="city_correspondance_etape2">Ville</label></th>
-                <td><input type="text" name="city_correspondance_etape2" id="city_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->ville ?>"></td>
+                <td><input type="text" name="adresse_correspondance_etape2" id="adresse_correspondance_etape2" class="input_large" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getAddress() ?>"></td>
             </tr>
-            <tr<?= ($this->companies->status_adresse_correspondance == 0 ? '' : ' style="display:none;"') ?>
-                class="same_adresse">
+            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?>
+                    class="same_adresse">
                 <th><label for="zip_correspondance_etape2">Code postal</label></th>
-                <td><input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= $this->clients_adresses->cp ?>"></td>
-                <th><label for="phone_correspondance_etape2">Téléphone</label></th>
-                <td>
-                    <input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>">
-                    <a class="btn-small btn_link phone-call">Appeler</a>
-                </td>
+                <td><input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getZip() ?>"></td>
+            </tr>
+            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
+                <th><label for="city_correspondance_etape2">Ville</label></th>
+                <td><input type="text" name="city_correspondance_etape2" id="city_correspondance_etape2" class="input_large" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getCity() ?>"></td>
             </tr>
             <tr>
                 <td colspan="2" style="padding-top: 15px;"><h2>Identification du dirigeant</h2></td>

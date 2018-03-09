@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Bids, Clients, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, WalletType, Zones
+    AddressType, BankAccount, Bids, Clients, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -352,9 +352,7 @@ class sfpmeiController extends bootstrap
 
     public function _emprunteur()
     {
-        $this->clients = $this->loadData('clients');
-        /** @var clients_adresses $clientAddress */
-        $clientAddress          = $this->loadData('clients_adresses');
+        $this->clients          = $this->loadData('clients');
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
@@ -364,8 +362,6 @@ class sfpmeiController extends bootstrap
         $companySector = $this->loadData('company_sector');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $paysV2Repository */
-        $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
@@ -389,30 +385,19 @@ class sfpmeiController extends bootstrap
                     break;
                 default:
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
-                    $clientAddress->get($this->clients->id_client, 'id_client');
-                    $this->clientAddress = '';
-
-                    if (false === empty($clientAddress->adresse1)) {
-                        $this->clientAddress .= $clientAddress->adresse1;
-                    }
-                    if (false === empty($clientAddress->cp)) {
-                        $this->clientAddress .= '<br>' . $clientAddress->cp;
-                    }
-                    if (false === empty($clientAddress->ville)) {
-                        $this->clientAddress .= ' ' . $clientAddress->adresse1;
-                    }
-                    if (false === empty($clientAddress->id_pays)) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $country */
-                        $country             = $paysV2Repository->find($this->clientAddress->id_pays);
-                        $this->clientAddress .= empty($country) ? '' : '<br>' . $country->getFr();
-                    }
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                    $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
+                    $companyAddress      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
+                    $this->clientAddress = '';
+                    if (null !== $companyAddress) {
+                        $this->clientAddress .= $companyAddress->getAddress() . '<br>' . $companyAddress->getZip() . ' ' . $companyAddress->getCity() . '<br>' . $companyAddress->getIdCountry()->getFr();
+                    }
 
                     if (false === empty($this->clients->telephone)) {
                         $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
                     }
+
+                    $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
                     $this->currentBankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
                     $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
@@ -499,7 +484,6 @@ class sfpmeiController extends bootstrap
         $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->companies_bilans        = $this->loadData('companies_bilans');
         $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
@@ -507,6 +491,8 @@ class sfpmeiController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TranslatorInterface translator */
         $this->translator = $this->get('translator');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository $companyAddressRepository */
+        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         if (
             isset($this->params[0]) &&
@@ -515,8 +501,11 @@ class sfpmeiController extends bootstrap
             $this->projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
 
             $this->companies->get($this->projects->id_company, 'id_company');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress companyAddress */
+            $this->companyMainAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
+            $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
+
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 

@@ -220,8 +220,6 @@ class loans extends loans_crud
                 p.title,
                 p.period,
                 p.slug,
-                c.city,
-                c.zip,
                 p.risk,
                 p.status AS project_status,
                 ps.label AS project_status_label,
@@ -239,7 +237,6 @@ class loans extends loans_crud
                 (SELECT ROUND(SUM(capital - capital_rembourse) / 100, 2) FROM echeanciers WHERE id_project = p.id_project AND id_lender = l.id_lender) AS remaining_capital
             FROM loans l
             INNER JOIN projects p ON l.id_project = p.id_project
-            INNER JOIN companies c ON p.id_company = c.id_company
             INNER JOIN projects_status ps ON p.status = ps.status
             INNER JOIN echeanciers first_repayment ON (l.id_loan = first_repayment.id_loan AND first_repayment.ordre = 1)
             WHERE l.id_lender = :idLender

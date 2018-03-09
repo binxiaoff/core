@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -52,11 +53,11 @@ class LoansRepository extends EntityRepository
      * @param int $lenderId
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function countProjectsForLenderByRegion($lenderId)
+    public function countProjectsForLenderByRegion(int $lenderId): array
     {
-        $bind = ['lenderId' => $lenderId];
-        $type = ['lenderId' => \PDO::PARAM_INT];
+        $bind = ['lenderId' => $lenderId, 'mainAddress' => AddressType::TYPE_MAIN_ADDRESS];
 
         $query = 'SELECT
                       CASE
@@ -102,17 +103,20 @@ class LoansRepository extends EntityRepository
                       SUM(client_base.amount) / 100 AS loaned_amount,
                       AVG(client_base.rate) AS average_rate
                     FROM (SELECT
-                            companies.zip AS cp,
-                            loans.amount,
-                            loans.rate
-                          FROM loans 
-                              INNER JOIN wallet w ON loans.id_lender = w.id
-                              INNER JOIN projects ON loans.id_project = projects.id_project
-                              INNER JOIN companies ON projects.id_company = companies.id_company
-                          WHERE w.id = :lenderId ) AS client_base
+                            ca.zip AS cp,
+                            l.amount,
+                            l.rate
+                          FROM loans l
+                              INNER JOIN wallet w ON l.id_lender = w.id
+                              INNER JOIN projects p ON l.id_project = p.id_project
+                              INNER JOIN company_address ca ON p.id_company = ca.id_company AND ca.date_archived IS NULL
+                              INNER JOIN address_type at ON ca.id_type = at.id AND at.label = :mainAddress
+                          WHERE w.id = :lenderId) AS client_base
                     GROUP BY insee_region_code';
 
-        $statement    = $this->getEntityManager()->getConnection()->executeQuery($query, $bind, $type);
+        $statement    = $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, $bind);
         $regionsCount = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         return $regionsCount;

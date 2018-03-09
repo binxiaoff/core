@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
@@ -286,14 +287,17 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
-        $client      = $this->getClient();
-        $company     = $this->getCompany();
-        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $client         = $this->getClient();
+        $company        = $this->getCompany();
+        $bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         return [
-            'client'      => $client,
-            'company'     => $company,
-            'bankAccount' => $bankAccount
+            'client'         => $client,
+            'company'        => $company,
+            'bankAccount'    => $bankAccount,
+            'companyAddress' => $companyAddress
         ];
     }
 
@@ -496,10 +500,11 @@ class BorrowerAccountController extends Controller
             $projectsIds = [$filter['project']];
         }
 
-        $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $client              = $this->getClient();
-        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
-        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $client         = $this->getClient();
+        $wallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
+        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
 
         $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
         $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
@@ -509,6 +514,7 @@ class BorrowerAccountController extends Controller
             'operations'        => $borrowerOperations,
             'client'            => $wallet->getIdClient(),
             'company'           => $company,
+            'companyAddress'    => $companyAddress,
             'available_balance' => $wallet->getAvailableBalance()
         ]);
 

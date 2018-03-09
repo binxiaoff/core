@@ -762,11 +762,11 @@ class projects extends projects_crud
                 END AS 'Nom_Societe',
                 REPLACE(co.forme,',','') AS 'Forme',
                 REPLACE(REPLACE(co.siren,'\t',''),',','') AS 'Siren',
-                REPLACE(co.adresse1,',','') as 'Adresse1',
-                REPLACE(co.adresse2,',','') as 'Adresse2',
-                REPLACE(co.zip,',','') AS 'CP',
-                REPLACE(co.city,',','') AS 'Ville',
-                co.id_pays AS 'IdPays',
+                REPLACE(ca.address,',','') as 'Adresse1',
+                '' as 'Adresse2',
+                REPLACE(ca.zip,',','') AS 'CP',
+                REPLACE(ca.city,',','') AS 'Ville',
+                ca.id_country AS 'IdPays',
                 REPLACE(co.phone,'\t','') AS 'Telephone',
                 co.status_client AS 'Status_Client',
                 CASE co.added
@@ -780,6 +780,7 @@ class projects extends projects_crud
                 co.id_client_owner AS 'IDClient'
             FROM projects p
             LEFT JOIN companies co ON (p.id_company = co.id_company)
+            LEFT JOIN company_address ca = co.id_company = ca.id_company
             LEFT JOIN clients cl ON (cl.id_client = co.id_client_owner)
             LEFT JOIN projects_notes pn ON (p.id_project = pn.id_project)
             LEFT JOIN projects_status ps ON ps.status = p.status";
@@ -877,7 +878,11 @@ class projects extends projects_crud
         return $statement->fetchColumn(0);
     }
 
-    public function countProjectsByRegion()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function countProjectsByRegion(): array
     {
         $query = 'SELECT
                       CASE
@@ -922,16 +927,17 @@ class projects extends projects_crud
                       COUNT(*) AS count
                     FROM (SELECT
                         clients.id_client,
-                        companies.zip AS cp
+                        ca.zip AS cp
                       FROM projects
                         INNER JOIN companies ON projects.id_company = companies.id_company
                         INNER JOIN clients ON clients.id_client = companies.id_client_owner
+                        INNER JOIN company_address ca ON ca.id_company = companies.id_company
                         INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4) AS client_base
                     GROUP BY insee_region_code
                     HAVING insee_region_code != "0"';
 
         $statement    = $this->bdd->executeQuery($query);
-        $regionsCount = array();
+        $regionsCount = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $regionsCount[] = $row;
         }
