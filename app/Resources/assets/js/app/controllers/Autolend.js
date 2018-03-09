@@ -426,7 +426,7 @@ function eventIncreaseCell (event) {
     var $inputRate = getInputRate(cellData.cellIndex)
     var newInterest = adjustInterestRate(cellData, cellData.step)
 
-    if (newInterest >= 10) newInterest = parseInt(newInterest)
+    if (newInterest >= 10) newInterest = parseInt(newInterest, 10)
 
     // Do before updating cellData
     changeCellColor(cellData, newInterest)
