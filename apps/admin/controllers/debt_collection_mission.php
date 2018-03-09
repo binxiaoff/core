@@ -83,7 +83,7 @@ class debt_collection_missionController extends bootstrap
                 $errors[] = 'Le recouvreur n\'existe pas.';
             }
             if (empty($this->request->request->get('debt-collection-type'))
-                || false === ($debtCollectionType = filter_var($this->request->request->get('debt-collection-type'), FILTER_VALIDATE_INT))
+                || false === ($debtCollectionType = $this->request->request->filter('debt-collection-type', null, FILTER_VALIDATE_INT))
                 || false === in_array($debtCollectionType, [DebtCollectionMission::TYPE_AMICABLE, DebtCollectionMission::TYPE_LITIGATION, DebtCollectionMission::TYPE_PRE_LITIGATION])
             ) {
                 $errors[] = 'Le type de mission fourni (id type : ' . $debtCollectionType . ') n\'est pas valable.';
