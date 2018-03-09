@@ -243,6 +243,8 @@ class dashboardController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider $messageProvider */
+        $messageProvider = $this->get('unilend.swiftmailer.message_provider');
 
         $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
         foreach ($projects as $projectEntity) {
@@ -252,6 +254,28 @@ class dashboardController extends bootstrap
                 $status = empty($projectEntity->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
                 $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
+            }
+            if ($project->status === ProjectsStatus::NOT_ELIGIBLE) {
+                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+
+                if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
+                    $keywords = [
+                        'firstName' => $company->getIdClientOwner()->getPrenom()
+                    ];
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $messageProvider->newMessage('emprunteur-dossier-rejete', $keywords);
+
+                    try {
+                        $message->setTo($company->getIdClientOwner()->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                            ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                        );
+                    }
+                }
             }
         }
 
