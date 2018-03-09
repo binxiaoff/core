@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Route
 };
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Form\{
     FormError, FormInterface
 };
@@ -212,7 +212,10 @@ class LenderSubscriptionController extends Controller
         }
 
         $isValidCaptcha = $this->isValidCaptcha($request);
-        $this->checkSecuritySection($client, $form);
+
+        if ($isValidCaptcha) {
+            $this->checkSecuritySection($client, $form);
+        }
 
         if (false === $form->get('tos')->getData()) {
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
@@ -249,9 +252,9 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
-                $this->get('unilend.service.client_manager')->acceptLastTos($client);
+                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
                 $entityManager->commit();
-            } catch (Exception $exception) {
+            } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
@@ -327,13 +330,17 @@ class LenderSubscriptionController extends Controller
             $this->checkPostalAddressSection($clientAddress, $form);
         }
 
-        $this->checkSecuritySection($client, $form);
+        $isValidCaptcha = $this->isValidCaptcha($request);
+
+        if ($isValidCaptcha) {
+            $this->checkSecuritySection($client, $form);
+        }
 
         if (false === $form->get('tos')->getData()) {
             $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
         }
 
-        if ($this->isValidCaptcha($request) && $form->isValid()) {
+        if ($isValidCaptcha && $form->isValid()) {
             $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
@@ -379,14 +386,13 @@ class LenderSubscriptionController extends Controller
                 $entityManager->flush($company);
 
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
-
+                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
                 $entityManager->commit();
-            } catch (Exception $exception) {
+            } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
 
-            $this->get('unilend.service.client_manager')->acceptLastTos($client);
             $this->addClientToDataLayer($client);
             $this->sendSubscriptionStartConfirmationEmail($client);
 

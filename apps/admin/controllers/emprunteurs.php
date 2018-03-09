@@ -91,9 +91,9 @@ class emprunteursController extends bootstrap
                     ->getValue();
 
                 $email = trim($_POST['email']);
-                if (1 !== preg_match($emailRegex, $email)) {
+                if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
-                } elseif ($email !== $this->clients->email) {
+                } elseif (false === empty($email) && $email !== $this->clients->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
                     $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
 
@@ -157,10 +157,10 @@ class emprunteursController extends bootstrap
             $end                       = new \DateTime('NOW');
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
-            $this->companyManager = $this->get('unilend.service.company_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus[] possibleCompanyStatus */
+            $this->companyManager        = $this->get('unilend.service.company_manager');
+            $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
-            $this->companyStatusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             exit;

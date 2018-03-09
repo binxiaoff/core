@@ -135,6 +135,9 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
     private function archivePastSponsorshipCampaigns()
     {
         $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -143,7 +146,7 @@ class CheckPromotionalOfferValidityCommand extends ContainerAwareCommand
 
         /** @var SponsorshipCampaign $campaign */
         foreach ($activeCampaigns as $campaign) {
-            if ($campaign->getEnd()->getTimestamp() < $now->getTimestamp()) {
+            if ($campaign->getEnd()->format('Y-m-d') < $now->format('Y-m-d')) {
                 $campaign->setStatus(SponsorshipCampaign::STATUS_ARCHIVED);
                 $entityManager->flush($campaign);
             }

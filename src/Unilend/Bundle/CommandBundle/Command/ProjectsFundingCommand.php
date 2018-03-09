@@ -60,8 +60,13 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $projectLifecycleManager->checkBids($project, true);
                         $projectLifecycleManager->autoBid($project);
                     } else {
-                        $project->date_fin = $currentDate->format('Y-m-d H:i:s');
-                        $project->update();
+                        /**
+                         * Useful in case of the project was not funded in prepublish step
+                         */
+                        if ($project->date_fin === '0000-00-00 00:00:00') {
+                            $project->date_fin = $currentDate->format('Y-m-d H:i:s');
+                            $project->update();
+                        }
 
                         $hasProjectFinished = true;
 

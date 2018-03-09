@@ -5,6 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingPayment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CloseOutNettingRepayment;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
@@ -127,8 +128,8 @@ class ProjectCloseOutNettingManager
         $interest       = $overdueAmounts['interest'];
         $commission     = $overdueAmounts['commission'];
 
-        $closeOUtNettingPayment = new CloseOutNettingPayment();
-        $closeOUtNettingPayment->setIdProject($project)
+        $closeOutNettingPayment = new CloseOutNettingPayment();
+        $closeOutNettingPayment->setIdProject($project)
             ->setCapital($capital)
             ->setInterest($interest)
             ->setCommissionTaxIncl($commission)
@@ -137,7 +138,12 @@ class ProjectCloseOutNettingManager
             ->setPaidCommissionTaxIncl(0)
             ->setNotified(false);
 
-        $this->entityManager->persist($closeOUtNettingPayment);
-        $this->entityManager->flush($closeOUtNettingPayment);
+        if (CompanyStatus::STATUS_IN_BONIS !== $project->getIdCompany()->getIdStatus()->getLabel()) {
+            // As we have notified the lender when passing the company in a collective procedure, we won't notify the close-out netting here (asked by marketing in BLD-82)
+            $closeOutNettingPayment->setNotified(true);
+        }
+
+        $this->entityManager->persist($closeOutNettingPayment);
+        $this->entityManager->flush($closeOutNettingPayment);
     }
 }

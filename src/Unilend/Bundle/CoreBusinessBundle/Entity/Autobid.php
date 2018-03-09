@@ -7,11 +7,16 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Autobid
  *
- * @ORM\Table(name="autobid", indexes={@ORM\Index(name="idx_autobid_eval_period", columns={"evaluation", "id_period", "status"}), @ORM\Index(name="idx_autobid_id_lender", columns={"id_lender"})})
- * @ORM\Entity
+ * @ORM\Table(name="autobid", indexes={@ORM\Index(name="idx_autobid_eval_period", columns={"evaluation", "id_period", "status"}), @ORM\Index(name="idx_autobid_id_lender", columns={"id_lender"}), @ORM\Index(name="idx_autobid_id_period", columns={"id_period"})})
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AutobidRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Autobid
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+    const STATUS_ARCHIVED = 2;
+
     const REGULAR_SETTINGS_COUNT = 30;
 
     /**
@@ -29,16 +34,19 @@ class Autobid
     private $evaluation;
 
     /**
-     * @var integer
+     * @var ProjectPeriod
      *
-     * @ORM\Column(name="id_period", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_period", referencedColumnName="id_period")
+     * })
      */
     private $idPeriod;
 
     /**
-     * @var float
+     * @var string
      *
-     * @ORM\Column(name="rate_min", type="float", precision=3, scale=1, nullable=false)
+     * @ORM\Column(name="rate_min", type="decimal", precision=3, scale=1, nullable=false)
      */
     private $rateMin;
 
@@ -59,7 +67,7 @@ class Autobid
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -73,7 +81,7 @@ class Autobid
     private $idAutobid;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @var Wallet
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
@@ -89,7 +97,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Autobid
     {
         $this->status = $status;
 
@@ -101,7 +109,7 @@ class Autobid
      *
      * @return integer
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -113,7 +121,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setEvaluation($evaluation)
+    public function setEvaluation(string $evaluation): Autobid
     {
         $this->evaluation = $evaluation;
 
@@ -125,7 +133,7 @@ class Autobid
      *
      * @return string
      */
-    public function getEvaluation()
+    public function getEvaluation(): string
     {
         return $this->evaluation;
     }
@@ -133,11 +141,11 @@ class Autobid
     /**
      * Set idPeriod
      *
-     * @param integer $idPeriod
+     * @param ProjectPeriod $idPeriod
      *
      * @return Autobid
      */
-    public function setIdPeriod($idPeriod)
+    public function setIdPeriod(ProjectPeriod $idPeriod): Autobid
     {
         $this->idPeriod = $idPeriod;
 
@@ -147,9 +155,9 @@ class Autobid
     /**
      * Get idPeriod
      *
-     * @return integer
+     * @return ProjectPeriod
      */
-    public function getIdPeriod()
+    public function getIdPeriod(): ProjectPeriod
     {
         return $this->idPeriod;
     }
@@ -157,11 +165,11 @@ class Autobid
     /**
      * Set rateMin
      *
-     * @param float $rateMin
+     * @param string $rateMin
      *
      * @return Autobid
      */
-    public function setRateMin($rateMin)
+    public function setRateMin(string $rateMin): Autobid
     {
         $this->rateMin = $rateMin;
 
@@ -171,9 +179,9 @@ class Autobid
     /**
      * Get rateMin
      *
-     * @return float
+     * @return string
      */
-    public function getRateMin()
+    public function getRateMin(): string
     {
         return $this->rateMin;
     }
@@ -185,7 +193,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setAmount($amount)
+    public function setAmount(int $amount): Autobid
     {
         $this->amount = $amount;
 
@@ -197,7 +205,7 @@ class Autobid
      *
      * @return integer
      */
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->amount;
     }
@@ -209,7 +217,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Autobid
     {
         $this->added = $added;
 
@@ -221,7 +229,7 @@ class Autobid
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -233,7 +241,7 @@ class Autobid
      *
      * @return Autobid
      */
-    public function setUpdated($updated)
+    public function setUpdated(\DateTime $updated): Autobid
     {
         $this->updated = $updated;
 
@@ -243,9 +251,9 @@ class Autobid
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -255,7 +263,7 @@ class Autobid
      *
      * @return integer
      */
-    public function getIdAutobid()
+    public function getIdAutobid(): int
     {
         return $this->idAutobid;
     }
@@ -263,11 +271,11 @@ class Autobid
     /**
      * Set idLender
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     * @param Wallet $idLender
      *
      * @return Autobid
      */
-    public function setIdLender(\Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender)
+    public function setIdLender(Wallet $idLender): Autobid
     {
         $this->idLender = $idLender;
 
@@ -277,10 +285,28 @@ class Autobid
     /**
      * Get idLender
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return Wallet
      */
-    public function getIdLender()
+    public function getIdLender(): Wallet
     {
         return $this->idLender;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class project_rate_settingsController extends bootstrap
@@ -84,7 +84,7 @@ class project_rate_settingsController extends bootstrap
                 /** @var Wallet $wallet */
                 $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($autoLendClient['id_client'], WalletType::LENDER);
                 if (
-                    null !== $wallet
+                    null === $wallet
                     || false === $lenderManager->canBid($wallet->getIdClient())
                     || $autoBidSettingsManager->isNovice($wallet->getIdClient())
                 ) {

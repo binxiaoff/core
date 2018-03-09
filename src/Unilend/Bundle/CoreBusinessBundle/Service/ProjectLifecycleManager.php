@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, TaxType, UnderlyingContractAttributeType, Users, Wallet, WalletType
+    AcceptedBids, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectsStatus, TaxType, UnderlyingContractAttributeType, Users, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
@@ -150,15 +150,37 @@ class ProjectLifecycleManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function prePublish(\projects $project) : void
+    public function prePublish(\projects $project): void
     {
         $this->autoBid($project);
+        $isFunded = $this->projectManager->isFunded($project);
 
-        if ($this->projectManager->isFunded($project)) {
+        if ($isFunded) {
             $this->markAsFunded($project);
         }
-
         $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
+
+        $currentDate      = new \DateTime();
+        $projectEndDate   = $this->projectManager->getProjectEndDate($project);
+        $isRateMinReached = $this->projectManager->isRateMinReached($project);
+
+        /**
+         * We are trying to set the date_fin here to be sure that the call of sendBidRejected in sendAcceptedOrRejectedBidNotifications
+         * when publishing the project will use the same date for all bid rejection emails.
+         * In fact, it may happens that this function uses date_retrait on the begin, and date_fin once funding cron is launched
+         */
+        if ($projectEndDate <= $currentDate || true === $isRateMinReached) {
+            $project->date_fin = $currentDate->format('Y-m-d H:i:s');
+            $project->update();
+        }
+        /**
+         * Change of behaviour: send it only if the rate min is not reached,
+         * to avoid calling sendFundedAndFinishedToBorrower immediately after this one in funding cron
+         */
+        if (true === $isFunded && false === $isRateMinReached) {
+            $this->mailerManager->sendFundedToBorrower($project);
+        }
+
         $this->insertNewProjectEmails($project);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $project);
     }
@@ -269,29 +291,24 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function bidAllAutoBid(\projects $project) : void
+    private function bidAllAutoBid(\projects $project): void
     {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->entityManagerSimulator->getRepository('autobid');
+        $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->entityManagerSimulator->getRepository('project_period');
-        $autobidRepo    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         $projectEntity  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
         if ($projectPeriods->getPeriod($project->period)) {
             $rateRange = $this->bidManager->getProjectRateRange($project);
             $iOffset   = 0;
             $iLimit    = 100;
-            while ($aAutoBidList = $oAutoBid->getSettings(null, $project->risk, $projectPeriods->id_period, array(\autobid::STATUS_ACTIVE), ['id_autobid' => 'ASC'], $iLimit, $iOffset)) {
+            while ($autoBidSettings = $autoBidRepository->findBy(['evaluation' => $project->risk, 'idPeriod' => $projectPeriods->id_period, 'status' => Autobid::STATUS_ACTIVE], ['idAutobid' => 'ASC'], $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
-                foreach ($aAutoBidList as $aAutoBidSetting) {
-                    $autobid = $autobidRepo->find($aAutoBidSetting['id_autobid']);
-                    if ($autobid) {
-                        try {
-                            $this->bidManager->bidByAutoBidSettings($autobid, $projectEntity, $rateRange['rate_max'], false);
-                        } catch (\Exception $exception) {
-                            continue;
-                        }
+                foreach ($autoBidSettings as $autoBidSetting) {
+                    try {
+                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max'], false);
+                    } catch (\Exception $exception) {
+                        continue;
                     }
                 }
             }
@@ -915,12 +932,11 @@ class ProjectLifecycleManager
     /**
      * @param \projects $project
      */
-    private function insertNewProjectEmails(\projects $project) : void
+    private function insertNewProjectEmails(\projects $project): void
     {
         /** @var \clients $clientData */
         $clientData = $this->entityManagerSimulator->getRepository('clients');
-        /** @var \autobid $autobidData */
-        $autobidData = $this->entityManagerSimulator->getRepository('autobid');
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriodData */
         $projectPeriodData = $this->entityManagerSimulator->getRepository('project_period');
 
@@ -938,7 +954,7 @@ class ProjectLifecycleManager
             'projectLink'     => $this->frontUrl . $this->router->generate('project_detail', ['projectSlug' => $project->slug])
         ];
 
-        $autoBidSettings  = $autobidData->getSettings(null, $project->risk, $projectPeriodData->id_period, [\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE]);
+        $autoBidSettings  = $autobidRepository->getSettings(null, $project->risk, $projectPeriodData->id_period, [Autobid::STATUS_ACTIVE, Autobid::STATUS_INACTIVE]);
         $autoBidsAmount   = array_column($autoBidSettings, 'amount', 'id_lender');
         $autoBidsMinRate  = array_column($autoBidSettings, 'rate_min', 'id_lender');
         $autoBidsStatus   = array_column($autoBidSettings, 'status', 'id_lender');
@@ -1009,10 +1025,10 @@ class ProjectLifecycleManager
                         if (true === $hasAutolendOn) {
                             if (isset($autoBidsStatus[$wallet->getId()])) {
                                 switch ($autoBidsStatus[$wallet->getId()]) {
-                                    case \autobid::STATUS_INACTIVE:
+                                    case Autobid::STATUS_INACTIVE:
                                         $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_autobid-setting-for-period-rate-off', ['%autolendUrl%' => $autolendUrl]);
                                         break;
-                                    case \autobid::STATUS_ACTIVE:
+                                    case Autobid::STATUS_ACTIVE:
                                         if (bccomp($wallet->getAvailableBalance(), $autoBidsAmount[$wallet->getId()]) < 0) {
                                             $autolendSettingsAdvises = $this->translator->trans('email-nouveau-projet_low-balance-for-autolend', ['%walletProvisionUrl%' => $walletDepositUrl]);
                                         }

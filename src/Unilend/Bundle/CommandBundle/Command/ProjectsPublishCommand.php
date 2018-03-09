@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
 
@@ -28,41 +27,32 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $oLogger = $this->getContainer()->get('monolog.logger.console');
+        $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \projects $oProject */
-        $oProject = $entityManagerSimulator->getRepository('projects');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
+        /** @var \projects $project */
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectLifecycleManager $projectLifecycleManager */
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
-        /** @var bool $bHasProjectPublished */
-        $bHasProjectPublished = false;
+        $hasProjectPublished     = false;
 
         // One project each execution, to avoid the memory issue.
-        $aProjectToFund = $oProject->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', 1, false);
-        $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        $projectToFund = $project->selectProjectsByStatus([\projects_status::AUTO_BID_PLACED], "AND p.date_publication <= NOW()", [], '', 1, false);
+        $logger->info('Number of projects to publish: ' . count($projectToFund), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
-        $projectLifecycleManager->setLogger($oLogger);
+        $projectLifecycleManager->setLogger($logger);
 
-        foreach ($aProjectToFund as $aProject) {
-            if ($oProject->get($aProject['id_project'])) {
-                $oLogger->info('Publishing the project ' . $aProject['id_project'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']]);
+        foreach ($projectToFund as $projectRow) {
+            if ($project->get($projectRow['id_project'])) {
+                $logger->info('Publishing the project ' . $projectRow['id_project'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projectRow['id_project']]);
 
                 try {
-                    $bHasProjectPublished = true;
-                    $projectLifecycleManager->publish($oProject);
+                    $hasProjectPublished = true;
+                    $projectLifecycleManager->publish($project);
 
-                    if ($oProjectManager->isFunded($oProject)) {
-                        /** @var MailerManager $mailerManager */
-                        $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-                        $mailerManager->sendFundedToBorrower($oProject);
-                    }
-
-                    $this->zipProjectAttachments($oProject, $entityManagerSimulator);
+                    $this->zipProjectAttachments($project, $entityManagerSimulator);
                 } catch (\Exception $exception) {
-                    $oLogger->critical('An exception occurred during publishing of project ' . $oProject->id_project . ' with message: ' . $exception->getMessage(), [
+                    $logger->critical('An exception occurred during publishing of project ' . $project->id_project . ' with message: ' . $exception->getMessage(), [
                         'method' => __METHOD__,
                         'file'   => $exception->getFile(),
                         'line'   => $exception->getLine()
@@ -71,10 +61,10 @@ EOF
             }
         }
 
-        if ($bHasProjectPublished) {
-            /** @var \Cache\Adapter\Memcache\MemcacheCachePool $oCachePool */
-            $oCachePool = $this->getContainer()->get('memcache.default');
-            $oCachePool->deleteItem(CacheKeys::LIST_PROJECTS);
+        if ($hasProjectPublished) {
+            /** @var \Cache\Adapter\Memcache\MemcacheCachePool $cachePool */
+            $cachePool = $this->getContainer()->get('memcache.default');
+            $cachePool->deleteItem(CacheKeys::LIST_PROJECTS);
         }
     }
 

@@ -1,0 +1,165 @@
+$(function () {
+    App.initHelpers(['datatables', 'datepicker'])
+
+    var dt = $('#receptions-table').DataTable({
+        serverSide: true,
+        processing: true,
+        columnDefs: [
+            {orderable: false, targets: [3, 8]},
+            {searchable: false, targets: [6, 7, 8, 9, 10, 11]},
+            {visible: false, targets: [9, 10, 11]},
+            {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+            {visible: false, targets: [2]},
+            {% endif %}
+            {name: "r.idReception", "targets": 0},
+            {name: "r.idClient", "targets": 1},
+            {name: "r.idProject", "targets": 2},
+            {name: "r.motif", "targets": 3},
+            {name: "r.montant", "targets": 4},
+            {name: "r.statusBo", "targets": 5},
+            {name: "o.added", "targets": 6},
+            {name: "r.added", "targets": 7}
+        ],
+        order: [[0, "desc"]],
+        ajax: {
+            url: '{{ app.adminUrl }}/transferts/attribues/{{ type }}',
+            data: function (d) {
+                return $.extend({}, d, {
+                    date_from: $('#datepik_from').val(),
+                    date_to: $('#datepik_to').val()
+                });
+            }
+        },
+        language: {
+            url: '{{ app.adminUrl }}/oneui/js/plugins/datatables/localisation/fr_FR.json'
+        },
+        createdRow: function (row, data, index) {
+            var $row = $(row)
+            var receptionId = data[0]
+            var comment = data[9]
+            var line = data[10]
+            var rejection = data[11]
+            var clientId = data[1]
+            var projectId = data[2]
+            var clientIdColum = $row.find('td:eq(1)')
+            var projectIdColum = $row.find('td:eq(2)')
+            var amountColumn = $row.find('td:eq(4)')
+
+            {% if false == readOnly %}
+                {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+            clientIdColum.html('<a href="{{ app.adminUrl }}/preteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+                {% else %}
+            clientIdColum.html('<a href="{{ app.adminUrl }}/emprunteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+            projectIdColum.html('<a href="{{ app.adminUrl }}/dossiers/edit/' + projectId + '" target="_blank">' + projectId + '</a>')
+                {% endif %}
+            {% endif %}
+
+            amountColumn.addClass('text-right')
+
+            var addCommentBtn = '<a class="table-action add-comment" data-comment="' + comment + '" data-toggle="modal" data-target="#modal-reception-comment" title="Commenter l\'opération">' +
+                '<span class="fa fa-pencil"></span>' +
+                '</a>'
+            var showReceptionBtn = '<a class="table-action" data-line="' + line + '" data-toggle="modal" data-target="#modal-reception-line" title="Afficher l\'opération">' +
+                '<span class="fa fa-eye"></span>' +
+                '</a>'
+
+            if (rejection) {
+                $row.addClass('rejected-row')
+            }
+
+            if (comment !== null) {
+                addCommentBtn = '<a class="table-action add-comment" data-comment="' + comment + '" data-toggle="modal" data-target="#modal-reception-comment" title="Modifier le commentaire">' +
+                    '<span class="fa fa-pencil-square"></span>' +
+                    '</a>'
+            }
+            $row.attr('data-reception-id', receptionId)
+            var $lastColumn = $row.find('td:last-child');
+            $lastColumn.append(showReceptionBtn)
+            {% if false == readOnly %}
+            $lastColumn.append('&nbsp;' + addCommentBtn)
+            {% endif %}
+        }
+    })
+    dt.on('draw', function () {
+        $('.table-action').tooltip({
+            position: {my: 'left top', at: 'right top'},
+            content: function () {
+                return $(this).prop('title')
+            }
+        })
+    })
+
+    $(document).on('show.bs.modal', '#modal-reception-line', function (e) {
+        var $modal = $(this)
+        var $invoker = $(e.relatedTarget)
+        $modal.find('.line').html($invoker.data('line'))
+    })
+
+    $(document).on('show.bs.modal', '#modal-reception-comment', function (e) {
+        var $modal = $(this)
+        var $invoker = $(e.relatedTarget)
+        $modal.find('[name=reception]').val($invoker.closest('tr').data('reception-id'))
+        $modal.find('[name=comment]').val($invoker.data('comment'))
+    })
+
+    $(document).on('hidden.bs.modal', '#modal-reception-comment', function () {
+        $(this).find('[name=comment]').val('')
+    })
+
+    $(document).on('submit', '#modal-add-modify-comment-form', function (e) {
+        e.preventDefault()
+        var $form = $(this)
+
+        if ($form.find('[name=comment]').val() !== '') {
+            var $reception = $form.find('[name=reception]')
+            var $blockContainer = $form.find('.block')
+            $blockContainer.addClass('block-opt-refresh')
+            $.ajax({
+                url: $form.attr('action'),
+                method: $form.attr('method'),
+                data: $form.serialize(),
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        $('#modal-reception-comment').modal('hide');
+                        var $row = $('[data-reception-id="' + $reception.val() + '"]')
+                        $row.find('.add-comment')
+                            .data('comment', response.data.comment)
+                            .html('<span class="fa fa-pencil-square"></span>')
+                    } else {
+                        alert('Une erreur est survenue')
+                    }
+                },
+                error: function () {
+                    alert('Une erreur est survenue')
+                },
+                complete: function () {
+                    $blockContainer.removeClass('block-opt-refresh')
+                }
+            })
+        }
+    })
+
+    $('#datepik_from').datepicker({
+        showOn: 'both',
+        buttonImageOnly: true,
+        changeMonth: true,
+        changeYear: true,
+        maxDate: '0'
+    }).change(function () {
+        if ('' === $('#datepik_to').val()) {
+            $('#datepik_to').val($('#datepik_from').val())
+        }
+        dt.draw()
+    })
+
+    $('#datepik_to').datepicker({
+        showOn: 'both',
+        buttonImageOnly: true,
+        changeMonth: true,
+        changeYear: true,
+        maxDate: '0'
+    }).change(function () {
+        dt.draw()
+    })
+})
