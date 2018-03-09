@@ -7,11 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatus
  *
- * @ORM\Table(name="clients_status")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository")
+ * @ORM\Table(name="clients_status", indexes={@ORM\Index(name="idx_clients_status_status", columns={"status"})})
+ * @ORM\Entity
  */
 class ClientsStatus
 {
+    const CREATION              = 5;
     const TO_BE_CHECKED         = 10;
     const COMPLETENESS          = 20;
     const COMPLETENESS_REMINDER = 30;

@@ -287,9 +287,7 @@ class preteursController extends bootstrap
         $this->settings                = $this->loadData('settings');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->clients_status          = $this->loadData('clients_status');
         $this->clients_status_history  = $this->loadData('clients_status_history');
-        $this->clientsStatusForHistory = $this->loadData('clients_status');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 
@@ -360,9 +358,6 @@ class preteursController extends bootstrap
                 $this->naissance = '';
             }
 
-            /** @var BankAccount $currentBankAccount */
-            $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
             }
@@ -373,17 +368,18 @@ class preteursController extends bootstrap
                 $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2, ' '));
             }
 
-            $this->clients_status->getLastStatut($this->clients->id_client);
             $this->lActions                = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
             $this->aTaxationCountryHistory = $this->getTaxationHistory($wallet->getId());
-
-            $this->clientStatusMessage = $this->getMessageAboutClientStatus();
+            $this->clientStatusMessage     = $this->getMessageAboutClientStatus();
 
             $attachments     = $client->getAttachments();
             $attachmentTypes = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
-            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+
+            $this->currentBankAccount      = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+            $this->clientsStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            $this->treeRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments          = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
             if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
@@ -1354,50 +1350,40 @@ class preteursController extends bootstrap
     /**
      * @return string
      */
-    private function getMessageAboutClientStatus()
+    private function getMessageAboutClientStatus(): string
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository $clientStatusRepository */
-        $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-        /** @var ClientsStatus $currentStatus */
-        $currentStatus       = $clientStatusRepository->getLastClientStatus($this->clients->id_client);
-        $creationTime        = strtotime($this->clients->added);
-        $clientStatusMessage = '';
-
-        if (null === $currentStatus) {
-            return $clientStatusMessage;
-        }
-        switch ($currentStatus->getStatus()) {
-            case ClientsStatus::TO_BE_CHECKED :
-                $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+        switch ($this->clients->clients_status) {
+            case ClientsStatus::CREATION:
+                $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
+                break;
+            case ClientsStatus::TO_BE_CHECKED:
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::COMPLETENESS:
             case ClientsStatus::COMPLETENESS_REMINDER:
             case ClientsStatus::COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
                 break;
             case ClientsStatus::MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::CLOSED_LENDER_REQUEST:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
+                $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
             case ClientsStatus::CLOSED_BY_UNILEND:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
+                $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
                 break;
             case ClientsStatus::VALIDATED:
                 $clientStatusMessage = '';
                 break;
             case ClientsStatus::CLOSED_DEFINITELY:
-                $clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';
                 break;
             default:
-                if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION == $this->clients->etape_inscription_preteur) {
-                    $clientStatusMessage = '<div class="attention">Attention : Inscription non terminé </div>';
-                } else {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->warning('Unknown client status "' . $currentStatus->getStatus() . '"', ['client' => $this->clients->id_client]);
-                }
+                $clientStatusMessage = '';
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning('Unknown client status "' . $this->clients->clients_status . '"', ['client' => $this->clients->id_client]);
                 break;
         }
 

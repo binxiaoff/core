@@ -41,25 +41,6 @@ class clients_status_history extends clients_status_history_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function addStatus($id_user, $status, $id_client, $content = '', $numerorelance = false)
-    {
-        $sql = 'SELECT id_client_status FROM `clients_status` WHERE status = ' . $status . ' ';
-
-        $result           = $this->bdd->query($sql);
-        $id_client_status = (int) ($this->bdd->result($result, 0, 0));
-
-        $this->id_client        = $id_client;
-        $this->id_client_status = $id_client_status;
-        $this->id_user          = $id_user;
-        $this->content          = $content;
-        if (is_integer($numerorelance)) {
-            $this->numero_relance = $numerorelance;
-        }
-        $this->id_client_status_history = $this->create();
-
-        return $this->id_client_status_history;
-    }
-
     /**
      * @param clients $oClient
      *

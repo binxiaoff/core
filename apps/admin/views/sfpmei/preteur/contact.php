@@ -106,7 +106,7 @@
                 <tr>
                     <th>Origine des fonds</th>
                     <td>
-                        <?= $this->fundsOriginList[$this->clients->funds_origin - 1] ?>
+                        <?= isset($this->fundsOriginList[$this->clients->funds_origin - 1]) ? $this->fundsOriginList[$this->clients->funds_origin - 1] : '' ?>
                         <?= empty($this->clients->funds_origin_detail) ? '' : '<br>' . $this->clients->funds_origin_detail ?>
                     </td>
                 </tr>

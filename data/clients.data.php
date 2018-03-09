@@ -214,38 +214,30 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
+    public function selectPreteursByStatus($status, $where = '', $order = '', $start = '', $nb = ''): array
     {
         if ($where != '') {
-            $where = ' WHERE ' . $where;
+            $where = ' AND ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
-        }
-        if ($status != '') {
-            $status = ' HAVING status_client IN (' . $status . ')';
         }
 
         $sql = '
             SELECT
-                c.*,
-                cs.status AS status_client,
-                cs.label AS label_status,
-                csh.added AS added_status,
-                clsh.id_client_status_history,
-                com.id_company as id_company,
-                w.wire_transfer_pattern as motif,
-                w.available_balance as balance
+              c.*,
+              (SELECT added FROM clients_status_history WHERE id_client = c.id_client ORDER BY added DESC, id_client_status_history DESC LIMIT 1) AS added_status,
+              (SELECT id_client_status_history FROM clients_status_history WHERE id_client = c.id_client ORDER BY added DESC, id_client_status_history DESC LIMIT 1) AS id_client_status_history
             FROM clients c
-            INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
-            INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
-            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
             INNER JOIN wallet w ON c.id_client = w.id_client
-            LEFT JOIN companies com ON c.id_client = com.id_client_owner
-            ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
+            WHERE c.clients_status IN (' . $status . ')
+              AND wt.label = "lender"' .
+              $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result   = [];
         $resultat = $this->bdd->query($sql);
-        $result   = array();
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;

@@ -847,11 +847,8 @@ class transfertsController extends bootstrap
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
-            $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
-            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
-            if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
+            if ($newOwner->clients_status != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -926,17 +923,25 @@ class transfertsController extends bootstrap
                         $numberLoans += 1;
                     }
 
-                    $lenderStatQueueOriginal = new LenderStatisticQueue();
-                    $lenderStatQueueOriginal->setIdWallet($originalWallet);
-                    $entityManager->persist($lenderStatQueueOriginal);
-                    $lenderStatQueueNew = new LenderStatisticQueue();
-                    $lenderStatQueueNew->setIdWallet($newWallet);
-                    $entityManager->persist($lenderStatQueueNew);
+                    $lenderStatQueueRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue');
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $originalWallet])) {
+                        $lenderStatQueueOriginal = new LenderStatisticQueue();
+                        $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                        $entityManager->persist($lenderStatQueueOriginal);
+                    }
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $newWallet])) {
+                        $lenderStatQueueNew = new LenderStatisticQueue();
+                        $lenderStatQueueNew->setIdWallet($newWallet);
+                        $entityManager->persist($lenderStatQueueNew);
+                    }
+
                     $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
-                        $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                        $clientStatusManager->closeLenderAccount($originalClient, $_SESSION['user']['id_user'], $comment);
                     } catch (\Exception $exception) {
                         $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
                         throw $exception;
@@ -945,7 +950,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $lastStatus,
+                        $newOwner->clients_status,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 

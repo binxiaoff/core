@@ -17,16 +17,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 </thead>
                 <tbody>
                 <?php foreach ($this->statusHistory as $historyEntry) : ?>
-                    <?php
-                    $this->clients_status->get($historyEntry['id_client_status'], 'id_client_status');
-                    $this->users->get($historyEntry['id_user'], 'id_user');
-                    ?>
-                    <?php switch ($this->clients_status->status) :
+                    <?php $this->users->get($historyEntry['id_user'], 'id_user'); ?>
+                    <?php switch ($this->clientsStatusRepository->findOneBy(['idClientStatus' => $historyEntry['id_client_status']])->getStatus()) :
+                        case ClientsStatus::CREATION: ?>
+                            <tr>
+                                <td>Création de compte</td>
+                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                <td></td>
+                            </tr>
+                            <?php break;
                         case ClientsStatus::TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
                                     <?php if (empty($historyEntry['content'])) : ?>
-                                        Création de compte
+                                        Fin d'inscription
                                     <?php else: ?>
                                         Compte modifié
                                         <?= $historyEntry['content'] ?>

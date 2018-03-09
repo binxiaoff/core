@@ -80,21 +80,4 @@ class projects_status extends projects_status_crud
         $result = $this->bdd->query('SELECT label FROM `projects_status` WHERE status = "' . $status . '"');
         return ($this->bdd->result($result, 0, 0));
     }
-
-    public function getLastStatutByMonth($id_project, $month, $year)
-    {
-        $sql = '
-            SELECT id_project_status
-            FROM `projects_status_history`
-            WHERE id_project = ' . $id_project . '
-                AND MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-            ORDER BY projects_status_history.added DESC, id_project_status_history DESC
-            LIMIT 1';
-
-        $result            = $this->bdd->query($sql);
-        $id_project_statut = (int)($this->bdd->result($result, 0, 0));
-
-        return parent::get($id_project_statut, 'id_project_status');
-    }
 }

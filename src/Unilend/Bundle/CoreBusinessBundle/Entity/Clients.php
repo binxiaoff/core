@@ -11,7 +11,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * Clients
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"})})
+ * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_clients_clients_status", columns={"clients_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -33,7 +33,7 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
-    /** Legacy welcome offer before separating them and adding types  */
+    /** Legacy welcome offer before separating them and adding types */
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
@@ -261,6 +261,13 @@ class Clients
      * @ORM\Column(name="status", type="integer", nullable=true)
      */
     private $status;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="clients_status", type="integer", nullable=true)
+     */
+    private $clientsStatus;
 
     /**
      * @var \DateTime
@@ -1054,6 +1061,30 @@ class Clients
     }
 
     /**
+     * Set clientsStatus
+     *
+     * @param integer $clientsStatus
+     *
+     * @return Clients
+     */
+    public function setClientsStatus(?int $clientsStatus): Clients
+    {
+        $this->clientsStatus = $clientsStatus;
+
+        return $this;
+    }
+
+    /**
+     * Get clientsStatus
+     *
+     * @return integer
+     */
+    public function getClientsStatus(): ?int
+    {
+        return $this->clientsStatus;
+    }
+
+    /**
      * Set added
      *
      * @param \DateTime $added
@@ -1408,5 +1439,4 @@ class Clients
 
         return $this;
     }
-
 }

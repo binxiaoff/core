@@ -95,7 +95,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('S' . $row, 'Intérêts bruts versés jusqu\'au 31/12/' . $year);
         $row++;
 
-
         /** @var Clients $client */
         foreach ($clientRepository->findValidatedClientsUntilYear($year) as $client) {
             /** @var ClientsAdresses $clientAddress */
@@ -105,7 +104,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $endOfYearBalance            = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
             $remainingDuCapital          = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
             $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $currentClientStatus         = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
             $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
             $nationalityCountry          = $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite());
@@ -123,7 +121,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->getCodePays() : '');
             $activeSheet->setCellValue('E' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('F' . $row, $currentClientStatus->getStatus());
+            $activeSheet->setCellValue('F' . $row, $client->getClientsStatus());
             $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
             $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
             $activeSheet->setCellValue('I' . $row, $client->getNom());
@@ -138,7 +136,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit('R' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit('S' . $row, $yearlyGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $row+=1;
+            $row += 1;
         }
 
         $activeSheet->getStyle('P' . 2 . ':' . 'S' . $row)

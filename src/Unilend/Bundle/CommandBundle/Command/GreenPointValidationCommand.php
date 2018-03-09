@@ -36,7 +36,6 @@ EOF
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \greenpoint_kyc $greenPointKyc */
         $greenPointKyc = $entityManagerSimulator->getRepository('greenpoint_kyc');
-        /** @var LoggerInterface $logger */
         $logger        = $this->getContainer()->get('monolog.logger.console');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
@@ -53,9 +52,10 @@ EOF
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
             AttachmentType::RIB,
         ];
+
         /** @var Clients[] $clients */
         $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
-
+var_dump(count($clients));die;
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
             $greenPoint        = new greenPoint($this->getContainer()->getParameter('kernel.environment'));

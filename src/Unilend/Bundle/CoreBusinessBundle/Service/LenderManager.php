@@ -41,8 +41,8 @@ class LenderManager
     {
         if (
             $client->isLender()
-            && Clients::STATUS_ONLINE == $client->getStatus()
-            && $this->isValidated($client)
+            && Clients::STATUS_ONLINE === $client->getStatus()
+            && ClientsStatus::VALIDATED === $client->getClientsStatus()
         ) {
             return true;
         }
@@ -134,21 +134,6 @@ class LenderManager
         }
 
         return $wallet->getWireTransferPattern();
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return bool
-     */
-    public function isValidated(Clients $client)
-    {
-        $clientStatusRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-        /** @var ClientsStatus $clientStatusEntity */
-        $clientStatusEntity = $clientStatusRepository->getLastClientStatus($client);
-        $lastStatus         = (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus();
-
-        return ClientsStatus::VALIDATED == $lastStatus;
     }
 
     /**

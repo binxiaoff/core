@@ -63,14 +63,13 @@ class comptesController extends bootstrap
             /** @var EntityManager $entityManager */
             $entityManager          = $this->get('doctrine.orm.entity_manager');
             $clientsRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
             $accounts               = $clientsRepository->findDuplicatesByEmail($email);
-            /** @var \clients_status $clientStatus */
-            $clientStatus = $this->get('unilend.service.entity_manager')->getRepository('clients_status');
 
             foreach ($accounts as $account) {
-                if (WalletType::LENDER === $account['walletType']) {
-                    $clientStatus->getLastStatut($account['idClient']);
-                    $account['additionalStatus'] = $clientStatus->label;
+                if (false === empty($account['clientsStatus'])) {
+                    $clientStatus = $clientStatusRepository->findOneBy(['status' => $account['clientsStatus']]);
+                    $account['additionalStatus'] = $clientStatus->getLabel();
                 }
 
                 if (

@@ -619,15 +619,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     <h3>Historique des statuts client</h3>
                         <table class="tablesorter histo_status_client">
                         <?php foreach ($this->lActions as $historyEntry) {
-                            $this->clientsStatusForHistory->get($historyEntry['id_client_status'], 'id_client_status');
                             $this->users->get($historyEntry['id_user'], 'id_user');
 
-                            switch ($this->clientsStatusForHistory->status) {
+                            switch ($this->clientsStatusRepository->findOneBy(['idClientStatus' => $historyEntry['id_client_status']])->getStatus()) {
+                                case ClientsStatus::CREATION: ?>
+                                    <tr>
+                                        <td>Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                    </tr>
+                                    <?php break;
                                 case ClientsStatus::TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
                                             <?php if (empty($historyEntry['content'])) : ?>
-                                                Création de compte le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
+                                                Fin d'inscription le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
                                             <?php else: ?>
                                                 Compte modifié le <?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?><br>
                                                 <?= $historyEntry['content'] ?>
@@ -733,7 +737,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 <?php endif; ?>
             </div>
             <div class="droite">
-                <?php if ($this->clients_status->status != ClientsStatus::CLOSED_DEFINITELY) : ?>
+                <?php if ($this->clients->clients_status != ClientsStatus::CLOSED_DEFINITELY) : ?>
                 <table class="tabLesStatuts">
                     <tr>
                         <td>
@@ -753,14 +757,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (ClientsStatus::VALIDATED != $this->clients_status->status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                            <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+                            <?php if (ClientsStatus::VALIDATED != $this->clients->clients_status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                                <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
                             <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if (false === in_array($this->clients_status->status, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                            <?php if (false === in_array($this->clients->clients_status, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
                                 <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
                             <?php endif; ?>
                         </td>
@@ -784,7 +788,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <?php if ($this->clients_status->status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
+                            <?php if ($this->clients->clients_status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
                                 <input type="button"
                                        onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
                                        class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">

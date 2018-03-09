@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\{
     UnsupportedUserException, UsernameNotFoundException
@@ -11,18 +12,15 @@ use Symfony\Component\Security\Core\User\{
     UserInterface, UserProviderInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Wallet, WalletType
+    Clients, Companies, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ClientManager, LenderManager, SlackManager, TermsOfSaleManager
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
     /** @var ClientManager */
@@ -35,33 +33,35 @@ class UserProvider implements UserProviderInterface
     private $slackManager;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
-     * @param EntityManagerSimulator     $entityManagerSimulator
      * @param EntityManager              $entityManager
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
      * @param SlackManager               $slackManager
      * @param TermsOfSaleManager         $termsOfSaleManager
+     * @param LoggerInterface            $logger
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
         SlackManager $slackManager,
-        TermsOfSaleManager $termsOfSaleManager
+        TermsOfSaleManager $termsOfSaleManager,
+        LoggerInterface $logger
     )
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
         $this->entityManager              = $entityManager;
         $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
         $this->slackManager               = $slackManager;
         $this->termsOfSaleManager         = $termsOfSaleManager;
+        $this->logger                     = $logger;
     }
 
     /**
@@ -128,14 +128,31 @@ class UserProvider implements UserProviderInterface
         $roles    = ['ROLE_USER'];
 
         if ($client->isLender()) {
+            $roles[] = 'ROLE_LENDER';
+
             /** @var Wallet $wallet */
             $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-            /** @var ClientsStatus $clientStatusEntity */
-            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $hasAcceptedCurrentTerms = $this->termsOfSaleManager->hasAcceptedCurrentVersion($client);
-            $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($client);
-            $userLevel               = $this->lenderManager->getDiversificationLevel($client);
-            $roles[]                 = 'ROLE_LENDER';
+
+            try {
+                $notifications = $this->notificationDisplayManager->getLastLenderNotifications($client);
+            } catch (\Exception $exception) {
+                $notifications = [];
+                $this->logger->error(
+                    'Unable to retrieve last lender notifications',
+                    ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
+
+            try {
+                $userLevel = $this->lenderManager->getDiversificationLevel($client);
+            } catch (\Exception $exception) {
+                $userLevel = 0;
+                $this->logger->error(
+                    'Unable to retrieve lender diversification level',
+                    ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
 
             return new UserLender(
                 $client->getEmail(),
@@ -150,7 +167,7 @@ class UserProvider implements UserProviderInterface
                 $initials,
                 $client->getPrenom(),
                 $client->getNom(),
-                (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus(),
+                $client->getClientsStatus(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $client->getEtapeInscriptionPreteur(),
@@ -160,12 +177,11 @@ class UserProvider implements UserProviderInterface
         }
 
         if ($client->isBorrower()) {
-            /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
-            /** @var \companies $company */
-            $company = $this->entityManagerSimulator->getRepository('companies');
-            $company->get($client->getIdClient(), 'id_client_owner');
             $roles[] = 'ROLE_BORROWER';
+
+            /** @var Wallet $wallet */
+            $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
 
             return new UserBorrower(
                 $client->getEmail(),
@@ -178,7 +194,7 @@ class UserProvider implements UserProviderInterface
                 $client->getHash(),
                 $client->getPrenom(),
                 $client->getNom(),
-                $company->siren,
+                $company->getSiren(),
                 $wallet->getAvailableBalance(),
                 $client->getLastlogin()
             );
@@ -191,6 +207,7 @@ class UserProvider implements UserProviderInterface
             $roles[] = UserPartner::ROLE_DEFAULT;
             $roles[] = $partnerRole->getRole();
 
+            /** @var Companies $rootCompany */
             $rootCompany = $partnerRole->getIdCompany();
 
             while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {

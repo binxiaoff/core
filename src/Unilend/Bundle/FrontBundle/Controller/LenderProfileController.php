@@ -877,11 +877,10 @@ class LenderProfileController extends Controller
      */
     private function updateClientStatusAndNotifyClient(\clients $client, $modifiedData)
     {
-        $historyContent = $this->formatArrayToUnorderedList($modifiedData);
-
-        /** @var ClientStatusManager $clientStatusManager */
+        $historyContent      = $this->formatArrayToUnorderedList($modifiedData);
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
         $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
+
         $this->sendAccountModificationEmail($client);
     }
 
