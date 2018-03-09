@@ -12,14 +12,16 @@
   },
   "scripts": {
     "build": "gulp && gulp rev",
+    "build:js": "gulp browserify && gulp rev",
+    "build:css": "gulp css && gulp rev",
     "dev": "npm install && gulp",
     "clean:modules": "echo -e '\\033[0;31mIf you receive any specific package errors, please install each errored package individually using\\n\\t\\033[1;33mnpm i <package_name>\\033[0m' && rm -rf node_modules/* && npm i",
     "gulp": "gulp",
     "gulp:watch": "gulp watch",
-    "gulp:dev": "gulp",
-    "gulp:demo": "gulp",
-    "gulp:preprod": "gulp production",
-    "gulp:prod": "gulp production"
+    "gulp:dev": "gulp && gulp rev",
+    "gulp:demo": "gulp && gulp rev",
+    "gulp:preprod": "gulp production && gulp rev",
+    "gulp:prod": "gulp production && gulp rev"
   },
   "devDependencies": {
     "bootstrap": "3.3.7",
