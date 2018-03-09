@@ -8,7 +8,6 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsStatus, ClientsStatusHistory, Users, WalletType
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ClientStatusManager
 {
