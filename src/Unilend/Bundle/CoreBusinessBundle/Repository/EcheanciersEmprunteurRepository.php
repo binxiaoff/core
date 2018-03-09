@@ -81,13 +81,19 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      */
     public function getOverdueScheduleCount($project)
     {
+        if ($project->getCloseOutNettingDate()) {
+            $date = $project->getCloseOutNettingDate();
+        } else {
+            $date = new \DateTime();
+        }
+
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select('count(ee)')
             ->where('ee.idProject = :project')
             ->andWhere('ee.statusEmprunteur in (:unfinished)')
             ->andWhere('DATE(ee.dateEcheanceEmprunteur) < :today')
             ->setParameter('project', $project)
-            ->setParameter('today', (new \DateTime())->format('Y-m-d'))
+            ->setParameter('today', $date->format('Y-m-d'))
             ->setParameter('unfinished', [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]);
 
         return (int) $queryBuilder->getQuery()->getSingleScalarResult();

@@ -83,10 +83,16 @@
                         <th style="width: 20%">
                             Projet
                         </th>
-                        <th style="width: 15%">
-                            Statut
+                        <th style="width: 7%">
+                            Statut Projet
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 8%">
+                            Statut Société
+                        </th>
+                        <th style="width: 7%">
+                            Nombre d'echeances impayés
+                        </th>
+                        <th style="width: 8%">
                             Déchéance du terme
                         </th>
                         <th style="width: 15%">
@@ -107,10 +113,16 @@
                     {% for projectId, project in projectWithPaymentProblems %}
                         <tr>
                             <td>
-                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}</a><br>
+                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}<br><span class="text-muted">ID : {{ projectId }}</span></a>
                             </td>
                             <td>
-                                <span class="label ui-project-status-{{ project.projectStatus }}-bg ui-company-status-{{ project.companyStatusLabel }}-bg">{{ project.projectStatusLabel }}</span>
+                               {{ project.projectStatusLabel }}
+                            </td>
+                            <td>
+                                {{ project.companyStatusLabel }}
+                            </td>
+                            <td>
+                                {{ project.overduePaymentScheduleCount }}
                             </td>
                             <td class="text-right">
                                 {% if project.closeOutNettingDate is not empty %}
