@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\UnitOfWork;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
@@ -37,7 +36,7 @@ class AddressManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveBorrowerCompanyAddress(string $address, string $zip, string $city, int $idCountry, ?CompanyAddress $companyAddress, ?int $idCompany, ?string $type): void
+    public function saveCompanyAddress(string $address, string $zip, string $city, int $idCountry, ?CompanyAddress $companyAddress, ?int $idCompany, ?string $type): void
     {
         if (null === $companyAddress) {
             $companyAddress = new CompanyAddress();
@@ -101,7 +100,7 @@ class AddressManager
      * @return bool
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): bool
+    private function createCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): bool
     {
         $companyAddress = new CompanyAddress();
         $companyAddress

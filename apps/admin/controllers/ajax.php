@@ -311,7 +311,7 @@ class ajaxController extends bootstrap
                     $client->update();
 
                     if (false === empty($_POST['address_etape2']) && false === empty($_POST['ville_etape2']) && false === empty($_POST['postal_etape2'])) {
-                        $addressManager->saveBorrowerCompanyAddress(
+                        $addressManager->saveCompanyAddress(
                                 $_POST['address_etape2'],
                                 $_POST['postal_etape2'],
                                 $_POST['ville_etape2'],
@@ -323,7 +323,7 @@ class ajaxController extends bootstrap
                     }
 
                     if (false === empty($_POST['adresse_correspondance_etape2']) && false === empty($_POST['city_correspondance_etape2']) && false === empty($_POST['zip_correspondance_etape2'])) {
-                        $addressManager->saveBorrowerCompanyAddress(
+                        $addressManager->saveCompanyAddress(
                             $_POST['adresse_correspondance_etape2'],
                             $_POST['zip_correspondance_etape2'],
                             $_POST['city_correspondance_etape2'],

@@ -120,7 +120,7 @@ class emprunteursController extends bootstrap
 
                 if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
                     $this->get('unilend.service.address_manager')
-                        ->saveBorrowerCompanyAddress(
+                        ->saveCompanyAddress(
                             $_POST['adresse'],
                             $_POST['cp'],
                             $_POST['ville'],
