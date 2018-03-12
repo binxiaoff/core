@@ -114,7 +114,7 @@
                     {% for projectId, project in projectWithPaymentProblems %}
                         <tr>
                             <td>
-                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}<br><span class="text-muted">ID : {{ projectId }}</span></a>
+                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}<br><span class="text-muted">ID projet : {{ projectId }}</span></a>
                             </td>
                             <td>
                                {{ project.projectStatusLabel }}
@@ -151,14 +151,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
-                <div class="row font-s12">
-                    <small class="label push-10-l ui-project-status-100-bg">&nbsp;</small> Retard
-                    <small class="label push-10-l ui-company-status-precautionary_process-bg">&nbsp;</small> Procédure de sauvegarde
-                    <small class="label push-10-l ui-company-status-receivership-bg">&nbsp;</small> Redressement judiciaire
-                    <small class="label push-10-l ui-company-status-compulsory_liquidation-bg">&nbsp;</small> Liquidation judiciaire
-                </div>
             </div>
-
         </div>
         {% endif %}
     </div>
