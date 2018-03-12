@@ -17,7 +17,8 @@
                 $('#late-payments-table').dataTable({
                     columnDefs: [
                         {targets: [3,4,5], type: 'formatted-num'}
-                    ]
+                    ],
+                    order: [[2, "asc"], [3, "desc"]]
                 })
             {% endif %}
         })
