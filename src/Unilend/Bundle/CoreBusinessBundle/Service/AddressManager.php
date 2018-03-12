@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
@@ -131,11 +132,7 @@ class AddressManager
         $kbis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
             ->getProjectAttachmentByType($idProject, \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::KBIS);
 
-        $companyAddress
-            ->setDateValidated(new \DateTime('NOW'))
-            ->setIdAttachment($kbis);
-
-        $this->entityManager->flush($companyAddress);
+        $this->validateCompanyAddress($companyAddress, $kbis);
     }
 
     /**
@@ -149,5 +146,20 @@ class AddressManager
             $address->setLatitude($coordinates['latitude']);
             $address->setLongitude($coordinates['longitude']);
         }
+    }
+
+    /**
+     * @param CompanyAddress $companyAddress
+     * @param Attachment     $kbis
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function validateCompanyAddress(CompanyAddress $companyAddress, Attachment $kbis)
+    {
+        $companyAddress
+            ->setDateValidated(new \DateTime('NOW'))
+            ->setIdAttachment($kbis);
+
+        $this->entityManager->flush($companyAddress);
     }
 }

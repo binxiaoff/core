@@ -47,7 +47,7 @@ class CompanyAddress
     /**
      * @var Attachment
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="CompanyAddress")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })

@@ -1,9 +1,12 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
+use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
@@ -26,7 +29,16 @@ class companyController extends bootstrap
             $siren = filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING);
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager   = $this->get('doctrine.orm.entity_manager');
-            $this->companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren], ['idCompany' => 'DESC']);
+            $companies = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren], ['idCompany' => 'DESC']);
+            $this->companies = [];
+
+            foreach ($companies as $company) {
+                $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                $this->companies[]  = [
+                    'company' => $company,
+                    'address' => $companyMainAddress
+                ];
+            }
         }
     }
 
@@ -37,10 +49,12 @@ class companyController extends bootstrap
         if (isset($this->params[0])) {
             $this->siren = $this->params[0];
         }
-        $this->client  = new Clients();
-        $this->company = new Companies();
+        $this->client         = new Clients();
+        $this->company        = new Companies();
+        $this->companyAddress = null;
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
+            $this->companyAddress = new CompanyAddress();
             if ($this->save()) {
                 $_SESSION['freeow']['title']   = 'Société créée.';
                 $_SESSION['freeow']['message'] = 'La Société est bien créée !';
@@ -122,6 +136,7 @@ class companyController extends bootstrap
             die;
         }
 
+        $this->companyAddress       = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->company, AddressType::TYPE_MAIN_ADDRESS);
         $this->siren                = $this->company->getSiren();
         $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->client);
         $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
@@ -145,13 +160,16 @@ class companyController extends bootstrap
 
     /**
      * @return bool
+     * @throws \Doctrine\DBAL\ConnectionException
      */
-    private function save()
+    private function save(): bool
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+        $addressManager = $this->get('unilend.service.address_manager');
 
         $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
         $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
@@ -196,9 +214,6 @@ class companyController extends bootstrap
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($invoiceEmail)
                 ->setIdClientOwner($this->client)
-                ->setAdresse1($address)
-                ->setZip($postCode)
-                ->setCity($city)
                 ->setPhone($phone);
 
             if (false === $entityManager->contains($this->company)) {
@@ -206,13 +221,17 @@ class companyController extends bootstrap
             }
             $entityManager->flush($this->company);
 
+            $addressManager->saveCompanyAddress($address, $postCode, $city, PaysV2::COUNTRY_FRANCE, $this->companyAddress, $this->company->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS);
+
             if ($bankAccountDocument) {
                 $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
                 $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
             }
             if ($registryForm) {
                 $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
+                $attachment         = $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
+
+                $addressManager->validateCompanyAddress($this->companyAddress, $attachment);
             }
 
             $entityManager->commit();
