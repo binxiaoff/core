@@ -90,22 +90,22 @@
                         <th style="width: 8%">
                             Statut Société
                         </th>
-                        <th style="width: 7%">
+                        <th style="width: 11%">
                             Nombre d'echeances impayés
                         </th>
-                        <th style="width: 8%">
+                        <th style="width: 12%">
                             Déchéance du terme
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 11%">
                             Retard emprunteur
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 11%">
                             Confié au recouvreur
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 10%">
                             Réceptions à traiter
                         </th>
-                        <th style="width: 5%">
+                        <th style="width: 10%">
                             Action
                         </th>
                     </tr>
@@ -124,8 +124,11 @@
                             </td>
                             <td>
                                 {{ project.overduePaymentScheduleCount }}
+                                {% if project.closeOutNettingDate is not empty %}
+                                    (à la date de DDT)
+                                {% endif %}
                             </td>
-                            <td class="text-right">
+                            <td>
                                 {% if project.closeOutNettingDate is not empty %}
                                     {{ project.closeOutNettingDate|localizeddate('short', 'none') }}
                                 {% endif %}
