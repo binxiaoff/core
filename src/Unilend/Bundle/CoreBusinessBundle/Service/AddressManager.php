@@ -71,7 +71,7 @@ class AddressManager
                 ->setIdCountry($country)
                 ->setIdType($typeEntity);
 
-            if (UnitOfWork::STATE_MANAGED !== $this->entityManager->getUnitOfWork()->getEntityState($companyAddress)) {
+            if (false === $this->entityManager->contains($companyAddress)) {
                 $this->entityManager->persist($companyAddress);
             }
 
