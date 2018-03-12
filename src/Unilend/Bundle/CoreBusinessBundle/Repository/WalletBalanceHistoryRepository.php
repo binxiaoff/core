@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
@@ -210,7 +211,11 @@ class WalletBalanceHistoryRepository extends EntityRepository
                 ->setParameter('operationType', $operationType);
         }
 
-        return $qb->getQuery()->getResult();
+        $query = $qb->getQuery();
+
+        $query->setHint(Query::HINT_CUSTOM_OUTPUT_WALKER, 'Unilend\Bridge\Doctrine\ORM\UsePrimaryKeyForInnerJoinWalker');
+
+        return $query->getResult();
     }
 
     /**
