@@ -50,8 +50,10 @@ class recouvreurController extends bootstrap
             $data                 = [];
 
             if ($wallet && WalletType::DEBT_COLLECTOR === $wallet->getIdType()->getLabel()) {
-                $data           = [
-                    'address'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()]),
+                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
+                $data    = [
+                    'company'           => $company,
+                    'address'           => $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findOneBy(['idCompany' => $company->getIdCompany()]),
                     'entrustedProjects' => $this->getEntrustedProjectData($wallet->getIdClient()),
                     'operationHistory'  => $walletBalanceHistory->getDebtCollectorWalletOperations($wallet),
                     'availableBalance'  => $wallet->getAvailableBalance(),
@@ -130,8 +132,9 @@ class recouvreurController extends bootstrap
     private function getRepaymentsList($wallet)
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
         return $operationRepository->getFeesPaymentOperations($wallet);
     }
 }
