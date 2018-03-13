@@ -263,9 +263,12 @@ class Clients
     private $status;
 
     /**
-     * @var integer
+     * @var ClientsStatus
      *
-     * @ORM\Column(name="clients_status", type="integer", nullable=true)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="clients_status", referencedColumnName="id", nullable=true)
+     * })
      */
     private $clientsStatus;
 
@@ -1063,11 +1066,11 @@ class Clients
     /**
      * Set clientsStatus
      *
-     * @param integer $clientsStatus
+     * @param ClientsStatus $clientsStatus
      *
      * @return Clients
      */
-    public function setClientsStatus(?int $clientsStatus): Clients
+    public function setClientsStatus(?ClientsStatus $clientsStatus): Clients
     {
         $this->clientsStatus = $clientsStatus;
 
@@ -1077,9 +1080,9 @@ class Clients
     /**
      * Get clientsStatus
      *
-     * @return integer
+     * @return ClientsStatus
      */
-    public function getClientsStatus(): ?int
+    public function getClientsStatus(): ?ClientsStatus
     {
         return $this->clientsStatus;
     }

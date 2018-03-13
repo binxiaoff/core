@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
@@ -747,19 +747,16 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction()
     {
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        $attachmentManager      = $this->get('unilend.service.attachment_manager');
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-
         /** @var \clients $client */
-        $client = $this->getClient();
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $entityManagerSimulator->getRepository('clients_status_history');
+        $client            = $this->getClient();
+        $attachmentManager = $this->get('unilend.service.attachment_manager');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
 
-        $completenessRequestContent  = $clientStatusHistory->getCompletenessRequestContent($client);
-        $template['attachmentTypes'] = $attachmentManager->getAllTypesForLender();
-        $template['attachmentsList'] = '';
-        $template['bankForm']        = null;
+        $template = [
+            'attachmentTypes' => $attachmentManager->getAllTypesForLender(),
+            'attachmentsList' => '',
+            'bankForm'        => null
+        ];
 
         $ribAttachment   = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client->id_client, AttachmentType::RIB);
         $bankAccount     = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client->id_client);
@@ -771,9 +768,14 @@ class LenderProfileController extends Controller
         $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
         $template['bankForm'] = $bankAccountForm->createView();
 
-        if (false === empty($completenessRequestContent)) {
+        $completenessRequest = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(
+            ['idClient' => $client->id_client, 'idStatus' => ClientsStatus::COMPLETENESS],
+            ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+        );
+
+        if (null !== $completenessRequest) {
             $oDOMElement = new \DOMDocument();
-            $oDOMElement->loadHTML($completenessRequestContent);
+            $oDOMElement->loadHTML($completenessRequest->getContent());
             $oList = $oDOMElement->getElementsByTagName('ul');
             if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
                 $template['attachmentsList'] = $oList->item(0)->C14N();

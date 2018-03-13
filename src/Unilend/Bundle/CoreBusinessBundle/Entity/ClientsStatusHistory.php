@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatusHistory
  *
- * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_client_status", columns={"id_client_status"}), @ORM\Index(name="id_user", columns={"id_user"})})
+ * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsStatusHistoryRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -28,10 +28,10 @@ class ClientsStatusHistory
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_client_status", referencedColumnName="id_client_status")
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
      * })
      */
-    private $idClientStatus;
+    private $idStatus;
 
     /**
      * @var string
@@ -100,15 +100,15 @@ class ClientsStatusHistory
     }
 
     /**
-     * Set idClientStatus
+     * Set idStatus
      *
-     * @param ClientsStatus $idClientStatus
+     * @param ClientsStatus $idStatus
      *
      * @return ClientsStatusHistory
      */
-    public function setIdClientStatus(ClientsStatus $idClientStatus): ClientsStatusHistory
+    public function setIdStatus(ClientsStatus $idStatus): ClientsStatusHistory
     {
-        $this->idClientStatus = $idClientStatus;
+        $this->idStatus = $idStatus;
 
         return $this;
     }
@@ -118,9 +118,9 @@ class ClientsStatusHistory
      *
      * @return ClientsStatus
      */
-    public function getIdClientStatus(): ClientsStatus
+    public function getIdStatus(): ClientsStatus
     {
-        return $this->idClientStatus;
+        return $this->idStatus;
     }
 
     /**

@@ -267,8 +267,10 @@ class sfpmeiController extends bootstrap
                 $this->clients_adresses = $this->loadData('clients_adresses');
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-                $this->clients_status_history = $this->loadData('clients_status_history');
-                $this->statusHistory          = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+                $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+                    ['idClient' => $this->clients->id_client],
+                    ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+                );
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
                 $provisionType    = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
@@ -306,7 +308,6 @@ class sfpmeiController extends bootstrap
                 $this->taxExemptionHistory            = $this->getTaxExemptionHistory($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
                 $this->termsOfSalesAcceptation        = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
                 $this->treeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
-                $this->clientsStatusRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
 
                 if (null === $this->currentBankAccount) {
                     $this->currentBankAccount = new BankAccount();

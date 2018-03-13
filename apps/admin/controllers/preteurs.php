@@ -287,7 +287,6 @@ class preteursController extends bootstrap
         $this->settings                = $this->loadData('settings');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->clients_status_history  = $this->loadData('clients_status_history');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 
@@ -368,18 +367,20 @@ class preteursController extends bootstrap
                 $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2, ' '));
             }
 
-            $this->lActions                = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
             $this->aTaxationCountryHistory = $this->getTaxationHistory($wallet->getId());
             $this->clientStatusMessage     = $this->getMessageAboutClientStatus();
+            $this->statusHistory           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+                ['idClient' => $this->clients->id_client],
+                ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+            );
 
             $attachments     = $client->getAttachments();
             $attachmentTypes = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
 
-            $this->currentBankAccount      = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-            $this->clientsStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-            $this->treeRepository          = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocuments          = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+            $this->currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+            $this->treeRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments     = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
             if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
@@ -776,18 +777,23 @@ class preteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->clients                = $this->loadData('clients');
+        $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
 
-        $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-        $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
-        $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+            ['idClient' => $this->clients->id_client],
+            ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+        );
+
+        $timeCreate = empty($statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $statusHistory[0]->getAdded();
+        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
 
         $keywords = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client),
             'frontUrl'         => $this->furl,
@@ -1322,12 +1328,12 @@ class preteursController extends bootstrap
 
     private function sendCompletenessRequest()
     {
-        $timeCreate = empty($this->lActions[0]['added']) ? strtotime($this->clients->added) : strtotime($this->lActions[0]['added']);
-        $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+        $timeCreate = empty($this->statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $this->statusHistory[0]->getAdded();
+        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords   = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client)
         ];
@@ -1508,8 +1514,7 @@ class preteursController extends bootstrap
                 case Clients::STATUS_ONLINE:
                     $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
                     if (false === empty($lastTwoStatus[1])) {
-                        $clientStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($lastTwoStatus[1]->getIdClientStatus());
-                        $status       = $clientStatus->getStatus();
+                        $status = $lastTwoStatus[1]->getIdStatus()->getId();
                     } else {
                         $status = ClientsStatus::TO_BE_CHECKED;
                     }

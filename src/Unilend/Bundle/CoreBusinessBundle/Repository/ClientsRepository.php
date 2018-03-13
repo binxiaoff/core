@@ -3,21 +3,16 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\{
+    AbstractQuery, EntityRepository
+};
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, PaysV2, WalletType
+};
 
 class ClientsRepository extends EntityRepository
 {
@@ -288,7 +283,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('statusOnline', Clients::STATUS_ONLINE);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -314,7 +309,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -391,17 +386,18 @@ class ClientsRepository extends EntityRepository
                 ELSE CONCAT('P', p.id_prospect)
               END AS 'DeletingProspect',
               '0012400000K0Bxw' AS 'Sfcompte'
-            FROM
-              clients c
-              INNER JOIN wallet w ON w.id_client = c.id_client
+            FROM clients c
+              INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id
               LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
               LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
               LEFT JOIN pays_v2 acountry ON ca.id_pays = acountry.id_pays
               LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
               LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
-              LEFT JOIN clients_status cs ON c.clients_status = cs.status
+              LEFT JOIN clients_status cs ON c.clients_status = cs.id
               LEFT JOIN prospects p ON p.email = c.email
             WHERE c.status = " . Clients::STATUS_ONLINE . "
+              AND wt.label = '" . WalletType::LENDER . "' 
             GROUP BY c.id_client";
 
         return $this->getEntityManager()->getConnection()->executeQuery($query);
@@ -420,11 +416,11 @@ class ClientsRepository extends EntityRepository
               cs.label            AS label_status,
               w.available_balance AS balance
             FROM clients c
-              INNER JOIN clients_status cs ON c.clients_status = cs.status
+              INNER JOIN clients_status cs ON c.clients_status = cs.id
               INNER JOIN wallet w ON c.id_client = w.id_client
               LEFT JOIN companies com ON c.id_client = com.id_client_owner
             WHERE c.clients_status IN (:clientsStatus)
-            ORDER BY FIELD(cs.status, :clientsStatus), c.added DESC';
+            ORDER BY FIELD(c.clients_status, :clientsStatus), c.added DESC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['clientsStatus' => $status], ['clientsStatus' => Connection::PARAM_INT_ARRAY])
@@ -461,7 +457,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -492,7 +488,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -507,11 +503,10 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder  = $this->createQueryBuilder('c');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->andWhere('wt.label = :lender')
-            ->andWhere('cs.status = :status')
+            ->andWhere('csh.idStatus = :status')
             ->andWhere('csh.added <= :year')
             ->andWhere('c.status = :clientStatus')
             ->setParameter('lender', WalletType::LENDER)
@@ -527,27 +522,28 @@ class ClientsRepository extends EntityRepository
      */
     public function findAllClientsForLoiEckert()
     {
-        $query = 'SELECT
-                  c.*,
-                  IF (
-                    o_provision.added IS NOT NULL, 
-                    IF (
-                        o_withdraw.added IS NOT NULL,
-                        IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
-                        MAX(o_provision.added)
-                    ), 
-                    MAX(o_withdraw.added)
-                  ) AS lastMovement,
-                  w.available_balance AS availableBalance,
-                  MIN(csh.added) AS validationDate
-                FROM clients c
-                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
-                  LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
-                  LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
-                  LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_client_status = 6
-                WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
-                GROUP BY c.id_client
-                ORDER BY c.lastlogin ASC';
+        $query = '
+            SELECT
+              c.*,
+              IF (
+                o_provision.added IS NOT NULL, 
+                IF (
+                  o_withdraw.added IS NOT NULL,
+                  IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
+                  MAX(o_provision.added)
+                ), 
+                MAX(o_withdraw.added)
+              ) AS lastMovement,
+              w.available_balance AS availableBalance,
+              MIN(csh.added) AS validationDate
+            FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+            LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
+            LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
+            LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::VALIDATED . '
+            WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
+            GROUP BY c.id_client
+            ORDER BY c.lastlogin ASC';
 
         return $this->getEntityManager()
             ->getConnection()
@@ -822,7 +818,7 @@ class ClientsRepository extends EntityRepository
                 c.prenom,
                 c.type AS clientType,
                 c.status,
-                c.clientsStatus,
+                IDENTITY(c.clientsStatus) AS clientsStatus,
                 c.added AS creationDate,
                 wt.label AS walletType,
                 co.idCompany,

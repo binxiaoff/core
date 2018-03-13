@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatus
  *
- * @ORM\Table(name="clients_status", indexes={@ORM\Index(name="idx_clients_status_status", columns={"status"})})
+ * @ORM\Table(name="clients_status", uniqueConstraints={@ORM\UniqueConstraint(name="unq_client_status_label", columns={"label"})})
  * @ORM\Entity
  */
 class ClientsStatus
@@ -33,18 +33,11 @@ class ClientsStatus
     /**
      * @var integer
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client_status", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idClientStatus;
+    private $id;
 
 
 
@@ -73,36 +66,12 @@ class ClientsStatus
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return ClientsStatus
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
+     * Get id
      *
      * @return integer
      */
-    public function getStatus()
+    public function getId()
     {
-        return $this->status;
-    }
-
-    /**
-     * Get idClientStatus
-     *
-     * @return integer
-     */
-    public function getIdClientStatus()
-    {
-        return $this->idClientStatus;
+        return $this->id;
     }
 }

@@ -111,15 +111,15 @@ class ClientStatusManager
         $this->entityManager->getConnection()->beginTransaction();
 
         try {
-            $client->setClientsStatus($status);
-
-            $clientStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->findOneBy(['status' => $status]);
+            $clientStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($status);
             $user         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+
+            $client->setClientsStatus($clientStatus);
 
             $clientStatusHistory = new ClientsStatusHistory();
             $clientStatusHistory
                 ->setIdClient($client)
-                ->setIdClientStatus($clientStatus)
+                ->setIdStatus($clientStatus)
                 ->setIdUser($user)
                 ->setContent($comment)
                 ->setNumeroRelance($reminder);
@@ -129,6 +129,11 @@ class ClientStatusManager
 
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error while changing client status. Message: ' . $exception->getMessage(),
+                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+
             try {
                 $this->entityManager->getConnection()->rollBack();
             } catch (ConnectionException $rollBackException) {

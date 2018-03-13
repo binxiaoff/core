@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients as ClientEntity, ClientsStatus, PaysV2, WalletType
+    Clients as ClientEntity, ClientsStatus, OperationSubType, PaysV2, WalletType
 };
 
 class clients extends clients_crud
@@ -351,7 +351,7 @@ class clients extends clients_crud
      */
     public function getClientsWithNoWelcomeOffer($clients): array
     {
-        if (1 !== preg_match('/^[1-9]+[, ]*[0-9]*$/', $clients)) {
+        if (1 !== preg_match('/^[1-9]+(,[0-9]*)*$/', $clients)) {
             return [];
         }
 
@@ -367,8 +367,7 @@ class clients extends clients_crud
                     SELECT MAX(csh.added)
                     FROM clients_status_history csh
                     INNER JOIN clients ON clients.id_client = csh.id_client
-                    INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-                    WHERE cs.status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
+                    WHERE csh.id_status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
                     ORDER BY csh.added DESC
                     LIMIT 1
                 ) AS date_validation
@@ -378,7 +377,7 @@ class clients extends clients_crud
                 WHERE
                     c.id_client IN (' . $clients . ')
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '") AND o.id_wallet_creditor = w.id)';
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '") AND o.id_wallet_creditor = w.id)';
 
         $result = $this->bdd->query($query);
 
@@ -653,7 +652,6 @@ class clients extends clients_crud
               INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
               INNER JOIN clients c ON c.id_client = csh.id_client
               INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
-              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
               INNER JOIN wallet w ON c.id_client = w.id_client
               INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
               LEFT JOIN (
@@ -672,7 +670,7 @@ class clients extends clients_crud
               WHERE csh_max.id_client = csh.id_client
               ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1
             )
-            AND cs.status IN (:clientStatus)
+            AND csh.id_status IN (:clientStatus)
             AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
             AND last_cvsh.id_client IS NULL";
 

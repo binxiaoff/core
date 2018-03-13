@@ -171,7 +171,7 @@ class LenderWalletController extends Controller
 
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
 
-            if (null !== $client->getClientsStatus() && $client->getClientsStatus() < ClientsStatus::VALIDATED) {
+            if (null !== $client->getClientsStatus() && $client->getClientsStatus()->getId() < ClientsStatus::VALIDATED) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
 

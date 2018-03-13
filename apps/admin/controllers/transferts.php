@@ -825,10 +825,8 @@ class transfertsController extends bootstrap
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-            $walletRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
@@ -959,6 +957,7 @@ class transfertsController extends bootstrap
                     $entityManager->getConnection()->rollback();
                     throw $exception;
                 }
+
                 $_SESSION['succession']['success'] = [
                     'accountBalance' => $originalClientBalance,
                     'numberLoans'    => $numberLoans,

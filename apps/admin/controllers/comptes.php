@@ -68,7 +68,7 @@ class comptesController extends bootstrap
 
             foreach ($accounts as $account) {
                 if (false === empty($account['clientsStatus'])) {
-                    $clientStatus = $clientStatusRepository->findOneBy(['status' => $account['clientsStatus']]);
+                    $clientStatus = $clientStatusRepository->find($account['clientsStatus']);
                     $account['additionalStatus'] = $clientStatus->getLabel();
                 }
 

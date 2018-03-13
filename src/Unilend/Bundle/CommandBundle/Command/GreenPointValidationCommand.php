@@ -55,7 +55,7 @@ EOF
 
         /** @var Clients[] $clients */
         $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
-var_dump(count($clients));die;
+
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
             $greenPoint        = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
@@ -80,6 +80,7 @@ var_dump(count($clients));die;
                             ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                         );
                     }
+
                     if ($validationCount > 0 && false === $attachmentManager->isModifiedAttachment($attachment)) {
                         $logger->warning(
                             'The attachment ID ' . $attachment->getId() . ' will be ignored according to isModifiedAttachment method.',

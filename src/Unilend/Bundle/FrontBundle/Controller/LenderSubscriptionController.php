@@ -972,7 +972,7 @@ class LenderSubscriptionController extends Controller
             if ($authorizationChecker->isGranted('ROLE_LENDER')) {
                 $clientEntity = $clientRepository->find($this->getUser()->getClientId());
 
-                if (null !== $clientEntity->getClientsStatus() && $clientEntity->getClientsStatus() >= ClientsStatus::MODIFICATION) {
+                if (null !== $clientEntity->getClientsStatus() && $clientEntity->getClientsStatus()->getId() >= ClientsStatus::MODIFICATION) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {
