@@ -500,7 +500,7 @@ class sfpmeiController extends bootstrap
 
             $this->companies->get($this->projects->id_company, 'id_company');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress companyAddress */
-            $this->companyMainAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
+            $this->companyMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
             $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
 
             $this->clients->get($this->companies->id_client_owner, 'id_client');

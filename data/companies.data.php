@@ -1,7 +1,6 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 
 class companies extends companies_crud
@@ -123,24 +122,6 @@ class companies extends companies_crud
               LEFT JOIN close_out_netting_payment conp ON p.id_project = conp.id_project
             WHERE c.siren =  "' . $this->siren . '"'
         ));
-    }
-
-    /**
-     * @param int $siren
-     * @return float
-     */
-    public function getLastYearReleasedFundsBySIREN($siren)
-    {
-        $query     = '
-            SELECT IFNULL(SUM(o.amount), 0)
-            FROM operation o
-              INNER JOIN wallet w ON w.id = o.id_wallet_creditor
-              INNER JOIN companies c ON c.id_client_owner = w.id_client
-            WHERE o.added > DATE_SUB(NOW(), INTERVAL 1 YEAR)
-                  AND c.siren = :siren
-                  AND o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::LENDER_LOAN . '\')';
-        $statement = $this->bdd->executeQuery($query, ['siren' => $siren]);
-        return (float) $statement->fetchColumn();
     }
 
     /**

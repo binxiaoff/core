@@ -83,6 +83,7 @@ class emprunteursController extends bootstrap
                 'idClient' => $client,
                 'idType'   => AttachmentType::RIB
             ]);
+            $this->companyEntity        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $emailRegex = $entityManager
@@ -125,8 +126,7 @@ class emprunteursController extends bootstrap
                             $_POST['cp'],
                             $_POST['ville'],
                             PaysV2::COUNTRY_FRANCE,
-                            $this->companyAddress,
-                            $this->companies->id_company,
+                            $this->companyEntity,
                             AddressType::TYPE_MAIN_ADDRESS
                         );
                 }
@@ -144,7 +144,6 @@ class emprunteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 exit;
             }
-            $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
 
             if (false === empty($_POST['problematic_status']) && $_POST['problematic_status'] != $this->companyEntity->getIdStatus()->getId()) {
                 $this->updateCompanyStatus($this->companyEntity);

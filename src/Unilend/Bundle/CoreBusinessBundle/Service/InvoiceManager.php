@@ -115,7 +115,7 @@ class InvoiceManager
         $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
             'client'         => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
-            'companyAddress' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($invoice->getIdProject()->getIdCompany()->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS),
+            'companyAddress' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($invoice->getIdProject()->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS),
             'project'        => $invoice->getIdProject(),
             'invoice'        => $invoice,
             'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,

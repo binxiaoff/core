@@ -316,8 +316,7 @@ class ajaxController extends bootstrap
                                 $_POST['postal_etape2'],
                                 $_POST['ville_etape2'],
                                 PaysV2::COUNTRY_FRANCE,
-                                $companyMainAddress,
-                                $company->id_company,
+                                $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company->id_company),
                                 AddressType::TYPE_MAIN_ADDRESS
                             );
                     }
@@ -328,8 +327,7 @@ class ajaxController extends bootstrap
                             $_POST['zip_correspondance_etape2'],
                             $_POST['city_correspondance_etape2'],
                             PaysV2::COUNTRY_FRANCE,
-                            $companyPostalAddress,
-                            $company->id_company,
+                            $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company->id_company),
                             AddressType::TYPE_POSTAL_ADDRESS
                         );
                     }

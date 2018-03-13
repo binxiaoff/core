@@ -1228,16 +1228,17 @@ class ProjectsController extends Controller
      * @param \projects $project
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
      */
-    private function getDIRSProject(\projects $project)
+    private function getDIRSProject(\projects $project): array
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $attachmentManager      = $this->get('unilend.service.attachment_manager');
-        /** @var \companies $company */
-        $company = $entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
 
+        /** @var Projects $projectEntity */
         $projectEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
         $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
         $attachment     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
@@ -1268,7 +1269,7 @@ class ProjectsController extends Controller
             'start_date'          => $startDate,
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
-            'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
+            'released_funds'      => $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
             'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];

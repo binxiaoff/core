@@ -134,17 +134,14 @@ class ExternalDataManager
 
                     $this->entityManager->flush($company);
 
-                    if (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS)) {
-                        $this->addressManager->saveBorrowerCompanyAddress(
-                            $identity->getAddress(),
-                            $identity->getCity(),
-                            $identity->getPostCode(),
-                            PaysV2::COUNTRY_FRANCE,
-                            null,
-                            $company->getIdCompany(),
-                            AddressType::TYPE_MAIN_ADDRESS
-                        );
-                    }
+                    $this->addressManager->saveBorrowerCompanyAddress(
+                        $identity->getAddress(),
+                        $identity->getCity(),
+                        $identity->getPostCode(),
+                        PaysV2::COUNTRY_FRANCE,
+                        $company,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
                 }
             }
 

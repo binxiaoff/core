@@ -25,11 +25,11 @@ class CompanyAddressRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
-            ->andWhere('ca.dateArchived is NULL')
+            ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('dateOrder', 'DESC')
-            ->setMaxResults(1)
             ->setParameter('idCompany', $idCompany)
-            ->setParameter('type', $type);
+            ->setParameter('type', $type)
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
@@ -50,9 +50,9 @@ class CompanyAddressRepository extends EntityRepository
             ->andWhere('ba.dateValidated IS NOT NULL')
             ->andWhere('ba.dateArchived IS NULL')
             ->orderBy('ba.dateValidated', 'DESC')
-            ->setMaxResults(1)
             ->setParameter(':idCompany', $idCompany)
-            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS);
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
