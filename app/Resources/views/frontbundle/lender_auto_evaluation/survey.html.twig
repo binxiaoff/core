@@ -46,7 +46,8 @@
                                     {% trans %} lender-evaluation_question-value-monthly-savings {% endtrans %}
                                 </label>
                                 <div class="input-group set-right">
-                                    <input type="text" id="savings-answer" name="savings-answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number" data-formvalidation-minvalue="0" class="input-field" value="{{ answers['value-monthly-savings']|default() }}" {% if currentStep > 2 %} readonly {% endif %}/>
+                                    <input type="text" id="savings-answer" name="savings-answer" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="number"
+                                           data-formvalidation-minvalue="0" class="input-field" value="{{ answers['value-monthly-savings']|default() }}" {% if currentStep > 2 %} readonly {% endif %}/>
                                     <div class="btn-group">
                                         <span class="icon fa-euro"></span>
                                     </div>
@@ -56,32 +57,29 @@
                     {% endif %}
                     {% if currentStep >= 3 %}
                         <div class="row">
-                            <div class="form-field cip-answer">
+                            <div class="cip-answer">
                                 <label for="answer" class="field-label">
                                     {% trans %} lender-evaluation_question-value-blocking-period {% endtrans %}
                                 </label>
-                                {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] is not empty %}
-                                    <input type="text" id="blocking-answer" value="{% spaceless %}
-                                       {% if answers['value-blocking-period'] == '-12' %}
-                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-12 {% endtrans %}
-                                       {% elseif answers['value-blocking-period']== '-36' %}
-                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-36 {% endtrans %}
-                                       {% elseif answers['value-blocking-period'] == '-60' %}
-                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-60 {% endtrans %}
-                                       {% elseif answers['value-blocking-period']== '60+' %}
-                                            {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-plus-60 {% endtrans %}
-                                        {% endif %}
-                                       {% endspaceless %}"
-                                           class="input-field" readonly/>
-                                {% else %}
-                                    <select id="answer" name="blocking-period-answer" data-formvalidation-input data-formvalidation-required="true" class="input-field">
-                                        <option></option>
-                                        <option value="-12">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-12 {% endtrans %}</option>
-                                        <option value="-36">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-36 {% endtrans %}</option>
-                                        <option value="-60">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-60 {% endtrans %}</option>
-                                        <option value="60+">{% trans %} lender-evaluation_question-value-blocking-period-answer-choice-plus-60 {% endtrans %}</option>
-                                    </select>
+                                {% if currentStep > 3 and answers['value-blocking-period'] is defined %}
+                                    <input type="hidden" name="blocking-period-answer" value="{{ answers['value-blocking-period'] }}">
                                 {% endif %}
+                                <select id="answer" name="blocking-period-answer" class="input-field"
+                                        {% if currentStep > 3 and answers['value-blocking-period'] is defined %} disabled {% else %} data-formvalidation-input data-formvalidation-required="true" {% endif %}>
+                                    <option></option>
+                                    <option value="-12" {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] == '-12' %} selected {% endif %}>
+                                        {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-12 {% endtrans %}
+                                    </option>
+                                    <option value="-36" {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] == '-36' %} selected {% endif %}>
+                                        {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-36 {% endtrans %}
+                                    </option>
+                                    <option value="-60" {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] == '-60' %} selected {% endif %}>
+                                        {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-60 {% endtrans %}
+                                    </option>
+                                    <option value="60+" {% if answers['value-blocking-period'] is defined and answers['value-blocking-period'] == '60+' %} selected {% endif %}>
+                                        {% trans %} lender-evaluation_question-value-blocking-period-answer-choice-plus-60 {% endtrans %}
+                                    </option>
+                                </select>
                             </div><!-- /.form-field -->
                         </div>
                     {% endif %}
