@@ -65,6 +65,12 @@
 
 <script>
     <?php if (1 == $this->step) : ?>
+    $(document).on('cbox_complete', function () {
+        if (CKEDITOR.instances.hasOwnProperty('rejection-comment')) {
+            var editor = CKEDITOR.instances['rejection-comment']
+            editor.destroy(true)
+        }
+
         CKEDITOR.replace('rejection-comment', {
             width: '500px',
             toolbar: 'Basic',
@@ -76,6 +82,7 @@
         CKEDITOR.on('instanceReady', function () {
             $.colorbox.resize()
         })
+    })
     <?php endif; ?>
 
     $('#rejection-reason-form').on('submit', function (e) {
