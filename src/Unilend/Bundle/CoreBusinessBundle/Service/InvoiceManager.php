@@ -5,13 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompteurFactures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
+};
 
 class InvoiceManager
 {

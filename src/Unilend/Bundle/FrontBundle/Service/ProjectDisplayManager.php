@@ -4,19 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Clients, ClientsStatus, Product, Projects, ProjectsStatus
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BidManager, CompanyBalanceSheetManager, ProjectManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager

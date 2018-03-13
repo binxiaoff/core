@@ -4,9 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Companies, CompanyAddress
+};
 
 class CompanyAddressRepository extends EntityRepository
 {
