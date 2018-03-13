@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    Companies, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
@@ -3257,6 +3257,7 @@ class dossiersController extends bootstrap
             $userManager->isGrantedRisk($this->userEntity)
             || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
         ) {
+            $this->menu_admin = 'remboursement';
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
