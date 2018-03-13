@@ -19,18 +19,24 @@ class LenderAutoEvaluationController extends Controller
      *
      * @return Response
      */
-    public function indexAction()
+    public function indexAction(): Response
     {
+        $this->get('session')->remove('answers');
         return $this->render('lender_auto_evaluation/survey.html.twig');
     }
 
     /**
      * @Route("/auto-evaluation/questionnaire", name="lender_auto_evaluation_survey")
      *
+     * @param Request $request
+     *
      * @return Response
      */
-    public function surveyAction(Request $request)
+    public function surveyAction(Request $request): Response
     {
+        if (empty($request->request->all())) {
+            $this->get('session')->remove('answers');
+        }
         $answers               = $this->get('session')->get('answers', []);
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $questionsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderQuestionnaireQuestion');
@@ -55,7 +61,7 @@ class LenderAutoEvaluationController extends Controller
             $amount = filter_var($request->request->get('savings-answer'), \FILTER_VALIDATE_INT);
 
             if ($amount < self::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
-                return $this->render('lender_auto_evaluation_survey/survey.html.twig', [
+                return $this->render('lender_auto_evaluation/survey.html.twig', [
                     'advices' => [$this->get('translator')->trans('lender-auto-evaluation_rejection-message')]
                 ]);
             }
