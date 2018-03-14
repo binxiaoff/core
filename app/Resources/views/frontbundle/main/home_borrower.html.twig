@@ -211,8 +211,11 @@
                                         <input id="esim-input-amount" type="text" step="any" name="esim[amount]" value="{% if app.session.has('esim') and app.session.get('esim')['amount'] is defined %}{{ app.session.get('esim')['amount'] }}{% endif %}"
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
-                                               data-formvalidation-minvalue="{{ projectAmountMin }}" data-formvalidation-maxvalue="{{ projectAmountMax }}" data-formvalidation-input
-                                               data-formvalidation-required="true">
+                                               data-formvalidation-input
+                                               data-formvalidation-required="true"
+                                               data-formvalidation-minvalue="{{ projectAmountMin }}"
+                                               data-formvalidation-maxvalue="{{ projectAmountMax }}"
+                                               data-formvalidation-type="integer">
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
@@ -262,13 +265,20 @@
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
-                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}" class="input-field">
+                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
+                                               class="input-field"
+                                               data-formvalidation-input
+                                               data-formvalidation-required="true"
+                                               data-formvalidation-type="siren">
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
                                         <div class="input-group">
-                                            <input type="email" id="esim-input-email" name="esim[email]" value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}" class="input-field"
-                                                   data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                            <input type="email" id="esim-input-email" name="esim[email]" value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}"
+                                                   class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"
+                                                   data-formvalidation-type="email">
                                         </div><!-- /.input-group -->
                                     </div><!-- /.form-field -->
                                 </div>
