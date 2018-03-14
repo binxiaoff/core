@@ -116,11 +116,11 @@ class AddressManager
 
     /**
      * @param CompanyAddress $companyAddress
-     * @param int            $idProject
+     * @param int            $projectId
      *
      * @throws \Exception
      */
-    public function validateBorrowerCompanyAddress(CompanyAddress $companyAddress, int $idProject): void
+    public function validateBorrowerCompanyAddress(CompanyAddress $companyAddress, int $projectId): void
     {
         $this->entityManager->beginTransaction();
         try {
@@ -132,7 +132,11 @@ class AddressManager
                 }
 
                 $kbis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
-                    ->getProjectAttachmentByType($idProject, AttachmentType::KBIS);
+                    ->getProjectAttachmentByType($projectId, AttachmentType::KBIS);
+
+                if (null === $kbis) {
+                    throw new \InvalidArgumentException('Project ' . $projectId . ' has no valid KBIS. Address could not be validated');
+                }
 
                 $companyAddress
                     ->setDateValidated(new \DateTime('NOW'))

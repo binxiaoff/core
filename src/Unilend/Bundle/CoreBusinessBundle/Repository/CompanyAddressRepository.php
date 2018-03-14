@@ -44,12 +44,12 @@ class CompanyAddressRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'co.idType = at.id')
+            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
-            ->andWhere('ba.dateValidated IS NOT NULL')
-            ->andWhere('ba.dateArchived IS NULL')
-            ->orderBy('ba.dateValidated', 'DESC')
+            ->andWhere('ca.dateValidated IS NOT NULL')
+            ->andWhere('ca.dateArchived IS NULL')
+            ->orderBy('ca.dateValidated', 'DESC')
             ->setParameter(':idCompany', $idCompany)
             ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
             ->setMaxResults(1);

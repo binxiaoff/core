@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, TaxType, Virements, WalletType, Zones
+    AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
@@ -630,8 +630,6 @@ class dossiersController extends bootstrap
                         $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                     }
-
-                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($this->companyMainAddress, $this->projects->id_project);
                 }
 
                 if ($this->projects->status == ProjectsStatus::PREP_FUNDING) {
@@ -2425,7 +2423,14 @@ class dossiersController extends bootstrap
             return;
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+
+        if (null === $companyMainAddress) {
+            echo 'L\'entreprise n\'a pas d\'adresse principale';
+            $this->autoFireView = false;
+            return;
+        }
 
         if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
@@ -2447,6 +2452,15 @@ class dossiersController extends bootstrap
 
             if ($publicationDate <= $publicationLimitationDate || $endOfPublicationDate <= $endOfPublicationLimitationDate) {
                 $_SESSION['publish_error'] = 'La date de publication du dossier doit être au minimum dans 5 minutes et la date de retrait dans plus d\'une heure';
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            }
+
+            try {
+                $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
+            } catch (\Exception $exception) {
+                $_SESSION['publish_error'] = 'Une erreur s\'est produit pendant la validation de l\'adresse de l\'emprunteur.';
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
