@@ -1,0 +1,131 @@
+{% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
+    {% set type = 'preteurs' %}
+    {% set pageTitle = 'Opérations prêteurs' %}
+    {% set idClientTitle = 'ID prêteur' %}
+{% else %}
+    {% set type = 'emprunteurs' %}
+    {% set pageTitle = 'Opérations emprunteurs' %}
+    {% set idClientTitle = 'ID emprunteur' %}
+{% endif %}
+
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css" type="text/css" rel="stylesheet">
+    <link href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.css" type="text/css" rel="stylesheet">
+    <style>
+        .rejected-legend {
+            color: #f9adb3;
+        }
+
+        .rejected-row {
+            background: #f9adb3;
+        }
+    </style>
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        {% include 'transferts/blocks/attributions/attributions.js.twig' %}
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        {{ pageTitle }}
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block">
+            <div class="block-content">
+                <div class="block-options-simple">
+                    <a href="{{ app.adminUrl }}/transferts/{{ type }}/csv" class="btn btn-default push-5-r push-10"><i class="fa fa-file-excel-o"></i> Export CSV</a>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="datepik_from">Date début</label>
+                            <input type="text" name="date_from" id="datepik_from" class="js-datepicker form-control" placeholder="dd/mm/yyyy">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="datepik_to">Date fin</label>
+                            <input type="text" name="date_to" id="datepik_to" class="js-datepicker form-control" placeholder="dd/mm/yyyy">
+                        </div>
+                    </div>
+                </div>
+                <table id="receptions-table" class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th style="width:5%">ID réception</th>
+                        <th style="width:10%">{{ idClientTitle }}</th>
+                        <th style="width:10%">ID projet</th>
+                        <th style="width:26%">Motif</th>
+                        <th style="width:12%">Montant</th>
+                        <th style="width:14%">Type d'attribution</th>
+                        <th style="width:9%">Attribué</th>
+                        <th style="width:9%">Reçu</th>
+                        <th style="width:5%">&nbsp;</th>
+                    </tr>
+                    </thead>
+                </table>
+                {% if false == readOnly %}
+                    <p><i class="fa fa-pencil-square"></i> Commentaire existant</p>
+                {% endif %}
+                <p><i class="fa fa-square rejected-legend"></i> Rejet</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block modals %}
+    <div class="modal fade in" id="modal-reception-line">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="block block-themed block-transparent remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Opération</h5>
+                    </div>
+                    <div class="block-content">
+                        <div class="line"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade in" id="modal-reception-comment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="modal-add-modify-comment-form" method="POST" action="{{ app.adminUrl }}/transferts/comment">
+                    <div class="block block-themed block-transparent remove-margin-b">
+                        <div class="block-header bg-primary">
+                            <h5 class="block-title">Commenter l'opération</h5>
+                        </div>
+                        <div class="block-content">
+                            <input type="hidden" name="reception">
+                            <div class="form-group">
+                                <label>Commentaire</label>
+                                <textarea name="comment" class="form-control" required rows="5"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-sm btn-default" data-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-sm btn-primary">Valider</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

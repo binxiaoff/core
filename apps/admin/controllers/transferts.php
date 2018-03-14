@@ -3,7 +3,23 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
+    AttachmentType,
+    Bids,
+    Factures,
+    LenderStatisticQueue,
+    Notifications,
+    OperationSubType,
+    OperationType,
+    Prelevements,
+    ProjectRepaymentTask,
+    ProjectsPouvoir,
+    ProjectsStatus,
+    Receptions,
+    UniversignEntityInterface,
+    Virements,
+    Wallet,
+    WalletType,
+    Zones
 };
 
 class transfertsController extends bootstrap
@@ -17,9 +33,9 @@ class transfertsController extends bootstrap
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
             Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
-            Receptions::STATUS_ASSIGNED_AUTO   => 'Auto',
+            Receptions::STATUS_ASSIGNED_AUTO   => 'Plateforme',
             Receptions::STATUS_IGNORED_MANUAL  => 'Ignoré manu',
-            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré auto'
+            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré plateforme'
         ];
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
@@ -35,18 +51,28 @@ class transfertsController extends bootstrap
     public function _preteurs()
     {
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
-            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
+            /** @var EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getAttributions($walletType);
             $this->hideDecoration();
             $this->view = 'csv';
+        } else {
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => false]);
         }
     }
 
     public function _emprunteurs()
     {
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
-            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
+            /** @var EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::BORROWER]);
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getAttributions($walletType);
             $this->hideDecoration();
             $this->view = 'csv';
+        } else {
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => false]);
         }
     }
 
@@ -59,6 +85,7 @@ class transfertsController extends bootstrap
             $currencyFormatter = $this->get('currency_formatter');
 
             $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $userRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
             $query    = $this->handleDataTablesRequest($this->request->query->all());
             $start    = $query['start'];
@@ -75,42 +102,43 @@ class transfertsController extends bootstrap
             $affectedReceptions      = [];
 
             try {
-                if ($this->params[0] === 'preteur') {
-                    $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search, $dateFrom, $dateTo);
-                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
+                if ($this->params[0] === 'preteurs') {
+                    $walletTypeLabel = WalletType::LENDER;
                 } else {
-                    $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search, $dateFrom, $dateTo);
-                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
+                    $walletTypeLabel = WalletType::BORROWER;
                 }
+                $walletType              = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => $walletTypeLabel]);
+                $receptionsCount         = $receptionRepository->getAttributionsCount($walletType);
+                $receptionsCountFiltered = $receptionRepository->getAttributionsCount($walletType, $search, $dateFrom, $dateTo);
+                $receptions              = $receptionRepository->getAttributions($walletType, $limit, $start, $sort, $search, $dateFrom, $dateTo);
 
                 foreach ($receptions as $reception) {
-                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
-                        $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception['statusBo'] && null !== $reception['idUser'] && $user = $userRepository->find($reception['idUser'])) {
+                        $attribution = $user->getFirstname() . ' ' . $user->getName();
                     } else {
-                        $attribution = $this->statusOperations[$reception->getStatusBo()];
+                        $attribution = $this->statusOperations[$reception['statusBo']];
                     }
 
                     $affectedReceptions[] = [
-                        0  => $reception->getIdReception(),
-                        1  => $reception->getMotif(),
-                        2  => $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
-                        3  => $attribution,
-                        4  => $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
-                        5  => $reception->getIdproject() ? $reception->getIdproject()->getIdproject() : '',
-                        6  => $reception->getAdded()->format('d/m/Y'),
-                        7  => '',
-                        8  => $reception->getComment(),
-                        9  => $reception->getLigne(),
-                        10 => Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
+                        0  => $reception['idReception'],
+                        1  => $reception['idClient'],
+                        2  => $reception['idProject'],
+                        3  => $reception['motif'],
+                        4  => $currencyFormatter->formatCurrency(round(bcdiv($reception['montant'], 100, 4), 2), 'EUR'),
+                        5  => $attribution,
+                        6  => $reception['assigned'] instanceof DateTime ? $reception['assigned']->format('d/m/Y à H:i:s') : '',
+                        7  => $reception['added']->format('d/m/Y'),
+                        8  => '',
+                        9  => $reception['comment'],
+                        10 => $reception['ligne'],
+                        11 => Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception['statusPrelevement'] || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception['statusVirement']
                     ];
                 }
             } catch (Exception $exception) {
-                $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+                $error = 'Une erreur est survenue lors de la récupération des réceptions attribuées.';
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                $logger->warning($error . ' Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
             }
 
             if (empty($error)) {

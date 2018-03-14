@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    Companies, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
@@ -3257,13 +3257,17 @@ class dossiersController extends bootstrap
             $userManager->isGrantedRisk($this->userEntity)
             || (isset($this->params[0]) && 'risk' === $this->params[0] && $userManager->isUserGroupIT($this->userEntity))
         ) {
+            $this->menu_admin = 'remboursement';
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
 
-            $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $projectsRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $receptionsRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
             $totalPendingWireTransferInAmount = 0;
             $totalRemainingAmount             = 0;
@@ -3289,7 +3293,7 @@ class dossiersController extends bootstrap
                 $projectData[$project->getIdProject()] = [
                     'projectId'                   => $project->getIdProject(),
                     'siren'                       => $project->getIdCompany()->getSiren(),
-                    'companyStatusLabel'          => $project->getIdCompany()->getIdStatus()->getLabel(),
+                    'companyStatusLabel'          => $companyManager->getCompanyStatusNameByLabel($project->getIdCompany()->getIdStatus()->getLabel()),
                     'projectTitle'                => $project->getTitle(),
                     'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
                     'projectStatus'               => $project->getStatus(),
@@ -3297,6 +3301,7 @@ class dossiersController extends bootstrap
                     'entrustedToDebtCollector'    => $debtCollectionAmount,
                     'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
                     'closeOutNettingDate'         => $project->getCloseOutNettingDate(),
+                    'overduePaymentScheduleCount' => $paymentScheduleRepository->getOverdueScheduleCount($project)
                 ];
                 $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
                 $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);

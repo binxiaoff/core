@@ -263,7 +263,7 @@ class AutoBidSettingsManager
             if (null !== $autobidRepository->findOneBy(['idLender' => $wallet, 'status' => Autobid::STATUS_INACTIVE])) {
                 $bIsNovice = false;
             } else {
-                $autobidSettings     = $autobidRepository->findBy(['idLender' => $wallet]);
+                $autobidSettings = $autobidRepository->findBy(['idLender' => $wallet, 'status' => Autobid::STATUS_ACTIVE]);
 
                 if (count($autobidSettings)) {
                     $firstAutobidSetting = array_shift($autobidSettings);
@@ -577,7 +577,7 @@ class AutoBidSettingsManager
             $projectMaxRate[$rate['id_period']][$rate['evaluation']] = $rate['rate_max'];
         }
 
-        $autoBidSettings = $autoBidRepository->findBy(['idLender' => $wallet]);
+        $autoBidSettings = $autoBidRepository->findBy(['idLender' => $wallet, 'status' => Autobid::STATUS_ACTIVE]);
         $badSettings     = [];
         foreach ($autoBidSettings as $setting) {
             if (false === isset($projectMaxRate[$setting->getIdPeriod()->getIdPeriod()][$setting->getEvaluation()])) {
