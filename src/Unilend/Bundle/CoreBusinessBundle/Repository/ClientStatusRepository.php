@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
-
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
@@ -12,6 +10,7 @@ class ClientStatusRepository extends EntityRepository
 {
     /**
      * @param integer|Clients $idClient
+     *
      * @return mixed
      */
     public function getLastClientStatus($idClient)
@@ -32,5 +31,5 @@ class ClientStatusRepository extends EntityRepository
 
         return $result;
     }
-
 }
+

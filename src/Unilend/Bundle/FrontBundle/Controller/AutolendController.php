@@ -427,11 +427,6 @@ class AutolendController extends Controller
                         'period_min' => $period['min'],
                         'period_max' => $period['max']
                     ];
-                    $logger->warning(
-                        'The autobid setting is missing for the combination evaluation/period: ' . $risk . '/' . $period['id_period'] . ' for the client: ' . $this->getClient()->getIdClient() .
-                        '. A default setting will be used',
-                        ['method' => __METHOD__, 'id_client' => $this->getClient()->getIdClient()]
-                    );
                 } else {
                     $settings[$key] = $autobidUserSettings[$key];
                 }

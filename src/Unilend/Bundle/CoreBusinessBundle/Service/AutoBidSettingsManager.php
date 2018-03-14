@@ -12,43 +12,34 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
- * Class AutoBidSettingsManager
  * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 class AutoBidSettingsManager
 {
-    const CGV_AUTOBID = 53;
+    const AUTOBID_TERMS_OF_SALES = 53;
 
+    /** @var EntityManagerSimulator */
+    private $entityManagerSimulator;
+    /** @var EntityManager */
+    private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
-
     /** @var ClientManager */
     private $clientManager;
-
     /** @var NotificationManager */
     private $notificationManager;
-
     /** @var LenderManager */
     private $lenderManager;
-
-    /** @var  ProductManager */
+    /** @var ProductManager */
     private $productManager;
-
-    /** @var  ContractManager */
+    /** @var ContractManager */
     private $contractManager;
-
-    /** @var  EntityManagerSimulator */
-    private $entityManagerSimulator;
-
-    /** @var  EntityManager */
-    private $entityManager;
-
+    /** @var TermsOfSaleManager */
+    private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * AutoBidSettingsManager constructor.
-     *
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
      * @param ClientSettingsManager  $clientSettingsManager
@@ -57,6 +48,7 @@ class AutoBidSettingsManager
      * @param LenderManager          $lenderManager
      * @param ProductManager         $productManager
      * @param ContractManager        $contractManager
+     * @param TermsOfSaleManager     $termsOfSaleManager
      * @param LoggerInterface        $logger
      */
     public function __construct(
@@ -68,6 +60,7 @@ class AutoBidSettingsManager
         LenderManager $lenderManager,
         ProductManager $productManager,
         ContractManager $contractManager,
+        TermsOfSaleManager $termsOfSaleManager,
         LoggerInterface $logger
     )
     {
@@ -79,6 +72,7 @@ class AutoBidSettingsManager
         $this->lenderManager          = $lenderManager;
         $this->productManager         = $productManager;
         $this->contractManager        = $contractManager;
+        $this->termsOfSaleManager     = $termsOfSaleManager;
         $this->logger                 = $logger;
     }
 
@@ -135,10 +129,11 @@ class AutoBidSettingsManager
         if (false === $client->isLender()) {
             return false;
         }
-        /** @var \settings $settings */
-        $settings = $this->entityManagerSimulator->getRepository('settings');
 
-        if (false === $settings->get('Auto-bid global switch', 'type')) {
+        $autobidGlobalSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => 'Auto-bid global switch']);
+
+        if (null === $autobidGlobalSetting) {
             return false;
         }
 
@@ -151,7 +146,10 @@ class AutoBidSettingsManager
             }
         }
 
-        if ($settings->value && $this->clientManager->isAcceptedCGV($client, self::CGV_AUTOBID) || $this->clientManager->isBetaTester($client)) {
+        if (
+            $autobidGlobalSetting->getValue() && $this->termsOfSaleManager->isAcceptedVersion($client, self::AUTOBID_TERMS_OF_SALES)
+            || $this->clientManager->isBetaTester($client)
+        ) {
             return true;
         }
 

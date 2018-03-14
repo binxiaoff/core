@@ -94,7 +94,7 @@
             {% endblock %}
 
             {# Global site-wide modals can be placed here #}
-            {% set tos_session_key = constant('Unilend\\Bundle\\CoreBusinessBundle\\Service\\ClientManager::SESSION_KEY_TOS_ACCEPTED') %}
+            {% set tos_session_key = constant('Unilend\\Bundle\\CoreBusinessBundle\\Service\\TermsOfSaleManager::SESSION_KEY_TOS_ACCEPTED') %}
             {% if app.user
                 and app.session.has(tos_session_key)
                 and false == app.session.get(tos_session_key)

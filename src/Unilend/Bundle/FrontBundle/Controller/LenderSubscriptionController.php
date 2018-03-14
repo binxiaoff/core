@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Route
 };
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Form\{
     FormError, FormInterface
 };
@@ -252,9 +252,9 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
-                $this->get('unilend.service.client_manager')->acceptLastTos($client);
+                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
                 $entityManager->commit();
-            } catch (Exception $exception) {
+            } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
@@ -386,14 +386,13 @@ class LenderSubscriptionController extends Controller
                 $entityManager->flush($company);
 
                 $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
-
+                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
                 $entityManager->commit();
-            } catch (Exception $exception) {
+            } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
 
-            $this->get('unilend.service.client_manager')->acceptLastTos($client);
             $this->addClientToDataLayer($client);
             $this->sendSubscriptionStartConfirmationEmail($client);
 
@@ -983,7 +982,8 @@ class LenderSubscriptionController extends Controller
                 /** @var ClientsStatus $lastStatus */
                 $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
 
-                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
+                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION
+                    && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {
