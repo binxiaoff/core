@@ -26,29 +26,30 @@ class LenderAutoEvaluationController extends Controller
     }
 
     /**
-     * @Route("/auto-evaluation/questionnaire", name="lender_auto_evaluation_survey")
+     * @Route("/auto-evaluation/questionnaire/{step}", name="lender_auto_evaluation_survey")
      *
+     * @param int     $step
      * @param Request $request
      *
      * @return Response
      */
-    public function surveyAction(Request $request): Response
+    public function surveyAction(int $step, Request $request): Response
     {
-        if (empty($request->request->all())) {
-            $this->get('session')->remove('answers');
+        if (empty($this->get('session')->get('answers')) && $step > 1) {
+            return $this->redirectToRoute('lender_auto_evaluation_survey', ['step' => 1]);
         }
         $answers               = $this->get('session')->get('answers', []);
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $questionsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderQuestionnaireQuestion');
         $submittedQuestionType = filter_var($request->request->get('question'), \FILTER_SANITIZE_STRING);
         $nextQuestionType      = \lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE;
-        $currentStep           = 1;
+        $currentStep           = $step;
 
+        if ($estateAmount = $request->request->getInt('estate-answer')) {
+            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE => $estateAmount]);
+        }
         if (\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE == $submittedQuestionType) {
-            $amount  = $request->request->getInt('estate-answer');
-            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE => $amount]);
-
-            if ($amount >= self::VALUE_TOTAL_ESTATE_THRESHOLD) {
+            if ($answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE] >= self::VALUE_TOTAL_ESTATE_THRESHOLD) {
                 $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD;
                 $currentStep      = 3;
             } else {
@@ -57,24 +58,26 @@ class LenderAutoEvaluationController extends Controller
             }
         }
 
+        if ($savingAmount = filter_var($request->request->getInt('savings-answer'), FILTER_VALIDATE_INT)) {
+            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS => $savingAmount]);
+        }
         if (\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS == $submittedQuestionType) {
-            $amount = filter_var($request->request->get('savings-answer'), \FILTER_VALIDATE_INT);
 
-            if ($amount < self::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
+            if ($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS] < self::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
                 return $this->render('lender_auto_evaluation/survey.html.twig', [
                     'advices' => [$this->get('translator')->trans('lender-auto-evaluation_rejection-message')]
                 ]);
             }
-
             $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD;
             $currentStep      = 3;
-            $answers          = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS => $amount]);
         }
 
+        if ($blockingPeriod = filter_var($request->request->get('blocking-period-answer'), FILTER_SANITIZE_STRING)) {
+            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD => $blockingPeriod]);
+        }
         if (\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD == $submittedQuestionType) {
             $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE;
             $currentStep      = 4;
-            $answers          = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD => filter_var($request->request->get('blocking-period-answer'), \FILTER_SANITIZE_STRING)]);
         }
 
         if (\lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE == $submittedQuestionType) {

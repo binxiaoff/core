@@ -22,7 +22,7 @@
                 </div>
             </div>
             {% if currentStep >= 1 %}
-                <form method="post" action="{{ path('lender_auto_evaluation_survey') }}" class="panel" data-formvalidation>
+                <form method="post" action="{{ path('lender_auto_evaluation_survey', {step: currentStep}) }}" class="panel" data-formvalidation>
                     <input type="hidden" name="question" value="{{ question.type }}"/>
                     <div class="row">
                         <div class="form-field cip-answer">
@@ -126,7 +126,7 @@
                 <p>{{ advice|raw }}</p>
             {% endfor %}
         {% else %}
-            <a href="{{ path('lender_auto_evaluation_survey') }}" class="btn-primary">{% trans %}lender-auto-evaluation_survey-start-button{% endtrans %}</a>
+            <a href="{{ path('lender_auto_evaluation_survey', {step: 1}) }}" class="btn-primary">{% trans %}lender-auto-evaluation_survey-start-button{% endtrans %}</a>
         {% endif %}
     </section>
 {% endblock %}
