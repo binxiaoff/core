@@ -20,6 +20,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
+use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementEvent;
@@ -54,6 +55,7 @@ class CompanyValidator
         'TC-RISK-020' => 'checkCurrentExecutivesEventsDepositorCompanyRoleComplainant',
         'TC-RISK-021' => 'checkCurrentExecutivesEventsDepositorCompanyNoRole',
         'TC-RISK-022' => 'checkCurrentExecutivesEventsDepositorCompanyCollectiveProceeding',
+        'TC-RISK-023' => 'checkNoLegalPersonality',
     ];
 
     /**
@@ -88,6 +90,11 @@ class CompanyValidator
         }
 
         $sirenCheck = $this->checkRule('TC-RISK-001', $siren, $project);
+        if (false === empty($sirenCheck)) {
+            return $sirenCheck;
+        }
+
+        $sirenCheck = $this->checkRule('TC-RISK-023', $siren, $project);
         if (false === empty($sirenCheck)) {
             return $sirenCheck;
         }
@@ -1028,5 +1035,30 @@ class CompanyValidator
             $this->entityManager->persist($assessment);
             $this->entityManager->flush($assessment);
         }
+    }
+
+    /**
+     * TC-RISK-023
+     * Exclude SIREN with legal form which does not have a legal personality
+     *
+     * @param $siren
+     *
+     * @return array
+     */
+    private function checkNoLegalPersonality($siren)
+    {
+        try {
+            if (null !== $companyIdentity = $this->externalDataManager->getCompanyIdentity($siren)) {
+                if (in_array($companyIdentity->getLegalFormCode(), CompanyIdentityDetail::LEGAL_FORM_WITHOUT_PERSONALITY_CODES)) {
+                    return [ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_PERSONALITY];
+                }
+            } else {
+                return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
+        }
+
+        return [];
     }
 }

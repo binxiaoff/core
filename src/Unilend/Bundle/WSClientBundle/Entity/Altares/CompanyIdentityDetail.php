@@ -6,6 +6,8 @@ use JMS\Serializer\Annotation as JMS;
 
 class CompanyIdentityDetail
 {
+    const LEGAL_FORM_WITHOUT_PERSONALITY_CODES = [2210, 2220,2310, 2320, 2385];
+
     /**
      * @JMS\SerializedName("raisonSociale")
      * @JMS\Type("string")

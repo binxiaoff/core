@@ -200,6 +200,8 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_product-blend');
             case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
                 return $this->translator->trans('project-rejection-reason-bo_company-location');
+            case ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_PERSONALITY:
+                return $this->translator->trans('project-rejection-reason-bo_not-eligible-reason-no-legal-personality');
             default:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-default');
         }
