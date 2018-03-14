@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Partner, ProjectsStatus, Users, UsersTypes, Zones
+    BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
@@ -237,26 +237,27 @@ class dashboardController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
+        /** @var \projects $projectData */
+        $projectData = $this->loadData('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider $messageProvider */
         $messageProvider = $this->get('unilend.swiftmailer.message_provider');
-
+        /** @var Projects[] $projects */
         $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
-        foreach ($projects as $projectEntity) {
-            $project->get($projectEntity->getIdProject());
 
-            if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
-                $status = empty($projectEntity->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
-                $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
-                $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
+        foreach ($projects as $project) {
+            $projectData->get($project->getIdProject());
+
+            if (null === $projectRequestManager->checkProjectRisk($projectData, $_SESSION['user']['id_user'])) {
+                $status = empty($project->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
+                $projectStatusManager->addProjectStatus($this->userEntity, $status, $projectData);
+                $projectRequestManager->assignEligiblePartnerProduct($projectData, $_SESSION['user']['id_user'], true);
             }
-            if ($project->status === ProjectsStatus::NOT_ELIGIBLE) {
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
+            if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
+                $company = $project->getIdCompany();
 
                 if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
                     $keywords = [
