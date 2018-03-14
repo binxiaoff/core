@@ -42,7 +42,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
-        $loans = $entityManagerSimulator->getRepository('loans');
+        $loans  = $entityManagerSimulator->getRepository('loans');
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');

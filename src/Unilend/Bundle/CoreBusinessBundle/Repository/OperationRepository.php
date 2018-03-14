@@ -1409,4 +1409,28 @@ class OperationRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getArrayResult();
     }
+
+    /**
+     * @param string $siren
+     *
+     * @return bool|string
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getLastYearReleasedFundsBySIREN(string $siren)
+    {
+        $query = '
+            SELECT IFNULL(SUM(o.amount), 0)
+            FROM operation o
+              INNER JOIN wallet w ON w.id = o.id_wallet_creditor
+              INNER JOIN companies c ON c.id_client_owner = w.id_client
+              INNER JOIN operation_type ot ON o.id_type = ot.id
+            WHERE o.added > DATE_SUB(NOW(), INTERVAL 1 YEAR)
+              AND c.siren = :siren
+              AND ot.label = :loan';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['siren' => $siren, 'loan' => OperationType::LENDER_LOAN])
+            ->fetchColumn();
+    }
 }

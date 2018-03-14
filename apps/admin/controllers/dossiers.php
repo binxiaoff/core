@@ -148,8 +148,7 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository $companyAddressRepository */
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+        $companyAddressRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         $this->beneficialOwnerDeclaration = null;
 
@@ -229,10 +228,10 @@ class dossiersController extends bootstrap
                 $this->hasAdvisor = true;
             }
 
-            $this->latitude  = (float) $this->companyMainAddress->getLatitude();
-            $this->longitude = (float) $this->companyMainAddress->getLongitude();
+            $this->latitude  = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLatitude();
+            $this->longitude = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLongitude();
 
-            $this->aAnnualAccountsDates = array();
+            $this->aAnnualAccountsDates = [];
             $this->aAnalysts            = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_RISK . ') OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL . ') OR id_user = ' . Users::USER_ID_ARNAUD_SCHWARTZ . ' OR id_user = ' . $this->projects->id_commercial);
             $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
@@ -257,8 +256,8 @@ class dossiersController extends bootstrap
             }
 
             if (empty($this->lbilans)) {
-                $this->lCompanies_actif_passif = array();
-                $this->aBalanceSheets          = array();
+                $this->lCompanies_actif_passif = [];
+                $this->aBalanceSheets          = [];
             } else {
                 $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
@@ -2427,9 +2426,10 @@ class dossiersController extends bootstrap
         $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         if (null === $companyMainAddress) {
-            echo 'L\'entreprise n\'a pas d\'adresse principale';
-            $this->autoFireView = false;
-            return;
+            $_SESSION['publish_error'] = 'L\'entreprise n\'a pas d\'adresse principale';
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
         }
 
         if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
@@ -2460,7 +2460,7 @@ class dossiersController extends bootstrap
             try {
                 $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
             } catch (\Exception $exception) {
-                $_SESSION['publish_error'] = 'Une erreur s\'est produit pendant la validation de l\'adresse de l\'emprunteur.';
+                $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;

@@ -93,9 +93,7 @@ class InvoiceManager
      * @param \DateTime|null $paymentDate
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig_Error
      */
     private function generateInvoice(Factures $invoice, \DateTime $paymentDate = null)
     {

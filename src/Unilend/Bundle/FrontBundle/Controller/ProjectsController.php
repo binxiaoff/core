@@ -1269,7 +1269,7 @@ class ProjectsController extends Controller
             'start_date'          => $startDate,
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
-            'released_funds'      => $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
+            'released_funds'      => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
             'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];

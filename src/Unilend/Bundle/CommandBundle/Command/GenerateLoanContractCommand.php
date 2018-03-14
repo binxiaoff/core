@@ -83,6 +83,10 @@ EOF
                     $borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
                     $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
 
+                    if (null !== $borrowerCompanyAddress) {
+                        throw new \Exception('Borrower of loan ' . $loan->id_loan . ' has no main address');
+                    }
+
                     if ($wallet->getIdClient()->isNaturalPerson()) {
                         $clientAddress->get($wallet->getIdClient()->getIdClient(), 'id_client');
 
