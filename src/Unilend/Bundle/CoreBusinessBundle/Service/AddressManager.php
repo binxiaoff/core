@@ -122,6 +122,13 @@ class AddressManager
      */
     public function validateBorrowerCompanyAddress(CompanyAddress $companyAddress, int $projectId): void
     {
+        $kbis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+            ->getProjectAttachmentByType($projectId, AttachmentType::KBIS);
+
+        if (null === $kbis) {
+            throw new \InvalidArgumentException('Project ' . $projectId . ' has no valid KBIS. Address can not be validated');
+        }
+
         $this->entityManager->beginTransaction();
         try {
             $currentAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findValidatedMainCompanyAddress($companyAddress->getIdCompany());
@@ -129,13 +136,6 @@ class AddressManager
                 if ($currentAddress) {
                     $currentAddress->setDateArchived(new \DateTime('NOW'));
                     $this->entityManager->flush($currentAddress);
-                }
-
-                $kbis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
-                    ->getProjectAttachmentByType($projectId, AttachmentType::KBIS);
-
-                if (null === $kbis) {
-                    throw new \InvalidArgumentException('Project ' . $projectId . ' has no valid KBIS. Address could not be validated');
                 }
 
                 $companyAddress
