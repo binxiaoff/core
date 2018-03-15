@@ -7,21 +7,9 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, PaysV2, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet
+};
 use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
@@ -1408,5 +1396,29 @@ class OperationRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return bool|string
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getLastYearReleasedFundsBySIREN(string $siren)
+    {
+        $query = '
+            SELECT IFNULL(SUM(o.amount), 0)
+            FROM operation o
+              INNER JOIN wallet w ON w.id = o.id_wallet_creditor
+              INNER JOIN companies c ON c.id_client_owner = w.id_client
+              INNER JOIN operation_type ot ON o.id_type = ot.id
+            WHERE o.added > DATE_SUB(NOW(), INTERVAL 1 YEAR)
+              AND c.siren = :siren
+              AND ot.label = :loan';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['siren' => $siren, 'loan' => OperationType::LENDER_LOAN])
+            ->fetchColumn();
     }
 }

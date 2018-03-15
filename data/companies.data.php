@@ -1,8 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, CompanyStatus, ProjectsStatus
+};
 
 class companies extends companies_crud
 {
@@ -126,24 +126,6 @@ class companies extends companies_crud
     }
 
     /**
-     * @param int $siren
-     * @return float
-     */
-    public function getLastYearReleasedFundsBySIREN($siren)
-    {
-        $query     = '
-            SELECT IFNULL(SUM(o.amount), 0)
-            FROM operation o
-              INNER JOIN wallet w ON w.id = o.id_wallet_creditor
-              INNER JOIN companies c ON c.id_client_owner = w.id_client
-            WHERE o.added > DATE_SUB(NOW(), INTERVAL 1 YEAR)
-                  AND c.siren = :siren
-                  AND o.id_type = (SELECT id FROM operation_type WHERE label = \'' . OperationType::LENDER_LOAN . '\')';
-        $statement = $this->bdd->executeQuery($query, ['siren' => $siren]);
-        return (float) $statement->fetchColumn();
-    }
-
-    /**
      * @return array
      */
     public function getProjectsBySIREN()
@@ -215,27 +197,28 @@ class companies extends companies_crud
 
     public function getCompaniesSalesForce()
     {
-        $sQuery = "SELECT
-                    co.id_company AS 'IDCompany',
-                    REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
-                    CASE REPLACE(co.name,',','')
-                      WHEN '' THEN 'A renseigner'
-                      ELSE REPLACE(co.name,',','')
-                    END AS 'RaisonSociale',
-                    REPLACE(co.adresse1,',','') AS 'Adresse1',
-                    REPLACE(co.zip,',','') AS 'CP',
-                    REPLACE(co.city,',','') AS 'Ville',
-                    acountry.fr AS 'Pays',
-                    REPLACE(co.email_facture,',','') AS 'EmailFacturation',
-                    co.id_client_owner AS 'IDClient',
-                    co.forme as 'FormeSociale',
-                    '012240000002G4U' as 'Sfcompte'
-                  FROM
-                    companies co
-                  LEFT JOIN
-                    pays_v2 acountry ON (co.id_pays = acountry.id_pays)";
+        $query = "
+          SELECT
+            co.id_company AS 'IDCompany',
+            REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
+            CASE REPLACE(co.name,',','')
+              WHEN '' THEN 'A renseigner'
+              ELSE REPLACE(co.name,',','')
+            END AS 'RaisonSociale',
+            REPLACE(IFNULL(ca.address, co.adresse1),',','') AS 'Adresse1',
+            REPLACE(IFNULL(ca.zip, co.zip),',','') AS 'CP',
+            REPLACE(IFNULL(ca.city, co.zip),',','') AS 'Ville',
+            acountry.fr AS 'Pays',
+            REPLACE(co.email_facture,',','') AS 'EmailFacturation',
+            co.id_client_owner AS 'IDClient',
+            co.forme as 'FormeSociale',
+            '012240000002G4U' as 'Sfcompte'
+          FROM
+            companies co
+            LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "')
+            LEFT JOIN pays_v2 acountry ON (IFNULL(ca.id_country, co.id_pays) = acountry.id_pays)";
 
-        return $this->bdd->executeQuery($sQuery);
+        return $this->bdd->executeQuery($query);
     }
 
     /**

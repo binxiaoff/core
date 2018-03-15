@@ -82,7 +82,7 @@
                             <td class="col-3">
                                 <!-- Row -->
                                 <div class="row">
-                                    <div class="text-box"><?= ($this->entreprise == false ? $this->clients_adresses->adresse1 : $this->companies->adresse1) ?></div>
+                                    <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->adresse1 : $this->companyAddress->getAddress()) ?></div>
                                     <span class="small-text">Numéro et nom de la rue</span>
                                 </div>
                                 <!-- End Row -->
@@ -90,12 +90,12 @@
                                 <div class="row">
                                     <div class="box box-w-1">
                                         <span class="star">*</span>
-                                        <div class="text-box"><?= ($this->entreprise == false ? $this->clients_adresses->cp : $this->companies->zip) ?></div>
+                                        <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->cp : $this->companyAddress->getZip()) ?></div>
                                         <span class="small-text">Code postal</span>
                                     </div>
                                     <div class="box box-w-2">
                                         <span class="star">*</span>
-                                        <div class="text-box"><?= ($this->entreprise == false ? $this->clients_adresses->ville : $this->companies->city) ?></div>
+                                        <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->ville : $this->companyAddress->getCity()) ?></div>
                                         <span class="small-text">Ville</span>
                                     </div>
                                     <div class="cl">&nbsp;</div>
@@ -285,7 +285,7 @@
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                             <td class="col-1">
-                                A retourner à : <?=$this->adresse_retour?>
+                                A retourner à : <?= $this->adresse_retour ?>
                             </td>
                             <td class="col-2">
                                 Zone réservée à l'usage exclusif du créancier

@@ -126,7 +126,7 @@
                                         <td><?= strtoupper($this->ficelle->speCharNoAccent($this->companiesEmp->adresse1)) ?></td>
                                     </tr>
                                     <tr>
-                                        <td><?= strtoupper($this->companiesEmp->zip . ' ' . $this->ficelle->speCharNoAccent($this->companiesEmp->city)) ?></td>
+                                        <td><?= strtoupper($this->borrowerCompanyAddress->getZip(). ' ' . $this->ficelle->speCharNoAccent($this->borrowerCompanyAddress->getCity())) ?></td>
                                     </tr>
                                     <tr>
                                         <td>&nbsp;</td>

@@ -43,17 +43,17 @@
                     </li>
                     <li>
                         <div class="col-long">Adresse</div>
-                        <div class="col-small"><?= $this->companies->adresse1 ?></div>
+                        <div class="col-small"><?= $this->companyAddress->getAddress() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Code postal</div>
-                        <div class="col-small"><?= $this->companies->zip ?></div>
+                        <div class="col-small"><?= $this->companyAddress->getZip() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>
                         <div class="col-long">Ville</div>
-                        <div class="col-small"><?= $this->companies->city ?></div>
+                        <div class="col-small"><?= $this->companyAddress->getCity() ?></div>
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>

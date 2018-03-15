@@ -50,11 +50,11 @@
                                 <dt>{{ 'borrower-profile_company-name'|trans }}</dt>
                                 <dd>{{ company.name }}</dd>
                                 <dt>{{ 'borrower-profile_address'|trans }}</dt>
-                                <dd id="profile-address-street-output">{{ company.adresse1 }}</dd>
+                                <dd id="profile-address-street-output">{{ companyAddress.address|default('') }}</dd>
                                 <dt>{{ 'borrower-profile_post-code'|trans }}</dt>
-                                <dd id="profile-address-code-output">{{ company.zip }}</dd>
+                                <dd id="profile-address-code-output">{{ companyAddress.zip|default('') }}</dd>
                                 <dt>{{ 'borrower-profile_city'|trans }}</dt>
-                                <dd id="profile-address-ville-output">{{ company.city }}</dd>
+                                <dd id="profile-address-ville-output">{{ companyAddress.city|default('') }}</dd>
                                 <dt>{{ 'borrower-profile_company-phone-number'|trans }}</dt>
                                 <dd id="profile-address-mobile-output">{{ company.phone }}</dd>
                                 <dt>{{ 'borrower-profile_invoice-email'|trans }}</dt>

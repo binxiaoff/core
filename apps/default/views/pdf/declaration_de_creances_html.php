@@ -9,17 +9,17 @@
 <body style="text-align:center;">
 <div class="img">
     <div class="creancier">
-        <?php if (in_array($this->clients->type, array(1, 4))) { // particulier ?>
+        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br/>
             <?= $this->clients_adresses->adresse_fiscal ?><br/>
             <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?><br/>
             <?= $this->pays_fiscal ?>
-        <?php } else { // entreprise ?>
+        <?php else :  ?>
             <?= $this->companies->name ?><br/>
             <?= $this->companies->adresse1 ?><br/>
             <?= $this->companies->zip ?> <?= $this->companies->city ?><br/>
             <?= $this->pays_fiscal ?>
-        <?php } ?>
+        <?php endif; ?>
         <br/><br/>
         n°de <?= $this->translator->trans('contract-type-label_' . $this->contract->getLabel()); ?> :  <?= $this->loan->getIdLoan() ?>
     </div>
@@ -27,13 +27,13 @@
         <?= $this->mandataires_var ?>
     </div>
     <div class="debiteur">
-        <?=$this->borrowerCompany->getForme()?> <?=$this->borrowerCompany->getName()?>
-        <br />
-        <?=$this->borrowerCompany->getAdresse1()?>
-        <br />
-        <?=$this->borrowerCompany->getZip()?> <?=$this->borrowerCompany->getCity()?>
-        <br />
-        <?=$this->borrowerCompany->getSiren()?>
+        <?= $this->borrowerCompany->getForme() ?> <?= $this->borrowerCompany->getName() ?>
+        <br/>
+        <?= $this->borrowerCompanyAddress->getAddress() ?>
+        <br/>
+        <?= $this->borrowerCompanyAddress->getZip() ?> <?= $this->borrowerCompanyAddress->getCity() ?>
+        <br/>
+        <?= $this->borrowerCompany->getSiren() ?>
     </div>
     <div class="procedure">
         <?= $this->nature_var ?>
@@ -67,29 +67,26 @@
     </div>
     <div style="clear:both;"></div>
     <div class="fait_a">
-        <?php if (in_array($this->clients->type, array(1, 4))) { // particulier
-            echo $this->clients_adresses->ville_fiscal;
-        } else { // entreprise
-            echo $this->companies->city;
-        }
-        ?>
+        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
+            <?= $this->clients_adresses->ville_fiscal ?>
+        <?php else : ?>
+            <?= $this->companies->city ?>
+        <?php endif; ?>
     </div>
     <div class="fait_le">
         <?= date('d/m/Y') ?>
     </div>
     <div style="clear:both;"></div>
     <div class="signataire">
-        <?php if (in_array($this->clients->type, array(1, 4))) { // particulier
-            echo $this->clients->prenom . ' ' . $this->clients->nom;
-        } else { // entreprise
-            // pas le dirigeant
-            if ($this->companies->status_client != 1) {
-                echo $this->companies->prenom_dirigeant . ' ' . $this->companies->nom_dirigeant . '<br> Fonction : ' . $this->companies->fonction_dirigeant;
-            } else {
-                echo $this->clients->prenom . ' ' . $this->clients->nom . '<br> Fonction : ' . $this->clients->fonction;
-            }
-        }
-        ?>
+        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
+            <?= $this->clients->prenom ?> <?= $this->clients->nom ?>
+        <?php else : ?>
+            <?php if ($this->companies->status_client != \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER) : ?>
+                <?= $this->companies->prenom_dirigeant ?> <?= $this->companies->nom_dirigeant ?><br> Fonction : <?= $this->companies->fonction_dirigeant ?>
+            <?php else : ?>
+                <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br> Fonction : <?= $this->clients->fonction ?>
+            <?php endif; ?>
+        <?php endif; ?>
     </div>
     <div style="clear:both;"></div>
     <div class="montant_total">

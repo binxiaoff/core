@@ -27,7 +27,7 @@
                             Adresse
                         </div>
                         <div class="col-small">
-                            <?= $this->companies->adresse1 ?>
+                            <?= $this->companyAddress->getAddress() ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -36,7 +36,7 @@
                             Code postal
                         </div>
                         <div class="col-small">
-                            <?= $this->companies->zip ?>
+                            <?= $this->companyAddress->getZip() ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -45,7 +45,7 @@
                             Ville
                         </div>
                         <div class="col-small">
-                            <?= $this->companies->city ?>
+                            <?= $this->companyAddress->getCity() ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>

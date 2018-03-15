@@ -3,12 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Bids, Product, ProjectsStatus
+};
 
 class FeedsBPICommand extends ContainerAwareCommand
 {
@@ -28,19 +29,20 @@ class FeedsBPICommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        $translator    = $this->getContainer()->get('translator');
-        $router        = $this->getContainer()->get('router');
-        $serializer    = $this->getContainer()->get('serializer');
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager          = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $translator             = $this->getContainer()->get('translator');
+        $router                 = $this->getContainer()->get('router');
+        $serializer             = $this->getContainer()->get('serializer');
 
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
+        $project = $entityManagerSimulator->getRepository('projects');
         /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bids */
-        $bids = $entityManager->getRepository('bids');
+        $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
-        $loans  = $entityManager->getRepository('loans');
+        $loans  = $entityManagerSimulator->getRepository('loans');
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
@@ -68,6 +70,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
             $company->get($project->id_company);
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
             $projectPublicationDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_publication);
             $projectWithdrawalDate  = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
@@ -105,8 +108,8 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'mode_financement'                 => 'PRR',
                 'type_porteur_projet'              => 'ENT',
                 'qualif_ESS'                       => 'NON',
-                'code_postal'                      => $company->zip,
-                'ville'                            => $company->city,
+                'code_postal'                      => $companyAddress->getZip(),
+                'ville'                            => $companyAddress->getCity(),
                 'titre'                            => $translator->trans('company-sector_sector-' . $company->sector) . ' - ' . $company->city,
                 'description'                      => $project->nature_project,
                 'url'                              => $hostUrl . $router->generate('project_detail',

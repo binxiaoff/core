@@ -982,7 +982,8 @@ class LenderSubscriptionController extends Controller
                 /** @var ClientsStatus $lastStatus */
                 $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
 
-                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION) {
+                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION
+                    && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {

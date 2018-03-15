@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -14,17 +15,25 @@ class LocationManager
 {
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-
     /** @var EntityManager */
     private $entityManager;
-
     /** @var string */
     private $mapboxToken;
-
     /** @var CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, EntityManagerSimulator $entityManagerSimulator, $mapboxToken, CacheItemPoolInterface $cachePool)
+    /**
+     * @param EntityManager          $entityManager
+     * @param EntityManagerSimulator $entityManagerSimulator
+     * @param string                 $mapboxToken
+     * @param CacheItemPoolInterface $cachePool
+     */
+    public function __construct(
+        EntityManager $entityManager,
+        EntityManagerSimulator $entityManagerSimulator,
+        string $mapboxToken,
+        CacheItemPoolInterface $cachePool
+    )
     {
         $this->entityManager          = $entityManager;
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -33,13 +42,13 @@ class LocationManager
     }
 
     /**
-     * @param \companies $company
+     * @param CompanyAddress $companyAddress
      *
-     * @return float[]|null [Latitude, Longitude]
+     * @return float[]|null
      */
-    public function getCompanyCoordinates(\companies $company)
+    public function getCompanyCoordinates(CompanyAddress $companyAddress)
     {
-        return $this->getMapboxGeocoding($company->city, $company->zip, $company->id_pays);
+        return $this->getMapboxGeocoding($companyAddress->getCity(), $companyAddress->getZip(), $companyAddress->getIdCountry()->getIdPays());
     }
 
     /**
