@@ -4,18 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Clients, ClientsStatus, Product, Projects, ProjectsStatus
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BidManager, CompanyBalanceSheetManager, ProjectManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -131,15 +130,16 @@ class ProjectDisplayManager
      * @param \projects $project
      *
      * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getBaseData(\projects $project)
+    public function getBaseData(\projects $project): array
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
+        $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
-        $now = new \DateTime('NOW');
-        $end = $this->projectManager->getProjectEndDate($project);
+        $now      = new \DateTime('NOW');
+        $end      = $this->projectManager->getProjectEndDate($project);
+        $daysLeft = $now->diff($end);
+        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
 
         $projectData = [
             'projectId'            => $project->id_project,
@@ -159,22 +159,18 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $company->city,
-                'zip'       => $company->zip,
-                'sectorId'  => $company->sector,
-                'latitude'  => (float) $company->latitude,
-                'longitude' => (float) $company->longitude
+                'city'      => $companyAddress->getCity(),
+                'zip'       => $companyAddress->getZip(),
+                'sectorId'  => $companyAddress->getIdCompany()->getSector(),
+                'latitude'  => (float) $companyAddress->getLatitude(),
+                'longitude' => (float) $companyAddress->getLongitude()
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
             'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project)
+            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project),
+            'daysLeft'             => $daysLeft
         ];
-
-        $daysLeft = $now->diff($end);
-        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
-
-        $projectData['daysLeft'] = $daysLeft;
 
         return $projectData;
     }

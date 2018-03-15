@@ -200,8 +200,8 @@ class LenderAccountDisplayManager
      * get lender loans allocation by company region
      * @param int $lenderId
      *
-     * @return array
-     * @throws \Exception
+     * @return array|mixed
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     private function getLoansAllocationByCompanyRegion($lenderId)
     {
