@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}), @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}), @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Projects
 {
@@ -1766,5 +1767,23 @@ class Projects
         }
 
         return $this->debtCollectionMissions->matching($criteria);
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }
