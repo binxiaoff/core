@@ -1,8 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Product, Projects
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 
 class PartnerProductManager extends ProductManager
@@ -30,7 +31,7 @@ class PartnerProductManager extends ProductManager
      *
      * @return \product[]
      */
-    public function findEligibleProducts($project, bool $includeInactiveProduct = false)
+    public function findEligibleProducts($project, bool $includeInactiveProduct = false): array
     {
         $eligibleProducts = [];
         $project          = $this->convertProject($project);

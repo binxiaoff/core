@@ -247,7 +247,7 @@ class dashboardController extends bootstrap
         $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
 
         foreach ($projects as $project) {
-            if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
+            if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
                 $status = empty($project->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
                 $projectRequestManager->assignEligiblePartnerProduct($project, $this->userEntity->getIdUser(), true);
