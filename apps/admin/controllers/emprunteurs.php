@@ -129,19 +129,15 @@ class emprunteursController extends bootstrap
                     exit;
                 }
 
-                if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
-                    if (null === $this->companyAddress) {
-                        $this->get('unilend.service.address_manager')
-                            ->saveBorrowerCompanyAddress(
-                                $_POST['adresse'],
-                                $_POST['cp'],
-                                $_POST['ville'],
-                                PaysV2::COUNTRY_FRANCE,
-                                $this->companyEntity,
-                                AddressType::TYPE_MAIN_ADDRESS
-                            );
-                    }
-                }
+                $this->get('unilend.service.address_manager')
+                    ->saveBorrowerCompanyAddress(
+                        $_POST['adresse'],
+                        $_POST['cp'],
+                        $_POST['ville'],
+                        PaysV2::COUNTRY_FRANCE,
+                        $this->companyEntity,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
 
                 $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST]);
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
