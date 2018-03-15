@@ -113,12 +113,12 @@ class ProjectCloseOutNettingManager
 
     /**
      * @param Projects $project
-     * @param bool     $includUnilendCommission
+     * @param bool     $includeUnilendCommission
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function buildPayments(Projects $project, bool $includUnilendCommission): void
+    private function buildPayments(Projects $project, bool $includeUnilendCommission): void
     {
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
@@ -130,7 +130,7 @@ class ProjectCloseOutNettingManager
         $interest       = $overdueAmounts['interest'];
         $commission     = $overdueAmounts['commission'];
 
-        if (false === $includUnilendCommission) {
+        if (false === $includeUnilendCommission) {
             $commission = 0;
         }
 
