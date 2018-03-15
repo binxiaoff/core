@@ -3283,9 +3283,12 @@ class dossiersController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
 
-            $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $projectsRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $receptionsRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
             $totalPendingWireTransferInAmount = 0;
             $totalRemainingAmount             = 0;
@@ -3311,7 +3314,7 @@ class dossiersController extends bootstrap
                 $projectData[$project->getIdProject()] = [
                     'projectId'                   => $project->getIdProject(),
                     'siren'                       => $project->getIdCompany()->getSiren(),
-                    'companyStatusLabel'          => $project->getIdCompany()->getIdStatus()->getLabel(),
+                    'companyStatusLabel'          => $companyManager->getCompanyStatusNameByLabel($project->getIdCompany()->getIdStatus()->getLabel()),
                     'projectTitle'                => $project->getTitle(),
                     'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
                     'projectStatus'               => $project->getStatus(),
@@ -3319,6 +3322,7 @@ class dossiersController extends bootstrap
                     'entrustedToDebtCollector'    => $debtCollectionAmount,
                     'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
                     'closeOutNettingDate'         => $project->getCloseOutNettingDate(),
+                    'overduePaymentScheduleCount' => $paymentScheduleRepository->getOverdueScheduleCount($project)
                 ];
                 $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
                 $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);

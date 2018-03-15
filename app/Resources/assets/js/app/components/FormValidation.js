@@ -403,7 +403,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
           inputType: 'data-formvalidation-type',
           sameValueAs: 'data-formvalidation-samevalueas',
           minValue: 'data-formvalidation-minvalue',
-          maxValue: 'data-formValidation-maxvalue'
+          maxValue: 'data-formvalidation-maxvalue'
         })
       ),
 
@@ -888,7 +888,7 @@ FormValidation.prototype.rules = {
   // Input Type
   inputType: function (inputValidation, inputType) {
     // Non empty values should be check using required form validation attribute
-    if (inputValidation.value.length === 0) return
+    if (undefined === inputValidation.value || inputValidation.value.length === 0) return
 
     // FormValidation
     var self = this
@@ -906,6 +906,16 @@ FormValidation.prototype.rules = {
               description: __.__('Field accepts only numbers', 'error-field-input-type-number')
             })
           }
+          break
+
+        case 'integer':
+          if (false === /^-?\s*[\d][\d\s]*$/.test(inputValidation.value)) {
+            inputValidation.errors.push({
+                type: 'inputType',
+                description: __.__('Field accepts only integers', 'error-field-input-type-integer')
+            })
+          }
+          inputValidation.value = inputValidation.value.replace(/[^\d-]/g, '')
           break
 
         case 'currency':
@@ -1080,7 +1090,9 @@ FormValidation.prototype.rules = {
 
     if (typeof minValue === 'undefined') minValue = inputValidation.options.rules.minValue
 
-    if (minValue && inputValidation.value < minValue) {
+    valueToCheck = inputValidation.value.replace(/[^0-9-.,]/g, '')
+
+    if (minValue && parseFloat(valueToCheck) < minValue) {
       inputValidation.errors.push({
         type: 'minValue',
         description: sprintf(__.__('Amounts below %s are not allowed', 'error-field-min-value'), __Utility.formatNumber(minValue, 0))
@@ -1094,7 +1106,9 @@ FormValidation.prototype.rules = {
 
     if (typeof maxValue === 'undefined') maxValue = inputValidation.options.rules.maxValue
 
-    if (maxValue && inputValidation.value > maxValue) {
+    valueToCheck = inputValidation.value.replace(/[^0-9-.,]/g, '')
+
+    if (maxValue && parseFloat(valueToCheck) > maxValue) {
       inputValidation.errors.push({
         type: 'maxValue',
         description: sprintf(__.__('Amounts above %s are not allowed', 'error-field-max-value'), __Utility.formatNumber(maxValue, 0))

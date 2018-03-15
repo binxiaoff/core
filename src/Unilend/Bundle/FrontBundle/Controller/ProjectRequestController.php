@@ -81,32 +81,22 @@ class ProjectRequestController extends Controller
         if ($request->isMethod(Request::METHOD_GET)) {
             return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
         }
-
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
+        $projectManager = $this->get('unilend.service.project_manager');
+        $translator     = $this->get('translator');
 
         $amount = null;
         $siren  = null;
         $email  = null;
         $reason = null;
 
-        $translator = $this->get('translator');
-
         if (empty($request->request->get('amount'))) {
             $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
         } else {
-            $amount = str_replace([' ', '€'], '', $request->request->get('amount'));
+            $amount = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT);
 
-            $settings->get('Somme à emprunter min', 'type');
-            $minimumAmount = $settings->value;
-
-            $settings->get('Somme à emprunter max', 'type');
-            $maximumAmount = $settings->value;
-
-            if (false === filter_var($amount, FILTER_VALIDATE_INT)) {
+            if (false === $amount) {
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-            } elseif ($amount < $minimumAmount || $amount > $maximumAmount) {
+            } elseif ($amount < $projectManager->getMinProjectAmount() || $amount > $projectManager->getMaxProjectAmount()) {
                 $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
             }
         }
@@ -241,7 +231,7 @@ class ProjectRequestController extends Controller
             $partnerId      = $partnerManager->getDefaultPartner()->getId();
         }
 
-        $this->project                                       = $entityManagerSimulator->getRepository('projects');
+        $this->project                                       = $this->get('unilend.service.entity_manager')->getRepository('projects');
         $this->project->id_company                           = $this->company->getIdCompany();
         $this->project->amount                               = $amount;
         $this->project->id_borrowing_motive                  = $reason;
