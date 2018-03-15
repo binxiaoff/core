@@ -192,6 +192,15 @@ $height-autolend-cell-label-mobile: 40px;
     margin-bottom: 40px;
   }
 
+  .btn-cell-plus,
+  .btn-cell-minus,
+  .cell-input input[type="number"] {
+    &::selection {
+      background-color: transparent;
+      color: inherit;
+    }
+  }
+
   // Show the sidebar with information about the cell (tablet-l and desktop)
   .btn-cell-enable {
     display: block;
