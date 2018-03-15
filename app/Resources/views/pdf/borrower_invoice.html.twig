@@ -62,11 +62,8 @@
             <p class="text-align-right">
                 {% trans %} invoice-pdf_addressee-line {% endtrans %}
                 {{ project.idCompany.name }}<br>
-                {{ project.idCompany.adresse1 }}<br>
-                {% if project.idCompany.adresse2 %}
-                    {{ project.idCompany.adresse2 }}<br>
-                {% endif %}
-                {{ project.idCompany.zip }} {{ project.idCompany.city }}
+                {{ companyAddress.address }}<br>
+                {{ companyAddress.zip }} {{ companyAddress.city }}
             </p>
         </div>
     </div>

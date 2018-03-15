@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients as ClientEntity, ClientsStatus, OperationSubType, PaysV2, WalletType
+    AddressType, Clients as ClientEntity, ClientsStatus, OperationSubType, PaysV2, WalletType
 };
 
 class clients extends clients_crud
@@ -481,69 +481,70 @@ class clients extends clients_crud
 
     public function getBorrowersSalesForce()
     {
-        $sQuery = "SELECT
-                      c.id_client AS 'IDClient',
-                      c.id_client AS 'IDClient_2',
-                      c.id_langue AS 'Langue',
-                      REPLACE(c.civilite,',','') AS 'Civilite',
-                      REPLACE(c.nom,',','') AS 'Nom',
-                      REPLACE(c.nom_usage,',','') AS 'Nom_usage',
-                      REPLACE(c.prenom,',','') AS 'Prenom',
-                      CONVERT(REPLACE(c.fonction,',','') USING utf8) AS 'Fonction',
-                      CASE c.naissance
-                          WHEN '0000-00-00' then '2001-01-01'
-                          ELSE
-                            CASE SUBSTRING(c.naissance,1,1)
-                                WHEN '0' then '2001-01-01'
-                                ELSE c.naissance
-                            END
-                      END AS 'DateNaissance',
-                      REPLACE(ville_naissance,',','') AS 'VilleNaissance',
-                      ccountry.fr AS 'PaysNaissance',
-                      nv2.fr_f AS 'Nationalite',
-                      REPLACE(c.telephone,'\t','') AS 'Telephone',
-                      c.mobile AS 'Mobile',
-                      REPLACE(c.email,',','') AS 'Email',
-                      c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
-                      CASE c.type
-                        WHEN 1 THEN 'Physique'
-                        WHEN 2 THEN 'Morale'
-                        WHEN 3 THEN 'Physique'
-                        ELSE 'Morale'
-                      END AS 'TypeContact',
-                      CASE c.status
-                        WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
-                        ELSE 'non'
-                      END AS 'Valide',
-                      CASE c.added
-                        WHEN '0000-00-00 00:00:00' then ''
-                        ELSE c.added
-                      END AS 'date_inscription',
-                      CASE c.updated
-                        WHEN '0000-00-00 00:00:00' then ''
-                        ELSE c.updated
-                      END AS 'DateMiseJour',
-                      CASE c.lastlogin
-                        WHEN '0000-00-00 00:00:00' then ''
-                        ELSE c.lastlogin
-                      END AS 'DateDernierLogin',
-                      REPLACE(ca.adresse1,',','') AS 'Adresse1',
-                      REPLACE(ca.adresse2,',','') AS 'Adresse2',
-                      REPLACE(ca.adresse3,',','') AS 'Adresse3',
-                      REPLACE(ca.cp,',','') AS 'CP',
-                      REPLACE(ca.ville,',','') AS 'Ville',
-                      acountry.fr AS 'Pays',
-                      '012240000002G4e' as 'Sfcompte'
-                    FROM clients c
-                      INNER JOIN companies co on c.id_client = co.id_client_owner
-                      INNER JOIN projects p ON p.id_company = co.id_company
-                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
-                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
-                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                    GROUP BY c.id_client";
+        $query = "
+            SELECT
+              c.id_client AS 'IDClient',
+              c.id_client AS 'IDClient_2',
+              c.id_langue AS 'Langue',
+              REPLACE(c.civilite,',','') AS 'Civilite',
+              REPLACE(c.nom,',','') AS 'Nom',
+              REPLACE(c.nom_usage,',','') AS 'Nom_usage',
+              REPLACE(c.prenom,',','') AS 'Prenom',
+              CONVERT(REPLACE(c.fonction,',','') USING utf8) AS 'Fonction',
+              CASE c.naissance
+                  WHEN '0000-00-00' then '2001-01-01'
+                  ELSE
+                    CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                    END
+              END AS 'DateNaissance',
+              REPLACE(ville_naissance,',','') AS 'VilleNaissance',
+              ccountry.fr AS 'PaysNaissance',
+              nv2.fr_f AS 'Nationalite',
+              REPLACE(c.telephone,'\t','') AS 'Telephone',
+              c.mobile AS 'Mobile',
+              REPLACE(c.email,',','') AS 'Email',
+              c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
+              CASE c.type
+                WHEN 1 THEN 'Physique'
+                WHEN 2 THEN 'Morale'
+                WHEN 3 THEN 'Physique'
+                ELSE 'Morale'
+              END AS 'TypeContact',
+              CASE c.status
+                WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
+                ELSE 'non'
+              END AS 'Valide',
+              CASE c.added
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.added
+              END AS 'date_inscription',
+              CASE c.updated
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.updated
+              END AS 'DateMiseJour',
+              CASE c.lastlogin
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.lastlogin
+              END AS 'DateDernierLogin',
+              REPLACE(ca.address,',','') AS 'Adresse1',
+              '' AS 'Adresse2',
+              '' AS 'Adresse3',
+              REPLACE(ca.zip,',','') AS 'CP',
+              REPLACE(ca.city,',','') AS 'Ville',
+              acountry.fr AS 'Pays',
+              '012240000002G4e' as 'Sfcompte'
+            FROM clients c
+              INNER JOIN companies co on c.id_client = co.id_client_owner
+              INNER JOIN projects p ON p.id_company = co.id_company
+              LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "') 
+              LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+              LEFT JOIN pays_v2 acountry on ca.id_country = acountry.id_pays
+              LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
+            GROUP BY c.id_client";
 
-        return $this->bdd->executeQuery($sQuery);
+        return $this->bdd->executeQuery($query);
     }
 
     public function countClientsByRegion()

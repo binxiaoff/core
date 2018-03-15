@@ -48,24 +48,20 @@
             <tr>
                 <th>Adresse du siège social</th>
                 <td>
-                    <?= $this->companies->adresse1 ?><br>
-                    <?= $this->companies->zip ?> <?= $this->companies->city ?>
+                    <?= null !== $this->companyMainAddress ? $this->companyMainAddress->getAddress() : '' ?><br>
+                    <?= null !== $this->companyMainAddress ? $this->companyMainAddress->getZip() : '' ?> <?= null !== $this->companyMainAddress ? $this->companyMainAddress->getCity() : '' ?>
                 </td>
             </tr>
             <tr>
                 <th>Adresse de correspondance</th>
                 <td>
-                    <?= $this->clients_adresses->adresse1 ?><br>
-                    <?= $this->clients_adresses->cp ?> <?= $this->clients_adresses->ville ?>
+                    <?= null !== $this->companyPostalAddress ? $this->companyPostalAddress->getAddress() : '' ?><br>
+                    <?= null !== $this->companyPostalAddress ? $this->companyPostalAddress->getZip() : '' ?> <?= null !== $this->companyPostalAddress ? $this->companyPostalAddress->getCity() : '' ?>
                 </td>
             </tr>
             <tr>
                 <th>Téléphone du siège social</th>
                 <td><?= $this->companies->phone ?></td>
-            </tr>
-            <tr>
-                <th>Téléphone de correspondance</th>
-                <td><?= $this->clients_adresses->telephone ?></td>
             </tr>
             </tbody>
         </table>

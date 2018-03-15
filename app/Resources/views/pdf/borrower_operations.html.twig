@@ -61,8 +61,8 @@
             <p class="text-align-right">
                 <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}borrower-operation_pdf-location-date{% endtrans %}</b><br/>
                 <b>{{ company.name }}</b><br/>
-                {{ company.adresse1 }} <br/>
-                {{ company.zip }} {{ company.city }}
+                {{ companyAddress.address }} <br/>
+                {{ companyAddress.zip }} {{ companyAddress.city }}
             </p>
 
         </div>
