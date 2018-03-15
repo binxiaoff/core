@@ -5,7 +5,7 @@ use Doctrine\ORM\{
 };
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Product, ProjectsStatus, WalletType, Zones
+    AddressType, Clients, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PaysV2, Product, ProjectsStatus, WalletType, Zones
 };
 
 class partenairesController extends bootstrap
@@ -54,6 +54,16 @@ class partenairesController extends bootstrap
             return strcasecmp($first->getName(), $second->getName());
         });
 
+        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+        $agenciesWithAddress      = [];
+        foreach ($agencies as $agency) {
+            $agencyAddress                                = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
+            $agenciesWithAddress[$agency->getIdCompany()] = [
+                'agency'  => $agency,
+                'address' => $agencyAddress
+            ];
+        }
+
         $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
 
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
@@ -81,7 +91,7 @@ class partenairesController extends bootstrap
             'formSuccess'   => $success,
             'formErrors'    => $errors,
             'partner'       => $partner,
-            'agencies'      => $agencies,
+            'agencies'      => $agenciesWithAddress,
             'users'         => $users,
             'documentTypes' => $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findBy([], ['label' => 'ASC']),
             'documents'     => $partner->getAttachmentTypes(),
@@ -117,23 +127,28 @@ class partenairesController extends bootstrap
         }
 
         /** @var Companies $agency */
-        $agency   = null;
-        $agencyId = null;
-        $errors   = [];
+        $agency                   = null;
+        $agencyId                 = null;
+        $agencyAddress            = null;
+        $errors                   = [];
+        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+
 
         switch ($this->request->request->get('action')) {
             case 'create':
                 $agency = $this->createAgency($this->request, $partner, $errors);
 
                 if ($agency instanceof Companies) {
-                    $agencyId = $agency->getIdCompany();
+                    $agencyId      = $agency->getIdCompany();
+                    $agencyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
                 }
                 break;
             case 'modify':
                 $agency = $this->modifyAgency($this->request, $errors);
 
                 if ($agency instanceof Companies) {
-                    $agencyId = $agency->getIdCompany();
+                    $agencyId      = $agency->getIdCompany();
+                    $agencyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
                 }
                 break;
             case 'delete':
@@ -150,9 +165,9 @@ class partenairesController extends bootstrap
                 $agency->getName(),
                 $agency->getSiren(),
                 $agency->getPhone(),
-                $agency->getAdresse1(),
-                $agency->getZip(),
-                $agency->getCity(),
+                $agencyAddress->getAddress(),
+                $agencyAddress->getZip(),
+                $agencyAddress->getCity(),
             ] : 'delete',
             $errors,
             $agencyId
@@ -191,6 +206,16 @@ class partenairesController extends bootstrap
             try {
                 $entityManager->persist($agency);
                 $entityManager->flush($agency);
+
+                $this->get('unilend.service.address_manager')
+                    ->saveCompanyAddress(
+                        trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
+                        trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
+                        trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
+                        PaysV2::COUNTRY_FRANCE,
+                        $agency,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
 
                 return $agency;
             } catch (ORMException $exception) {
@@ -231,6 +256,17 @@ class partenairesController extends bootstrap
         if (empty($errors)) {
             try {
                 $entityManager->flush($agency);
+
+                $this->get('unilend.service.address_manager')
+                    ->saveCompanyAddress(
+                        trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
+                        trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
+                        trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
+                        PaysV2::COUNTRY_FRANCE,
+                        $agency,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
+
                 return $agency;
             } catch (ORMException $exception) {
                 $errors[] = $exception->getMessage();
@@ -258,6 +294,7 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
         $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+        $addressManager      = $this->get('unilend.service.address_manager');
         $agency              = $companiesRepository->find($id);
 
         if (null === $agency) {
@@ -287,9 +324,11 @@ class partenairesController extends bootstrap
         }
 
         if (empty($errors)) {
-            $agencyId = $agency->getIdCompany();
+            $agencyId      = $agency->getIdCompany();
 
             try {
+                $addressManager->deleteCompanyAddresses($agency);
+
                 $entityManager->remove($agency);
                 $entityManager->flush($agency);
                 return $agencyId;
@@ -313,9 +352,6 @@ class partenairesController extends bootstrap
         $name     = trim($request->request->filter('name', FILTER_SANITIZE_STRING));
         $siren    = trim($request->request->filter('siren', FILTER_SANITIZE_STRING));
         $phone    = trim($request->request->filter('phone', FILTER_SANITIZE_STRING));
-        $address  = trim($request->request->filter('address', FILTER_SANITIZE_STRING));
-        $postcode = trim($request->request->filter('postcode', FILTER_SANITIZE_STRING));
-        $city     = trim($request->request->filter('city', FILTER_SANITIZE_STRING));
 
         if (empty($name)) {
             $errors[] = 'Vous devez renseigner le nom de l\'agence';
@@ -328,9 +364,6 @@ class partenairesController extends bootstrap
             $agency->setName($name);
             $agency->setSiren($siren);
             $agency->setPhone($phone);
-            $agency->setAdresse1($address);
-            $agency->setZip($postcode);
-            $agency->setCity($city);
         }
 
         return $errors;

@@ -34,7 +34,7 @@ class AddressManager
      *
      * @throws \Exception
      */
-    public function saveBorrowerCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
+    public function saveCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
     {
         $addressType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AddressType')->findOneBy(['label' => $type]);
         if (null === $type) {
@@ -162,6 +162,19 @@ class AddressManager
         if ($coordinates) {
             $address->setLatitude($coordinates['latitude']);
             $address->setLongitude($coordinates['longitude']);
+        }
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function deleteCompanyAddresses(Companies $company)
+    {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findby(['idCompany' => $company]) as $address) {
+            $this->entityManager->remove($address);
+            $this->entityManager->flush($address);
         }
     }
 }

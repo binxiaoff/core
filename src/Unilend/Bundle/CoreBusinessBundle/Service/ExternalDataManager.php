@@ -125,7 +125,7 @@ class ExternalDataManager
 
                     $this->entityManager->flush($company);
 
-                    $this->addressManager->saveBorrowerCompanyAddress(
+                    $this->addressManager->saveCompanyAddress(
                         $identity->getAddress(),
                         $identity->getCity(),
                         $identity->getPostCode(),

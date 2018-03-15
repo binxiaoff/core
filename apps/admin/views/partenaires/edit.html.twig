@@ -378,13 +378,13 @@
                     </thead>
                     <tbody>
                     {% for agency in agencies %}
-                        <tr data-id="{{ agency.idCompany }}">
-                            <td>{{ agency.name }}</td>
-                            <td>{{ agency.siren }}</td>
-                            <td>{{ agency.phone }}</td>
-                            <td>{{ agency.adresse1 }}</td>
-                            <td>{{ agency.zip }}</td>
-                            <td>{{ agency.city }}</td>
+                        <tr data-id="{{ agency.agency.idCompany }}">
+                            <td>{{ agency.agency.name }}</td>
+                            <td>{{ agency.agency.siren }}</td>
+                            <td>{{ agency.agency.phone }}</td>
+                            <td>{{ agency.address.address|default('') }}</td>
+                            <td>{{ agency.address.zip|default('') }}</td>
+                            <td>{{ agency.address.city|default('') }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
