@@ -137,7 +137,6 @@
                                             {% set i = 0 %}
                                             {% for settings in autoBidSettings %}
                                                 {% for setting in settings %}
-                                                    {% set row = (i / 5)|round(0, 'floor') + 1 %}
                                                     {% set column = i % 5 %}
                                                     {% set classEnabled = '' %}
                                                     {% if setting.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Autobid::STATUS_ACTIVE') %}
@@ -153,13 +152,13 @@
                                                     {# Show the header at the start of each group #}
                                                     {% if column == 0 %}
                                                         <div class="cell cell-header">
-                                                            {{ "autolend_expert-settings-project-period-#{ row }"|trans }}
+                                                            {{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans }}
                                                         </div>
                                                     {% endif %}
                                                     <div data-autolendtable-cell="{{ i }}" class="cell cell-data {{ classEnabled }} {{ classAverage }}">
                                                         <div class="cell-label">
                                                             <div class="cell-period">
-                                                                {{ "autolend_expert-settings-project-period-#{ row }"|trans }}
+                                                                {{ "autolend_expert-settings-project-period-#{ setting.id_period }"|trans }}
                                                             </div>
                                                             <div class="cell-rating">
                                                                 {% if column == 0 %}
