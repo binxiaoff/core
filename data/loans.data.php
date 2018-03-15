@@ -212,7 +212,7 @@ class loans extends loans_crud
      * @return array
      * @throws Exception
      */
-    public function getSumLoansByProject(int $idLender, $order = null, $year = null) : array
+    public function getSumLoansByProject(int $idLender, $order = null, $year = null): array
     {
         $query = '
             SELECT

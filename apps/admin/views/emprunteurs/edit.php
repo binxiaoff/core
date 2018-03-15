@@ -77,6 +77,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
         <?php unset($_SESSION['error_email_exist']); ?>
     <?php endif; ?>
+    <?php if (isset($_SESSION['error_company_address']) && false === empty($_SESSION['error_company_address'])) : ?>
+        <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_company_address'] ?></p>
+        <?php unset($_SESSION['error_company_address']); ?>
+    <?php endif; ?>
 
     <form method="post" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>">
         <input type="hidden" name="form_edit_emprunteur">

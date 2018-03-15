@@ -3,13 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Bids, Product, ProjectsStatus
+};
 
 class FeedsBPICommand extends ContainerAwareCommand
 {
@@ -42,7 +42,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
-        $loans = $entityManagerSimulator->getRepository('loans');
+        $loans  = $entityManagerSimulator->getRepository('loans');
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');

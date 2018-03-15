@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, CompanyAddress, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType, Bids, Clients, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -251,7 +251,6 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 /** @var EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository $companyAddressRepository */
                 $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
                 $addressManager = $this->get('unilend.service.address_manager');
@@ -263,9 +262,6 @@ class ajaxController extends bootstrap
                 /** @var \companies $company */
                 $company = $this->loadData('companies');
                 $company->get($project->id_company, 'id_company');
-                /** @var CompanyAddress $companyMainAddress */
-                $companyMainAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
-                /** @var CompanyAddress $companyPostalAddress */
                 $companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_POSTAL_ADDRESS);
 
                 /** @var \clients $client */
@@ -312,13 +308,12 @@ class ajaxController extends bootstrap
 
                     if (false === empty($_POST['address_etape2']) && false === empty($_POST['ville_etape2']) && false === empty($_POST['postal_etape2'])) {
                         $addressManager->saveCompanyAddress(
-                                $_POST['address_etape2'],
-                                $_POST['postal_etape2'],
-                                $_POST['ville_etape2'],
-                                PaysV2::COUNTRY_FRANCE,
-                                $companyMainAddress,
-                                $company->id_company,
-                                AddressType::TYPE_MAIN_ADDRESS
+                            $_POST['address_etape2'],
+                            $_POST['postal_etape2'],
+                            $_POST['ville_etape2'],
+                            PaysV2::COUNTRY_FRANCE,
+                            $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company->id_company),
+                            AddressType::TYPE_MAIN_ADDRESS
                             );
                     }
 
@@ -328,8 +323,7 @@ class ajaxController extends bootstrap
                             $_POST['zip_correspondance_etape2'],
                             $_POST['city_correspondance_etape2'],
                             PaysV2::COUNTRY_FRANCE,
-                            $companyPostalAddress,
-                            $company->id_company,
+                            $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($company->id_company),
                             AddressType::TYPE_POSTAL_ADDRESS
                         );
                     }

@@ -2,15 +2,9 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class pdfController extends bootstrap

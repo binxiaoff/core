@@ -69,10 +69,12 @@
                             <div class="input-group set-right">
                                 <div class="btn-group"><span class="icon fa-euro"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-amount" name="autolend_amount"
+                                       class="input-field"
+                                       data-formvalidation-input
                                        data-formvalidation-minvalue="{{ setting('pret min') }}" step="any"
                                        value="{{ autolend_amount|default(setting('pret min'))|localizednumber }}"
-                                       class="input-field" data-formvalidation-type="number"
-                                       data-formvalidation-input data-formvalidation-required="true"/>
+                                       data-formvalidation-type="integer"
+                                       data-formvalidation-required="true"/>
                             </div><!-- /.input-group -->
                         </div><!-- /.form-field -->
                         <div class="form-field col-lg-3 col-md-4 col-sm-4" id="div-interest-simple" {% if is_novice == false %} style="display:none;" {% endif %}>
@@ -83,11 +85,12 @@
                             <div class="input-group set-right">
                                 <div class="btn-group"><span class="icon fa-percent"></span></div><!-- /.btn-group -->
                                 <input type="text" id="autolend-interest" name="autolend_rate_min"
+                                       class="input-field"
+                                       data-formvalidation-input
                                        data-formvalidation-minvalue="{{ projectRatesGlobal.rate_min|round(1) }}"
-                                       data-formValidation-maxvalue="{{ projectRatesGlobal.rate_max|round(1) }}"
+                                       data-formvalidation-maxvalue="{{ projectRatesGlobal.rate_max|round(1) }}"
                                        step="{{ setting('Auto-bid step')|round(1) }}"
                                        value="{{ autoBidSettings[1][0]['rate_min']|default(averageRateUnilend)|localizednumber }}"
-                                       class="input-field"
                                         {% if is_novice %}
                                             data-formvalidation-input data-formvalidation-required="true"
                                         {% endif %}/>

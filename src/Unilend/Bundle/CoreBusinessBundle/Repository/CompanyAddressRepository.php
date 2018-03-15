@@ -4,9 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Companies, CompanyAddress
+};
 
 class CompanyAddressRepository extends EntityRepository
 {
@@ -25,11 +25,11 @@ class CompanyAddressRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
-            ->andWhere('ca.dateArchived is NULL')
+            ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('dateOrder', 'DESC')
-            ->setMaxResults(1)
             ->setParameter('idCompany', $idCompany)
-            ->setParameter('type', $type);
+            ->setParameter('type', $type)
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
@@ -44,15 +44,15 @@ class CompanyAddressRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'co.idType = at.id')
+            ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
             ->where('ca.idCompany = :idCompany')
             ->andWhere('at.label = :type')
-            ->andWhere('ba.dateValidated IS NOT NULL')
-            ->andWhere('ba.dateArchived IS NULL')
-            ->orderBy('ba.dateValidated', 'DESC')
-            ->setMaxResults(1)
+            ->andWhere('ca.dateValidated IS NOT NULL')
+            ->andWhere('ca.dateArchived IS NULL')
+            ->orderBy('ca.dateValidated', 'DESC')
             ->setParameter(':idCompany', $idCompany)
-            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS);
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }

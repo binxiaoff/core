@@ -5,13 +5,13 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Loans, PaysV2, ProjectsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
@@ -82,6 +82,10 @@ EOF
                     $borrowerCompany->get($project->id_company, 'id_company');
                     $borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
                     $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
+
+                    if (null !== $borrowerCompanyAddress) {
+                        throw new \Exception('Borrower of loan ' . $loan->id_loan . ' has no main address');
+                    }
 
                     if ($wallet->getIdClient()->isNaturalPerson()) {
                         $clientAddress->get($wallet->getIdClient()->getIdClient(), 'id_client');
