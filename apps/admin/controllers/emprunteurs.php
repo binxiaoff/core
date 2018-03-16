@@ -130,7 +130,7 @@ class emprunteursController extends bootstrap
                 }
 
                 $this->get('unilend.service.address_manager')
-                    ->saveBorrowerCompanyAddress(
+                    ->saveCompanyAddress(
                         $_POST['adresse'],
                         $_POST['cp'],
                         $_POST['ville'],

@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\{
+    AbstractType, FormBuilderInterface
+};
 use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
 
 class CompanyAddressType extends AbstractType
@@ -16,20 +16,10 @@ class CompanyAddressType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('adresse1')
+            ->add('address')
             ->add('zip')
             ->add('city')
-            ->add('idPays', CountriesType::class)
+            ->add('idCountry', CountriesType::class)
         ;
-    }
-
-    /**
-     * @param OptionsResolver $resolver
-     */
-    public function configureOptions(OptionsResolver $resolver)
-    {
-        $resolver->setDefaults([
-            'data_class' => 'Unilend\Bundle\CoreBusinessBundle\Entity\Companies'
-        ]);
     }
 }
