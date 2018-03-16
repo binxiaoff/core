@@ -1,23 +1,24 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\{
+    FormError, FormInterface
+};
+use Symfony\Component\HttpFoundation\{
+    FileBag, JsonResponse, Request, Response
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\FileBag;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
@@ -206,7 +207,7 @@ class LenderProfileController extends Controller
 
             $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedClient, $client));
             if (false === empty($modifiedData)) {
-                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+                $this->updateClientStatusAndNotifyClient($client, $modifiedData);
             }
 
             $this->redirectToRoute('lender_profile_personal_information');
@@ -294,7 +295,7 @@ class LenderProfileController extends Controller
             $modifiedDataCompany = $formManager->getModifiedContent($unattachedCompany, $company);
             $modifiedData        = array_merge($modifiedDataClient, $modifiedDataCompany, $modifications);
             if (false === empty($modifiedData)) {
-                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+                $this->updateClientStatusAndNotifyClient($client, $modifiedData);
             }
 
             return true;
@@ -372,7 +373,7 @@ class LenderProfileController extends Controller
 
             $modifiedData = array_merge($modifications, $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedClientAddress, $clientAddress));
             if (false === empty($modifiedData)) {
-                $this->updateClientStatusAndNotifyClient($this->getClient(), array_merge($modifiedData, $modifications));
+                $this->updateClientStatusAndNotifyClient($client, array_merge($modifiedData, $modifications));
             }
 
             return true;
@@ -409,7 +410,8 @@ class LenderProfileController extends Controller
 
             $modifiedData = $this->get('unilend.frontbundle.service.form_manager')->getModifiedContent($unattachedCompany, $company);
             if (false === empty($modifiedData)) {
-                $this->updateClientStatusAndNotifyClient($this->getClient(), $modifiedData);
+                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($company->getIdClientOwner());
+                $this->updateClientStatusAndNotifyClient($client, $modifiedData);
             }
             $this->addFlash('fiscalAddressSuccess', $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message'));
 
@@ -770,7 +772,7 @@ class LenderProfileController extends Controller
 
         $completenessRequest = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(
             ['idClient' => $client->id_client, 'idStatus' => ClientsStatus::COMPLETENESS],
-            ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+            ['added' => 'DESC', 'id' => 'DESC']
         );
 
         if (null !== $completenessRequest) {
@@ -824,7 +826,7 @@ class LenderProfileController extends Controller
             }
         }
         if (empty($uploadError) && false === empty($uploadSuccess)) {
-            $this->updateClientStatusAndNotifyClient($client, $uploadSuccess);
+            $this->updateClientStatusAndNotifyClient($clientEntity, $uploadSuccess);
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
         } elseif (false === empty($uploadError)) {
             $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
@@ -874,10 +876,10 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param \clients $client
-     * @param array    $modifiedData
+     * @param Clients $client
+     * @param array   $modifiedData
      */
-    private function updateClientStatusAndNotifyClient(\clients $client, $modifiedData)
+    private function updateClientStatusAndNotifyClient(Clients $client, $modifiedData)
     {
         $historyContent      = $this->formatArrayToUnorderedList($modifiedData);
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
@@ -1137,28 +1139,28 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param \clients $client
+     * @param Clients $client
      */
-    private function sendAccountModificationEmail(\clients $client)
+    private function sendAccountModificationEmail(Clients $client)
     {
         $keywords = [
-            'firstName'     => $client->prenom,
+            'firstName'     => $client->getPrenom(),
             'lenderPattern' => $this->get('doctrine.orm.entity_manager')
                 ->getRepository('UnilendCoreBusinessBundle:Wallet')
-                ->getWalletByType($client->id_client, WalletType::LENDER)->getWireTransferPattern()
+                ->getWalletByType($client->getIdClient(), WalletType::LENDER)
+                ->getWireTransferPattern()
         ];
 
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $keywords);
 
         try {
-            $message->setTo($client->email);
+            $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
                 'Could not send email: preteur-modification-compte - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
     }
@@ -1180,6 +1182,7 @@ class LenderProfileController extends Controller
         /** @var UserLender $user */
         $user     = $this->getUser();
         $clientId = $user->getClientId();
+
         /** @var \clients_adresses $clientAddress */
         $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
         $clientAddress->get($clientId, 'id_client');

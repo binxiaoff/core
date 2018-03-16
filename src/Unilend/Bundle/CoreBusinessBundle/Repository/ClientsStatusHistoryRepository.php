@@ -27,7 +27,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->where('csh.idClient = :idClient')
             ->andWhere('csh.idStatus = :status')
             ->orderBy('csh.added', 'ASC')
-            ->addOrderBy('csh.idClientStatusHistory', 'ASC')
+            ->addOrderBy('csh.id', 'ASC')
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient)
             ->setParameter('status', ClientsStatus::VALIDATED);
@@ -91,7 +91,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->where('csh.idClient = :clientId')
             ->setParameter('clientId', $client)
             ->orderBy('csh.added', 'DESC')
-            ->addOrderBy('csh.idClientStatusHistory', 'DESC')
+            ->addOrderBy('csh.id', 'DESC')
             ->setMaxResults(2);
 
         return $queryBuilder->getQuery()->getResult();
@@ -109,7 +109,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('csh');
         $queryBuilder
-            ->select('COUNT(csh.idClientStatusHistory)')
+            ->select('COUNT(csh.id)')
             ->where('csh.idClient = :idClient')
             ->andWhere('csh.idStatus = :validated')
             ->setParameter('idClient', $client)

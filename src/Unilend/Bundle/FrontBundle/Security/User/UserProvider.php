@@ -167,7 +167,7 @@ class UserProvider implements UserProviderInterface
                 $initials,
                 $client->getPrenom(),
                 $client->getNom(),
-                $client->getClientsStatus()->getId(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $client->getEtapeInscriptionPreteur(),

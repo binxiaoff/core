@@ -331,12 +331,12 @@ class ClientsRepository extends EntityRepository
               REPLACE(c.prenom, ',', '') AS 'Prenom',
               REPLACE(c.fonction, ',', '') AS 'Fonction',
               CASE c.naissance
-                  WHEN '0000-00-00' THEN '2001-01-01'
-                  ELSE
-                    CASE SUBSTRING(c.naissance, 1, 1)
+                WHEN '0000-00-00' THEN '2001-01-01'
+                ELSE
+                  CASE SUBSTRING(c.naissance, 1, 1)
                     WHEN '0' THEN '2001-01-01'
                     ELSE c.naissance
-                END
+                  END
               END AS 'Datenaissance',
               REPLACE(ville_naissance, ',', '') AS 'Villenaissance',
               ccountry.fr AS 'PaysNaissance',
@@ -346,31 +346,31 @@ class ClientsRepository extends EntityRepository
               REPLACE(c.email, ',', '') AS 'Email',
               c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
               CASE c.type
-                  WHEN 1 THEN 'Physique'
-                  WHEN 2 THEN 'Morale'
-                  WHEN 3 THEN 'Physique'
-                  ELSE 'Morale'
+                WHEN 1 THEN 'Physique'
+                WHEN 2 THEN 'Morale'
+                WHEN 3 THEN 'Physique'
+                ELSE 'Morale'
               END AS 'TypeContact',
-              CASE c.clients_status
-                  WHEN " . ClientsStatus::VALIDATED . " THEN 'oui'
-                  ELSE 'non'
+              CASE csh.id_status
+                WHEN " . ClientsStatus::VALIDATED . " THEN 'oui'
+                ELSE 'non'
               END AS 'Valide',
               cs.label AS 'StatusCompletude',
               CASE c.added
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE c.added
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.added
               END AS 'DateInscription',
               CASE c.updated
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE c.updated
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.updated
               END AS 'DateDerniereMiseaJour',
               CASE c.lastlogin
-                  WHEN '0000-00-00 00:00:00' THEN ''
-                  ELSE c.lastlogin
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.lastlogin
               END AS 'DateDernierLogin',
-              CASE c.clients_status
-                  WHEN " . ClientsStatus::VALIDATED . " THEN 1
-                  ELSE 0
+              CASE csh.id_status
+                WHEN " . ClientsStatus::VALIDATED . " THEN 1
+                ELSE 0
               END AS 'StatutValidation',
               status_inscription_preteur AS 'StatusInscription',
               COUNT(DISTINCT l.id_project) AS 'NbPretsValides',
@@ -387,15 +387,16 @@ class ClientsRepository extends EntityRepository
               END AS 'DeletingProspect',
               '0012400000K0Bxw' AS 'Sfcompte'
             FROM clients c
-              INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
-              INNER JOIN wallet_type wt ON w.id_type = wt.id
-              LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
-              LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
-              LEFT JOIN pays_v2 acountry ON ca.id_pays = acountry.id_pays
-              LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
-              LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
-              LEFT JOIN clients_status cs ON c.clients_status = cs.id
-              LEFT JOIN prospects p ON p.email = c.email
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
+            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
+            LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
+            LEFT JOIN pays_v2 acountry ON ca.id_pays = acountry.id_pays
+            LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
+            LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
+            LEFT JOIN clients_status cs ON csh.id_status = cs.id
+            LEFT JOIN prospects p ON p.email = c.email
             WHERE c.status = " . Clients::STATUS_ONLINE . "
               AND wt.label = '" . WalletType::LENDER . "' 
             GROUP BY c.id_client";
@@ -413,14 +414,16 @@ class ClientsRepository extends EntityRepository
         $query = '
             SELECT
               c.*,
-              cs.label            AS label_status,
+              cs.id AS clients_status,
+              cs.label AS label_status,
               w.available_balance AS balance
             FROM clients c
-              INNER JOIN clients_status cs ON c.clients_status = cs.id
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+              INNER JOIN clients_status cs ON csh.id_status = cs.id
               INNER JOIN wallet w ON c.id_client = w.id_client
               LEFT JOIN companies com ON c.id_client = com.id_client_owner
-            WHERE c.clients_status IN (:clientsStatus)
-            ORDER BY FIELD(c.clients_status, :clientsStatus), c.added DESC';
+            WHERE csh.id_status IN (:clientsStatus)
+            ORDER BY FIELD(csh.id_status, :clientsStatus), c.added DESC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['clientsStatus' => $status], ['clientsStatus' => Connection::PARAM_INT_ARRAY])
@@ -537,11 +540,12 @@ class ClientsRepository extends EntityRepository
               w.available_balance AS availableBalance,
               MIN(csh.added) AS validationDate
             FROM clients c
-            INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
             LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
             LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
             LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::VALIDATED . '
-            WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
+            WHERE csh.id IS NOT NULL OR available_balance > 0
             GROUP BY c.id_client
             ORDER BY c.lastlogin ASC';
 
@@ -573,11 +577,12 @@ class ClientsRepository extends EntityRepository
         $sql = '
             SELECT *
             FROM clients c
-            WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`nom`' . $replaceCharacters . ' LIKE :lastName
-                AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`prenom`' . $replaceCharacters . ' LIKE :firstName
-                AND naissance = :birthdate
-                AND status = ' . Clients::STATUS_ONLINE . '
-                AND clients_status = ' . ClientsStatus::VALIDATED;
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
+                AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
+                AND c.naissance = :birthdate
+                AND c.status = ' . Clients::STATUS_ONLINE . '
+                AND csh.id_status = ' . ClientsStatus::VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()

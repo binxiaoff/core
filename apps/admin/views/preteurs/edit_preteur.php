@@ -742,104 +742,105 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 <?php endif; ?>
             </div>
             <div class="droite">
-                <?php if ($this->clients->clients_status != ClientsStatus::CLOSED_DEFINITELY) : ?>
-                <table class="tabLesStatuts">
-                    <tr>
-                        <td>
-                            <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
-                                || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
-                            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
-                                <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
-                                <span style="color:green;">Votre email a été envoyé</span>
-                                <?php unset($_SESSION['email_completude_confirm']); ?>
-                                <?php unset($_SESSION['compte_valide']); ?>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <?php if (ClientsStatus::VALIDATED != $this->clients->clients_status && Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                                <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <?php if (false === in_array($this->clients->clients_status, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
-                                <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
-                    <tr>
-                        <td colspan="2">
-                            <?php if (Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                                <input type="button"
-                                       onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
-                                       class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
-                                       value="Hors ligne / Clôturé par Unilend">
-                            <?php else: ?>
-                                <input type="button"
-                                       onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au statut avant la mise hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
-                                       class="btn-primary"
-                                       value="En ligne / Statut avant mise hors ligne">
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2">
-                            <?php if ($this->clients->clients_status != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
-                                <input type="button"
-                                       onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
-                                       class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                </table>
-                <br/>
-                <div class="message_completude">
-                    <h2>Complétude - Personnalisation du message</h2>
-
-                    <div class="liwording">
-                        <table>
-                            <?php foreach($this->completude_wording as $key => $message) : ?>
-                                <tr>
-                                    <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
-                                    <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
-                                </tr>
-                                <?php if (substr($key, -1, 1) == 3) : ?>
-                                    <tr><td colspan="2">&nbsp;</td></tr>
+                <?php $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId(); ?>
+                <?php if ($clientStatus != ClientsStatus::CLOSED_DEFINITELY) : ?>
+                    <table class="tabLesStatuts">
+                        <tr>
+                            <td>
+                                <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
+                                    || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
+                                <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
                                 <?php endif; ?>
-                            <?php endforeach; ?>
-                        </table>
-                    </div>
+                            </td>
+                            <td>
+                                <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
+                                    <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
+                                    <span style="color:green;">Votre email a été envoyé</span>
+                                    <?php unset($_SESSION['email_completude_confirm']); ?>
+                                    <?php unset($_SESSION['compte_valide']); ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <?php if (ClientsStatus::VALIDATED != $clientStatus && Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                                    <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <?php if (false === in_array($clientStatus, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                                    <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                <?php if (Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                                    <input type="button"
+                                           onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
+                                           class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
+                                           value="Hors ligne / Clôturé par Unilend">
+                                <?php else: ?>
+                                    <input type="button"
+                                           onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au statut avant la mise hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
+                                           class="btn-primary"
+                                           value="En ligne / Statut avant mise hors ligne">
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <?php if ($clientStatus != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
+                                    <input type="button"
+                                           onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
+                                           class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    </table>
                     <br/>
-                    <h3 class="test">Listes : </h3>
-                    <div class="content_li_wording">
+                    <div class="message_completude">
+                        <h2>Complétude - Personnalisation du message</h2>
+
+                        <div class="liwording">
+                            <table>
+                                <?php foreach($this->completude_wording as $key => $message) : ?>
+                                    <tr>
+                                        <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                        <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
+                                    </tr>
+                                    <?php if (substr($key, -1, 1) == 3) : ?>
+                                        <tr><td colspan="2">&nbsp;</td></tr>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </table>
+                        </div>
+                        <br/>
+                        <h3 class="test">Listes : </h3>
+                        <div class="content_li_wording">
+                        </div>
+                        <fieldset style="width:100%;">
+                            <table class="formColor" style="width:100%;">
+                                <tr>
+                                    <td>
+                                        <label for="id">Saisir votre message :</label>
+                                        <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
+                                        <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
+                                    </th>
+                                </tr>
+                            </table>
+                        </fieldset>
+                        <br/><br/>
                     </div>
-                    <fieldset style="width:100%;">
-                        <table class="formColor" style="width:100%;">
-                            <tr>
-                                <td>
-                                    <label for="id">Saisir votre message :</label>
-                                    <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>
-                                    <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
-                                    <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
-                                </th>
-                            </tr>
-                        </table>
-                    </fieldset>
-                    <br/><br/>
-                </div>
                 <?php endif; ?>
             </div>
             <div class="clear"></div>

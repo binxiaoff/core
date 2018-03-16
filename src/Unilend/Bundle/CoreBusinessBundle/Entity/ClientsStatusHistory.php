@@ -67,11 +67,11 @@ class ClientsStatusHistory
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_client_status_history", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idClientStatusHistory;
+    private $id;
 
 
 
@@ -220,13 +220,13 @@ class ClientsStatusHistory
     }
 
     /**
-     * Get idClientStatusHistory
+     * Get id
      *
      * @return int
      */
-    public function getIdClientStatusHistory(): int
+    public function getId(): int
     {
-        return $this->idClientStatusHistory;
+        return $this->id;
     }
 
     /**

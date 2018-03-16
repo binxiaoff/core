@@ -3,23 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType,
-    Bids,
-    Factures,
-    LenderStatisticQueue,
-    Notifications,
-    OperationSubType,
-    OperationType,
-    Prelevements,
-    ProjectRepaymentTask,
-    ProjectsPouvoir,
-    ProjectsStatus,
-    Receptions,
-    UniversignEntityInterface,
-    Virements,
-    Wallet,
-    WalletType,
-    Zones
+    AttachmentType, Bids, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -869,12 +853,16 @@ class transfertsController extends bootstrap
                 false === empty($_POST['id_client_receiver'])
                 && (false === is_numeric($_POST['id_client_receiver'])
                     || false === $newOwner->get($_POST['id_client_receiver'])
-                    || false === $clientManager->isLender($newOwner))
+                    || false === $clientManager->isLender($newOwner)
+                )
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
 
-            if ($newOwner->clients_status != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
+            $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
+            $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
+
+            if ($newOwnerStatus !== ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -976,7 +964,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $newOwner->clients_status,
+                        $newOwnerStatus,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 

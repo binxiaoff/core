@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
+    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -9,6 +9,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class preteursController extends bootstrap
 {
+    /** @var Wallet */
+    protected $wallet;
+
     public function initialize()
     {
         parent::initialize();
@@ -371,7 +374,7 @@ class preteursController extends bootstrap
             $this->clientStatusMessage     = $this->getMessageAboutClientStatus();
             $this->statusHistory           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
                 ['idClient' => $this->clients->id_client],
-                ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+                ['added' => 'DESC', 'id' => 'DESC']
             );
 
             $attachments     = $client->getAttachments();
@@ -782,14 +785,14 @@ class preteursController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-            ['idClient' => $this->clients->id_client],
-            ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
-        );
+        $timeCreate    = \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added);
 
-        $timeCreate = empty($statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $statusHistory[0]->getAdded();
-        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
+        if (false === empty($this->clients->id_client_status_history)) {
+            $statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->find($this->clients->id_client_status_history);
+            $timeCreate    = $statusHistory->getAdded();
+        }
 
+        $month    = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords = [
             'firstName'        => $this->clients->prenom,
             'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
@@ -806,8 +809,6 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
         $mailTemplate           = $mailTemplateRepository->findOneBy([
             'type'   => 'completude',
@@ -1358,7 +1359,17 @@ class preteursController extends bootstrap
      */
     private function getMessageAboutClientStatus(): string
     {
-        switch ($this->clients->clients_status) {
+        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
+
+        if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $this->clients->id_client]);
+
+            return '';
+        }
+
+        switch ($clientStatusHistory->getIdStatus()->getId()) {
             case ClientsStatus::CREATION:
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
@@ -1389,7 +1400,7 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '';
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $this->clients->clients_status . '"', ['client' => $this->clients->id_client]);
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $this->clients->id_client]);
                 break;
         }
 

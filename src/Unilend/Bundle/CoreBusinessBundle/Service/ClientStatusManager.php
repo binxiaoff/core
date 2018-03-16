@@ -68,12 +68,12 @@ class ClientStatusManager
     }
 
     /**
-     * @param \clients $client
-     * @param string   $content
+     * @param Clients $client
+     * @param string  $content
      */
-    public function changeClientStatusTriggeredByClientAction(\clients $client, $content): void
+    public function changeClientStatusTriggeredByClientAction(Clients $client, string $content): void
     {
-        switch ($client->clients_status) {
+        switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
             case ClientsStatus::COMPLETENESS:
             case ClientsStatus::COMPLETENESS_REMINDER:
             case ClientsStatus::COMPLETENESS_REPLY:
@@ -114,8 +114,6 @@ class ClientStatusManager
             $clientStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($status);
             $user         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
 
-            $client->setClientsStatus($clientStatus);
-
             $clientStatusHistory = new ClientsStatusHistory();
             $clientStatusHistory
                 ->setIdClient($client)
@@ -125,7 +123,10 @@ class ClientStatusManager
                 ->setNumeroRelance($reminder);
 
             $this->entityManager->persist($clientStatusHistory);
-            $this->entityManager->flush();
+            $this->entityManager->flush($clientStatusHistory);
+
+            $client->setIdClientStatusHistory($clientStatusHistory);
+            $this->entityManager->flush($client);
 
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {

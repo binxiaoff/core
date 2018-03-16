@@ -3,12 +3,15 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, BankAccount, Bids, Clients, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, WalletType, Zones
+    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class sfpmeiController extends bootstrap
 {
+    /** @var Wallet */
+    protected $wallet;
+
     public function initialize()
     {
         parent::initialize();
@@ -269,7 +272,7 @@ class sfpmeiController extends bootstrap
 
                 $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
                     ['idClient' => $this->clients->id_client],
-                    ['added' => 'DESC', 'idClientStatusHistory' => 'DESC']
+                    ['added' => 'DESC', 'id' => 'DESC']
                 );
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
@@ -660,7 +663,17 @@ class sfpmeiController extends bootstrap
      */
     private function getLenderStatusMessage()
     {
-        switch ($this->clients->clients_status) {
+        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
+
+        if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $this->clients->id_client]);
+
+            return '';
+        }
+
+        switch ($clientStatusHistory->getIdStatus()->getId()) {
             case ClientsStatus::CREATION:
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
@@ -691,7 +704,7 @@ class sfpmeiController extends bootstrap
                 $clientStatusMessage = '';
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $this->clients->clients_status . '"', ['client' => $this->clients->id_client]);
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $this->clients->id_client]);
                 break;
         }
 
