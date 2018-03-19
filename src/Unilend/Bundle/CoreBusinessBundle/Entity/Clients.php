@@ -11,7 +11,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * Clients
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"})})
+ * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -33,7 +33,7 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
-    /** Legacy welcome offer before separating them and adding types  */
+    /** Legacy welcome offer before separating them and adding types */
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
@@ -261,6 +261,16 @@ class Clients
      * @ORM\Column(name="status", type="integer", nullable=true)
      */
     private $status;
+
+    /**
+     * @var ClientsStatusHistory
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id", nullable=true)
+     * })
+     */
+    private $idClientStatusHistory;
 
     /**
      * @var \DateTime
@@ -1068,6 +1078,30 @@ class Clients
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * Set idClientsStatusHistory
+     *
+     * @param ClientsStatusHistory $idClientStatusHistory
+     *
+     * @return Clients
+     */
+    public function setIdClientStatusHistory(?ClientsStatusHistory $idClientStatusHistory): Clients
+    {
+        $this->idClientStatusHistory = $idClientStatusHistory;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientsStatusHistory
+     *
+     * @return ClientsStatusHistory
+     */
+    public function getIdClientStatusHistory(): ?ClientsStatusHistory
+    {
+        return $this->idClientStatusHistory;
     }
 
     /**

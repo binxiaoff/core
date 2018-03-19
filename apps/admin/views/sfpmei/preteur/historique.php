@@ -16,23 +16,27 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 </tr>
                 </thead>
                 <tbody>
+                <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory $historyEntry */ ?>
                 <?php foreach ($this->statusHistory as $historyEntry) : ?>
-                    <?php
-                    $this->clients_status->get($historyEntry['id_client_status'], 'id_client_status');
-                    $this->users->get($historyEntry['id_user'], 'id_user');
-                    ?>
-                    <?php switch ($this->clients_status->status) :
+                    <?php switch ($historyEntry->getIdStatus()->getId()) :
+                        case ClientsStatus::CREATION: ?>
+                            <tr>
+                                <td>Création de compte</td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td></td>
+                            </tr>
+                            <?php break;
                         case ClientsStatus::TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
-                                    <?php if (empty($historyEntry['content'])) : ?>
-                                        Création de compte
+                                    <?php if (empty($historyEntry->getContent())) : ?>
+                                        Fin d'inscription
                                     <?php else: ?>
                                         Compte modifié
-                                        <?= $historyEntry['content'] ?>
+                                        <?= $historyEntry->getContent() ?>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td></td>
                             </tr>
                             <?php break;
@@ -40,19 +44,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                             <tr>
                                 <td>
                                     Complétude<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
-                                <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
                         case ClientsStatus::COMPLETENESS_REMINDER: ?>
                             <tr>
                                 <td>
                                     Complétude relance<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td></td>
                             </tr>
                             <?php break;
@@ -60,9 +64,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                             <tr>
                                 <td>
                                     Complétude réponse<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td></td>
                             </tr>
                             <?php break;
@@ -70,50 +74,50 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                             <tr>
                                 <td>
                                     Compte modifié<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td></td>
                             </tr>
                             <?php break;
                         case ClientsStatus::VALIDATED: ?>
                             <tr>
                                 <td>
-                                    <?php if (empty($historyEntry['content'])) : ?>
+                                    <?php if (empty($historyEntry->getContent())) : ?>
                                         Compte validé
                                     <?php else : ?>
-                                        <?= $historyEntry['content'] ?>
+                                        <?= $historyEntry->getContent() ?>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
-                                <td class="text-nowrap"><?= (-1 == $historyEntry['id_user']) ? 'Validation automatique Greenpoint' : $this->users->firstname . ' ' . $this->users->name ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td class="text-nowrap"><?= (-1 === $historyEntry->getIdUser()->getIdUser()) ? 'Validation automatique Greenpoint' : $historyEntry->getIdUser()->getFirstname() . ' ' . $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
                         case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
                             <tr>
                                 <td>Compte clôturé à la demande du prêteur</td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
-                                <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
                         case ClientsStatus::CLOSED_BY_UNILEND: ?>
                             <tr>
                                 <td>
                                     Compte clôturé par Unilend<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
-                                <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
                         case ClientsStatus::CLOSED_DEFINITELY: ?>
                             <tr>
                                 <td>
                                     Compte définitvement fermé<br>
-                                    <?= $historyEntry['content'] ?>
+                                    <?= $historyEntry->getContent() ?>
                                 </td>
-                                <td><?= date('d/m/Y H:i:s', strtotime($historyEntry['added'])) ?></td>
-                                <td class="text-nowrap"><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                                <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
+                                <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break; ?>
                     <?php endswitch; ?>

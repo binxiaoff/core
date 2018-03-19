@@ -3251,7 +3251,8 @@ class dossiersController extends bootstrap
 
     public function _dechoir_terme()
     {
-        $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
+        $projectId = $this->request->request->getInt('project-id');
+        $includeUnilendCommission =  $this->request->request->getboolean('include-unilend-commission');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
@@ -3264,7 +3265,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                 try {
-                    $projectCloseOutNettingManager->decline($project, new DateTime());
+                    $projectCloseOutNettingManager->decline($project, new DateTime(), $includeUnilendCommission);
                 } catch (\Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
                     $_SESSION['freeow']['title']   = 'Déchéance du terme';
