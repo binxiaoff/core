@@ -38,13 +38,16 @@
         </tr>
         <tr>
             <th><label for="address">Adresse *</label></th>
-            <td colspan="3"><input type="text" name="address" id="address" style="width: 610px;" class="input_big" value="<?= null !== $this->companyAddress ? $this->companyAddress->getAddress() : '' ?>" required></td>
+            <td colspan="3"><input type="text" name="address" id="address" style="width: 610px;" class="input_big"
+                                   value="<?= null === $this->company->getIdAddress() ? '' : $this->company->getIdAddress()->getAddress() ?>" required></td>
         </tr>
         <tr>
             <th><label for="postCode">Code postal *</label></th>
-            <td><input type="text" name="postCode" id="postCode" class="input_large" value="<?= null !== $this->companyAddress ? $this->companyAddress->getZip() : '' ?>" required></td>
+            <td><input type="text" name="postCode" id="postCode" class="input_large"
+                       value="<?= null === $this->company->getIdAddress() ? '' : $this->company->getIdAddress()->getZip() ?>" required></td>
             <th><label for="city">Ville *</label></th>
-            <td><input type="text" name="city" id="city" class="input_large" value="<?= null !== $this->companyAddress ? $this->companyAddress->getCity() : '' ?>" required></td>
+            <td><input type="text" name="city" id="city" class="input_large"
+                       value="<?= null === $this->company->getIdAddress() ? '' : $this->company->getIdAddress()->getCity() ?>" required></td>
         </tr>
         <tr>
             <th><label for="invoice_email">Email de facturation</label></th>

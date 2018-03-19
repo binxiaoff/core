@@ -35,16 +35,17 @@
             <tbody>
             <?php $i = 1; ?>
             <?php
-            foreach ($this->companies as $details) : ?>
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
+            foreach ($this->companies as $company) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $details['company']->getName() ?></td>
-                    <td><?= null !== $details['address'] ? $details['address']->getAddress() : '' ?></td>
-                    <td><?= null !== $details['address'] ? $details['address']->getZip() : '' ?></td>
-                    <td><?= null !== $details['address'] ? $details['address']->getCity() : '' ?></td>
-                    <td><?= $details['company']->getPhone() ?></td>
+                    <td><?= $company->getName() ?></td>
+                    <td><?= $company->getIdAddress()->getAddress() ?></td>
+                    <td><?= $company->getIdAddress()->getZip() ?></td>
+                    <td><?= $company->getIdAddress()->getCity() ?></td>
+                    <td><?= $company->getPhone() ?></td>
                     <td align="center">
-                        <a href="<?= $this->lurl ?>/company/edit/<?= $details['company']->getIdCompany() ?>">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $details['company']->getName() ?>">
+                        <a href="<?= $this->lurl ?>/company/edit/<?= $company->getIdCompany() ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $company->getName() ?>">
                         </a>
                     </td>
                 </tr>
