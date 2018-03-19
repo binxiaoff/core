@@ -980,8 +980,8 @@ class LenderSubscriptionController extends Controller
                 $clientEntity = $clientRepository->find($this->getUser()->getClientId());
 
                 if (
-                    null !== $clientEntity->getClientsStatus()
-                    && $clientEntity->getClientsStatus()->getId() >= ClientsStatus::MODIFICATION
+                    null !== $clientEntity->getIdClientStatusHistory()
+                    && $clientEntity->getIdClientStatusHistory()->getIdStatus()->getId() >= ClientsStatus::MODIFICATION
                     && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()
                 ) {
                     return $this->redirectToRoute('lender_dashboard');

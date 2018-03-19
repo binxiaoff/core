@@ -186,7 +186,8 @@ class ClientsRepository extends EntityRepository
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->where('c.clientsStatus IN (:status)')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('csh.idStatus IN (:status)')
             ->andWhere('wt.label = :lender')
             ->setParameter('status', $status, Connection::PARAM_INT_ARRAY)
             ->setParameter('lender', WalletType::LENDER);
@@ -823,7 +824,7 @@ class ClientsRepository extends EntityRepository
                 c.prenom,
                 c.type AS clientType,
                 c.status,
-                IDENTITY(c.clientsStatus) AS clientsStatus,
+                IDENTITY(csh.idStatus) AS idStatus,
                 c.added AS creationDate,
                 wt.label AS walletType,
                 co.idCompany,
@@ -837,6 +838,7 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->leftJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
             ->leftJoin('UnilendCoreBusinessBundle:BeneficialOwner', 'bo', Join::WITH, 'c.idClient = bo.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')

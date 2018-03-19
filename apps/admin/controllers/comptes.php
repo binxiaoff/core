@@ -67,8 +67,8 @@ class comptesController extends bootstrap
             $accounts               = $clientsRepository->findDuplicatesByEmail($email);
 
             foreach ($accounts as $account) {
-                if (false === empty($account['clientsStatus'])) {
-                    $clientStatus = $clientStatusRepository->find($account['clientsStatus']);
+                if (false === empty($account['idStatus'])) {
+                    $clientStatus = $clientStatusRepository->find($account['idStatus']);
                     $account['additionalStatus'] = $clientStatus->getLabel();
                 }
 
