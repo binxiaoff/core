@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\User\{
     UserInterface, UserProviderInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, Wallet, WalletType
+    Clients, ClientsStatus, Companies, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ClientManager, LenderManager, SlackManager, TermsOfSaleManager
@@ -70,7 +70,7 @@ class UserProvider implements UserProviderInterface
     public function loadUserByUsername($username)
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]);
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($username, ClientsStatus::LOGIN_ENABLED_STATUS);
             $usersCount = count($users);
 
             if ($usersCount > 0) {
@@ -234,11 +234,10 @@ class UserProvider implements UserProviderInterface
         }
     }
 
-
     /**
      * @param string $hash
      *
-     * @return UserBorrower|UserLender
+     * @return UserBorrower|UserLender|UserPartner
      */
     public function loadUserByHash($hash)
     {
@@ -246,7 +245,11 @@ class UserProvider implements UserProviderInterface
             throw new NotFoundHttpException('Invalid client hash');
         }
 
-        if ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $hash, 'status' => Clients::STATUS_ONLINE])) {
+        $clientEntity = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Clients')
+            ->findOneByHashAndStatus($hash, ClientsStatus::LOGIN_ENABLED_STATUS);
+
+        if ($clientEntity) {
             return $this->setUser($clientEntity);
         }
 
