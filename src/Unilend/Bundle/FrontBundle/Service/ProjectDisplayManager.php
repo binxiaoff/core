@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, ClientsStatus, Product, Projects, ProjectsStatus
+    Clients, ClientsStatus, Product, Projects, ProjectsStatus
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BidManager, CompanyBalanceSheetManager, ProjectManager
@@ -134,7 +134,7 @@ class ProjectDisplayManager
      */
     public function getBaseData(\projects $project): array
     {
-        $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
         $now      = new \DateTime('NOW');
         $end      = $this->projectManager->getProjectEndDate($project);
@@ -159,11 +159,11 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $companyAddress->getCity(),
-                'zip'       => $companyAddress->getZip(),
-                'sectorId'  => $companyAddress->getIdCompany()->getSector(),
-                'latitude'  => (float) $companyAddress->getLatitude(),
-                'longitude' => (float) $companyAddress->getLongitude()
+                'city'      => $company->getIdAddress->getCity(),
+                'zip'       => $company->getIdAddress->getZip(),
+                'sectorId'  => $company->getIdAddress->getIdCompany()->getSector(),
+                'latitude'  => (float) $company->getIdAddress->getLatitude(),
+                'longitude' => (float) $company->getIdAddress->getLongitude()
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
