@@ -13,7 +13,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class QueriesCrsDacCommand extends ContainerAwareCommand
 {
-
     /**
      * @see Command
      */
@@ -107,7 +106,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->getCodePays() : '');
             $activeSheet->setCellValue('E' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('F' . $row, $client->getClientsStatus()->getId());
+            $activeSheet->setCellValue('F' . $row, $client->getIdClientStatusHistory()->getIdStatus()->getId());
             $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
             $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
             $activeSheet->setCellValue('I' . $row, $client->getNom());
