@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Product, ProjectsStatus
+    Bids, Product, ProjectsStatus
 };
 
 class FeedsBPICommand extends ContainerAwareCommand
@@ -37,8 +37,6 @@ class FeedsBPICommand extends ContainerAwareCommand
 
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
-        /** @var \companies $company */
-        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
@@ -60,7 +58,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         ];
 
         $partner    = strtolower($input->getArgument('partner'));
-        $products   = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
+        $products   = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
         $productIds = array_map(function (Product $product) {
             return $product->getIdProduct();
         }, $products);
@@ -69,8 +67,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $projectList         = $project->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false, $productIds);
         foreach ($projectList as $item) {
             $project->get($item['id_project']);
-            $company->get($project->id_company);
-            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
             $projectPublicationDate = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_publication);
             $projectWithdrawalDate  = \DateTime::createFromFormat('Y-m-d H:i:s', $project->date_retrait);
@@ -102,15 +99,15 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'impact_culturel'                  => 'NON',
                 'impact_eco'                       => 'OUI',
                 'categorie'                        => [
-                    'categorie1' => $this->getBPISector($company->sector)
+                    'categorie1' => $this->getBPISector($company->getSector())
                 ],
                 'mots_cles_nomenclature_operateur' => '',
                 'mode_financement'                 => 'PRR',
                 'type_porteur_projet'              => 'ENT',
                 'qualif_ESS'                       => 'NON',
-                'code_postal'                      => $companyAddress->getZip(),
-                'ville'                            => $companyAddress->getCity(),
-                'titre'                            => $translator->trans('company-sector_sector-' . $company->sector) . ' - ' . $company->city,
+                'code_postal'                      => $company->getIdAddress()->getZip(),
+                'ville'                            => $company->getIdAddress()->getCity(),
+                'titre'                            => $translator->trans('company-sector_sector-' . $company->getSector()) . ' - ' . $company->getIdAddress->getCity(),
                 'description'                      => $project->nature_project,
                 'url'                              => $hostUrl . $router->generate('project_detail',
                         ['projectSlug' => $project->slug]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',

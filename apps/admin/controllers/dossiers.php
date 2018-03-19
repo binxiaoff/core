@@ -148,7 +148,6 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-        $companyAddressRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         $this->beneficialOwnerDeclaration = null;
 
@@ -171,8 +170,8 @@ class dossiersController extends bootstrap
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->companyMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
-            $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
+            $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
+            $this->companyPostalAddress = $this->projectEntity->getIdCompany()->getIdPostalAddress();
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
@@ -2457,13 +2456,22 @@ class dossiersController extends bootstrap
                 die;
             }
 
-            try {
-                $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
-            } catch (\Exception $exception) {
-                $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
+            if (null === $companyMainAddress->getDateValidated()) {
+                try {
+                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
+                } catch (\Exception $exception) {
+                    $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
 
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                die;
+                    $this->get('logger')->error('An exception occured druing validation of borrower address. Message: ' . $exception->getMessage(), [
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'projectId' => $this->projects->id_project
+                    ]);
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                }
             }
 
             $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');

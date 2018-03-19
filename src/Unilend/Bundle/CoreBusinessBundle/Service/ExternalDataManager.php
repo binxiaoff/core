@@ -127,8 +127,8 @@ class ExternalDataManager
 
                     $this->addressManager->saveCompanyAddress(
                         $identity->getAddress(),
-                        $identity->getCity(),
                         $identity->getPostCode(),
+                        $identity->getCity(),
                         PaysV2::COUNTRY_FRANCE,
                         $company,
                         AddressType::TYPE_MAIN_ADDRESS
