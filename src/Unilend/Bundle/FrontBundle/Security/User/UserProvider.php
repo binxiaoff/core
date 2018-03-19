@@ -254,7 +254,7 @@ class UserProvider implements UserProviderInterface
         }
 
         throw new NotFoundHttpException(
-            sprintf('Hash "%s" does not exist.', $hash)
+            sprintf('No client with hash "%s" can log in.', $hash)
         );
     }
 }
