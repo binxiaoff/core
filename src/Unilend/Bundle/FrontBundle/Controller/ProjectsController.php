@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContractAttributeType, WalletType
+    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContractAttributeType, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -1192,33 +1192,27 @@ class ProjectsController extends Controller
      * @param \projects $project
      *
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function getDIRSCompany(\projects $project)
+    private function getDIRSCompany(\projects $project): array
     {
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-
-        /** @var \companies $company */
-        $company = $entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
-        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
-
+        $entityManager              = $this->get('doctrine.orm.entity_manager');
+        $company                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+
         $balanceDetails = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount([$project->id_dernier_bilan]);
         $balanceDetails = $balanceDetails[$project->id_dernier_bilan]['details'];
         $workingCapital = $balanceDetails['CJ'] - ($balanceDetails['DS'] + $balanceDetails['DT'] + $balanceDetails['DU'] + $balanceDetails['DV'] + $balanceDetails['DW'] + $balanceDetails['DX'] + $balanceDetails['DY'] + $balanceDetails['DZ'] + $balanceDetails['EA']);
 
         return [
-            'name'             => $company->name,
-            'siren'            => $company->siren,
-            'legal_status'     => $company->forme,
-            'capital'          => str_replace(' ', '', $company->capital),
-            'address'          => trim($companyAddress->getAddress()),
-            'post_code'        => $companyAddress->getZip(),
-            'city'             => $companyAddress->getCity(),
-            'commercial_court' => $company->tribunal_com,
-            'creation_date'    => \DateTime::createFromFormat('Y-m-d', $company->date_creation),
+            'name'             => $company->getName(),
+            'siren'            => $company->getSiren(),
+            'legal_status'     => $company->getForme(),
+            'capital'          => str_replace(' ', '', $company->getCapital()),
+            'address'          => trim($company->getIdAddress()->getAddress()),
+            'post_code'        => $company->getIdAddress()->getZip(),
+            'city'             => $company->getIdAddress()->getCity(),
+            'commercial_court' => $company->getTribunalCom(),
+            'creation_date'    => $company->getDateCreation()->format('Y-m-d'),
             'accounts_count'   => $project->balance_count,
             'working_capital'  => $workingCapital
         ];
