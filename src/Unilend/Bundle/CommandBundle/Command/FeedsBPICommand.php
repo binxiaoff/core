@@ -107,7 +107,7 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'qualif_ESS'                       => 'NON',
                 'code_postal'                      => $company->getIdAddress()->getZip(),
                 'ville'                            => $company->getIdAddress()->getCity(),
-                'titre'                            => $translator->trans('company-sector_sector-' . $company->getSector()) . ' - ' . $company->getIdAddress->getCity(),
+                'titre'                            => $translator->trans('company-sector_sector-' . $company->getSector()) . ' - ' . $company->getIdAddress()->getCity(),
                 'description'                      => $project->nature_project,
                 'url'                              => $hostUrl . $router->generate('project_detail',
                         ['projectSlug' => $project->slug]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',
