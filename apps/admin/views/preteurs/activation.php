@@ -47,7 +47,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                     $sBGColor = '#ff0100;';
                                 }
                             }
-                        } elseif (in_array($client['status_client'], [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION])) {
+                        } elseif (in_array($client['clients_status'], [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION])) {
                             $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
                             $sBGColor      = '';
                         }
@@ -75,7 +75,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                         <td align="center"><?= $val ?></td>
                         <td align="center"><?= $client['label_status'] . $sWaitingForGP ?></td>
                         <td align="center">
-                            <?php if (in_array($client['status_client'], [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION])) : ?>
+                            <?php if (in_array($client['clients_status'], [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION])) : ?>
                                 <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>" class="btn-primary btn-sm">Contrôler</a>
                             <?php else : ?>
                                 <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $client['id_client'] ?>">Détails</a>

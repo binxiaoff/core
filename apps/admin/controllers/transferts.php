@@ -3,23 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType,
-    Bids,
-    Factures,
-    LenderStatisticQueue,
-    Notifications,
-    OperationSubType,
-    OperationType,
-    Prelevements,
-    ProjectRepaymentTask,
-    ProjectsPouvoir,
-    ProjectsStatus,
-    Receptions,
-    UniversignEntityInterface,
-    Virements,
-    Wallet,
-    WalletType,
-    Zones
+    AttachmentType, Bids, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -853,10 +837,8 @@ class transfertsController extends bootstrap
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-            $walletRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
@@ -871,15 +853,16 @@ class transfertsController extends bootstrap
                 false === empty($_POST['id_client_receiver'])
                 && (false === is_numeric($_POST['id_client_receiver'])
                     || false === $newOwner->get($_POST['id_client_receiver'])
-                    || false === $clientManager->isLender($newOwner))
+                    || false === $clientManager->isLender($newOwner)
+                )
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
-            $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
-            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
-            if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
+            $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
+            $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
+
+            if ($newOwnerStatus !== ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -954,17 +937,25 @@ class transfertsController extends bootstrap
                         $numberLoans += 1;
                     }
 
-                    $lenderStatQueueOriginal = new LenderStatisticQueue();
-                    $lenderStatQueueOriginal->setIdWallet($originalWallet);
-                    $entityManager->persist($lenderStatQueueOriginal);
-                    $lenderStatQueueNew = new LenderStatisticQueue();
-                    $lenderStatQueueNew->setIdWallet($newWallet);
-                    $entityManager->persist($lenderStatQueueNew);
+                    $lenderStatQueueRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue');
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $originalWallet])) {
+                        $lenderStatQueueOriginal = new LenderStatisticQueue();
+                        $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                        $entityManager->persist($lenderStatQueueOriginal);
+                    }
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $newWallet])) {
+                        $lenderStatQueueNew = new LenderStatisticQueue();
+                        $lenderStatQueueNew->setIdWallet($newWallet);
+                        $entityManager->persist($lenderStatQueueNew);
+                    }
+
                     $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
-                        $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                        $clientStatusManager->closeLenderAccount($originalClient, $_SESSION['user']['id_user'], $comment);
                     } catch (\Exception $exception) {
                         $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
                         throw $exception;
@@ -973,7 +964,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $lastStatus,
+                        $newOwnerStatus,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 
@@ -982,6 +973,7 @@ class transfertsController extends bootstrap
                     $entityManager->getConnection()->rollback();
                     throw $exception;
                 }
+
                 $_SESSION['succession']['success'] = [
                     'accountBalance' => $originalClientBalance,
                     'numberLoans'    => $numberLoans,

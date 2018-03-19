@@ -3,24 +3,16 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsStatusHistoryRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\LendersImpositionHistoryRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\OperationRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletBalanceHistoryRepository;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Companies, OperationType, WalletType
+};
 
 class QueriesCrsDacCommand extends ContainerAwareCommand
 {
-
     /**
      * @see Command
      */
@@ -54,20 +46,14 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             return;
         }
 
-        $filePath      = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        /** @var ClientsRepository $clientRepository */
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var WalletBalanceHistoryRepository $walletBalanceHistoryRepository */
+        $filePath                       = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $clientRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        /** @var OperationRepository $operationRepository */
-        $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        /** @var ClientsStatusHistoryRepository $clientStatusHistoryRepository */
-        $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
-        /** @var LendersImpositionHistoryRepository $lenderImpositionRepository */
-        $lenderImpositionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $clientStatusHistoryRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $lenderImpositionRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();
@@ -95,17 +81,14 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         $activeSheet->setCellValue('S' . $row, 'Intérêts bruts versés jusqu\'au 31/12/' . $year);
         $row++;
 
-
         /** @var Clients $client */
         foreach ($clientRepository->findValidatedClientsUntilYear($year) as $client) {
-            /** @var ClientsAdresses $clientAddress */
             $clientAddress               = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
             $wallet                      = $walletRepository->getWalletByType($client, WalletType::LENDER);
             $endOfYearBalanceHistory     = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastDayOfTheYear);
             $endOfYearBalance            = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
             $remainingDuCapital          = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
             $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $currentClientStatus         = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
             $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
             $nationalityCountry          = $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite());
@@ -123,7 +106,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
             $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->getCodePays() : '');
             $activeSheet->setCellValue('E' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('F' . $row, $currentClientStatus->getStatus());
+            $activeSheet->setCellValue('F' . $row, $client->getIdClientStatusHistory()->getIdStatus()->getId());
             $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
             $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
             $activeSheet->setCellValue('I' . $row, $client->getNom());
@@ -138,7 +121,7 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             $activeSheet->setCellValueExplicit('R' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->setCellValueExplicit('S' . $row, $yearlyGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
-            $row+=1;
+            $row += 1;
         }
 
         $activeSheet->getStyle('P' . 2 . ':' . 'S' . $row)
@@ -146,6 +129,6 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
 
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
-        $writer->save(str_replace(__FILE__, $filePath ,__FILE__));
+        $writer->save(str_replace(__FILE__, $filePath, __FILE__));
     }
 }

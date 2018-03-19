@@ -26,7 +26,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
 
-        /** @var \clients $clientData */
+        /** @var \clients $clientDataClass */
         $clientDataClass  = $entityManagerSimulator->getRepository('clients');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $userRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
@@ -38,10 +38,10 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
             );
 
             foreach ($clientsToValidate as $clientData) {
-                $client = $clientRepository->find($clientData['id_client']);
-                $user   = $userRepository->find(Users::USER_ID_CRON);
-
+                $client     = $clientRepository->find($clientData['id_client']);
+                $user       = $userRepository->find(Users::USER_ID_CRON);
                 $validation = $lenderValidationManager->validateClient($client, $user);
+
                 if (true !== $validation) {
                     $logger->warning('Processing client id: ' . $client->getIdClient() . ' - Duplicate client found: ' . json_encode($validation),
                         ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);

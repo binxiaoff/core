@@ -3,21 +3,16 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\{
+    AbstractQuery, EntityRepository
+};
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, PaysV2, WalletType
+};
 
 class ClientsRepository extends EntityRepository
 {
@@ -187,23 +182,17 @@ class ClientsRepository extends EntityRepository
      */
     public function getLendersInStatus(array $status)
     {
-        $qb  = $this->createQueryBuilder('c');
-        $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
-           ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
-           ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-           ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-           ->where(
-               $qb->expr()->eq(
-                   'csh.idClientStatusHistory',
-                   '(SELECT MAX(csh1 . idClientStatusHistory) FROM UnilendCoreBusinessBundle:ClientsStatusHistory csh1 WHERE csh1.idClient = csh.idClient)'
-               )
-           )
-           ->andWhere('wt.label = :lender')
-           ->andWhere('cs.status IN (:status)')
-           ->setParameter(':lender', WalletType::LENDER)
-           ->setParameter('status', $status, Connection::PARAM_INT_ARRAY);
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('csh.idStatus IN (:status)')
+            ->andWhere('wt.label = :lender')
+            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY)
+            ->setParameter('lender', WalletType::LENDER);
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -295,7 +284,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('statusOnline', Clients::STATUS_ONLINE);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -321,7 +310,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -329,87 +318,89 @@ class ClientsRepository extends EntityRepository
 
     public function getLendersSalesForce()
     {
-        $query = "SELECT
-                      c.id_client as 'IDClient',
-                      c.id_client as 'IDPreteur',
-                      c.id_langue as 'Langue',
-                      REPLACE(c.source,',','') as 'Source1',
-                      REPLACE(c.source2,',','') as 'Source2',
-                      REPLACE(c.source3,',','') as 'Source3',
-                      REPLACE(c.civilite,',','') as 'Civilite',
-                      REPLACE(c.nom,',','') as 'Nom',
-                      REPLACE(c.nom_usage,',','') as 'NomUsage',
-                      REPLACE(c.prenom,',','') as 'Prenom',
-                      REPLACE(c.fonction,',','') as 'Fonction',
-                      CASE c.naissance
-                      WHEN '0000-00-00' then '2001-01-01'
-                      ELSE
-                        CASE SUBSTRING(c.naissance,1,1)
-                        WHEN '0' then '2001-01-01'
-                        ELSE c.naissance
-                        END
-                      END as 'Datenaissance',
-                      REPLACE(ville_naissance,',','') as 'Villenaissance',
-                      ccountry.fr as 'PaysNaissance',
-                      nv2.fr_f as 'Nationalite',
-                      REPLACE(c.telephone,'\t','') as 'Telephone',
-                      REPLACE(c.mobile,',','') as 'Mobile',
-                      REPLACE(c.email,',','') as 'Email',
-                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
-                      CASE c.type
-                      WHEN 1 THEN 'Physique'
-                      WHEN 2 THEN 'Morale'
-                      WHEN 3 THEN 'Physique'
-                      ELSE 'Morale'
-                      END as 'TypeContact',
-                      CASE cs.status
-                      WHEN 6 THEN 'oui'
-                      ELSE 'non'
-                      END as 'Valide',
-                      (
-                        SELECT cs.label FROM clients_status_history cshs1
-                        INNER JOIN clients_status cs on cshs1.id_client_status =cs.id_client_status
-                        WHERE cshs1.id_client = c.id_client
-                        ORDER BY cshs1.added DESC LIMIT 1
-                      ) AS 'StatusCompletude',
-                      CASE c.added
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.added
-                      END as 'DateInscription',
-                      CASE c.updated
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.updated
-                      END as 'DateDerniereMiseaJour',
-                      CASE c.lastlogin
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.lastlogin
-                      END as 'DateDernierLogin',
-                      cs.id_client_status as 'StatutValidation',
-                      status_inscription_preteur as 'StatusInscription',
-                      count(
-                          distinct(l.id_project)
-                      ) as 'NbPretsValides',
-                      REPLACE(ca.adresse1,',','') as 'Adresse1',
-                      REPLACE(ca.adresse2,',','') as 'Adresse2',
-                      REPLACE(ca.adresse3,',','') as 'Adresse3',
-                      REPLACE(ca.cp,',','') as 'CP',
-                      REPLACE(ca.ville,',','') as 'Ville',
-                      acountry.fr as 'Pays',
-                      SUM(l.amount)/100 as 'TotalPretEur',
-                      CASE p.id_prospect WHEN NULL THEN '' ELSE CONCAT('P', p.id_prospect) END AS 'DeletingProspect',
-                      '0012400000K0Bxw' as 'Sfcompte'
-                    FROM
-                      clients c
-                      INNER JOIN wallet w on w.id_client = c.id_client
-                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
-                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
-                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                      LEFT JOIN loans l on w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
-                      LEFT JOIN clients_status cs on c.status = cs.id_client_status
-                      LEFT JOIN prospects p ON p.email = c.email
-                    WHERE c.status = " . Clients::STATUS_ONLINE . "
-                    GROUP BY c.id_client";
+        $query = "
+            SELECT
+              c.id_client AS 'IDClient',
+              c.id_client AS 'IDPreteur',
+              c.id_langue AS 'Langue',
+              REPLACE(c.source, ',', '') AS 'Source1',
+              REPLACE(c.source2, ',', '') AS 'Source2',
+              REPLACE(c.source3, ',', '') AS 'Source3',
+              REPLACE(c.civilite, ',', '') AS 'Civilite',
+              REPLACE(c.nom, ',', '') AS 'Nom',
+              REPLACE(c.nom_usage, ',', '') AS 'NomUsage',
+              REPLACE(c.prenom, ',', '') AS 'Prenom',
+              REPLACE(c.fonction, ',', '') AS 'Fonction',
+              CASE c.naissance
+                WHEN '0000-00-00' THEN '2001-01-01'
+                ELSE
+                  CASE SUBSTRING(c.naissance, 1, 1)
+                    WHEN '0' THEN '2001-01-01'
+                    ELSE c.naissance
+                  END
+              END AS 'Datenaissance',
+              REPLACE(ville_naissance, ',', '') AS 'Villenaissance',
+              ccountry.fr AS 'PaysNaissance',
+              nv2.fr_f AS 'Nationalite',
+              REPLACE(c.telephone, '\t', '') AS 'Telephone',
+              REPLACE(c.mobile, ',', '') AS 'Mobile',
+              REPLACE(c.email, ',', '') AS 'Email',
+              c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
+              CASE c.type
+                WHEN 1 THEN 'Physique'
+                WHEN 2 THEN 'Morale'
+                WHEN 3 THEN 'Physique'
+                ELSE 'Morale'
+              END AS 'TypeContact',
+              CASE csh.id_status
+                WHEN " . ClientsStatus::VALIDATED . " THEN 'oui'
+                ELSE 'non'
+              END AS 'Valide',
+              cs.label AS 'StatusCompletude',
+              CASE c.added
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.added
+              END AS 'DateInscription',
+              CASE c.updated
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.updated
+              END AS 'DateDerniereMiseaJour',
+              CASE c.lastlogin
+                WHEN '0000-00-00 00:00:00' THEN ''
+                ELSE c.lastlogin
+              END AS 'DateDernierLogin',
+              CASE csh.id_status
+                WHEN " . ClientsStatus::VALIDATED . " THEN 1
+                ELSE 0
+              END AS 'StatutValidation',
+              status_inscription_preteur AS 'StatusInscription',
+              COUNT(DISTINCT l.id_project) AS 'NbPretsValides',
+              REPLACE(ca.adresse1, ',', '') AS 'Adresse1',
+              REPLACE(ca.adresse2, ',', '') AS 'Adresse2',
+              REPLACE(ca.adresse3, ',', '') AS 'Adresse3',
+              REPLACE(ca.cp, ',', '') AS 'CP',
+              REPLACE(ca.ville, ',', '') AS 'Ville',
+              acountry.fr AS 'Pays',
+              SUM(l.amount) / 100 AS 'TotalPretEur',
+              CASE p.id_prospect 
+                WHEN NULL THEN '' 
+                ELSE CONCAT('P', p.id_prospect)
+              END AS 'DeletingProspect',
+              '0012400000K0Bxw' AS 'Sfcompte'
+            FROM clients c
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
+            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
+            LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
+            LEFT JOIN pays_v2 acountry ON ca.id_pays = acountry.id_pays
+            LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
+            LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
+            LEFT JOIN clients_status cs ON csh.id_status = cs.id
+            LEFT JOIN prospects p ON p.email = c.email
+            WHERE c.status = " . Clients::STATUS_ONLINE . "
+              AND wt.label = '" . WalletType::LENDER . "' 
+            GROUP BY c.id_client";
 
         return $this->getEntityManager()->getConnection()->executeQuery($query);
     }
@@ -419,27 +410,21 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getClientsToValidate(array $status)
+    public function getClientsToValidate(array $status): array
     {
-        $query = 'SELECT
-                      c.*,
-                      cs.status               AS status_client,
-                      cs.label                AS label_status,
-                      csh.added               AS added_status,
-                      clsh.id_client_status_history,
-                      com.id_company          AS id_company,
-                      w.wire_transfer_pattern AS motif,
-                      w.available_balance     AS balance
-                    FROM clients c
-                      INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history
-                                  FROM clients_status_history
-                                  GROUP BY id_client) clsh ON c.id_client = clsh.id_client
-                      INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
-                      INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-                      INNER JOIN wallet w ON c.id_client = w.id_client
-                      LEFT JOIN companies com ON c.id_client = com.id_client_owner
-                    HAVING status_client IN (:clientsStatus)
-                    ORDER BY FIELD(cs.status, :clientsStatus), c.added DESC';
+        $query = '
+            SELECT
+              c.*,
+              cs.id AS clients_status,
+              cs.label AS label_status,
+              w.available_balance AS balance
+            FROM clients c
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+              INNER JOIN clients_status cs ON csh.id_status = cs.id
+              INNER JOIN wallet w ON c.id_client = w.id_client
+              LEFT JOIN companies com ON c.id_client = com.id_client_owner
+            WHERE csh.id_status IN (:clientsStatus)
+            ORDER BY FIELD(csh.id_status, :clientsStatus), c.added DESC';
 
         $result = $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['clientsStatus' => $status], ['clientsStatus' => Connection::PARAM_INT_ARRAY])
@@ -476,7 +461,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -507,7 +492,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idClientStatus = 6');
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -522,11 +507,10 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder  = $this->createQueryBuilder('c');
         $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->andWhere('wt.label = :lender')
-            ->andWhere('cs.status = :status')
+            ->andWhere('csh.idStatus = :status')
             ->andWhere('csh.added <= :year')
             ->andWhere('c.status = :clientStatus')
             ->setParameter('lender', WalletType::LENDER)
@@ -542,26 +526,29 @@ class ClientsRepository extends EntityRepository
      */
     public function findAllClientsForLoiEckert()
     {
-        $query = 'SELECT
-                  c.*,
-                  IF (
-                    o_provision.added IS NOT NULL, 
-                    IF (
-                        o_withdraw.added IS NOT NULL,
-                        IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
-                        MAX(o_provision.added)), 
-                    MAX(o_withdraw.added)
-                  ) AS lastMovement,
-                  w.available_balance AS availableBalance,
-                  MIN(csh.added) AS validationDate
-                FROM clients c
-                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
-                  LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
-                  LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
-                  LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_client_status = 6
-                WHERE csh.id_client_status_history IS NOT NULL OR available_balance > 0
-                GROUP BY c.id_client
-                ORDER BY c.lastlogin ASC';
+        $query = '
+            SELECT
+              c.*,
+              IF (
+                o_provision.added IS NOT NULL, 
+                IF (
+                  o_withdraw.added IS NOT NULL,
+                  IF (MAX(o_provision.added) > MAX(o_withdraw.added), MAX(o_provision.added), MAX(o_withdraw.added)),
+                  MAX(o_provision.added)
+                ), 
+                MAX(o_withdraw.added)
+              ) AS lastMovement,
+              w.available_balance AS availableBalance,
+              MIN(csh.added) AS validationDate
+            FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
+            LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
+            LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
+            LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::VALIDATED . '
+            WHERE csh.id IS NOT NULL OR available_balance > 0
+            GROUP BY c.id_client
+            ORDER BY c.lastlogin ASC';
 
         return $this->getEntityManager()
             ->getConnection()
@@ -588,18 +575,15 @@ class ClientsRepository extends EntityRepository
             $replaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
         }
 
-        $sql = 'SELECT *
-                  FROM clients c
-                WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`nom`' . $replaceCharacters . ' LIKE :lastName
-                  AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . '`prenom`' . $replaceCharacters . ' LIKE :firstName
-                  AND naissance = :birthdate
-                  AND status = ' . Clients::STATUS_ONLINE . '
-                  AND (
-                        SELECT cs.status
-                          FROM clients_status cs
-                        LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
-                        WHERE csh.id_client = c.id_client
-                        ORDER BY csh.added DESC LIMIT 1) = ' . ClientsStatus::VALIDATED;
+        $sql = '
+            SELECT *
+            FROM clients c
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
+                AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
+                AND c.naissance = :birthdate
+                AND c.status = ' . Clients::STATUS_ONLINE . '
+                AND csh.id_status = ' . ClientsStatus::VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()
@@ -840,6 +824,7 @@ class ClientsRepository extends EntityRepository
                 c.prenom,
                 c.type AS clientType,
                 c.status,
+                IDENTITY(csh.idStatus) AS idStatus,
                 c.added AS creationDate,
                 wt.label AS walletType,
                 co.idCompany,
@@ -853,6 +838,7 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->leftJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
             ->leftJoin('UnilendCoreBusinessBundle:BeneficialOwner', 'bo', Join::WITH, 'c.idClient = bo.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
