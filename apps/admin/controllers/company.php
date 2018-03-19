@@ -39,7 +39,6 @@ class companyController extends bootstrap
         }
         $this->client         = new Clients();
         $this->company        = new Companies();
-        $this->companyAddress = null;
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
             if ($this->save()) {
