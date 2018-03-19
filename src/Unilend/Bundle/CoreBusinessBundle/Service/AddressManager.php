@@ -34,7 +34,7 @@ class AddressManager
      *
      * @throws \Exception
      */
-    public function saveBorrowerCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
+    public function saveCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
     {
         $addressType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AddressType')->findOneBy(['label' => $type]);
         if (null === $type) {
