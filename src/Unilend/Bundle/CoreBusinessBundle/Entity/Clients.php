@@ -315,6 +315,7 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
      */
     private $wallets;
+
     /**
      * @var string
      *
@@ -328,6 +329,22 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses", mappedBy="idClient")
      */
     private $clientsAddresses;
+
+    /**
+     * @var ClientAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
+     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
+     */
+    private $idAddress;
+
+    /**
+     * @var ClientAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
+     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
+     */
+    private $idPostalAddress;
 
     /**
      * Clients constructor.
@@ -1439,6 +1456,54 @@ class Clients
     public function setClientsAddresses($clientsAddresses)
     {
         $this->clientsAddresses = $clientsAddresses;
+
+        return $this;
+    }
+
+    /**
+     * @return ClientAddress|null
+     */
+    public function getIdAddress(): ?ClientAddress
+    {
+        if (0 === $this->idAddress) {
+            return null;
+        }
+
+        return $this->idAddress;
+    }
+
+    /**
+     * @param null|ClientAddress $idAddress
+     *
+     * @return Clients
+     */
+    public function setIdAddress(?ClientAddress $idAddress): Clients
+    {
+        $this->idAddress = $idAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return ClientAddress|null
+     */
+    public function getIdPostalAddress(): ?ClientAddress
+    {
+        if (0 === $this->idPostalAddress) {
+            return null;
+        }
+
+        return $this->idPostalAddress;
+    }
+
+    /**
+     * @param null|ClientAddress $idPostalAddress
+     *
+     * @return Clients
+     */
+    public function setIdPostalAddress(?ClientAddress $idPostalAddress): Clients
+    {
+        $this->idPostalAddress = $idPostalAddress;
 
         return $this;
     }

@@ -125,10 +125,10 @@ class ExternalDataManager
 
                     $this->entityManager->flush($company);
 
-                    $this->addressManager->saveBorrowerCompanyAddress(
+                    $this->addressManager->saveCompanyAddress(
                         $identity->getAddress(),
-                        $identity->getCity(),
                         $identity->getPostCode(),
+                        $identity->getCity(),
                         PaysV2::COUNTRY_FRANCE,
                         $company,
                         AddressType::TYPE_MAIN_ADDRESS
