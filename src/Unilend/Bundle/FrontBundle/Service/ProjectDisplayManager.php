@@ -130,7 +130,6 @@ class ProjectDisplayManager
      * @param \projects $project
      *
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getBaseData(\projects $project): array
     {
@@ -159,11 +158,11 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $company->getIdAddress->getCity(),
-                'zip'       => $company->getIdAddress->getZip(),
-                'sectorId'  => $company->getIdAddress->getIdCompany()->getSector(),
-                'latitude'  => (float) $company->getIdAddress->getLatitude(),
-                'longitude' => (float) $company->getIdAddress->getLongitude()
+                'city'      => $company->getIdAddress()->getCity(),
+                'zip'       => $company->getIdAddress()->getZip(),
+                'sectorId'  => $company->getIdAddress()->getIdCompany()->getSector(),
+                'latitude'  => (float) $company->getIdAddress()->getLatitude(),
+                'longitude' => (float) $company->getIdAddress()->getLongitude()
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
