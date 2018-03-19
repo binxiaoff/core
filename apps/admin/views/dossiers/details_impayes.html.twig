@@ -183,8 +183,8 @@
                             <label>Échéances</label>
                             <ul>
                                 {% for payment in latePaymentsData %}
-                                    {% if payment.remainingAmount > 0 %}
-                                        <li>{{ payment.label }} - {{ payment.remainingAmount|localizedcurrency('EUR') }}</li>
+                                    {% if payment.totalOverdueAmount > 0 %}
+                                        <li>{{ payment.label }} - {{ payment.totalOverdueAmount|localizedcurrency('EUR') }}</li>
                                     {% endif %}
                                 {% endfor %}
                             </ul>
