@@ -67,10 +67,10 @@ class AddressManager
                     $this->entityManager->persist($companyAddress);
                 }
 
-                $this->addLatitudeAndLongitudeToCompanyAddress($companyAddress);
+                $this->addLatitudeAndLongitude($companyAddress);
                 $this->entityManager->flush($companyAddress);
 
-                $this->saveAddressInCompany($company, $companyAddress);
+                $this->use($companyAddress);
             } elseif (
                 $address !== $companyAddress->getAddress()
                 || $zip !== $companyAddress->getZip()
@@ -88,25 +88,6 @@ class AddressManager
             $this->entityManager->rollback();
             throw $exception;
         }
-    }
-
-    /**
-     * @param Companies      $company
-     * @param CompanyAddress $address
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function saveAddressInCompany(Companies $company, CompanyAddress $address): void
-    {
-        if (AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel()) {
-            $company->setIdAddress($address);
-        }
-
-        if (AddressType::TYPE_POSTAL_ADDRESS === $address->getIdType()->getLabel()) {
-            $company->setIdPostalAddress($address);
-        }
-
-        $this->entityManager->flush($company);
     }
 
     /**
@@ -130,12 +111,30 @@ class AddressManager
             ->setIdCountry($country)
             ->setIdType($type);
 
-        $this->addLatitudeAndLongitudeToCompanyAddress($companyAddress);
+        $this->addLatitudeAndLongitude($companyAddress);
 
         $this->entityManager->persist($companyAddress);
         $this->entityManager->flush($companyAddress);
 
-        $this->saveAddressInCompany($company, $companyAddress);
+        $this->use($companyAddress);
+    }
+
+    /**
+     * @param CompanyAddress $address
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function use(CompanyAddress $address): void
+    {
+        if (AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel()) {
+            $address->getIdCompany()->setIdAddress($address);
+        }
+
+        if (AddressType::TYPE_POSTAL_ADDRESS === $address->getIdType()->getLabel()) {
+            $address->getIdCompany()->setIdPostalAddress($address);
+        }
+
+        $this->entityManager->flush($address->getIdCompany());
     }
 
     /**
@@ -166,14 +165,8 @@ class AddressManager
                     ->setDateValidated(new \DateTime('NOW'))
                     ->setIdAttachment($kbis);
 
-                $company = $companyAddress->getIdCompany();
-
-                if ($company->getIdAddress() === $company->getIdPostalAddress()) {
-                    $company->setIdPostalAddress($companyAddress);
-                }
-                $company->setIdAddress($companyAddress);
-
-                $this->entityManager->flush([$companyAddress, $company]);
+                $this->entityManager->flush($companyAddress);
+                $this->use($companyAddress);
             }
 
             $this->entityManager->commit();
@@ -186,7 +179,7 @@ class AddressManager
     /**
      * @param CompanyAddress $address
      */
-    public function addLatitudeAndLongitudeToCompanyAddress(CompanyAddress $address)
+    public function addLatitudeAndLongitude(CompanyAddress $address)
     {
         $coordinates = $this->locationManager->getCompanyCoordinates($address);
 
