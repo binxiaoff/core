@@ -4,9 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectProductAssessment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\CompanyChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker\ProjectChecker;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
@@ -102,7 +102,7 @@ class ProjectValidator
                 $checkResult = $this->isEligibleForMaxPreScore($project, $product, $this->productAttributeManager, $this->entityManager);
                 break;
             case ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION:
-                $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);
+                $checkResult = $this->isEligibleForExcludedHeadquartersLocation($project->getIdCompany(), $product, $this->productAttributeManager);
                 break;
             case ProductAttributeType::MAX_XERFI_SCORE:
                 $checkResult = $this->isEligibleForMaxXerfiScore($project->getIdCompany(), $product, $this->productAttributeManager, $this->entityManager);

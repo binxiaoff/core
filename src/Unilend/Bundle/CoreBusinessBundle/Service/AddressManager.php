@@ -48,7 +48,8 @@ class AddressManager
 
         $this->entityManager->beginTransaction();
         try {
-            $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+            $companyAddress = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress(): $company->getIdPostalAddress();
+
             if (null === $companyAddress) {
                 $companyAddress = new CompanyAddress();
                 $companyAddress->setIdCompany($company);
@@ -68,6 +69,8 @@ class AddressManager
 
                 $this->addLatitudeAndLongitudeToCompanyAddress($companyAddress);
                 $this->entityManager->flush($companyAddress);
+
+                $this->saveAddressInCompany($company, $companyAddress);
             } elseif (
                 $address !== $companyAddress->getAddress()
                 || $zip !== $companyAddress->getZip()
@@ -85,6 +88,25 @@ class AddressManager
             $this->entityManager->rollback();
             throw $exception;
         }
+    }
+
+    /**
+     * @param Companies      $company
+     * @param CompanyAddress $address
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function saveAddressInCompany(Companies $company, CompanyAddress $address): void
+    {
+        if (AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel()) {
+            $company->setIdAddress($address);
+        }
+
+        if (AddressType::TYPE_POSTAL_ADDRESS === $address->getIdType()->getLabel()) {
+            $company->setIdPostalAddress($address);
+        }
+
+        $this->entityManager->flush($company);
     }
 
     /**
@@ -112,6 +134,8 @@ class AddressManager
 
         $this->entityManager->persist($companyAddress);
         $this->entityManager->flush($companyAddress);
+
+        $this->saveAddressInCompany($company, $companyAddress);
     }
 
     /**
@@ -131,7 +155,7 @@ class AddressManager
 
         $this->entityManager->beginTransaction();
         try {
-            $currentAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findValidatedMainCompanyAddress($companyAddress->getIdCompany());
+            $currentAddress = $companyAddress->getIdCompany()->getIdAddress();
             if ($currentAddress !== $companyAddress) {
                 if ($currentAddress) {
                     $currentAddress->setDateArchived(new \DateTime('NOW'));
@@ -142,7 +166,14 @@ class AddressManager
                     ->setDateValidated(new \DateTime('NOW'))
                     ->setIdAttachment($kbis);
 
-                $this->entityManager->flush($companyAddress);
+                $company = $companyAddress->getIdCompany();
+
+                if ($company->getIdAddress() === $company->getIdPostalAddress()) {
+                    $company->setIdPostalAddress($companyAddress);
+                }
+                $company->setIdAddress($companyAddress);
+
+                $this->entityManager->flush([$companyAddress, $company]);
             }
 
             $this->entityManager->commit();
