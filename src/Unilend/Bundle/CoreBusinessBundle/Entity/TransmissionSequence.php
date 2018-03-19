@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * TransmissionSequence
  *
  * @ORM\Table(name="transmission_sequence", indexes={@ORM\Index(name="element_name", columns={"element_name"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class TransmissionSequence
 {
@@ -36,7 +37,7 @@ class TransmissionSequence
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -49,8 +50,6 @@ class TransmissionSequence
      */
     private $idTransmissionSequence;
 
-
-
     /**
      * Set elementName
      *
@@ -58,7 +57,7 @@ class TransmissionSequence
      *
      * @return TransmissionSequence
      */
-    public function setElementName($elementName)
+    public function setElementName(string $elementName): TransmissionSequence
     {
         $this->elementName = $elementName;
 
@@ -70,7 +69,7 @@ class TransmissionSequence
      *
      * @return string
      */
-    public function getElementName()
+    public function getElementName(): string
     {
         return $this->elementName;
     }
@@ -82,7 +81,7 @@ class TransmissionSequence
      *
      * @return TransmissionSequence
      */
-    public function setSequence($sequence)
+    public function setSequence(int $sequence): TransmissionSequence
     {
         $this->sequence = $sequence;
 
@@ -94,7 +93,7 @@ class TransmissionSequence
      *
      * @return integer
      */
-    public function getSequence()
+    public function getSequence(): int
     {
         return $this->sequence;
     }
@@ -106,7 +105,7 @@ class TransmissionSequence
      *
      * @return TransmissionSequence
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): TransmissionSequence
     {
         $this->added = $added;
 
@@ -118,7 +117,7 @@ class TransmissionSequence
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -130,7 +129,7 @@ class TransmissionSequence
      *
      * @return TransmissionSequence
      */
-    public function setUpdated($updated)
+    public function setUpdated(\DateTime $updated): TransmissionSequence
     {
         $this->updated = $updated;
 
@@ -142,7 +141,7 @@ class TransmissionSequence
      *
      * @return \DateTime
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -152,8 +151,26 @@ class TransmissionSequence
      *
      * @return integer
      */
-    public function getIdTransmissionSequence()
+    public function getIdTransmissionSequence(): int
     {
         return $this->idTransmissionSequence;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function seUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

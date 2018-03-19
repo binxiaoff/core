@@ -1,0 +1,60 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="h3" style="clear:both; margin: 40px 0 30px">
+        Fichiers des déclarations mensuelles Banque De France
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block block-rounded">
+            <div class="block-content block-content-full">
+                {% if declarations|length > 0 %}
+                    <table class="table table-bordered table-striped table-header-bg">
+                        <thead>
+                        <tr role="row">
+                            <th>Mois de centralisation</th>
+                            <th>Déclaration des prêts IFP</th>
+                            <th>Déclaration des prêts CIP</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for year, declaration in declarations %}
+                            <tr role="row">
+                                <th colspan="3" class="text-center bg-info">{{ year }}</th>
+                            </tr>
+                            {% for month, row in declaration %}
+                                <tr role="row" class="{% if loop.index is divisible by(2) %}odd{% else %}even{% endif %}">
+                                    <td>{{ row.declarationDate|localizeddate('medium', 'none', null, null, 'LLLL Y')|capitalize }}</td>
+                                    <td>
+                                        {% if row.ifpFileName is defined %}
+                                            <a href="/stats/declarations_bdf/ifp/{{ row.ifpFileName }}">{{ row.ifpFileName }}</a>{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.cipFileName is defined %}
+                                            <a href="/stats/declarations_bdf/cip/{{ row.cipFileName }}">{{ row.cipFileName }}</a>{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="bg-warning">
+                        <p class="content content-full">Aucun fichier de déclaration disponible.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
