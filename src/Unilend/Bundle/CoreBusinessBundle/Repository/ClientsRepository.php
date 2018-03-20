@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\{
-    AbstractQuery, EntityRepository
+    AbstractQuery, EntityRepository, NonUniqueResultException
 };
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -851,5 +851,57 @@ class ClientsRepository extends EntityRepository
             ->groupBy('c.idClient');
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $email
+     * @param int[]  $status
+     *
+     * @return array
+     */
+    public function findByEmailAndStatus(string $email, array $status): array
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('c.email = :email')
+            ->andWhere($queryBuilder->expr()->orX(
+                $queryBuilder->expr()->isNull('c.idClientStatusHistory'),
+                $queryBuilder->expr()->eq('c.idClientStatusHistory', 0),
+                $queryBuilder->expr()->in('csh.idStatus', ':status')
+            ))
+            ->andWhere('c.status = ' . Clients::STATUS_ONLINE)
+            ->setParameter('email', $email, \PDO::PARAM_STR)
+            ->setParameter('status', $status);
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param string $hash
+     * @param int[]  $status
+     *
+     * @return Clients|null
+     */
+    public function findOneByHashAndStatus(string $hash, array $status): ?Clients
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('c.hash = :hash')
+            ->andWhere($queryBuilder->expr()->orX(
+                $queryBuilder->expr()->isNull('c.idClientStatusHistory'),
+                $queryBuilder->expr()->eq('c.idClientStatusHistory', 0),
+                $queryBuilder->expr()->in('csh.idStatus', ':status')
+            ))
+            ->andWhere('c.status = ' . Clients::STATUS_ONLINE)
+            ->setParameter('hash', $hash, \PDO::PARAM_STR)
+            ->setParameter('status', $status);
+
+        try {
+            return $queryBuilder->getQuery()->getOneOrNullResult();
+        } catch (NonUniqueResultException $exception) {
+            return null;
+        }
     }
 }
