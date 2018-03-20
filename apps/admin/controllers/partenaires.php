@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Clients, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PaysV2, Product, ProjectsStatus, WalletType, Zones
 };
+use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
 class partenairesController extends bootstrap
 {
@@ -117,16 +118,16 @@ class partenairesController extends bootstrap
         }
 
         /** @var Companies $agency */
-        $agency                   = null;
-        $agencyId                 = null;
-        $errors                   = [];
+        $agency   = null;
+        $agencyId = null;
+        $errors   = [];
 
         switch ($this->request->request->get('action')) {
             case 'create':
                 $agency = $this->createAgency($this->request, $partner, $errors);
 
                 if ($agency instanceof Companies) {
-                    $agencyId  = $agency->getIdCompany();
+                    $agencyId = $agency->getIdCompany();
                 }
                 break;
             case 'modify':
@@ -165,8 +166,9 @@ class partenairesController extends bootstrap
      * @param array   $errors
      *
      * @return Companies|null
+     * @throws Exception
      */
-    private function createAgency(Request $request, Partner $partner, array &$errors = [])
+    private function createAgency(Request $request, Partner $partner, array &$errors = []): ?Companies
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -192,15 +194,16 @@ class partenairesController extends bootstrap
                 $entityManager->persist($agency);
                 $entityManager->flush($agency);
 
-                $this->get('unilend.service.address_manager')
-                    ->saveCompanyAddress(
-                        trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
-                        trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
-                        trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
-                        PaysV2::COUNTRY_FRANCE,
-                        $agency,
-                        AddressType::TYPE_MAIN_ADDRESS
-                    );
+                /** @var AddressManager $addressManager */
+                $addressManager = $this->get('unilend.service.address_manager');
+                $addressManager->saveCompanyAddress(
+                    trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
+                    trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
+                    trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
+                    PaysV2::COUNTRY_FRANCE,
+                    $agency,
+                    AddressType::TYPE_MAIN_ADDRESS
+                );
 
                 return $agency;
             } catch (ORMException $exception) {
@@ -216,8 +219,9 @@ class partenairesController extends bootstrap
      * @param array   $errors
      *
      * @return Companies|null
+     * @throws Exception
      */
-    private function modifyAgency(Request $request, array &$errors = [])
+    private function modifyAgency(Request $request, array &$errors = []): ?Companies
     {
         $id = $request->request->getInt('id');
 
@@ -242,15 +246,16 @@ class partenairesController extends bootstrap
             try {
                 $entityManager->flush($agency);
 
-                $this->get('unilend.service.address_manager')
-                    ->saveCompanyAddress(
-                        trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
-                        trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
-                        trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
-                        PaysV2::COUNTRY_FRANCE,
-                        $agency,
-                        AddressType::TYPE_MAIN_ADDRESS
-                    );
+                /** @var AddressManager $addressManager */
+                $addressManager = $this->get('unilend.service.address_manager');
+                $addressManager->saveCompanyAddress(
+                    trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
+                    trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
+                    trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
+                    PaysV2::COUNTRY_FRANCE,
+                    $agency,
+                    AddressType::TYPE_MAIN_ADDRESS
+                );
 
                 return $agency;
             } catch (ORMException $exception) {
@@ -279,7 +284,6 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager       = $this->get('doctrine.orm.entity_manager');
         $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-        $addressManager      = $this->get('unilend.service.address_manager');
         $agency              = $companiesRepository->find($id);
 
         if (null === $agency) {
@@ -309,9 +313,11 @@ class partenairesController extends bootstrap
         }
 
         if (empty($errors)) {
-            $agencyId      = $agency->getIdCompany();
+            $agencyId = $agency->getIdCompany();
 
             try {
+                /** @var AddressManager $addressManager */
+                $addressManager = $this->get('unilend.service.address_manager');
                 $addressManager->deleteCompanyAddresses($agency);
 
                 $entityManager->remove($agency);
@@ -333,10 +339,10 @@ class partenairesController extends bootstrap
      */
     private function setAgencyData(Request $request, Companies $agency)
     {
-        $errors   = [];
-        $name     = trim($request->request->filter('name', FILTER_SANITIZE_STRING));
-        $siren    = trim($request->request->filter('siren', FILTER_SANITIZE_STRING));
-        $phone    = trim($request->request->filter('phone', FILTER_SANITIZE_STRING));
+        $errors = [];
+        $name   = trim($request->request->filter('name', FILTER_SANITIZE_STRING));
+        $siren  = trim($request->request->filter('siren', FILTER_SANITIZE_STRING));
+        $phone  = trim($request->request->filter('phone', FILTER_SANITIZE_STRING));
 
         if (empty($name)) {
             $errors[] = 'Vous devez renseigner le nom de l\'agence';

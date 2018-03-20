@@ -130,8 +130,8 @@ class CompanyManager
      */
     public function createBorrowerBlankCompany($siren = null, $userId)
     {
-        $clientEntity        = new Clients();
-        $companyEntity       = new Companies();
+        $clientEntity  = new Clients();
+        $companyEntity = new Companies();
 
         $this->entityManager->getConnection()->beginTransaction();
         try {

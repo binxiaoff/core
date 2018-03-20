@@ -196,7 +196,7 @@ class AddressManager
      */
     public function deleteCompanyAddresses(Companies $company)
     {
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findby(['idCompany' => $company]) as $address) {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
             $this->entityManager->remove($address);
             $this->entityManager->flush($address);
         }
