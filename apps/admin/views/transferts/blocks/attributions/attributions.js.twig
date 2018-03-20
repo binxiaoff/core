@@ -113,7 +113,7 @@ $(function () {
         if ($form.find('[name=comment]').val() !== '') {
             var $reception = $form.find('[name=reception]')
             var $blockContainer = $form.find('.block')
-            $blockContainer.addClass('block-opt-refresh')
+            App.blocks($blockContainer, 'state_loading')
             $.ajax({
                 url: $form.attr('action'),
                 method: $form.attr('method'),
@@ -134,7 +134,7 @@ $(function () {
                     alert('Une erreur est survenue')
                 },
                 complete: function () {
-                    $blockContainer.removeClass('block-opt-refresh')
+                    App.blocks($blockContainer, 'state_normal')
                 }
             })
         }

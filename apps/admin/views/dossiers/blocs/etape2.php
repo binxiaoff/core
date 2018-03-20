@@ -247,6 +247,9 @@
                 <th colspan="4" style="text-align:left;"><br>Coordonnées du siège social</th>
             </tr>
             <tr>
+                <td colspan="2" style="background: lightgray">Attention! Seulement des adresses complètes sont enregistrées.</td>
+            </tr>
+            <tr>
                 <th><label for="address_etape2">Adresse</label></th>
                 <td>
                     <input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= null !== $this->companyMainAddress ? $this->companyMainAddress->getAddress() : '' ?>">
@@ -259,7 +262,7 @@
                                 </a>
                                 <div id="popup-content">
                                     <h2 style="padding-top: 30px" class="title">Erreur</h2>
-                                    <p style="margin: 0; line-height: 18px;">Veuillez saisir une nouvelle adresse, ville ou code postale et réessayez.</p>
+                                    <p style="margin: 0; line-height: 18px;">Veuillez saisir une nouvelle adresse, ville et code postale et réessayez.</p>
                                 </div>
                             </div>
                         </div>
@@ -293,19 +296,19 @@
                     <label for="same_address_etape2">L'adresse de correspondance est la même que l'adresse du siège social </label>
                 </td>
             </tr>
-            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
+            <tr<?= (null === $this->companyPostalAddress ? ' style="display:none;"' : '') ?> class="same_adresse">
                 <th colspan="4" style="text-align:left;"><br>Coordonnées de l'adresse de correspondance</th>
             </tr>
-            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
+            <tr<?= (null === $this->companyPostalAddress ? ' style="display:none;"' : '') ?> class="same_adresse">
                 <th><label for="adresse_correspondance_etape2">Adresse</label></th>
                 <td><input type="text" name="adresse_correspondance_etape2" id="adresse_correspondance_etape2" class="input_large" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getAddress() ?>"></td>
             </tr>
-            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?>
+            <tr<?= (null === $this->companyPostalAddress ? ' style="display:none;"' : '') ?>
                     class="same_adresse">
                 <th><label for="zip_correspondance_etape2">Code postal</label></th>
                 <td><input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getZip() ?>"></td>
             </tr>
-            <tr<?= (null !== $this->companyPostalAddress ? '' : ' style="display:none;"') ?> class="same_adresse">
+            <tr<?= (null === $this->companyPostalAddress ? ' style="display:none;"' : '') ?> class="same_adresse">
                 <th><label for="city_correspondance_etape2">Ville</label></th>
                 <td><input type="text" name="city_correspondance_etape2" id="city_correspondance_etape2" class="input_large" value="<?= null === $this->companyPostalAddress ? '' : $this->companyPostalAddress->getCity() ?>"></td>
             </tr>

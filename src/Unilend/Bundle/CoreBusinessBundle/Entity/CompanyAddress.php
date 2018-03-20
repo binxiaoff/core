@@ -3,13 +3,12 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Documents\Address;
 
 /**
  * CompanyAddress
  *
  * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_v2_id_country", columns={"id_country"})})
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
  */
 class CompanyAddress
@@ -47,7 +46,7 @@ class CompanyAddress
     /**
      * @var Attachment
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="CompanyAddress")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })

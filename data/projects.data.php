@@ -925,14 +925,16 @@ class projects extends projects_crud
                       ELSE "0"
                       END AS insee_region_code,
                       COUNT(*) AS count
-                    FROM (SELECT
-                        clients.id_client,
-                        ca.zip AS cp
-                      FROM projects
-                        INNER JOIN companies ON projects.id_company = companies.id_company
-                        INNER JOIN clients ON clients.id_client = companies.id_client_owner
-                        INNER JOIN company_address ca ON ca.id_company = companies.id_company
-                        INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4) AS client_base
+                    FROM (
+                          SELECT
+                            clients.id_client,
+                            ca.zip AS cp
+                          FROM projects
+                            INNER JOIN companies ON projects.id_company = companies.id_company
+                            INNER JOIN clients ON clients.id_client = companies.id_client_owner
+                            INNER JOIN company_address ca ON ca.id_company = companies.id_company
+                            INNER JOIN projects_status_history ON projects.id_project = projects_status_history.id_project AND projects_status_history.id_project_status = 4
+                        ) AS client_base
                     GROUP BY insee_region_code
                     HAVING insee_region_code != "0"';
 

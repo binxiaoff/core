@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, TaxType, Virements, WalletType, Zones
+    AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
@@ -148,8 +148,6 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository $companyAddressRepository */
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         $this->beneficialOwnerDeclaration = null;
 
@@ -172,8 +170,8 @@ class dossiersController extends bootstrap
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->companyMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
-            $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
+            $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
+            $this->companyPostalAddress = $this->projectEntity->getIdCompany()->getIdPostalAddress();
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
@@ -229,10 +227,10 @@ class dossiersController extends bootstrap
                 $this->hasAdvisor = true;
             }
 
-            $this->latitude  = (float) $this->companyMainAddress->getLatitude();
-            $this->longitude = (float) $this->companyMainAddress->getLongitude();
+            $this->latitude  = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLatitude();
+            $this->longitude = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLongitude();
 
-            $this->aAnnualAccountsDates = array();
+            $this->aAnnualAccountsDates = [];
             $this->aAnalysts            = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_RISK . ') OR id_user = ' . $this->projects->id_analyste);
             $this->aSalesPersons        = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL . ') OR id_user = ' . Users::USER_ID_ARNAUD_SCHWARTZ . ' OR id_user = ' . $this->projects->id_commercial);
             $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
@@ -257,8 +255,8 @@ class dossiersController extends bootstrap
             }
 
             if (empty($this->lbilans)) {
-                $this->lCompanies_actif_passif = array();
-                $this->aBalanceSheets          = array();
+                $this->lCompanies_actif_passif = [];
+                $this->aBalanceSheets          = [];
             } else {
                 $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
@@ -630,8 +628,6 @@ class dossiersController extends bootstrap
                         $endOfPublicationDate         = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
                         $this->projects->date_retrait = $endOfPublicationDate->format('Y-m-d H:i:s');
                     }
-
-                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($this->companyMainAddress, $this->projects->id_project);
                 }
 
                 if ($this->projects->status == ProjectsStatus::PREP_FUNDING) {
@@ -2425,7 +2421,15 @@ class dossiersController extends bootstrap
             return;
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+
+        if (null === $companyMainAddress) {
+            $_SESSION['publish_error'] = 'L\'entreprise n\'a pas d\'adresse principale';
+
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            die;
+        }
 
         if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($this->projects->id_company)) {
             $_SESSION['publish_error'] = 'Il n\'y a pas de bénéficiaire effectif déclaré';
@@ -2450,6 +2454,24 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            }
+
+            if (null === $companyMainAddress->getDateValidated()) {
+                try {
+                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
+                } catch (\Exception $exception) {
+                    $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
+
+                    $this->get('logger')->error('An exception occured druing validation of borrower address. Message: ' . $exception->getMessage(), [
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'projectId' => $this->projects->id_project
+                    ]);
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                }
             }
 
             $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
@@ -3229,7 +3251,8 @@ class dossiersController extends bootstrap
 
     public function _dechoir_terme()
     {
-        $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
+        $projectId = $this->request->request->getInt('project-id');
+        $includeUnilendCommission =  $this->request->request->getboolean('include-unilend-commission');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
@@ -3242,7 +3265,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                 try {
-                    $projectCloseOutNettingManager->decline($project, new DateTime());
+                    $projectCloseOutNettingManager->decline($project, new DateTime(), $includeUnilendCommission);
                 } catch (\Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
                     $_SESSION['freeow']['title']   = 'Déchéance du terme';
@@ -3269,9 +3292,12 @@ class dossiersController extends bootstrap
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $companyManager = $this->get('unilend.service.company_manager');
 
-            $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-            $receptionsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $projectsRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $receptionsRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
             $totalPendingWireTransferInAmount = 0;
             $totalRemainingAmount             = 0;
@@ -3297,7 +3323,7 @@ class dossiersController extends bootstrap
                 $projectData[$project->getIdProject()] = [
                     'projectId'                   => $project->getIdProject(),
                     'siren'                       => $project->getIdCompany()->getSiren(),
-                    'companyStatusLabel'          => $project->getIdCompany()->getIdStatus()->getLabel(),
+                    'companyStatusLabel'          => $companyManager->getCompanyStatusNameByLabel($project->getIdCompany()->getIdStatus()->getLabel()),
                     'projectTitle'                => $project->getTitle(),
                     'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
                     'projectStatus'               => $project->getStatus(),
@@ -3305,6 +3331,7 @@ class dossiersController extends bootstrap
                     'entrustedToDebtCollector'    => $debtCollectionAmount,
                     'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
                     'closeOutNettingDate'         => $project->getCloseOutNettingDate(),
+                    'overduePaymentScheduleCount' => $paymentScheduleRepository->getOverdueScheduleCount($project)
                 ];
                 $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
                 $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);

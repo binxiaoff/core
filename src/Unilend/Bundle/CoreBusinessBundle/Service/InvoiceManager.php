@@ -5,13 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompteurFactures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
+};
 
 class InvoiceManager
 {
@@ -97,9 +93,7 @@ class InvoiceManager
      * @param \DateTime|null $paymentDate
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Twig_Error_Loader
-     * @throws \Twig_Error_Runtime
-     * @throws \Twig_Error_Syntax
+     * @throws \Twig_Error
      */
     private function generateInvoice(Factures $invoice, \DateTime $paymentDate = null)
     {
@@ -115,7 +109,7 @@ class InvoiceManager
         $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
             'client'         => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
-            'companyAddress' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($invoice->getIdProject()->getIdCompany()->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS),
+            'companyAddress' => $invoice->getIdProject()->getIdCompany()->getIdAddress(),
             'project'        => $invoice->getIdProject(),
             'invoice'        => $invoice,
             'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,

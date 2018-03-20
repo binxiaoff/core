@@ -23,7 +23,7 @@
                         <div class="col-small"><?= (0 < $this->companiesEmprunteur->capital) ? $this->ficelle->formatNumber($this->companiesEmprunteur->capital, 0) : 0 ?>&nbsp;&euro;</div>
                     </li>
                     <li>Adresse du siège social
-                        <div class="col-small"><?= $this->borrowerCompanyAddress->getAddres() ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getAddress() ?></div>
                     </li>
                     <li>Code postal
                         <div class="col-small"><?= $this->borrowerCompanyAddress->getZip() ?></div>

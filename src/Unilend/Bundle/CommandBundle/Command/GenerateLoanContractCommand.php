@@ -5,13 +5,13 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Loans, PaysV2, ProjectsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class GenerateLoanContractCommand extends ContainerAwareCommand
@@ -69,8 +69,6 @@ EOF
             $loans = $loan->select('status = ' . Loans::STATUS_ACCEPTED .' AND fichier_declarationContratPret IS NULL AND id_project IN (' . implode(', ', array_column($projects, 'id_project')) . ')', 'id_loan ASC', 0, $limit);
 
             if (count($loans) > 0) {
-                /** @var \companies $borrowerCompany */
-                $borrowerCompany = $entityManagerSimulator->getRepository('companies');
                 /** @var \clients_adresses $clientAddress */
                 $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
                 /** @var \companies $lenderCompany */
@@ -79,9 +77,12 @@ EOF
                 foreach ($loans as $loanArray) {
                     $loan->get($loanArray['id_loan'], 'id_loan');
                     $project->get($loan->id_project, 'id_project');
-                    $borrowerCompany->get($project->id_company, 'id_company');
-                    $borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
-                    $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
+                    $borrowerCompany = $entityManager->getRepository('Companies')->find($project->id_company);
+                    $wallet          = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
+
+                    if (null !== $borrowerCompany->getIdAddress()) {
+                        throw new \Exception('Borrower of loan ' . $loan->id_loan . ' has no main address');
+                    }
 
                     if ($wallet->getIdClient()->isNaturalPerson()) {
                         $clientAddress->get($wallet->getIdClient()->getIdClient(), 'id_client');
@@ -97,9 +98,9 @@ EOF
                     }
 
                     $basePath     = $sRootDir . '/../protected/pdf/cerfa/2062/';
-                    $borrowerPath = $basePath . substr($loan->added, 0, 4) . '/' . substr(trim($borrowerCompanyAddress->getZip()), 0, 2) . '/emprunteurs/' . $project->slug . '/';
+                    $borrowerPath = $basePath . substr($loan->added, 0, 4) . '/' . substr(trim($borrowerCompany->getIdAddress()->getZip()), 0, 2) . '/emprunteurs/' . $project->slug . '/';
                     $lenderPath   = $basePath . substr($loan->added, 0, 4) . '/' . $lenderCode . '/preteurs/' . $project->slug . '/';
-                    $fileName     = $borrowerCompany->siren . '-' . $wallet->getIdClient()->getIdClient() . '-' . $loan->id_loan . '.pdf';
+                    $fileName     = $borrowerCompany->getSiren() . '-' . $wallet->getIdClient()->getIdClient() . '-' . $loan->id_loan . '.pdf';
 
                     if (false === is_dir($borrowerPath)) {
                         mkdir($borrowerPath, 0775, true);

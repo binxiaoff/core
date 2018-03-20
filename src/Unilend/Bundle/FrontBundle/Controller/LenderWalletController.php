@@ -166,18 +166,18 @@ class LenderWalletController extends Controller
         if ($client) {
             /** @var BankAccount $bankAccount */
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $post['amount'], 'mdp' => md5($post['password'])]);
-            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
-            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-            /** @var ClientsStatus $lastStatus */
-            $lastStatus = $clientStatusRepository->getLastClientStatus($client);
+            $amount      = $post['amount'];
+            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
 
-            if (null !== $lastStatus && $lastStatus->getStatus() < ClientsStatus::VALIDATED) {
+            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
+
+            if (
+                null !== $client->getIdClientStatusHistory()
+                && $client->getIdClientStatusHistory()->getIdStatus()->getId() < ClientsStatus::VALIDATED
+            ) {
                 $this->redirectToRoute('lender_wallet_withdrawal');
             }
-            $amount = $post['amount'];
 
-            /** @var UserPasswordEncoder $securityPasswordEncoder */
             $securityPasswordEncoder = $this->get('security.password_encoder');
 
             if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
@@ -205,7 +205,6 @@ class LenderWalletController extends Controller
             if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
                 $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
             } else {
-
                 if ($bankAccount) {
                     try {
                         $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');

@@ -6,31 +6,22 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRatingHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\InfolegaleExecutivePersonalChange;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\BalanceSheetListDetail;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyRatingDetail;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\FinancialSummaryListDetail;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, PaysV2
+};
+use Unilend\Bundle\WSClientBundle\Entity\Altares\{
+    BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail
+};
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncement;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Mandate;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
-use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
-use Unilend\Bundle\WSClientBundle\Service\CodinfManager;
-use Unilend\Bundle\WSClientBundle\Service\EllisphereManager;
-use Unilend\Bundle\WSClientBundle\Service\EulerHermesManager;
-use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
-use Unilend\Bundle\WSClientBundle\Service\InfolegaleManager;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
+    AnnouncementDetails, DirectorAnnouncement, Executive, Mandate, ScoreDetails
+};
+use Unilend\Bundle\WSClientBundle\Service\{
+    AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager
+};
 
 class ExternalDataManager
 {
@@ -134,17 +125,14 @@ class ExternalDataManager
 
                     $this->entityManager->flush($company);
 
-                    if (null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS)) {
-                        $this->addressManager->saveBorrowerCompanyAddress(
-                            $identity->getAddress(),
-                            $identity->getCity(),
-                            $identity->getPostCode(),
-                            PaysV2::COUNTRY_FRANCE,
-                            null,
-                            $company->getIdCompany(),
-                            AddressType::TYPE_MAIN_ADDRESS
-                        );
-                    }
+                    $this->addressManager->saveCompanyAddress(
+                        $identity->getAddress(),
+                        $identity->getPostCode(),
+                        $identity->getCity(),
+                        PaysV2::COUNTRY_FRANCE,
+                        $company,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
                 }
             }
 

@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients as ClientEntity, ClientsStatus, PaysV2, WalletType
+    AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, PaysV2, WalletType
 };
 
 class clients extends clients_crud
@@ -63,19 +63,6 @@ class clients extends clients_crud
         }
     }
 
-    public function handleLogout($bRedirect = true)
-    {
-        unset($_SESSION['auth']);
-        unset($_SESSION['token']);
-        unset($_SESSION['client']);
-        unset($_SESSION['panier']);
-        unset($_SESSION['partenaire']);
-
-        if ($bRedirect) {
-            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : ''));
-        }
-    }
-
     public function changePassword($email, $pass)
     {
         $this->bdd->query('
@@ -108,33 +95,6 @@ class clients extends clients_crud
             return false;
         } else {
             return true;
-        }
-    }
-
-    public function checkCompteCreate($id_client)
-    {
-        $sql    = 'SELECT count(*)
-                FROM `clients_status_history`
-                WHERE id_client = ' . $id_client;
-        $result = $this->bdd->query($sql);
-        $nb     = (int) ($this->bdd->result($result, 0, 0));
-
-        if ($nb > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public function checkAccessLender()
-    {
-        if ($this->isLender()) {
-            if (false === $this->checkCompteCreate($this->id_client)) {
-                header('location:' . $this->lurl . '/inscription-preteurs');
-                die;
-            }
-        } else {
-            $this->handleLogout();
         }
     }
 
@@ -214,38 +174,29 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
+    public function selectPreteursByStatus($status, $where = '', $order = '', $start = '', $nb = ''): array
     {
         if ($where != '') {
-            $where = ' WHERE ' . $where;
+            $where = ' AND ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
-        }
-        if ($status != '') {
-            $status = ' HAVING status_client IN (' . $status . ')';
         }
 
         $sql = '
             SELECT
-                c.*,
-                cs.status AS status_client,
-                cs.label AS label_status,
-                csh.added AS added_status,
-                clsh.id_client_status_history,
-                com.id_company as id_company,
-                w.wire_transfer_pattern as motif,
-                w.available_balance as balance
+              c.*,
+              csh.added AS added_status
             FROM clients c
-            INNER JOIN (SELECT id_client, MAX(id_client_status_history) AS id_client_status_history FROM clients_status_history GROUP BY id_client) clsh ON c.id_client = clsh.id_client
-            INNER JOIN clients_status_history csh ON clsh.id_client_status_history = csh.id_client_status_history
-            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w ON c.id_client = w.id_client
-            LEFT JOIN companies com ON c.id_client = com.id_client_owner
-            ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            INNER JOIN wallet_type wt ON w.id_type = wt.id
+            WHERE csh.id_status IN (' . $status . ') AND wt.label = "lender"' .
+              $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result   = [];
         $resultat = $this->bdd->query($sql);
-        $result   = array();
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
@@ -359,7 +310,7 @@ class clients extends clients_crud
      */
     public function getClientsWithNoWelcomeOffer($clients): array
     {
-        if (1 !== preg_match('/^[1-9]+[, ]*[0-9]*$/', $clients)) {
+        if (1 !== preg_match('/^[1-9]+(,[0-9]*)*$/', $clients)) {
             return [];
         }
 
@@ -375,8 +326,7 @@ class clients extends clients_crud
                     SELECT MAX(csh.added)
                     FROM clients_status_history csh
                     INNER JOIN clients ON clients.id_client = csh.id_client
-                    INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
-                    WHERE cs.status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
+                    WHERE csh.id_status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
                     ORDER BY csh.added DESC
                     LIMIT 1
                 ) AS date_validation
@@ -386,7 +336,7 @@ class clients extends clients_crud
                 WHERE
                     c.id_client IN (' . $clients . ')
                     AND NOT EXISTS (SELECT obd.id_client FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '") AND o.id_wallet_creditor = w.id)';
+                    AND NOT EXISTS (SELECT o.id FROM operation o WHERE o.id_sub_type = (SELECT id FROM operation_sub_type WHERE label = "' . OperationSubType::UNILEND_PROMOTIONAL_OPERATION_WELCOME_OFFER . '") AND o.id_wallet_creditor = w.id)';
 
         $result = $this->bdd->query($query);
 
@@ -491,67 +441,67 @@ class clients extends clients_crud
     public function getBorrowersSalesForce()
     {
         $query = "
-        SELECT
-          c.id_client AS 'IDClient',
-          c.id_client AS 'IDClient_2',
-          c.id_langue AS 'Langue',
-          REPLACE(c.civilite,',','') AS 'Civilite',
-          REPLACE(c.nom,',','') AS 'Nom',
-          REPLACE(c.nom_usage,',','') AS 'Nom_usage',
-          REPLACE(c.prenom,',','') AS 'Prenom',
-          CONVERT(REPLACE(c.fonction,',','') USING utf8) AS 'Fonction',
-          CASE c.naissance
-              WHEN '0000-00-00' then '2001-01-01'
-              ELSE
-                CASE SUBSTRING(c.naissance,1,1)
-                    WHEN '0' then '2001-01-01'
-                    ELSE c.naissance
-                END
-          END AS 'DateNaissance',
-          REPLACE(ville_naissance,',','') AS 'VilleNaissance',
-          ccountry.fr AS 'PaysNaissance',
-          nv2.fr_f AS 'Nationalite',
-          REPLACE(c.telephone,'\t','') AS 'Telephone',
-          c.mobile AS 'Mobile',
-          REPLACE(c.email,',','') AS 'Email',
-          c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
-          CASE c.type
-            WHEN 1 THEN 'Physique'
-            WHEN 2 THEN 'Morale'
-            WHEN 3 THEN 'Physique'
-            ELSE 'Morale'
-          END AS 'TypeContact',
-          CASE c.status
-            WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
-            ELSE 'non'
-          END AS 'Valide',
-          CASE c.added
-            WHEN '0000-00-00 00:00:00' then ''
-            ELSE c.added
-          END AS 'date_inscription',
-          CASE c.updated
-            WHEN '0000-00-00 00:00:00' then ''
-            ELSE c.updated
-          END AS 'DateMiseJour',
-          CASE c.lastlogin
-            WHEN '0000-00-00 00:00:00' then ''
-            ELSE c.lastlogin
-          END AS 'DateDernierLogin',
-          REPLACE(ca.address,',','') AS 'Adresse1',
-          '' AS 'Adresse2',
-          '' AS 'Adresse3',
-          REPLACE(ca.zip,',','') AS 'CP',
-          REPLACE(ca.city,',','') AS 'Ville',
-          acountry.fr AS 'Pays',
-          '012240000002G4e' as 'Sfcompte'
-        FROM clients c
-          INNER JOIN companies co on c.id_client = co.id_client_owner
-          INNER JOIN projects p ON p.id_company = co.id_company
-          LEFT JOIN company_address ca on co.id_company = ca.id_company
-          LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-          LEFT JOIN pays_v2 acountry on ca.id_country = acountry.id_pays
-          LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-        GROUP BY c.id_client";
+            SELECT
+              c.id_client AS 'IDClient',
+              c.id_client AS 'IDClient_2',
+              c.id_langue AS 'Langue',
+              REPLACE(c.civilite,',','') AS 'Civilite',
+              REPLACE(c.nom,',','') AS 'Nom',
+              REPLACE(c.nom_usage,',','') AS 'Nom_usage',
+              REPLACE(c.prenom,',','') AS 'Prenom',
+              CONVERT(REPLACE(c.fonction,',','') USING utf8) AS 'Fonction',
+              CASE c.naissance
+                  WHEN '0000-00-00' then '2001-01-01'
+                  ELSE
+                    CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                    END
+              END AS 'DateNaissance',
+              REPLACE(ville_naissance,',','') AS 'VilleNaissance',
+              ccountry.fr AS 'PaysNaissance',
+              nv2.fr_f AS 'Nationalite',
+              REPLACE(c.telephone,'\t','') AS 'Telephone',
+              c.mobile AS 'Mobile',
+              REPLACE(c.email,',','') AS 'Email',
+              c.etape_inscription_preteur AS 'EtapeInscriptionPreteur',
+              CASE c.type
+                WHEN 1 THEN 'Physique'
+                WHEN 2 THEN 'Morale'
+                WHEN 3 THEN 'Physique'
+                ELSE 'Morale'
+              END AS 'TypeContact',
+              CASE c.status
+                WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
+                ELSE 'non'
+              END AS 'Valide',
+              CASE c.added
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.added
+              END AS 'date_inscription',
+              CASE c.updated
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.updated
+              END AS 'DateMiseJour',
+              CASE c.lastlogin
+                WHEN '0000-00-00 00:00:00' then ''
+                ELSE c.lastlogin
+              END AS 'DateDernierLogin',
+              REPLACE(ca.address,',','') AS 'Adresse1',
+              '' AS 'Adresse2',
+              '' AS 'Adresse3',
+              REPLACE(ca.zip,',','') AS 'CP',
+              REPLACE(ca.city,',','') AS 'Ville',
+              acountry.fr AS 'Pays',
+              '012240000002G4e' as 'Sfcompte'
+            FROM clients c
+              INNER JOIN companies co on c.id_client = co.id_client_owner
+              INNER JOIN projects p ON p.id_company = co.id_company
+              LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "') 
+              LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+              LEFT JOIN pays_v2 acountry on ca.id_country = acountry.id_pays
+              LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
+            GROUP BY c.id_client";
 
         return $this->bdd->executeQuery($query);
     }
@@ -629,11 +579,11 @@ class clients extends clients_crud
     public function getClientsToAutoValidate(array $clientStatus, array $vigilanceStatusExcluded)
     {
         $bind = [
-            'statusValid'            => \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment::STATUS_VALIDATION_VALID,
+            'statusValid'            => GreenpointAttachment::STATUS_VALIDATION_VALID,
             'clientStatus'           => $clientStatus,
-            'attachmentTypeIdentity' => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::CNI_PASSPORTE,
-            'attachmentTypeAddress'  => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::JUSTIFICATIF_DOMICILE,
-            'attachmentTypeRib'      => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::RIB,
+            'attachmentTypeIdentity' => AttachmentType::CNI_PASSPORTE,
+            'attachmentTypeAddress'  => AttachmentType::JUSTIFICATIF_DOMICILE,
+            'attachmentTypeRib'      => AttachmentType::RIB,
             'vigilanceStatus'        => $vigilanceStatusExcluded,
             'lenderWallet'           => WalletType::LENDER
         ];
@@ -656,34 +606,27 @@ class clients extends clients_crud
               ga_address.validation_status address_attachment_status,
               ga_rib.id AS rib_attachment_id,
               ga_rib.validation_status rib_attachment_status
-            FROM clients_status_history csh
-              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
-              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
-              INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-              INNER JOIN clients c ON c.id_client = csh.id_client
-              INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
-              INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
-              INNER JOIN wallet w ON c.id_client = w.id_client
-              INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
-              LEFT JOIN (
-                SELECT * 
-                FROM client_vigilance_status_history cvsh
-                WHERE cvsh.id = (
-                  SELECT cvsh_max.id
-                  FROM client_vigilance_status_history cvsh_max
-                  WHERE cvsh.id_client = cvsh_max.id_client
-                  ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
-                )
-              ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
-            WHERE csh.id_client_status_history = (
-              SELECT csh_max.id_client_status_history
-              FROM clients_status_history csh_max
-              WHERE csh_max.id_client = csh.id_client
-              ORDER BY csh_max.added DESC, csh_max.id_client_status_history DESC LIMIT 1
-            )
-            AND cs.status IN (:clientStatus)
-            AND TIMESTAMPDIFF(YEAR, naissance, CURDATE()) < 80
-            AND last_cvsh.id_client IS NULL";
+            FROM clients c 
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
+            INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
+            LEFT JOIN (
+              SELECT * 
+              FROM client_vigilance_status_history cvsh
+              WHERE cvsh.id = (
+                SELECT cvsh_max.id
+                FROM client_vigilance_status_history cvsh_max
+                WHERE cvsh.id_client = cvsh_max.id_client
+                ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
+              )
+            ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+            WHERE csh.id_status IN (:clientStatus)
+              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 80
+              AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */
         $statement = $this->bdd->executeQuery($sql, $bind, $type);

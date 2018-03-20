@@ -3,11 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, Product, ProductAttributeType, ProjectsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
@@ -78,12 +76,11 @@ trait CompanyChecker
      * @param Companies               $company
      * @param Product                 $product
      * @param ProductAttributeManager $productAttributeManager
-     * @param EntityManager           $entityManager
      *
      * @return bool|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager, EntityManager $entityManager)
+    private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
         $exclusiveLocations = $productAttributeManager->getProductAttributesByType($product, ProductAttributeType::ELIGIBLE_EXCLUDED_HEADQUARTERS_LOCATION);
 
@@ -91,12 +88,11 @@ trait CompanyChecker
             return true;
         }
 
-        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-        if (null === $companyAddress) {
+        if (null === $company->getIdAddress()) {
             return null;
         }
 
-        $department = in_array(substr($companyAddress->getZip(), 0, 2), ['97', '98']) ? substr($companyAddress->getZip(), 0, 3) : substr($companyAddress->getZip(), 0, 2);
+        $department = in_array(substr($company->getIdAddress()->getZip(), 0, 2), ['97', '98']) ? substr($company->getIdAddress()->getZip(), 0, 3) : substr($company->getIdAddress()->getZip(), 0, 2);
 
         return false === in_array($department, $exclusiveLocations);
     }
