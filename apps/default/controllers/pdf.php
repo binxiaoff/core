@@ -3,7 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
+    Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -296,8 +296,9 @@ class pdfController extends bootstrap
         $this->pays->get($this->pdfClient->id_langue, 'id_langue');
 
         if ($this->companies->get($this->pdfClient->id_client, 'id_client_owner')) {
+            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
             $this->entreprise     = true;
-            $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+            $this->companyAddress = $company->getIdAddress();
             if (null === $this->companyAddress->getDateValidated()) {
                 $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in mandate.', [
                     'file'             => __FILE__,
@@ -499,7 +500,7 @@ class pdfController extends bootstrap
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company)->getIdAddress();
         if (null === $this->companyAddress->getDateValidated()) {
             $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in proxy.', [
                 'file'             => __FILE__,
@@ -513,9 +514,7 @@ class pdfController extends bootstrap
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oLoans                 = $this->loadData('loans');
         /** @var underlying_contract $contract */
-        $contract                     = $this->loadData('underlying_contract');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $contract               = $this->loadData('underlying_contract');
         $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
@@ -741,7 +740,8 @@ class pdfController extends bootstrap
         $this->oLoans                  = $oLoans;
         $this->clients                 = $oClients;
         $this->projects                = $oProjects;
-        $this->borrowerCompanyAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($oProjects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $this->borrowerCompanyAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($oProjects->id_company)->getIdAddress();
+
         if (null === $this->borrowerCompanyAddress->getDateValidated()) {
             $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
                 'file'             => __FILE__,
@@ -853,7 +853,7 @@ class pdfController extends bootstrap
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
             $this->preteur->get($wallet->getIdClient()->getIdClient(), 'id_client');
             $this->preteur_adresse->get($this->preteur->id_client, 'id_client');
-            $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+            $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
             if (null === $this->borrowerCompanyAddress->getDateValidated()) {
                 $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
                     'file'             => __FILE__,
@@ -962,8 +962,8 @@ class pdfController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
         $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
         if (null === $this->borrowerCompanyAddress->getDateValidated()) {
             $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in Déclaration de créances.', [
                 'file'             => __FILE__,

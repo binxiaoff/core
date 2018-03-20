@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
+    Clients, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectManager, ProjectStatusManager
@@ -282,15 +282,13 @@ class BorrowerAccountController extends Controller
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $client         = $this->getClient();
-        $company        = $this->getCompany();
+        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->id_client]);
         $bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
-        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         return [
             'client'         => $client,
             'company'        => $company,
-            'bankAccount'    => $bankAccount,
-            'companyAddress' => $companyAddress
+            'bankAccount'    => $bankAccount
         ];
     }
 
@@ -497,7 +495,6 @@ class BorrowerAccountController extends Controller
         $client         = $this->getClient();
         $wallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
         $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
-        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
 
         $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
         $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
@@ -507,7 +504,6 @@ class BorrowerAccountController extends Controller
             'operations'        => $borrowerOperations,
             'client'            => $wallet->getIdClient(),
             'company'           => $company,
-            'companyAddress'    => $companyAddress,
             'available_balance' => $wallet->getAvailableBalance()
         ]);
 

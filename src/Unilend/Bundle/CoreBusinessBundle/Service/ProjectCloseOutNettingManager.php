@@ -30,13 +30,13 @@ class ProjectCloseOutNettingManager
     /**
      * @param Projects  $project
      * @param \DateTime $closeOutNettingDate
-     * @param bool      $rebuildMode
+     * @param bool      $includeUnilendCommission
      *
      * @throws \Exception
      */
-    public function decline(Projects $project, \DateTime $closeOutNettingDate, $rebuildMode = false)
+    public function decline(Projects $project, \DateTime $closeOutNettingDate, bool $includeUnilendCommission): void
     {
-        if ($project->getCloseOutNettingDate() && false === $rebuildMode) {
+        if ($project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
         }
 
@@ -58,7 +58,7 @@ class ProjectCloseOutNettingManager
             $this->entityManager->flush($project);
 
             $this->buildRepayments($project);
-            $this->buildPayments($project);
+            $this->buildPayments($project, $includeUnilendCommission);
             $this->entityManager->getConnection()->commit();
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
@@ -113,10 +113,12 @@ class ProjectCloseOutNettingManager
 
     /**
      * @param Projects $project
+     * @param bool     $includeUnilendCommission
      *
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function buildPayments(Projects $project)
+    private function buildPayments(Projects $project, bool $includeUnilendCommission): void
     {
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
@@ -127,6 +129,10 @@ class ProjectCloseOutNettingManager
         $capital        = $paymentScheduleRepository->getRemainingCapitalByProject($project);
         $interest       = $overdueAmounts['interest'];
         $commission     = $overdueAmounts['commission'];
+
+        if (false === $includeUnilendCommission) {
+            $commission = 0;
+        }
 
         $closeOutNettingPayment = new CloseOutNettingPayment();
         $closeOutNettingPayment->setIdProject($project)

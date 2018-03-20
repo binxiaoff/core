@@ -202,10 +202,10 @@
         </service>
 
         <service id="unilend.service.client_status_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.service.cip_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CIPManager">

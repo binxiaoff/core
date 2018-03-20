@@ -7,43 +7,53 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatusHistory
  *
- * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_client_status", columns={"id_client_status"}), @ORM\Index(name="id_user", columns={"id_user"})})
+ * @ORM\Table(name="clients_status_history", indexes={@ORM\Index(name="id_client", columns={"id_client"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="idx_clients_status_history_id_status", columns={"id_status"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsStatusHistoryRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsStatusHistory
 {
     /**
-     * @var integer
+     * @var Clients
      *
-     * @ORM\Column(name="id_client", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Clients")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client", referencedColumnName="id_client")
+     * })
      */
     private $idClient;
 
     /**
-     * @var integer
+     * @var ClientsStatus
      *
-     * @ORM\Column(name="id_client_status", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_status", referencedColumnName="id")
+     * })
      */
-    private $idClientStatus;
+    private $idStatus;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="content", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="content", type="text", length=16777215, nullable=true)
      */
     private $content;
 
     /**
-     * @var integer
+     * @var Users
      *
-     * @ORM\Column(name="id_user", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Users")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_user", referencedColumnName="id_user")
+     * })
      */
     private $idUser;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="numero_relance", type="integer", nullable=false)
+     * @ORM\Column(name="numero_relance", type="integer", nullable=true)
      */
     private $numeroRelance;
 
@@ -55,31 +65,24 @@ class ClientsStatusHistory
     private $added;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
-
-    /**
      * @var integer
      *
-     * @ORM\Column(name="id_client_status_history", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idClientStatusHistory;
+    private $id;
 
 
 
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param Clients $idClient
      *
      * @return ClientsStatusHistory
      */
-    public function setIdClient($idClient)
+    public function setIdClient(Clients $idClient): ClientsStatusHistory
     {
         $this->idClient = $idClient;
 
@@ -89,45 +92,45 @@ class ClientsStatusHistory
     /**
      * Get idClient
      *
-     * @return integer
+     * @return Clients
      */
-    public function getIdClient()
+    public function getIdClient(): Clients
     {
         return $this->idClient;
     }
 
     /**
-     * Set idClientStatus
+     * Set idStatus
      *
-     * @param integer $idClientStatus
+     * @param ClientsStatus $idStatus
      *
      * @return ClientsStatusHistory
      */
-    public function setIdClientStatus($idClientStatus)
+    public function setIdStatus(ClientsStatus $idStatus): ClientsStatusHistory
     {
-        $this->idClientStatus = $idClientStatus;
+        $this->idStatus = $idStatus;
 
         return $this;
     }
 
     /**
-     * Get idClientStatus
+     * Get ClientsStatus
      *
-     * @return integer
+     * @return ClientsStatus
      */
-    public function getIdClientStatus()
+    public function getIdStatus(): ClientsStatus
     {
-        return $this->idClientStatus;
+        return $this->idStatus;
     }
 
     /**
      * Set content
      *
-     * @param string $content
+     * @param string|null $content
      *
      * @return ClientsStatusHistory
      */
-    public function setContent($content)
+    public function setContent(?string $content): ClientsStatusHistory
     {
         $this->content = $content;
 
@@ -137,9 +140,9 @@ class ClientsStatusHistory
     /**
      * Get content
      *
-     * @return string
+     * @return string|null
      */
-    public function getContent()
+    public function getContent(): ?string
     {
         return $this->content;
     }
@@ -147,11 +150,11 @@ class ClientsStatusHistory
     /**
      * Set idUser
      *
-     * @param integer $idUser
+     * @param Users $idUser
      *
      * @return ClientsStatusHistory
      */
-    public function setIdUser($idUser)
+    public function setIdUser(Users $idUser): ClientsStatusHistory
     {
         $this->idUser = $idUser;
 
@@ -161,9 +164,9 @@ class ClientsStatusHistory
     /**
      * Get idUser
      *
-     * @return integer
+     * @return Users
      */
-    public function getIdUser()
+    public function getIdUser(): Users
     {
         return $this->idUser;
     }
@@ -171,11 +174,11 @@ class ClientsStatusHistory
     /**
      * Set numeroRelance
      *
-     * @param integer $numeroRelance
+     * @param int|null $numeroRelance
      *
      * @return ClientsStatusHistory
      */
-    public function setNumeroRelance($numeroRelance)
+    public function setNumeroRelance(?int $numeroRelance): ClientsStatusHistory
     {
         $this->numeroRelance = $numeroRelance;
 
@@ -185,9 +188,9 @@ class ClientsStatusHistory
     /**
      * Get numeroRelance
      *
-     * @return integer
+     * @return int|null
      */
-    public function getNumeroRelance()
+    public function getNumeroRelance(): ?int
     {
         return $this->numeroRelance;
     }
@@ -199,7 +202,7 @@ class ClientsStatusHistory
      *
      * @return ClientsStatusHistory
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ClientsStatusHistory
     {
         $this->added = $added;
 
@@ -211,42 +214,28 @@ class ClientsStatusHistory
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
+     * Get id
      *
-     * @param \DateTime $updated
-     *
-     * @return ClientsStatusHistory
+     * @return int
      */
-    public function setUpdated($updated)
+    public function getId(): int
     {
-        $this->updated = $updated;
-
-        return $this;
+        return $this->id;
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @ORM\PrePersist
      */
-    public function getUpdated()
+    public function setAddedValue(): void
     {
-        return $this->updated;
-    }
-
-    /**
-     * Get idClientStatusHistory
-     *
-     * @return integer
-     */
-    public function getIdClientStatusHistory()
-    {
-        return $this->idClientStatusHistory;
+        if (! $this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
     }
 }

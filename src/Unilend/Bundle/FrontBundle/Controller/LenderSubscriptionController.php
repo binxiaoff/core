@@ -1004,13 +1004,13 @@ class LenderSubscriptionController extends Controller
             }
 
             if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                $clientEntity           = $clientRepository->find($this->getUser()->getClientId());
-                $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-                /** @var ClientsStatus $lastStatus */
-                $lastStatus = $clientStatusRepository->getLastClientStatus($clientEntity);
+                $clientEntity = $clientRepository->find($this->getUser()->getClientId());
 
-                if (null !== $lastStatus && $lastStatus->getStatus() >= ClientsStatus::MODIFICATION
-                    && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()) {
+                if (
+                    null !== $clientEntity->getIdClientStatusHistory()
+                    && $clientEntity->getIdClientStatusHistory()->getIdStatus()->getId() >= ClientsStatus::MODIFICATION
+                    && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()
+                ) {
                     return $this->redirectToRoute('lender_dashboard');
                 }
             } else {
