@@ -54,16 +54,6 @@ class partenairesController extends bootstrap
             return strcasecmp($first->getName(), $second->getName());
         });
 
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-        $agenciesWithAddress      = [];
-        foreach ($agencies as $agency) {
-            $agencyAddress                                = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
-            $agenciesWithAddress[$agency->getIdCompany()] = [
-                'agency'  => $agency,
-                'address' => $agencyAddress
-            ];
-        }
-
         $users = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findBy(['idCompany' => $agencies]);
 
         /** @var \Symfony\Component\Translation\TranslatorInterface $translator */
@@ -91,7 +81,7 @@ class partenairesController extends bootstrap
             'formSuccess'   => $success,
             'formErrors'    => $errors,
             'partner'       => $partner,
-            'agencies'      => $agenciesWithAddress,
+            'agencies'      => $agencies,
             'users'         => $users,
             'documentTypes' => $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findBy([], ['label' => 'ASC']),
             'documents'     => $partner->getAttachmentTypes(),
@@ -129,26 +119,21 @@ class partenairesController extends bootstrap
         /** @var Companies $agency */
         $agency                   = null;
         $agencyId                 = null;
-        $agencyAddress            = null;
         $errors                   = [];
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-
 
         switch ($this->request->request->get('action')) {
             case 'create':
                 $agency = $this->createAgency($this->request, $partner, $errors);
 
                 if ($agency instanceof Companies) {
-                    $agencyId      = $agency->getIdCompany();
-                    $agencyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
+                    $agencyId  = $agency->getIdCompany();
                 }
                 break;
             case 'modify':
                 $agency = $this->modifyAgency($this->request, $errors);
 
                 if ($agency instanceof Companies) {
-                    $agencyId      = $agency->getIdCompany();
-                    $agencyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($agency, AddressType::TYPE_MAIN_ADDRESS);
+                    $agencyId = $agency->getIdCompany();
                 }
                 break;
             case 'delete':
@@ -165,9 +150,9 @@ class partenairesController extends bootstrap
                 $agency->getName(),
                 $agency->getSiren(),
                 $agency->getPhone(),
-                $agencyAddress->getAddress(),
-                $agencyAddress->getZip(),
-                $agencyAddress->getCity(),
+                $agency->getIdAddress()->getAddress(),
+                $agency->getIdAddress()->getZip(),
+                $agency->getIdAddress()->getCity(),
             ] : 'delete',
             $errors,
             $agencyId
