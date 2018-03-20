@@ -188,4 +188,17 @@ class AddressManager
             $address->setLongitude($coordinates['longitude']);
         }
     }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function deleteCompanyAddresses(Companies $company)
+    {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
+            $this->entityManager->remove($address);
+            $this->entityManager->flush($address);
+        }
+    }
 }
