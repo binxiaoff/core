@@ -36,7 +36,7 @@ class UserLender extends BaseUser
      * @param string         $initials
      * @param string         $firstName
      * @param string         $lastName
-     * @param int|null       $clientStatus
+     * @param int            $clientStatus
      * @param bool           $hasAcceptedCurrentTerms
      * @param array          $notifications
      * @param int            $subscriptionStep
@@ -56,7 +56,7 @@ class UserLender extends BaseUser
         string $initials,
         string $firstName,
         string $lastName,
-        ?int $clientStatus,
+        int $clientStatus,
         bool $hasAcceptedCurrentTerms,
         array $notifications,
         int $subscriptionStep,
@@ -77,42 +77,66 @@ class UserLender extends BaseUser
         $this->level                   = $level;
     }
 
-    public function getBalance()
+    /**
+     * @return float
+     */
+    public function getBalance(): float
     {
         return $this->balance;
     }
 
-    public function getInitials()
+    /**
+     * @return string
+     */
+    public function getInitials(): string
     {
         return $this->initials;
     }
 
-    public function getFirstName()
+    /**
+     * @return string
+     */
+    public function getFirstName(): string
     {
         return $this->firstName;
     }
 
-    public function getLastName()
+    /**
+     * @return string
+     */
+    public function getLastName(): string
     {
         return $this->lastName;
     }
 
-    public function getClientStatus()
+    /**
+     * @return int
+     */
+    public function getClientStatus(): int
     {
         return $this->clientStatus;
     }
 
-    public function hasAcceptedCurrentTerms()
+    /**
+     * @return bool
+     */
+    public function hasAcceptedCurrentTerms(): bool
     {
         return $this->hasAcceptedCurrentTerms;
     }
 
-    public function getNotifications()
+    /**
+     * @return array
+     */
+    public function getNotifications(): array
     {
         return $this->notifications;
     }
 
-    public function getUnreadNotificationsCount()
+    /**
+     * @return int
+     */
+    public function getUnreadNotificationsCount(): int
     {
         if (in_array('unread', array_column($this->notifications, 'status'))) {
             return array_count_values(array_column($this->notifications, 'status'))['unread'];
@@ -121,20 +145,26 @@ class UserLender extends BaseUser
         return 0;
     }
 
-    public function getSubscriptionStep()
+    /**
+     * @return int
+     */
+    public function getSubscriptionStep(): int
     {
         return $this->subscriptionStep;
     }
 
-    public function getLevel()
+    /**
+     * @return int
+     */
+    public function getLevel(): int
     {
         return $this->level;
     }
 
     /**
-     * @param double $balance
+     * @param float $balance
      */
-    public function setBalance($balance)
+    public function setBalance(float $balance): void
     {
         $this->balance = $balance;
     }

@@ -75,7 +75,13 @@ abstract class ProductManager
         $this->entityManager           = $entityManager;
     }
 
-    abstract public function findEligibleProducts(\projects $project, $includeInactiveProduct = false);
+    /**
+     * @param \projects|Projects $project
+     * @param bool               $includeInactiveProduct
+     *
+     * @return mixed
+     */
+    abstract public function findEligibleProducts($project, bool $includeInactiveProduct = false);
 
     /**
      * @param Projects|\projects $project
@@ -305,7 +311,7 @@ abstract class ProductManager
         return $product;
     }
 
-    private function convertProject($project)
+    protected function convertProject($project)
     {
         if ($project instanceof \projects) {
             return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);

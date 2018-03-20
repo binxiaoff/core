@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Partner, ProjectsStatus, Users, UsersTypes, Zones
+    BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
@@ -237,21 +237,40 @@ class dashboardController extends bootstrap
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider $messageProvider */
+        $messageProvider = $this->get('unilend.swiftmailer.message_provider');
+        /** @var Projects[] $projects */
         $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
-        foreach ($projects as $projectEntity) {
-            $project->get($projectEntity->getIdProject());
 
-            if (null === $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user'])) {
-                $status = empty($projectEntity->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
+        foreach ($projects as $project) {
+            if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
+                $status = empty($project->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
-                $projectRequestManager->assignEligiblePartnerProduct($project, $_SESSION['user']['id_user'], true);
+                $projectRequestManager->assignEligiblePartnerProduct($project, $this->userEntity->getIdUser(), true);
+            }
+
+            if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
+                $company = $project->getIdCompany();
+
+                if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $messageProvider->newMessage('emprunteur-dossier-rejete', ['firstName' => $company->getIdClientOwner()->getPrenom()]);
+
+                    try {
+                        $message->setTo($company->getIdClientOwner()->getEmail());
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->warning(
+                            'Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
+                            ['method' => __METHOD__, 'id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                        );
+                    }
+                }
             }
         }
 

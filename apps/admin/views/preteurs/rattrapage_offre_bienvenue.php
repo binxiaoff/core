@@ -39,7 +39,7 @@
                     </div>
                     <button type="submit" class="btn-primary">Rechercher</button>
                     <?php if (false === empty($this->clientsWithoutWelcomeOffer)) : ?>
-                        <a href="#toggle-target" id="toggle-trigger" style="display: block; margin: 10px 0 -10px;">Hide table [x]</a>
+                        <a href="#toggle-target" id="toggle-trigger" style="display: block; margin: 10px 0 -10px;">Masquer le tableau [x]</a>
                     <?php endif; ?>
                 </form>
                 <?php if (empty($this->clientsWithoutWelcomeOffer)) : ?>
@@ -61,7 +61,7 @@
                                 </thead>
                             </table>
                         </div>
-                        <div style="height: 250px; overflow-y: scroll; overflow-x: hidden;">
+                        <div style="max-height: 250px; overflow-y: scroll; overflow-x: hidden;">
                             <table id="offer-search-table" class="tablesorter table table-hover table-striped">
                                 <thead style="display: none;">
                                 <tr>
