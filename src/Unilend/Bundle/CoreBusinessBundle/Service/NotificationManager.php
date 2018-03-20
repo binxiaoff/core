@@ -1,8 +1,8 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsGestionMailsNotif;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
@@ -159,27 +159,18 @@ class NotificationManager
     }
 
     /**
-     * @param \clients|Clients $client
+     * @param int $clientId
      */
-    public function generateDefaultNotificationSettings($client)
+    public function generateDefaultNotificationSettings(int $clientId)
     {
-        if ($client instanceof Clients) {
-            $clientEntity = $client;
-            $client = $this->entityManagerSimulator->getRepository('clients');
-            $client->get($clientEntity->getIdClient());
-            unset($clientEntity);
-        }
-
         $notificationTypes = $this->getNotificationTypes();
         /** @var \clients_gestion_notifications $clientNotificationSettings */
         $clientNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
 
         foreach ($notificationTypes as $notification) {
-            if ($clientNotificationSettings->exist(['id_client' => $client->id_client, 'id_notif'  => $notification['id_client_gestion_type_notif']])) {
+            if ($clientNotificationSettings->exist(['id_client' => $clientId, 'id_notif'  => $notification['id_client_gestion_type_notif']])) {
                 continue;
             }
-            $clientNotificationSettings->id_client = $client->id_client;
-            $clientNotificationSettings->id_notif  = $notification['id_client_gestion_type_notif'];
 
             $defaultImmediate = [
                 \clients_gestion_type_notif::TYPE_NEW_PROJECT,
@@ -200,6 +191,8 @@ class NotificationManager
                 \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
             ];
 
+            $clientNotificationSettings->id_client     = $clientId;
+            $clientNotificationSettings->id_notif      = $notification['id_client_gestion_type_notif'];
             $clientNotificationSettings->immediatement = in_array($notification['id_client_gestion_type_notif'], $defaultImmediate) ? 1 : 0;
             $clientNotificationSettings->quotidienne   = in_array($notification['id_client_gestion_type_notif'], $defaultDaily) ? 1 : 0;
             $clientNotificationSettings->hebdomadaire  = in_array($notification['id_client_gestion_type_notif'], $defaultWeekly) ? 1 : 0;
