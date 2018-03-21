@@ -38,9 +38,9 @@
             {% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSE'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT_ANTICIPE') ] %}
                 <p>
                     {% if project.isCloseOutNetting %}
-                        {% trans with {'%dateLastRepayment%': project.dateLastRepayment} %} project-detail_project-collected-message {% endtrans %}
+                        {% trans with {'%dateLastRepayment%': project.dateLastStatus} %} project-detail_project-collected-message {% endtrans %}
                     {% else %}
-                        {% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}
+                        {% trans with {'%dateLastRepayment%' : project.dateLastStatus} %} project-detail_project-repaid-message {% endtrans %}
                     {% endif %}
                 </p>
                 {% if project.lender is defined %}
@@ -53,7 +53,7 @@
                 {% endif %}
                 {% include 'projects/detail/login_form.html.twig' %}
             {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::LOSS') %}
-                <p>{% trans %} project-detail_side-bar-lost-message {% endtrans %}</p>
+                <p>{% trans with {'%date%': project.dateLastStatus} %} project-detail_side-bar-lost-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
             {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::FUNDE') or project.status >= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') %}
                 <p>
