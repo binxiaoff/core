@@ -3150,7 +3150,7 @@ class dossiersController extends bootstrap
                         'projectStatusLabel'       => $projectStatus->getLabel(),
                         'projectStatus'            => $project->getStatus(),
                         'projectTitle'             => $project->getTitle(),
-                        'totalOverdueAmount'       => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['capital'], 4), 2),
+                        'totalOverdueAmount'       => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
                         'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project),
                         'closeOutNettingDate'      => $project->getCloseOutNettingDate(),
@@ -3301,7 +3301,7 @@ class dossiersController extends bootstrap
                 $project        = $projectsRepository->find($lateRepayment['idProject']);
                 $overdueAmounts = $projectManager->getOverdueAmounts($project);
 
-                $overdueAmount        = round(bcadd(bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), $overdueAmounts['capital'], 4), 2);
+                $overdueAmount        = round(bcadd(bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), $overdueAmounts['commission'], 4), 2);
                 $debtCollectionAmount = 0;
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */

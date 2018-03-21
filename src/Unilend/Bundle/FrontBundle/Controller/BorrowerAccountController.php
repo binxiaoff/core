@@ -773,14 +773,14 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsPostFunding()
     {
-        $aStatusPostFunding = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
+        $statusPostFunding = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
 
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $projectManager = $this->get('unilend.service.project_manager');
 
         /** @var \projects $projects */
         $projects            = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $projectsPostFunding = $this->getCompany()->getProjectsForCompany(null, $aStatusPostFunding);
+        $projectsPostFunding = $this->getCompany()->getProjectsForCompany(null, $statusPostFunding);
         /** @var \echeanciers_emprunteur $repaymentSchedule */
         $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers_emprunteur');
 
