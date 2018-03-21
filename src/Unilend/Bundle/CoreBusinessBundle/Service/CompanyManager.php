@@ -5,15 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType
+};
 
 class CompanyManager
 {
@@ -136,9 +130,8 @@ class CompanyManager
      */
     public function createBorrowerBlankCompany($siren = null, $userId)
     {
-        $clientEntity        = new Clients();
-        $companyEntity       = new Companies();
-        $clientAddressEntity = new ClientsAdresses();
+        $clientEntity  = new Clients();
+        $companyEntity = new Companies();
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -148,9 +141,6 @@ class CompanyManager
 
             $this->entityManager->persist($clientEntity);
             $this->entityManager->flush($clientEntity);
-
-            $clientAddressEntity->setIdClient($clientEntity);
-            $this->entityManager->persist($clientAddressEntity);
 
             $companyEntity
                 ->setSiren($siren)

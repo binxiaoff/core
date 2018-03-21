@@ -622,7 +622,7 @@ class LenderSubscriptionController extends Controller
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::TO_BE_CHECKED);
 
-            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client);
+            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client->getIdClient());
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
 
             return true;
