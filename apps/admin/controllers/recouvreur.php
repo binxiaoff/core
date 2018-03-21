@@ -53,7 +53,6 @@ class recouvreurController extends bootstrap
                 $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()->getIdClient()]);
                 $data    = [
                     'company'           => $company,
-                    'address'           => $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findOneBy(['idCompany' => $company->getIdCompany()]),
                     'entrustedProjects' => $this->getEntrustedProjectData($wallet->getIdClient()),
                     'operationHistory'  => $walletBalanceHistory->getDebtCollectorWalletOperations($wallet),
                     'availableBalance'  => $wallet->getAvailableBalance(),
