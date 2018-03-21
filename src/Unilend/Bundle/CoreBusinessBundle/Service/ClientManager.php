@@ -24,8 +24,6 @@ class ClientManager
     private $entityManager;
     /** @var ClientSettingsManager */
     private $clientSettingsManager;
-    /** @var WalletCreationManager */
-    private $walletCreationManager;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
     /** @var TokenStorageInterface */
@@ -39,7 +37,6 @@ class ClientManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
      * @param ClientSettingsManager  $clientSettingsManager
-     * @param WalletCreationManager  $walletCreationManager
      * @param TermsOfSaleManager     $termsOfSaleManager
      * @param TokenStorageInterface  $tokenStorage
      * @param RouterInterface        $router
@@ -49,7 +46,6 @@ class ClientManager
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         ClientSettingsManager $clientSettingsManager,
-        WalletCreationManager $walletCreationManager,
         TermsOfSaleManager $termsOfSaleManager,
         TokenStorageInterface $tokenStorage,
         RouterInterface $router,
@@ -59,7 +55,6 @@ class ClientManager
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
         $this->clientSettingsManager  = $clientSettingsManager;
-        $this->walletCreationManager  = $walletCreationManager;
         $this->termsOfSaleManager     = $termsOfSaleManager;
         $this->tokenStorage           = $tokenStorage;
         $this->router                 = $router;
