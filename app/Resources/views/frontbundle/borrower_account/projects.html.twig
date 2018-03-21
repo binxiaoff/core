@@ -181,7 +181,7 @@
                                             <td>{{ project.ended|localizeddate('short', 'none')}}</td>
                                             <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
                                             <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
-                                            <td>{{ project.outstanding_capital|localizedcurrency('EUR') }}</td>
+                                            <td>{{ project.remaining_capital|localizedcurrency('EUR') }}</td>
                                             <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
                                             <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
                                         </tr>

@@ -583,7 +583,7 @@ class partenairesController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
-                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $_SESSION['user']['id_user'], ClientsStatus::DISABLED);
+                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::DISABLED);
 
                 $entityManager->remove($companyClient);
                 $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
@@ -634,14 +634,14 @@ class partenairesController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
-                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $_SESSION['user']['id_user'], ClientsStatus::VALIDATED);
+                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::VALIDATED);
             }
         } elseif ('deactivate' === $request->request->get('action')) {
             $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
-            $clientStatusManager->addClientStatus($companyClient->getIdClient(), $_SESSION['user']['id_user'], ClientsStatus::DISABLED);
+            $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::DISABLED);
         }
 
         try {
