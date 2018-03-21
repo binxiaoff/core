@@ -251,6 +251,8 @@ class ProjectDisplayManager
             ];
         }
 
+        $projectData['isCloseOutNetting'] = $project->close_out_netting_date && '0000-00-00' !== $project->close_out_netting_date;
+
         return $projectData;
     }
 

@@ -14,7 +14,7 @@
                     </div><!-- /.ui-progressbar -->
                 </div><!-- /.project-single-cost-progress -->
 
-                {% if project.status == constant('\\projects_status::EN_FUNDING') %}
+                {% if project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::EN_FUNDING') %}
                     <div class="project-single-cost-amount">
                         <div class="project-single-cost-amount-funded">{% transchoice project.costFunded with {'%costFunded%' : project.costFunded|localizednumber} %} project-detail_already-bid-amount {% endtranschoice %}</div>
                     </div><!-- /.project-single-cost-amount -->
@@ -35,8 +35,14 @@
                 </div><!-- /.project-single-duration -->
             </div>
 
-            {% if project.status in [constant('\\projects_status::REMBOURSE'), constant('\\projects_status::REMBOURSEMENT_ANTICIPE') ] %}
-                <p>{% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}</p>
+            {% if project.status in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSE'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT_ANTICIPE') ] %}
+                <p>
+                    {% if project.isCloseOutNetting %}
+                        {% trans with {'%dateLastRepayment%': project.dateLastRepayment} %} project-detail_project-collected-message {% endtrans %}
+                    {% else %}
+                        {% trans with {'%dateLastRepayment%' : project.dateLastRepayment} %} project-detail_project-repaid-message {% endtrans %}
+                    {% endif %}
+                </p>
                 {% if project.lender is defined %}
                     <p>
                         {% transchoice project.lender.loans.myLoanOnProject.nbValid with {
@@ -46,7 +52,10 @@
                     </p>
                 {% endif %}
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\projects_status::FUNDE') or project.status >= constant('\\projects_status::REMBOURSEMENT') %}
+            {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::LOSS') %}
+                <p>{% trans %} project-detail_side-bar-lost-message {% endtrans %}</p>
+                {% include 'projects/detail/login_form.html.twig' %}
+            {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::FUNDE') or project.status >= constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') %}
                 <p>
                     {% trans with {
                         '%numberLenders%' : project.totalLenders|localizednumber,
@@ -55,10 +64,10 @@
                     } %} project-detail_project-funded-message-with-statistics {% endtrans %}
                 </p>
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\projects_status::FUNDING_KO') %}
+            {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::FUNDING_KO') %}
                 <p>{% trans with {'%percentageFunded%' : project.percentFunded|localizednumberwithprecision(1)} %} project-detail_side-bar-funding-ko-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
-            {% elseif project.status == constant('\\projects_status::PRET_REFUSE') %}
+            {% elseif project.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PRET_REFUSE') %}
                 <p class="h4">{% trans %} project-detail_side-bar-loan-rejected-title {% endtrans %}</p>
                 <p>{% trans %} project-detail_side-bar-loan-rejected-message {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
