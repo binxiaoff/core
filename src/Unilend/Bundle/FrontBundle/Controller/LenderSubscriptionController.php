@@ -251,8 +251,10 @@ class LenderSubscriptionController extends Controller
                 $clientAddress->setIdClient($client);
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
-                $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
+
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+
                 $entityManager->commit();
             } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();
@@ -385,8 +387,9 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($company);
                 $entityManager->flush($company);
 
-                $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::LENDER);
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+
                 $entityManager->commit();
             } catch (ORMException $exception) {
                 $entityManager->getConnection()->rollBack();

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, CompanyStatus, Product, ProjectsStatus, Users, WalletType
+    AttachmentType, Clients, ClientsStatus, Companies, CompanyStatus, Product, ProjectsStatus, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Service\{
@@ -183,6 +183,7 @@ class ProjectRequestController extends Controller
             ->setEmailFacture($email);
 
         $entityManager->beginTransaction();
+
         try {
             $entityManager->persist($this->client);
 
@@ -200,7 +201,7 @@ class ProjectRequestController extends Controller
                 $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT)
             );
 
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($this->client, WalletType::BORROWER);
+            $this->get('unilend.service.client_creation_manager')->createAccount($this->client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
 
             $entityManager->commit();
         } catch (\Exception $exception) {
