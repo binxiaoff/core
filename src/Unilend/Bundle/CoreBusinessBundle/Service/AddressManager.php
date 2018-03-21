@@ -48,9 +48,20 @@ class AddressManager
 
         $this->entityManager->beginTransaction();
         try {
-            $companyAddress = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress(): $company->getIdPostalAddress();
+            $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+            $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress() : $company->getIdPostalAddress();
 
-            if (null === $companyAddress) {
+            if (
+                null === $companyAddress && null === $lastModifiedAddress
+                || (
+                    null !== $lastModifiedAddress
+                    && ($address !== $lastModifiedAddress->getAddress()
+                        || $zip !== $lastModifiedAddress->getZip()
+                        || $city !== $lastModifiedAddress->getCity()
+                        || $idCountry !== $lastModifiedAddress->getIdCountry()->getIdPays()
+                    )
+                )
+            ) {
                 $companyAddress = new CompanyAddress();
                 $companyAddress->setIdCompany($company);
             }
@@ -199,5 +210,18 @@ class AddressManager
         $company = $companyAddress->getIdCompany();
 
         $this->entityManager->flush([$companyAddress, $company]);
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function deleteCompanyAddresses(Companies $company)
+    {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
+            $this->entityManager->remove($address);
+            $this->entityManager->flush($address);
+        }
     }
 }
