@@ -62,6 +62,13 @@
                         </a>
                     </li>
 
+                    <li role="presentation" class="user-nav-major user-nav-autolend {% if app.request.attributes.get('_route') == 'autolend' %} active {% else %} complete {% endif %}">
+                        <a href="{{ path('autolend') }}">
+                            <span class="icon fa-autolend-u"></span>
+                            <div class="label">{% trans %} lender-dashboard-navigation_autolend-link {% endtrans %}</div>
+                        </a>
+                    </li>
+
                     {% if currentSponsorshipCampaign is defined and currentSponsorshipCampaign is not empty and isValidatedClient and false == isBlacklisted %}
                         <li role="presentation" class="user-nav-major user-nav-sponsorship {% if app.request.attributes.get('_route') == 'lender_sponsorship' %} active {% else %} complete {% endif %}">
                             <a href="{{ path('lender_sponsorship') }}">

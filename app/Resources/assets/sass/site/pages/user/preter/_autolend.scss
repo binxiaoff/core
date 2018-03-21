@@ -4,8 +4,20 @@
 
 // @todo Sooooo much refactoring to make it easier to follow all the responsive changes
 
+// 1: 3-12 months
+// 2: 18-24 months
+// 3: 36 months
+// 4: 48 months
+// 5: 60 months
+// 6: 60+ months
+$count-autolend-periods: 6;
+
+$width-autolend-cell-label-mobile: 90px;
+$width-autolend-cell-controls-mobile: 60px;
+
 $height-autolend-cell: 90px;
 $height-autolend-cell-header: 50px;
+$height-autolend-cell-label-mobile: 40px;
 
 #user-preter-autolend.dashboard {
 
@@ -180,14 +192,23 @@ $height-autolend-cell-header: 50px;
     margin-bottom: 40px;
   }
 
+  .btn-cell-plus,
+  .btn-cell-minus,
+  .cell-input input[type="number"] {
+    &::selection {
+      background-color: transparent;
+      color: inherit;
+    }
+  }
+
+  // Show the sidebar with information about the cell (tablet-l and desktop)
   .btn-cell-enable {
     display: block;
-    width: 100%;
-    height: 100%;
+    height: $height-autolend-cell-header;
 
     position: absolute;
     left: 0;
-    top: 0;
+    top: auto;
     right: 0;
     bottom: 0;
 
@@ -197,23 +218,41 @@ $height-autolend-cell-header: 50px;
     &:before {
       content: $fa-plus-u16;
       display: block;
-      width: 46px;
-      height: 46px;
-      margin: -23px 0 0 -23px;
+      width: 36px;
+      height: 36px;
+      margin: -18px 0 0 -18px;
 
       position: absolute;
       left: 50%;
       top: 50%;
 
       background-color: $c-white;
-      border-radius: 46px;
+      border-radius: 36px;
       color: $c-bg1;
       font-family: $ff-icon;
-      font-size: $fs-h3;
-      line-height: 46px;
+      font-size: 26px;
+      line-height: 36px;
       text-align: center;
       text-decoration: none !important;
       vertical-align: middle;
+
+      @include devices('sm', 'md', 'lg') {
+        width: 46px;
+        height: 46px;
+        margin: -23px 0 0 -23px;
+        border-radius: 46px;
+        font-size: 36px;
+        line-height: 46px;
+      }
+    }
+
+    @include devices('sm') {
+      left: $width-autolend-cell-label-mobile;
+      right: 0;
+    }
+
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell;
     }
   }
 
@@ -221,16 +260,16 @@ $height-autolend-cell-header: 50px;
   .btn-cell-plus {
     display: block;
     width: 30px;
-    height: $height-autolend-cell;
+    height: $height-autolend-cell-header;
+    line-height: $height-autolend-cell-header;
 
     position: absolute;
-    top: 0;
+    top: auto;
     bottom: 0;
     z-index: 5;
 
     font-size: $fs-base * 1.2;
     font-weight: bold;
-    line-height: $height-autolend-cell;
     text-align: center;
     text-decoration: none !important;
     vertical-align: middle;
@@ -240,7 +279,7 @@ $height-autolend-cell-header: 50px;
     @include link-states(
       $link: (
         background-color: transparent,
-        color: $c-white
+        color: $c-black
       ),
       $hover: (
         background-color: fade-out($c-white, .8),
@@ -252,8 +291,17 @@ $height-autolend-cell-header: 50px;
       )
     );
 
-    @include devices('xs', 'sm') {
-      display: none;
+    @include devices('md', 'lg') {
+      &,
+      &:link,
+      &:visited {
+        color: $c-white;
+      }
+    }
+
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell;
+      line-height: $height-autolend-cell;
     }
   }
 
@@ -272,7 +320,7 @@ $height-autolend-cell-header: 50px;
   .cell {
     box-sizing: border-box;
     padding: 10px;
-    height: $height-autolend-cell;
+    height: $height-autolend-cell-header;
     float: left;
     overflow: hidden;
     position: relative;
@@ -281,22 +329,268 @@ $height-autolend-cell-header: 50px;
     border-right: solid 2px $c-bg2;
     line-height: 1.3em;
     text-align: center;
-  }
 
-  .cell-header {
-    background-color: $c-bg2;
-    color: $c-t2;
-    font-size: $fs-base * .9;
-    text-align: center;
-    vertical-align: middle;
-
-    @include devices('xs', 'sm') {
-      font-size: $fs-base * .8;
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell;
     }
   }
 
+  .cell-header {
+    height: $height-autolend-cell-header;
+    background-color: $c-bg2;
+    color: $c-t2;
+    font-size: $fs-base;
+    line-height: 1em;
+    text-align: center;
+    vertical-align: middle;
+
+    @include devices('sm') {
+      height: $height-autolend-cell-header;
+    }
+
+    @include devices('md', 'lg') {
+      height: $height-autolend-cell;
+      font-size: $fs-base * .9;
+    }
+  }
+
+  @include devices('xs', 'sm') {
+    // Add extra padding on the top of the mobile cell to align the text
+    .col-data .cell.cell-header {
+      padding-top: 16px;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    // These headers should be the same height as other cells
+    .col-header .cell.cell-header {
+      height: $height-autolend-cell;
+    }
+
+    // Hide inline headers for larger devices (since it is displayed as a multi-column table and not as single column)
+    .col-data .cell.cell-header {
+      display: none;
+    }
+  }
+
+  // The cell's label (the risk rating and the period)
+  .cell-label {
+    display: block;
+    position: relative;
+    text-align: right;
+    vertical-align: middle;
+
+    .cell-period {
+      @include hide-accessible;
+    }
+
+    .cell-rating {
+      display: block;
+      height: $height-autolend-cell-label-mobile;
+      line-height: $height-autolend-cell-label-mobile;
+      padding-left: 10px;
+      padding-right: 10px;
+
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    @include devices('sm') {
+      width: $width-autolend-cell-label-mobile;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: auto;
+
+      .cell-rating {
+        height: auto;
+        line-height: $height-autolend-cell;
+
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      display: none;
+    }
+  }
+
+  // The controls for this specific cell (e.g. activate/deactivate cell)
+  .cell-controls {
+    @include vertical-align-inline-block;
+    display: block;
+    width: $width-autolend-cell-controls-mobile;
+    height: $height-autolend-cell-label-mobile;
+
+    position: absolute;
+    top: 0;
+    left: auto;
+    bottom: auto;
+    right: 0;
+
+    // background-color: $c-white;
+    text-align: center;
+
+    @include devices('sm') {
+      display: none; // will only be displayed when the cell is enabled
+      height: auto;
+      bottom: 0;
+    }
+
+    // Should always be hidden on larger devices
+    @include devices('md', 'lg') {
+      display: none;
+    }
+  }
+
+  // The input field and additional buttons to manipulate the input field
+  .cell-input {
+    width: auto;
+    height: $height-autolend-cell-header;
+
+    position: relative;
+
+    @include devices('sm') {
+      position: absolute;
+      left: $width-autolend-cell-label-mobile;
+      top: auto;
+      right: $width-autolend-cell-controls-mobile;
+      bottom: 0;
+    }
+
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell;
+    }
+
+    // Add a percentage
+    &:after {
+      box-sizing: border-box;
+      content: '%';
+      padding: 0;
+      margin: 0 0 0 20px;
+
+      position: absolute;
+      left: 50%;
+      top: 38%;
+
+      color: inherit;
+      font-size: .8em;
+      line-height: 1em;
+
+      pointer-events: none;
+      user-select: none;
+    }
+
+    input {
+      box-sizing: border-box;
+      display: block;
+      width: 100%;
+      height: $height-autolend-cell-header;
+      line-height: $height-autolend-cell-header;
+
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+
+      background-color: transparent;
+      border: 0;
+      font-family: $ff-base;
+      font-size: $fs-h3;
+      text-align: center;
+      vertical-align: middle;
+
+      // Remove the default number spin buttons
+      -moz-appearance: textfield;
+
+      &::-webkit-inner-spin-button,
+      &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      @include devices('sm', 'md', 'lg') {
+        height: $height-autolend-cell;
+        line-height: $height-autolend-cell;
+      }
+    }
+
+    .btn-cell-minus {
+      left: 0;
+
+      &:before {
+        display: inline;
+        content: '-';
+      }
+    }
+
+    .btn-cell-plus {
+      right: 0;
+
+      &:before {
+        display: inline;
+        content: '+';
+      }
+    }
+
+    > .icon {
+      display: none;
+    }
+
+    @include devices('md', 'lg') {
+      left: 0;
+      right: 0;
+    }
+  }
+
+  // Cell that contains input data (e.g. interest rate) within the table
   .cell-data {
+    padding: 0;
+    height: auto;
+
+    background-color: $c-bg4;
+
+    @include devices('sm', 'md', 'lg') {
+      height: $height-autolend-cell;
+    }
+
     &#{$js-autolend-cell-enabled} {
+      // Show the cell's controls if the cell is enabled
+      .cell-controls {
+        display: block;
+
+        // Hide the controls (only .btn-cell-enable will be used for this breakpoint)
+        @include devices('md', 'lg') {
+          display: none;
+        }
+      }
+
+      &:hover,
+      &:active,
+      &.active {
+        .btn-cell-minus,
+        .btn-cell-plus {
+          @include link-states(
+            $link: (
+              color: $c-white
+            ),
+            $hover: (
+              color: $c-white
+            ),
+            $active: (
+              color: $c-white
+            )
+          );
+        }
+      }
+
       &#{$js-autolend-average-within} {
         background-color: $c-white;
         color: $c-teal;
@@ -342,23 +636,28 @@ $height-autolend-cell-header: 50px;
         color: $c-orange;
 
         .cell-input {
-          >.icon {
+          > .icon {
             display: inline-block;
-            font-size: 64px;
+            margin: -16px 0 0 -16px;
+
             position: absolute;
-            left: 24px;
-            top: 12px;
+            left: 50%;
+            top: 50%;
+            font-size: 32px;
             opacity: 0.5;
+
+            pointer-events: none;
+            user-select: none;
+
+            @include devices ('sm', 'md', 'lg') {
+              margin: -32px 0 0 -32px;
+              font-size: 64px;
+            }
           }
 
           input {
             color: $c-orange;
           }
-        }
-
-        .btn-cell-minus,
-        .btn-cell-plus {
-          color: transparent;
         }
 
         &:hover,
@@ -370,103 +669,8 @@ $height-autolend-cell-header: 50px;
           .cell-input input {
             color: $c-white;
           }
-
-          .btn-cell-minus,
-          .btn-cell-plus {
-            @include link-states(
-              $link: (
-                color: $c-white
-              ),
-              $hover: (
-                color: $c-white
-              ),
-              $active: (
-                color: $c-white
-              )
-            );
-          }
         }
       }
-    }
-  }
-
-  .cell-input {
-    width: 100%;
-    height: $height-autolend-cell;
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-
-    // Add a percentage
-    &:after {
-      box-sizing: border-box;
-      content: '%';
-      padding: 0;
-      margin: 0;
-
-      position: absolute;
-      right: 24%;
-      top: 38%;
-
-      color: inherit;
-      font-size: .8em;
-      line-height: 1em;
-
-      user-select: none;
-    }
-
-    input {
-      box-sizing: border-box;
-      display: block;
-      width: 100%;
-      height: $height-autolend-cell;
-
-      position: absolute;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-
-      background-color: transparent;
-      border: 0;
-      font-family: $ff-base;
-      font-size: $fs-h3;
-      line-height: $height-autolend-cell;
-      text-align: center;
-      vertical-align: middle;
-
-      // Remove the default number spin buttons
-      -moz-appearance: textfield;
-
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-    }
-
-    .btn-cell-minus {
-      left: 0;
-
-      &:before {
-        display: inline;
-        content: '–';
-      }
-    }
-
-    .btn-cell-plus {
-      right: 0;
-
-      &:before {
-        display: inline;
-        content: '+';
-      }
-    }
-
-    >.icon {
-      display: none;
     }
   }
 
@@ -486,8 +690,8 @@ $height-autolend-cell-header: 50px;
       background-position: 0 -20px;
     }
 
-    @include devices('sm', 'md', 'lg') {
-      height: $height-autolend-cell * 5;
+    @include devices('md', 'lg') {
+      height: $height-autolend-cell * $count-autolend-periods;
     }
 
     @include devices('md') {
@@ -547,7 +751,7 @@ $height-autolend-cell-header: 50px;
         margin-right: auto;
       }
 
-      @include devices('sm', 'md', 'lg') {
+      @include devices('md', 'lg') {
         padding-left: 20px;
         padding-right: 20px;
         padding-bottom: 20px;
@@ -849,6 +1053,7 @@ $height-autolend-cell-header: 50px;
   }
 
   .col-info {
+    display: none;
     width: 100%;
     background-color: $c-white;
 
@@ -857,51 +1062,57 @@ $height-autolend-cell-header: 50px;
       line-height: 1.3em;
     }
 
-    @include devices('sm', 'md', 'lg') {
+    @include devices('md', 'lg') {
+      display: block;
       width: 30%;
       margin-top: $height-autolend-cell-header;
     }
   }
 
   .col-table {
-    width: 70%;
+    width: 100%;
 
-    @include devices('xs') {
-      width: 100%;
+    @include devices('md', 'lg') {
+      width: 70%;
     }
   }
 
   .row-header {
     @include clearfix;
+    display: none;
+    width: 100%;
 
     .cell {
-      width: 16.66%;
-      height: $height-autolend-cell-header;
+      width: 100%;
     }
 
-    @include devices('xs') {
-      display: none;
+    @include devices('md', 'lg') {
+      display: block;
+
+      .cell {
+        width: 16.66%;
+        height: $height-autolend-cell-header;
+      }
     }
   }
 
   .col-header {
-    width: 16.66%;
+    display: none;
 
     .cell {
+      @include vertical-align-inline-block;
       width: 100%;
 
-      @include devices('sm', 'md', 'lg') {
-        @include vertical-align-inline-block;
-
-        span {
-          display: inline-block;
-          vertical-align: middle;
-        }
+      span {
+        display: inline-block;
+        vertical-align: middle;
       }
     }
 
-    @include devices('xs') {
-      display: none;
+    // Only show for larger devices. Smaller devices will use .cell-header
+    @include devices('md', 'lg') {
+      display: block;
+      width: 16.66%;
     }
   }
 
@@ -911,21 +1122,24 @@ $height-autolend-cell-header: 50px;
     .cell {
       width: 20%;
 
-      // Hide this for non xs devices
-      @include devices('sm', 'md', 'lg') {
-        .cell-rating,
-        .cell-period {
+      // Hide this for large devices
+      @include devices('md', 'lg') {
+        .cell-header {
           @include hide-accessible;
         }
       }
 
       .cell-input {
-        display: none;
+        visibility: hidden;
+        pointer-events: none;
+        user-select: none;
       }
 
       &#{$js-autolend-cell-enabled} {
         .cell-input {
-          display: block;
+          visibility: visible;
+          pointer-events: auto;
+          user-select: all;
         }
 
         .btn-cell-enable {
@@ -934,44 +1148,29 @@ $height-autolend-cell-header: 50px;
       }
     }
 
-    @include devices('xs') {
+    @include devices('xs', 'sm') {
       width: 100%;
       border: solid 1px $c-bg2;
 
       .cell {
         width: 100%;
-        height: auto;
         border: solid 1px $c-bg2;
 
         .cell-input {
-          height: $height-autolend-cell-header;
-          position: relative;
-          left: auto;
-          top: auto;
-          right: auto;
-          bottom: auto;
-
-          input {
-            height: $height-autolend-cell-header;
-            line-height: $height-autolend-cell-header;
-          }
+          //height: $height-autolend-cell;
+          //
+          //input {
+          //  height: $height-autolend-cell;
+          //  line-height: $height-autolend-cell;
+          //}
 
           .btn-cell-minus,
           .btn-cell-plus {
             display: block;
             width: 40px;
-            height: $height-autolend-cell-header;
-            line-height: $height-autolend-cell-header;
+            //height: $height-autolend-cell;
+            //line-height: $height-autolend-cell;
           }
-        }
-
-        .btn-cell-enable {
-          height: $height-autolend-cell-header;
-          position: relative;
-          left: auto;
-          top: auto;
-          right: auto;
-          bottom: auto;
         }
       }
     }
@@ -1001,5 +1200,12 @@ $height-autolend-cell-header: 50px;
       margin-left: 10px;
       margin-right: 10px;
     }
+  }
+}
+
+@include devices('xs', 'sm') {
+  #autolend-save-settings {
+    padding: 10px;
+    background-color: $c-white;
   }
 }

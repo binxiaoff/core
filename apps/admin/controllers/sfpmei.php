@@ -388,7 +388,7 @@ class sfpmeiController extends bootstrap
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                    $companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idClientOwner' => $this->clients->id_client]);
+                    $companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
                     $this->clientAddress = '';
                     if (null !==  $companyEntity->getIdAddress()) {
                         $this->clientAddress .= $companyEntity->getIdAddress()->getAddress() . '<br>' . $companyEntity->getIdAddress()->getZip() . ' ' . $companyEntity->getIdAddress()->getCity() . '<br>' . $companyEntity->getIdAddress()->getIdCountry()->getFr();

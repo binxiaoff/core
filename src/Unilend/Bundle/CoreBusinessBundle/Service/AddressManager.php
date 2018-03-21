@@ -48,9 +48,20 @@ class AddressManager
 
         $this->entityManager->beginTransaction();
         try {
-            $companyAddress = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress(): $company->getIdPostalAddress();
+            $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+            $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress() : $company->getIdPostalAddress();
 
-            if (null === $companyAddress) {
+            if (
+                null === $companyAddress && null === $lastModifiedAddress
+                || (
+                    null !== $lastModifiedAddress
+                    && ($address !== $lastModifiedAddress->getAddress()
+                        || $zip !== $lastModifiedAddress->getZip()
+                        || $city !== $lastModifiedAddress->getCity()
+                        || $idCountry !== $lastModifiedAddress->getIdCountry()->getIdPays()
+                    )
+                )
+            ) {
                 $companyAddress = new CompanyAddress();
                 $companyAddress->setIdCompany($company);
             }
