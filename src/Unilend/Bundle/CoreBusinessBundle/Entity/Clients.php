@@ -1431,8 +1431,8 @@ class Clients
      */
     public function getIdAddress(): ?ClientAddress
     {
-        if (0 === $this->idAddress) {
-            return null;
+        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
+            $this->idAddress = null;
         }
 
         return $this->idAddress;
@@ -1455,8 +1455,8 @@ class Clients
      */
     public function getIdPostalAddress(): ?ClientAddress
     {
-        if (0 === $this->idPostalAddress) {
-            return null;
+        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
+            $this->idPostalAddress = null;
         }
 
         return $this->idPostalAddress;

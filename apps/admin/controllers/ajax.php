@@ -330,10 +330,11 @@ class ajaxController extends bootstrap
                     }
 
                     if (null !== $companyEntity->getIdPostalAddress() && isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2']) {
-                        $companyEntity->getIdPostalAddress()->setDateArchived(new \DateTime('NOW'));
+                        $postalAddress = $companyEntity->getIdPostalAddress();
+                        $postalAddress->setDateArchived(new \DateTime('NOW'));
                         $companyEntity->setIdPostalAddress(null);
 
-                        $entityManager->flush([$companyEntity->getIdPostalAddress(), $companyEntity]);
+                        $entityManager->flush([$postalAddress, $companyEntity]);
                     }
                 }
             } elseif ($_POST['etape'] == 3) {

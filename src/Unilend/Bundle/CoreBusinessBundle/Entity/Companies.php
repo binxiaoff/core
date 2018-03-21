@@ -1444,8 +1444,8 @@ class Companies
      */
     public function getIdAddress(): ?CompanyAddress
     {
-        if (empty($this->idAddress->getId())) {
-            return null;
+        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
+            $this->idAddress = null;
         }
 
         return $this->idAddress;
@@ -1468,8 +1468,8 @@ class Companies
      */
     public function getIdPostalAddress(): ?CompanyAddress
     {
-        if (empty($this->idPostalAddress->getId())) {
-            return null;
+        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
+            $this->idPostalAddress = null;
         }
 
         return $this->idPostalAddress;
