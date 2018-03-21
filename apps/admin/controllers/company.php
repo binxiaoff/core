@@ -175,6 +175,7 @@ class companyController extends bootstrap
         }
 
         $entityManager->beginTransaction();
+
         try {
             $this->client
                 ->setEmail($email)

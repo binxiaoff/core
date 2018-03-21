@@ -40,7 +40,7 @@
                         <h3 class="block-title">Retard emprunteurs</h3>
                     </div>
                     <div class="block-content text-center">
-                        <p class="h3 text-primary pull-t">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</p>
+                        <p class="h3 text-primary pull-t">{{ totalOverdueAmountToCollect|localizedcurrency('EUR') }}</p>
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-right">
-                                {{ project.remainingAmount|localizedcurrency('EUR') }}
+                                {{ project.overdueAmount|localizedcurrency('EUR') }}
                             </td>
                             <td class="text-right">
                                 {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}

@@ -4,15 +4,15 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Wallet, WalletType
+};
 
 class WalletCreationManager
 {
     /** @var EntityManager */
     private $entityManager;
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
 
     /**
@@ -33,12 +33,13 @@ class WalletCreationManager
     /**
      * @param Clients $client
      * @param string  $walletType
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createWallet(Clients $client, $walletType)
+    public function createWallet(Clients $client, string $walletType)
     {
         $walletTypeRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType');
-        /** @var WalletType $walletTypeEntity */
-        $walletTypeEntity = $walletTypeRepository->findOneByLabel($walletType);
+        $walletTypeEntity     = $walletTypeRepository->findOneBy(['label' => $walletType]);
 
         switch ($walletTypeEntity->getLabel()) {
             case WalletType::LENDER:
@@ -61,6 +62,7 @@ class WalletCreationManager
      * @param WalletType $walletType
      *
      * @return Wallet
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function createBaseWallet(Clients $client, WalletType $walletType)
     {
@@ -69,6 +71,7 @@ class WalletCreationManager
         $wallet->setIdType($walletType);
         $wallet->setAvailableBalance(0);
         $wallet->setCommittedBalance(0);
+
         $this->entityManager->persist($wallet);
         $this->entityManager->flush($wallet);
 
