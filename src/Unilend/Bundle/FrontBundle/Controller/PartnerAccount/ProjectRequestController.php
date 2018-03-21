@@ -3,23 +3,17 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{
+    RedirectResponse, Request, Response
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -148,12 +142,6 @@ class ProjectRequestController extends Controller
         $entityManager->beginTransaction();
         try {
             $entityManager->persist($client);
-
-            $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client);
-
-            $entityManager->persist($clientAddress);
-            $entityManager->flush($clientAddress);
 
             $company->setIdClientOwner($client);
 
