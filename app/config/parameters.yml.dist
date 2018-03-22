@@ -7,6 +7,9 @@ parameters:
     database_name:                  unilend
     database_user:                  unilend
     database_password:              myPassw0rd
+    database_ssl_key                ~
+    database_ssl_cert               ~
+    database_ssl_ca                 ~
 
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
