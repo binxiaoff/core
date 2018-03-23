@@ -25,7 +25,7 @@ class ClientsStatus
     const CLOSED_BY_UNILEND     = 90;
     const CLOSED_DEFINITELY     = 100;
 
-    const LOGIN_ENABLED_STATUS = [
+    const GRANTED_LOGIN = [
         self::CREATION,
         self::TO_BE_CHECKED,
         self::COMPLETENESS,
@@ -34,6 +34,34 @@ class ClientsStatus
         self::MODIFICATION,
         self::VALIDATED,
         self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_ACCOUNT_READ = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_DEPOSIT = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED
+    ];
+
+    const GRANTED_LENDER_WITHDRAW = [
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_SPONSORSHIP = [
+        self::VALIDATED
     ];
 
     /**

@@ -10,37 +10,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{
     FormError, FormInterface
 };
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\{
-    FileBag,
-    JsonResponse,
-    RedirectResponse,
-    Request,
-    Response
+    FileBag, JsonResponse, RedirectResponse, Request, Response
 };
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment,
-    AttachmentType,
-    Backpayline,
-    Clients,
-    ClientsAdresses,
-    ClientsHistory,
-    ClientsHistoryActions,
-    ClientsStatus,
-    Companies,
-    OffresBienvenues,
-    PaysV2,
-    Users,
-    WalletType
+    Attachment, AttachmentType, Backpayline, Clients, ClientsAdresses, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, OffresBienvenues, PaysV2, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     GoogleRecaptchaManager, SponsorshipManager
 };
-use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
+use Unilend\Bundle\FrontBundle\Security\{
+    BCryptPasswordEncoder, User\UserPartner
+};
 use Unilend\Bundle\FrontBundle\Service\{
-    DataLayerCollector,
-    SourceManager
+    DataLayerCollector, SourceManager
 };
 use Unilend\core\Loader;
 
@@ -438,7 +423,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param Clients $client
      */
-    private function sendSubscriptionStartConfirmationEmail(Clients $client)
+    private function sendSubscriptionStartConfirmationEmail(Clients $client): void
     {
         $keywords = [
             'firstName' => $client->getPrenom()
@@ -507,7 +492,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return Response
      */
-    public function documentsAction($clientHash, Request $request)
+    public function documentsAction(string $clientHash, Request $request): Response
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse) {
@@ -552,7 +537,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return bool
      */
-    private function handleDocumentsForm(ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag)
+    private function handleDocumentsForm(ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag): bool
     {
         $translator  = $this->get('translator');
         /** @var Clients $client */
@@ -612,7 +597,7 @@ class LenderSubscriptionController extends Controller
      * @param ClientsAdresses   $clientAddress
      * @param FileBag           $fileBag
      */
-    private function validateAttachmentsPerson(FormInterface $form, Clients $client, ClientsAdresses $clientAddress, FileBag $fileBag)
+    private function validateAttachmentsPerson(FormInterface $form, Clients $client, ClientsAdresses $clientAddress, FileBag $fileBag): void
     {
         $translator         = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
@@ -638,19 +623,19 @@ class LenderSubscriptionController extends Controller
                 }
             } else {
                 switch ($attachmentTypeId) {
-                    case AttachmentType::CNI_PASSPORTE :
+                    case AttachmentType::CNI_PASSPORTE:
                         $error = $translator->trans('lender-subscription_documents-person-missing-id');
                         break;
-                    case AttachmentType::JUSTIFICATIF_FISCAL :
+                    case AttachmentType::JUSTIFICATIF_FISCAL:
                         $error = $translator->trans('lender-subscription_documents-person-missing-tax-certificate');
                         break;
-                    case AttachmentType::JUSTIFICATIF_DOMICILE :
+                    case AttachmentType::JUSTIFICATIF_DOMICILE:
                         $error = $translator->trans('lender-subscription_documents-person-missing-housing-certificate');
                         break;
-                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS :
+                    case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
                         $error = $translator->trans('lender-subscription_documents-person-missing-housed-by-third-person-declaration');
                         break;
-                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT :
+                    case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
                         $error = $translator->trans('lender-subscription_documents-person-missing-id-third-person-housing');
                         break;
                     default :
@@ -667,7 +652,7 @@ class LenderSubscriptionController extends Controller
      * @param Companies     $company
      * @param FileBag       $fileBag
      */
-    private function validateAttachmentsLegalEntity(FormInterface $form, Clients $client, Companies $company, FileBag $fileBag)
+    private function validateAttachmentsLegalEntity(FormInterface $form, Clients $client, Companies $company, FileBag $fileBag): void
     {
         $translator         = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
@@ -722,7 +707,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return Response
      */
-    public function moneyDepositAction($clientHash, Request $request)
+    public function moneyDepositAction(string $clientHash, Request $request): Response
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse) {
@@ -752,9 +737,9 @@ class LenderSubscriptionController extends Controller
      * @param string  $clientHash
      * @param Request $request
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
-    public function moneyDepositFormAction($clientHash, Request $request)
+    public function moneyDepositFormAction(string $clientHash, Request $request): RedirectResponse
     {
         $response = $this->checkProgressAndRedirect($request, $clientHash);
         if ($response instanceof RedirectResponse) {
@@ -792,9 +777,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/payment/{clientHash}", name="lender_subscription_money_transfer")
      *
+     * @param Request $request
+     * @param string  $clientHash
+     *
      * @return RedirectResponse
      */
-    public function paymentAction(Request $request, $clientHash): RedirectResponse
+    public function paymentAction(Request $request, string $clientHash): RedirectResponse
     {
         $translator       = $this->get('translator');
         $entityManager    = $this->get('doctrine.orm.entity_manager');
@@ -847,8 +835,10 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/devenir-preteur-lp", name="lender_landing_page")
      * @Method("GET")
+     *
+     * @return Response
      */
-    public function landingPageAction()
+    public function landingPageAction(): Response
     {
         return $this->render('lender_subscription/landing_page.html.twig', [
             'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
@@ -859,8 +849,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function sponsorshipLandingPageAction(Request $request)
+    public function sponsorshipLandingPageAction(Request $request): Response
     {
         $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
         $template           = [
@@ -890,9 +884,10 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
      * @Method("GET")
+     *
      * @return Response
      */
-    public function landingPageFormOnlyAction()
+    public function landingPageFormOnlyAction(): Response
     {
         return $this->render('lender_subscription/landing_page_form_only.html.twig', [
             'showWelcomeOffer'   => $this->get('unilend.service.welcome_offer_manager')->displayOfferOnLandingPage(),
@@ -907,9 +902,9 @@ class LenderSubscriptionController extends Controller
      *
      * @param Request $request
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
-    public function landingPageFormAction(Request $request)
+    public function landingPageFormAction(Request $request): RedirectResponse
     {
         /** @var \prospects $prospect */
         $prospect    = $this->get('unilend.service.entity_manager')->getRepository('prospects');
@@ -967,43 +962,47 @@ class LenderSubscriptionController extends Controller
      */
     private function checkProgressAndRedirect(Request $request, ?string $clientHash = null): ?RedirectResponse
     {
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-
-        $redirectPath = null;
-        $currentPath = $request->getPathInfo();
-
+        $client               = null;
+        $redirectPath         = null;
+        $currentPath          = $request->getPathInfo();
         $authorizationChecker = $this->get('security.authorization_checker');
+        $clientRepository     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if ($authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || false === is_null($clientHash)) {
+        if ($authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')) {
             if ($authorizationChecker->isGranted('ROLE_BORROWER')) {
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                $clientEntity = $clientRepository->find($this->getUser()->getClientId());
-
-                if (
-                    null !== $clientEntity->getIdClientStatusHistory()
-                    && $clientEntity->getIdClientStatusHistory()->getIdStatus()->getId() >= ClientsStatus::MODIFICATION
-                    && Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT === $clientEntity->getEtapeInscriptionPreteur()
-                ) {
-                    return $this->redirectToRoute('lender_dashboard');
-                }
-            } else {
-                $clientEntity = $clientRepository->findOneBy(['hash' => $clientHash]);
-
-                if (
-                    null === $clientEntity
-                    || Clients::STATUS_ONLINE !== $clientEntity->getStatus()
-                    || $clientEntity->getEtapeInscriptionPreteur() > Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT
-                ) {
-                    return $this->redirectToRoute('login');
-                }
+            if ($authorizationChecker->isGranted(UserPartner::ROLE_DEFAULT)) {
+                return $this->redirectToRoute('partner_home');
             }
-            $redirectPath = $this->get('unilend.service.client_manager')->getSubscriptionStepRedirectRoute($clientEntity);
+
+            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
+                $client = $clientRepository->find($this->getUser()->getClientId());
+            }
+        } elseif (null !== $clientHash) {
+            $client = $clientRepository->findOneBy(['hash' => $clientHash]);
+        }
+
+        if ($client) {
+            switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
+                case ClientsStatus::CREATION:
+                case ClientsStatus::TO_BE_CHECKED:
+                    $redirectPath = $this->getLenderSubscriptionStepRoute($client);
+                    break;
+                case ClientsStatus::COMPLETENESS:
+                case ClientsStatus::COMPLETENESS_REMINDER:
+                    return $this->redirectToRoute('lender_completeness');
+                case ClientsStatus::COMPLETENESS_REPLY:
+                case ClientsStatus::MODIFICATION:
+                case ClientsStatus::VALIDATED:
+                case ClientsStatus::SUSPENDED:
+                default:
+                    return $this->redirectToRoute('lender_dashboard');
+            }
         } else {
-            $personalFormRoute =['lender_subscription_personal_information_person_form', 'lender_subscription_personal_information_legal_entity_form'];
-            if (! in_array($request->get('_route'), $personalFormRoute)) {
+            $personalFormRoute = ['lender_subscription_personal_information_person_form', 'lender_subscription_personal_information_legal_entity_form'];
+            if (false === in_array($request->get('_route'), $personalFormRoute)) {
                 $redirectPath = $this->generateUrl('lender_subscription_personal_information');
             }
         }
@@ -1017,10 +1016,28 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param Clients $client
+     *
+     * @return string|null
+     */
+    private function getLenderSubscriptionStepRoute(Clients $client): ?string
+    {
+        switch ($client->getEtapeInscriptionPreteur()) {
+            case Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION:
+                return $this->generateUrl('lender_subscription_documents', ['clientHash' => $client->getHash()]);
+            case Clients::SUBSCRIPTION_STEP_DOCUMENTS:
+            case Clients::SUBSCRIPTION_STEP_MONEY_DEPOSIT:
+                return $this->generateUrl('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @param Clients $client
      * @param Request $request
      * @param int     $step
      */
-    private function saveClientHistoryAction(Clients $client, Request $request, $step)
+    private function saveClientHistoryAction(Clients $client, Request $request, int $step): void
     {
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
@@ -1044,13 +1061,13 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param Clients      $client
-     * @param integer      $attachmentTypeId
+     * @param int          $attachmentTypeId
      * @param UploadedFile $file
      *
      * @return Attachment
      * @throws \Exception
      */
-    private function upload(Clients $client, $attachmentTypeId, UploadedFile $file)
+    private function upload(Clients $client, int $attachmentTypeId, UploadedFile $file): Attachment
     {
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
@@ -1066,8 +1083,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function getBirthPlaceAction(Request $request)
+    public function getBirthPlaceAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $locationManager = $this->get('unilend.service.location_manager');
@@ -1080,8 +1101,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function getCityAction(Request $request)
+    public function getCityAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $locationManager = $this->get('unilend.service.location_manager');
@@ -1094,8 +1119,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function getZipAction(Request $request)
+    public function getZipAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $locationManager = $this->get('unilend.service.location_manager');
@@ -1108,8 +1137,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age")
      * @Method("POST")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function checkAgeAction(Request $request)
+    public function checkAgeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             /** @var \dates $dates */
@@ -1133,7 +1166,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param Clients $client
      */
-    private function sendFinalizedSubscriptionConfirmationEmail(Clients $client)
+    private function sendFinalizedSubscriptionConfirmationEmail(Clients $client): void
     {
         $keywords = [
             'firstName' => $client->getPrenom(),
@@ -1156,8 +1189,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function checkCityAction(Request $request)
+    public function checkCityAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
@@ -1184,8 +1221,12 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee")
      * @Method("GET")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function checkCityInseeCodeAction(Request $request)
+    public function checkCityInseeCodeAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $country = $request->query->get('country');
@@ -1211,7 +1252,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return array
      */
-    private function getFundsOrigin($clientType)
+    private function getFundsOrigin(int $clientType): array
     {
         /** @var \settings $settings */
         $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
@@ -1233,7 +1274,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param Clients $client
      */
-    private function addClientSources(Clients $client)
+    private function addClientSources(Clients $client): void
     {
         $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
 
@@ -1246,7 +1287,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param Clients $clientEntity
      */
-    private function addClientToDataLayer(Clients $clientEntity)
+    private function addClientToDataLayer(Clients $clientEntity): void
     {
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $clientEntity->getEmail());
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $clientEntity->getIdClient());
@@ -1254,14 +1295,14 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param \DateTime $birthDay
+     *
      * @return bool
      */
-    private function isAtLeastEighteenYearsOld(\DateTime $birthDay)
+    private function isAtLeastEighteenYearsOld(\DateTime $birthDay): bool
     {
         $now = new \DateTime('NOW');
         $dateDiff = $birthDay->diff($now);
 
         return $dateDiff->y >= 18;
     }
-
 }

@@ -47,11 +47,12 @@ class ClientCreationManager
      */
     public function createAccount(Clients $client, string $walletType, int $userId, ?int $status = null): void
     {
-        if (in_array($walletType, [WalletType::LENDER, WalletType::BORROWER, WalletType::PARTNER])) {
+        if (false === in_array($walletType, [WalletType::LENDER, WalletType::BORROWER, WalletType::PARTNER])) {
             $this->logger->error(
                 'Account creation is not possible for wallet type "' . $walletType . '"',
                 ['id_client' => $client->getIdClient(), 'file' => __FILE__, 'line' => __LINE__]
             );
+            return;
         }
 
         if (null === $status) {

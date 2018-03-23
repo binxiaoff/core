@@ -502,7 +502,8 @@ class ProjectRequestController extends Controller
 
             $client
                 ->setStatus(Clients::STATUS_ONLINE)
-                ->setEmail($email);
+                ->setEmail($email)
+                ->setSlug(Loader::loadLib('ficelle')->generateSlug($client->getPrenom() . '-' . $client->getNom()));
 
             $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
 
