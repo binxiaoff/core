@@ -241,14 +241,15 @@ class LenderOperationsController extends Controller
 
             switch ($aProjectLoans['loanStatus']) {
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED:
+                    $finished = \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y');
+                    if ($aProjectLoans['isCloseOutNetting']) {
+                        $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
+                    } else {
+                        $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date';
+
+                    }
                     $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue(
-                        'G' . ($iRowIndex + 2),
-                        $this->get('translator')->trans(
-                            'lender-operations_loans-table-project-status-label-repayment-finished-on-date',
-                            ['%date%' => \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y')]
-                        )
-                    );
+                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $finished]));
                     break;
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
                 case LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
@@ -258,6 +259,16 @@ class LenderOperationsController extends Controller
                         'G' . ($iRowIndex + 2),
                         $this->get('translator')->transChoice(
                             'lender-operations_loans-table-project-procedure-in-progress',
+                            $aProjectLoans['count']['declaration']
+                        )
+                    );
+                    break;
+                case LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS:
+                    $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
+                    $oActiveSheet->setCellValue(
+                        'G' . ($iRowIndex + 2),
+                        $this->get('translator')->transChoice(
+                            'lender-operations_detailed-loan-status-label-lost',
                             $aProjectLoans['count']['declaration']
                         )
                     );
@@ -338,9 +349,7 @@ class LenderOperationsController extends Controller
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \loans $loan */
-        $loan = $entityManagerSimulator->getRepository('loans');
-        /** @var \projects $project */
-        $project                 = $entityManagerSimulator->getRepository('projects');
+        $loan                    = $entityManagerSimulator->getRepository('loans');
         $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
         $lenderOperationManager  = $this->get('unilend.service.lender_operations_manager');
         $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -358,8 +367,8 @@ class LenderOperationsController extends Controller
         foreach ($lenderLoans as $projectLoans) {
             if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
                 $loanData       = [];
-                $projectEntity  = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($projectEntity);
+                $project        = $projectRepository->find($projectLoans['id_project']);
+                $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($project);
 
                 if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
                     continue;
@@ -387,6 +396,7 @@ class LenderOperationsController extends Controller
                 $loanData['project_status']           = $projectLoans['project_status'];
                 $loanData['loanStatus']               = $loanStatusInfo['status'];
                 $loanData['loanStatusLabel']          = $loanStatusInfo['statusLabel'];
+                $loanData['isCloseOutNetting']        = $project->getCloseOutNettingDate() instanceof \DateTime;
 
                 switch ($loanData['loanStatus']) {
                     case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
@@ -420,7 +430,7 @@ class LenderOperationsController extends Controller
                 $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
                     ->findBy([
                         'idLender'  => $wallet->getId(),
-                        'idProject' => $projectEntity
+                        'idProject' => $project
                     ]);
                 $loans               = [];
                 $loanData['count']   = [

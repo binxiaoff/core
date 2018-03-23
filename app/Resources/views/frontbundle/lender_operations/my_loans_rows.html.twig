@@ -28,13 +28,23 @@
     {% if loan.loanStatus == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED') %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
-                {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
+                {% if loan.isCloseOutNetting %}
+                    {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-collected-on-date {% endtrans %}
+                {% else %}
+                    {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-operations_loans-table-project-status-label-repayment-finished-on-date {% endtrans %}
+                {% endif %}
             </em>
         </td>
     {% elseif loan.loanStatus in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')] %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% transchoice loan.count.declaration %} lender-operations_loans-table-project-procedure-in-progress {% endtranschoice %}
+            </em>
+        </td>
+    {% elseif loan.loanStatus == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS') %}
+        <td colspan="4" class="table-myloans-item-next">
+            <em class="c-t2">
+                {{ loan.loanStatusLabel }}
             </em>
         </td>
     {% else %}
