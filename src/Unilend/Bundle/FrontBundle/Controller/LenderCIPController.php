@@ -2,15 +2,16 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Knp\Snappy\GeneratorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
@@ -21,19 +22,24 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip", name="cip_index")
+     * @Security("has_role('ROLE_LENDER')")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function indexAction()
+    public function indexAction(): Response
     {
-        /** @var Clients $client */
-        $client                 = $this->getClient();
-        $cipManager             = $this->get('unilend.service.cip_manager');
-        $template               = [
-            'isCIPActive' => true
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
+        $client     = $this->getClient();
+        $cipManager = $this->get('unilend.service.cip_manager');
+        $evaluation = $cipManager->getCurrentEvaluation($client);
+
+        $template = [
+            'isCIPActive' => true,
+            'clientHash'  => $this->getUser()->getHash()
         ];
-        $evaluation             = $cipManager->getCurrentEvaluation($client);
-        $template['clientHash'] = $this->getUser()->getHash();
 
         if (null === $evaluation) {
             $template['evaluation'] = false;
@@ -49,13 +55,18 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/commencer/{start}", name="cip_start_questionnaire", defaults={"start"=null})
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param string|null $start
-     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @return Response
      */
-    public function startQuestionnaireAction(?string $start = null)
+    public function startQuestionnaireAction(?string $start = null): Response
     {
-        /** @var Clients $client */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
         $evaluation = $cipManager->getCurrentEvaluation($client);
@@ -78,11 +89,16 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/questionnaire", name="cip_continue_questionnaire")
+     * @Security("has_role('ROLE_LENDER')")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function questionnaireAction()
+    public function questionnaireAction(): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         /** @var Clients $client */
         $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
@@ -144,12 +160,18 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/questionnaire/form", name="cip_form_questionnaire")
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @return Response
      */
-    public function questionnaireFormAction(Request $request)
+    public function questionnaireFormAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         /** @var Clients $client */
         $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
@@ -232,12 +254,18 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/valider", name="cip_validate_questionnaire")
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @return Response
      */
-    public function validateQuestionnaireAction(Request $request)
+    public function validateQuestionnaireAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         /** @var Clients $client */
         $client     = $this->getClient();
         $cipManager = $this->get('unilend.service.cip_manager');
@@ -262,11 +290,16 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/conseil-cip/reset", name="cip_reset_questionnaire")
+     * @Security("has_role('ROLE_LENDER')")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function resetQuestionnaireAction()
+    public function resetQuestionnaireAction(): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $cipManager = $this->get('unilend.service.cip_manager');
         $cipManager->endLenderEvaluation($this->getClient());
 
@@ -275,18 +308,21 @@ class LenderCIPController extends Controller
 
     /**
      * @Route("/pdf/conseil-cip/{clientHash}", name="pdf_cip", requirements={"clientHash": "[0-9a-f-]{32,36}"})
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param string $clientHash
+     *
      * @return Response
      */
-    public function cipAdvisePdfAction($clientHash)
+    public function cipAdvisePdfAction($clientHash): Response
     {
-        /** @var CIPManager $cipManager */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $cipManager = $this->get('unilend.service.cip_manager');
-        /** @var GeneratorInterface $snappy */
-        $snappy = $this->get('knp_snappy.pdf');
-        /** @var Clients $client */
-        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+        $snappy     = $this->get('knp_snappy.pdf');
+        $client     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
         $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
         $content['advice']     = $this->getFormatedAdvice($client);
@@ -317,7 +353,7 @@ class LenderCIPController extends Controller
     /**
      * @param Clients $client
      */
-    private function sendAdviceEmail(Clients $client)
+    private function sendAdviceEmail(Clients $client): void
     {
         /** @var Wallet $wallet */
         $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
@@ -343,10 +379,13 @@ class LenderCIPController extends Controller
         }
     }
 
-    private function getClient()
+    /**
+     * @return Clients
+     */
+    private function getClient(): Clients
     {
         /** @var UserLender $user */
-        $user     = $this->getUser();
+        $user   = $this->getUser();
         $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
 
         return $client;
@@ -357,7 +396,7 @@ class LenderCIPController extends Controller
      *
      * @return string
      */
-    private function getFormatedAdvice(Clients $client)
+    private function getFormatedAdvice(Clients $client): string
     {
         /** @var CIPManager $cipManager */
         $cipManager = $this->get('unilend.service.cip_manager');
