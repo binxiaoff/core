@@ -1193,27 +1193,26 @@ class ProjectsController extends Controller
      *
      * @return array
      */
-    private function getDIRSCompany(\projects $project)
+    private function getDIRSCompany(\projects $project): array
     {
-        /** @var \companies $company */
-        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->get($project->id_company);
-
+        $entityManager              = $this->get('doctrine.orm.entity_manager');
+        $company                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
+
         $balanceDetails = $companyBalanceSheetManager->getBalanceSheetsByAnnualAccount([$project->id_dernier_bilan]);
         $balanceDetails = $balanceDetails[$project->id_dernier_bilan]['details'];
         $workingCapital = $balanceDetails['CJ'] - ($balanceDetails['DS'] + $balanceDetails['DT'] + $balanceDetails['DU'] + $balanceDetails['DV'] + $balanceDetails['DW'] + $balanceDetails['DX'] + $balanceDetails['DY'] + $balanceDetails['DZ'] + $balanceDetails['EA']);
 
         return [
-            'name'             => $company->name,
-            'siren'            => $company->siren,
-            'legal_status'     => $company->forme,
-            'capital'          => str_replace(' ', '', $company->capital),
-            'address'          => trim($company->adresse1 . ' ' . $company->adresse2),
-            'post_code'        => $company->zip,
-            'city'             => $company->city,
-            'commercial_court' => $company->tribunal_com,
-            'creation_date'    => \DateTime::createFromFormat('Y-m-d', $company->date_creation),
+            'name'             => $company->getName(),
+            'siren'            => $company->getSiren(),
+            'legal_status'     => $company->getForme(),
+            'capital'          => str_replace(' ', '', $company->getCapital()),
+            'address'          => trim($company->getIdAddress()->getAddress()),
+            'post_code'        => $company->getIdAddress()->getZip(),
+            'city'             => $company->getIdAddress()->getCity(),
+            'commercial_court' => $company->getTribunalCom(),
+            'creation_date'    => $company->getDateCreation()->format('Y-m-d'),
             'accounts_count'   => $project->balance_count,
             'working_capital'  => $workingCapital
         ];
@@ -1223,16 +1222,17 @@ class ProjectsController extends Controller
      * @param \projects $project
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
      */
-    private function getDIRSProject(\projects $project)
+    private function getDIRSProject(\projects $project): array
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $attachmentManager      = $this->get('unilend.service.attachment_manager');
-        /** @var \companies $company */
-        $company = $entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
 
+        /** @var Projects $projectEntity */
         $projectEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
         $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DEBTS_STATEMENT);
         $attachment     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->getProjectAttachmentByType($projectEntity, $attachmentType);
@@ -1263,7 +1263,7 @@ class ProjectsController extends Controller
             'start_date'          => $startDate,
             'end_date'            => $endDate,
             'signature_date'      => $signatureDate,
-            'released_funds'      => $company->getLastYearReleasedFundsBySIREN($company->siren),
+            'released_funds'      => $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->getLastYearReleasedFundsBySIREN($projectEntity->getIdCompany()->getSiren()),
             'debts_statement_img' => base64_encode(file_get_contents($attachmentManager->getFullPath($attachment))),
             'repayment_schedule'  => $repaymentSchedule
         ];

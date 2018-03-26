@@ -3,10 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product\Checker;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, Product, ProductAttributeType, ProjectsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductAttributeManager;
 
 trait CompanyChecker
@@ -79,6 +78,7 @@ trait CompanyChecker
      * @param ProductAttributeManager $productAttributeManager
      *
      * @return bool|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     private function isEligibleForExcludedHeadquartersLocation(Companies $company, Product $product, ProductAttributeManager $productAttributeManager)
     {
@@ -88,13 +88,13 @@ trait CompanyChecker
             return true;
         }
 
-        if (empty($company->getZip())) {
+        if (null === $company->getIdAddress()) {
             return null;
         }
 
-        $departement = in_array(substr($company->getZip(), 0, 2), ['97', '98']) ? substr($company->getZip(), 0, 3) : substr($company->getZip(), 0, 2);
+        $department = in_array(substr($company->getIdAddress()->getZip(), 0, 2), ['97', '98']) ? substr($company->getIdAddress()->getZip(), 0, 3) : substr($company->getIdAddress()->getZip(), 0, 2);
 
-        return false === in_array($departement, $exclusiveLocations);
+        return false === in_array($department, $exclusiveLocations);
     }
 
     /**

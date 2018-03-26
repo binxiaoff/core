@@ -8,8 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * CompanyAddress
  *
  * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_v2_id_country", columns={"id_country"})})
- * @ORM\HasLifecycleCallbacks()
- * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
  */
 class CompanyAddress
 {
@@ -46,7 +46,7 @@ class CompanyAddress
     /**
      * @var Attachment
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="CompanyAddress")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })
@@ -122,6 +122,15 @@ class CompanyAddress
      */
     private $idCountry;
 
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AddressType
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AddressType")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     * })
+     */
+    private $idType;
 
     /**
      * Get id
@@ -465,5 +474,25 @@ class CompanyAddress
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param AddressType $idType
+     *
+     * @return CompanyAddress
+     */
+    public function setIdType(AddressType $idType): CompanyAddress
+    {
+        $this->idType = $idType;
+
+        return $this;
+    }
+
+    /**
+     * @return AddressType
+     */
+    public function getIdType(): AddressType
+    {
+        return $this->idType;
     }
 }

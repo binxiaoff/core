@@ -23,13 +23,13 @@
                         <div class="col-small"><?= (0 < $this->companiesEmprunteur->capital) ? $this->ficelle->formatNumber($this->companiesEmprunteur->capital, 0) : 0 ?>&nbsp;&euro;</div>
                     </li>
                     <li>Adresse du siège social
-                        <div class="col-small"><?= $this->companiesEmprunteur->adresse1 ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getAddress() ?></div>
                     </li>
                     <li>Code postal
-                        <div class="col-small"><?= $this->companiesEmprunteur->zip ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getZip() ?></div>
                     </li>
                     <li>Ville
-                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getCity() ?></div>
                     </li>
                     <li>Tribunal de commerce
                         <div class="col-small"><?= $this->companiesEmprunteur->tribunal_com ?></div>
@@ -41,7 +41,7 @@
                         <div class="col-small"><?= $this->companiesEmprunteur->activite ?></div>
                     </li>
                     <li>Lieu d'exploitation
-                        <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
+                        <div class="col-small"><?= $this->borrowerCompanyAddress->getCity() ?></div>
                     </li>
                 </ul>
             </div>

@@ -988,10 +988,10 @@ class ProjectLifecycleManager
                         $hasAutolendOn = $this->autobidSettingsManager->isOn($wallet->getIdClient());
                     } catch (\Exception $exception) {
                         $this->logger->error(
-                            'Could not check Autolend activation state for lender ' . $wallet->getId() . '. No Autolend advise will be shown in the email. Error: ' . $exception->getMessage(),
+                            'Could not check Autolend activation state for lender ' . $wallet->getId() . '. No Autolend advice will be shown in the email. Error: ' . $exception->getMessage(),
                             ['method' => __METHOD__, 'id_project' => $project->id_project, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                         );
-                        /** Do not include any advises about autolend in the email */
+                        /** Do not include any advice about autolend in the email */
                         $hasAutolendOn = null;
                     }
 

@@ -6,27 +6,21 @@ use Knp\Snappy\GeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{
+    RedirectResponse, Request, Response, StreamedResponse
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
-use Unilend\Bundle\FrontBundle\Form\BorrowerContactType;
-use Unilend\Bundle\FrontBundle\Form\SimpleProjectType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BorrowerOperationsManager, ProjectManager, ProjectStatusManager
+};
+use Unilend\Bundle\FrontBundle\Form\{
+    BorrowerContactType, SimpleProjectType
+};
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 
 class BorrowerAccountController extends Controller
@@ -286,14 +280,15 @@ class BorrowerAccountController extends Controller
      */
     public function profileAction()
     {
-        $client      = $this->getClient();
-        $company     = $this->getCompany();
-        $bankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $client         = $this->getClient();
+        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->id_client]);
+        $bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
 
         return [
-            'client'      => $client,
-            'company'     => $company,
-            'bankAccount' => $bankAccount
+            'client'         => $client,
+            'company'        => $company,
+            'bankAccount'    => $bankAccount
         ];
     }
 
@@ -496,10 +491,10 @@ class BorrowerAccountController extends Controller
             $projectsIds = [$filter['project']];
         }
 
-        $entityManager       = $this->get('doctrine.orm.entity_manager');
-        $client              = $this->getClient();
-        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
-        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $client         = $this->getClient();
+        $wallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
+        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
 
         $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
         $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');

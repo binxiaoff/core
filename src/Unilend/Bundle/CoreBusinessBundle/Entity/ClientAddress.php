@@ -46,7 +46,7 @@ class ClientAddress
     /**
      * @var Attachment
      *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment", inversedBy="ClientAddress")
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
      * })
@@ -108,7 +108,15 @@ class ClientAddress
      */
     private $idClient;
 
-
+    /**
+     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\AddressType
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\AddressType")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_type", referencedColumnName="id")
+     * })
+     */
+    private $idType;
 
     /**
      * Get id
@@ -404,5 +412,25 @@ class ClientAddress
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @param AddressType $idType
+     *
+     * @return ClientAddress
+     */
+    public function setIdType(AddressType $idType): ClientAddress
+    {
+        $this->idType = $idType;
+
+        return $this;
+    }
+
+    /**
+     * @return AddressType
+     */
+    public function getIdType(): AddressType
+    {
+        return $this->idType;
     }
 }

@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType, Bids, Clients, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -251,6 +251,8 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 2) {
                 /** @var EntityManager $entityManager */
                 $entityManager = $this->get('doctrine.orm.entity_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+                $addressManager = $this->get('unilend.service.address_manager');
                 $emailRegex    = $entityManager
                     ->getRepository('UnilendCoreBusinessBundle:Settings')
                     ->findOneBy(['type' => 'Regex validation email'])
@@ -259,10 +261,7 @@ class ajaxController extends bootstrap
                 /** @var \companies $company */
                 $company = $this->loadData('companies');
                 $company->get($project->id_company, 'id_company');
-
-                /** @var \clients_adresses $address */
-                $address = $this->loadData('clients_adresses');
-                $address->get($company->id_client_owner, 'id_client');
+                $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
                 /** @var \clients $client */
                 $client = $this->loadData('clients');
@@ -287,29 +286,11 @@ class ajaxController extends bootstrap
                     $project->balance_count = empty($project->balance_count) ? $creationDate->diff(new \DateTime())->y : $project->balance_count;
                 }
 
-                $company->name                          = $_POST['raison_sociale_etape2'];
-                $company->forme                         = $_POST['forme_juridique_etape2'];
-                $company->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $company->date_creation                 = isset($creationDate) ? $creationDate->format('Y-m-d') : $company->date_creation;
-                $company->adresse1                      = $_POST['address_etape2'];
-                $company->city                          = $_POST['ville_etape2'];
-                $company->zip                           = $_POST['postal_etape2'];
-                $company->phone                         = $_POST['phone_etape2'];
-                $company->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
-                $company->latitude                      = (float) str_replace(',', '.', $_POST['latitude']);
-                $company->longitude                     = (float) str_replace(',', '.', $_POST['longitude']);
-
-                if ($company->status_adresse_correspondance == 0) {
-                    $address->adresse1  = $_POST['adresse_correspondance_etape2'];
-                    $address->ville     = $_POST['city_correspondance_etape2'];
-                    $address->cp        = $_POST['zip_correspondance_etape2'];
-                    $address->telephone = $_POST['phone_correspondance_etape2'];
-                } else {
-                    $address->adresse1  = $_POST['address_etape2'];
-                    $address->ville     = $_POST['ville_etape2'];
-                    $address->cp        = $_POST['postal_etape2'];
-                    $address->telephone = $_POST['phone_etape2'];
-                }
+                $company->name          = $_POST['raison_sociale_etape2'];
+                $company->forme         = $_POST['forme_juridique_etape2'];
+                $company->capital       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
+                $company->date_creation = isset($creationDate) ? $creationDate->format('Y-m-d') : $company->date_creation;
+                $company->phone         = $_POST['phone_etape2'];
 
                 $client->email     = $email;
                 $client->civilite  = isset($_POST['civilite_etape2']) ? $_POST['civilite_etape2'] : $client->civilite;
@@ -322,8 +303,39 @@ class ajaxController extends bootstrap
                 if (empty($errors)) {
                     $project->update();
                     $company->update();
-                    $address->update();
                     $client->update();
+
+                    $entityManager->refresh($companyEntity);
+
+                    if (false === empty($_POST['address_etape2']) && false === empty($_POST['ville_etape2']) && false === empty($_POST['postal_etape2'])) {
+                        $addressManager->saveCompanyAddress(
+                            $_POST['address_etape2'],
+                            $_POST['postal_etape2'],
+                            $_POST['ville_etape2'],
+                            PaysV2::COUNTRY_FRANCE,
+                            $companyEntity,
+                            AddressType::TYPE_MAIN_ADDRESS
+                            );
+                    }
+
+                    if (false === empty($_POST['adresse_correspondance_etape2']) && false === empty($_POST['city_correspondance_etape2']) && false === empty($_POST['zip_correspondance_etape2'])) {
+                        $addressManager->saveCompanyAddress(
+                            $_POST['adresse_correspondance_etape2'],
+                            $_POST['zip_correspondance_etape2'],
+                            $_POST['city_correspondance_etape2'],
+                            PaysV2::COUNTRY_FRANCE,
+                            $companyEntity,
+                            AddressType::TYPE_POSTAL_ADDRESS
+                        );
+                    }
+
+                    if (null !== $companyEntity->getIdPostalAddress() && isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2']) {
+                        $postalAddress = $companyEntity->getIdPostalAddress();
+                        $postalAddress->setDateArchived(new \DateTime('NOW'));
+                        $companyEntity->setIdPostalAddress(null);
+
+                        $entityManager->flush([$postalAddress, $companyEntity]);
+                    }
                 }
             } elseif ($_POST['etape'] == 3) {
                 if (isset($_FILES['photo_projet']) && false === empty($_FILES['photo_projet']['name'])) {
