@@ -167,13 +167,6 @@ class LenderWalletController extends Controller
 
             $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
 
-            if (
-                null !== $client->getIdClientStatusHistory()
-                && $client->getIdClientStatusHistory()->getIdStatus()->getId() < ClientsStatus::VALIDATED
-            ) {
-                $this->redirectToRoute('lender_wallet_withdrawal');
-            }
-
             $securityPasswordEncoder = $this->get('security.password_encoder');
 
             if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
