@@ -315,6 +315,7 @@ class LenderDashboardController extends Controller
      * @param array $repaymentDateRange
      *
      * @return array
+     * @throws \Exception
      */
     private function getPaddingData(array $repaymentDateRange): array
     {
@@ -343,6 +344,7 @@ class LenderDashboardController extends Controller
      * @param array $repaymentDateRange
      *
      * @return array
+     * @throws \Exception
      */
     private function getMonthAxis(array $repaymentDateRange): array
     {
@@ -400,6 +402,7 @@ class LenderDashboardController extends Controller
      * Returns the full and short month names
      *
      * @return array
+     * @throws \Exception
      */
     private function getMonthNames(): array
     {

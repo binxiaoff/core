@@ -141,6 +141,8 @@ class LenderWalletController extends Controller
     /**
      * @param Request $request
      * @param array   $post
+     *
+     * @throws \Exception
      */
     private function handleWithdrawalPost(Request $request, array $post): void
     {

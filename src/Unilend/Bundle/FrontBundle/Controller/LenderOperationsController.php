@@ -330,6 +330,7 @@ class LenderOperationsController extends Controller
      * @param Wallet  $wallet
      *
      * @return array
+     * @throws \Exception
      */
     private function commonLoans(Request $request, Wallet $wallet): array
     {
@@ -517,6 +518,7 @@ class LenderOperationsController extends Controller
      * @param Request $request
      *
      * @return array
+     * @throws \Exception
      */
     private function getOperationFilters(Request $request): array
     {

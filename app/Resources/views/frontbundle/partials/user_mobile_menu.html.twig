@@ -36,21 +36,21 @@
                         </li>
 
                         {% if app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') and app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
-                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
+                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_deposit_result', 'lender_wallet_deposit_result_error', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_deposit') }}">
                                     <span class="icon fa-money-u32"></span>
                                     <span class="label">{% trans %} lender-dashboard-navigation_deposit-withdraw-link {% endtrans %}</span>
                                 </a>
                             </li>
                         {% elseif app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') %}
-                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
+                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_deposit_result', 'lender_wallet_deposit_result_error'] %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_deposit') }}">
                                     <span class="icon fa-money-u32"></span>
                                     <span class="label">{% trans %} lender-dashboard-navigation_deposit-link {% endtrans %}</span>
                                 </a>
                             </li>
                         {% elseif app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
-                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
+                            <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') == 'lender_wallet_withdrawal' %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_withdrawal') }}">
                                     <span class="icon fa-money-u32"></span>
                                     <span class="label">{% trans %} lender-dashboard-navigation_withdraw-link {% endtrans %}</span>

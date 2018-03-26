@@ -179,6 +179,8 @@ class LenderProfileController extends Controller
      * @param FileBag       $fileBag
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag): bool
     {
@@ -236,6 +238,8 @@ class LenderProfileController extends Controller
      * @param FileBag       $fileBag
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function handleCompanyIdentity(Clients $unattachedClient, Clients $client, Companies $unattachedCompany, Companies $company, FormInterface $form, FileBag $fileBag): bool
     {
@@ -325,6 +329,8 @@ class LenderProfileController extends Controller
      * @param FileBag         $fileBag
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function handlePersonFiscalAddress(ClientsAdresses $unattachedClientAddress, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag): bool
     {
@@ -404,6 +410,8 @@ class LenderProfileController extends Controller
      * @param FormInterface $form
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function handleCompanyFiscalAddress(Companies $unattachedCompany, Companies $company, FormInterface $form): bool
     {
@@ -441,6 +449,7 @@ class LenderProfileController extends Controller
      * @param ClientsAdresses $clientAddress
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function handlePostalAddressForm(ClientsAdresses $clientAddress): bool
     {
@@ -1009,6 +1018,7 @@ class LenderProfileController extends Controller
      * @param FileBag       $fileBag
      *
      * @return bool
+     * @throws \Exception
      */
     private function handleBankDetailsForm(BankAccount $unattachedBankAccount, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
@@ -1114,6 +1124,7 @@ class LenderProfileController extends Controller
      * @param FormInterface $form
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function handleEmailForm(Clients $unattachedClient, Clients $client, FormInterface $form): bool
     {
