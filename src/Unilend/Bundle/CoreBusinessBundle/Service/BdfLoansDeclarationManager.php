@@ -5,14 +5,21 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 class BdfLoansDeclarationManager
 {
     const DECLARATION_FILE_PATH = 'bdf/emissions/declarations_mensuelles';
-    const IFP_TYPE              = 'ifp';
-    const CIP_TYPE              = 'cip';
-    const UNILEND_IFP_ID        = 'IF010';
-    const UNILEND_CIP_ID        = 'CI004';
+
+    const TYPE_IFP = 'ifp';
+    const TYPE_CIP = 'cip';
+
+    const UNILEND_IFP_ID = 'IF010';
+    const UNILEND_CIP_ID = 'CI004';
 
     /** @var string */
     private $baseDir;
 
+    /**
+     * BdfLoansDeclarationManager constructor.
+     *
+     * @param string $baseDir
+     */
     public function __construct(string $baseDir)
     {
         $this->baseDir = $baseDir;
@@ -31,7 +38,7 @@ class BdfLoansDeclarationManager
      */
     public function getIfpPath(): string
     {
-        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::IFP_TYPE]);
+        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_IFP]);
     }
 
     /**
@@ -47,7 +54,7 @@ class BdfLoansDeclarationManager
      */
     public function getCipPath(): string
     {
-        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::CIP_TYPE]);
+        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_CIP]);
     }
 
     /**

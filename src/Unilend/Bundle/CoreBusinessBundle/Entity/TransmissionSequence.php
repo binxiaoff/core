@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="transmission_sequence", indexes={@ORM\Index(name="element_name", columns={"element_name"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository")
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\HasLifecycleCallbacks
  */
 class TransmissionSequence
 {

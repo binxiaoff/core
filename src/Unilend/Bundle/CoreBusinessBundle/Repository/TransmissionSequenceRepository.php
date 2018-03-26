@@ -37,7 +37,7 @@ class TransmissionSequenceRepository extends EntityRepository
      * @return null|TransmissionSequence
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function resetToPreviousSequence(string $elementName): ?TransmissionSequence
+    public function rollbackSequence(string $elementName): ?TransmissionSequence
     {
         if (null !== $sequence = $this->findOneBy(['elementName' => $elementName])) {
             $sequence->setSequence($sequence->getSequence() - 1);

@@ -16,14 +16,14 @@ use Unilend\core\Loader;
 
 class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 {
-    const RECORD_PAD_LENGTH   = 151;
-    const SEQUENCE_PAD_LENGTH = 6;
+    const PAD_LENGTH_RECORD   = 151;
+    const PAD_LENGTH_SEQUENCE = 6;
     const PADDING_CHAR        = ' ';
     const PADDING_NUMBER      = '0';
 
-    /** @var  int $recordLineNumber */
+    /** @var int $recordLineNumber */
     private $recordLineNumber = 1;
-    /** @var  \DateTime $declarationDate */
+    /** @var \DateTime $declarationDate */
     private $declarationDate;
     /** @var string $sequentialNumber */
     private $sequentialNumber;
@@ -91,37 +91,48 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             return;
         }
 
-        if (true === empty($ifpData)) {
-            $logger->error('no data found for IFP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        if (empty($ifpData)) {
+            $logger->info('No data found for IFP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
-        if (true === empty($cipData)) {
-            $logger->error('no data found for CIP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        if (empty($cipData)) {
+            $logger->info('No data found for CIP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         if (empty($cipData + $ifpData)) {
+            $logger->info('No data found for CIP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return;
         }
 
         $output->writeln('Generating files..');
+
         $ifpFileName = BdfLoansDeclarationManager::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
-        $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::IFP_TYPE);
+        $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP);
+
         $output->writeln('IFP file processed');
+
         $this->recordLineNumber = 1;
         $cipFileName            = BdfLoansDeclarationManager::UNILEND_CIP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
-        $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::CIP_TYPE);
+        $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_CIP);
+
         $output->writeln('CIP file processed');
 
-        if ('y' == strtolower($debug)) {
+        if ('y' === strtolower($debug)) {
             try {
                 $output->writeln('Generating CSV Files..');
                 $output->writeln('Generating CSV File for IFP contracts...');
+
                 $this->createCSVFile($ifpData, BdfLoansDeclarationManager::UNILEND_IFP_ID);
+
                 $output->writeln(['Done', 'Generating CSV File for CIP contracts...']);
+
                 $this->createCSVFile($cipData, BdfLoansDeclarationManager::UNILEND_CIP_ID);
                 $allContractsData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_MINIBON]);
+
                 $output->writeln(['Done', 'Generating CSV File for both IFP and CIP contracts...']);
+
                 $this->createCSVFile($allContractsData, 'tout_contrat');
+
                 $output->writeln('Done');
             } catch (\Exception $exception) {
                 $logger->warning('Could not generate CSV files for debug. Error: ' . $exception->getMessage(),
@@ -142,31 +153,30 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     {
         $bdfLoansDeclarationManager = $this->getContainer()->get('unilend.service.bdf_loans_declaration_manager');
         $fileManager                = $this->getContainer()->get('filesystem');
-        $logger                     = $this->getContainer()->get('monolog.logger.console');
 
         switch ($type) {
-            case BdfLoansDeclarationManager::IFP_TYPE:
+            case BdfLoansDeclarationManager::TYPE_IFP:
                 $declarerId      = BdfLoansDeclarationManager::UNILEND_IFP_ID;
                 $filePath        = $bdfLoansDeclarationManager->getIfpPath();
                 $fileArchivePath = $bdfLoansDeclarationManager->getIfpArchivePath();
                 break;
-            case BdfLoansDeclarationManager::CIP_TYPE:
+            case BdfLoansDeclarationManager::TYPE_CIP:
                 $declarerId      = BdfLoansDeclarationManager::UNILEND_CIP_ID;
                 $filePath        = $bdfLoansDeclarationManager->getCipPath();
                 $fileArchivePath = $bdfLoansDeclarationManager->getCipArchivePath();
                 break;
             default:
-                throw new \Exception(sprintf('Unknown declarer type, expected types are: ("%s", "%s")', BdfLoansDeclarationManager::IFP_TYPE, BdfLoansDeclarationManager::CIP_TYPE));
+                throw new \Exception(sprintf('Unknown declarer type, expected types are: ("%s", "%s")', BdfLoansDeclarationManager::TYPE_IFP, BdfLoansDeclarationManager::TYPE_CIP));
         }
 
         if (false === $fileManager->exists($filePath)) {
             $fileManager->mkdir($filePath);
         }
-        $absoluteFilePath     = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
-        $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $transmissionSequence = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+        $absoluteFilePath               = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $transmissionSequenceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
         /** @var TransmissionSequence $sequence */
-        $sequence = $transmissionSequence->findOneBy(['elementName' => $fileName]);
+        $sequence = $transmissionSequenceRepository->findOneBy(['elementName' => $fileName]);
 
         if (null !== $sequence && $fileManager->exists($absoluteFilePath)) {
             $currentName = pathinfo($absoluteFilePath, PATHINFO_FILENAME);
@@ -177,7 +187,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                 $fileManager->rename($absoluteFilePath, implode(DIRECTORY_SEPARATOR, [$fileArchivePath, $currentName . '_' . $sequence->getSequence() . '.txt']), true);
             } catch (\Exception $exception) {
                 $fileManager->remove($absoluteFilePath);
-                $logger->error(
+                $this->getContainer()->get('monolog.logger.console')->error(
                     sprintf('Could not archive the old file "%s", it will be removed. Error: %s', $absoluteFilePath, $exception->getMessage()),
                     ['method' => __METHOD__, 'file' => $exception->getMessage(), 'line' => $exception->getLine()]
                 );
@@ -197,11 +207,11 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $fileManager->appendToFile($absoluteFilePath, $this->getEndDeclarerRecord($declarerId));
             $fileManager->appendToFile($absoluteFilePath, $this->getEndSenderRecord($declarerId));
         } catch (\Exception $exception) {
-            $logger->error(
+            $this->getContainer()->get('monolog.logger.console')->error(
                 sprintf('An exception occurred when writing the "%s" loan lines into "%s". - Error: %s', $type, $absoluteFilePath, $exception->getMessage()),
                 ['class' => __CLASS__, 'function' => __FUNCTION__]
             );
-            $transmissionSequence->resetToPreviousSequence($fileName);
+            $transmissionSequenceRepository->rollbackSequence($fileName);
             $fileManager->remove($absoluteFilePath);
         }
     }
@@ -211,7 +221,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     private function setSequentialNumber()
     {
-        $this->sequentialNumber = str_pad($this->recordLineNumber, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $this->sequentialNumber = str_pad($this->recordLineNumber, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
         $this->recordLineNumber++;
     }
 
@@ -243,7 +253,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             ->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')
             ->getNextSequence($fileName);
 
-        return str_pad($this->getStartingRecord('01', $declarerId) . str_pad($sequence->getSequence(), 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('01', $declarerId) . str_pad($sequence->getSequence(), 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -253,7 +263,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     private function getStartDeclarerRecord(string $declarerId): string
     {
-        return str_pad($this->getStartingRecord('02', $declarerId), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('02', $declarerId), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -268,7 +278,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectData = $this->getProjectInformation($projectData);
 
         if (null !== $projectData) {
-            return $this->multiBytePad($this->getStartingRecord('11', $declarerId) . $projectData, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+            return $this->multiBytePad($this->getStartingRecord('11', $declarerId) . $projectData, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
         }
 
         return null;
@@ -281,9 +291,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     public function getEndDeclarerRecord(string $declarerId): string
     {
-        $recordCounter = str_pad($this->recordLineNumber - 1, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $recordCounter = str_pad($this->recordLineNumber - 1, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
 
-        return str_pad($this->getStartingRecord('92', $declarerId) . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('92', $declarerId) . $recordCounter, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
@@ -293,9 +303,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     public function getEndSenderRecord(string $declarerId): string
     {
-        $recordCounter = str_pad($this->recordLineNumber, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $recordCounter = str_pad($this->recordLineNumber, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
 
-        return str_pad($this->getStartingRecord('93', $declarerId) . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT);
+        return str_pad($this->getStartingRecord('93', $declarerId) . $recordCounter, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
