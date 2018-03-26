@@ -77,10 +77,10 @@ EOF
                 foreach ($loans as $loanArray) {
                     $loan->get($loanArray['id_loan'], 'id_loan');
                     $project->get($loan->id_project, 'id_project');
-                    $borrowerCompany = $entityManager->getRepository('Companies')->find($project->id_company);
+                    $borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
                     $wallet          = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($loan->id_lender);
 
-                    if (null !== $borrowerCompany->getIdAddress()) {
+                    if (null === $borrowerCompany->getIdAddress()) {
                         throw new \Exception('Borrower of loan ' . $loan->id_loan . ' has no main address');
                     }
 
