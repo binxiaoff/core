@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyRating, CompanyStatus, Projects, ProjectsStatus, TaxType, Users, WalletType
+    Clients, ClientsStatus, Companies, CompanyRating, CompanyStatus, Projects, ProjectsStatus, TaxType, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -23,8 +23,8 @@ class ProjectRequestManager
     private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
-    /** @var WalletCreationManager */
-    private $walletCreationManager;
+    /** @var ClientCreationManager */
+    private $clientCreationManager;
     /** @var SourceManager */
     private $sourceManager;
     /** @var PartnerManager */
@@ -43,7 +43,7 @@ class ProjectRequestManager
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
-     * @param WalletCreationManager  $walletCreationManager
+     * @param ClientCreationManager  $clientCreationManager
      * @param SourceManager          $sourceManager
      * @param PartnerManager         $partnerManager
      * @param EligibilityManager     $eligibilityManager
@@ -55,7 +55,7 @@ class ProjectRequestManager
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
-        WalletCreationManager $walletCreationManager,
+        ClientCreationManager $clientCreationManager,
         SourceManager $sourceManager,
         PartnerManager $partnerManager,
         EligibilityManager $eligibilityManager,
@@ -67,7 +67,7 @@ class ProjectRequestManager
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
-        $this->walletCreationManager  = $walletCreationManager;
+        $this->clientCreationManager  = $clientCreationManager;
         $this->sourceManager          = $sourceManager;
         $this->partnerManager         = $partnerManager;
         $this->eligibilityManager     = $eligibilityManager;
@@ -166,8 +166,8 @@ class ProjectRequestManager
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($this->sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siren             = substr($formData['siren'], 0, 9);
-        $siret             = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
+        $siren = substr($formData['siren'], 0, 9);
+        $siret = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
 
         $company = new Companies();
         $company
@@ -178,6 +178,7 @@ class ProjectRequestManager
             ->setEmailFacture($email);
 
         $this->entityManager->beginTransaction();
+
         try {
             $this->entityManager->persist($client);
 
@@ -186,7 +187,7 @@ class ProjectRequestManager
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
 
-            $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
+            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);

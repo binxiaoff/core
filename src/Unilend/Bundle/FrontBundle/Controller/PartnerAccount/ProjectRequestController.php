@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
+    Clients, ClientsStatus, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
@@ -148,7 +148,7 @@ class ProjectRequestController extends Controller
             $entityManager->persist($company);
             $entityManager->flush($company);
 
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::BORROWER);
+            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::DISABLED);
 
             /** @var CompanyStatus $statusInBonis */
             $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
@@ -453,6 +453,7 @@ class ProjectRequestController extends Controller
             }
         }
 
+        /** @var Clients $client */
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $client           = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
 
@@ -501,9 +502,13 @@ class ProjectRequestController extends Controller
 
             $client
                 ->setStatus(Clients::STATUS_ONLINE)
-                ->setEmail($email);
+                ->setEmail($email)
+                ->setSlug(Loader::loadLib('ficelle')->generateSlug($client->getPrenom() . '-' . $client->getNom()));
 
-            $project->getIdCompany()
+            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+
+            $project
+                ->getIdCompany()
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($email);
 

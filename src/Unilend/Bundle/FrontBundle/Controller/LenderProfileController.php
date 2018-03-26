@@ -11,7 +11,7 @@ use Symfony\Component\Form\{
     Extension\Core\Type\CheckboxType, FormError, FormInterface
 };
 use Symfony\Component\HttpFoundation\{
-    FileBag, JsonResponse, Request, Response
+    FileBag, JsonResponse, RedirectResponse, Request, Response
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,14 +38,18 @@ class LenderProfileController extends Controller
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function personalInformationAction(Request $request)
+    public function personalInformationAction(Request $request): Response
     {
-        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
+        $entityManager            = $this->get('doctrine.orm.entity_manager');
         $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-        $client                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $unattachedClient        = clone $client;
-        $clientAddress           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
-        $unattachedClientAddress = clone $clientAddress;
+        $client                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $unattachedClient         = clone $client;
+        $clientAddress            = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
+        $unattachedClientAddress  = clone $clientAddress;
 
         $phoneForm             = $this->createForm(PersonPhoneType::class, $client);
 
@@ -190,8 +194,12 @@ class LenderProfileController extends Controller
      * @param Clients       $client
      * @param FormInterface $form
      * @param FileBag       $fileBag
+     *
+     * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag)
+    private function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag): bool
     {
         $translator    = $this->get('translator');
         $modifications = [];
@@ -232,8 +240,10 @@ class LenderProfileController extends Controller
                 $this->updateClientStatusAndNotifyClient($client, $modifiedData);
             }
 
-            $this->redirectToRoute('lender_profile_personal_information');
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -245,6 +255,7 @@ class LenderProfileController extends Controller
      * @param FileBag       $fileBag
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
     private function handleCompanyIdentity(Clients $unattachedClient, Clients $client, Companies $unattachedCompany, Companies $company, FormInterface $form, FileBag $fileBag): bool
@@ -322,6 +333,7 @@ class LenderProfileController extends Controller
 
             return true;
         }
+
         return false;
     }
 
@@ -332,8 +344,10 @@ class LenderProfileController extends Controller
      * @param FileBag         $fileBag
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function handlePersonFiscalAddress(ClientsAdresses $unattachedClientAddress, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag)
+    private function handlePersonFiscalAddress(ClientsAdresses $unattachedClientAddress, ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag): bool
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $translator    = $this->get('translator');
@@ -412,6 +426,7 @@ class LenderProfileController extends Controller
      *
      * @return bool
      * @throws \Exception
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function handleCompanyAddress(Companies $company, FormInterface $form, string $type): bool
     {
@@ -469,8 +484,9 @@ class LenderProfileController extends Controller
      * @param ClientsAdresses $clientAddress
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function handlePostalAddressForm(ClientsAdresses $clientAddress)
+    private function handlePostalAddressForm(ClientsAdresses $clientAddress): bool
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $translator    = $this->get('translator');
@@ -493,10 +509,17 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function fiscalInformationAction(Request $request)
+    public function fiscalInformationAction(Request $request): Response
     {
-        /** @var EntityManager $entityManager */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $client                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
         $unattachedClientEntity = clone $client;
@@ -563,9 +586,17 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/securite", name="lender_profile_security")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function securityAction(Request $request)
+    public function securityAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $client                 = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
         $unattachedClientEntity = clone $client;
         $emailForm              = $this->createForm(ClientEmailType::class, $client);
@@ -633,9 +664,15 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/alertes", name="lender_profile_notifications")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
      */
-    public function notificationsAction()
+    public function notificationsAction(): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $templateData = [
             'isCIPActive' => $this->isCIPActive()
         ];
@@ -648,7 +685,7 @@ class LenderProfileController extends Controller
     /**
      * @param array $templateData
      */
-    private function addNotificationSettingsTemplate(array &$templateData)
+    private function addNotificationSettingsTemplate(array &$templateData): void
     {
         /** @var \clients_gestion_notifications $notificationSettings */
         $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
@@ -696,9 +733,17 @@ class LenderProfileController extends Controller
      * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
      */
-    public function updateNotificationAction(Request $request)
+    public function updateNotificationAction(Request $request): JsonResponse
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->json('ko');
+        }
+
         $sendingPeriod = $request->request->filter('period', FILTER_SANITIZE_STRING);
         $typeId        = $request->request->getInt('type_id');
         $active        = $request->request->getBoolean('active');
@@ -782,9 +827,15 @@ class LenderProfileController extends Controller
     /**
      * @Route("/profile/documents", name="lender_completeness")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
      */
-    public function lenderCompletenessAction()
+    public function lenderCompletenessAction(): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])) {
+            return $this->redirectToRoute('lender_dashboard');
+        }
+
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
 
@@ -831,9 +882,17 @@ class LenderProfileController extends Controller
      * @Route("/profile/documents/submit", name="lender_completeness_submit")
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return RedirectResponse
      */
-    public function lenderCompletenessFormAction(Request $request)
+    public function lenderCompletenessFormAction(Request $request): RedirectResponse
     {
+        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])) {
+            return $this->redirectToRoute('lender_dashboard');
+        }
+
         $translator    = $this->get('translator');
         $files         = $request->request->get('files', []);
         $uploadSuccess = [];
@@ -871,18 +930,19 @@ class LenderProfileController extends Controller
 
     /**
      * @param Clients      $client
-     * @param integer      $attachmentTypeId
+     * @param int          $attachmentTypeId
      * @param UploadedFile $file
      *
      * @return Attachment
      * @throws \Exception
      */
-    private function upload(Clients $client, $attachmentTypeId, UploadedFile $file)
+    private function upload(Clients $client, int $attachmentTypeId, UploadedFile $file): Attachment
     {
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $attachmentType    = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
         $attachment        = $attachmentManager->upload($client, $attachmentType, $file);
+
         if (false === $attachment instanceof Attachment) {
             throw new \Exception();
         }
@@ -927,8 +987,12 @@ class LenderProfileController extends Controller
      * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
      * @Method("GET")
      * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function getZipAction(Request $request)
+    public function getZipAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             /** @var LocationManager $locationManager */
@@ -947,8 +1011,12 @@ class LenderProfileController extends Controller
      *
      * @return Response
      */
-    public function downloadIFUAction(Request $request)
+    public function downloadIFUAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         /** @var \ifu $ifu */
         $ifu        = $this->get('unilend.service.entity_manager')->getRepository('ifu');
         $client     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
@@ -987,6 +1055,7 @@ class LenderProfileController extends Controller
      * @param FileBag       $fileBag
      *
      * @return bool
+     * @throws \Exception
      */
     private function handleBankDetailsForm(BankAccount $unattachedBankAccount, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
@@ -1045,7 +1114,7 @@ class LenderProfileController extends Controller
      *
      * @return array
      */
-    private function getFiscalBalanceAndOwedCapital(Clients $client)
+    private function getFiscalBalanceAndOwedCapital(Clients $client): array
     {
         $entityManager                  = $this->get('doctrine.orm.entity_manager');
         $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
@@ -1154,7 +1223,7 @@ class LenderProfileController extends Controller
     /**
      * @param Clients $client
      */
-    private function sendPasswordModificationEmail(Clients $client)
+    private function sendPasswordModificationEmail(Clients $client): void
     {
         $keywords = [
             'firstName'     => $client->getPrenom(),
@@ -1185,7 +1254,7 @@ class LenderProfileController extends Controller
     /**
      * @param Clients $client
      */
-    private function sendAccountModificationEmail(Clients $client)
+    private function sendAccountModificationEmail(Clients $client): void
     {
         $keywords = [
             'firstName'     => $client->getPrenom(),
@@ -1209,7 +1278,10 @@ class LenderProfileController extends Controller
         }
     }
 
-    private function getClientAddress()
+    /**
+     * @return \clients_adresses
+     */
+    private function getClientAddress(): \clients_adresses
     {
         /** @var UserLender $user */
         $user     = $this->getUser();
@@ -1225,7 +1297,7 @@ class LenderProfileController extends Controller
     /**
      * @return bool
      */
-    private function isCIPActive()
+    private function isCIPActive(): bool
     {
         /** @var \lender_evaluation_log $evaluationLog */
         $evaluationLog = $this->get('unilend.service.entity_manager')->getRepository('lender_evaluation_log');
@@ -1243,8 +1315,12 @@ class LenderProfileController extends Controller
      *
      * @return Response
      */
-    public function requestTaxExemptionAction(Request $request)
+    public function requestTaxExemptionAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $translator                   = $this->get('translator');
         $logger                       = $this->get('logger');
@@ -1294,12 +1370,14 @@ class LenderProfileController extends Controller
 
     /**
      * Returns true if the declaration is possible, false otherwise
+     *
      * @param array $taxExemptionHistory
      * @param array $taxExemptionDateRange
-     * @param bool $isEligible
+     * @param bool  $isEligible
+     *
      * @return bool
      */
-    private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, $isEligible)
+    private function checkIfTaxExemptionIsPossible(array $taxExemptionHistory, array $taxExemptionDateRange, bool $isEligible): bool
     {
         /** @var \DateTime $now */
         $now       = new \DateTime();
@@ -1319,7 +1397,7 @@ class LenderProfileController extends Controller
      *
      * @return bool
      */
-    private function getTaxExemptionEligibility(Wallet $wallet)
+    private function getTaxExemptionEligibility(Wallet $wallet): bool
     {
         $lenderImpositionHistoryRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
         try {
@@ -1341,11 +1419,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Wallet                $wallet
+     * @param Wallet $wallet
      *
      * @return array
      */
-    private function getExemptionHistory(Wallet $wallet)
+    private function getExemptionHistory(Wallet $wallet): array
     {
         $result = [];
         $lenderTaxExemptionRepository = $this->get('doctrine.orm.entity_manager')
@@ -1359,9 +1437,11 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param object $address
+     * @param ClientsAdresses|Companies $address
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function updateFiscalAndPostalAddress($address)
+    private function updateFiscalAndPostalAddress($address): void
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -1389,12 +1469,15 @@ class LenderProfileController extends Controller
     /**
      * @return array
      */
-    private function getTaxExemptionDateRange()
+    private function getTaxExemptionDateRange(): array
     {
         /** @var \settings $settings */
-        $settings = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $settings  = $this->get('unilend.service.entity_manager')->getRepository('settings');
+        $dateRange = [];
+
         $settings->get('taxExemptionRequestLimitDate', 'type');
         $dateRange['taxExemptionRequestLimitDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 23:59:59');
+
         $settings->get('taxExemptionRequestStartDate', 'type');
         $dateRange['taxExemptionRequestStartDate'] = \DateTime::createFromFormat('Y-m-d H:i:s', date('Y') . '-' . $settings->value . ' 00:00:00');
 
@@ -1406,11 +1489,11 @@ class LenderProfileController extends Controller
      *
      * @return string
      */
-    private function formatArrayToUnorderedList(array $modifications)
+    private function formatArrayToUnorderedList(array $modifications): string
     {
         $list = '<ul>';
 
-        foreach($modifications as $modification) {
+        foreach ($modifications as $modification) {
             $list .= '<li>' . $modification . '</li>';
         }
 
@@ -1420,7 +1503,8 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param CompanyAddress|null $address
+     * @param null|CompanyAddress $address
+     * @param string              $type
      *
      * @return FormInterface
      */

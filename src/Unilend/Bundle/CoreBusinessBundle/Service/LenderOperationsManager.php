@@ -511,10 +511,15 @@ class LenderOperationsManager
                 break;
             case ProjectsStatus::LOSS:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_LOSS;
+                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-lost');
                 break;
             case ProjectsStatus::REMBOURSE:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-repaid');
+                if (null === $project->getCloseOutNettingDate()) {
+                    $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-repaid');
+                } else {
+                    $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-collected');
+                }
                 break;
             case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
                 $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;

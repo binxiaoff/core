@@ -5,7 +5,7 @@ use Doctrine\ORM\{
 };
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PaysV2, Product, ProjectsStatus, WalletType, Zones
+    AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PaysV2, Product, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
@@ -486,9 +486,9 @@ class partenairesController extends bootstrap
                 $entityManager->persist($companyClient);
                 $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\WalletCreationManager $walletCreationManager */
-                $walletCreationManager = $this->get('unilend.service.wallet_creation_manager');
-                $walletCreationManager->createWallet($companyClient->getIdClient(), WalletType::PARTNER);
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientCreationManager $clientCreationManager */
+                $clientCreationManager = $this->get('unilend.service.client_creation_manager');
+                $clientCreationManager->createAccount($companyClient->getIdClient(), WalletType::PARTNER, $_SESSION['user']['id_user'], ClientsStatus::VALIDATED);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
@@ -560,7 +560,8 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-        $companyClient           = $companyClientRepository->find($id);
+        /** @var CompanyClient $companyClient */
+        $companyClient = $companyClientRepository->find($id);
 
         if (null === $companyClient) {
             $errors[] = 'Utilisateur inconnu';
@@ -580,8 +581,13 @@ class partenairesController extends bootstrap
             try {
                 $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
 
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
+                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::DISABLED);
+
                 $entityManager->remove($companyClient);
                 $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
+
                 return $companyClientId;
             } catch (ORMException $exception) {
                 $errors[] = $exception->getMessage();
@@ -609,7 +615,8 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-        $companyClient           = $companyClientRepository->find($id);
+        /** @var CompanyClient $companyClient */
+        $companyClient = $companyClientRepository->find($id);
 
         if (null === $companyClient) {
             $errors[] = 'Utilisateur inconnu';
@@ -624,9 +631,17 @@ class partenairesController extends bootstrap
                 $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
             } else {
                 $companyClient->getIdClient()->setStatus(Clients::STATUS_ONLINE);
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
+                $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::VALIDATED);
             }
         } elseif ('deactivate' === $request->request->get('action')) {
             $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+            $clientStatusManager = $this->get('unilend.service.client_status_manager');
+            $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::DISABLED);
         }
 
         try {
@@ -657,7 +672,8 @@ class partenairesController extends bootstrap
         /** @var EntityManager $entityManager */
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-        $companyClient           = $companyClientRepository->find($id);
+        /** @var CompanyClient $companyClient */
+        $companyClient = $companyClientRepository->find($id);
 
         if (null === $companyClient) {
             $errors[] = 'Utilisateur inconnu';

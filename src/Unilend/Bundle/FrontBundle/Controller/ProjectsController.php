@@ -524,10 +524,7 @@ class ProjectsController extends Controller
             /** @var UserLender $user */
             $user = $this->getUser();
 
-            if (
-                false === ($user instanceof UserLender)
-                || $user->getClientStatus() < ClientsStatus::VALIDATED
-            ) {
+            if (false === $user instanceof UserLender || $user->getClientStatus() !== ClientsStatus::VALIDATED) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }

@@ -108,6 +108,15 @@ class ClientStatusManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
+        if (
+            $client->getIdClientStatusHistory()
+            && $status === $client->getIdClientStatusHistory()->getIdStatus()->getId()
+            && empty($comment)
+            && empty($reminder)
+        ) {
+            return;
+        }
+
         $this->entityManager->getConnection()->beginTransaction();
 
         try {

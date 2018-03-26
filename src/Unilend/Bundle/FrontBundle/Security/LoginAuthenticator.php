@@ -357,7 +357,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      *
      * @return string
      */
-    private function getUserSpecificTargetPath(Request $request, string $providerKey, BaseUser $user) : string
+    private function getUserSpecificTargetPath(Request $request, string $providerKey, BaseUser $user): string
     {
         $targetPath = $this->getTargetPath($request->getSession(), $providerKey);
 
@@ -365,11 +365,16 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             $targetPath = $this->getDefaultSuccessRedirectUrl($request, $user);
         }
 
-        if (
-            $user instanceof UserLender
-            && in_array($user->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])
-        ) {
-            $targetPath = $this->router->generate('lender_completeness');
+        if ($user instanceof UserLender) {
+            switch ($user->getClientStatus()) {
+                case ClientsStatus::CREATION:
+                    $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $user->getHash()]);
+                    break;
+                case ClientsStatus::COMPLETENESS:
+                case ClientsStatus::COMPLETENESS_REMINDER:
+                    $targetPath = $this->router->generate('lender_completeness');
+                    break;
+            }
         }
 
         return $targetPath;
