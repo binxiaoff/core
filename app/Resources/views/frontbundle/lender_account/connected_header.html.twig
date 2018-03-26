@@ -31,7 +31,7 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
 
-                            {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::CREATION') and app.user.notifications|length > 0 %}
+                            {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') and app.user.notifications|length > 0 %}
                                 <a href="javascript:;" class="profile-notifications" data-usernotificationsdrop>
                                     <span data-usernotifications-unreadcount></span>
                                 </a><!-- /.profile-notifications -->

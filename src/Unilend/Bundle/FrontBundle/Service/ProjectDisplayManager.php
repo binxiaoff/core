@@ -462,7 +462,7 @@ class ProjectDisplayManager
 
         if (null !== $client) {
             if ($user instanceof UserLender) {
-                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED, ClientsStatus::SUSPENDED])) {
+                if (in_array($user->getClientStatus(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

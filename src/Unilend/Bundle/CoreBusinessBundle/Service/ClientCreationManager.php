@@ -58,11 +58,11 @@ class ClientCreationManager
         if (null === $status) {
             switch ($walletType) {
                 case WalletType::LENDER:
-                    $status = ClientsStatus::CREATION;
+                    $status = ClientsStatus::STATUS_CREATION;
                     break;
                 case WalletType::BORROWER:
                 case WalletType::PARTNER:
-                    $status = ClientsStatus::VALIDATED;
+                    $status = ClientsStatus::STATUS_VALIDATED;
                     break;
             }
         }

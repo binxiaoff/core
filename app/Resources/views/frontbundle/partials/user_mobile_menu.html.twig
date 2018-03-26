@@ -15,7 +15,7 @@
         <nav class="site-user-nav" role="navigation">
             <ul class="site-user-nav-menu">
                 {% if is_granted('ROLE_LENDER') %}
-                    {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::CREATION') %}
+                   {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') %}
                         {% if app.user.notifications|length > 0 %}
                             <li role="presentation" class="user-nav-major user-nav-dashboard ">
                                 <a href="javascript:;" class="ui-open-usernotificationsdrop">

@@ -98,7 +98,7 @@ class LenderValidationManager
         }
 
         if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($client)) {
-            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::VALIDATED, $message);
+            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_VALIDATED, $message);
             $this->sendClientValidationEmail($client, 'preteur-validation-modification-compte');
         } else {
             $this->firstClientValidation($client, $user);
@@ -125,7 +125,7 @@ class LenderValidationManager
             $this->welcomeOfferManager->payOutWelcomeOffer($client);
         }
 
-        $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::VALIDATED);
+        $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_VALIDATED);
     }
 
     /**
@@ -166,7 +166,7 @@ class LenderValidationManager
         $existingClient   = array_shift($existingClient);
 
         if (false === empty($existingClient) && $existingClient['id_client'] != $client->getIdClient()) {
-            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $existingClient['id_client']);
+            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $existingClient['id_client']);
 
             return $existingClient['id_client'];
         }

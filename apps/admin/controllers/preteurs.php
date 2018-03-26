@@ -397,7 +397,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
-                $clientStatusManager->addClientStatus($this->clients, $this->userEntity->getIdUser(), ClientsStatus::COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
+                $clientStatusManager->addClientStatus($this->clients, $this->userEntity->getIdUser(), ClientsStatus::STATUS_COMPLETENESS, $_SESSION['content_email_completude'][$this->clients->id_client]);
 
                 unset($_SESSION['content_email_completude'][$this->clients->id_client]);
                 $_SESSION['email_completude_confirm'] = true;
@@ -719,11 +719,11 @@ class preteursController extends bootstrap
         $this->companies = $this->loadData('companies');
 
         $statusOrderedByPriority = [
-            ClientsStatus::TO_BE_CHECKED,
-            ClientsStatus::MODIFICATION,
-            ClientsStatus::COMPLETENESS_REPLY,
-            ClientsStatus::COMPLETENESS,
-            ClientsStatus::COMPLETENESS_REMINDER
+            ClientsStatus::STATUS_TO_BE_CHECKED,
+            ClientsStatus::STATUS_MODIFICATION,
+            ClientsStatus::STATUS_COMPLETENESS_REPLY,
+            ClientsStatus::STATUS_COMPLETENESS,
+            ClientsStatus::STATUS_COMPLETENESS_REMINDER
         ];
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1370,30 +1370,30 @@ class preteursController extends bootstrap
         }
 
         switch ($clientStatusHistory->getIdStatus()->getId()) {
-            case ClientsStatus::CREATION:
+            case ClientsStatus::STATUS_CREATION:
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
-            case ClientsStatus::TO_BE_CHECKED:
+            case ClientsStatus::STATUS_TO_BE_CHECKED:
                 $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::COMPLETENESS:
-            case ClientsStatus::COMPLETENESS_REMINDER:
-            case ClientsStatus::COMPLETENESS_REPLY:
+            case ClientsStatus::STATUS_COMPLETENESS:
+            case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
+            case ClientsStatus::STATUS_COMPLETENESS_REPLY:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
                 break;
-            case ClientsStatus::MODIFICATION:
+            case ClientsStatus::STATUS_MODIFICATION:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::CLOSED_LENDER_REQUEST:
+            case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
-            case ClientsStatus::CLOSED_BY_UNILEND:
+            case ClientsStatus::STATUS_CLOSED_BY_UNILEND:
                 $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
                 break;
-            case ClientsStatus::VALIDATED:
+            case ClientsStatus::STATUS_VALIDATED:
                 $clientStatusMessage = '';
                 break;
-            case ClientsStatus::CLOSED_DEFINITELY:
+            case ClientsStatus::STATUS_CLOSED_DEFINITELY:
                 $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';
                 break;
             default:
@@ -1520,14 +1520,14 @@ class preteursController extends bootstrap
 
             switch ($this->params[2]) {
                 case Clients::STATUS_OFFLINE:
-                    $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_BY_UNILEND);
+                    $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_BY_UNILEND);
                     break;
                 case Clients::STATUS_ONLINE:
                     $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
                     if (false === empty($lastTwoStatus[1])) {
                         $status = $lastTwoStatus[1]->getIdStatus()->getId();
                     } else {
-                        $status = ClientsStatus::TO_BE_CHECKED;
+                        $status = ClientsStatus::STATUS_TO_BE_CHECKED;
                     }
 
                     $content = 'Compte remis en ligne par Unilend';
@@ -1542,7 +1542,7 @@ class preteursController extends bootstrap
         if ($action == 'deactivate') {
             $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
             $this->sendEmailClosedAccount($client);
-            $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::CLOSED_LENDER_REQUEST);
+            $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_LENDER_REQUEST);
         }
 
         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());

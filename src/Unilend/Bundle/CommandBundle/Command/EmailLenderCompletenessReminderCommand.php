@@ -43,7 +43,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
         $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS, '', 'added_status DESC');
         foreach ($lenders as $lender) {
             $statusDate = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
@@ -51,11 +51,11 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
                 $clientStatusHistory = $clientStatusHistoryRepository->find($lender['id_client_status_history']);
                 $clients->get($lender['id_client']);
                 $this->sendReminderEmail($clients, $lender, $clientStatusHistory->getContent());
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->getContent());
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::STATUS_COMPLETENESS_REMINDER, $clientStatusHistory->getContent());
             }
         }
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS_REMINDER, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS_REMINDER, '', 'added_status DESC');
         foreach ($lenders as $lender) {
             $sendReminder        = false;
             $reminder            = null;
@@ -77,7 +77,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             if (true === $sendReminder) {
                 $clients->get($lender['id_client']);
                 $this->sendReminderEmail($clients, $lender, $clientStatusHistory->getContent());
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->getContent(), $reminder);
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::STATUS_COMPLETENESS_REMINDER, $clientStatusHistory->getContent(), $reminder);
             }
         }
     }

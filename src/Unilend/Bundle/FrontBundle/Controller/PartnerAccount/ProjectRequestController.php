@@ -148,7 +148,7 @@ class ProjectRequestController extends Controller
             $entityManager->persist($company);
             $entityManager->flush($company);
 
-            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::DISABLED);
+            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
 
             /** @var CompanyStatus $statusInBonis */
             $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
@@ -505,7 +505,7 @@ class ProjectRequestController extends Controller
                 ->setEmail($email)
                 ->setSlug(Loader::loadLib('ficelle')->generateSlug($client->getPrenom() . '-' . $client->getNom()));
 
-            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $project
                 ->getIdCompany()

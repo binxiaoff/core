@@ -201,7 +201,7 @@ class ProjectRequestController extends Controller
                 $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT)
             );
 
-            $this->get('unilend.service.client_creation_manager')->createAccount($this->client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+            $this->get('unilend.service.client_creation_manager')->createAccount($this->client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $entityManager->commit();
         } catch (\Exception $exception) {

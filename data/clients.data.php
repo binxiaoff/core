@@ -326,7 +326,7 @@ class clients extends clients_crud
                     SELECT MAX(csh.added)
                     FROM clients_status_history csh
                     INNER JOIN clients ON clients.id_client = csh.id_client
-                    WHERE csh.id_status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
+                    WHERE csh.id_status = ' . ClientsStatus::STATUS_VALIDATED . ' AND c.id_client = csh.id_client
                     ORDER BY csh.added DESC
                     LIMIT 1
                 ) AS date_validation

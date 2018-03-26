@@ -624,12 +624,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <?php foreach ($this->statusHistory as $historyEntry) : ?>
                         <?php
                             switch ($historyEntry->getIdStatus()->getId()) {
-                                case ClientsStatus::CREATION: ?>
+                                case ClientsStatus::STATUS_CREATION: ?>
                                     <tr>
                                         <td>Création de compte le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::TO_BE_CHECKED: ?>
+                                case ClientsStatus::STATUS_TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
                                             <?php if (empty($historyEntry->getContent())) : ?>
@@ -641,7 +641,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS: ?>
                                     <tr>
                                         <td>
                                             Complétude le <?= $historyEntry->getAdded()->format('d/m/Y H:i:s') ?><br>
@@ -650,7 +650,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS_REMINDER: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS_REMINDER: ?>
                                     <tr>
                                         <td>
                                             Complétude Relance le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -658,7 +658,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS_REPLY: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS_REPLY: ?>
                                     <tr>
                                         <td>
                                             Complétude Reponse le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -666,7 +666,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::MODIFICATION: ?>
+                                case ClientsStatus::STATUS_MODIFICATION: ?>
                                     <tr>
                                         <td>
                                             Compte modifié le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -674,7 +674,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::VALIDATED: ?>
+                                case ClientsStatus::STATUS_VALIDATED: ?>
                                     <tr>
                                         <td>
                                             <?php if ($historyEntry->getIdUser()->getIdUser() > 0) : ?>
@@ -687,7 +687,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
+                                case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST: ?>
                                     <tr>
                                         <td>
                                             Compte clôturé à la demande du prêteur (mis hors ligne)<br>
@@ -696,7 +696,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_BY_UNILEND: ?>
+                                case ClientsStatus::STATUS_CLOSED_BY_UNILEND: ?>
                                     <tr>
                                         <td>
                                             Compte clôturé par Unilend (mis hors ligne)<br>
@@ -706,7 +706,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_DEFINITELY: ?>
+                                case ClientsStatus::STATUS_CLOSED_DEFINITELY: ?>
                                     <tr>
                                         <td>
                                             Compte définitvement fermé le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -743,7 +743,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             </div>
             <div class="droite">
                 <?php $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId(); ?>
-                <?php if ($clientStatus != ClientsStatus::CLOSED_DEFINITELY) : ?>
+                <?php if ($clientStatus != ClientsStatus::STATUS_CLOSED_DEFINITELY) : ?>
                     <table class="tabLesStatuts">
                         <tr>
                             <td>
@@ -763,14 +763,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <?php if (ClientsStatus::VALIDATED != $clientStatus && Clients::STATUS_ONLINE == $this->clients->status) : ?>
+                                <?php if (ClientsStatus::STATUS_VALIDATED != $clientStatus && Clients::STATUS_ONLINE == $this->clients->status) : ?>
                                     <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
                                 <?php endif; ?>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <?php if (false === in_array($clientStatus, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
+                                <?php if (false === in_array($clientStatus, [ClientsStatus::STATUS_CLOSED_BY_UNILEND, ClientsStatus::STATUS_CLOSED_LENDER_REQUEST])) : ?>
                                     <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
                                 <?php endif; ?>
                             </td>
@@ -794,7 +794,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         </tr>
                         <tr>
                             <td colspan="2">
-                                <?php if ($clientStatus != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
+                                <?php if ($clientStatus != ClientsStatus::STATUS_CLOSED_LENDER_REQUEST) : ?>
                                     <input type="button"
                                            onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
                                            class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">

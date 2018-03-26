@@ -33,7 +33,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
         try {
             $clientsToValidate = $clientDataClass->getClientsToAutoValidate(
-                [ClientsStatus::TO_BE_CHECKED, ClientsStatus::COMPLETENESS_REPLY, ClientsStatus::MODIFICATION],
+                [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
                 [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]
             );
 

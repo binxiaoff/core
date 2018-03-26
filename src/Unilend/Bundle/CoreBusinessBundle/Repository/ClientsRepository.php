@@ -284,7 +284,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('statusOnline', Clients::STATUS_ONLINE);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -310,7 +310,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
+            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $qb->getQuery()->getSingleScalarResult();
@@ -353,7 +353,7 @@ class ClientsRepository extends EntityRepository
                 ELSE 'Morale'
               END AS 'TypeContact',
               CASE csh.id_status
-                WHEN " . ClientsStatus::VALIDATED . " THEN 'oui'
+                WHEN " . ClientsStatus::STATUS_VALIDATED . " THEN 'oui'
                 ELSE 'non'
               END AS 'Valide',
               cs.label AS 'StatusCompletude',
@@ -370,7 +370,7 @@ class ClientsRepository extends EntityRepository
                 ELSE c.lastlogin
               END AS 'DateDernierLogin',
               CASE csh.id_status
-                WHEN " . ClientsStatus::VALIDATED . " THEN 1
+                WHEN " . ClientsStatus::STATUS_VALIDATED . " THEN 1
                 ELSE 0
               END AS 'StatutValidation',
               status_inscription_preteur AS 'StatusInscription',
@@ -461,7 +461,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -492,7 +492,7 @@ class ClientsRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -514,7 +514,7 @@ class ClientsRepository extends EntityRepository
             ->andWhere('csh.added <= :year')
             ->andWhere('c.status = :clientStatus')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('status', ClientsStatus::VALIDATED)
+            ->setParameter('status', ClientsStatus::STATUS_VALIDATED)
             ->setParameter('clientStatus', Clients::STATUS_ONLINE)
             ->setParameter('year', $year . '-12-31 23:59:59');
 
@@ -545,7 +545,7 @@ class ClientsRepository extends EntityRepository
             INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
             LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
             LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
-            LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::VALIDATED . '
+            LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::STATUS_VALIDATED . '
             WHERE csh.id IS NOT NULL OR available_balance > 0
             GROUP BY c.id_client
             ORDER BY c.lastlogin ASC';
@@ -583,7 +583,7 @@ class ClientsRepository extends EntityRepository
                 AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
                 AND c.naissance = :birthdate
                 AND c.status = ' . Clients::STATUS_ONLINE . '
-                AND csh.id_status = ' . ClientsStatus::VALIDATED;
+                AND csh.id_status = ' . ClientsStatus::STATUS_VALIDATED;
 
         $result = $this->getEntityManager()
             ->getConnection()
