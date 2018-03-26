@@ -1,29 +1,26 @@
 {# Dashboard Panel Notifications #}
 
+{% if app.user.notifications|length > 0 %}
+    {% embed 'lender_account/dashboard_panel.html.twig' %}
+        {# Panel classes #}
+        {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
 
-{% embed 'lender_account/dashboard_panel.html.twig' %}
-    {# Panel classes #}
-    {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
-
-    {# Panel Title #}
-    {% block panelTitle %}
-        {% trans %} lender-notifications_listing-title {% endtrans %}
-        {% if app.user.unreadNotificationsCount > 0 %}
+        {# Panel Title #}
+        {% block panelTitle %}
+            {% trans %} lender-notifications_listing-title {% endtrans %}
             <span data-usernotifications-unreadcount></span>
-        {% endif %}
-    {% endblock %}
+        {% endblock %}
 
-    {# Panel controls #}
-    {% block panelControls %}
-        <a href="{{ path('lender_profile_notifications') }}" class="btn-settings"><span class="sr-only">{% trans %} lender-notifications_settings-link-sr {% endtrans %}</span></a>
-    {% endblock %}
+        {# Panel controls #}
+        {% block panelControls %}
+            <a href="{{ path('lender_profile_notifications') }}" class="btn-settings"><span class="sr-only">{% trans %} lender-notifications_settings-link-sr {% endtrans %}</span></a>
+        {% endblock %}
 
-    {# Remove close control #}
-    {% block panelClose %} {% endblock %}
+        {# Remove close control #}
+        {% block panelClose %} {% endblock %}
 
-    {# Panel content #}
-    {% block panelContent %}
-        {% if app.user.notifications|length > 0 %}
+        {# Panel content #}
+        {% block panelContent %}
             <div id="profile-notifications" data-usernotificationslist>
                 <ul class="list-notifications">
                     {% for notification in app.user.notifications %}
@@ -48,11 +45,16 @@
                     {% endfor %}
                 </ul>
             </div>
-        {% endif %}
-    {% endblock %}
+        {% endblock %}
 
-    {# Panel footer #}
-    {% block panelFooter %}
-        <a href="javascript:;" class="ui-usernotifications-loadmore">{% trans %} lender-notifications_more-notifications-link {% endtrans %}<span class="spinner-usernotifications-loadingmore ui-is-spinner"></span></a>
-    {% endblock %}
-{% endembed %}
+        {# Panel footer #}
+        {% block panelFooter %}
+            {% if app.user.notifications|length > 20 %}
+                <a href="javascript:;" class="ui-usernotifications-loadmore">
+                    {% trans %} lender-notifications_more-notifications-link {% endtrans %}
+                    <span class="spinner-usernotifications-loadingmore ui-is-spinner"></span>
+                </a>
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

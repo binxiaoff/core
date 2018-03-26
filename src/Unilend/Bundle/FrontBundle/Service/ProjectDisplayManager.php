@@ -5,7 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, ClientsStatus, Product, Projects, ProjectsStatus
+    Clients, ClientsStatus, Product, Projects, ProjectsStatus
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BidManager, CompanyBalanceSheetManager, ProjectManager
@@ -130,11 +130,10 @@ class ProjectDisplayManager
      * @param \projects $project
      *
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getBaseData(\projects $project): array
     {
-        $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($project->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
         $now      = new \DateTime('NOW');
         $end      = $this->projectManager->getProjectEndDate($project);
@@ -159,11 +158,11 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $companyAddress->getCity(),
-                'zip'       => $companyAddress->getZip(),
-                'sectorId'  => $companyAddress->getIdCompany()->getSector(),
-                'latitude'  => (float) $companyAddress->getLatitude(),
-                'longitude' => (float) $companyAddress->getLongitude()
+                'city'      => $company->getIdAddress()->getCity(),
+                'zip'       => $company->getIdAddress()->getZip(),
+                'sectorId'  => $company->getIdAddress()->getIdCompany()->getSector(),
+                'latitude'  => (float) $company->getIdAddress()->getLatitude(),
+                'longitude' => (float) $company->getIdAddress()->getLongitude()
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
@@ -221,10 +220,10 @@ class ProjectDisplayManager
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
-            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
-            $lastStatusHistory                = array_shift($lastStatusHistory);
-            $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
+        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS])) {
+            $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
+            $lastStatusHistory             = array_shift($lastStatusHistory);
+            $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
         if (ProjectsStatus::EN_FUNDING <= $projectData['status']) {
@@ -251,6 +250,8 @@ class ProjectDisplayManager
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         }
+
+        $projectData['isCloseOutNetting'] = $project->close_out_netting_date && '0000-00-00' !== $project->close_out_netting_date;
 
         return $projectData;
     }
@@ -463,7 +464,7 @@ class ProjectDisplayManager
 
         if (null !== $client) {
             if ($user instanceof UserLender) {
-                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED])) {
+                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED, ClientsStatus::SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

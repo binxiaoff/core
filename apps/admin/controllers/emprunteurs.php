@@ -63,7 +63,6 @@ class emprunteursController extends bootstrap
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
             $walletType           = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
             $borrowerWallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
             if ($borrowerWallet) {
@@ -82,7 +81,8 @@ class emprunteursController extends bootstrap
                 'idClient' => $client,
                 'idType'   => AttachmentType::RIB
             ]);
-            $this->companyEntity        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyAddress = $this->companyEntity->getIdAddress();
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $emailRegex = $entityManager
@@ -130,7 +130,7 @@ class emprunteursController extends bootstrap
                 }
 
                 $this->get('unilend.service.address_manager')
-                    ->saveBorrowerCompanyAddress(
+                    ->saveCompanyAddress(
                         $_POST['adresse'],
                         $_POST['cp'],
                         $_POST['ville'],

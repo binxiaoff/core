@@ -2,31 +2,18 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
-use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, Request, Response, StreamedResponse
+};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, ProjectsStatus, UnderlyingContract, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
@@ -62,14 +49,14 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function indexAction(Request $request)
+    public function indexAction(Request $request): Response
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var LenderOperationsManager $lenderOperationsManager */
+        $entityManagerSimulator  = $this->get('unilend.service.entity_manager');
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
         $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
@@ -104,9 +91,15 @@ class LenderOperationsController extends Controller
      *
      * @return JsonResponse
      */
-    public function filterLoansAction(Request $request)
+    public function filterLoansAction(Request $request): JsonResponse
     {
-        /** @var EntityManager $entityManager */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->json([
+                'target'   => 'loans .panel-table',
+                'template' => ''
+            ]);
+        }
+
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $loans         = $this->commonLoans($request, $wallet);
@@ -128,32 +121,34 @@ class LenderOperationsController extends Controller
      *
      * @return JsonResponse
      */
-    public function filterOperationsAction(Request $request)
+    public function filterOperationsAction(Request $request): JsonResponse
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var LenderOperationsManager $lenderOperationsManager */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->json([
+                'target'   => 'loans .panel-table',
+                'template' => ''
+            ]);
+        }
+
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters                 = $this->getOperationFilters($request);
+        $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $lenderOperations        = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $projectsFundedByLender  = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
 
-        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $filters                = $this->getOperationFilters($request);
-        $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
-        $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
-
-        return $this->json(
-            [
-                'target'   => 'operations',
-                'template' => $this->render('lender_operations/my_operations.html.twig',
-                    [
-                        'clientId'               => $this->getUser()->getClientId(),
-                        'hash'                   => $this->getUser()->getHash(),
-                        'projectsFundedByLender' => $projectsFundedByLender,
-                        'lenderOperations'       => $lenderOperations,
-                        'currentFilters'         => $filters
-                    ])->getContent()
-            ]
-        );
+        return $this->json([
+            'target'   => 'operations',
+            'template' => $this->render('lender_operations/my_operations.html.twig',
+                [
+                    'clientId'               => $this->getUser()->getClientId(),
+                    'hash'                   => $this->getUser()->getHash(),
+                    'projectsFundedByLender' => $projectsFundedByLender,
+                    'lenderOperations'       => $lenderOperations,
+                    'currentFilters'         => $filters
+                ])->getContent()
+        ]);
     }
 
     /**
@@ -163,25 +158,25 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function exportOperationsExcelAction()
+    public function exportOperationsExcelAction(): Response
     {
-        /** @var SessionInterface $session */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $session = $this->get('session');
 
         if (false === $session->has('lenderOperationsFilters')) {
             return $this->redirectToRoute('lender_operations');
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var LenderOperationsManager $lenderOperationsManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-
-        $wallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $filters    = $session->get('lenderOperationsFilters');
-        $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $fileName   = 'operations_' . date('Y-m-d_His') . '.xlsx';
-        $writer     = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations, $fileName);
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $filters                 = $session->get('lenderOperationsFilters');
+        $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $fileName                = 'operations_' . date('Y-m-d_His') . '.xlsx';
+        $writer                  = $lenderOperationsManager->getOperationsExcelFile($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations, $fileName);
 
         return new StreamedResponse(
             function () use ($writer) {
@@ -202,8 +197,12 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function exportLoansExcelAction(Request $request)
+    public function exportLoansExcelAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
@@ -241,14 +240,15 @@ class LenderOperationsController extends Controller
 
             switch ($aProjectLoans['loanStatus']) {
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED:
+                    $finished = \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y');
+                    if ($aProjectLoans['isCloseOutNetting']) {
+                        $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
+                    } else {
+                        $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date';
+
+                    }
                     $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue(
-                        'G' . ($iRowIndex + 2),
-                        $this->get('translator')->trans(
-                            'lender-operations_loans-table-project-status-label-repayment-finished-on-date',
-                            ['%date%' => \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y')]
-                        )
-                    );
+                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $finished]));
                     break;
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
                 case LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
@@ -258,6 +258,16 @@ class LenderOperationsController extends Controller
                         'G' . ($iRowIndex + 2),
                         $this->get('translator')->transChoice(
                             'lender-operations_loans-table-project-procedure-in-progress',
+                            $aProjectLoans['count']['declaration']
+                        )
+                    );
+                    break;
+                case LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS:
+                    $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
+                    $oActiveSheet->setCellValue(
+                        'G' . ($iRowIndex + 2),
+                        $this->get('translator')->transChoice(
+                            'lender-operations_detailed-loan-status-label-lost',
                             $aProjectLoans['count']['declaration']
                         )
                     );
@@ -290,41 +300,40 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param string $sRisk a letter that gives the risk value [A-H]
+     * @param string $risk a letter that gives the risk value [A-H]
      *
      * @return string
      */
-    private function getProjectNote($sRisk)
+    private function getProjectNote(string $risk): string
     {
-        switch ($sRisk) {
+        switch ($risk) {
             case 'A':
-                $sNote = '5';
+                return '5';
                 break;
             case 'B':
-                $sNote = '4,5';
+                return '4,5';
                 break;
             case 'C':
-                $sNote = '4';
+                return '4';
                 break;
             case 'D':
-                $sNote = '3,5';
+                return '3,5';
                 break;
             case 'E':
-                $sNote = '3';
+                return '3';
                 break;
             case 'F':
-                $sNote = '2,5';
+                return '2,5';
                 break;
             case 'G':
-                $sNote = '2';
+                return '2';
                 break;
             case 'H':
-                $sNote = '1,5';
+                return '1,5';
                 break;
             default:
-                $sNote = '';
+                return '';
         }
-        return $sNote;
     }
 
     /**
@@ -332,15 +341,14 @@ class LenderOperationsController extends Controller
      * @param Wallet  $wallet
      *
      * @return array
+     * @throws \Exception
      */
-    private function commonLoans(Request $request, Wallet $wallet)
+    private function commonLoans(Request $request, Wallet $wallet): array
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \loans $loan */
-        $loan = $entityManagerSimulator->getRepository('loans');
-        /** @var \projects $project */
-        $project                 = $entityManagerSimulator->getRepository('projects');
+        $loan                    = $entityManagerSimulator->getRepository('loans');
         $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
         $lenderOperationManager  = $this->get('unilend.service.lender_operations_manager');
         $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -358,17 +366,15 @@ class LenderOperationsController extends Controller
         foreach ($lenderLoans as $projectLoans) {
             if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
                 $loanData       = [];
-                $projectEntity  = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($projectEntity);
+                $project        = $projectRepository->find($projectLoans['id_project']);
+                $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($project);
 
                 if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
                     continue;
                 }
-                /** @var \DateTime $startDateTime */
-                $startDateTime = new \DateTime(date('Y-m-d'));
-                /** @var \DateTime $endDateTime */
-                $endDateTime = new \DateTime($projectLoans['fin']);
-                /** @var \DateInterval $remainingDuration */
+
+                $startDateTime     = new \DateTime(date('Y-m-d'));
+                $endDateTime       = new \DateTime($projectLoans['fin']);
                 $remainingDuration = $startDateTime->diff($endDateTime);
 
                 $loanData['id']                       = $projectLoans['id_project'];
@@ -387,6 +393,7 @@ class LenderOperationsController extends Controller
                 $loanData['project_status']           = $projectLoans['project_status'];
                 $loanData['loanStatus']               = $loanStatusInfo['status'];
                 $loanData['loanStatusLabel']          = $loanStatusInfo['statusLabel'];
+                $loanData['isCloseOutNetting']        = $project->getCloseOutNettingDate() instanceof \DateTime;
 
                 switch ($loanData['loanStatus']) {
                     case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
@@ -420,7 +427,7 @@ class LenderOperationsController extends Controller
                 $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
                     ->findBy([
                         'idLender'  => $wallet->getId(),
-                        'idProject' => $projectEntity
+                        'idProject' => $project
                     ]);
                 $loans               = [];
                 $loanData['count']   = [
@@ -428,7 +435,7 @@ class LenderOperationsController extends Controller
                     'contract'    => 0,
                     'declaration' => 0
                 ];
-                /** @var Loans $partialLoan */
+
                 foreach ($projectLoansDetails as $partialLoan) {
                     (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
 
@@ -488,7 +495,15 @@ class LenderOperationsController extends Controller
      *
      * @return array
      */
-    private function getDocumentDetail($projectStatus, $hash, $loanId, UnderlyingContract $contract, array $projectsInDept, $projectId, &$nbDeclarations = 0)
+    private function getDocumentDetail(
+        int $projectStatus,
+        string $hash,
+        int $loanId,
+        UnderlyingContract $contract,
+        array $projectsInDept,
+        int $projectId,
+        int &$nbDeclarations = 0
+    ): array
     {
         $documents = [];
 
@@ -515,8 +530,9 @@ class LenderOperationsController extends Controller
      * @param Request $request
      *
      * @return array
+     * @throws \Exception
      */
-    private function getOperationFilters(Request $request)
+    private function getOperationFilters(Request $request): array
     {
         $defaultValues = [
             'start'          => date('d/m/Y', strtotime('-1 month')),
@@ -577,7 +593,6 @@ class LenderOperationsController extends Controller
         $filters['start']     = $filters['startDate']->format('d/m/Y');
         $filters['end']       = $filters['endDate']->format('d/m/Y');
 
-        /** @var SessionInterface $session */
         $session = $request->getSession();
         $session->set('lenderOperationsFilters', $filters);
 
@@ -593,10 +608,14 @@ class LenderOperationsController extends Controller
      *
      * @param int $projectId
      *
-     * @return Response
+     * @return JsonResponse
      */
-    public function loadProjectNotificationsAction($projectId)
+    public function loadProjectNotificationsAction(int $projectId): JsonResponse
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->json(['tpl' => '']);
+        }
+
         try {
             $data = $this->getProjectInformation($projectId);
             $code = Response::HTTP_OK;
@@ -607,7 +626,7 @@ class LenderOperationsController extends Controller
                 ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
-        return new JsonResponse(
+        return $this->json(
             [
                 'tpl' => $this->renderView('lender_operations/my_loans_details_activity.html.twig', ['projectNotifications' => $data, 'code' => $code]),
             ],
@@ -620,23 +639,22 @@ class LenderOperationsController extends Controller
      *
      * @return array
      */
-    private function getProjectInformation($projectId)
+    private function getProjectInformation(int $projectId): array
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $translator      = $this->get('translator');
         $numberFormatter = $this->get('number_formatter');
 
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
-        /** @var Projects $project */
-        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        /** @var Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $project             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
 
         $data = [];
 
-        $companyStatusHistoryContent = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
+        $companyStatusHistoryContent = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
             ->getNotificationContent($project->getIdCompany());
+
         foreach ($companyStatusHistoryContent as $content) {
             $titleAndContent = $this->getProjectStatusTitleAndContent($content, $project, $translator);
             $data[]          = [
@@ -652,8 +670,10 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $projectNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectNotification')
+        $projectNotifications = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectNotification')
             ->findBy(['idProject' => $project->getIdProject()], ['notificationDate' => 'DESC']);
+
         foreach ($projectNotifications as $projectNotification) {
             $data[] = [
                 'id'        => count($data),
@@ -669,12 +689,12 @@ class LenderOperationsController extends Controller
         }
 
         $capitalEarlyRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_EARLY]);
-        /** @var Operation[] $earlyRepayments */
-        $earlyRepayments = $operationRepository->findBy([
+        $earlyRepayments           = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
             'idSubType'        => $capitalEarlyRepaymentType
         ]);
+
         foreach ($earlyRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
@@ -694,12 +714,12 @@ class LenderOperationsController extends Controller
         }
 
         $capitalDebtCollectionRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')->findOneBy(['label' => OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION]);
-        /** @var Operation[] $debtCollectionRepayments */
-        $debtCollectionRepayments = $operationRepository->findBy([
+        $debtCollectionRepayments           = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
             'idSubType'        => $capitalDebtCollectionRepaymentType
         ]);
+
         foreach ($debtCollectionRepayments as $repayment) {
             $data[] = [
                 'id'        => count($data),
@@ -719,13 +739,13 @@ class LenderOperationsController extends Controller
         }
 
         $capitalRepaymentType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT]);
-        /** @var Operation[] $scheduledRepayments */
-        $scheduledRepayments = $operationRepository->findBy([
+        $scheduledRepayments  = $operationRepository->findBy([
             'idProject'        => $project,
             'idWalletCreditor' => $wallet,
             'idType'           => $capitalRepaymentType,
             'idSubType'        => null
         ]);
+
         foreach ($scheduledRepayments as $repayment) {
             $title             = $translator->trans('lender-notifications_repayment-title');
             $repaymentSchedule = $repayment->getRepaymentSchedule();
@@ -752,8 +772,7 @@ class LenderOperationsController extends Controller
         }
 
         $capitalRepaymentRegularizationType = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneBy(['label' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION]);
-        /** @var Operation[] $regularizedRepayments */
-        $regularizedRepayments = $operationRepository->findBy([
+        $regularizedRepayments              = $operationRepository->findBy([
             'idProject'      => $project,
             'idWalletDebtor' => $wallet,
             'idType'         => $capitalRepaymentRegularizationType,
@@ -761,7 +780,6 @@ class LenderOperationsController extends Controller
         ]);
 
         foreach ($regularizedRepayments as $repayment) {
-
             $title             = $translator->trans('lender-notifications_repayment-regularization-title');
             $repaymentSchedule = $repayment->getRepaymentSchedule();
             if (null !== $repaymentSchedule) {
@@ -786,12 +804,13 @@ class LenderOperationsController extends Controller
             ];
         }
 
-        $acceptedLoansNotifications = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications')
-            ->findBy(['idProject' => $projectId, 'idLender' => $wallet, 'type' => Notifications::TYPE_LOAN_ACCEPTED]);
+        /** @var \ficelle $ficelle */
+        $ficelle                    = Loader::loadLib('ficelle');
         $bidsEntity                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $acceptedBidEntity          = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+        $acceptedLoansNotifications = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Notifications')
+            ->findBy(['idProject' => $projectId, 'idLender' => $wallet, 'type' => Notifications::TYPE_LOAN_ACCEPTED]);
 
         foreach ($acceptedLoansNotifications as $notification) {
             $title             = $translator->trans('lender-notifications_accepted-loan-title');
@@ -840,7 +859,7 @@ class LenderOperationsController extends Controller
      *
      * @return array
      */
-    private function getProjectStatusTitleAndContent(array $content, Projects $project, TranslatorInterface $translator)
+    private function getProjectStatusTitleAndContent(array $content, Projects $project, TranslatorInterface $translator): array
     {
         switch ($content['label']) {
             case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
@@ -880,9 +899,9 @@ class LenderOperationsController extends Controller
      * @param array $a
      * @param array $b
      *
-     * @return mixed
+     * @return int
      */
-    private function sortArrayByDate(array $a, array $b)
+    private function sortArrayByDate(array $a, array $b): int
     {
         return $b['datetime']->getTimestamp() - $a['datetime']->getTimestamp();
     }
@@ -893,22 +912,23 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function downloadOperationPdfAction()
+    public function downloadOperationPdfAction(): Response
     {
-        /** @var SessionInterface $session */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $session = $this->get('session');
 
         if (false === $session->has('lenderOperationsFilters')) {
             return $this->redirectToRoute('lender_operations');
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var LenderOperationsManager $lenderOperationsManager */
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $clientAddress           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()->getIdClient()]);
 
-        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()->getIdClient()]);
         if (false === $wallet->getIdClient()->isNaturalPerson()) {
             $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
         }
@@ -925,7 +945,6 @@ class LenderOperationsController extends Controller
             'available_balance' => $wallet->getAvailableBalance()
         ]);
 
-        /** @var GeneratorInterface $snappy */
         $snappy = $this->get('knp_snappy.pdf');
 
         return new Response(

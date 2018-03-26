@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
+    BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -388,10 +388,10 @@ class sfpmeiController extends bootstrap
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                    $companyAddress      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
+                    $companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
                     $this->clientAddress = '';
-                    if (null !== $companyAddress) {
-                        $this->clientAddress .= $companyAddress->getAddress() . '<br>' . $companyAddress->getZip() . ' ' . $companyAddress->getCity() . '<br>' . $companyAddress->getIdCountry()->getFr();
+                    if (null !==  $companyEntity->getIdAddress()) {
+                        $this->clientAddress .= $companyEntity->getIdAddress()->getAddress() . '<br>' . $companyEntity->getIdAddress()->getZip() . ' ' . $companyEntity->getIdAddress()->getCity() . '<br>' . $companyEntity->getIdAddress()->getIdCountry()->getFr();
                     }
 
                     if (false === empty($this->clients->telephone)) {
@@ -490,7 +490,6 @@ class sfpmeiController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TranslatorInterface translator */
         $this->translator         = $this->get('translator');
-        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         if (
             isset($this->params[0]) &&
@@ -499,8 +498,8 @@ class sfpmeiController extends bootstrap
             $this->projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
 
             $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companyMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
-            $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
+            $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
+            $this->companyPostalAddress = $this->projectEntity->getIdCompany()->getIdPostalAddress();
 
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');

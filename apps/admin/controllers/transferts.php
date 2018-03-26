@@ -828,8 +828,6 @@ class transfertsController extends bootstrap
     public function _succession()
     {
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             /** @var \clients $originalClient */
@@ -842,18 +840,21 @@ class transfertsController extends bootstrap
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
-                && (false === is_numeric($_POST['id_client_to_transfer'])
+                && (
+                    false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
-                    || false === $clientManager->isLender($originalClient))
+                    || false === $originalClient->isLender()
+                )
             ) {
                 $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
             }
 
             if (
                 false === empty($_POST['id_client_receiver'])
-                && (false === is_numeric($_POST['id_client_receiver'])
+                && (
+                    false === is_numeric($_POST['id_client_receiver'])
                     || false === $newOwner->get($_POST['id_client_receiver'])
-                    || false === $clientManager->isLender($newOwner)
+                    || false === $newOwner->isLender()
                 )
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
@@ -898,7 +899,7 @@ class transfertsController extends bootstrap
             if (isset($_POST['succession_validate'])) {
                 $transferDocument = $this->request->files->get('transfer_document');
                 if (null === $transferDocument) {
-                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfert');
                 }
 
                 $entityManager->getConnection()->beginTransaction();

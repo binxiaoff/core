@@ -328,7 +328,21 @@ class Companies
      */
     private $idParentCompany;
 
+    /**
+     * @var CompanyAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress")
+     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
+     */
+    private $idAddress;
 
+    /**
+     * @var CompanyAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress", mappedBy="id")
+     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
+     */
+    private $idPostalAddress;
 
     /**
      * Set idClientOwner
@@ -1423,5 +1437,53 @@ class Companies
         if (is_numeric($this->name) || 0 === strcasecmp($this->name, 'Monsieur') || 0 === strcasecmp($this->name, 'Madame')) {
             trigger_error('An invalid company name "' . $this->name . '" detected for siren : ' . $this->siren . '- trace : ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5)), E_USER_WARNING);
         }
+    }
+
+    /**
+     * @return CompanyAddress|null
+     */
+    public function getIdAddress(): ?CompanyAddress
+    {
+        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
+            $this->idAddress = null;
+        }
+
+        return $this->idAddress;
+    }
+
+    /**
+     * @param null|CompanyAddress $idAddress
+     *
+     * @return Companies
+     */
+    public function setIdAddress(?CompanyAddress $idAddress): Companies
+    {
+        $this->idAddress = $idAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return CompanyAddress|null
+     */
+    public function getIdPostalAddress(): ?CompanyAddress
+    {
+        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
+            $this->idPostalAddress = null;
+        }
+
+        return $this->idPostalAddress;
+    }
+
+    /**
+     * @param null|CompanyAddress $idPostalAddress
+     *
+     * @return Companies
+     */
+    public function setIdPostalAddress(?CompanyAddress $idPostalAddress): Companies
+    {
+        $this->idPostalAddress = $idPostalAddress;
+
+        return $this;
     }
 }

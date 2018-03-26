@@ -59,7 +59,7 @@
                             Code postal
                         </div>
                         <div class="col-small">
-                            <?= $this->companiesAddress->getZip() ?>
+                            <?= $this->companyAddress->getZip() ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -68,7 +68,7 @@
                             Ville
                         </div>
                         <div class="col-small">
-                            <?= $this->companiesAddress->getCity() ?>
+                            <?= $this->companyAddress->getCity() ?>
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>

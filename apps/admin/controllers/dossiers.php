@@ -148,7 +148,6 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-        $companyAddressRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
 
         $this->beneficialOwnerDeclaration = null;
 
@@ -171,8 +170,8 @@ class dossiersController extends bootstrap
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->companyMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_MAIN_ADDRESS);
-            $this->companyPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companies->id_company, AddressType::TYPE_POSTAL_ADDRESS);
+            $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
+            $this->companyPostalAddress = $this->projectEntity->getIdCompany()->getIdPostalAddress();
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
@@ -2457,13 +2456,22 @@ class dossiersController extends bootstrap
                 die;
             }
 
-            try {
-                $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
-            } catch (\Exception $exception) {
-                $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
+            if (null === $companyMainAddress->getDateValidated()) {
+                try {
+                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
+                } catch (\Exception $exception) {
+                    $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
 
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                die;
+                    $this->get('logger')->error('An exception occured druing validation of borrower address. Message: ' . $exception->getMessage(), [
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'projectId' => $this->projects->id_project
+                    ]);
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
+                }
             }
 
             $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
@@ -3141,14 +3149,16 @@ class dossiersController extends bootstrap
                     $projectStatus                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
                     $lastCompanyStatus             = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
                         ->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
-                    $projectData                   = [
+                    $totalOverdueAmounts           = $projectManager->getOverdueAmounts($project);
+
+                    $projectData = [
                         'projectId'                => $project->getIdProject(),
                         'siren'                    => $project->getIdCompany()->getSiren(),
                         'companyStatusLabel'       => $project->getIdCompany()->getIdStatus()->getLabel(),
                         'projectStatusLabel'       => $projectStatus->getLabel(),
                         'projectStatus'            => $project->getStatus(),
                         'projectTitle'             => $project->getTitle(),
-                        'totalRemainingAmount'     => $projectManager->getRemainingAmount($project),
+                        'totalOverdueAmount'       => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
                         'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project),
                         'closeOutNettingDate'      => $project->getCloseOutNettingDate(),
@@ -3243,7 +3253,8 @@ class dossiersController extends bootstrap
 
     public function _dechoir_terme()
     {
-        $projectId = filter_var($this->request->request->get('id_project'), FILTER_VALIDATE_INT);
+        $projectId = $this->request->request->getInt('project-id');
+        $includeUnilendCommission =  $this->request->request->getboolean('include-unilend-commission');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
@@ -3256,7 +3267,7 @@ class dossiersController extends bootstrap
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                 $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
                 try {
-                    $projectCloseOutNettingManager->decline($project, new DateTime());
+                    $projectCloseOutNettingManager->decline($project, new DateTime(), $includeUnilendCommission);
                 } catch (\Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
                     $_SESSION['freeow']['title']   = 'Déchéance du terme';
@@ -3291,13 +3302,15 @@ class dossiersController extends bootstrap
             $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
             $totalPendingWireTransferInAmount = 0;
-            $totalRemainingAmount             = 0;
+            $totalOverdueAmount               = 0;
             $projectsWithDebtCollection       = 0;
             $projectData                      = [];
 
             foreach ($projectsRepository->getProjectsWithLateRepayments() as $lateRepayment) {
-                $project              = $projectsRepository->find($lateRepayment['idProject']);
-                $remainingAmount      = $projectManager->getRemainingAmount($project);
+                $project        = $projectsRepository->find($lateRepayment['idProject']);
+                $overdueAmounts = $projectManager->getOverdueAmounts($project);
+
+                $overdueAmount        = round(bcadd(bcadd($overdueAmounts['capital'], $overdueAmounts['interest'], 4), $overdueAmounts['commission'], 4), 2);
                 $debtCollectionAmount = 0;
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission $mission */
@@ -3318,17 +3331,17 @@ class dossiersController extends bootstrap
                     'projectTitle'                => $project->getTitle(),
                     'projectStatusLabel'          => $lateRepayment['projectStatusLabel'],
                     'projectStatus'               => $project->getStatus(),
-                    'remainingAmount'             => $remainingAmount,
+                    'overdueAmount'               => $overdueAmount,
                     'entrustedToDebtCollector'    => $debtCollectionAmount,
                     'pendingWireTransferInAmount' => $pendingWireTransferInAmount,
                     'closeOutNettingDate'         => $project->getCloseOutNettingDate(),
                     'overduePaymentScheduleCount' => $paymentScheduleRepository->getOverdueScheduleCount($project)
                 ];
-                $totalRemainingAmount                  = round(bcadd($totalRemainingAmount, $remainingAmount, 4), 2);
+                $totalOverdueAmount                    = round(bcadd($totalOverdueAmount, $overdueAmount, 4), 2);
                 $totalPendingWireTransferInAmount      = round(bcadd($totalPendingWireTransferInAmount, $projectData[$project->getIdProject()]['pendingWireTransferInAmount'], 4), 2);
             }
             $this->render(null, [
-                'remainingAmountToCollect'     => $totalRemainingAmount,
+                'totalOverdueAmountToCollect'  => $totalOverdueAmount,
                 'pendingWireTransferInAmount'  => $totalPendingWireTransferInAmount,
                 'nbProjectsWithDebtCollection' => $projectsWithDebtCollection,
                 'nbProjectsWithLateRepayments' => count($projectData) - $projectsWithDebtCollection,

@@ -34,13 +34,16 @@
         </service>
 
         <service id="unilend.service.client_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.client_settings_manager"/>
-            <argument type="service" id="unilend.service.wallet_creation_manager"/>
             <argument type="service" id="unilend.service.terms_of_sale_manager"/>
-            <argument type="service" id="security.token_storage"/>
-            <argument type="service" id="router"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <service id="unilend.service.client_creation_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientCreationManager">
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="unilend.service.client_status_manager"/>
             <argument type="service" id="logger"/>
         </service>
 
@@ -158,7 +161,7 @@
         <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
-            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="unilend.service.client_creation_manager"/>
             <argument type="service" id="unilend.frontbundle.service.source_manager"/>
             <argument type="service" id="unilend.service.partner_manager"/>
             <argument type="service" id="unilend.service.eligibility.eligibility_manager"/>
@@ -453,7 +456,7 @@
         <service id="unilend.service.company_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
-            <argument type="service" id="unilend.service.wallet_creation_manager"/>
+            <argument type="service" id="unilend.service.client_creation_manager"/>
             <argument type="service" id="translator"/>
             <argument type="service" id="logger"/>
         </service>

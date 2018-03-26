@@ -19,9 +19,50 @@ class ClientsStatus
     const COMPLETENESS_REPLY    = 40;
     const MODIFICATION          = 50;
     const VALIDATED             = 60;
-    const CLOSED_LENDER_REQUEST = 70;
-    const CLOSED_BY_UNILEND     = 80;
+    const SUSPENDED             = 65;
+    const DISABLED              = 70;
+    const CLOSED_LENDER_REQUEST = 80;
+    const CLOSED_BY_UNILEND     = 90;
     const CLOSED_DEFINITELY     = 100;
+
+    const GRANTED_LOGIN = [
+        self::CREATION,
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_ACCOUNT_READ = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_DEPOSIT = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED
+    ];
+
+    const GRANTED_LENDER_WITHDRAW = [
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_SPONSORSHIP = [
+        self::VALIDATED
+    ];
 
     /**
      * @var string

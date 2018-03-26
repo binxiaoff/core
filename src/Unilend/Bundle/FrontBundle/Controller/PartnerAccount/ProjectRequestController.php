@@ -3,23 +3,17 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{
+    RedirectResponse, Request, Response
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PartnerProjectAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -149,18 +143,12 @@ class ProjectRequestController extends Controller
         try {
             $entityManager->persist($client);
 
-            $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client);
-
-            $entityManager->persist($clientAddress);
-            $entityManager->flush($clientAddress);
-
             $company->setIdClientOwner($client);
 
             $entityManager->persist($company);
             $entityManager->flush($company);
 
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::BORROWER);
+            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::DISABLED);
 
             /** @var CompanyStatus $statusInBonis */
             $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
@@ -465,6 +453,7 @@ class ProjectRequestController extends Controller
             }
         }
 
+        /** @var Clients $client */
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $client           = $clientRepository->find($project->getIdCompany()->getIdClientOwner());
 
@@ -513,9 +502,13 @@ class ProjectRequestController extends Controller
 
             $client
                 ->setStatus(Clients::STATUS_ONLINE)
-                ->setEmail($email);
+                ->setEmail($email)
+                ->setSlug(Loader::loadLib('ficelle')->generateSlug($client->getPrenom() . '-' . $client->getNom()));
 
-            $project->getIdCompany()
+            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+
+            $project
+                ->getIdCompany()
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($email);
 

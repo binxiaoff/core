@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
+    CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
 };
 
 class InvoiceManager
@@ -109,7 +109,7 @@ class InvoiceManager
         $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
             'client'         => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
-            'companyAddress' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($invoice->getIdProject()->getIdCompany(), AddressType::TYPE_MAIN_ADDRESS),
+            'companyAddress' => $invoice->getIdProject()->getIdCompany()->getIdAddress(),
             'project'        => $invoice->getIdProject(),
             'invoice'        => $invoice,
             'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,

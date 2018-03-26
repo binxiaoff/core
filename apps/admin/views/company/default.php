@@ -39,9 +39,9 @@
             foreach ($this->companies as $company) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $company->getName() ?></td>
-                    <td><?= $company->getAdresse1() ?></td>
-                    <td><?= $company->getZip() ?></td>
-                    <td><?= $company->getCity() ?></td>
+                    <td><?= $company->getIdAddress()->getAddress() ?></td>
+                    <td><?= $company->getIdAddress()->getZip() ?></td>
+                    <td><?= $company->getIdAddress()->getCity() ?></td>
                     <td><?= $company->getPhone() ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/company/edit/<?= $company->getIdCompany() ?>">
