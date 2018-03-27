@@ -682,7 +682,7 @@ class statsController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var BdfLoansDeclarationManager $bdfLoansDeclarationManager */
         $bdfLoansDeclarationManager = $this->get('unilend.service.bdf_loans_declaration_manager');
-        $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findAll();
+        $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findBy([], ['added' => 'DESC']);
         $declarationList            = [];
         $documentTypes              = [
             BdfLoansDeclarationManager::TYPE_IFP,

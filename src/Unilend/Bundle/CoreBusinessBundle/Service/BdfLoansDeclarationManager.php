@@ -16,8 +16,6 @@ class BdfLoansDeclarationManager
     private $baseDir;
 
     /**
-     * BdfLoansDeclarationManager constructor.
-     *
      * @param string $baseDir
      */
     public function __construct(string $baseDir)

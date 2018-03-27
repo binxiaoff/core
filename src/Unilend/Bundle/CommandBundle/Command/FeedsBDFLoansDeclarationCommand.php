@@ -84,7 +84,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $cipData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_MINIBON]);
         } catch (\Exception $exception) {
             $logger->error(
-                'Could not get data to generate BDF loan declarations. Error: ' . $exception->getMessage(),
+                sprintf('Could not get data to generate BDF loan declarations. Error: %s', $exception->getMessage()),
                 ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
 
@@ -135,7 +135,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
                 $output->writeln('Done');
             } catch (\Exception $exception) {
-                $logger->warning('Could not generate CSV files for debug. Error: ' . $exception->getMessage(),
+                $logger->warning(sprintf('Could not generate CSV files for debug. Error: %s', $exception->getMessage()),
                     ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                 );
             }
@@ -502,9 +502,8 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                     return $repayment->getDateEcheance()->format('Ymd');
                 }
             } catch (NonUniqueResultException $exception) {
-                $this->getContainer()->get('monolog.logger.console')
-                    ->error(
-                        'Could not get the first overdue schedule for project ' . $projectId . '. Please check the output file. Exception: ' . $exception->getMessage(),
+                $this->getContainer()->get('monolog.logger.console')->error(
+                        sprintf('Could not get the first overdue schedule for project %s. Please check the output file. Exception: %s', $projectId, $exception->getMessage()),
                         ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                     );
             }

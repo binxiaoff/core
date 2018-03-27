@@ -17,9 +17,9 @@
 {% block content %}
     <div class="content">
         <div class="block block-rounded">
-            <div class="block-content block-content-full">
+            <div class="block-content">
                 {% if declarations|length > 0 %}
-                    <table class="table table-bordered table-striped table-header-bg">
+                    <table class="table table-condensed">
                         <thead>
                         <tr role="row">
                             <th>Mois de centralisation</th>
@@ -28,21 +28,26 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for year, declarationFiles in declarations %}
-                            <tr role="row">
-                                <th colspan="3" class="text-center bg-info">{{ year }}</th>
-                            </tr>
+                        {% for declarationFiles in declarations %}
                             {% for declarationDetails in declarationFiles %}
                                 <tr role="row">
                                     <td>{{ declarationDetails.declarationDate|localizeddate('medium', 'none', null, null, 'LLLL Y')|capitalize }}</td>
                                     <td>
                                         {% if declarationDetails.ifpFileName is defined %}
-                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/ifp/{{ declarationDetails.ifpFileName }}">{{ declarationDetails.ifpFileName }}</a>
+                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/ifp/{{ declarationDetails.ifpFileName }}"
+                                               class="btn btn-default btn-xs push-10-r"
+                                               data-toggle="tooltip" data-original-title="{{ declarationDetails.ifpFileName }}">
+                                                <i class="fa fa-download fa-2x"></i>
+                                            </a>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% if declarationDetails.cipFileName is defined %}
-                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/cip/{{ declarationDetails.cipFileName }}">{{ declarationDetails.cipFileName }}</a>
+                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/cip/{{ declarationDetails.cipFileName }}"
+                                               class="btn btn-default btn-xs push-10-r"
+                                               data-toggle="tooltip" data-original-title="{{ declarationDetails.cipFileName }}">
+                                                <i class="fa fa-download fa-2x"></i>
+                                            </a>
                                         {% endif %}
                                     </td>
                                 </tr>
