@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -339,13 +339,19 @@ class sfpmeiController extends bootstrap
                     $this->companies = $this->loadData('companies');
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
-                    $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $companyAddress = $company->getIdAddress();
+
+                    if (null === $companyAddress) {
+                        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            ->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                    }
 
                     $this->fiscalAddress = [
-                        'address'  => $company->getIdAddress()->getAddress(),
-                        'postCode' => $company->getIdAddress()->getZip(),
-                        'city'     => $company->getIdAddress()->getCity(),
-                        'country'  => $company->getIdAddress()->getIdCountry()->getFr()
+                        'address'  => $companyAddress->getAddress(),
+                        'postCode' => $companyAddress->getZip(),
+                        'city'     => $companyAddress->getCity(),
+                        'country'  => $companyAddress->getIdCountry()->getFr()
                     ];
 
                     $this->postalAddress = [
