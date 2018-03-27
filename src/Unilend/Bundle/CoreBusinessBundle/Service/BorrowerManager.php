@@ -2,41 +2,60 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, Projects, Wallet
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 
 class BorrowerManager
 {
     /**
      * @var EntityManager
      */
-    private $oEntityManager;
+    private $entityManager;
 
-    public function __construct(EntityManager $oEntityManager)
+    public function __construct(EntityManager $entityManager, WireTransferOutManager $wireTransferOutManager, ProjectRepaymentTaskManager $projectRepaymentTaskManager)
     {
-        $this->oEntityManager = $oEntityManager;
+        $this->entityManager               = $entityManager;
+        $this->wireTransferOutManager      = $wireTransferOutManager;
+        $this->projectRepaymentTaskManager = $projectRepaymentTaskManager;
     }
 
     /**
-     * @param \projects|Projects $project
+     * @param Projects|Companies $entity
      *
      * @return string
      */
-    public function getBorrowerBankTransferLabel($project)
+    public function getBorrowerBankTransferLabel($entity)
     {
-        if ($project instanceof \projects) {
-            $projectId = $project->id_project;
-            /** @var \companies $company */
-            $company = $this->oEntityManager->getRepository('companies');
-            $company->get($project->id_company);
-            $siren = $company->siren;
-        } elseif ($project instanceof Projects) {
-            $projectId = $project->getIdProject();
-            $siren     = $project->getIdCompany()->getSiren();
+        if ($entity instanceof Projects) {
+            $identity = $entity->getIdProject();
+            $siren    = $entity->getIdCompany()->getSiren();
+        } elseif ($entity instanceof Companies) {
+            $identity = $entity->getIdCompany();
+            $siren    = $entity->getSiren();
         } else {
             return '';
         }
 
-        return 'UNILEND' . str_pad($projectId, 6, 0, STR_PAD_LEFT) . 'E' . trim($siren);
+        return 'UNILEND' . str_pad($identity, 6, 0, STR_PAD_LEFT) . 'E' . trim($siren);
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     */
+    public function getRestOfFundsToRelease(Wallet $wallet): float
+    {
+        $balance = $wallet->getAvailableBalance();
+        $balance = round(bcsub($balance, $this->wireTransferOutManager->getCommittedAmount($wallet), 4), 2);
+
+        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        if ($company) {
+            $balance = round(bcsub($balance, $this->projectRepaymentTaskManager->getPlannedRepaymentTaskAmountByCompany($company), 4), 2);
+        }
+        return $balance;
     }
 }

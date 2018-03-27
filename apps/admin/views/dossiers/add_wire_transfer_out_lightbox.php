@@ -1,7 +1,7 @@
 <div id="popup">
     <h1>Création du transfert</h1>
     <p>Fonds restants : <?= $this->restFunds ?></p>
-    <form method="post" enctype="multipart/form-data" action="/dossiers/add_wire_transfer_out_lightbox/<?= $this->project->getIdProject() ?>">
+    <form method="post" enctype="multipart/form-data" action="/dossiers/add_wire_transfer_out_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
         <table class="formColor">
             <tr>
                 <th>Date transfert</th>
@@ -28,6 +28,26 @@
                     <input type="text" name="pattern" id="pattern" value="<?= $this->borrowerMotif ?>" class="input_large" required>
                 </td>
             </tr>
+            <?php if (empty($this->project)) : ?>
+            <tr>
+                <th>
+                    <label for="project">Projet</label>
+                </th>
+                <td>
+                    <select id="project" class="input_large" name="project" required>
+                        <option value="">Sélectionnez un projet concerné</option>
+                        <?php
+                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
+                        foreach ($this->projects as $project) : ?>
+                            <option value="<?= $project->getIdProject() ?>"><?= $project->getTitle() ?> (<?= $project->getIdProject() ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                </td>
+            </tr>
+            <?php else : ?>
+                <input type="hidden" name="project" value="<?= $this->project->getIdProject() ?>">
+            <?php endif; ?>
+
             <tr>
                 <th>
                     <label for="beneficiary">Bénéficiaire</label>

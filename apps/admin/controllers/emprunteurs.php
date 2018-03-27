@@ -52,24 +52,36 @@ class emprunteursController extends bootstrap
         $this->settings         = $this->loadData('settings');
         /** @var \company_sector $companySector */
         $companySector = $this->loadData('company_sector');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager           = $this->get('doctrine.orm.entity_manager');
-        $this->currencyFormatter = $this->get('currency_formatter');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
         $this->sectors    = $companySector->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var NumberFormatter currencyFormatter */
+            $this->currencyFormatter = $this->get('currency_formatter');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
+            $borrowerManager = $this->get('unilend.service.borrower_manager');
+
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $walletType           = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
-            $borrowerWallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
+            $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $walletType          = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
+            $borrowerWallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
             if ($borrowerWallet) {
                 $this->availableBalance = $borrowerWallet->getAvailableBalance();
+                $this->restFunds        = $borrowerManager->getRestOfFundsToRelease($borrowerWallet);
             } else {
                 $this->availableBalance = 0;
+                $this->restFunds        = 0;
             }
+
+            $this->wireTransferOuts = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['idClient' => $client]);
+            $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
+            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+
             $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
             if ($this->clients->telephone != '') {
@@ -81,7 +93,6 @@ class emprunteursController extends bootstrap
                 'idClient' => $client,
                 'idType'   => AttachmentType::RIB
             ]);
-            $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
             $this->companyAddress = $this->companyEntity->getIdAddress();
 
             if (isset($_POST['form_edit_emprunteur'])) {

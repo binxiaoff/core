@@ -88,26 +88,26 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
             <div class="col-md-6">
                 <h1>Emprunteur</h1>
                 <h2 id="borrower-name"><?= $this->clients->prenom ?> <?= $this->clients->nom ?></h2>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="nom">Nom</label>
-                            <input type="text" name="nom" id="nom" value="<?= $this->clients->nom ?>" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="prenom">Prénom</label>
-                            <input type="text" name="prenom" id="prenom" value="<?= $this->clients->prenom ?>" class="form-control">
-                        </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="nom">Nom</label>
+                        <input type="text" name="nom" id="nom" value="<?= $this->clients->nom ?>" class="form-control">
                     </div>
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label for="email">Email</label>
-                            <input type="text" name="email" id="email" value="<?= $this->clients->email ?>" class="form-control">
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label for="telephone">Téléphone</label>
-                            <input type="text" name="telephone" id="telephone" value="<?= $this->clients->telephone ?>" class="form-control">
-                        </div>
+                    <div class="form-group col-md-6">
+                        <label for="prenom">Prénom</label>
+                        <input type="text" name="prenom" id="prenom" value="<?= $this->clients->prenom ?>" class="form-control">
                     </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input type="text" name="email" id="email" value="<?= $this->clients->email ?>" class="form-control">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="telephone">Téléphone</label>
+                        <input type="text" name="telephone" id="telephone" value="<?= $this->clients->telephone ?>" class="form-control">
+                    </div>
+                </div>
 
             </div>
             <div class="col-md-6">
@@ -159,18 +159,26 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                         <label for="status">Statut</label>
                         <select id="status" name="status" class="form-control">
                             <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
-                                <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
+                                <option selected disabled
+                                        value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()
+                                        ->getLabel()) ?></option>
                             <?php endif; ?>
                             <?php /** @var $status CompanyStatus */ ?>
                             <?php foreach ($this->possibleCompanyStatus as $status) : ?>
-                                <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                                <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?>
+                                        value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Solde</label>
-                    <div><?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?></div>
+                    <?php if ($this->restFunds > 0) : ?>
+                        <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager::TRANSFER_OUT_BY_COMPANY ?>/<?= $this->companyEntity->getIdCompany() ?>"
+                           class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                    <?php endif; ?>
+                    <p><?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?> (dont <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR') ?> disponible)</p>
+                    <?php $this->fireView('../dossiers/blocs/wire_transfer_out_list'); ?>
                 </div>
             </div>
         </div>
@@ -235,7 +243,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
                                     <a href="/emprunteurs/link_ligthbox/pouvoir/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">POUVOIR</a>
                                 <?php endif; ?>
                                 &nbsp;&nbsp;
-                                <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
+                                <?php if ($this->clients_mandats->get($this->clients->id_client,
+                                    'id_project = ' . $aProject['id_project'] . ' AND status = ' . \Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface::STATUS_SIGNED . ' AND id_client')) : ?>
                                     <a href="<?= $this->lurl ?>/protected/mandats/<?= $this->clients_mandats->name ?>">MANDAT</a>
                                 <?php elseif ($aProject['status'] > \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::FUNDE) : ?>
                                     <a href="/emprunteurs/link_ligthbox/mandat/<?= $aProject['id_project'] ?>" class="thickbox cboxElement">MANDAT</a>
