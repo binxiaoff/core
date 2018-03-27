@@ -1022,8 +1022,14 @@ class preteursController extends bootstrap
         $this->clients       = $this->loadData('clients');
 
         if (
-        $this->clients->get($this->params[0], 'id_client')
+            isset($this->params[0])
+            && filter_var($this->params[0], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'id_client')
         ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+
             if (isset($_POST['send_dates'])) {
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
                 $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
