@@ -780,7 +780,7 @@ class projects extends projects_crud
                 co.id_client_owner AS 'IDClient'
             FROM projects p
             LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN company_address ca = co.id_company = ca.id_company
+            LEFT JOIN company_address ca ON co.id_company = ca.id_company
             LEFT JOIN clients cl ON (cl.id_client = co.id_client_owner)
             LEFT JOIN projects_notes pn ON (p.id_project = pn.id_project)
             LEFT JOIN projects_status ps ON ps.status = p.status";
