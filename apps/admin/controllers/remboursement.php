@@ -261,7 +261,7 @@ class remboursementController extends bootstrap
             }
             $paymentManager->rejectPayment($reception, $this->userEntity);
 
-            header('Location: ' . $this->url . '/dossiers/details_impayes/' . $reception->getIdProject()->getIdProject());
+            header('Location: ' . $this->url . '/dossiers/details_remboursement/' . $reception->getIdProject()->getIdProject());
         }
 
         if ($this->request->request->get('validate')) {

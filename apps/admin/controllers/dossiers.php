@@ -3122,7 +3122,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    public function _details_impayes()
+    public function _details_remboursement()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -3146,7 +3146,11 @@ class dossiersController extends bootstrap
                     $projectManager = $this->get('unilend.service.project_manager');
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
                     $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-                    $projectStatus                 = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+
+                    $projectLastStatusHistory      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy(
+                        ['idProject' => $project],
+                        ['added'=>'DESC', 'idProjectStatusHistory' => 'DESC']
+                    );
                     $lastCompanyStatus             = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
                         ->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
                     $totalOverdueAmounts           = $projectManager->getOverdueAmounts($project);
@@ -3155,8 +3159,6 @@ class dossiersController extends bootstrap
                         'projectId'                => $project->getIdProject(),
                         'siren'                    => $project->getIdCompany()->getSiren(),
                         'companyStatusLabel'       => $project->getIdCompany()->getIdStatus()->getLabel(),
-                        'projectStatusLabel'       => $projectStatus->getLabel(),
-                        'projectStatus'            => $project->getStatus(),
                         'projectTitle'             => $project->getTitle(),
                         'totalOverdueAmount'       => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
@@ -3178,7 +3180,7 @@ class dossiersController extends bootstrap
                             'date'                     => $project->getCloseOutNettingDate(),
                             'label'                    => 'Prêt déchu',
                             'amount'                   => $totalAmount,
-                            'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalRemainingAmount'] ? 'Partiellement' : 'Oui'),
+                            'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalOverdueAmount'] ? 'Partiellement' : 'Oui'),
                             'remainingAmount'          => round(bcsub($totalAmount, $paidAmount, 4), 2)
                         ];
                     }
@@ -3187,6 +3189,8 @@ class dossiersController extends bootstrap
                     $pendingWireTransferIn  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
 
                     $templateData = [
+                        'project'                    => $project,
+                        'projectLastStatusHistory'   => $projectLastStatusHistory,
                         'projectData'                => $projectData,
                         'latePaymentsData'           => $latePaymentData,
                         'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')

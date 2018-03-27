@@ -46,7 +46,7 @@ class debt_collection_missionController extends bootstrap
                             'Could not download the Excel file for debt collection mission: ' . $debtCollectionMission->getId() . ' Error: ' . $exception->getMessage(),
                             ['file' => $exception->getFile(), 'line' => $exception->getLine()]
                         );
-                        header('Location: ' . $this->url . '/dossiers/details_impayes/' . $debtCollectionMission->getIdProject()->getIdProject());
+                        header('Location: ' . $this->url . '/dossiers/details_remboursement/' . $debtCollectionMission->getIdProject()->getIdProject());
                         die;
                     }
                 }
