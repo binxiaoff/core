@@ -42,8 +42,6 @@ class LenderDashboardController extends Controller
         $lenderRepayment = $entityManagerSimulator->getRepository('echeanciers');
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
-        /** @var \companies $company */
-        $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bid */
         $bid = $entityManagerSimulator->getRepository('bids');
 
@@ -90,11 +88,11 @@ class LenderDashboardController extends Controller
                 ];
             }
 
-            $company->get($aProject['id_company']);
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($aProject['id_company']);
             $publishedProjects[] = [
                 'title'            => $aProject['title'],
                 'slug'             => $aProject['slug'],
-                'company_address'  => (false === empty($company->city) ? $company->city . ', ' : '') . $company->zip,
+                'company_address'  => (false === empty($company->getIdAddress()) ? $company->getIdAddress()->getCity() . ', ' : '') . $company->getIdAddress()->getZip(),
                 'amount'           => $aProject['amount'],
                 'days_left'        => $aProject['daysLeft'],
                 'risk'             => $aProject['risk'],

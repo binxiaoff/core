@@ -78,37 +78,37 @@
                     ])) : ?>
                         <li>
                             <div class="col-long">Raison sociale</div>
-                            <div class="col-small"><?= $this->companiesPreteur->name ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getName() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Forme juridique</div>
-                            <div class="col-small"><?= $this->companiesPreteur->forme ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getForme() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Adresse du siège social</div>
-                            <div class="col-small"><?= $this->companiesPreteur->adresse1 ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getAddress() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Code postal</div>
-                            <div class="col-small"><?= $this->companiesPreteur->zip ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getZip() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Ville</div>
-                            <div class="col-small"><?= $this->companiesPreteur->city ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getCity() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Tribunal de commerce</div>
-                            <div class="col-small"><?= $this->companiesPreteur->tribunal_com ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getTribunalCom() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">R.C.S.</div>
-                            <div class="col-small"><?= $this->companiesPreteur->siren ?></div>
+                            <div class="col-small"><?= $this->lenderCompany->getSiren() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                     <?php else : ?>
