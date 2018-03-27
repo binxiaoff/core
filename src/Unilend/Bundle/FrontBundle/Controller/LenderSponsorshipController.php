@@ -34,31 +34,39 @@ class LenderSponsorshipController extends Controller
             return $this->redirectToRoute('lender_dashboard');
         }
 
-        $sponsorshipManager         = $this->get('unilend.service.sponsorship_manager');
-        $currentSponsorshipCampaign = $sponsorshipManager->getCurrentSponsorshipCampaign();
-        $isBlacklisted              = $sponsorshipManager->isClientCurrentlyBlacklisted($this->getClient());
+        $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
+        try {
+            $currentSponsorshipCampaign = $sponsorshipManager->getCurrentSponsorshipCampaign();
+        } catch (\Exception $exception) {
+            $currentSponsorshipCampaign = null;
+            $this->get('logger')->error(
+                'Could not find current sponsorship campaign. Exception: ' . $exception->getMessage(),
+                ['file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
+        $isBlacklisted = $sponsorshipManager->isClientCurrentlyBlacklisted($this->getClient());
 
         if (empty($currentSponsorshipCampaign) || $isBlacklisted) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
-        $translator         = $this->get('translator');
-        $client             = $this->getClient();
-        $sponsorLink        = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $translator  = $this->get('translator');
+        $client      = $this->getClient();
+        $sponsorLink = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         if ($request->isMethod(Request::METHOD_POST)) {
-            $sponseeEmail = $request->request->filter('sponsee-email', FILTER_VALIDATE_EMAIL);
-            if (null === $sponseeEmail) {
+            $sponseeEmail = $request->request->filter('sponsee-email', null, FILTER_VALIDATE_EMAIL);
+            if (empty($sponseeEmail)) {
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-email-not-valid'));
             }
 
-            $sponseeNames = $request->request->filter('sponsee-names', FILTER_SANITIZE_STRING);
-            if (null === $sponseeNames){
+            $sponseeNames = $request->request->filter('sponsee-names', null, FILTER_SANITIZE_STRING);
+            if (empty($sponseeNames)) {
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsee-names-not-valid'));
             }
 
-            $message = $request->request->filter('sponsor-message', FILTER_SANITIZE_STRING);
-            if (null === $message){
+            $message = $request->request->filter('sponsor-message', null, FILTER_SANITIZE_STRING);
+            if (false === $message) {
                 $this->addFlash('sponsorshipSendMailErrors', $translator->trans('lender-sponsorship_sponsor-message-not-valid'));
             }
 
