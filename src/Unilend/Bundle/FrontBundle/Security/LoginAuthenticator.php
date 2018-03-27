@@ -367,11 +367,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if ($user instanceof UserLender) {
             switch ($user->getClientStatus()) {
-                case ClientsStatus::CREATION:
+                case ClientsStatus::STATUS_CREATION:
                     $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $user->getHash()]);
                     break;
-                case ClientsStatus::COMPLETENESS:
-                case ClientsStatus::COMPLETENESS_REMINDER:
+                case ClientsStatus::STATUS_COMPLETENESS:
+                case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
                     $targetPath = $this->router->generate('lender_completeness');
                     break;
             }

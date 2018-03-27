@@ -237,7 +237,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
 
-                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
 
                 $entityManager->commit();
@@ -372,7 +372,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($company);
                 $entityManager->flush($company);
 
-                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
 
                 $entityManager->commit();
@@ -581,7 +581,7 @@ class LenderSubscriptionController extends Controller
             $bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
 
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
-            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::TO_BE_CHECKED);
+            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_TO_BE_CHECKED);
 
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client->getIdClient());
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
@@ -986,17 +986,17 @@ class LenderSubscriptionController extends Controller
 
         if ($client) {
             switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
-                case ClientsStatus::CREATION:
-                case ClientsStatus::TO_BE_CHECKED:
+                case ClientsStatus::STATUS_CREATION:
+                case ClientsStatus::STATUS_TO_BE_CHECKED:
                     $redirectPath = $this->getLenderSubscriptionStepRoute($client);
                     break;
-                case ClientsStatus::COMPLETENESS:
-                case ClientsStatus::COMPLETENESS_REMINDER:
+                case ClientsStatus::STATUS_COMPLETENESS:
+                case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
                     return $this->redirectToRoute('lender_completeness');
-                case ClientsStatus::COMPLETENESS_REPLY:
-                case ClientsStatus::MODIFICATION:
-                case ClientsStatus::VALIDATED:
-                case ClientsStatus::SUSPENDED:
+                case ClientsStatus::STATUS_COMPLETENESS_REPLY:
+                case ClientsStatus::STATUS_MODIFICATION:
+                case ClientsStatus::STATUS_VALIDATED:
+                case ClientsStatus::STATUS_SUSPENDED:
                 default:
                     return $this->redirectToRoute('lender_dashboard');
             }

@@ -149,7 +149,7 @@ class CompanyManager
             $this->entityManager->persist($companyEntity);
             $this->entityManager->flush($companyEntity);
 
-            $this->clientCreationManager->createAccount($clientEntity, WalletType::BORROWER, $userId, ClientsStatus::VALIDATED);
+            $this->clientCreationManager->createAccount($clientEntity, WalletType::BORROWER, $userId, ClientsStatus::STATUS_VALIDATED);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
