@@ -1,7 +1,9 @@
 Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses:
     properties:
         cp:
-            - Type: alnum
+            - Regex:
+                pattern: '/[^A-z0-9\s\-]+/'
+                match: false
         ville:
             - Regex:
                 pattern: '/[^A-zÀ-ÿ0-9\s\-'']+/'
@@ -16,7 +18,9 @@ Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses:
                 pattern: '/[^A-zÀ-ÿ0-9\s\-\'']+/'
                 match: false
         cpFiscal:
-            - Type: alnum
+            - Regex:
+                pattern: '/[^A-z0-9\s\-]+/'
+                match: false
         idPaysFiscal:
             - Length:
                 min: 1

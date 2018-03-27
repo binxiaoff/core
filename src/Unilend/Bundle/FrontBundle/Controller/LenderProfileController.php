@@ -340,7 +340,7 @@ class LenderProfileController extends Controller
         $modifications = [];
 
         if (
-            $unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal()
+            ($unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal() || $unattachedClientAddress->getIdPaysFiscal() !== $clientAddress->getIdPaysFiscal())
             && PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])
         ) {
