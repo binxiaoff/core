@@ -41,7 +41,7 @@ class LenderSponsorshipController extends Controller
             $currentSponsorshipCampaign = null;
             $this->get('logger')->error(
                 'Could not find current sponsorship campaign. Exception: ' . $exception->getMessage(),
-                ['file' => $exception->getFile(), 'line' => $exception->getLine()]
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
         $isBlacklisted = $sponsorshipManager->isClientCurrentlyBlacklisted($this->getClient());
