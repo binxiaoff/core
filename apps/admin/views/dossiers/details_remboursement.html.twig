@@ -366,7 +366,7 @@
                                 <h3 class="block-title">Terme déchu le</h3>
                             </div>
                             <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate|localizeddate('short', 'none') }}</p>
+                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate()|localizeddate('short', 'none') }}</p>
                             </div>
                         </div>
                     </div>
@@ -374,10 +374,48 @@
                     <div class="col-md-2">
                         <div class="block">
                             <div class="block-header">
-                                <h3 class="block-title">Échéances remboursée</h3>
+                                <h3 class="block-title">Nombre d'échéances</h3>
+                            </div>
+                            <div class="block-content">
+                                <div class="row items-push text-center pull-t">
+                                    <div class="col-xs-6 border-r">
+                                        <div class="text-primary">{{ paidScheduleCount }}</div>
+                                        <div class="h5 font-w300 text-muted">remboursées</div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="text-primary">{{ unpaidScheduleCount }}</div>
+                                        <div class="h5 font-w300 text-muted">à venir</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Montant d'échéances</h3>
+                            </div>
+                            <div class="block-content">
+                                <div class="row items-push text-center pull-t">
+                                    <div class="col-xs-6 border-r">
+                                        <div class="text-primary">{{ paidScheduledAmount|localizedcurrency('EUR') }}</div>
+                                        <div class="h5 font-w300 text-muted">remboursés</div>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="text-primary">{{ unpaidScheduledAmount|localizedcurrency('EUR') }}</div>
+                                        <div class="h5 font-w300 text-muted">à percevoir</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Prochaine échéance le</h3>
                             </div>
                             <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ paidScheduleCount }} sur {{ totalScheduleCount }}</p>
+                                <p class="text-primary pull-t">{{ nextUnpaidSchedule.getDateEcheanceEmprunteur()|localizeddate('short', 'none') }}</p>
                             </div>
                         </div>
                     </div>

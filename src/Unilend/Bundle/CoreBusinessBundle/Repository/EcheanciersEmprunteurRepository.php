@@ -256,4 +256,38 @@ class EcheanciersEmprunteurRepository extends EntityRepository
 
         return $remaining['capital'];
     }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return float
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getUnpaidScheduledAmount($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva - ee.paidCapital - ee.paidInterest - ee.paidCommissionVatIncl) / 100, 2)')
+            ->where('ee.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param int|Projects $project
+     *
+     * @return float
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getPaidScheduledAmount($project)
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('ROUND(SUM(ee.paidCapital + ee.paidInterest + ee.paidCommissionVatIncl) / 100, 2)')
+            ->where('ee.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

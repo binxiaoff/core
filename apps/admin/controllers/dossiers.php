@@ -3160,9 +3160,28 @@ class dossiersController extends bootstrap
                         'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project)
                     ];
 
+                    $unpaidScheduleCount   = 0;
+                    $paidScheduleCount     = 0;
+                    $paidScheduledAmount   = 0;
+                    $unpaidScheduledAmount = 0;
+                    $nextUnpaidSchedule    = null;
                     if (null === $project->getCloseOutNettingDate()) {
                         $latePaymentData           = $this->getLatePaymentsData($project);
-
+                        $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+                        $unpaidScheduleCount       = count($paymentScheduleRepository->findBy([
+                            'idProject'        => $project,
+                            'statusEmprunteur' => [
+                                EcheanciersEmprunteur::STATUS_PENDING,
+                                EcheanciersEmprunteur::STATUS_PARTIALLY_PAID
+                            ]
+                        ]));
+                        $paidScheduleCount         = count($paymentScheduleRepository->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID]));
+                        $nextUnpaidSchedule        = $paymentScheduleRepository->findOneBy(
+                            ['idProject' => $project, 'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]],
+                            ['ordre' => 'ASC']
+                        );
+                        $paidScheduledAmount       = $paymentScheduleRepository->getPaidScheduledAmount($project);
+                        $unpaidScheduledAmount     = $paymentScheduleRepository->getUnpaidScheduledAmount($project);
                     } else {
                         $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
                         $totalAmount            = round(bcadd($closeOutNettingPayment->getCommissionTaxIncl(), bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
@@ -3182,10 +3201,6 @@ class dossiersController extends bootstrap
                     $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
                     $pendingWireTransferIn  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
 
-                    $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-                    $totalScheduleCount        = count($paymentScheduleRepository->findBy(['idProject' => $project]));
-                    $paidScheduleCount         = count($paymentScheduleRepository->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID]));
-
                     $templateData = [
                         'project'                    => $project,
                         'projectLastStatusHistory'   => $projectLastStatusHistory,
@@ -3200,8 +3215,11 @@ class dossiersController extends bootstrap
                         'pendingWireTransferIn'      => $pendingWireTransferIn,
                         'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
                         'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
-                        'totalScheduleCount'         => $totalScheduleCount,
-                        'paidScheduleCount'          => $paidScheduleCount
+                        'nextUnpaidSchedule'         => $nextUnpaidSchedule,
+                        'paidScheduleCount'          => $paidScheduleCount,
+                        'unpaidScheduleCount'        => $unpaidScheduleCount,
+                        'unpaidScheduledAmount'      => $unpaidScheduledAmount,
+                        'paidScheduledAmount'        => $paidScheduledAmount,
                     ];
 
                     $this->render(null, $templateData);
