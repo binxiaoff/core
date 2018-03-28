@@ -42,7 +42,7 @@ class LenderManager
         if (
             $client->isLender()
             && Clients::STATUS_ONLINE === $client->getStatus()
-            && ClientsStatus::VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
+            && ClientsStatus::STATUS_VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
         ) {
             return true;
         }

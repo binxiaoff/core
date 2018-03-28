@@ -187,7 +187,7 @@ class ProjectRequestManager
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
 
-            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
