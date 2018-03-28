@@ -3178,7 +3178,7 @@ class dossiersController extends bootstrap
                             'date'                     => $project->getCloseOutNettingDate(),
                             'label'                    => 'Prêt déchu',
                             'amount'                   => $totalAmount,
-                            'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalRemainingAmount'] ? 'Partiellement' : 'Oui'),
+                            'entrustedToDebtCollector' => (0 == $projectData['entrustedToDebtCollector']) ? 'Non' : ($projectData['entrustedToDebtCollector'] < $projectData['totalOverdueAmount'] ? 'Partiellement' : 'Oui'),
                             'remainingAmount'          => round(bcsub($totalAmount, $paidAmount, 4), 2)
                         ];
                     }

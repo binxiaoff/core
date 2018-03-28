@@ -57,7 +57,7 @@
                     &nbsp;
                 </th>
                 <th class="text-right" style="width: 20%;">
-                    {{ projectData.totalRemainingAmount > 0 ? projectData.totalRemainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                    {{ projectData.totalOverdueAmount > 0 ? projectData.totalOverdueAmount|localizedcurrency('EUR') : 'N/A' }}
                 </th>
             </tr>
             </tfoot>
@@ -72,16 +72,16 @@
             <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
         {% endif %}
 
-        {% if projectData.totalRemainingAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == projectData.projectStatus %}
+        {% if projectData.totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == projectData.projectStatus %}
             {% if pendingWireTransferIn|length > 0 %}
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur ({{ projectData.totalOverdueAmount|localizedcurrency('EUR') }})</button>
                 <div class="text-muted">
                     <small>
                         <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
                     </small>
                 </div>
             {% else %}
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})</button>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur ({{ projectData.totalOverdueAmount|localizedcurrency('EUR') }})</button>
             {% endif %}
         {% endif %}
     </div>
