@@ -318,7 +318,7 @@ class pdfController extends bootstrap
             $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
-            $this->motif = $borrowerManager->getBorrowerBankTransferLabel($project);
+            $this->motif = $borrowerManager->getProjectBankTransferLabel($project);
         } else {
             $this->motif = $this->pdfClient->getLenderPattern($this->pdfClient->id_client);
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);

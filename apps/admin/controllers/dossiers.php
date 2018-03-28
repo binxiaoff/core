@@ -856,10 +856,8 @@ class dossiersController extends bootstrap
             $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
             $this->currencyFormatter     = $this->get('currency_formatter');
 
-            $restFunds              = $projectManager->getRestOfFundsToRelease($project, true);
+            $this->restFunds        = $projectManager->getRestOfFundsToRelease($project, true);
             $this->wireTransferOuts = $project->getWireTransferOuts();
-            $this->restFunds        = $this->currencyFormatter->formatCurrency($restFunds, 'EUR');
-            $this->displayAddButton = $restFunds > 0;
         }
     }
 
@@ -3020,33 +3018,32 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager = $this->get('unilend.service.project_manager');
             /** @var \NumberFormatter $currencyFormatter */
-            $currencyFormatter = $this->get('currency_formatter');
+            $this->currencyFormatter = $this->get('currency_formatter');
 
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
                 $this->project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
-                $client              = $this->project->getIdCompany()->getIdClientOwner();
-                $this->borrowerMotif = $borrowerManager->getBorrowerBankTransferLabel($this->project);
-                $restFunds           = $projectManager->getRestOfFundsToRelease($this->project, true);
+                $this->company       = $this->project->getIdCompany();
+                $this->borrowerMotif = $borrowerManager->getProjectBankTransferLabel($this->project);
+                $this->restFunds     = $projectManager->getRestOfFundsToRelease($this->project, true);
             } else {
+                $this->project       = null;
                 $this->company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->params[1]);
-                $client              = $this->company->getIdClientOwner();
-                $this->borrowerMotif = $borrowerManager->getBorrowerBankTransferLabel($this->company);
+                $this->borrowerMotif = $borrowerManager->getCompanyBankTransferLabel($this->company);
                 $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->company->getIdClientOwner(), WalletType::BORROWER);
-                $restFunds           = $borrowerManager->getRestOfFundsToRelease($wallet);
+                $this->restFunds     = $borrowerManager->getRestOfFundsToRelease($wallet);
 
                 $this->projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $this->company]);
                 if (1 === count($this->projects)) {
                     $this->project = current($this->projects);
                 }
             }
-
+            $client             = $this->company->getIdClientOwner();
             $this->bankAccounts = [$entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client)];
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
                 $this->bankAccounts = array_merge($this->bankAccounts, $partnerManager->getPartnerThirdPartyBankAccounts($this->project->getIdPartner()));
             }
-
-            $this->restFunds = $currencyFormatter->formatCurrency($restFunds, 'EUR');
 
             if ($this->request->isMethod('POST')) {
                 if ($this->request->request->get('date')) {
@@ -3070,7 +3067,7 @@ class dossiersController extends bootstrap
                     die;
                 }
 
-                if ($amount > $restFunds) {
+                if ($amount > $this->restFunds) {
                     $_SESSION['freeow']['title']   = 'Transfert de fonds';
                     $_SESSION['freeow']['message'] = 'Le transfert de fonds n\'a pas été créé. Montant trop élévé.';
                     header('Location: ' . $this->request->server->get('HTTP_REFERER'));

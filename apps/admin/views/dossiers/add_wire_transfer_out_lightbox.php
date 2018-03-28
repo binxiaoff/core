@@ -1,6 +1,6 @@
 <div id="popup">
     <h1>Création du transfert</h1>
-    <p>Fonds restants : <?= $this->restFunds ?></p>
+    <p>Fonds restants : <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR'); ?></p>
     <form method="post" enctype="multipart/form-data" action="/dossiers/add_wire_transfer_out_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
         <table class="formColor">
             <tr>

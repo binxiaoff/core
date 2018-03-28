@@ -1227,12 +1227,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                     <?php if ($this->projects->status >= ProjectsStatus::REMBOURSEMENT) : ?>
                         <h2>
                             Transfert
-                            <?php if ($this->displayAddButton) : ?>
+                            <?php if ($this->restFunds > 0) : ?>
                                 <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager::TRANSFER_OUT_BY_PROJECT ?>/<?= $this->projects->id_project ?>" class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                             <?php endif; ?>
                         </h2>
                         <p>
-                            Fonds restants : <?= $this->restFunds ?>
+                            Fonds restants : <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR'); ?>
                         </p>
                         <?php $this->fireView('blocs/wire_transfer_out_list'); ?>
                     <?php endif; ?>

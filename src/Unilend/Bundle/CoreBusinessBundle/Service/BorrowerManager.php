@@ -23,23 +23,23 @@ class BorrowerManager
     }
 
     /**
-     * @param Projects|Companies $entity
+     * @param Companies $company
      *
      * @return string
      */
-    public function getBorrowerBankTransferLabel($entity)
+    public function getCompanyBankTransferLabel(Companies $company)
     {
-        if ($entity instanceof Projects) {
-            $identity = $entity->getIdProject();
-            $siren    = $entity->getIdCompany()->getSiren();
-        } elseif ($entity instanceof Companies) {
-            $identity = $entity->getIdCompany();
-            $siren    = $entity->getSiren();
-        } else {
-            return '';
-        }
+        return 'UNILEND' . str_pad($company->getIdCompany(), 6, 0, STR_PAD_LEFT) . 'E' . trim($company->getSiren());
+    }
 
-        return 'UNILEND' . str_pad($identity, 6, 0, STR_PAD_LEFT) . 'E' . trim($siren);
+    /**
+     * @param Projects $project
+     *
+     * @return string
+     */
+    public function getProjectBankTransferLabel(Projects $project)
+    {
+        return 'UNILEND' . str_pad($project->getIdProject(), 6, 0, STR_PAD_LEFT) . 'E' . trim($project->getIdCompany()->getSiren());
     }
 
     /**
