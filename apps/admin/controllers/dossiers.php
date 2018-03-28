@@ -2456,24 +2456,6 @@ class dossiersController extends bootstrap
                 die;
             }
 
-            if (null === $companyMainAddress->getDateValidated()) {
-                try {
-                    $this->get('unilend.service.address_manager')->validateBorrowerCompanyAddress($companyMainAddress, $this->projects->id_project);
-                } catch (\Exception $exception) {
-                    $_SESSION['publish_error'] = 'Une erreur s\'est produite pendant la validation de l\'adresse de l\'emprunteur.';
-
-                    $this->get('logger')->error('An exception occured druing validation of borrower address. Message: ' . $exception->getMessage(), [
-                        'method'    => __METHOD__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine(),
-                        'projectId' => $this->projects->id_project
-                    ]);
-
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-                    die;
-                }
-            }
-
             $this->projects->date_publication = $publicationDate->format('Y-m-d H:i:s');
             $this->projects->date_retrait     = $endOfPublicationDate->format('Y-m-d H:i:s');
             $this->projects->update();
