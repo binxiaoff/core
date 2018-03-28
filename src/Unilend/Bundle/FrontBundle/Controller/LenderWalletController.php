@@ -141,8 +141,6 @@ class LenderWalletController extends Controller
     /**
      * @param Request $request
      * @param array   $post
-     *
-     * @throws \Exception
      */
     private function handleWithdrawalPost(Request $request, array $post): void
     {
@@ -162,42 +160,42 @@ class LenderWalletController extends Controller
         $wallet        = $this->getWallet();
 
         if ($client) {
-            /** @var BankAccount $bankAccount */
-            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-            $amount      = $post['amount'];
-            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
+            try {
+                /** @var BankAccount $bankAccount */
+                $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+                $amount      = $post['amount'];
+                $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
 
-            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
+                $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
 
-            $securityPasswordEncoder = $this->get('security.password_encoder');
+                $securityPasswordEncoder = $this->get('security.password_encoder');
 
-            if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
-                $logger->info('Wrong password id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-            } else {
-                if (false === is_numeric($amount)) {
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-                } elseif (null === $bankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-                } elseif ($amount <= 0 || $amount > $this->getUser()->getBalance()) {
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+                if (false === $securityPasswordEncoder->isPasswordValid($this->getUser(), $post['password'])) {
+                    $logger->info('Wrong password id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-password'));
                 } else {
-                    $unusedWelcomeOfferAmount  = $this->get('unilend.service.welcome_offer_manager')->getUnusedWelcomeOfferAmount($client);
-                    $unusedSponseeRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponseeRewardAmount($client);
-                    $unusedSponsorRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponsorRewardAmount($client);
-                    $blockedAmount             = round(bcadd($unusedWelcomeOfferAmount, bcadd($unusedSponseeRewardAmount, $unusedSponsorRewardAmount, 4), 4), 2);
+                    if (false === is_numeric($amount) || $amount <= 0) {
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-amount'));
+                    } elseif (false === $bankAccount instanceof BankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-missing-bank-details'));
+                    } elseif ($amount > $this->getUser()->getBalance()) {
+                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-insufficient-balance'));
+                    } else {
+                        $unusedWelcomeOfferAmount  = $this->get('unilend.service.welcome_offer_manager')->getUnusedWelcomeOfferAmount($client);
+                        $unusedSponseeRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponseeRewardAmount($client);
+                        $unusedSponsorRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponsorRewardAmount($client);
+                        $blockedAmount             = round(bcadd($unusedWelcomeOfferAmount, bcadd($unusedSponseeRewardAmount, $unusedSponsorRewardAmount, 4), 4), 2);
 
-                    if (round(bcadd($amount, $blockedAmount, 4), 2) > $this->getUser()->getBalance()) {
-                        $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-blocked-amount'));
+                        if (round(bcadd($amount, $blockedAmount, 4), 2) > $this->getUser()->getBalance()) {
+                            $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-blocked-amount'));
+                        }
                     }
                 }
-            }
 
-            if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
-            } else {
-                if ($bankAccount) {
-                    try {
+                if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
+                    $logger->info('Wrong parameters submitted, id_client=' . $client->getIdClient() . ' Amount : ' . $post['amount'], ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                } else {
+                    if ($bankAccount) {
                         $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
                         $wireTransferOut        = $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount);
 
@@ -229,14 +227,17 @@ class LenderWalletController extends Controller
                         }
 
                         $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
-                    } catch (\Exception $exception) {
-                        $logger->error('Failed to handle withdrawal operation for client : ' . $client->getIdClient() . 'Error : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                    } else {
+                        $logger->info('No validated bank account found for id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
                         $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                     }
-                } else {
-                    $logger->info('No validated bank account found for id_client=' . $client->getIdClient(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
                 }
+            } catch (\Exception $exception) {
+                $logger->error(
+                    'Failed to handle withdrawal operation for client : ' . $client->getIdClient() . 'Error : ' . $exception->getMessage(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
+                );
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
             }
         }
     }
