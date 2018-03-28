@@ -126,7 +126,7 @@
         <div class="modal-dialog">
             <!-- Form -->
             <form class="modal-dialog validate" action="/dossiers/dechoir_terme" method="post">
-                <input type="hidden" name="project-id" value="{{ projectData.projectId }}">
+                <input type="hidden" name="project-id" value="{{ project.idProject }}">
                 <div class="modal-content">
                     <div class="js-wizard-simple block">
                         <div class="block-header bg-primary">
@@ -195,7 +195,7 @@
         </div>
     </div>
     <div class="modal fade in" id="modal-status-problem">
-        <form class="modal-dialog validate" action="/dossiers/setProblematicStatus/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/dossiers/setProblematicStatus/{{ project.idProject }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -240,7 +240,7 @@
         </form>
     </div>
     <div class="modal fade in" id="modal-debt-collection">
-        <form class="modal-dialog validate" action="/debt_collection_mission/add/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/debt_collection_mission/add/{{ project.idProject }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -293,7 +293,7 @@
         </form>
     </div>
     <div class="modal fade in" id="modal-additional-fees">
-        <form class="modal-dialog validate" action="/debt_collection_mission/addCharge/{{ projectData.projectId }}" method="post">
+        <form class="modal-dialog validate" action="/debt_collection_mission/addCharge/{{ project.idProject }}" method="post">
             <div class="modal-content">
                 <div class="block block-themed remove-margin-b">
                     <div class="block-header bg-primary">
@@ -357,28 +357,39 @@
 
     {% block content %}
         <div class="content">
-            <h2 class="content-heading">Récapitulatif</h2>
+            <h2 class="content-heading">Synthèse du projet</h2>
             <div class="row">
-                {% if projectData.closeOutNettingDate is not empty %}
+                {% if project.getCloseOutNettingDate %}
                     <div class="col-md-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Terme déchu le</h3>
                             </div>
-                            <div class="block-content">
-                                <p class="text-primary">{{ projectData.closeOutNettingDate|localizeddate('short', 'none') }}</p>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate|localizeddate('short', 'none') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-md-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Échéances remboursée</h3>
+                            </div>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ paidScheduleCount }} sur {{ totalScheduleCount }}</p>
                             </div>
                         </div>
                     </div>
                 {% endif %}
-                {% if projectData.totalOverdueAmount > 0 %}
+                {% if totalOverdueAmount > 0 %}
                     <div class="col-md-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Retard Emprunteur</h3>
                             </div>
-                            <div class="block-content">
-                                <p class="text-primary">{{ projectData.totalOverdueAmount|localizedcurrency('EUR') }}</p>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ totalOverdueAmount|localizedcurrency('EUR') }}</p>
                             </div>
                         </div>
                     </div>
@@ -387,8 +398,8 @@
                             <div class="block-header">
                                 <h3 class="block-title">Confié au recouvreur</h3>
                             </div>
-                            <div class="block-content">
-                                <p class="text-primary">{{ projectData.entrustedToDebtCollector > 0 ? projectData.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</p>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ entrustedToDebtCollector > 0 ? entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</p>
                             </div>
                         </div>
                     </div>
@@ -398,29 +409,31 @@
                         <div class="block-header">
                             <h3 class="block-title">Réceptions à traiter</h3>
                         </div>
-                        <div class="block-content">
-                            <p class="text-primary">{{ pendingWireTransferIn|length|localizednumber }}</p>
+                        <div class="block-content text-center">
+                            <p class="text-primary pull-t">{{ pendingWireTransferIn|length|localizednumber }}</p>
                         </div>
                     </div>
                 </div>
-                {% if projectData.collectiveProceeding.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                    {% set companyStatusName = 'company-status_label-' ~ projectData.collectiveProceeding.idStatus.label|replace({'_': '-'}) %}
+                {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+                    {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
                     <div class="col-md-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">{{ companyStatusName|trans }}</h3>
                             </div>
-                            <div class="block-content">
-                                <p class="text-primary">{{ projectData.collectiveProceeding.changedOn|localizeddate('short', 'none') }}</p>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ companyLastStatusHistory.changedOn|localizeddate('short', 'none') }}</p>
                             </div>
                         </div>
                     </div>
                 {% endif %}
             </div>
-            {% include 'dossiers/blocs/details_remboursement/retards.html.twig' %}
-            <div id="debt-colletion" class="block block-rounded">
+            {% if totalOverdueAmount > 0 %}
+                {% include 'dossiers/blocs/details_remboursement/retards.html.twig' %}
+            {% endif %}
+            {% if debtCollectionMissionsData|length > 0 %}
                 {% include 'dossiers/blocs/details_remboursement/recouvrements.html.twig' %}
-            </div>
+            {% endif %}
             <div id="fees" class="block block-rounded">
                 {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
             </div>

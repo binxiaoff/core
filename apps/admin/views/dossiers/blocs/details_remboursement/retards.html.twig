@@ -1,8 +1,8 @@
 <div class="row">
     <div class="col-lg-12">
         <div id="retards" class="block">
-            <div class="block-header bg-primary">
-                <h3>Retards</h3>
+            <div class="block-header">
+                <h3 class="block-title">Retards</h3>
             </div>
             <div class="block-content block-content-full">
                 <table class="table table-bordered table-hover table-header-bg">
@@ -62,25 +62,25 @@
                                 &nbsp;
                             </th>
                             <th class="text-right" style="width: 20%;">
-                                {{ projectData.totalRemainingAmount > 0 ? projectData.totalRemainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                                {{ totalOverdueAmount > 0 ? totalOverdueAmount|localizedcurrency('EUR') : 'N/A' }}
                             </th>
                         </tr>
                         </tfoot>
                     {% endif %}
                 </table>
                 <div class="text-right">
-                    {% if projectData.canBeDeclined %}
+                    {% if canBeDeclined %}
                         <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
                     {% endif %}
 
-                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == projectData.projectStatus %}
+                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == project.status %}
                         <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
                     {% endif %}
 
-                    {% if projectData.totalRemainingAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == projectData.projectStatus %}
+                    {% if totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}
                         {% if pendingWireTransferIn|length > 0 %}
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur
-                                ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})
+                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
                             </button>
                             <div class="text-muted">
                                 <small>
@@ -89,7 +89,7 @@
                             </div>
                         {% else %}
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur
-                                ({{ projectData.totalRemainingAmount|localizedcurrency('EUR') }})
+                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
                             </button>
                         {% endif %}
                     {% endif %}

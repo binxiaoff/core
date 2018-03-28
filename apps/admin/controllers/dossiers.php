@@ -3151,24 +3151,18 @@ class dossiersController extends bootstrap
                         ['idProject' => $project],
                         ['added'=>'DESC', 'idProjectStatusHistory' => 'DESC']
                     );
-                    $lastCompanyStatus             = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')
-                        ->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
+                    $lastCompanyStatus             = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
                     $totalOverdueAmounts           = $projectManager->getOverdueAmounts($project);
 
                     $projectData = [
-                        'projectId'                => $project->getIdProject(),
-                        'siren'                    => $project->getIdCompany()->getSiren(),
-                        'companyStatusLabel'       => $project->getIdCompany()->getIdStatus()->getLabel(),
-                        'projectTitle'             => $project->getTitle(),
                         'totalOverdueAmount'       => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2),
                         'entrustedToDebtCollector' => $missionPaymentScheduleRepository->getEntrustedAmount($project),
-                        'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project),
-                        'closeOutNettingDate'      => $project->getCloseOutNettingDate(),
-                        'collectiveProceeding'     => $lastCompanyStatus
+                        'canBeDeclined'            => $projectCloseOutNettingManager->canBeDeclined($project)
                     ];
 
                     if (null === $project->getCloseOutNettingDate()) {
-                        $latePaymentData = $this->getLatePaymentsData($project);
+                        $latePaymentData           = $this->getLatePaymentsData($project);
+
                     } else {
                         $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
                         $totalAmount            = round(bcadd($closeOutNettingPayment->getCommissionTaxIncl(), bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
@@ -3188,17 +3182,26 @@ class dossiersController extends bootstrap
                     $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
                     $pendingWireTransferIn  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
 
+                    $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+                    $totalScheduleCount        = count($paymentScheduleRepository->findBy(['idProject' => $project]));
+                    $paidScheduleCount         = count($paymentScheduleRepository->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID]));
+
                     $templateData = [
                         'project'                    => $project,
                         'projectLastStatusHistory'   => $projectLastStatusHistory,
-                        'projectData'                => $projectData,
+                        'companyLastStatusHistory'   => $lastCompanyStatus,
+                        'totalOverdueAmount'         => round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2),
+                        'entrustedToDebtCollector'   => $missionPaymentScheduleRepository->getEntrustedAmount($project),
+                        'canBeDeclined'              => $projectCloseOutNettingManager->canBeDeclined($project),
                         'latePaymentsData'           => $latePaymentData,
                         'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
                             ->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
                         'debtCollectionMissionsData' => $debtCollectionMissions,
                         'pendingWireTransferIn'      => $pendingWireTransferIn,
                         'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
-                        'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll()
+                        'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
+                        'totalScheduleCount'         => $totalScheduleCount,
+                        'paidScheduleCount'          => $paidScheduleCount
                     ];
 
                     $this->render(null, $templateData);
