@@ -174,17 +174,17 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function selectPreteursByStatus($status, $where = '', $order = '', $start = '', $nb = ''): array
+    /**
+     * @param int         $status
+     * @param string|null $order
+     * @param int|null    $start
+     * @param int|null    $nb
+     *
+     * @return array
+     */
+    public function selectPreteursByStatus(int $status, ?string $order = null, ?int $start = null, ?int $nb = null): array
     {
-        if ($where != '') {
-            $where = ' AND ' . $where;
-        }
-
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
+        $query = '
             SELECT
               c.*,
               csh.added AS added_status
@@ -192,13 +192,25 @@ class clients extends clients_crud
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id
-            WHERE csh.id_status IN (' . $status . ') AND wt.label = "lender"' .
-              $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            WHERE csh.id_status IN (' . $status . ') AND wt.label = "' . WalletType::LENDER . '"';
 
-        $result   = [];
-        $resultat = $this->bdd->query($sql);
+        if (null !== $order) {
+            $query .= ' 
+                ORDER BY ' . $order;
+        }
 
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
+        if (null !== $start && null !== $nb) {
+            $query .= '
+                LIMIT ' . $start . ', ' . $nb;
+        } elseif (null !== $nb) {
+            $query .= '
+                LIMIT ' . $nb;
+        }
+
+        $result    = [];
+        $statement = $this->bdd->query($query);
+
+        while ($record = $this->bdd->fetch_assoc($statement)) {
             $result[] = $record;
         }
         return $result;
@@ -403,15 +415,14 @@ class clients extends clients_crud
             $oEndDate = new \DateTime('NOW');
         }
 
-        $sQuery = 'SELECT
-                        c.source
-                    FROM
-                        clients c
-                        INNER JOIN companies com on c.id_client = com.id_client_owner
-                    WHERE
-                    com.siren = ' . $sSiren . '
-                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-                    ORDER BY c.added ASC LIMIT 1';
+        $sQuery = '
+            SELECT c.source
+            FROM clients c
+            INNER JOIN companies com on c.id_client = com.id_client_owner
+            WHERE com.siren = ' . $sSiren . '
+              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+            ORDER BY c.added ASC 
+            LIMIT 1';
 
         $rQuery = $this->bdd->query($sQuery);
         return ($this->bdd->result($rQuery, 0));
@@ -424,15 +435,14 @@ class clients extends clients_crud
             $oEndDate = new \DateTime('NOW');
         }
 
-        $sQuery = 'SELECT
-                        c.source
-                    FROM
-                        clients c
-                        INNER JOIN companies com on c.id_client = com.id_client_owner
-                    WHERE
-                    com.siren = ' . $sSiren . '
-                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-                    ORDER BY c.added DESC LIMIT 1';
+        $sQuery = '
+            SELECT c.source
+            FROM clients c
+            INNER JOIN companies com on c.id_client = com.id_client_owner
+            WHERE com.siren = ' . $sSiren . '
+              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+            ORDER BY c.added DESC 
+            LIMIT 1';
 
         $rQuery = $this->bdd->query($sQuery);
         return ($this->bdd->result($rQuery, 0));
@@ -625,7 +635,7 @@ class clients extends clients_crud
               )
             ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
             WHERE csh.id_status IN (:clientStatus)
-              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 80
+              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 800
               AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */

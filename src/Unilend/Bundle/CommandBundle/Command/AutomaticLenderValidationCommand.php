@@ -3,11 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\{
+    InputInterface
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ClientsStatus, Users, UsersHistory, VigilanceRule
+};
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
 {
@@ -38,20 +40,23 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
             );
 
             foreach ($clientsToValidate as $clientData) {
+                $duplicates = [];
                 $client     = $clientRepository->find($clientData['id_client']);
                 $user       = $userRepository->find(Users::USER_ID_CRON);
-                $validation = $lenderValidationManager->validateClient($client, $user);
+                $validation = $lenderValidationManager->validateClient($client, $user, $duplicates);
 
                 if (true !== $validation) {
-                    $logger->warning('Processing client id: ' . $client->getIdClient() . ' - Duplicate client found: ' . json_encode($validation),
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]);
+                    $logger->warning(
+                        'Processing client ID: ' . $client->getIdClient() . ' - Duplicate client found: ' . implode(', ', $duplicates),
+                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
+                    );
                     continue;
                 }
 
                 /** @var \users_history $userHistory */
                 $userHistory = $entityManagerSimulator->getRepository('users_history');
                 $serialize   = serialize(['id_client' => $client->getIdClient(), 'attachment_data' => $clientData]);
-                $userHistory->histo(\users_history::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
+                $userHistory->histo(UsersHistory::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
 
                 /** @var \clients_adresses $clientAddress */
                 $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');

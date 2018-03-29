@@ -67,14 +67,4 @@ class ClientManager
 
         return $initials;
     }
-
-    /**
-     * @param Clients $client
-     *
-     * @return bool
-     */
-    public function isActive(Clients $client): bool
-    {
-        return Clients::STATUS_ONLINE === $client->getStatus();
-    }
 }
