@@ -658,12 +658,7 @@ class preteursController extends bootstrap
                     }
 
                     if (null !== $this->companyEntity->getIdPostalAddress() && isset($_POST['meme-adresse']) && 'on' === $_POST['meme-adresse']) {
-                        $postalAddress = $this->companyEntity->getIdPostalAddress();
-                        $postalAddress->setDateArchived(new \DateTime('NOW'));
-
-                        $this->companyEntity->setIdPostalAddress(null);
-
-                        $entityManager->flush([$postalAddress, $this->companyEntity]);
+                        $addressManager->companyPostalAddressSameAsMainAddress($this->companyEntity);
                     }
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES]);
@@ -1798,7 +1793,12 @@ class preteursController extends bootstrap
     }
 
 
-    private function validateAddress(Clients $client)
+    /**
+     * @param Clients $client
+     *
+     * @throws Exception
+     */
+    private function validateAddress(Clients $client): void
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager        = $this->get('doctrine.orm.entity_manager');
