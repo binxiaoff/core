@@ -286,7 +286,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $clientType   = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
@@ -310,6 +310,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->flush($company);
 
                 $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
+
                 $addressManager = $this->get('unilend.service.address_manager');
                 $addressManager->saveCompanyAddress(
                     $form->get('mainAddress')->get('address')->getData(),
@@ -335,7 +336,8 @@ class LenderSubscriptionController extends Controller
                 $entityManager->commit();
             } catch (\Exception $exception) {
                 $entityManager->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client ', ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(),
+                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]);
             }
 
             $this->addClientToDataLayer($client);
@@ -343,6 +345,7 @@ class LenderSubscriptionController extends Controller
 
             return true;
         }
+
         return false;
     }
 
@@ -542,8 +545,20 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        $client        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneByHash($clientHash);
-        $clientAddress = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneByIdClient($client->getIdClient());
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+
+        if ($client->isNaturalPerson()) {
+            $clientAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneByIdClient($client->getIdClient());
+            $countryId      = $clientAddress->getIdPaysFiscal();
+            $isLivingAbroad = $countryId > PaysV2::COUNTRY_FRANCE;
+        } else {
+            $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $countryId      = $companyAddress->getIdCountry()->getIdPays();
+            $isLivingAbroad = $countryId > PaysV2::COUNTRY_FRANCE;
+        }
+
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
         $form          = $formManager->getBankInformationForm($client);
         $form->handleRequest($request);
@@ -551,7 +566,7 @@ class LenderSubscriptionController extends Controller
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             if ($form->isValid()) {
-                $isValid = $this->handleDocumentsForm($clientAddress, $form, $request->files);
+                $isValid = $this->handleDocumentsForm($form, $request->files, $countryId);
                 if ($isValid) {
                     return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
                 }
@@ -560,13 +575,13 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $isLivingAbroad,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $template['company'] = $company;
         }
 
         return $this->render('lender_subscription/documents.html.twig', $template);
@@ -574,13 +589,15 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @param ClientsAdresses $clientAddress
-     * @param FormInterface   $form
-     * @param FileBag         $fileBag
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     * @param int           $countryId
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function handleDocumentsForm(ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag): bool
+    private function handleDocumentsForm(FormInterface $form, FileBag $fileBag, int $countryId): bool
     {
         $translator  = $this->get('translator');
         /** @var Clients $client */
@@ -610,7 +627,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $this->validateAttachmentsPerson($form, $client, $clientAddress, $fileBag);
+            $this->validateAttachmentsPerson($form, $client, $fileBag, $countryId);
         } else {
             $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
@@ -635,12 +652,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param FormInterface     $form
-     * @param Clients           $client
-     * @param ClientsAdresses   $clientAddress
-     * @param FileBag           $fileBag
+     * @param FormInterface $form
+     * @param Clients       $client
+     * @param FileBag       $fileBag
+     * @param int           $countryId
      */
-    private function validateAttachmentsPerson(FormInterface $form, Clients $client, ClientsAdresses $clientAddress, FileBag $fileBag): void
+    private function validateAttachmentsPerson(FormInterface $form, Clients $client, FileBag $fileBag, int $countryId): void
     {
         $translator         = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
@@ -650,7 +667,7 @@ class LenderSubscriptionController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
+        if ($countryId > PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())) {

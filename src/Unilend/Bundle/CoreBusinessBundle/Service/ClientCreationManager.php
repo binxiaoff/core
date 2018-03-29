@@ -74,6 +74,7 @@ class ClientCreationManager
             $this->walletCreationManager->createWallet($client, $walletType);
 
             $this->entityManager->getConnection()->commit();
+            $this->entityManager->refresh($client);
         } catch (\Exception $exception) {
             $this->logger->error(
                 'Error while creating client account. Message: ' . $exception->getMessage(),

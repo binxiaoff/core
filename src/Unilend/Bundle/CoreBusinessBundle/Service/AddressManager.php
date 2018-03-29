@@ -60,9 +60,9 @@ class AddressManager
                     $this->use($companyAddress);
                     $this->archivePreviousCompanyAddress($company);
                 }
-
-                $this->entityManager->commit();
             }
+
+            $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
             throw $exception;
@@ -106,6 +106,7 @@ class AddressManager
      * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
     {
@@ -126,9 +127,11 @@ class AddressManager
         if (AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
             $newAddress->setDateValidated(new \DateTime('NOW'));
             $this->entityManager->flush($newAddress);
+
+            $this->validateCompanyAddress($newAddress);
             $this->use($newAddress);
 
-            //TODO use validate address method once it is merged
+            //TODO archive pending addresses
         }
     }
 
@@ -207,8 +210,8 @@ class AddressManager
      */
     private function archivePreviousCompanyAddress(Companies $company): void
     {
-        $pendingAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'dateArchived' => null]);
-        foreach ($pendingAddress as $addressToArchive) {
+        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'dateArchived' => null]);
+        foreach ($previousAddress as $addressToArchive) {
             if ($addressToArchive === $company->getIdAddress() || $addressToArchive === $company->getIdPostalAddress()) {
                 continue;
             }
