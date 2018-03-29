@@ -58,7 +58,7 @@ class AddressManager
                 if (null !== $companyAddress) {
                     $this->validateCompanyAddress($companyAddress);
                     $this->use($companyAddress);
-                    $this->archivePreviousCompanyAddress($company);
+                    $this->archivePreviousCompanyAddress($company, $type);
                 }
             }
 
@@ -130,8 +130,7 @@ class AddressManager
 
             $this->validateCompanyAddress($newAddress);
             $this->use($newAddress);
-
-            //TODO archive pending addresses
+            $this->archivePreviousCompanyAddress($company, $type);
         }
     }
 
@@ -204,13 +203,14 @@ class AddressManager
     }
 
     /**
-     * @param Companies $company
+     * @param Companies   $company
+     * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function archivePreviousCompanyAddress(Companies $company): void
+    private function archivePreviousCompanyAddress(Companies $company, AddressType $type): void
     {
-        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'dateArchived' => null]);
+        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'idType' => $type, 'dateArchived' => null]);
         foreach ($previousAddress as $addressToArchive) {
             if ($addressToArchive === $company->getIdAddress() || $addressToArchive === $company->getIdPostalAddress()) {
                 continue;

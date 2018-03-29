@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
 };
@@ -430,8 +429,8 @@ class LenderProfileController extends Controller
      */
     private function handleCompanyAddress(Companies $company, FormInterface $form, string $type): bool
     {
-        $translator    = $this->get('translator');
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $translator     = $this->get('translator');
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
         $addressManager = $this->get('unilend.service.address_manager');
 
         $zip       = $form->get('zip')->getData();
@@ -456,10 +455,13 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid()) {
-            if ($form->get('samePostalAddress')->getData()) {
+            if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
                 $addressManager->companyPostalAddressSameAsMainAddress($company);
 
-            } elseif (false === $form->get('samePostalAddress')->getData()) {
+            } elseif (
+                false === $form->has('samePostalAddress')
+                || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
+            ) {
                 $addressManager->saveCompanyAddress(
                     $form->get('address')->getData(),
                     $form->get('zip')->getData(),
