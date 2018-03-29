@@ -304,25 +304,27 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <h3>Adresse fiscale validée</h3>
-                <div class="row">
-                    <div class="form-group col-md-12">
-                        <label for="adresse">Adresse</label>
-                        <input type="text" name="adresse" id="adresse" value="<?= null !== $this->companyEntity->getIdAddress() ? $this->companyEntity->getIdAddress()->getAddress() : '' ?>" class="form-control">
+            <?php if (null !== $this->companyEntity->getIdAddress()) : ?>
+                <div class="col-md-6">
+                    <h3>Adresse fiscale validée</h3>
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label for="adresse">Adresse</label>
+                            <input type="text" name="adresse" id="adresse" value="<?= $this->companyEntity->getIdAddress()->getAddress() ?>" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="cp">Code postal</label>
+                            <input type="text" name="cp" id="cp" value="<?= $this->companyEntity->getIdAddress()->getZip() ?>" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="ville">Ville</label>
+                            <input type="text" name="ville" id="ville" value="<?= $this->companyEntity->getIdAddress()->getCity() ?>" class="form-control">
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="form-group col-md-6">
-                        <label for="cp">Code postal</label>
-                        <input type="text" name="cp" id="cp" value="<?= null !== $this->companyEntity->getIdAddress() ? $this->companyEntity->getIdAddress()->getZip() : '' ?>" class="form-control">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="ville">Ville</label>
-                        <input type="text" name="ville" id="ville" value="<?= null !== $this->companyEntity->getIdAddress() ? $this->companyEntity->getIdAddress()->getCity() : '' ?>" class="form-control">
-                    </div>
-                </div>
-            </div>
+            <? endif; ?>
             <?php if (null !== $this->lastModifiedCompanyAddress && $this->lastModifiedCompanyAddress !== $this->companyEntity->getIdAddress()): ?>
                 <div class="col-md-6">
                     <h3>Adresse fiscale en attente de validation</h3>
@@ -349,20 +351,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 <div class="row meme-adresse" <?= (null !== $this->companyEntity->getIdPostalAddress() ? '' : 'style="display:none;"') ?>>
                     <div class="form-group col-md-6">
                         <label for="adresse">Adresse postale</label>
-                        <input type="text" name="adresse" id="adresse" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getAddress() : '' ?>" class="form-control">
+                        <input type="text" name="adresse2" id="adresse2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getAddress() : '' ?>" class="form-control">
                     </div>
                 </div>
                 <div class="row meme-adresse" <?= (null !== $this->companyEntity->getIdPostalAddress() ? '' : 'style="display:none;"' )?>>
                     <div class="form-group col-md-3">
                         <label for="cp">Code postal</label>
-                        <input type="text" name="cp" id="cp" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getZip(): '' ?>" class="form-control">
+                        <input type="text" name="cp2" id="cp2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getZip(): '' ?>" class="form-control">
                     </div>
                     <div class="form-group col-md-3">
                         <label for="ville">Ville</label>
-                        <input type="text" name="ville" id="ville" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getCity() : '' ?>" class="form-control">
+                        <input type="text" name="ville2" id="ville2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getCity() : '' ?>" class="form-control">
                     </div>
                 </div>
-                <div class="row" <?= (null === $this->companyEntity->getIdPostalAddress() ? '' : 'style="display:none;"') ?>>
+                <div class="row">
                     <div class="form-group col-md-12">
                         <input type="checkbox" name="meme-adresse" id="meme-adresse" <?= (null === $this->companyEntity->getIdPostalAddress() ? 'checked' : '') ?>>
                         <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale </label>

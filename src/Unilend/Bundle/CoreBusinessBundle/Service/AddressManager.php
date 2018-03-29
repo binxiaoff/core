@@ -110,21 +110,18 @@ class AddressManager
      */
     private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
     {
-        $companyAddress = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
+        $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
 
         if (
-            null === $companyAddress
-            || (
-                $address !== $companyAddress->getAddress()
-                || $zip !== $companyAddress->getZip()
-                || $city !== $companyAddress->getCity()
-                || $country !== $companyAddress->getIdCountry()
-            )
+            null === $companyAddress && null === $lastModifiedAddress
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->addressDataIsDifferent($companyAddress, $address, $zip, $city, $country) && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
         ) {
             $newAddress = $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
         }
 
-        if (AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
+        if (isset($newAddress) && AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
             $newAddress->setDateValidated(new \DateTime('NOW'));
             $this->entityManager->flush($newAddress);
 

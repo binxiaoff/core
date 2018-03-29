@@ -139,7 +139,12 @@ class preteursController extends bootstrap
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                $this->companyAddress = $this->companyEntity->getIdAddress();
+                if (null === $this->companyAddress) {
+                    $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedCompanyAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                }
             }
 
             $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
@@ -337,7 +342,6 @@ class preteursController extends bootstrap
                 $this->lastModifiedCompanyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
 
                 $this->meme_adresse_fiscal = null === $this->companyEntity->getIdPostalAddress();
-
 
                 $this->settings->get("Liste deroulante origine des fonds societe", 'type');
                 $this->origine_fonds = $this->settings->value;
@@ -588,15 +592,6 @@ class preteursController extends bootstrap
                     $this->companies->siret        = $_POST['siret']; //(19/11/2014)
                     $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
                     $this->companies->tribunal_com = $_POST['tribunal_com'];
-
-                    if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
-                        $addressManager->saveCompanyAddress($_POST['adresse'], $_POST['cp'], $_POST['ville'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
-                    }
-
-                    if (false === empty($_POST['adresse2']) && false === empty($_POST['ville2']) && false === empty($_POST['cp2'])) {
-                        $addressManager->saveCompanyAddress($_POST['adresse'], $_POST['cp'], $_POST['ville'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_POSTAL_ADDRESS);
-                    }
-
                     $this->companies->status_client = $_POST['enterprise'];
 
                     $this->clients->civilite = $_POST['civilite_e'];
@@ -652,8 +647,24 @@ class preteursController extends bootstrap
                     }
 
                     $this->clients->update();
-                    $this->clients_adresses->update();
                     $this->companies->update();
+
+                    if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
+                        $addressManager->saveCompanyAddress($_POST['adresse'], $_POST['cp'], $_POST['ville'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                    }
+
+                    if (false === empty($_POST['adresse2']) && false === empty($_POST['ville2']) && false === empty($_POST['cp2']) && empty($_POST['meme-adresse'])) {
+                        $addressManager->saveCompanyAddress($_POST['adresse2'], $_POST['cp2'], $_POST['ville2'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_POSTAL_ADDRESS);
+                    }
+
+                    if (null !== $this->companyEntity->getIdPostalAddress() && isset($_POST['meme-adresse']) && 'on' === $_POST['meme-adresse']) {
+                        $postalAddress = $this->companyEntity->getIdPostalAddress();
+                        $postalAddress->setDateArchived(new \DateTime('NOW'));
+
+                        $this->companyEntity->setIdPostalAddress(null);
+
+                        $entityManager->flush([$postalAddress, $this->companyEntity]);
+                    }
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES]);
                     $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $this->userEntity->getIdUser(), $serialize);

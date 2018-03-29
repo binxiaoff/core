@@ -19,6 +19,8 @@ class CompanyAddressRepository extends EntityRepository
      */
     public function findLastModifiedCompanyAddressByType($idCompany, $type): ?CompanyAddress
     {
+        $typeLabel = $type instanceof AddressType ? $type->getLabel() : $type;
+
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
             ->select('ca', 'COALESCE(ca.updated, ca.datePending) AS HIDDEN dateOrder')
@@ -28,7 +30,7 @@ class CompanyAddressRepository extends EntityRepository
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('dateOrder', 'DESC')
             ->setParameter('idCompany', $idCompany)
-            ->setParameter('type', $type)
+            ->setParameter('type', $typeLabel)
             ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
