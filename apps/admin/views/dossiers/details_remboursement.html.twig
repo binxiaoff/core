@@ -117,6 +117,36 @@
                 var block = $('#modal-close-out-netting').find('.block')
                 App.blocks(block, 'state_loading')
             })
+
+            $(document).on('change', 'input[name="auto-repayment"]', function () {
+                if (this.checked) {
+                    if (confirm('Voulez-vous activer le remboursement automatique ?')) {
+                        autoRepayment(true)
+                    } else {
+                        $(this).prop('checked', false)
+                    }
+                } else {
+                    if (confirm('Voulez-vous desactiver le remboursement automatique ?')) {
+                        autoRepayment(false)
+                    } else {
+                        $(this).prop('checked', true)
+                    }
+                }
+            })
+
+            var autoRepayment = function (onOff) {
+                $.post("{{ app.adminUrl }}/dossiers/switch_auto_repayment_ajax/{{ project.idProject }}", {
+                    switch: onOff
+                }).done(function (data) {
+                    if (data.success == false) {
+                        var errorMessage = ''
+                        data.errors.forEach(function(element) {
+                            errorMessage += element
+                        })
+                        alert(errorMessage)
+                    }
+                });
+            }
         })
     </script>
 {% endblock %}
@@ -349,6 +379,11 @@
             <span class="label push-10-l ui-project-status-{{ project.status }}-bg ui-company-status-{{ project.idCompany.idStatus.label }}-bg">
                 {{ projectLastStatusHistory.idProjectStatus.label }}
             </span>
+            <br>
+                <label class="css-input switch switch-sm switch-primary">
+                    <input type="checkbox" name="auto-repayment" {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
+                    Remboursement automatique
+                </label>
         </div>
         <h1 class="page-heading push">
             Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
@@ -380,11 +415,11 @@
                                 <div class="row items-push text-center pull-t">
                                     <div class="col-xs-6 border-r">
                                         <div class="text-primary">{{ paidScheduleCount }}</div>
-                                        <div class="h5 font-w300 text-muted">remboursées</div>
+                                        <div class="text-muted">remboursées</div>
                                     </div>
                                     <div class="col-xs-6">
                                         <div class="text-primary">{{ unpaidScheduleCount }}</div>
-                                        <div class="h5 font-w300 text-muted">à venir</div>
+                                        <div class="text-muted">à venir</div>
                                     </div>
                                 </div>
                             </div>
@@ -393,17 +428,17 @@
                     <div class="col-md-2">
                         <div class="block">
                             <div class="block-header">
-                                <h3 class="block-title">Montant d'échéances</h3>
+                                <h3 class="block-title">Montant remboursement</h3>
                             </div>
                             <div class="block-content">
                                 <div class="row items-push text-center pull-t">
                                     <div class="col-xs-6 border-r">
                                         <div class="text-primary">{{ paidScheduledAmount|localizedcurrency('EUR') }}</div>
-                                        <div class="h5 font-w300 text-muted">remboursés</div>
+                                        <div class="text-muted">remboursés</div>
                                     </div>
                                     <div class="col-xs-6">
                                         <div class="text-primary">{{ unpaidScheduledAmount|localizedcurrency('EUR') }}</div>
-                                        <div class="h5 font-w300 text-muted">à percevoir</div>
+                                        <div class="text-muted">à percevoir</div>
                                     </div>
                                 </div>
                             </div>
@@ -472,12 +507,8 @@
             {% if debtCollectionMissionsData|length > 0 %}
                 {% include 'dossiers/blocs/details_remboursement/recouvrements.html.twig' %}
             {% endif %}
-            <div id="fees" class="block block-rounded">
-                {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
-            </div>
-            <div id="receptions" class="block block-rounded">
-                {% include 'dossiers/blocs/details_remboursement/receptions.html.twig' %}
-            </div>
+            {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
+            {% include 'dossiers/blocs/details_remboursement/receptions.html.twig' %}
         </div>
     {% endblock %}
 {% endif %}

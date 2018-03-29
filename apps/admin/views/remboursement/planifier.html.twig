@@ -85,9 +85,9 @@
         <a href="/dossiers/details_remboursement/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
     </div>
     <div class="pull-right">
-        <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
+        <small>SIREN : <a href="/emprunteurs/edit/{{ reception.idProject.idCompany.idClientOwner.idClient }}">{{ reception.idProject.idCompany.siren }}</a></small>
         <small>|</small>
-        <small>ID Projet : {{ reception.idProject.idProject }}</small>
+        <small>ID Projet : <a href="/dossiers/edit/{{ reception.idProject.idProject }}">{{ reception.idProject.idProject }}</a></small>
         <span class="label push-10-l ui-project-status-{{ reception.idProject.status }}-bg ui-company-status-{{ reception.idProject.idCompany.idStatus.label }}-bg">{{ projectStatus }}</span>
     </div>
     <h1 class="h3" style="clear:both;margin:30px 0 30px;">
@@ -205,6 +205,25 @@
                                 <p>Ce projet n'a pas de mission de recouvrement.</p>
                             {% endif %}
                             <div class="push"></div>
+                            {% if project.getCloseOutNettingDate is empty %}
+                                <h4 class="font-w400 push-20">Mode du remboursement</h4>
+                                <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <select class="form-control required" name="repayment-mode" required>
+                                            <option value="">Selectionner un mode</option>
+                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') }}">
+                                                Remboursement normal
+                                            </option>
+                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_LATE') }}">
+                                                Remboursement de régularisation
+                                            </option>
+                                            <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }}">
+                                                Remboursement anticipé
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            {% endif %}
                             <h4 class="font-w400 push-20">Date du remboursement</h4>
                             <div class="row">
                                 <div class="form-group col-md-12">

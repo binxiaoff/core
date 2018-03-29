@@ -3231,6 +3231,49 @@ class dossiersController extends bootstrap
         die;
     }
 
+    public function _switch_auto_repayment_ajax()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        $error = [];
+        if (
+            $userManager->isGrantedRisk($this->userEntity)
+            || (isset($this->params[1]) && 'risk' === $this->params[1] && $userManager->isUserGroupIT($this->userEntity))
+        ) {
+            if ($this->request->isXmlHttpRequest() && $this->request->isMethod(\Symfony\Component\HttpFoundation\Request::METHOD_POST)) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+                $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
+                /** @var \Doctrine\ORM\EntityManager $entityManager */
+                $entityManager = $this->get('doctrine.orm.entity_manager');
+
+                $switch = $this->request->request->getBoolean('switch');
+
+                if (false === empty($this->params[0]) && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($this->params[0], FILTER_VALIDATE_INT))) {
+                    if ($switch) {
+                        $projectRepaymentTaskManager->enableAutomaticRepayment($project);
+                    } else {
+                        $projectRepaymentTaskManager->disableAutomaticRepayment($project);
+                    }
+                } else {
+                    $error[] = 'ID projet invalide.';
+                }
+            } else {
+                $error[] = 'accès non autorisé.';
+            }
+        } else {
+            $error[] = 'accès non autorisé.';
+        }
+
+        echo json_encode([
+            'success' => empty($error),
+            'errors'   => $error
+        ]);
+    }
+
     /**
      * @param Projects $project
      *
