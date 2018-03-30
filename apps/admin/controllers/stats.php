@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, CompanyRating, OperationType, Product, ProjectProductAssessment, Projects, Zones
+    Bids, Clients, ClientsAdresses, ClientsStatus, CompanyRating, OperationType, PaysV2, Product, ProjectProductAssessment, Projects, TaxType, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
@@ -28,14 +28,12 @@ class statsController extends bootstrap
     // Ressort un csv avec les process des users
     public function _etape_inscription()
     {
-        // Récup des dates
         if (isset($_POST['date1']) && $_POST['date1'] != '') {
             $d1    = explode('/', $_POST['date1']);
             $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
         } else {
             $_POST['date1'] = date('d/m/Y', strtotime('first day of this month'));
             $date1          = date('Y-m-d', strtotime('first day of this month'));
-
         }
 
         if (isset($_POST['date2']) && $_POST['date2'] != '') {
@@ -44,32 +42,32 @@ class statsController extends bootstrap
         } else {
             $_POST['date2'] = date('d/m/Y', strtotime('last day of this month'));
             $date2          = date('Y-m-d', strtotime('last day of this month'));
-
         }
 
         $sql = '
             SELECT
-                c.id_client,
-                c.nom,
-                c.prenom,
-                c.email,
-                c.telephone,
-                c.mobile,
-                c.added,
-                c.etape_inscription_preteur,
-                c.source,
-                c.source2
+              c.id_client,
+              c.nom,
+              c.prenom,
+              c.email,
+              c.telephone,
+              c.mobile,
+              c.added,
+              c.etape_inscription_preteur,
+              c.source,
+              c.source2
             FROM clients c
             INNER JOIN wallet w ON c.id_client = w.id_client
-            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             WHERE c.etape_inscription_preteur > 0 
-                AND c.status = ' . Clients::STATUS_ONLINE . '
-                AND c.added >= "' . $date1 . ' 00:00:00"
-                AND c.added <= "' . $date2 . ' 23:59:59"';
+              AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
+              AND c.added >= "' . $date1 . ' 00:00:00"
+              AND c.added <= "' . $date2 . ' 23:59:59"';
 
         $result = $this->bdd->query($sql);
 
-        $this->L_clients = array();
+        $this->L_clients = [];
         while ($record = $this->bdd->fetch_assoc($result)) {
             $this->L_clients[] = $record;
         }
@@ -81,55 +79,23 @@ class statsController extends bootstrap
             header('Content-type: application/vnd.ms-excel');
             header('Content-disposition: attachment; filename="Export_etape_inscription.csv"');
 
-            if ($_POST['spy_date1'] != '') {
-                $d1    = explode('/', $_POST['spy_date1']);
-                $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
-            } else {
-                $date1 = date('Y-m-d', strtotime('first day of this month'));
-            }
-
-            if ($_POST['spy_date2'] != '') {
-                $d2    = explode('/', $_POST['spy_date2']);
-                $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
-            } else {
-                $date2 = date('Y-m-d', strtotime('last day of this month'));
-            }
-
-            $sql = '
-                SELECT
-                    c.id_client,
-                    c.nom,
-                    c.prenom,
-                    c.email,
-                    c.telephone,
-                    c.mobile,
-                    c.added,
-                    c.etape_inscription_preteur,
-                    c.source,
-                    c.source2
-                FROM clients c
-                INNER JOIN wallet w ON c.id_client = w.id_client
-                INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER . '"
-                WHERE c.etape_inscription_preteur > 0 
-                    AND c.status = ' . Clients::STATUS_ONLINE . ' 
-                    AND c.added >= "' . $date1 . ' 00:00:00"
-                    AND c.added <= "' . $date2 . ' 23:59:59"';
-
-            $result = $this->bdd->query($sql);
-
-            $this->L_clients = array();
-            while ($record = $this->bdd->fetch_assoc($result)) {
-                $this->L_clients[] = $record;
-            }
-
-            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2;\n";
+            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2\n";
 
             foreach ($this->L_clients as $u) {
-                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'],
-                        'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
+                $csv .= implode(';', [
+                    $u['id_client'],
+                    $u['nom'],
+                    $u['prenom'],
+                    $u['email'],
+                    $u['telephone'] . ' ' . $u['mobile'],
+                    $this->dates->formatDate($u['added'], 'd/m/Y'),
+                    $u['etape_inscription_preteur'],
+                    $u['source'],
+                    $u['source2']
+                ]) . "\n";
             }
 
-            print($csv);
+            echo $csv;
         }
     }
 

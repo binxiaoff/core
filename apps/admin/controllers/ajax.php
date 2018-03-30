@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -272,7 +272,7 @@ class ajaxController extends bootstrap
                     $errors[] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $client->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+                    $duplicates       = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
                     if (false === empty($duplicates)) {
                         $errors[] = 'Cette adresse email est déjà utilisée par un autre compte';

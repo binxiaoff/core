@@ -431,7 +431,8 @@ class partenairesController extends bootstrap
             $data = 'delete';
         } elseif ($companyClient instanceof CompanyClient && $companyClient->getId()) {
             if (in_array($action, ['activate', 'deactivate'])) {
-                $data = $companyClient->getIdClient()->getStatus() ? 'active' : 'inactive';
+                $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+                $data         = ClientsStatus::STATUS_VALIDATED === $clientStatus ? 'active' : 'inactive';
             } else {
                 $data = [
                     $companyClient->getIdClient()->getNom(),
@@ -579,14 +580,12 @@ class partenairesController extends bootstrap
             $companyClientId = $companyClient->getId();
 
             try {
-                $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_DISABLED);
 
                 $entityManager->remove($companyClient);
-                $entityManager->flush([$companyClient->getIdClient(), $companyClient]);
+                $entityManager->flush($companyClient);
 
                 return $companyClientId;
             } catch (ORMException $exception) {
@@ -623,22 +622,20 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        if ('activate' === $request->request->get('action') && Clients::STATUS_ONLINE !== $companyClient->getIdClient()->getStatus()) {
+        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+
+        if ('activate' === $request->request->get('action') && ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $duplicates        = $clientsRepository->findBy(['email' => $companyClient->getIdClient()->getEmail(), 'status' => Clients::STATUS_ONLINE]);
+            $duplicates        = $clientsRepository->findByEmailAndStatus($companyClient->getIdClient()->getEmail(), ClientsStatus::GRANTED_LOGIN);
 
             if (count($duplicates)) {
                 $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
             } else {
-                $companyClient->getIdClient()->setStatus(Clients::STATUS_ONLINE);
-
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_VALIDATED);
             }
         } elseif ('deactivate' === $request->request->get('action')) {
-            $companyClient->getIdClient()->setStatus(Clients::STATUS_OFFLINE);
-
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             $clientStatusManager->addClientStatus($companyClient->getIdClient(), $this->userEntity->getIdUser(), ClientsStatus::STATUS_DISABLED);
@@ -680,7 +677,9 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        if (Clients::STATUS_ONLINE !== $companyClient->getIdClient()->getStatus()) {
+        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+
+        if (ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
             $errors[] = 'Cet utilisateur est désactivé. Vous devez d’abord le passer en ligne pour lui envoyer le mail de réinitialisation de mot de passe.';
             return null;
         }
@@ -746,8 +745,9 @@ class partenairesController extends bootstrap
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $existingEmail     = $clientsRepository->existEmail($email, Clients::STATUS_ONLINE);
-        if ($existingEmail && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
+        $duplicates        = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+
+        if (false === empty($duplicates) && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
             $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
         }
         if (empty($agency)) {
@@ -755,6 +755,7 @@ class partenairesController extends bootstrap
         }
         $companiesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
         $agency              = $companiesRepository->find($agency);
+
         if (null === $agency) {
             $errors[] = 'Agence de rattachement inconnue';
         }
@@ -768,10 +769,7 @@ class partenairesController extends bootstrap
         if (empty($errors)) {
             if (null === $companyClient->getIdClient()) {
                 $client = new Clients();
-                $client
-                    ->setIdLangue('fr')
-                    ->setSlug($this->ficelle->generateSlug($firstName . '-' . $lastName))
-                    ->setStatus(Clients::STATUS_ONLINE);
+                $client->setIdLangue('fr');
 
                 $companyClient->setIdClient($client);
             }

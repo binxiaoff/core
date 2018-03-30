@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, PaysV2, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet
+    Clients, ClientsStatus, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, PaysV2, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet
 };
 use Unilend\librairies\CacheKeys;
 
@@ -1137,15 +1137,18 @@ class OperationRepository extends EntityRepository
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($groupByProvision) {
-            $queryBuilder->addSelect('CASE WHEN (o.idBackpayline IS NOT NULL) THEN \'creditCard\' ELSE \'wireTransferIn\' END AS provisionType')
+            $queryBuilder
+                ->addSelect('CASE WHEN (o.idBackpayline IS NOT NULL) THEN \'creditCard\' ELSE \'wireTransferIn\' END AS provisionType')
                 ->groupBy('provisionType');
         }
 
         if ($onlineLenders) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'o.idWalletCreditor = w.id')
+            $queryBuilder
+                ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'o.idWalletCreditor = w.id')
                 ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-                ->andWhere('c.status = :online')
-                ->setParameter('online', Clients::STATUS_ONLINE);
+                ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+                ->andWhere('csh.idStatus IN (:onlineStatus)')
+                ->setParameter('onlineStatus', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY);
         }
 
         return $queryBuilder->getQuery()->getArrayResult();

@@ -43,7 +43,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
         $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS, 'added_status DESC');
         foreach ($lenders as $lender) {
             $statusDate = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
@@ -55,7 +55,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
             }
         }
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS_REMINDER, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS_REMINDER, 'added_status DESC');
         foreach ($lenders as $lender) {
             $sendReminder        = false;
             $reminder            = null;

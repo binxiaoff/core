@@ -1,63 +1,10 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory as UsersHistoryEntity;
 
 class users_history extends users_history_crud
 {
-    const FORM_ID_LENDER = 3;
-    const FORM_NAME_TAX_EXEMPTION = 'modification exoneration fiscale';
-
-    public function __construct($bdd, $params = '')
-    {
-        parent::__construct($bdd, $params);
-    }
-
-    function get($id, $field = 'id_user_history')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_user_history')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -75,7 +22,7 @@ class users_history extends users_history_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -87,14 +34,14 @@ class users_history extends users_history_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_user_history')
+    public function exist($id, $field = 'id_user_history')
     {
         $sql    = 'SELECT * FROM `users_history` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    function histo($id_form, $nom_form, $id_user, $serialize)
+    public function histo($id_form, $nom_form, $id_user, $serialize)
     {
         $this->id_form   = $id_form;
         $this->nom_form  = $nom_form;
@@ -117,8 +64,8 @@ class users_history extends users_history_crud
             ->where('id_form = :id_form')
             ->andWhere('nom_form = :form_name')
             ->andWhere('serialize like \'%' . $clientIdPattern . '%\'')
-            ->setParameter('id_form', self::FORM_ID_LENDER, \PDO::PARAM_INT)
-            ->setParameter('form_name', self::FORM_NAME_TAX_EXEMPTION, \PDO::PARAM_STR)
+            ->setParameter('id_form', UsersHistoryEntity::FORM_ID_LENDER, \PDO::PARAM_INT)
+            ->setParameter('form_name', UsersHistoryEntity::FORM_NAME_TAX_EXEMPTION, \PDO::PARAM_STR)
             ->orderBy('added', 'DESC');
 
         /** @var \Doctrine\DBAL\Driver\Statement $statement */
