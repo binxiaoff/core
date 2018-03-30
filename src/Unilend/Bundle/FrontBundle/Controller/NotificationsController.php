@@ -1,17 +1,17 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Security, Method
+};
+use Symfony\Component\HttpFoundation\{
+    Request, JsonResponse
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class NotificationsController extends Controller
 {
@@ -21,9 +21,10 @@ class NotificationsController extends Controller
      * @Method("POST")
      *
      * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function updateAction(Request $request)
+    public function updateAction(Request $request): JsonResponse
     {
         $action = $request->request->get('action');
         $list   = $request->request->get('list');
@@ -36,13 +37,11 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var NotificationsRepository $notificationsRepository */
-        $notificationsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Notifications');
         /** @var UserLender $user */
-        $user   = $this->getUser();
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+        $user                    = $this->getUser();
+        $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
 
         switch ($action) {
             case 'all_read':
@@ -71,9 +70,10 @@ class NotificationsController extends Controller
      * @Method("GET")
      *
      * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function paginationAction(Request $request)
+    public function paginationAction(Request $request): JsonResponse
     {
         $perPage     = $request->query->getInt('perPage');
         $currentPage = $request->query->getInt('currentPage');
@@ -86,16 +86,13 @@ class NotificationsController extends Controller
             ]);
         }
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var NotificationDisplayManager $notificationsDisplayManager */
-        $notificationsDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
         /** @var UserLender $user */
-        $user   = $this->getUser();
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
-
-        $start  = $perPage * ($currentPage - 1) + 1;
-        $length = $perPage;
+        $user                        = $this->getUser();
+        $entityManager               = $this->get('doctrine.orm.entity_manager');
+        $notificationsDisplayManager = $this->get('unilend.frontbundle.notification_display_manager');
+        $wallet                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+        $start                       = $perPage * ($currentPage - 1) + 1;
+        $length                      = $perPage;
 
         return new JsonResponse([
             'notifications' => $notificationsDisplayManager->getLenderNotifications($wallet->getIdClient(), $start, $length),

@@ -22,9 +22,6 @@ class Clients
     const TYPE_PERSON_FOREIGNER       = 3;
     const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
-    const STATUS_OFFLINE  = 0;
-    const STATUS_ONLINE   = 1;
-
     const SUBSCRIPTION_STEP_PERSONAL_INFORMATION = 1;
     const SUBSCRIPTION_STEP_DOCUMENTS            = 2;
     const SUBSCRIPTION_STEP_MONEY_DEPOSIT        = 3;
@@ -254,13 +251,6 @@ class Clients
      * @ORM\Column(name="optin2", type="integer", nullable=true)
      */
     private $optin2;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=true)
-     */
-    private $status;
 
     /**
      * @var ClientsStatusHistory
@@ -1054,30 +1044,6 @@ class Clients
     public function getOptin2()
     {
         return $this->optin2;
-    }
-
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return Clients
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
     }
 
     /**

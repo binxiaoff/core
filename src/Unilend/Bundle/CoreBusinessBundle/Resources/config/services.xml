@@ -34,12 +34,9 @@
         </service>
 
         <service id="unilend.service.client_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ClientManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.client_settings_manager"/>
             <argument type="service" id="unilend.service.terms_of_sale_manager"/>
-            <argument type="service" id="security.token_storage"/>
-            <argument type="service" id="router"/>
             <argument type="service" id="logger"/>
         </service>
 

@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Clients, Companies, CompanyStatus, PaysV2, Zones
+    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, Zones
 };
 
 class emprunteursController extends bootstrap
@@ -95,7 +95,7 @@ class emprunteursController extends bootstrap
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $this->clients->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+                    $duplicates       = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
                     if (false === empty($duplicates)) {
                         $_SESSION['error_email_exist'] = 'Cette adresse email est déjà utilisée par un autre compte';
@@ -123,7 +123,7 @@ class emprunteursController extends bootstrap
                 $this->companies->update();
 
                 if (empty($_POST['adresse']) || empty($_POST['ville']) || empty($_POST['cp'])) {
-                    $_SESSION['error_company_address'] = 'L\'addresse de l\'entreprise doit être complète pour être enregistrée.';
+                    $_SESSION['error_company_address'] = 'L\'adresse de l\'entreprise doit être complète pour être enregistrée.';
 
                     header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     exit;

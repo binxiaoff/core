@@ -37,16 +37,12 @@ class LenderManager
      *
      * @return bool
      */
-    public function canBid(Clients $client)
+    public function canBid(Clients $client): bool
     {
-        if (
+        return (
             $client->isLender()
-            && Clients::STATUS_ONLINE === $client->getStatus()
-            && ClientsStatus::VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
-        ) {
-            return true;
-        }
-        return false;
+            && ClientsStatus::STATUS_VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
+       );
     }
 
     /**

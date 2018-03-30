@@ -18,9 +18,11 @@
                     {% include 'partials/site_search.html.twig' %}
 
                     <div class="site-user">
-                        <a href="{{ path('lender_wallet_deposit') }}" class="site-user-balance">
-                            <span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span>
-                        </a><!-- /.site-user-balance -->
+                        {% if app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') %}
+                            <a href="{{ path('lender_wallet_deposit') }}" class="site-user-balance">
+                                <span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span>
+                            </a><!-- /.site-user-balance -->
+                        {% endif %}
 
                         <div class="site-user-profile">
                             <div class="profile-avatar">
@@ -29,13 +31,13 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
 
-                            {% if app.user.unreadNotificationsCount is defined %}
+                            {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') and app.user.notifications|length > 0 %}
                                 <a href="javascript:;" class="profile-notifications" data-usernotificationsdrop>
                                     <span data-usernotifications-unreadcount></span>
                                 </a><!-- /.profile-notifications -->
                             {% endif %}
 
-                            <div class="profile-name"><a href="{{ path('lender_dashboard') }}" class="c-t1">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %} </a></div>
+                            <div class="profile-name"><a href="{{ path('lender_dashboard') }}" class="c-t1">{% trans with {'%firstName%' : app.user.firstName} %} header-connected_greeting {% endtrans %}</a></div>
 
                             <div class="profile-balance">
                                 <a href="{{ path('lender_wallet_deposit') }}">{% trans with {'%balance%' : app.user.balance|default(0)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</a>

@@ -67,7 +67,7 @@ class sfpmeiController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName, null, true);
+            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName);
 
             if (false === empty($this->lenders) && 1 === count($this->lenders)) {
                 header('Location: ' . $this->lurl . '/sfpmei/preteur/' . $this->lenders[0]['id_client']);
@@ -673,30 +673,30 @@ class sfpmeiController extends bootstrap
         }
 
         switch ($clientStatusHistory->getIdStatus()->getId()) {
-            case ClientsStatus::CREATION:
+            case ClientsStatus::STATUS_CREATION:
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
-            case ClientsStatus::TO_BE_CHECKED:
+            case ClientsStatus::STATUS_TO_BE_CHECKED:
                 $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::COMPLETENESS:
-            case ClientsStatus::COMPLETENESS_REMINDER:
-            case ClientsStatus::COMPLETENESS_REPLY:
+            case ClientsStatus::STATUS_COMPLETENESS:
+            case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
+            case ClientsStatus::STATUS_COMPLETENESS_REPLY:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
                 break;
-            case ClientsStatus::MODIFICATION:
+            case ClientsStatus::STATUS_MODIFICATION:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::CLOSED_LENDER_REQUEST:
+            case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
-            case ClientsStatus::CLOSED_BY_UNILEND:
+            case ClientsStatus::STATUS_CLOSED_BY_UNILEND:
                 $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
                 break;
-            case ClientsStatus::VALIDATED:
+            case ClientsStatus::STATUS_VALIDATED:
                 $clientStatusMessage = '';
                 break;
-            case ClientsStatus::CLOSED_DEFINITELY:
+            case ClientsStatus::STATUS_CLOSED_DEFINITELY:
                 $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';
                 break;
             default:

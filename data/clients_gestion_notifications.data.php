@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 
 class clients_gestion_notifications extends clients_gestion_notifications_crud
 {
@@ -117,42 +117,54 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         return $aResult;
     }
 
-    private function getCustomerNotificationQuery($sFrequency, $iNotificationType, $sFieldName = null)
+    /**
+     * @param string      $frequency
+     * @param int         $notificationType
+     * @param string|null $fieldName
+     *
+     * @return string
+     */
+    private function getCustomerNotificationQuery(string $frequency, int $notificationType, ?string $fieldName = null): string
     {
-        if ($sFrequency === 'quotidienne') { // Quotidienne (chaque jour à 20h00)
+        if ($frequency === 'quotidienne') {
             $where = '
                 cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d') - 1, date('Y'))) . '"
                 AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d'), date('Y'))) . '"';
-        } elseif ($sFrequency === 'hebdomadaire') { // Hebdomadaire (chaque samedi matin à 9h00)
+        } elseif ($frequency === 'hebdomadaire') {
             $where = '
                 cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d') - 7, date('Y'))) . '"
                 AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . '"';
-        } elseif ($sFrequency === 'mensuelle') { // Mensuelle (tous les 1er jours du mois à 9h00)
+        } elseif ($frequency === 'mensuelle') {
             $where = '
                 cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m') - 1, 1, date('Y'))) . '"
                 AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), 1, date('Y'))) . '"';
         }
+
         return '
-            SELECT cgmn.' . (is_null($sFieldName) ? '*' : $sFieldName) . '
+            SELECT cgmn.' . (is_null($fieldName) ? '*' : $fieldName) . '
             FROM clients_gestion_mails_notif cgmn
             INNER JOIN clients_gestion_notifications cgn ON (cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif)
             INNER JOIN clients c ON c.id_client = cgn.id_client
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             WHERE ' . $where . '
-                AND c.status = ' . Clients::STATUS_ONLINE . '
-                AND cgn.' . $sFrequency . ' = 1
-                AND (cgmn.' . $sFrequency . ' = 0 OR cgmn.' . $sFrequency . ' IS NULL)
-                AND (cgmn.status_check_' . $sFrequency . ' = 0 OR cgmn.status_check_' . $sFrequency . ' IS NULL)
-                AND cgmn.id_notif = ' . $iNotificationType;
+                AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
+                AND cgn.' . $frequency . ' = 1
+                AND (cgmn.' . $frequency . ' = 0 OR cgmn.' . $frequency . ' IS NULL)
+                AND (cgmn.status_check_' . $frequency . ' = 0 OR cgmn.status_check_' . $frequency . ' IS NULL)
+                AND cgmn.id_notif = ' . $notificationType;
     }
 
-    public static function getAllPeriod()
+    /**
+     * @return int[]
+     */
+    public static function getAllPeriod(): array
     {
-        return array(
+        return [
             self::TYPE_NOTIFICATION_IMMEDIATE,
             self::TYPE_NOTIFICATION_DAILY,
             self::TYPE_NOTIFICATION_WEEKLY,
             self::TYPE_NOTIFICATION_MONTHLY,
-            self::TYPE_NOTIFICATION_NO_MAIL,
-        );
+            self::TYPE_NOTIFICATION_NO_MAIL
+        ];
     }
 }

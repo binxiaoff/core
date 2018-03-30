@@ -17,13 +17,13 @@ class UserBorrower extends BaseUser
      * @param string         $username
      * @param string|null    $password
      * @param string         $email
-     * @param string         $salt
-     * @param array          $roles
-     * @param bool           $isActive
+     * @param string|null    $salt
+     * @param string[]       $roles
      * @param int            $clientId
      * @param string         $hash
-     * @param string         $firstName
-     * @param string         $lastName
+     * @param int            $clientStatus
+     * @param string|null    $firstName
+     * @param string|null    $lastName
      * @param string         $siren
      * @param float          $balance
      * @param \DateTime|null $lastLoginDate
@@ -32,19 +32,19 @@ class UserBorrower extends BaseUser
         string $username,
         ?string $password,
         string $email,
-        string $salt,
+        ?string $salt,
         array $roles,
-        bool $isActive,
         int $clientId,
         string $hash,
-        string $firstName,
-        string $lastName,
+        int $clientStatus,
+        ?string $firstName,
+        ?string $lastName,
         string $siren,
         float $balance,
         ?\DateTime $lastLoginDate = null
     )
     {
-        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
+        parent::__construct($username, $password, $email, $salt, $roles, $clientId, $hash, $clientStatus, $lastLoginDate);
 
         $this->firstName = $firstName;
         $this->lastName  = $lastName;
@@ -55,23 +55,23 @@ class UserBorrower extends BaseUser
     /**
      * @return string
      */
-    public function getInitials()
+    public function getInitials(): string
     {
         return substr($this->firstName, 0, 1) . substr($this->lastName, 0, 1);
     }
 
     /**
-     * @return null|string
+     * @return string|null
      */
-    public function getFirstName()
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLastName()
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
@@ -79,7 +79,7 @@ class UserBorrower extends BaseUser
     /**
      * @return string
      */
-    public function getSiren()
+    public function getSiren(): string
     {
         return $this->siren;
     }
@@ -87,7 +87,7 @@ class UserBorrower extends BaseUser
     /**
      * @return float
      */
-    public function getBalance()
+    public function getBalance(): float
     {
         return $this->balance;
     }

@@ -126,7 +126,6 @@ class ProjectRequestController extends Controller
         $client = new Clients();
         $client
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_OFFLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
@@ -148,7 +147,7 @@ class ProjectRequestController extends Controller
             $entityManager->persist($company);
             $entityManager->flush($company);
 
-            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::DISABLED);
+            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
 
             /** @var CompanyStatus $statusInBonis */
             $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
@@ -491,8 +490,10 @@ class ProjectRequestController extends Controller
             $client->setPrenom($request->request->get('contact')['firstname']);
         }
         if (isset($request->request->get('contact')['email'])) {
-            $email = $request->request->get('contact')['email'];
-            if ($clientRepository->existEmail($email, Clients::STATUS_ONLINE)) {
+            $email      = $request->request->get('contact')['email'];
+            $duplicates = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+
+            if (false === empty($duplicates)) {
                 if ($this->removeEmailSuffix($client->getEmail()) === $email) {
                     $email = $client->getEmail();
                 } else {
@@ -500,11 +501,9 @@ class ProjectRequestController extends Controller
                 }
             }
 
-            $client
-                ->setStatus(Clients::STATUS_ONLINE)
-                ->setEmail($email);
+            $client->setEmail($email);
 
-            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::VALIDATED);
+            $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $project
                 ->getIdCompany()

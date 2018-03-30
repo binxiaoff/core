@@ -59,12 +59,7 @@ class ClientStatusManager
 
         $client->changePassword($client->email, mt_rand());
 
-        if (Clients::STATUS_ONLINE == $client->status) {
-            $client->status = Clients::STATUS_OFFLINE;
-            $client->update();
-        }
-
-        $this->addClientStatus($client, $userId, ClientsStatus::CLOSED_DEFINITELY, $comment);
+        $this->addClientStatus($client, $userId, ClientsStatus::STATUS_CLOSED_DEFINITELY, $comment);
     }
 
     /**
@@ -74,21 +69,21 @@ class ClientStatusManager
     public function changeClientStatusTriggeredByClientAction(Clients $client, string $content): void
     {
         switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
-            case ClientsStatus::COMPLETENESS:
-            case ClientsStatus::COMPLETENESS_REMINDER:
-            case ClientsStatus::COMPLETENESS_REPLY:
-                $status = ClientsStatus::COMPLETENESS_REPLY;
+            case ClientsStatus::STATUS_COMPLETENESS:
+            case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
+            case ClientsStatus::STATUS_COMPLETENESS_REPLY:
+                $status = ClientsStatus::STATUS_COMPLETENESS_REPLY;
                 break;
-            case ClientsStatus::VALIDATED:
-            case ClientsStatus::MODIFICATION:
-                $status = ClientsStatus::MODIFICATION;
+            case ClientsStatus::STATUS_VALIDATED:
+            case ClientsStatus::STATUS_MODIFICATION:
+                $status = ClientsStatus::STATUS_MODIFICATION;
                 break;
-            case ClientsStatus::CREATION:
-                $status = ClientsStatus::CREATION;
+            case ClientsStatus::STATUS_CREATION:
+                $status = ClientsStatus::STATUS_CREATION;
                 break;
-            case ClientsStatus::TO_BE_CHECKED:
+            case ClientsStatus::STATUS_TO_BE_CHECKED:
             default:
-                $status = ClientsStatus::TO_BE_CHECKED;
+                $status = ClientsStatus::STATUS_TO_BE_CHECKED;
                 break;
         }
 

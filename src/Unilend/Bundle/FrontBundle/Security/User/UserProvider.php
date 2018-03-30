@@ -67,10 +67,10 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function loadUserByUsername($username)
+    public function loadUserByUsername($username): UserInterface
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($username, ClientsStatus::LOGIN_ENABLED_STATUS);
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($username, ClientsStatus::GRANTED_LOGIN);
             $usersCount = count($users);
 
             if ($usersCount > 0) {
@@ -97,7 +97,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function refreshUser(UserInterface $user)
+    public function refreshUser(UserInterface $user): UserInterface
     {
         if (false === $user instanceof BaseUser) {
             throw new UnsupportedUserException(
@@ -111,7 +111,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function supportsClass($class)
+    public function supportsClass($class): bool
     {
         return $class === 'FrontBundle\Security\User\BaseUser';
     }
@@ -119,12 +119,11 @@ class UserProvider implements UserProviderInterface
     /**
      * @param Clients $client
      *
-     * @return UserBorrower|UserLender|UserPartner
+     * @return UserInterface
      */
-    private function setUser(Clients $client)
+    private function setUser(Clients $client): UserInterface
     {
         $initials = $this->clientManager->getInitials($client);
-        $isActive = $this->clientManager->isActive($client);
         $roles    = ['ROLE_USER'];
 
         if ($client->isLender()) {
@@ -160,14 +159,13 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $wallet->getAvailableBalance(),
                 $initials,
                 $client->getPrenom(),
                 $client->getNom(),
-                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $client->getEtapeInscriptionPreteur(),
@@ -189,9 +187,9 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $client->getPrenom(),
                 $client->getNom(),
                 $company->getSiren(),
@@ -222,9 +220,9 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $client->getPrenom(),
                 $client->getNom(),
                 $partnerRole->getIdCompany(),
@@ -237,9 +235,9 @@ class UserProvider implements UserProviderInterface
     /**
      * @param string $hash
      *
-     * @return UserBorrower|UserLender|UserPartner
+     * @return UserInterface
      */
-    public function loadUserByHash($hash)
+    public function loadUserByHash(string $hash): UserInterface
     {
         if (1 !== preg_match('/^[a-z0-9-]{32,36}$/', $hash)) {
             throw new NotFoundHttpException('Invalid client hash');
@@ -247,7 +245,7 @@ class UserProvider implements UserProviderInterface
 
         $clientEntity = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Clients')
-            ->findOneByHashAndStatus($hash, ClientsStatus::LOGIN_ENABLED_STATUS);
+            ->findOneByHashAndStatus($hash, ClientsStatus::GRANTED_LOGIN);
 
         if ($clientEntity) {
             return $this->setUser($clientEntity);
