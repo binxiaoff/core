@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, Zones
+    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, WalletType, Zones
 };
 
 class emprunteursController extends bootstrap
@@ -61,28 +61,31 @@ class emprunteursController extends bootstrap
         $this->sectors    = $companySector->select();
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $walletType           = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
-            $borrowerWallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
+
+            $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::BORROWER]);
+            $borrowerWallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $this->params[0], 'idType' => $walletType]);
+
             if ($borrowerWallet) {
                 $this->availableBalance = $borrowerWallet->getAvailableBalance();
             } else {
                 $this->availableBalance = 0;
             }
-            $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
+            $this->lprojects = $this->projects->select('id_company = ' . $this->companies->id_company, 'added DESC');
 
             if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
             }
 
-            $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+            $this->clientEntity         = $borrowerWallet->getIdClient();
+            $this->companyEntity        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyAddress       = $this->companyEntity->getIdAddress();
+            $this->bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($this->clientEntity);
             $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
-                'idClient' => $client,
+                'idClient' => $this->clientEntity,
                 'idType'   => AttachmentType::RIB
             ]);
-            $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
-            $this->companyAddress = $this->companyEntity->getIdAddress();
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $emailRegex = $entityManager
@@ -94,8 +97,7 @@ class emprunteursController extends bootstrap
                 if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $this->clients->email) {
-                    $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+                    $duplicates = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
                     if (false === empty($duplicates)) {
                         $_SESSION['error_email_exist'] = 'Cette adresse email est déjà utilisée par un autre compte';
