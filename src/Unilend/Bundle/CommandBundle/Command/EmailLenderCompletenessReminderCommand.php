@@ -8,16 +8,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     ClientsStatus, Users
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\core\Loader;
 
 class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 {
     const REMINDER_DELAY_DAYS_FIRST  = 8;
     const REMINDER_DELAY_DAYS_SECOND = 30;
-
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
 
     /** @var \dates */
     private $dates;
@@ -38,37 +34,34 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $this->entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        $this->dates                  = Loader::loadLib('dates');
         /** @var \clients $clients */
-        $clients = $this->entityManagerSimulator->getRepository('clients');
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $this->entityManagerSimulator->getRepository('clients_status_history');
-        $clientStatusManager = $this->getContainer()->get('unilend.service.client_status_manager');
+        $clients                       = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
+        $clientStatusManager           = $this->getContainer()->get('unilend.service.client_status_manager');
+        $clientStatusHistoryRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $this->dates                   = Loader::loadLib('dates');
 
         $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
         $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS, '', 'added_status DESC');
         foreach ($lenders as $lender) {
             $statusDate = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
             if ($statusDate <= $firstReminderDate) {
-                $clientStatusHistory->get($lender['id_client_status_history'], 'id_client_status_history');
+                $clientStatusHistory = $clientStatusHistoryRepository->find($lender['id_client_status_history']);
                 $clients->get($lender['id_client']);
-                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->content);
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->content);
+                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->getContent());
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::STATUS_COMPLETENESS_REMINDER, $clientStatusHistory->getContent());
             }
         }
 
-        $lenders = $clients->selectPreteursByStatus(ClientsStatus::COMPLETENESS_REMINDER, '', 'added_status DESC');
+        $lenders = $clients->selectPreteursByStatus(ClientsStatus::STATUS_COMPLETENESS_REMINDER, '', 'added_status DESC');
         foreach ($lenders as $lender) {
-            $clientStatusHistory->get($lender['id_client_status_history'], 'id_client_status_history');
-
-            $sendReminder   = false;
-            $reminder       = null;
-            $reminderNumber = $clientStatusHistory->numero_relance;
-            $statusDate     = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
+            $sendReminder        = false;
+            $reminder            = null;
+            $clientStatusHistory = $clientStatusHistoryRepository->find($lender['id_client_status_history']);
+            $reminderNumber      = $clientStatusHistory->getNumeroRelance();
+            $statusDate          = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
 
             if ($statusDate <= $firstReminderDate && $reminderNumber == 0) {
                 $sendReminder = true;
@@ -83,8 +76,8 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 
             if (true === $sendReminder) {
                 $clients->get($lender['id_client']);
-                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->content);
-                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::COMPLETENESS_REMINDER, $clientStatusHistory->content, $reminder);
+                $this->sendReminderEmail($clients, $lender, $clientStatusHistory->getContent());
+                $clientStatusManager->addClientStatus($clients, Users::USER_ID_CRON, ClientsStatus::STATUS_COMPLETENESS_REMINDER, $clientStatusHistory->getContent(), $reminder);
             }
         }
     }
@@ -100,7 +93,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
         $keywords   = [
             'firstName'        => $client->prenom,
-            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
+            'modificationDate' => date('j', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
             'content'          => $content,
             'uploadLink'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default') . '/profile/documents',
             'lenderPattern'    => $client->getLenderPattern($client->id_client)

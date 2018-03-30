@@ -113,12 +113,16 @@ class remboursementController extends bootstrap
                     if (null === $debtCollectionMission) {
                         $errors[] = 'Id mission recouvrement ' . $debtCollectionMissionId . 'n\'existe pas';
                     }
-                    $debtCollectionFeeRate = str_replace(',', '.', $this->request->request->get('fee_rate'));
-                    $debtCollectionFeeRate = filter_var($debtCollectionFeeRate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                    if (false === $debtCollectionFeeRate || $debtCollectionFeeRate > 100) {
-                        $errors[] = 'Le taux d\'honoraires  n\'est pas valide';
+                    if (false === $this->request->request->getBoolean('debt-collection-zero-rate')) {
+                        $debtCollectionFeeRate = str_replace(',', '.', $this->request->request->get('fee_rate'));
+                        $debtCollectionFeeRate = filter_var($debtCollectionFeeRate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                        if (false === $debtCollectionFeeRate || $debtCollectionFeeRate > 100 || $debtCollectionFeeRate <= 0) {
+                            $errors[] = 'Le taux d\'honoraires  n\'est pas valide';
+                        }
+                        $debtCollectionFeeRate = round(bcdiv($debtCollectionFeeRate, 100, 6), 4);
+                    } else {
+                        $debtCollectionFeeRate = 0;
                     }
-                    $debtCollectionFeeRate = round(bcdiv($debtCollectionFeeRate, 100, 6), 4);
                 } else {
                     $errors[] = 'Mission recouvrement n\'est pas défini.';
                 }
@@ -197,7 +201,7 @@ class remboursementController extends bootstrap
      *
      * @return DateTime
      */
-    private function getRepaymentMinDate(Receptions $reception) : DateTime
+    private function getRepaymentMinDate(Receptions $reception): DateTime
     {
         $repaymentMinDate = new DateTime();
 

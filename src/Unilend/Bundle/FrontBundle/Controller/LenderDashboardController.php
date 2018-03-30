@@ -2,22 +2,16 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\EntityManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LenderStatistic;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, Request, Response
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType
+};
 
 class LenderDashboardController extends Controller
 {
@@ -31,14 +25,17 @@ class LenderDashboardController extends Controller
      *
      * @return Response
      */
-    public function indexAction()
+    public function indexAction(): Response
     {
-        /** @var WalletRepository $walletRepository */
-        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-        /** @var EntityManagerSimulator $entityManager */
+        if (ClientsStatus::STATUS_CREATION === $this->getUser()->getClientStatus()) {
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $this->getUser()->getHash()]);
+        }
+
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $lenderRepayment */
@@ -49,14 +46,14 @@ class LenderDashboardController extends Controller
         $company = $entityManagerSimulator->getRepository('companies');
         /** @var \bids $bid */
         $bid = $entityManagerSimulator->getRepository('bids');
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
 
+        $entityManager               = $this->get('doctrine.orm.entity_manager');
+        $walletRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
-        $client->get($this->getUser()->getClientId());
-        $wallet          = $walletRepository->getWalletByType($client->id_client, WalletType::LENDER);
+        /** @var Wallet $wallet */
+        $wallet          = $walletRepository->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -108,12 +105,12 @@ class LenderDashboardController extends Controller
                 'funding_duration' => $projectStats->days
             ];
         }
-        /** @var LenderAccountDisplayManager $lenderDisplayManager */
-        $lenderDisplayManager = $this->get('unilend.frontbundle.service.lender_account_display_manager');
 
+        $lenderDisplayManager    = $this->get('unilend.frontbundle.service.lender_account_display_manager');
         $repaymentDateRange      = $lenderRepayment->getFirstAndLastRepaymentDates($wallet->getId());
         $lenderRepaymentsDetails = $repaymentScheduleRepository->getLenderRepaymentsDetails($wallet);
         $lenderRepaymentsData    = [];
+
         foreach ($lenderRepaymentsDetails as $lenderRepaymentDetail) {
             $lenderRepaymentsData[$lenderRepaymentDetail['month']]                 = $lenderRepaymentDetail;
             $lenderRepaymentsData[$lenderRepaymentDetail['month']]['capital']      = (float) $lenderRepaymentDetail['capital'];
@@ -205,14 +202,17 @@ class LenderDashboardController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
+     *
      * @return JsonResponse
      */
-    public function saveUserDisplayPreferencesAction(Request $request)
+    public function saveUserDisplayPreferencesAction(Request $request): JsonResponse
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->json(['error' => 1, 'msg' => '']);
+        }
+
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
@@ -274,12 +274,10 @@ class LenderDashboardController extends Controller
     /**
      * @return array
      */
-    private function getDashboardPreferences()
+    private function getDashboardPreferences(): array
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
@@ -317,8 +315,9 @@ class LenderDashboardController extends Controller
      * @param array $repaymentDateRange
      *
      * @return array
+     * @throws \Exception
      */
-    private function getPaddingData(array $repaymentDateRange)
+    private function getPaddingData(array $repaymentDateRange): array
     {
         $firstDateTime   = new \DateTime($repaymentDateRange['first_repayment_date']);
         $lastDateTime    = new \DateTime($repaymentDateRange['last_repayment_date']);
@@ -345,8 +344,9 @@ class LenderDashboardController extends Controller
      * @param array $repaymentDateRange
      *
      * @return array
+     * @throws \Exception
      */
-    private function getMonthAxis(array $repaymentDateRange)
+    private function getMonthAxis(array $repaymentDateRange): array
     {
         $firstDateTime   = new \DateTime($repaymentDateRange['first_repayment_date']);
         $lastDateTime    = new \DateTime($repaymentDateRange['last_repayment_date']);
@@ -371,7 +371,7 @@ class LenderDashboardController extends Controller
      *
      * @return array
      */
-    private function getQuarterAxis(array $lenderRepaymentsData)
+    private function getQuarterAxis(array $lenderRepaymentsData): array
     {
         $monthNames        = $this->getMonthNames()['shortNames'];
         $quarterLabels     = [
@@ -402,8 +402,9 @@ class LenderDashboardController extends Controller
      * Returns the full and short month names
      *
      * @return array
+     * @throws \Exception
      */
-    private function getMonthNames()
+    private function getMonthNames(): array
     {
         $startDate       = new \DateTime('2016-01-01');
         $monthCounter    = new \DateInterval('P1M');
@@ -423,7 +424,7 @@ class LenderDashboardController extends Controller
      *
      * @return array
      */
-    private function getYearAxis(array $repaymentDateRange)
+    private function getYearAxis(array $repaymentDateRange): array
     {
         $yearAxis       = [];
         $yearBandOrigin = 0;
@@ -443,7 +444,7 @@ class LenderDashboardController extends Controller
      *
      * @return array
      */
-    private function getQuarterAndYearSum(array $lenderRepaymentsData)
+    private function getQuarterAndYearSum(array $lenderRepaymentsData): array
     {
         $quarterCapital   = [];
         $quarterInterests = [];
@@ -504,7 +505,13 @@ class LenderDashboardController extends Controller
         ];
     }
 
-    private function getIRRDetailsForUserLevelWidget()
+    /**
+     * @return array
+     *
+     * @throws \Doctrine\DBAL\Cache\CacheException
+     * @throws \Exception
+     */
+    private function getIRRDetailsForUserLevelWidget(): array
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $lenderManager = $this->get('unilend.service.lender_manager');
@@ -549,5 +556,4 @@ class LenderDashboardController extends Controller
             'irrHasBeenCalculated'      => $irrHasBeenCalculated
         ];
     }
-
 }

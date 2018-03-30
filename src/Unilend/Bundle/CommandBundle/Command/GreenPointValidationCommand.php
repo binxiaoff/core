@@ -36,14 +36,13 @@ EOF
         $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \greenpoint_kyc $greenPointKyc */
         $greenPointKyc = $entityManagerSimulator->getRepository('greenpoint_kyc');
-        /** @var LoggerInterface $logger */
         $logger        = $this->getContainer()->get('monolog.logger.console');
         $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
 
         $statusToCheck            = [
-            ClientsStatus::TO_BE_CHECKED,
-            ClientsStatus::COMPLETENESS_REPLY,
-            ClientsStatus::MODIFICATION
+            ClientsStatus::STATUS_TO_BE_CHECKED,
+            ClientsStatus::STATUS_COMPLETENESS_REPLY,
+            ClientsStatus::STATUS_MODIFICATION
         ];
         $attachmentTypeToValidate = [
             AttachmentType::CNI_PASSPORTE,
@@ -53,6 +52,7 @@ EOF
             AttachmentType::CNI_PASSPORTE_DIRIGEANT,
             AttachmentType::RIB,
         ];
+
         /** @var Clients[] $clients */
         $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
 
@@ -80,11 +80,8 @@ EOF
                             ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                         );
                     }
+
                     if ($validationCount > 0 && false === $attachmentManager->isModifiedAttachment($attachment)) {
-                        $logger->warning(
-                            'The attachment ID ' . $attachment->getId() . ' will be ignored according to isModifiedAttachment method.',
-                            ['method' => __METHOD__, 'id_client' => $client->getIdClient()]
-                        );
                         continue;
                     }
 

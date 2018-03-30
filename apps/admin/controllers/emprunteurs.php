@@ -1,13 +1,11 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, CompanyStatus, Zones
+    AddressType, AttachmentType, Clients, Companies, CompanyStatus, PaysV2, Zones
 };
 
 class emprunteursController extends bootstrap
 {
-    /** @var \clients_adresses */
-    public $clients_adresses;
 
     public function initialize()
     {
@@ -27,7 +25,6 @@ class emprunteursController extends bootstrap
     public function _gestion()
     {
         $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
         $this->companies_bilans = $this->loadData('companies_bilans');
 
@@ -46,7 +43,6 @@ class emprunteursController extends bootstrap
     public function _edit()
     {
         $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
         $this->companies_bilans = $this->loadData('companies_bilans');
         $this->projects         = $this->loadData('projects');
@@ -66,11 +62,9 @@ class emprunteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $walletType     = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
-            $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
-                ->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
+            $walletType           = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
+            $borrowerWallet       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
             if ($borrowerWallet) {
                 $this->availableBalance = $borrowerWallet->getAvailableBalance();
             } else {
@@ -87,6 +81,8 @@ class emprunteursController extends bootstrap
                 'idClient' => $client,
                 'idType'   => AttachmentType::RIB
             ]);
+            $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyAddress = $this->companyEntity->getIdAddress();
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $emailRegex = $entityManager
@@ -95,9 +91,9 @@ class emprunteursController extends bootstrap
                     ->getValue();
 
                 $email = trim($_POST['email']);
-                if (1 !== preg_match($emailRegex, $email)) {
+                if (false === empty($email) && 1 !== preg_match($emailRegex, $email)) {
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
-                } elseif ($email !== $this->clients->email) {
+                } elseif (false === empty($email) && $email !== $this->clients->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
                     $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
 
@@ -122,20 +118,26 @@ class emprunteursController extends bootstrap
                     $this->companies->email_facture = $billingEmail;
                 }
 
-                if ($this->companies->status_adresse_correspondance == 1) {
-                    $this->companies->adresse1 = $_POST['adresse'];
-                    $this->companies->city     = $_POST['ville'];
-                    $this->companies->zip      = $_POST['cp'];
-                }
-
                 $this->companies->name   = $_POST['societe'];
                 $this->companies->sector = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
                 $this->companies->update();
 
-                $this->clients_adresses->adresse1 = $_POST['adresse'];
-                $this->clients_adresses->ville    = $_POST['ville'];
-                $this->clients_adresses->cp       = $_POST['cp'];
-                $this->clients_adresses->update();
+                if (empty($_POST['adresse']) || empty($_POST['ville']) || empty($_POST['cp'])) {
+                    $_SESSION['error_company_address'] = 'L\'addresse de l\'entreprise doit être complète pour être enregistrée.';
+
+                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
+                    exit;
+                }
+
+                $this->get('unilend.service.address_manager')
+                    ->saveCompanyAddress(
+                        $_POST['adresse'],
+                        $_POST['cp'],
+                        $_POST['ville'],
+                        PaysV2::COUNTRY_FRANCE,
+                        $this->companyEntity,
+                        AddressType::TYPE_MAIN_ADDRESS
+                    );
 
                 $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST]);
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
@@ -146,7 +148,6 @@ class emprunteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 exit;
             }
-            $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
 
             if (false === empty($_POST['problematic_status']) && $_POST['problematic_status'] != $this->companyEntity->getIdStatus()->getId()) {
                 $this->updateCompanyStatus($this->companyEntity);
@@ -159,10 +160,10 @@ class emprunteursController extends bootstrap
             $end                       = new \DateTime('NOW');
             $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
-            $this->companyManager = $this->get('unilend.service.company_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus[] possibleCompanyStatus */
+            $this->companyManager        = $this->get('unilend.service.company_manager');
+            $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
-            $this->companyStatusInBonis  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             exit;

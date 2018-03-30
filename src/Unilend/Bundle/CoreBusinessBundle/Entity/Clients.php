@@ -11,7 +11,7 @@ use Ramsey\Uuid\Uuid;
 /**
  * Clients
  *
- * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"})})
+ * @ORM\Table(name="clients", indexes={@ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="email", columns={"email"}), @ORM\Index(name="idx_client_nom", columns={"nom"}), @ORM\Index(name="idx_clients_id_client_status_history", columns={"id_client_status_history"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -33,7 +33,7 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
-    /** Legacy welcome offer before separating them and adding types  */
+    /** Legacy welcome offer before separating them and adding types */
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
@@ -263,6 +263,16 @@ class Clients
     private $status;
 
     /**
+     * @var ClientsStatusHistory
+     *
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_client_status_history", referencedColumnName="id", nullable=true)
+     * })
+     */
+    private $idClientStatusHistory;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -305,6 +315,7 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet", mappedBy="idClient")
      */
     private $wallets;
+
     /**
      * @var string
      *
@@ -318,6 +329,22 @@ class Clients
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses", mappedBy="idClient")
      */
     private $clientsAddresses;
+
+    /**
+     * @var ClientAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
+     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
+     */
+    private $idAddress;
+
+    /**
+     * @var ClientAddress
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
+     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
+     */
+    private $idPostalAddress;
 
     /**
      * Clients constructor.
@@ -1054,6 +1081,30 @@ class Clients
     }
 
     /**
+     * Set idClientsStatusHistory
+     *
+     * @param ClientsStatusHistory $idClientStatusHistory
+     *
+     * @return Clients
+     */
+    public function setIdClientStatusHistory(?ClientsStatusHistory $idClientStatusHistory): Clients
+    {
+        $this->idClientStatusHistory = $idClientStatusHistory;
+
+        return $this;
+    }
+
+    /**
+     * Get idClientsStatusHistory
+     *
+     * @return ClientsStatusHistory
+     */
+    public function getIdClientStatusHistory(): ?ClientsStatusHistory
+    {
+        return $this->idClientStatusHistory;
+    }
+
+    /**
      * Set added
      *
      * @param \DateTime $added
@@ -1409,4 +1460,51 @@ class Clients
         return $this;
     }
 
+    /**
+     * @return ClientAddress|null
+     */
+    public function getIdAddress(): ?ClientAddress
+    {
+        if (null !== $this->idAddress && empty($this->idAddress->getId())) {
+            $this->idAddress = null;
+        }
+
+        return $this->idAddress;
+    }
+
+    /**
+     * @param null|ClientAddress $idAddress
+     *
+     * @return Clients
+     */
+    public function setIdAddress(?ClientAddress $idAddress): Clients
+    {
+        $this->idAddress = $idAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return ClientAddress|null
+     */
+    public function getIdPostalAddress(): ?ClientAddress
+    {
+        if (null !== $this->idPostalAddress && empty($this->idPostalAddress->getId())) {
+            $this->idPostalAddress = null;
+        }
+
+        return $this->idPostalAddress;
+    }
+
+    /**
+     * @param null|ClientAddress $idPostalAddress
+     *
+     * @return Clients
+     */
+    public function setIdPostalAddress(?ClientAddress $idPostalAddress): Clients
+    {
+        $this->idPostalAddress = $idPostalAddress;
+
+        return $this;
+    }
 }

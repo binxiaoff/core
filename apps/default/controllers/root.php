@@ -1,6 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus
+};
 
 class rootController extends bootstrap
 {
@@ -54,7 +56,10 @@ class rootController extends bootstrap
             exit;
         }
 
-        $this->clients->checkAccessLender();
+        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getClientStatus()) {
+            header('Location: ' . $this->lurl . '/inscription-preteurs');
+            exit;
+        }
 
         $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
         $listeAccept = array_shift($listeAccept);

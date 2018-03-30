@@ -2,14 +2,9 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Elements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectCgv;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class pdfController extends bootstrap
@@ -293,12 +288,24 @@ class pdfController extends bootstrap
 
     private function GenerateWarrantyHtml($mandates)
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         $this->pays = $this->loadData('pays');
         $this->clients_adresses->get($this->pdfClient->id_client, 'id_client');
         $this->pays->get($this->pdfClient->id_langue, 'id_langue');
 
         if ($this->companies->get($this->pdfClient->id_client, 'id_client_owner')) {
-            $this->entreprise = true;
+            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->entreprise     = true;
+            $this->companyAddress = $company->getIdAddress();
+            if (null === $this->companyAddress->getDateValidated()) {
+                $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in mandate.', [
+                    'file'             => __FILE__,
+                    'line'             => __LINE__,
+                    'idCompanyAddress' => $this->companyAddress->getId()
+                ]);
+            }
         } else {
             $this->entreprise = false;
         }
@@ -491,15 +498,23 @@ class pdfController extends bootstrap
                 $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
             }
         }
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager        = $this->get('doctrine.orm.entity_manager');
+        $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company)->getIdAddress();
+        if (null === $this->companyAddress->getDateValidated()) {
+            $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in proxy.', [
+                'file'             => __FILE__,
+                'line'             => __LINE__,
+                'idCompanyAddress' => $this->companyAddress->getId()
+            ]);
+        }
 
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oLoans                 = $this->loadData('loans');
         /** @var underlying_contract $contract */
-        $contract                     = $this->loadData('underlying_contract');
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $contract               = $this->loadData('underlying_contract');
         $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
         $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
@@ -710,6 +725,9 @@ class pdfController extends bootstrap
      */
     private function GenerateContractHtml(\clients $oClients, \loans $oLoans, \projects $oProjects)
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         $this->emprunteur              = $this->loadData('clients');
         $this->companiesEmprunteur     = $this->loadData('companies');
         $this->companiesPreteur        = $this->loadData('companies');
@@ -722,6 +740,16 @@ class pdfController extends bootstrap
         $this->oLoans                  = $oLoans;
         $this->clients                 = $oClients;
         $this->projects                = $oProjects;
+        $this->borrowerCompanyAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($oProjects->id_company)->getIdAddress();
+
+        if (null === $this->borrowerCompanyAddress->getDateValidated()) {
+            $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
+                'file'             => __FILE__,
+                'line'             => __LINE__,
+                'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
+            ]);
+        }
+
         /** @var underlying_contract $contract */
         $contract                      = $this->loadData('underlying_contract');
 
@@ -730,7 +758,7 @@ class pdfController extends bootstrap
         $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
 
         // Si preteur morale
-        if ($oClients->type == 2) {
+        if ($oClients->type == Clients::TYPE_LEGAL_ENTITY) {
             $this->companiesPreteur->get($oClients->id_client, 'id_client_owner');
         }
 
@@ -825,6 +853,14 @@ class pdfController extends bootstrap
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
             $this->preteur->get($wallet->getIdClient()->getIdClient(), 'id_client');
             $this->preteur_adresse->get($this->preteur->id_client, 'id_client');
+            $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
+            if (null === $this->borrowerCompanyAddress->getDateValidated()) {
+                $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
+                    'file'             => __FILE__,
+                    'line'             => __LINE__,
+                    'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
+                ]);
+            }
 
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
             $this->lenderCountry = '';
@@ -925,7 +961,16 @@ class pdfController extends bootstrap
         $wallet = $loan->getIdLender();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
         $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
-
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
+        if (null === $this->borrowerCompanyAddress->getDateValidated()) {
+            $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in Déclaration de créances.', [
+                'file'             => __FILE__,
+                'line'             => __LINE__,
+                'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
+            ]);
+        }
         $status = [
             CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
             CompanyStatus::STATUS_RECEIVERSHIP,

@@ -5,9 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, ClientsStatusHistory
+};
 
 class ClientsStatusHistoryRepository extends EntityRepository
 {
@@ -23,14 +23,14 @@ class ClientsStatusHistoryRepository extends EntityRepository
         }
 
         $queryBuilder = $this->createQueryBuilder('csh');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
+        $queryBuilder
             ->where('csh.idClient = :idClient')
-            ->andWhere('cs.status = :status')
-            ->orderBy('csh.added', 'DESC')
-            ->addOrderBy('csh.idClientStatusHistory',  'DESC')
+            ->andWhere('csh.idStatus = :status')
+            ->orderBy('csh.added', 'ASC')
+            ->addOrderBy('csh.id', 'ASC')
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient)
-            ->setParameter('status', ClientsStatus::VALIDATED);
+            ->setParameter('status', ClientsStatus::STATUS_VALIDATED);
         $query  = $queryBuilder->getQuery();
         $result = $query->getOneOrNullResult();
 
@@ -42,22 +42,26 @@ class ClientsStatusHistoryRepository extends EntityRepository
      * @param \DateTime  $end
      * @param array|null $types
      *
-     * @return bool|string
+     * @return int
+     *
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function countLendersValidatedBetweenDatesByType(\DateTime $start, \DateTime $end, array $types = null)
+    public function countLendersValidatedBetweenDatesByType(\DateTime $start, \DateTime $end, array $types = null): int
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
-        $query = 'SELECT
-                    COUNT(DISTINCT c.id_client)
-                  FROM (
-                    SELECT MIN(id_client_status_history) AS id_client_status_history 
-                    FROM clients_status_history 
-                    WHERE id_client_status = 6 GROUP BY id_client) AS min_csh_validated
-                  INNER JOIN clients_status_history csh ON min_csh_validated.id_client_status_history = csh.id_client_status_history
-                  INNER JOIN clients c ON csh.id_client = c.id_client
-                  WHERE csh.added BETWEEN :start AND :end';
+        $query = '
+            SELECT COUNT(DISTINCT c.id_client)
+            FROM (
+              SELECT MIN(added) AS added, id_client
+              FROM clients_status_history
+              WHERE id_status = ' . ClientsStatus::STATUS_VALIDATED . '
+              GROUP BY id_client
+            ) AS min_csh_validated
+            INNER JOIN clients_status_history csh ON min_csh_validated.added = csh.added AND min_csh_validated.id_client = csh.id_client
+            INNER JOIN clients c ON csh.id_client = c.id_client
+            WHERE csh.added BETWEEN :start AND :end';
 
         $params    = ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')];
         $bindTypes = ['start' => \PDO::PARAM_STR, 'end' => \PDO::PARAM_STR];
@@ -72,7 +76,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->executeQuery($query, $params, $bindTypes)
             ->fetchColumn();
 
-        return $result;
+        return (int) $result;
     }
 
     /**
@@ -83,9 +87,11 @@ class ClientsStatusHistoryRepository extends EntityRepository
     public function findLastTwoClientStatus($client)
     {
         $queryBuilder = $this->createQueryBuilder('csh');
-        $queryBuilder->where('csh.idClient = :clientId')
+        $queryBuilder
+            ->where('csh.idClient = :clientId')
             ->setParameter('clientId', $client)
-            ->orderBy('csh.idClientStatusHistory', 'DESC')
+            ->orderBy('csh.added', 'DESC')
+            ->addOrderBy('csh.id', 'DESC')
             ->setMaxResults(2);
 
         return $queryBuilder->getQuery()->getResult();
@@ -94,19 +100,20 @@ class ClientsStatusHistoryRepository extends EntityRepository
     /**
      * @param int $client
      *
-     * @return mixed
+     * @return int
+     *
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getValidationsCount(int $client) : int
+    public function getValidationsCount(int $client): int
     {
         $queryBuilder = $this->createQueryBuilder('csh');
-        $queryBuilder->select('COUNT(csh.idClientStatusHistory)')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idClientStatus = cs.idClientStatus')
+        $queryBuilder
+            ->select('COUNT(csh.id)')
             ->where('csh.idClient = :idClient')
-            ->andWhere('cs.status = :validated')
+            ->andWhere('csh.idStatus = :validated')
             ->setParameter('idClient', $client)
-            ->setParameter('validated', ClientsStatus::VALIDATED);
+            ->setParameter('validated', ClientsStatus::STATUS_VALIDATED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

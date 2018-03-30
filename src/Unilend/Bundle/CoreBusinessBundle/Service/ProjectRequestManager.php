@@ -4,16 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyRating;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies, CompanyRating, CompanyStatus, Projects, ProjectsStatus, TaxType, Users, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\SourceManager;
@@ -30,8 +23,8 @@ class ProjectRequestManager
     private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
-    /** @var WalletCreationManager */
-    private $walletCreationManager;
+    /** @var ClientCreationManager */
+    private $clientCreationManager;
     /** @var SourceManager */
     private $sourceManager;
     /** @var PartnerManager */
@@ -50,7 +43,7 @@ class ProjectRequestManager
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param EntityManager          $entityManager
-     * @param WalletCreationManager  $walletCreationManager
+     * @param ClientCreationManager  $clientCreationManager
      * @param SourceManager          $sourceManager
      * @param PartnerManager         $partnerManager
      * @param EligibilityManager     $eligibilityManager
@@ -62,7 +55,7 @@ class ProjectRequestManager
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
-        WalletCreationManager $walletCreationManager,
+        ClientCreationManager $clientCreationManager,
         SourceManager $sourceManager,
         PartnerManager $partnerManager,
         EligibilityManager $eligibilityManager,
@@ -74,7 +67,7 @@ class ProjectRequestManager
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
         $this->entityManager          = $entityManager;
-        $this->walletCreationManager  = $walletCreationManager;
+        $this->clientCreationManager  = $clientCreationManager;
         $this->sourceManager          = $sourceManager;
         $this->partnerManager         = $partnerManager;
         $this->eligibilityManager     = $eligibilityManager;
@@ -173,8 +166,8 @@ class ProjectRequestManager
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
             ->setSlugOrigine($this->sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-        $siren             = substr($formData['siren'], 0, 9);
-        $siret             = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
+        $siren = substr($formData['siren'], 0, 9);
+        $siret = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
 
         $company = new Companies();
         $company
@@ -185,21 +178,16 @@ class ProjectRequestManager
             ->setEmailFacture($email);
 
         $this->entityManager->beginTransaction();
+
         try {
             $this->entityManager->persist($client);
-
-            $clientAddress = new ClientsAdresses();
-            $clientAddress->setIdClient($client);
-
-            $this->entityManager->persist($clientAddress);
-            $this->entityManager->flush($clientAddress);
 
             $company->setIdClientOwner($client);
 
             $this->entityManager->persist($company);
             $this->entityManager->flush($company);
 
-            $this->walletCreationManager->createWallet($client, WalletType::BORROWER);
+            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
@@ -273,15 +261,19 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \projects $projectData
-     * @param int       $userId
+     * @param \projects|Projects $projectToCheck
+     * @param int                $userId
      *
      * @return null|array
      */
-    public function checkProjectRisk(\projects $projectData, $userId)
+    public function checkProjectRisk($projectToCheck, int $userId): ?array
     {
-        $project     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectData->id_project);
-        $company     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($projectData->id_company);
+        if ($projectToCheck instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectToCheck->id_project);
+        } else {
+            $project = $projectToCheck;
+        }
+        $company     = $project->getIdCompany();
         $eligibility = $this->checkCompanyRisk($company, $userId, $project);
 
         $companyRatingHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
@@ -294,28 +286,36 @@ class ProjectRequestManager
             ->findBy(['idCompany' => $company->getIdCompany()], ['clotureExerciceFiscal' => 'DESC'], 1);
 
         if (false === empty($lastBalance)) {
-            $projectData->id_dernier_bilan = $lastBalance[0]->getIdBilan();
+            $project->setIdDernierBilan($lastBalance[0]->getIdBilan());
+        }
+        $balanceCount = null === $company->getDateCreation() ? 0 : $company->getDateCreation()->diff(new \DateTime())->y;
+        $project
+            ->setBalanceCount($balanceCount)
+            ->setIdCompanyRatingHistory($lastCompanyRatingHistory->getIdCompanyRatingHistory());
+        try {
+            $this->entityManager->flush($project);
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Could not save balance count and last rating history on project: ' . $project->getIdProject() . ' Error: ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
         }
 
-        $projectData->balance_count             = null === $company->getDateCreation() ? 0 : $company->getDateCreation()->diff(new \DateTime())->y;
-        $projectData->id_company_rating_history = $lastCompanyRatingHistory->getIdCompanyRatingHistory();
-        $projectData->update();
-
         if (is_array($eligibility) && false === empty($eligibility)) {
-            return $this->addRejectionProjectStatus($eligibility[0], $projectData, $userId);
+            return $this->addRejectionProjectStatus($eligibility[0], $project, $userId);
         }
 
         return null;
     }
 
     /**
-     * @param string    $motive
-     * @param \projects $project
-     * @param int       $userId
+     * @param string             $motive
+     * @param \projects|Projects $project
+     * @param int                $userId
      *
      * @return array
      */
-    public function addRejectionProjectStatus($motive, $project, $userId)
+    public function addRejectionProjectStatus(string $motive, $project, int $userId): array
     {
         $status = substr($motive, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE)) === ProjectsStatus::UNEXPECTED_RESPONSE
             ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
@@ -327,30 +327,34 @@ class ProjectRequestManager
     }
 
     /**
-     * @param \projects $project
-     * @param int       $userId
-     * @param boolean   $addProjectStatus
+     * @param \projects|Projects $project
+     * @param int                $userId
+     * @param boolean            $addProjectStatus
      *
      * @return int
      */
-    public function assignEligiblePartnerProduct(\projects $project, $userId, $addProjectStatus = false)
+    public function assignEligiblePartnerProduct($project, int $userId, $addProjectStatus = false): int
     {
         try {
-            if (false === empty($project->id_partner)) {
+            if ($project instanceof \projects) {
+                $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            }
+
+            if (false === empty($project->getIdPartner())) {
                 $products = $this->partnerProductManager->findEligibleProducts($project);
 
                 if (count($products) === 1 && isset($products[0]) && $products[0] instanceof \product) {
-                    $project->id_product = $products[0]->id_product;
+                    $project->setIdProduct($products[0]->id_product);
 
                     $partnerProduct = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')
-                        ->findOneBy(['idPartner' => $project->id_partner, 'idProduct' => $products[0]->id_product]);
+                        ->findOneBy(['idPartner' => $project->getIdPartner(), 'idProduct' => $products[0]->id_product]);
 
                     if (null !== $partnerProduct) {
-                        $project->id_product                = $partnerProduct->getIdProduct()->getIdProduct();
-                        $project->commission_rate_funds     = $partnerProduct->getCommissionRateFunds();
-                        $project->commission_rate_repayment = $partnerProduct->getCommissionRateRepayment();
-                        $project->update();
+                        $project->setIdProduct($partnerProduct->getIdProduct()->getIdProduct());
+                        $project->setCommissionRateFunds($partnerProduct->getCommissionRateFunds());
+                        $project->setCommissionRateRepayment($partnerProduct->getCommissionRateRepayment());
                     }
+                    $this->entityManager->flush($project);
                 }
 
                 if (empty($products) && $addProjectStatus) {
@@ -359,10 +363,16 @@ class ProjectRequestManager
 
                 return count($products);
             } else {
-                $this->logger->warning('Cannot find eligible partner product for project ' . $project->id_project . ' id_partner is empty');
+                $this->logger->warning(
+                    'Cannot find eligible partner product for project ' . $project->getIdProject() . ' id_partner is empty',
+                    ['method' => __METHOD__]
+                );
             }
         } catch (\Exception $exception) {
-            $this->logger->error('An exception occurs when trying to assign the product to the project ' . $project->id_project . '. Errors : ' . $exception->getMessage());
+            $this->logger->error(
+                'An exception occurs when trying to assign the product to the project ' . $project->getIdProject() . '. Errors : ' . $exception->getMessage(),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
         }
 
         return 0;

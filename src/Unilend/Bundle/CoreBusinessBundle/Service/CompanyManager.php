@@ -5,15 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatusHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType
+};
 
 class CompanyManager
 {
@@ -21,8 +15,8 @@ class CompanyManager
     private $entityManager;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
-    /** @var WalletCreationManager */
-    private $walletCreationManager;
+    /** @var ClientCreationManager */
+    private $clientCreationManager;
     /** @var TranslatorInterface */
     private $translator;
     /** @var LoggerInterface */
@@ -31,21 +25,21 @@ class CompanyManager
     /**
      * @param EntityManager         $entityManager
      * @param ProjectStatusManager  $projectStatusManager
-     * @param WalletCreationManager $walletCreationManager
+     * @param ClientCreationManager $clientCreationManager
      * @param TranslatorInterface   $translator
      * @param LoggerInterface       $logger
      */
     public function __construct(
         EntityManager $entityManager,
         ProjectStatusManager $projectStatusManager,
-        WalletCreationManager $walletCreationManager,
+        ClientCreationManager $clientCreationManager,
         TranslatorInterface $translator,
         LoggerInterface $logger
     )
     {
         $this->entityManager         = $entityManager;
         $this->projectStatusManager  = $projectStatusManager;
-        $this->walletCreationManager = $walletCreationManager;
+        $this->clientCreationManager = $clientCreationManager;
         $this->translator            = $translator;
         $this->logger                = $logger;
     }
@@ -57,24 +51,18 @@ class CompanyManager
      */
     public function getPossibleStatus(Companies $company)
     {
-        $companyStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
+        $possibleStatus = [CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
 
-        switch ($company->getIdStatus()->getLabel()) {
-            case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
-                $possibleStatus = [CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
-                break;
-            case CompanyStatus::STATUS_RECEIVERSHIP:
-                $possibleStatus = [CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
-                break;
-            default:
-                $possibleStatus = [CompanyStatus::STATUS_IN_BONIS, CompanyStatus::STATUS_PRECAUTIONARY_PROCESS, CompanyStatus::STATUS_RECEIVERSHIP, CompanyStatus::STATUS_COMPULSORY_LIQUIDATION];
+        if (CompanyStatus::STATUS_IN_BONIS === $company->getIdStatus()->getLabel()) {
+            $possibleStatus[] = CompanyStatus::STATUS_IN_BONIS;
         }
 
-        return $companyStatus->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findBy(['label' => $possibleStatus], ['id' => 'ASC']);
     }
 
     /**
      * @param string $statusLabel
+     *
      * @return string
      */
     public function getCompanyStatusNameByLabel($statusLabel)
@@ -142,9 +130,8 @@ class CompanyManager
      */
     public function createBorrowerBlankCompany($siren = null, $userId)
     {
-        $clientEntity        = new Clients();
-        $companyEntity       = new Companies();
-        $clientAddressEntity = new ClientsAdresses();
+        $clientEntity  = new Clients();
+        $companyEntity = new Companies();
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -155,9 +142,6 @@ class CompanyManager
             $this->entityManager->persist($clientEntity);
             $this->entityManager->flush($clientEntity);
 
-            $clientAddressEntity->setIdClient($clientEntity);
-            $this->entityManager->persist($clientAddressEntity);
-
             $companyEntity
                 ->setSiren($siren)
                 ->setIdClientOwner($clientEntity)
@@ -165,7 +149,7 @@ class CompanyManager
             $this->entityManager->persist($companyEntity);
             $this->entityManager->flush($companyEntity);
 
-            $this->walletCreationManager->createWallet($clientEntity, WalletType::BORROWER);
+            $this->clientCreationManager->createAccount($clientEntity, WalletType::BORROWER, $userId, ClientsStatus::STATUS_VALIDATED);
 
             $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);

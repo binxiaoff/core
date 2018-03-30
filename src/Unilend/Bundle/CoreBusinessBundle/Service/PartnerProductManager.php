@@ -1,7 +1,9 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Product, Projects
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 
 class PartnerProductManager extends ProductManager
@@ -24,16 +26,17 @@ class PartnerProductManager extends ProductManager
     }
 
     /**
-     * @param \projects $project
-     * @param bool      $includeInactiveProduct
+     * @param \projects|Projects $project
+     * @param bool               $includeInactiveProduct
      *
      * @return \product[]
      */
-    public function findEligibleProducts(\projects $project, $includeInactiveProduct = false)
+    public function findEligibleProducts($project, bool $includeInactiveProduct = false): array
     {
         $eligibleProducts = [];
+        $project          = $this->convertProject($project);
 
-        foreach ($this->getAvailableProducts($includeInactiveProduct, $project->id_partner) as $product) {
+        foreach ($this->getAvailableProducts($includeInactiveProduct, $project->getIdPartner()->getId()) as $product) {
             if ($this->isProjectEligible($project, $product)) {
                 $eligibleProduct    = clone $product;
                 $eligibleProducts[] = $eligibleProduct;

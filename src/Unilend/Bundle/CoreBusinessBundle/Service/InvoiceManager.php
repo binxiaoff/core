@@ -5,12 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Knp\Snappy\GeneratorInterface;
 use Twig_Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompteurFactures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    CompteurFactures, EcheanciersEmprunteur, Factures, Projects, ProjectsStatus, TaxType
+};
 
 class InvoiceManager
 {
@@ -94,6 +91,9 @@ class InvoiceManager
     /**
      * @param Factures       $invoice
      * @param \DateTime|null $paymentDate
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Twig_Error
      */
     private function generateInvoice(Factures $invoice, \DateTime $paymentDate = null)
     {
@@ -108,11 +108,12 @@ class InvoiceManager
 
         $filePath   = $this->getBorrowerInvoiceFilePath($invoice);
         $pdfContent = $this->twig->render('/pdf/borrower_invoice.html.twig', [
-            'client'      => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
-            'project'     => $invoice->getIdProject(),
-            'invoice'     => $invoice,
-            'paymentDate' => null === $paymentDate ? $invoice->getDate() : $paymentDate,
-            'vat'         => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
+            'client'         => $invoice->getIdProject()->getIdCompany()->getIdClientOwner(),
+            'companyAddress' => $invoice->getIdProject()->getIdCompany()->getIdAddress(),
+            'project'        => $invoice->getIdProject(),
+            'invoice'        => $invoice,
+            'paymentDate'    => null === $paymentDate ? $invoice->getDate() : $paymentDate,
+            'vat'            => $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT),
         ]);
 
         $this->snappy->generateFromHtml($pdfContent, $filePath, $options, true);

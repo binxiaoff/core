@@ -30,6 +30,7 @@ class ProjectManager
 
     /**
      * @param \projects $project
+     *
      * @return \DateTime
      */
     public function getProjectEndDate(\projects $project)
@@ -57,6 +58,7 @@ class ProjectManager
 
     /**
      * @param \projects $project
+     *
      * @return array
      */
     public function getBidsSummary(\projects $project)
@@ -105,6 +107,7 @@ class ProjectManager
 
     /**
      * @param int $amount
+     *
      * @return int
      */
     public function getAverageFundingDuration($amount)
@@ -152,8 +155,8 @@ class ProjectManager
         $commission              = ($financialCalculation->PMT($commissionRateRepayment / 12, $duration, -$amount) - $financialCalculation->PMT(0, $duration, -$amount)) * (1 + $vatRate);
 
         return [
-            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, - $amount) + $commission),
-            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, - $amount) + $commission)
+            'minimum' => round($financialCalculation->PMT($minimumRate / 100 / 12, $duration, -$amount) + $commission),
+            'maximum' => round($financialCalculation->PMT($maximumRate / 100 / 12, $duration, -$amount) + $commission)
         ];
     }
 
@@ -283,35 +286,56 @@ class ProjectManager
     /**
      * @param Projects $project
      *
-     * @return float
+     * @return array
      */
-    public function getRemainingAmount(Projects $project)
+    public function getOverdueAmounts(Projects $project): array
     {
-        $remainingAmount = 0;
         if (null === $project->getCloseOutNettingDate()) {
-            $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
-            $remainingAmount  = round(bcadd($remainingAmounts['commission'], bcadd($remainingAmounts['capital'], $remainingAmounts['interest'], 4), 4), 2);
+            $overdueAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
         } else {
+            $overdueAmounts = $this->getCloseOutNettingRemainingAmounts($project);
+        }
+
+        return $overdueAmounts;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getRemainingAmounts(Projects $project): array
+    {
+        if (null === $project->getCloseOutNettingDate()) {
+            $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+        } else {
+            $remainingAmounts = $this->getCloseOutNettingRemainingAmounts($project);
+        }
+
+        return $remainingAmounts;
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    private function getCloseOutNettingRemainingAmounts(Projects $project): array
+    {
+        $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+
+        if ($project->getCloseOutNettingDate()) {
             $closeOutNettingPayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
             if ($closeOutNettingPayment) {
-
-
-            $totalAmount = round(bcadd(
-                $closeOutNettingPayment->getCommissionTaxIncl(),
-                bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
-                4
-            ), 2);
-            $paidAmount  = round(bcadd(
-                $closeOutNettingPayment->getPaidCommissionTaxIncl(),
-                bcadd($closeOutNettingPayment->getPaidCapital(), $closeOutNettingPayment->getPaidInterest(), 4),
-                4
-            ), 2);
-
-            $remainingAmount = round(bcsub($totalAmount, $paidAmount, 4), 2);
+                $remainingAmounts = [
+                    'capital'    => round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2),
+                    'interest'   => round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2),
+                    'commission' => round(bcsub($closeOutNettingPayment->getCommissionTaxIncl(), $closeOutNettingPayment->getPaidCommissionTaxIncl(), 4), 2),
+                ];
             }
         }
 
-        return $remainingAmount;
+        return $remainingAmounts;
     }
 
     /**

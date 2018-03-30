@@ -2,18 +2,17 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TemporaryLinksLogin;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Companies, CompanyClient, TemporaryLinksLogin, Users, WalletType
+};
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
@@ -95,6 +94,8 @@ class UsersController extends Controller
                     $client->setStatus(Clients::STATUS_OFFLINE);
                     $entityManager->persist($client);
                     $entityManager->flush();
+
+                    $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
                     break;
                 case 'activate':
                     $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
@@ -102,6 +103,8 @@ class UsersController extends Controller
                         $client->setStatus(Clients::STATUS_ONLINE);
                         $entityManager->persist($client);
                         $entityManager->flush();
+
+                        $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
                     } else {
                         $this->addFlash('partnerUserError', $this->get('translator')->trans('partner-users_duplicate-online-user-error-message'));
                     }
@@ -198,7 +201,8 @@ class UsersController extends Controller
         $ficelle = Loader::loadLib('ficelle');
 
         $client = new Clients();
-        $client->setNom($request->request->get('lastname'))
+        $client
+            ->setNom($request->request->get('lastname'))
             ->setPrenom($request->request->get('firstname'))
             ->setEmail($request->request->get('email'))
             ->setTelephone($request->request->get('phone'))
@@ -207,9 +211,10 @@ class UsersController extends Controller
             ->setStatus(Clients::STATUS_ONLINE);
 
         $companyClient = new CompanyClient();
-        $companyClient->setIdCompany($company);
-        $companyClient->setIdClient($client);
-        $companyClient->setRole('admin' === $request->request->get('role') ? UserPartner::ROLE_ADMIN : UserPartner::ROLE_USER);
+        $companyClient
+            ->setIdCompany($company)
+            ->setIdClient($client)
+            ->setRole('admin' === $request->request->get('role') ? UserPartner::ROLE_ADMIN : UserPartner::ROLE_USER);
 
         $entityManager->beginTransaction();
 
@@ -218,7 +223,7 @@ class UsersController extends Controller
             $entityManager->persist($companyClient);
             $entityManager->flush();
 
-            $this->get('unilend.service.wallet_creation_manager')->createWallet($client, WalletType::PARTNER);
+            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::PARTNER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
 
             $entityManager->commit();
 

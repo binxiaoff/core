@@ -12,21 +12,21 @@
     <div class="pull-left">
         <a href="/recouvreur/liste" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Liste des recouvreurs</a>
     </div>
-    {% if address is not empty %}
+    {% if company is not empty %}
         <h1 class="page-heading push-5" style="margin: 30px 0 30px;">
-            Agence de recouvrement {{ address.idClient.nom }}
+            Agence de recouvrement {{ company.name }}
         </h1>
         <table class="table-condensed push-20" style="margin-left: -3px;">
             <th>Adresse :</th>
-            <td>{{ address.adresse1 ~ ', ' ~ address.cp ~ ' ' ~ address.ville }}</td>
+            <td>{{ company.idAddress.address ~ ', ' ~ company.idAddress.zip ~ ' ' ~ company.idAddress.city }}</td>
             <th>Telephone :</th>
-            <td>{{ address.idClient.telephone }}</td>
+            <td>{{ company.phone }}</td>
         </table>
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    {% if address is empty %}
+    {% if company is empty %}
         <div class="content">
             <div class="block block-bordered">
                 <div class="block-content">

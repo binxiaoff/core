@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
+    AttachmentType, Bids, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -17,9 +17,9 @@ class transfertsController extends bootstrap
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
             Receptions::STATUS_ASSIGNED_MANUAL => 'Manu',
-            Receptions::STATUS_ASSIGNED_AUTO   => 'Auto',
+            Receptions::STATUS_ASSIGNED_AUTO   => 'Plateforme',
             Receptions::STATUS_IGNORED_MANUAL  => 'Ignoré manu',
-            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré auto'
+            Receptions::STATUS_IGNORED_AUTO    => 'Ignoré plateforme'
         ];
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
@@ -35,18 +35,28 @@ class transfertsController extends bootstrap
     public function _preteurs()
     {
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
-            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getLenderAttributions();
+            /** @var EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::LENDER]);
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getAttributions($walletType);
             $this->hideDecoration();
             $this->view = 'csv';
+        } else {
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => false]);
         }
     }
 
     public function _emprunteurs()
     {
         if (isset($this->params[0]) && 'csv' === $this->params[0]) {
-            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getBorrowerAttributions();
+            /** @var EntityManager $entityManager */
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::BORROWER]);
+            $this->receptions = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->getAttributions($walletType);
             $this->hideDecoration();
             $this->view = 'csv';
+        } else {
+            $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => false]);
         }
     }
 
@@ -59,6 +69,7 @@ class transfertsController extends bootstrap
             $currencyFormatter = $this->get('currency_formatter');
 
             $receptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $userRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
             $query    = $this->handleDataTablesRequest($this->request->query->all());
             $start    = $query['start'];
@@ -75,42 +86,43 @@ class transfertsController extends bootstrap
             $affectedReceptions      = [];
 
             try {
-                if ($this->params[0] === 'preteur') {
-                    $receptionsCount         = $receptionRepository->getLenderAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getLenderAttributionsCount($search, $dateFrom, $dateTo);
-                    $receptions              = $receptionRepository->getLenderAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
+                if ($this->params[0] === 'preteurs') {
+                    $walletTypeLabel = WalletType::LENDER;
                 } else {
-                    $receptionsCount         = $receptionRepository->getBorrowerAttributionsCount();
-                    $receptionsCountFiltered = $receptionRepository->getBorrowerAttributionsCount($search, $dateFrom, $dateTo);
-                    $receptions              = $receptionRepository->getBorrowerAttributions($limit, $start, $sort, $search, $dateFrom, $dateTo);
+                    $walletTypeLabel = WalletType::BORROWER;
                 }
+                $walletType              = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => $walletTypeLabel]);
+                $receptionsCount         = $receptionRepository->getAttributionsCount($walletType);
+                $receptionsCountFiltered = $receptionRepository->getAttributionsCount($walletType, $search, $dateFrom, $dateTo);
+                $receptions              = $receptionRepository->getAttributions($walletType, $limit, $start, $sort, $search, $dateFrom, $dateTo);
 
                 foreach ($receptions as $reception) {
-                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception->getStatusBo() && null !== $reception->getIdUser()) {
-                        $attribution = $reception->getIdUser()->getFirstname() . ' ' . $reception->getIdUser()->getName() . '<br>' . $reception->getAssignmentDate()->format('d/m/Y H:i:s');
+                    if (Receptions::STATUS_ASSIGNED_MANUAL == $reception['statusBo'] && null !== $reception['idUser'] && $user = $userRepository->find($reception['idUser'])) {
+                        $attribution = $user->getFirstname() . ' ' . $user->getName();
                     } else {
-                        $attribution = $this->statusOperations[$reception->getStatusBo()];
+                        $attribution = $this->statusOperations[$reception['statusBo']];
                     }
 
                     $affectedReceptions[] = [
-                        0  => $reception->getIdReception(),
-                        1  => $reception->getMotif(),
-                        2  => $currencyFormatter->formatCurrency(round(bcdiv($reception->getMontant(), 100, 4), 2), 'EUR'),
-                        3  => $attribution,
-                        4  => $reception->getIdClient() ? $reception->getIdClient()->getIdClient() : '',
-                        5  => $reception->getIdproject() ? $reception->getIdproject()->getIdproject() : '',
-                        6  => $reception->getAdded()->format('d/m/Y'),
-                        7  => '',
-                        8  => $reception->getComment(),
-                        9  => $reception->getLigne(),
-                        10 => Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception->getStatusPrelevement() || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception->getStatusVirement()
+                        0  => $reception['idReception'],
+                        1  => $reception['idClient'],
+                        2  => $reception['idProject'],
+                        3  => $reception['motif'],
+                        4  => $currencyFormatter->formatCurrency(round(bcdiv($reception['montant'], 100, 4), 2), 'EUR'),
+                        5  => $attribution,
+                        6  => $reception['assigned'] instanceof DateTime ? $reception['assigned']->format('d/m/Y à H:i:s') : '',
+                        7  => $reception['added']->format('d/m/Y'),
+                        8  => '',
+                        9  => $reception['comment'],
+                        10 => $reception['ligne'],
+                        11 => Receptions::DIRECT_DEBIT_STATUS_REJECTED === $reception['statusPrelevement'] || Receptions::WIRE_TRANSFER_STATUS_REJECTED === $reception['statusVirement']
                     ];
                 }
             } catch (Exception $exception) {
-                $error = 'une erreur est survenue lors de la récupération des réceptions attribuées.';
+                $error = 'Une erreur est survenue lors de la récupération des réceptions attribuées.';
                 /** @var LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning($error, ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                $logger->warning($error . ' Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
             }
 
             if (empty($error)) {
@@ -816,8 +828,6 @@ class transfertsController extends bootstrap
     public function _succession()
     {
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             /** @var \clients $originalClient */
@@ -825,33 +835,35 @@ class transfertsController extends bootstrap
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-            $walletRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
-                && (false === is_numeric($_POST['id_client_to_transfer'])
+                && (
+                    false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
-                    || false === $clientManager->isLender($originalClient))
+                    || false === $originalClient->isLender()
+                )
             ) {
                 $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
             }
 
             if (
                 false === empty($_POST['id_client_receiver'])
-                && (false === is_numeric($_POST['id_client_receiver'])
+                && (
+                    false === is_numeric($_POST['id_client_receiver'])
                     || false === $newOwner->get($_POST['id_client_receiver'])
-                    || false === $clientManager->isLender($newOwner))
+                    || false === $newOwner->isLender()
+                )
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
-            $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
-            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
-            if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
+            $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
+            $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
+
+            if ($newOwnerStatus !== ClientsStatus::STATUS_VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -887,7 +899,7 @@ class transfertsController extends bootstrap
             if (isset($_POST['succession_validate'])) {
                 $transferDocument = $this->request->files->get('transfer_document');
                 if (null === $transferDocument) {
-                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfert');
                 }
 
                 $entityManager->getConnection()->beginTransaction();
@@ -926,17 +938,25 @@ class transfertsController extends bootstrap
                         $numberLoans += 1;
                     }
 
-                    $lenderStatQueueOriginal = new LenderStatisticQueue();
-                    $lenderStatQueueOriginal->setIdWallet($originalWallet);
-                    $entityManager->persist($lenderStatQueueOriginal);
-                    $lenderStatQueueNew = new LenderStatisticQueue();
-                    $lenderStatQueueNew->setIdWallet($newWallet);
-                    $entityManager->persist($lenderStatQueueNew);
+                    $lenderStatQueueRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue');
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $originalWallet])) {
+                        $lenderStatQueueOriginal = new LenderStatisticQueue();
+                        $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                        $entityManager->persist($lenderStatQueueOriginal);
+                    }
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $newWallet])) {
+                        $lenderStatQueueNew = new LenderStatisticQueue();
+                        $lenderStatQueueNew->setIdWallet($newWallet);
+                        $entityManager->persist($lenderStatQueueNew);
+                    }
+
                     $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
-                        $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                        $clientStatusManager->closeLenderAccount($originalClient, $_SESSION['user']['id_user'], $comment);
                     } catch (\Exception $exception) {
                         $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
                         throw $exception;
@@ -945,7 +965,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $lastStatus,
+                        $newOwnerStatus,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 
@@ -954,6 +974,7 @@ class transfertsController extends bootstrap
                     $entityManager->getConnection()->rollback();
                     throw $exception;
                 }
+
                 $_SESSION['succession']['success'] = [
                     'accountBalance' => $originalClientBalance,
                     'numberLoans'    => $numberLoans,

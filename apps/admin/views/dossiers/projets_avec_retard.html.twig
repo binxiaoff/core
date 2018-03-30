@@ -17,7 +17,8 @@
                 $('#late-payments-table').dataTable({
                     columnDefs: [
                         {targets: [3,4,5], type: 'formatted-num'}
-                    ]
+                    ],
+                    order: [[2, "asc"], [3, "desc"]]
                 })
             {% endif %}
         })
@@ -39,7 +40,7 @@
                         <h3 class="block-title">Retard emprunteurs</h3>
                     </div>
                     <div class="block-content text-center">
-                        <p class="h3 text-primary pull-t">{{ remainingAmountToCollect|localizedcurrency('EUR') }}</p>
+                        <p class="h3 text-primary pull-t">{{ totalOverdueAmountToCollect|localizedcurrency('EUR') }}</p>
                     </div>
                 </div>
             </div>
@@ -83,22 +84,28 @@
                         <th style="width: 20%">
                             Projet
                         </th>
-                        <th style="width: 15%">
-                            Statut
+                        <th style="width: 7%">
+                            Statut Projet
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 8%">
+                            Statut Société
+                        </th>
+                        <th style="width: 11%">
+                            Nombre d'échéances impayées
+                        </th>
+                        <th style="width: 12%">
                             Déchéance du terme
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 11%">
                             Retard emprunteur
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 11%">
                             Confié au recouvreur
                         </th>
-                        <th style="width: 15%">
+                        <th style="width: 10%">
                             Réceptions à traiter
                         </th>
-                        <th style="width: 5%">
+                        <th style="width: 10%">
                             Action
                         </th>
                     </tr>
@@ -107,18 +114,27 @@
                     {% for projectId, project in projectWithPaymentProblems %}
                         <tr>
                             <td>
-                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}</a><br>
+                                <a href="/dossiers/edit/{{ project.projectId }}">{{ project.projectTitle }}<br><span class="text-muted">ID projet : {{ projectId }}</span></a>
                             </td>
                             <td>
-                                <span class="label ui-project-status-{{ project.projectStatus }}-bg ui-company-status-{{ project.companyStatusLabel }}-bg">{{ project.projectStatusLabel }}</span>
+                               {{ project.projectStatusLabel }}
                             </td>
-                            <td class="text-right">
+                            <td>
+                                {{ project.companyStatusLabel }}
+                            </td>
+                            <td>
+                                {{ project.overduePaymentScheduleCount }}
+                                {% if project.closeOutNettingDate is not empty %}
+                                    (à la date de DDT)
+                                {% endif %}
+                            </td>
+                            <td>
                                 {% if project.closeOutNettingDate is not empty %}
                                     {{ project.closeOutNettingDate|localizeddate('short', 'none') }}
                                 {% endif %}
                             </td>
                             <td class="text-right">
-                                {{ project.remainingAmount|localizedcurrency('EUR') }}
+                                {{ project.overdueAmount|localizedcurrency('EUR') }}
                             </td>
                             <td class="text-right">
                                 {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
@@ -135,14 +151,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
-                <div class="row font-s12">
-                    <small class="label push-10-l ui-project-status-100-bg">&nbsp;</small> Retard
-                    <small class="label push-10-l ui-company-status-precautionary_process-bg">&nbsp;</small> Procédure de sauvegarde
-                    <small class="label push-10-l ui-company-status-receivership-bg">&nbsp;</small> Redressement judiciaire
-                    <small class="label push-10-l ui-company-status-compulsory_liquidation-bg">&nbsp;</small> Liquidation judiciaire
-                </div>
             </div>
-
         </div>
         {% endif %}
     </div>

@@ -472,10 +472,9 @@ class parrainageController extends bootstrap
                 die;
             }
 
-            $toBeCheckedStatus      = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->findOneBy(['status' => ClientsStatus::TO_BE_CHECKED]);
             $firstToBeCheckedStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')
                 ->findOneBy(
-                    ['idClient' => $sponsee->getIdClient(), 'idClientStatus' => $toBeCheckedStatus->getIdClientStatus()],
+                    ['idClient' => $sponsee->getIdClient(), 'idStatus' => ClientsStatus::STATUS_TO_BE_CHECKED],
                     ['added' => 'ASC']
                 );
 

@@ -7,9 +7,7 @@
 
 {% block dashboardContent %}
     <div class="dashboard-tabs tabs">
-        {% if showNavigation %}
-            {% include 'lender_wallet/tabnavigation.html.twig' %}
-        {% endif %}
+        {% include 'lender_wallet/tabnavigation.html.twig' %}
 
         <div class="dashboard-tabs-content tab-content">
             <article id="balance-deposit" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">

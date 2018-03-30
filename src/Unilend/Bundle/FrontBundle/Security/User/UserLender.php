@@ -4,19 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Security\User;
 
 class UserLender extends BaseUser
 {
-    /** @var float $balance */
+    /** @var float */
     private $balance;
-    /** @var string $initials */
+    /** @var string */
     private $initials;
     /** @var string */
     private $firstName;
     /** @var string */
     private $lastName;
-    /** @var int */
-    private $clientStatus;
-    /** @var bool $hasAcceptedCurrentTerms */
+    /** @var bool */
     private $hasAcceptedCurrentTerms;
-    /** @var array $notifications */
+    /** @var array */
     private $notifications;
     /** @var int */
     private $subscriptionStep;
@@ -25,18 +23,18 @@ class UserLender extends BaseUser
 
     /**
      * @param string         $username
-     * @param string         $password
+     * @param string|null    $password
      * @param string         $email
-     * @param string         $salt
-     * @param array          $roles
+     * @param string|null    $salt
+     * @param string[]       $roles
      * @param bool           $isActive
      * @param int            $clientId
      * @param string         $hash
+     * @param int            $clientStatus
      * @param float          $balance
      * @param string         $initials
-     * @param string         $firstName
-     * @param string         $lastName
-     * @param int|null       $clientStatus
+     * @param string|null    $firstName
+     * @param string|null    $lastName
      * @param bool           $hasAcceptedCurrentTerms
      * @param array          $notifications
      * @param int            $subscriptionStep
@@ -45,18 +43,18 @@ class UserLender extends BaseUser
      */
     public function __construct(
         string $username,
-        string $password,
+        ?string $password,
         string $email,
-        string $salt,
+        ?string $salt,
         array $roles,
         bool $isActive,
         int $clientId,
         string $hash,
+        int $clientStatus,
         float $balance,
         string $initials,
-        string $firstName,
-        string $lastName,
-        ?int $clientStatus,
+        ?string $firstName,
+        ?string $lastName,
         bool $hasAcceptedCurrentTerms,
         array $notifications,
         int $subscriptionStep,
@@ -64,77 +62,86 @@ class UserLender extends BaseUser
         ?\DateTime $lastLoginDate = null
     )
     {
-        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $lastLoginDate);
+        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $clientStatus, $lastLoginDate);
 
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;
         $this->lastName                = $lastName;
-        $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
         $this->notifications           = $notifications;
         $this->subscriptionStep        = $subscriptionStep;
         $this->level                   = $level;
     }
 
-    public function getBalance()
+    /**
+     * @return float
+     */
+    public function getBalance(): float
     {
         return $this->balance;
     }
 
-    public function getInitials()
+    /**
+     * @return string
+     */
+    public function getInitials(): string
     {
         return $this->initials;
     }
 
-    public function getFirstName()
+    /**
+     * @return string|null
+     */
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
-    public function getLastName()
+    /**
+     * @return string|null
+     */
+    public function getLastName(): ?string
     {
         return $this->lastName;
     }
 
-    public function getClientStatus()
-    {
-        return $this->clientStatus;
-    }
-
-    public function hasAcceptedCurrentTerms()
+    /**
+     * @return bool
+     */
+    public function hasAcceptedCurrentTerms(): bool
     {
         return $this->hasAcceptedCurrentTerms;
     }
 
-    public function getNotifications()
+    /**
+     * @return array
+     */
+    public function getNotifications(): array
     {
         return $this->notifications;
     }
 
-    public function getUnreadNotificationsCount()
-    {
-        if (in_array('unread', array_column($this->notifications, 'status'))) {
-            return array_count_values(array_column($this->notifications, 'status'))['unread'];
-        }
-
-        return 0;
-    }
-
-    public function getSubscriptionStep()
+    /**
+     * @return int
+     */
+    public function getSubscriptionStep(): int
     {
         return $this->subscriptionStep;
     }
 
-    public function getLevel()
+    /**
+     * @return int
+     */
+    public function getLevel(): int
     {
         return $this->level;
     }
 
     /**
-     * @param double $balance
+     * @param float $balance
      */
-    public function setBalance($balance)
+    public function setBalance(float $balance): void
     {
         $this->balance = $balance;
     }

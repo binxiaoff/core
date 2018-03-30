@@ -2,42 +2,41 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Psr\Log\LoggerInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, ClientsStatusHistory, Users, WalletType
+};
 
 class ClientStatusManager
 {
-    /** @var  EntityManagerSimulator */
-    private $entityManagerSimulator;
-    /** @var  NotificationManager */
+    /** @var NotificationManager */
     private $notificationManager;
-    /** @var  AutoBidSettingsManager */
+    /** @var AutoBidSettingsManager */
     private $autoBidSettingsManager;
-    /** @var  EntityManager */
+    /** @var EntityManager */
     private $entityManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
-     * ClientStatusManager constructor.
-     * @param EntityManagerSimulator $entityManagerSimulator
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param EntityManager          $entityManager
+     * @param LoggerInterface        $logger
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
-        EntityManager $entityManager
+        EntityManager $entityManager,
+        LoggerInterface $logger
     )
     {
-        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->entityManager          = $entityManager;
+        $this->logger                 = $logger;
     }
 
     /**
@@ -46,8 +45,9 @@ class ClientStatusManager
      * @param string   $comment
      *
      * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function closeAccount(\clients $client, $userId, $comment)
+    public function closeLenderAccount(\clients $client, $userId, $comment): void
     {
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
         if ($wallet->getAvailableBalance() > 0) {
@@ -64,57 +64,94 @@ class ClientStatusManager
             $client->update();
         }
 
-        $this->addClientStatus($client, $userId, ClientsStatus::CLOSED_DEFINITELY, $comment);
+        $this->addClientStatus($client, $userId, ClientsStatus::STATUS_CLOSED_DEFINITELY, $comment);
     }
 
     /**
-     * @param \clients $client
-     * @param string   $content
+     * @param Clients $client
+     * @param string  $content
      */
-    public function changeClientStatusTriggeredByClientAction(\clients $client, $content)
+    public function changeClientStatusTriggeredByClientAction(Clients $client, string $content): void
     {
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory    = $this->entityManagerSimulator->getRepository('clients_status_history');
-        $clientStatusRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-        /** @var ClientsStatus $clientStatusEntity */
-        $clientStatusEntity = $clientStatusRepository->getLastClientStatus($client->id_client);
-        $lastStatus         = (empty($clientStatusEntity)) ? null : $clientStatusEntity->getStatus();
-
-        switch ($lastStatus) {
-            case ClientsStatus::COMPLETENESS:
-            case ClientsStatus::COMPLETENESS_REMINDER:
-            case ClientsStatus::COMPLETENESS_REPLY:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::COMPLETENESS_REPLY, $client->id_client, $content);
+        switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
+            case ClientsStatus::STATUS_COMPLETENESS:
+            case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
+            case ClientsStatus::STATUS_COMPLETENESS_REPLY:
+                $status = ClientsStatus::STATUS_COMPLETENESS_REPLY;
                 break;
-            case ClientsStatus::VALIDATED:
-            case ClientsStatus::MODIFICATION:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::MODIFICATION, $client->id_client, $content);
+            case ClientsStatus::STATUS_VALIDATED:
+            case ClientsStatus::STATUS_MODIFICATION:
+                $status = ClientsStatus::STATUS_MODIFICATION;
                 break;
-            case ClientsStatus::TO_BE_CHECKED:
+            case ClientsStatus::STATUS_CREATION:
+                $status = ClientsStatus::STATUS_CREATION;
+                break;
+            case ClientsStatus::STATUS_TO_BE_CHECKED:
             default:
-                $clientStatusHistory->addStatus(Users::USER_ID_FRONT, ClientsStatus::TO_BE_CHECKED, $client->id_client, $content);
+                $status = ClientsStatus::STATUS_TO_BE_CHECKED;
                 break;
         }
+
+        $this->addClientStatus($client, Users::USER_ID_FRONT, $status, $content);
     }
 
     /**
-     * @param \clients|Clients $client
+     * @param Clients|\clients $client
      * @param int              $userId
-     * @param int              $clientStatus
+     * @param int              $status
      * @param string|null      $comment
      * @param int|null         $reminder
      */
-    public function addClientStatus($client, $userId, $clientStatus, $comment = null, $reminder = null)
+    public function addClientStatus($client, int $userId, int $status, ?string $comment = null, ?int $reminder = null): void
     {
-        /** @var \clients_status_history $clientStatusHistory */
-        $clientStatusHistory = $this->entityManagerSimulator->getRepository('clients_status_history');
-
-        if ($client instanceof Clients) {
-            $clientStatusHistory->addStatus($userId, $clientStatus, $client->getIdClient(), $comment, $reminder);
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        if ($client instanceof \clients) {
-            $clientStatusHistory->addStatus($userId, $clientStatus, $client->id_client, $comment, $reminder);
+        if (
+            $client->getIdClientStatusHistory()
+            && $status === $client->getIdClientStatusHistory()->getIdStatus()->getId()
+            && empty($comment)
+            && empty($reminder)
+        ) {
+            return;
+        }
+
+        $this->entityManager->getConnection()->beginTransaction();
+
+        try {
+            $clientStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($status);
+            $user         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($userId);
+
+            $clientStatusHistory = new ClientsStatusHistory();
+            $clientStatusHistory
+                ->setIdClient($client)
+                ->setIdStatus($clientStatus)
+                ->setIdUser($user)
+                ->setContent($comment)
+                ->setNumeroRelance($reminder);
+
+            $this->entityManager->persist($clientStatusHistory);
+            $this->entityManager->flush($clientStatusHistory);
+
+            $client->setIdClientStatusHistory($clientStatusHistory);
+            $this->entityManager->flush($client);
+
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $exception) {
+            $this->logger->error(
+                'Error while changing client status. Message: ' . $exception->getMessage(),
+                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+
+            try {
+                $this->entityManager->getConnection()->rollBack();
+            } catch (ConnectionException $rollBackException) {
+                $this->logger->error(
+                    'Error while trying to rollback the transaction client status update. Message: ' . $rollBackException->getMessage(),
+                    ['id_client' => $client->getIdClient(), 'file' => $rollBackException->getFile(), 'line' => $rollBackException->getLine()]
+                );
+            }
         }
     }
 
@@ -123,7 +160,7 @@ class ClientStatusManager
      *
      * @return bool
      */
-    public function hasBeenValidatedAtLeastOnce(Clients $client)
+    public function hasBeenValidatedAtLeastOnce(Clients $client): bool
     {
         $clientStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
         $previousValidation  = $clientStatusHistory->getFirstClientValidation($client);

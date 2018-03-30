@@ -4,18 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\BidManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Product, Projects, ProjectsStatus
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BidManager, CompanyBalanceSheetManager, ProjectManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserLender
+};
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -132,14 +131,14 @@ class ProjectDisplayManager
      *
      * @return array
      */
-    public function getBaseData(\projects $project)
+    public function getBaseData(\projects $project): array
     {
-        /** @var \companies $company */
-        $company = $this->entityManagerSimulator->getRepository('companies');
-        $company->get($project->id_company);
+        $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($project->id_company);
 
-        $now = new \DateTime('NOW');
-        $end = $this->projectManager->getProjectEndDate($project);
+        $now      = new \DateTime('NOW');
+        $end      = $this->projectManager->getProjectEndDate($project);
+        $daysLeft = $now->diff($end);
+        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
 
         $projectData = [
             'projectId'            => $project->id_project,
@@ -159,22 +158,18 @@ class ProjectDisplayManager
             'projectNeed'          => $project->id_project_need,
             'risk'                 => $project->risk,
             'company'              => [
-                'city'      => $company->city,
-                'zip'       => $company->zip,
-                'sectorId'  => $company->sector,
-                'latitude'  => (float) $company->latitude,
-                'longitude' => (float) $company->longitude
+                'city'      => $company->getIdAddress()->getCity(),
+                'zip'       => $company->getIdAddress()->getZip(),
+                'sectorId'  => $company->getIdAddress()->getIdCompany()->getSector(),
+                'latitude'  => (float) $company->getIdAddress()->getLatitude(),
+                'longitude' => (float) $company->getIdAddress()->getLongitude()
             ],
             'status'               => $project->status,
             'finished'             => ($project->status > ProjectsStatus::EN_FUNDING || $end < $now),
             'averageRate'          => round($project->getAverageInterestRate(), 1),
-            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project)
+            'fundingDuration'      => (ProjectsStatus::EN_FUNDING > $project->status) ? '' : $this->getFundingDurationTranslation($project),
+            'daysLeft'             => $daysLeft
         ];
-
-        $daysLeft = $now->diff($end);
-        $daysLeft = $daysLeft->invert == 0 ? $daysLeft->days : 0;
-
-        $projectData['daysLeft'] = $daysLeft;
 
         return $projectData;
     }
@@ -225,10 +220,10 @@ class ProjectDisplayManager
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
-            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
-            $lastStatusHistory                = array_shift($lastStatusHistory);
-            $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
+        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS])) {
+            $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
+            $lastStatusHistory             = array_shift($lastStatusHistory);
+            $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
         if (ProjectsStatus::EN_FUNDING <= $projectData['status']) {
@@ -255,6 +250,8 @@ class ProjectDisplayManager
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         }
+
+        $projectData['isCloseOutNetting'] = $project->close_out_netting_date && '0000-00-00' !== $project->close_out_netting_date;
 
         return $projectData;
     }
@@ -467,7 +464,7 @@ class ProjectDisplayManager
 
         if (null !== $client) {
             if ($user instanceof UserLender) {
-                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED])) {
+                if (in_array($user->getClientStatus(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

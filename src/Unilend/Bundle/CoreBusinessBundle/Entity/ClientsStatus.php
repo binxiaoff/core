@@ -7,20 +7,62 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatus
  *
- * @ORM\Table(name="clients_status")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository")
+ * @ORM\Table(name="clients_status", uniqueConstraints={@ORM\UniqueConstraint(name="unq_client_status_label", columns={"label"})})
+ * @ORM\Entity
  */
 class ClientsStatus
 {
-    const TO_BE_CHECKED         = 10;
-    const COMPLETENESS          = 20;
-    const COMPLETENESS_REMINDER = 30;
-    const COMPLETENESS_REPLY    = 40;
-    const MODIFICATION          = 50;
-    const VALIDATED             = 60;
-    const CLOSED_LENDER_REQUEST = 70;
-    const CLOSED_BY_UNILEND     = 80;
-    const CLOSED_DEFINITELY     = 100;
+    const STATUS_CREATION              = 5;
+    const STATUS_TO_BE_CHECKED         = 10;
+    const STATUS_COMPLETENESS          = 20;
+    const STATUS_COMPLETENESS_REMINDER = 30;
+    const STATUS_COMPLETENESS_REPLY    = 40;
+    const STATUS_MODIFICATION          = 50;
+    const STATUS_VALIDATED             = 60;
+    const STATUS_SUSPENDED             = 65;
+    const STATUS_DISABLED              = 70;
+    const STATUS_CLOSED_LENDER_REQUEST = 80;
+    const STATUS_CLOSED_BY_UNILEND     = 90;
+    const STATUS_CLOSED_DEFINITELY     = 100;
+
+    const GRANTED_LOGIN = [
+        self::STATUS_CREATION,
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
+    ];
+
+    const GRANTED_LENDER_ACCOUNT_READ = [
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
+    ];
+
+    const GRANTED_LENDER_DEPOSIT = [
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED
+    ];
+
+    const GRANTED_LENDER_WITHDRAW = [
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
+    ];
+
+    const GRANTED_LENDER_SPONSORSHIP = [
+        self::STATUS_VALIDATED
+    ];
 
     /**
      * @var string
@@ -32,18 +74,11 @@ class ClientsStatus
     /**
      * @var integer
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client_status", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idClientStatus;
+    private $id;
 
 
 
@@ -72,36 +107,12 @@ class ClientsStatus
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return ClientsStatus
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
+     * Get id
      *
      * @return integer
      */
-    public function getStatus()
+    public function getId()
     {
-        return $this->status;
-    }
-
-    /**
-     * Get idClientStatus
-     *
-     * @return integer
-     */
-    public function getIdClientStatus()
-    {
-        return $this->idClientStatus;
+        return $this->id;
     }
 }

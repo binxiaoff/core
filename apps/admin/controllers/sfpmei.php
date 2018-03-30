@@ -3,12 +3,15 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Bids, Clients, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, WalletType, Zones
+    BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class sfpmeiController extends bootstrap
 {
+    /** @var Wallet */
+    protected $wallet;
+
     public function initialize()
     {
         parent::initialize();
@@ -267,11 +270,10 @@ class sfpmeiController extends bootstrap
                 $this->clients_adresses = $this->loadData('clients_adresses');
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-                $this->clients_status = $this->loadData('clients_status');
-                $this->clients_status->getLastStatut($this->clients->id_client);
-
-                $this->clients_status_history = $this->loadData('clients_status_history');
-                $this->statusHistory          = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
+                $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+                    ['idClient' => $this->clients->id_client],
+                    ['added' => 'DESC', 'id' => 'DESC']
+                );
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
                 $provisionType    = $entityManager->getRepository('UnilendCoreBusinessBundle:OperationType')->findOneByLabel(OperationType::LENDER_PROVISION);
@@ -307,7 +309,6 @@ class sfpmeiController extends bootstrap
                 $this->transfers                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($this->wallet->getIdClient());
                 $this->taxationCountryHistory         = $this->getTaxationHistory($this->wallet->getId());
                 $this->taxExemptionHistory            = $this->getTaxExemptionHistory($this->users_history->getTaxExemptionHistoryAction($this->clients->id_client));
-                $this->clientStatus                   = $this->clients_status->status;
                 $this->termsOfSalesAcceptation        = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client], ['added' => 'DESC']);
                 $this->treeRepository                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
 
@@ -352,9 +353,7 @@ class sfpmeiController extends bootstrap
 
     public function _emprunteur()
     {
-        $this->clients = $this->loadData('clients');
-        /** @var clients_adresses $clientAddress */
-        $clientAddress          = $this->loadData('clients_adresses');
+        $this->clients          = $this->loadData('clients');
         $this->companies        = $this->loadData('companies');
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
@@ -364,8 +363,6 @@ class sfpmeiController extends bootstrap
         $companySector = $this->loadData('company_sector');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $paysV2Repository */
-        $paysV2Repository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
 
         /** @var \Symfony\Component\Translation\TranslatorInterface translator */
         $this->translator = $this->get('translator');
@@ -389,30 +386,19 @@ class sfpmeiController extends bootstrap
                     break;
                 default:
                     $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
-                    $clientAddress->get($this->clients->id_client, 'id_client');
-                    $this->clientAddress = '';
-
-                    if (false === empty($clientAddress->adresse1)) {
-                        $this->clientAddress .= $clientAddress->adresse1;
-                    }
-                    if (false === empty($clientAddress->cp)) {
-                        $this->clientAddress .= '<br>' . $clientAddress->cp;
-                    }
-                    if (false === empty($clientAddress->ville)) {
-                        $this->clientAddress .= ' ' . $clientAddress->adresse1;
-                    }
-                    if (false === empty($clientAddress->id_pays)) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2 $country */
-                        $country             = $paysV2Repository->find($this->clientAddress->id_pays);
-                        $this->clientAddress .= empty($country) ? '' : '<br>' . $country->getFr();
-                    }
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                    $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
+                    $companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $this->clientAddress = '';
+                    if (null !==  $companyEntity->getIdAddress()) {
+                        $this->clientAddress .= $companyEntity->getIdAddress()->getAddress() . '<br>' . $companyEntity->getIdAddress()->getZip() . ' ' . $companyEntity->getIdAddress()->getCity() . '<br>' . $companyEntity->getIdAddress()->getIdCountry()->getFr();
+                    }
 
                     if (false === empty($this->clients->telephone)) {
                         $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
                     }
+
+                    $this->projects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 
                     $this->currentBankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
                     $this->bankAccountDocuments = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
@@ -441,12 +427,10 @@ class sfpmeiController extends bootstrap
 
         switch ($this->params[0]) {
             case 'preteurs':
-                $this->receptions = $receptionsRepository->getLenderAttributions();
-                $this->setView('transferts/preteurs');
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true]);
                 break;
             case 'emprunteurs':
-                $this->receptions = $receptionsRepository->getBorrowerAttributions();
-                $this->setView('transferts/emprunteurs');
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true]);
                 break;
             case 'non_attribues':
                 $this->receptions = $receptionsRepository->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
@@ -499,14 +483,13 @@ class sfpmeiController extends bootstrap
         $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->companies_bilans        = $this->loadData('companies_bilans');
         $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyBalanceSheetManager $companyBalanceSheetManager */
         $companyBalanceSheetManager = $this->get('unilend.service.company_balance_sheet_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var TranslatorInterface translator */
-        $this->translator = $this->get('translator');
+        $this->translator         = $this->get('translator');
 
         if (
             isset($this->params[0]) &&
@@ -515,8 +498,10 @@ class sfpmeiController extends bootstrap
             $this->projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
 
             $this->companies->get($this->projects->id_company, 'id_company');
+            $this->companyMainAddress   = $this->projectEntity->getIdCompany()->getIdAddress();
+            $this->companyPostalAddress = $this->projectEntity->getIdCompany()->getIdPostalAddress();
+
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
@@ -677,44 +662,48 @@ class sfpmeiController extends bootstrap
      */
     private function getLenderStatusMessage()
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $currentStatus */
-        $currentStatus       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($this->clients->id_client);
-        $creationTime        = strtotime($this->clients->added);
-        $clientStatusMessage = '';
+        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
 
-        if (null === $currentStatus) {
-            return $clientStatusMessage = '<div class="attention">Attention : Inscription non terminée </div>';
+        if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $this->clients->id_client]);
+
+            return '';
         }
-        switch ($currentStatus->getStatus()) {
-            case ClientsStatus::TO_BE_CHECKED:
-                $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+
+        switch ($clientStatusHistory->getIdStatus()->getId()) {
+            case ClientsStatus::STATUS_CREATION:
+                $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
-            case ClientsStatus::COMPLETENESS:
-            case ClientsStatus::COMPLETENESS_REMINDER:
-            case ClientsStatus::COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
+            case ClientsStatus::STATUS_TO_BE_CHECKED:
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+            case ClientsStatus::STATUS_COMPLETENESS:
+            case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
+            case ClientsStatus::STATUS_COMPLETENESS_REPLY:
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
                 break;
-            case ClientsStatus::CLOSED_LENDER_REQUEST:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
+            case ClientsStatus::STATUS_MODIFICATION:
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
-            case ClientsStatus::CLOSED_BY_UNILEND:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
+            case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST:
+                $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
-            case ClientsStatus::VALIDATED:
+            case ClientsStatus::STATUS_CLOSED_BY_UNILEND:
+                $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
+                break;
+            case ClientsStatus::STATUS_VALIDATED:
                 $clientStatusMessage = '';
                 break;
-            case ClientsStatus::CLOSED_DEFINITELY:
-                $clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+            case ClientsStatus::STATUS_CLOSED_DEFINITELY:
+                $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';
                 break;
             default:
-                if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION == $this->clients->etape_inscription_preteur) {
-                    $clientStatusMessage = '<div class="attention">Attention : Inscription non terminée </div>';
-                }
+                $clientStatusMessage = '';
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $this->clients->id_client]);
                 break;
         }
 
