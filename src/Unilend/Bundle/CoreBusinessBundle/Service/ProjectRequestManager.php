@@ -151,8 +151,9 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
         }
 
-        $email = $formData['email'];
-        if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email, Clients::STATUS_ONLINE)) {
+        $email      = $formData['email'];
+        $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+        if (false === empty($duplicates)) {
             $email .= '-' . time();
         }
 
@@ -160,7 +161,6 @@ class ProjectRequestManager
         $client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))

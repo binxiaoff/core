@@ -14,7 +14,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsHistoryActions, WalletType
+    Clients, ClientsHistoryActions, ClientsStatus, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{
@@ -110,7 +110,7 @@ class SecurityController extends Controller
 
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $clients           = $clientsRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+        $clients           = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
         $clientsCount      = count($clients);
 
         if (0 === $clientsCount) {

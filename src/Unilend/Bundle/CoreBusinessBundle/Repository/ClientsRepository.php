@@ -3,8 +3,10 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\Statement;
 use Doctrine\ORM\{
-    AbstractQuery, EntityRepository, NonUniqueResultException
+    AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException
 };
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
@@ -196,44 +198,51 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param $limit
+     * @param int $limit
      *
      * @return array
+     * @throws DBALException
      */
-    public function getLendersToMatchCity($limit)
+    public function getLendersToMatchCity(int $limit): array
     {
-        $query = 'SELECT * FROM (
-                    SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
-                    FROM clients_adresses ca
-                    INNER JOIN clients c ON ca.id_client = c.id_client
-                    INNER JOIN wallet w ON c.id_client = w.id_client
-                    INNER JOIN wallet_type wt ON w.id_type = wt.id
-                    WHERE c.status = ' . Clients::STATUS_ONLINE . '
-                      AND wt.label = "' . WalletType::LENDER . '"
-                      AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                      AND c.type IN (1, 3)
-                      AND (
-                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
-                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
-                      )
-                  LIMIT :limit
-                ) perso
-                UNION
-                SELECT * FROM (
-                  SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
-                  FROM clients_adresses ca
-                    INNER JOIN clients c ON ca.id_client = c.id_client
-                    INNER JOIN wallet w ON c.id_client = w.id_client
-                    INNER JOIN wallet_type wt ON w.id_type = wt.id
-                    INNER JOIN companies co ON co.id_client_owner = ca.id_client
-                  WHERE c.status = ' . Clients::STATUS_ONLINE . '
-                    AND wt.label = "' . WalletType::LENDER . '"
-                    AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                    AND (
-                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
-                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
-                    )  LIMIT :limit
-                ) company';
+        $query = '
+            SELECT * FROM (
+              SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
+              FROM clients_adresses ca
+              INNER JOIN clients c ON ca.id_client = c.id_client
+              INNER JOIN wallet w ON c.id_client = w.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+              WHERE csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
+                AND wt.label = "' . WalletType::LENDER . '"
+                AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                AND c.type IN (' . Clients::TYPE_PERSON . ', ' . Clients::TYPE_PERSON_FOREIGNER . ')
+                AND (
+                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                )
+              LIMIT :limit
+            ) perso
+
+            UNION
+
+            SELECT * FROM (
+              SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
+              FROM clients_adresses ca
+              INNER JOIN clients c ON ca.id_client = c.id_client
+              INNER JOIN wallet w ON c.id_client = w.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id
+              INNER JOIN companies co ON co.id_client_owner = ca.id_client
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+              WHERE csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
+                AND wt.label = "' . WalletType::LENDER . '"
+                AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
+                AND (
+                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
+                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
+                ) 
+              LIMIT :limit
+            ) company';
 
         $result =  $this->getEntityManager()->getConnection()
             ->executeQuery($query, ['limit' => floor($limit / 2)], ['limit' => PDO::PARAM_INT])
@@ -247,76 +256,91 @@ class ClientsRepository extends EntityRepository
      *
      * @return array
      */
-    public function getLendersToMatchBirthCity($limit)
+    public function getLendersToMatchBirthCity(int $limit): array
     {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('c.idClient, c.prenom, c.nom, c.villeNaissance')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('c.idClient, c.prenom, c.nom, c.villeNaissance')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.status = :statusOnline')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.idPaysNaissance = :France')
             ->andWhere('c.inseeBirth IS NULL')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('France', PaysV2::COUNTRY_FRANCE)
             ->setMaxResults($limit);
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * if true only lenders activated at least once (active lenders)
-     * if false all online lender (Community)
+     * If true only lenders activated at least once (active lenders)
+     * If false all online lender (Community)
+     *
      * @param bool $onlyActive
      *
-     * @return int
+     * @return int|null
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      */
-    public function countLenders($onlyActive = false)
+    public function countLenders(bool $onlyActive = false): ?int
     {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.status = :statusOnline')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:statusOnline)')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', Clients::STATUS_ONLINE);
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
-        return $qb->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * @param array $clientType
+     * @param int[] $clientType
      * @param bool  $onlyActive
      *
-     * @return int
+     * @return int|null
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      */
-    public function countLendersByClientType(array $clientType, $onlyActive = false)
+    public function countLendersByClientType(array $clientType, bool $onlyActive = false): ?int
     {
-        $qb = $this->createQueryBuilder('c');
-        $qb->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
+            ->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.status = :statusOnline')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.type IN (:types)')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY);
 
         if ($onlyActive) {
-            $qb->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
-        return $qb->getQuery()->getSingleScalarResult();
+        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
-    public function getLendersSalesForce()
+    /**
+     * @return Statement
+     * @throws DBALException
+     */
+    public function getLendersSalesForce(): Statement
     {
         $query = "
             SELECT
@@ -398,7 +422,7 @@ class ClientsRepository extends EntityRepository
             LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
             LEFT JOIN clients_status cs ON csh.id_status = cs.id
             LEFT JOIN prospects p ON p.email = c.email
-            WHERE c.status = " . Clients::STATUS_ONLINE . "
+            WHERE csh.id_status IN (" . implode(',', ClientsStatus::GRANTED_LOGIN) . ")
               AND wt.label = '" . WalletType::LENDER . "' 
             GROUP BY c.id_client";
 
@@ -440,59 +464,67 @@ class ClientsRepository extends EntityRepository
      * @param bool      $onlyActive
      *
      * @return int|null
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      */
-    public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, $onlyActive = false)
+    public function countLendersByClientTypeBetweenDates(array $clientType, \DateTime $start, \DateTime $end, bool $onlyActive = false): ?int
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
 
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder
+            ->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.status = :statusOnline')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.type IN (:types)')
             ->andWhere('c.added BETWEEN :start AND :end')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('types', $clientType, Connection::PARAM_INT_ARRAY)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**
-     * if true only lenders activated at least once (active lenders)
-     * if false all online lender (Community)
+     * If true only lenders activated at least once (active lenders)
+     * If false all online lender (Community)
      *
      * @param \DateTime $start
      * @param \DateTime $end
      * @param bool      $onlyActive
      *
      * @return int|null
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function countLendersBetweenDates(\DateTime $start, \DateTime $end, $onlyActive = false)
+    public function countLendersBetweenDates(\DateTime $start, \DateTime $end, bool $onlyActive = false): ?int
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->select('COUNT(DISTINCT(c.idClient))')
+        $queryBuilder
+            ->select('COUNT(DISTINCT(c.idClient))')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('c.status = :statusOnline')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:statusOnline)')
             ->andWhere('c.added BETWEEN :start AND :end')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', Clients::STATUS_ONLINE)
+            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
             ->setParameter('start', $start->format('Y-m-d H:i:s'))
             ->setParameter('end', $end->format('Y-m-d H:i:s'));
 
         if ($onlyActive) {
-            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'csh.idClient = c.idClient AND csh.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
+            $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'valid.idClient = c.idClient AND valid.idStatus = ' . ClientsStatus::STATUS_VALIDATED);
         }
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
@@ -505,17 +537,19 @@ class ClientsRepository extends EntityRepository
      */
     public function findValidatedClientsUntilYear($year)
     {
-        $queryBuilder  = $this->createQueryBuilder('c');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClient = csh.idClient')
+        $queryBuilder = $this->createQueryBuilder('c');
+        $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->andWhere('wt.label = :lender')
-            ->andWhere('csh.idStatus = :status')
-            ->andWhere('csh.added <= :year')
-            ->andWhere('c.status = :clientStatus')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'valid', Join::WITH, 'c.idClient = valid.idClient')
+            ->where('wt.label = :lender')
+            ->andWhere('csh.idStatus IN (:onlineStatus)')
+            ->andWhere('valid.idStatus = :validatedStatus')
+            ->andWhere('valid.added <= :year')
             ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('status', ClientsStatus::STATUS_VALIDATED)
-            ->setParameter('clientStatus', Clients::STATUS_ONLINE)
+            ->setParameter('onlineStatus', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
+            ->setParameter('validatedStatus', ClientsStatus::STATUS_VALIDATED)
             ->setParameter('year', $year . '-12-31 23:59:59');
 
         return $queryBuilder->getQuery()->getResult();
@@ -523,12 +557,14 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @return array
+     * @throws DBALException
      */
-    public function findAllClientsForLoiEckert()
+    public function findAllClientsForLoiEckert(): array
     {
         $query = '
             SELECT
               c.*,
+              csh.id_status,
               IF (
                 o_provision.added IS NOT NULL, 
                 IF (
@@ -539,14 +575,15 @@ class ClientsRepository extends EntityRepository
                 MAX(o_withdraw.added)
               ) AS lastMovement,
               w.available_balance AS availableBalance,
-              MIN(csh.added) AS validationDate
+              MIN(csh_valid.added) AS validationDate
             FROM clients c
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
             LEFT JOIN operation o_provision ON w.id = o_provision.id_wallet_creditor AND o_provision.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_PROVISION . '")
             LEFT JOIN operation o_withdraw ON w.id = o_withdraw.id_wallet_debtor AND o_withdraw.id_type = (SELECT id FROM operation_type WHERE label = "'. OperationType::LENDER_WITHDRAW . '")
-            LEFT JOIN clients_status_history csh ON c.id_client = csh.id_client AND csh.id_status = ' . ClientsStatus::STATUS_VALIDATED . '
-            WHERE csh.id IS NOT NULL OR available_balance > 0
+            LEFT JOIN clients_status_history csh_valid ON c.id_client = csh_valid.id_client AND csh_valid.id_status = ' . ClientsStatus::STATUS_VALIDATED . '
+            WHERE csh_valid.id IS NOT NULL OR available_balance > 0
             GROUP BY c.id_client
             ORDER BY c.lastlogin ASC';
 
@@ -559,35 +596,34 @@ class ClientsRepository extends EntityRepository
     /**
      * @param string    $lastName
      * @param string    $firstName
-     * @param \DateTime $birthdate
+     * @param \DateTime $birthday
      *
      * @return array
+     * @throws DBALException
      */
-    public function getDuplicatesByName($lastName, $firstName, \DateTime $birthdate)
+    public function getDuplicatesByName(string $lastName, string $firstName, \DateTime $birthday): array
     {
+        $replaceCharacters   = '';
         $charactersToReplace = [' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@'];
+        $firstName           = str_replace($charactersToReplace, '', htmlspecialchars_decode($firstName));
+        $lastName            = str_replace($charactersToReplace, '', htmlspecialchars_decode($lastName));
 
-        $firstName = str_replace($charactersToReplace, '', htmlspecialchars_decode($firstName));
-        $lastName  = str_replace($charactersToReplace, '', htmlspecialchars_decode($lastName));
-
-        $replaceCharacters = '';
         foreach ($charactersToReplace as $character) {
             $replaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
         }
 
-        $sql = '
-            SELECT *
+        $query = '
+            SELECT c.*
             FROM clients c
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
-                AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
-                AND c.naissance = :birthdate
-                AND c.status = ' . Clients::STATUS_ONLINE . '
-                AND csh.id_status = ' . ClientsStatus::STATUS_VALIDATED;
+              AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
+              AND c.naissance = :birthday
+              AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')';
 
         $result = $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($sql, ['lastName' => '%' . $lastName . '%', 'firstName' => '%' . $firstName . '%', 'birthdate' => $birthdate->format('Y-m-d')])
+            ->executeQuery($query, ['lastName' => '%' . $lastName . '%', 'firstName' => '%' . $firstName . '%', 'birthday' => $birthday->format('Y-m-d')])
             ->fetchAll(\PDO::FETCH_ASSOC);
 
         return $result;
@@ -634,51 +670,54 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param null|int    $idClient
-     * @param null|string $email
-     * @param null|string $name
-     * @param null|string $firstName
-     * @param null|string $companyName
-     * @param null|string $siren
-     * @param bool        $online
-     * @param bool        $adult
+     * @param int|null    $idClient
+     * @param string|null $email
+     * @param string|null $name
+     * @param string|null $firstName
+     * @param string|null $companyName
+     * @param string|null $siren
+     * @param bool|null   $online
      *
      * @return array
+     * @throws DBALException
      */
-    public function findLenders($idClient = null, $email = null, $name = null, $firstName = null, $companyName = null, $siren = null, $online = true)
+    public function findLenders(?int $idClient = null, ?string $email = null, ?string $name = null, ?string $firstName = null, ?string $companyName = null, ?string $siren = null, ?bool $online = null): array
     {
         $query = '
-                SELECT
-                  c.id_client AS id_client,
-                  c.status AS status,
-                  c.email AS email,
-                  c.telephone AS telephone,
-                  c.status_inscription_preteur AS status_inscription_preteur,
-                  CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.prenom
-                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
-                    ELSE
-                    (SELECT
-                       CASE co.status_client
-                       WHEN ' . Companies::CLIENT_STATUS_MANAGER . ' THEN CONCAT(c.prenom, " ", c.nom)
-                       ELSE CONCAT(co.prenom_dirigeant, " ", co.nom_dirigeant)
-                       END as dirigeant
-                     FROM companies co WHERE co.id_client_owner = c.id_client)
-                  END AS prenom_ou_dirigeant,
-                  CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' THEN c.nom
-                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.nom
-                  ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
-                  END AS nom_ou_societe,
-                  CASE c.type
-                    WHEN ' . Clients::TYPE_PERSON . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
-                    WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
-                    ELSE ""
-                  END AS nom_usage
-                FROM clients c
-                  INNER JOIN wallet w ON c.id_client = w.id_client AND w.id_type = (SELECT id FROM wallet_type WHERE label = "' . WalletType::LENDER . '")
-                  LEFT JOIN companies co ON co.id_client_owner = c.id_client
-                 WHERE c.status_inscription_preteur = 1' ;
+            SELECT
+              c.id_client AS id_client,
+              cs.label AS status,
+              c.email AS email,
+              c.telephone AS telephone,
+              c.status_inscription_preteur AS status_inscription_preteur,
+              CASE c.type
+                WHEN ' . Clients::TYPE_PERSON . ' THEN c.prenom
+                WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.prenom
+                ELSE
+                (SELECT
+                   CASE co.status_client
+                   WHEN ' . Companies::CLIENT_STATUS_MANAGER . ' THEN CONCAT(c.prenom, " ", c.nom)
+                   ELSE CONCAT(co.prenom_dirigeant, " ", co.nom_dirigeant)
+                   END AS dirigeant
+                 FROM companies co WHERE co.id_client_owner = c.id_client)
+              END AS prenom_ou_dirigeant,
+              CASE c.type
+                WHEN ' . Clients::TYPE_PERSON . ' THEN c.nom
+                WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN c.nom
+                ELSE (SELECT co.name FROM companies co WHERE co.id_client_owner = c.id_client)
+              END AS nom_ou_societe,
+              CASE c.type
+                WHEN ' . Clients::TYPE_PERSON . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
+                WHEN ' . Clients::TYPE_PERSON_FOREIGNER . ' THEN REPLACE(c.nom_usage, "Nom D\'usage" ,"")
+                ELSE ""
+              END AS nom_usage
+            FROM clients c
+            INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN clients_status cs ON csh.id_status = cs.id
+            LEFT JOIN companies co ON co.id_client_owner = c.id_client
+            WHERE c.status_inscription_preteur = 1' ;
 
         $parameters = [];
 
@@ -712,9 +751,13 @@ class ClientsRepository extends EntityRepository
             $parameters['siren'] = $siren;
         }
 
-        $query .= $online ? ' AND c.status = ' . Clients::STATUS_ONLINE : ' AND c.status = ' . Clients::STATUS_OFFLINE;
-        $query .= ' GROUP BY c.id_client
-                   ORDER BY c.id_client DESC';
+        if (null !== $online) {
+            $query .= $online ? ' AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')' : ' AND csh.id_status NOT IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')';
+        }
+
+        $query .= '
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC';
 
         return $this->getEntityManager()
             ->getConnection()
@@ -791,8 +834,8 @@ class ClientsRepository extends EntityRepository
      * @param CompanyClient $companyClient
      *
      * @return int
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
+     * @throws NoResultException
      */
     public function countDuplicatesByFullName(CompanyClient $companyClient) : int
     {
@@ -823,8 +866,8 @@ class ClientsRepository extends EntityRepository
                 c.nom,
                 c.prenom,
                 c.type AS clientType,
-                c.status,
-                IDENTITY(csh.idStatus) AS idStatus,
+                IDENTITY(csh.idStatus) AS status,
+                cs.label AS statusLabel,
                 c.added AS creationDate,
                 wt.label AS walletType,
                 co.idCompany,
@@ -839,6 +882,7 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
             ->leftJoin('UnilendCoreBusinessBundle:WalletBalanceHistory', 'wbh', Join::WITH, 'w.id = wbh.idWallet')
             ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatus', 'cs', Join::WITH, 'csh.idStatus = cs.id')
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner')
             ->leftJoin('UnilendCoreBusinessBundle:BeneficialOwner', 'bo', Join::WITH, 'c.idClient = bo.idClient')
             ->leftJoin('UnilendCoreBusinessBundle:CompanyClient', 'cc', Join::WITH, 'c.idClient = cc.idClient')
@@ -863,14 +907,9 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.email = :email')
-            ->andWhere($queryBuilder->expr()->orX(
-                $queryBuilder->expr()->isNull('c.idClientStatusHistory'),
-                $queryBuilder->expr()->eq('c.idClientStatusHistory', 0),
-                $queryBuilder->expr()->in('csh.idStatus', ':status')
-            ))
-            ->andWhere('c.status = ' . Clients::STATUS_ONLINE)
+            ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, \PDO::PARAM_STR)
             ->setParameter('status', $status);
 
@@ -887,14 +926,9 @@ class ClientsRepository extends EntityRepository
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
-            ->leftJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('c.hash = :hash')
-            ->andWhere($queryBuilder->expr()->orX(
-                $queryBuilder->expr()->isNull('c.idClientStatusHistory'),
-                $queryBuilder->expr()->eq('c.idClientStatusHistory', 0),
-                $queryBuilder->expr()->in('csh.idStatus', ':status')
-            ))
-            ->andWhere('c.status = ' . Clients::STATUS_ONLINE)
+            ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('hash', $hash, \PDO::PARAM_STR)
             ->setParameter('status', $status);
 

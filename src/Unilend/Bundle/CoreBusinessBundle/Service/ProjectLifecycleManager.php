@@ -968,7 +968,7 @@ class ProjectLifecycleManager
         $limit  = 100;
         $this->logger->info('Insert publication emails for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
-        while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
+        while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.id_client ASC', $offset, $limit)) {
             $emailsInserted = 0;
             $offset         += $limit;
             $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
@@ -1134,7 +1134,7 @@ class ProjectLifecycleManager
         $limit  = 100;
         $this->logger->info('Insert new project notification for project: ' . $project->id_project, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);
 
-        while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.status = ' . Clients::STATUS_ONLINE, 'c.id_client ASC', $offset, $limit)) {
+        while ($lenders = $clientData->selectPreteursByStatus(ClientsStatus::STATUS_VALIDATED, 'c.id_client ASC', $offset, $limit)) {
             $notificationsCount = 0;
             $offset             += $limit;
             $this->logger->info('Lenders retrieved: ' . count($lenders), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]);

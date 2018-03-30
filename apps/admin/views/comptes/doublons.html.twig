@@ -111,14 +111,14 @@
                                             N/A
                                         {% endif %}
                                     </td>
-                                    <td>
-                                        {% if account.status == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::STATUS_ONLINE') %}
-                                            En ligne
+                                    <td data-order="{{ account.status }}">
+                                        {% if account.status in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LOGIN') %}
+                                            <span class="badge badge-success"><i class="fa fa-check"></i></span>
                                         {% else %}
-                                            Hors ligne
+                                            <span class="badge badge-danger"><i class="fa fa-times-circle"></i></span>
                                         {% endif %}
-                                        {% if account.additionalStatus is defined and account.additionalStatus is not empty %}
-                                            / {{ account.additionalStatus }}
+                                        {% if account.statusLabel is not empty %}
+                                            {{ account.statusLabel }}
                                         {% endif %}
                                     </td>
                                     <td>{{ account.creationDate|date('d/m/Y') }}</td>

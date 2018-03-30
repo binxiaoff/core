@@ -25,7 +25,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function usersAction()
+    public function usersAction(): Response
     {
         $template                = ['users' => []];
         $entityManager           = $this->get('doctrine.orm.entity_manager');
@@ -33,13 +33,16 @@ class UsersController extends Controller
         $users                   = $companyClientRepository->findBy(['idCompany' => $this->getUserCompanies()]);
 
         foreach ($users as $user) {
-            $userData = [
-                'client' => $user->getIdClient(),
+            /** @var Clients $client */
+            $client       = $user->getIdClient();
+            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+            $userData     = [
+                'client' => $client,
                 'role'   => $user->getRole() === UserPartner::ROLE_ADMIN ? 'admin' : 'agent',
                 'entity' => $user->getIdCompany()
             ];
 
-            if (Clients::STATUS_OFFLINE == $user->getIdClient()->getStatus()) {
+            if (ClientsStatus::STATUS_DISABLED === $clientStatus) {
                 $template['offlineUsers'][] = $userData;
             } else {
                 $template['onlineUsers'][] = $userData;
@@ -91,19 +94,12 @@ class UsersController extends Controller
                     }
                     break;
                 case 'deactivate':
-                    $client->setStatus(Clients::STATUS_OFFLINE);
-                    $entityManager->persist($client);
-                    $entityManager->flush();
-
                     $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
                     break;
                 case 'activate':
-                    $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
-                    if (empty($duplicates)) {
-                        $client->setStatus(Clients::STATUS_ONLINE);
-                        $entityManager->persist($client);
-                        $entityManager->flush();
+                    $duplicates = $clientRepository->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
 
+                    if (empty($duplicates)) {
                         $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
                     } else {
                         $this->addFlash('partnerUserError', $this->get('translator')->trans('partner-users_duplicate-online-user-error-message'));
@@ -175,7 +171,8 @@ class UsersController extends Controller
         if (empty($request->request->get('email')) || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = true;
         }
-        if ($clientRepository->existEmail($request->request->get('email'), Clients::STATUS_ONLINE)) {
+        $duplicates = $clientRepository->findByEmailAndStatus($request->request->get('email'), ClientsStatus::GRANTED_LOGIN);
+        if (false === empty($duplicates)) {
             $errors['email_existing'] = true;
         }
         if (empty($request->request->get('phone'))) {
@@ -197,18 +194,13 @@ class UsersController extends Controller
             return $this->redirectToRoute('partner_user_creation');
         }
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
         $client = new Clients();
         $client
             ->setNom($request->request->get('lastname'))
             ->setPrenom($request->request->get('firstname'))
             ->setEmail($request->request->get('email'))
             ->setTelephone($request->request->get('phone'))
-            ->setIdLangue('fr')
-            ->setSlug($ficelle->generateSlug($request->request->get('firstname') . '-' . $request->request->get('lastname')))
-            ->setStatus(Clients::STATUS_ONLINE);
+            ->setIdLangue('fr');
 
         $companyClient = new CompanyClient();
         $companyClient
@@ -263,9 +255,10 @@ class UsersController extends Controller
         if ($linkExpires <= $now) {
             $isLinkExpired = true;
         } else {
-            $client = $temporaryLinks->getIdClient();
+            $client       = $temporaryLinks->getIdClient();
+            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
 
-            if (null === $client || false === $client->isPartner() || Clients::STATUS_ONLINE !== $client->getStatus()) {
+            if (null === $client || false === $client->isPartner() || ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
                 return $this->redirectToRoute('home');
             }
 

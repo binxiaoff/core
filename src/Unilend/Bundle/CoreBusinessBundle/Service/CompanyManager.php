@@ -135,9 +135,7 @@ class CompanyManager
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $clientEntity
-                ->setIdLangue('fr')
-                ->setStatus(Clients::STATUS_ONLINE);
+            $clientEntity->setIdLangue('fr');
 
             $this->entityManager->persist($clientEntity);
             $this->entityManager->flush($clientEntity);

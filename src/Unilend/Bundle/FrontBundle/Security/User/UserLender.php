@@ -27,7 +27,6 @@ class UserLender extends BaseUser
      * @param string         $email
      * @param string|null    $salt
      * @param string[]       $roles
-     * @param bool           $isActive
      * @param int            $clientId
      * @param string         $hash
      * @param int            $clientStatus
@@ -47,7 +46,6 @@ class UserLender extends BaseUser
         string $email,
         ?string $salt,
         array $roles,
-        bool $isActive,
         int $clientId,
         string $hash,
         int $clientStatus,
@@ -62,7 +60,7 @@ class UserLender extends BaseUser
         ?\DateTime $lastLoginDate = null
     )
     {
-        parent::__construct($username, $password, $email, $salt, $roles, $isActive, $clientId, $hash, $clientStatus, $lastLoginDate);
+        parent::__construct($username, $password, $email, $salt, $roles, $clientId, $hash, $clientStatus, $lastLoginDate);
 
         $this->balance                 = $balance;
         $this->initials                = $initials;

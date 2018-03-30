@@ -6,6 +6,7 @@ use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
 use Symfony\Component\Security\Core\User\{
     AdvancedUserInterface, EquatableInterface, UserInterface
 };
+use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 
 class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
@@ -19,8 +20,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $salt;
     /** @var array */
     private $roles;
-    /** @var bool */
-    private $isActive;
     /** @var int */
     private $clientId;
     /** @var string */
@@ -38,7 +37,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      * @param string         $email
      * @param string|null    $salt
      * @param string[]       $roles
-     * @param bool           $isActive
      * @param int            $clientId
      * @param string         $hash
      * @param int            $clientStatus
@@ -50,7 +48,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
         string $email,
         ?string $salt,
         array $roles,
-        bool $isActive,
         int $clientId,
         string $hash,
         int $clientStatus,
@@ -62,7 +59,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
         $this->email         = $email;
         $this->salt          = $salt;
         $this->roles         = $roles;
-        $this->isActive      = $isActive;
         $this->clientId      = $clientId;
         $this->hash          = $hash;
         $this->clientStatus  = $clientStatus;
@@ -125,14 +121,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     public function useDefaultEncoder(): void
     {
         $this->encoderName = 'default';
-    }
-
-    /**
-     * @return bool
-     */
-    public function getIsActive(): bool
-    {
-        return $this->isActive;
     }
 
     /**
@@ -233,6 +221,6 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      */
     public function isAccountNonLocked(): bool
     {
-        return $this->isActive;
+        return in_array($this->clientStatus, ClientsStatus::GRANTED_LOGIN);
     }
 }
