@@ -233,8 +233,14 @@
                     <div class="docview-form">
                         <select class="docview-switcher">
                             {% for document in documents %}
-                                <option value="{{ document.url }}" {% if document.isSelected %} selected="selected" {% endif %}>
-                                    {{ document.name }}
+                                {% set document = document.getAttachment() %}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"
+                                        {% if document.getId() == currentDocumentId %} selected="selected" {% endif %}>
+                                    {% if document.getOriginalName() is empty %}
+                                        {{ document.getPath() }}
+                                    {% else %}
+                                        {{ document.getOriginalName() }}
+                                    {% endif %}
                                 </option>
                             {% endfor %}
                         </select>
@@ -248,8 +254,13 @@
                         <select class="docview-switcher">
                             <option value="">Select document...</option>
                             {% for document in documents %}
-                                <option value="{{ document.url }}">
-                                    {{ document.name }}
+                                {% set document = document.getAttachment() %}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
+                                    {% if document.getOriginalName() is empty %}
+                                        {{ document.getPath() }}
+                                    {% else %}
+                                        {{ document.getOriginalName() }}
+                                    {% endif %}
                                 </option>
                             {% endfor %}
                         </select>
