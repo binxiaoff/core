@@ -7,17 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SepaRejectionReason;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsGestionTypeNotif, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
@@ -407,13 +399,13 @@ EOF
                             ]);
 
                             $clients_gestion_mails_notif->id_client                 = $client->getIdClient();
-                            $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                            $clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT;
                             $clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
                             $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                             $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                             $clients_gestion_mails_notif->create();
 
-                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
                                 $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                 $clients_gestion_mails_notif->immediatement = 1;
                                 $clients_gestion_mails_notif->update();
