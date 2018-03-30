@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, Wallet, WalletType, Zones
+    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -1043,7 +1043,7 @@ class preteursController extends bootstrap
 
             $this->aInfosNotifications['vos-offres-et-vos-projets']['title']           = 'Offres et Projets';
             $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications']   = [
-                \clients_gestion_type_notif::TYPE_NEW_PROJECT                   => [
+                ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => [
                     'title'           => 'Annonce des nouveaux projets',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1052,7 +1052,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_BID_PLACED                    => [
+                ClientsGestionTypeNotif::TYPE_BID_PLACED                    => [
                     'title'           => 'Offres réalisées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1060,7 +1060,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_BID_REJECTED                  => [
+                ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => [
                     'title'           => 'Offres refusées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1068,7 +1068,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED                 => [
+                ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => [
                     'title'           => 'Offres acceptées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1078,14 +1078,14 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM               => [
+                ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => [
                     'title'           => 'Problème sur un projet',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
+                ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
                     'title'           => 'Autolend : offre réalisée ou rejetée',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1095,7 +1095,7 @@ class preteursController extends bootstrap
             ];
             $this->aInfosNotifications['vos-remboursements']['title']                  = 'Offres et Projets';
             $this->aInfosNotifications['vos-remboursements']['notifications']          = [
-                \clients_gestion_type_notif::TYPE_REPAYMENT => [
+                ClientsGestionTypeNotif::TYPE_REPAYMENT => [
                     'title'           => 'Remboursement(s)',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1108,21 +1108,21 @@ class preteursController extends bootstrap
             ];
             $this->aInfosNotifications['mouvements-sur-votre-compte']['title']         = 'Mouvements sur le compte';
             $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = [
-                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => [
+                ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT => [
                     'title'           => 'Alimentation de votre compte par virement',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => [
+                ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT   => [
                     'title'           => 'Alimentation de votre compte par carte bancaire',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_DEBIT                => [
+                ClientsGestionTypeNotif::TYPE_DEBIT                => [
                     'title'           => 'retrait',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,

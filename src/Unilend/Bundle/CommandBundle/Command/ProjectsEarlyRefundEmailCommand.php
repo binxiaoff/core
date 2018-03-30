@@ -2,14 +2,13 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Component\Console\Input\InputOption;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsGestionTypeNotif, Notifications, OperationSubType, OperationType
+};
 
 class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 {
@@ -112,12 +111,12 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                     $emailNotification->unsetData();
                     $emailNotification->id_client                 = $wallet->getIdClient()->getIdClient();
-                    $emailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                    $emailNotification->id_notif                  = ClientsGestionTypeNotif::TYPE_REPAYMENT;
                     $emailNotification->date_notif                = $earlyRepaymentOperation->getAdded()->format('Y-m-d H:i:s');
                     $emailNotification->id_notification           = $notification->id_notification;
                     $emailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
 
-                    if ($notificationSettings->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                    if ($notificationSettings->getNotif($wallet->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_REPAYMENT, 'immediatement')) {
                         $emailNotification->immediatement = 1;
 
                         $loan->get($projectLender['id_loan'], 'id_loan');
