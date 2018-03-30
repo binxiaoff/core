@@ -1,92 +1,95 @@
-{% extends 'layout.html.twig' %}
+{% extends 'layout_basic.html.twig' %}
+
+{# Testing
+{% set documents = [
+    {
+        name: 'operations.pdf',
+        url: app.adminUrl ~ '/demo/operations.pdf'
+    },{
+        name: 'emprunteurs.pdf',
+        url: app.adminUrl ~ '/demo/emprunteurs.pdf'
+    },{
+        name: 'doc-cni.jpg',
+        url: app.adminUrl ~ '/demo/doc-cni.jpg'
+    },{
+        name: 'montants.png',
+        url: app.adminUrl ~ '/demo/montants.png'
+    },{
+        name: 'montants.jpg',
+        url: app.adminUrl ~ '/demo/montants.jpg'
+    }
+] %}
+#}
 
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.css">
     <style>
         .docview {
-
-        }
-        .docview-viewer .docview-files {
             position: relative;
-            width: 100%;
-            height: 60px;
-            margin: 0 0 5px;
-            overflow: hidden;
         }
-        .docview-files:after {
-            clear: both;
-            display: table;
-            content: " ";
-        }
-        .docview-viewer .docview-files {
+
+        .docview .block-options {
             position: absolute;
-            top: 0;
-            left: 0;
+            right: 20px;
+            top: 20px;
+            z-index: 100;
         }
-        .docview-files > * {
-            display: block;
-            margin-right: 5px;
-            margin-bottom: 5px;
-            padding-bottom: 8px;
-        }
-        .docview-files > *.active {
-            background: #c7c7c7;
-        }
-        .docview-files .fa {
-            font-size: 20px;
-        }
-        .docview-files .name {
-            display: block;
-            width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 12px;
+
+        .docview .block-options [data-action="fullscreen_toggle"] {
+            visibility: hidden;
         }
 
         .docview-body {
             margin: 0;
         }
-        .docview-viewer {
-            width: 100%;
-        }
-        .docview-viewer-image,
-        .docview-viewer-pdf {
-            position: relative;
-            width: 100%;
-            height: 0;
-            padding-bottom: 85%;
-            display: none;
-        }
-        .docview-viewer-image.active,
-        .docview-viewer-pdf.active {
-            display: block;
-        }
-        .docview-viewer-image {
-            padding-bottom: 65%;
-        }
-        .docview-viewer-image > img {
-            display: none;
-        }
-        .docview-viewer-image img,
-        .docview-viewer-pdf iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .docview-viewer-image img {
-            height: auto;
+
+        .docview-form {
+            text-align: center;
+            margin-bottom: 1em;
         }
 
-        .docview-viewer-image .viewer-prev,
-        .docview-viewer-image .viewer-next,
-        .docview-viewer-image .viewer-play,
-        .docview-viewer-image .viewer-flip-horizontal,
-        .docview-viewer-image .viewer-flip-vertical {
+        .docview-viewer {
+            width: 100%;
+            min-height: 500px;
+            position: relative;
+            background: #fafafa;
+        }
+
+        .docview-viewer .docview-message {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .docview-viewer img,
+        .docview-viewer iframe {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .docview-viewer .viewer-prev,
+        .docview-viewer .viewer-next,
+        .docview-viewer .viewer-play,
+        .docview-viewer .viewer-flip-horizontal,
+        .docview-viewer .viewer-flip-vertical {
             display: none;
         }
-        .docview-viewer-image .viewer-toolbar {
+        .docview-viewer .viewer-toolbar {
             width: 150px;
+        }
+
+        .docview.block-opt-fullscreen .docview-viewer {
+            height: 90vh;
+        }
+
+        @media screen and (max-width: 992px) {
+            .docview-form:nth-child(2) {
+                margin-top: 1em;
+            }
         }
     </style>
 {% endblock %}
@@ -98,144 +101,155 @@
 {% block pageScripts %}
     <script>
         $(function () {
-            var Docview = {
-                imgViewers: [],
-                settings: {
-                    pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
-                },
-                render: function (url, index) {
-                    url.indexOf('pdf') > -1 ? this.renderPdf(url, index) : this.renderImg(url, index)
-                },
-                renderImg: function (url, index) {
-                    var $viewerContainer = $('.docview-body').find('.docview-viewer').eq(index)
-                    var $imgContainer = $viewerContainer.find('.docview-viewer-image')
-                    var $pdfContainer = $viewerContainer.find('.docview-viewer-pdf')
+          var $doc = $(document)
+          var Docview = {
+              $elem: $('#docview'),
+              imgViewers: [],
+              settings: {
+                pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
+              },
+              render: function (fileUrl, index) {
+                var $viewer = this.$elem.find('.docview-viewer').eq(index)
 
-                    $pdfContainer.removeClass('active')
-                    $imgContainer.addClass('active')
-
-                    $imgContainer.find('img').attr('src', url)
-
-                    var options = {
-                        inline: true,
-                        scalable: true,
-                        movable: true,
-                        navbar: false,
-                        title: false,
-                        transition: false,
-                        built: function () {
-                            $imgContainer.next().addClass('imgviewer')
-                        }
-                    }
-
-                    if (this.imgViewers[index]) {
-                        this.imgViewers[index].destroy()
-                    }
-                    this.imgViewers[index] = new Viewer($imgContainer.find('img')[0], options)
-                },
-                renderPdf: function (url, index) {
-                    var $viewerContainer = $('.docview-body').find('.docview-viewer').eq(index)
-                    var $imgContainer = $viewerContainer.find('.docview-viewer-image')
-                    var $pdfContainer = $viewerContainer.find('.docview-viewer-pdf')
-
-                    $imgContainer.removeClass('active')
-                    $pdfContainer.addClass('active')
-
-                    var newUrl = this.settings.pdfViewer + '?file=' + url
-                    $pdfContainer.find('iframe').attr('src', newUrl)
+                // Unload the file
+                if (!fileUrl || fileUrl === '') {
+                  $viewer.html('<div class="docview-message">Select a document to view</div>')
+                  return
                 }
-            }
 
-            $('.docview-files').each(function (index) {
-                var $active = $(this).find('.active')
-                if ($active.length) {
-                    Docview.render($active.data('docview-url'), index)
+                // Determine if PDF or image
+                if (/\.pdf$/i.test(fileUrl)) {
+                  this.renderPdf(fileUrl, index)
+                } else if (/\.(jpe?g|gif|png)$/.test(fileUrl)) {
+                  this.renderImg(fileUrl, index)
+                } else {
+                  $viewer.html('<div class="docview-message">File format not supported in viewer<br/><br/><strong><a href="' + fileUrl + '">Download file</a></strong></div>')
                 }
-            })
+              },
+              renderImg: function (fileUrl, index) {
+                var $viewer = this.$elem.find('.docview-viewer').eq(index)
+                var $imgViewer = $viewer.find('img').length ? $viewer.find('img').first() : $('<img />')
 
-            var $doc = $(document)
+                // Do nothing if already loaded
+                if ($imgViewer.attr('src') === fileUrl) return
 
-            $doc.on('click', '[data-docview-url]', function () {
-                var url = $(this).data('docview-url')
-                var $linkContainer = $(this).closest('.docview-files')
-                var index = $('.docview-files').index($linkContainer)
+                // Setup viewer options for the image
+                var imgViewerOptions = {
+                  inline: true,
+                  scalable: true,
+                  movable: true,
+                  navbar: false,
+                  title: false,
+                  transition: false,
+                  built: function () {
+                    $imgViewer.addClass('imgviewer')
+                  }
+                }
 
-                $linkContainer.find('[data-docview-url]').removeClass('active')
-                $(this).addClass('active')
+                // In case an error occurs
+                $imgViewer.on('error', function () {
+                  $viewer.html('<div class="docview-message">Error loading document!</div>')
+                })
 
-                Docview.render(url, index)
-            })
+                // Set the image src attribute
+                $imgViewer.attr('src', fileUrl)
+
+                // Delete any previous image viewer for this index
+                if (typeof this.imgViewers[index] !== 'undefined') this.imgViewers[index].destroy()
+
+                // Append to the DOM
+                if (!$viewer.find('img').length) {
+                  $viewer.html('')
+                  $imgViewer.appendTo($viewer)
+                }
+
+                // Create the new image viewer
+                this.imgViewers[index] = new Viewer($imgViewer[0], imgViewerOptions)
+              },
+              renderPdf: function (fileUrl, index) {
+                var $viewer = this.$elem.find('.docview-viewer').eq(index)
+                var $pdfViewer = $viewer.find('iframe').length ? $viewer.find('iframe').first() : $('<iframe />')
+                var viewFileUrl = this.settings.pdfViewer + '?file=' + fileUrl
+
+                // Do nothing if already loaded
+                if ($pdfViewer.attr('src') === viewFileUrl) return
+
+                // In case an error occurs
+                $pdfViewer.on('error', function () {
+                  $viewer.html('<div class="docview-message">Error loading document!</div>')
+                })
+
+                // Set the iframe src attribute
+                $pdfViewer.attr('src', viewFileUrl)
+
+                // Append to the DOM
+                if (!$viewer.find('iframe').length) {
+                  $viewer.html('')
+                  $pdfViewer.appendTo($viewer)
+                }
+              }
+          }
+
+          // Render a file within the viewer based on the switcher
+          $doc.on('Docview:init change', '.docview-switcher', function () {
+            var index = $(this).closest('.docview').first().find('.docview-switcher').index(this)
+            var fileUrl = $(this).val()
+            Docview.render(fileUrl, index)
+          })
+
+          // Force fullscreen
+          $('[data-action="fullscreen_toggle"]').click()
+
+          // Trigger loading the first document on DOM ready
+          $('.docview-switcher:eq(0)').trigger('Docview:init')
         })
     </script>
 {% endblock %}
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        Document viewer prototype
+        Document viewer
     </h1>
 {% endblock %}
 
 {% block content %}
-    <div id="docview" class="docview block block-bordered">
-        <div class="block-header">
+    <div id="docview" class="docview block block-bordered" style="min-width: 1000px; min-height: 500px;">
+        <div class="docview-body block-content block-content-full">
             <ul class="block-options">
                 <li>
-                    <button type="button" data-toggle="block-option" data-action="fullscreen_toggle"><i class="si si-size-fullscreen"></i></button>
+                    <button type="button" data-toggle="block-option" data-action="fullscreen_toggle">
+                        <i class="si si-size-fullscreen"></i>
+                    </button>
                 </li>
             </ul>
-            <div class="block-title col-md-6">
-                <form class="docview-form" action="#">
-                    <div class="docview-files">
-                        <button type="button" class="btn btn-default active" data-docview-url="{{ app.adminUrl }}/demo/operations.pdf">
-                            <span class="fa fa-file-pdf-o"></span> <span class="name">operations.pdf</span>
-                        </button>
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/emprunteurs.pdf">
-                            <span class="fa fa-file-pdf-o"></span> <span class="name">emprunteurs.pdf</span>
-                        </button>
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/doc-cni.jpg">
-                            <span class="fa fa-file-image-o"></span> <span class="name">doc-cni.jpg</span>
-                        </button>
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/montants.png">
-                            <span class="fa fa-file-image-o"></span> <span class="name">montants.png</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="block-title col-md-6">
-                <form class="docview-form" action="#">
-                    <div class="docview-files">
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/operations.pdf">
-                            <span class="fa fa-file-pdf-o"></span> <span class="name">operations.pdf</span>
-                        </button>
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/emprunteurs.pdf">
-                            <span class="fa fa-file-pdf-o"></span> <span class="name">emprunteurs.pdf</span>
-                        </button>
-                        <button type="button" class="btn btn-default active" data-docview-url="{{ app.adminUrl }}/demo/doc-cni.jpg">
-                            <span class="fa fa-file-image-o"></span> <span class="name">doc-cni.jpg</span>
-                        </button>
-                        <button type="button" class="btn btn-default" data-docview-url="{{ app.adminUrl }}/demo/montants.png">
-                            <span class="fa fa-file-image-o"></span> <span class="name">montants.png</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <div class="docview-body block-content block-content-full">
             <div class="row">
-                <div class="docview-viewer col-md-6">
-                    <div class="docview-viewer-image">
-                        <img src="" alt="">
+                <div class="col-md-6">
+                    <div class="docview-form">
+                        <select class="docview-switcher">
+                            {% for document in documents %}
+                                <option value="{{ document.url }}" {% if document.isSelected %} selected="selected" {% endif %}>
+                                    {{ document.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="docview-viewer-pdf">
-                        <iframe src="" frameborder="0"></iframe>
+                    <div class="docview-viewer">
+                        <div class="docview-message">Loading...</div>
                     </div>
                 </div>
-                <div class="docview-viewer col-md-6">
-                    <div class="docview-viewer-image">
-                        <img src="" alt="">
+                <div class="col-md-6">
+                    <div class="docview-form">
+                        <select class="docview-switcher">
+                            <option value="">Select document...</option>
+                            {% for document in documents %}
+                                <option value="{{ document.url }}">
+                                    {{ document.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="docview-viewer-pdf">
-                        <iframe src="" frameborder="0"></iframe>
+                    <div class="docview-viewer">
+                        <div class="docview-message">Select a document above to view</div>
                     </div>
                 </div>
             </div>

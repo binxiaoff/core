@@ -1,0 +1,40 @@
+<header id="header-navbar" class="content-mini content-mini-full">
+    <ul class="nav-header pull-right">
+        <li>
+            <div class="btn-group">
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+                    {{ app.user.firstname }} {{ app.user.name }}
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li>
+                        <a data-toggle="modal" data-target="#modal-profile-settings">
+                            <i class="si si-settings pull-right"></i>Profil
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ app.adminUrl }}/users/edit_password">
+                            <i class="si si-lock pull-right"></i>Mot de passe
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ app.adminUrl }}/logout">
+                            <i class="si si-logout pull-right"></i>Se déconnecter
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+    </ul>
+    <ul class="nav-header pull-left">
+        <li class="header-search">
+            <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
+        </li>
+        <li class="hidden-md hidden-lg">
+            <!-- Layout API, functionality initialized in App() -> uiLayoutApi() -->
+            <button class="btn btn-default" data-toggle="layout" data-action="sidebar_toggle" type="button">
+                <i class="fa fa-navicon"></i>
+            </button>
+        </li>
+    </ul>
+</header>
