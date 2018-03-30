@@ -1,6 +1,6 @@
 {% extends 'layout_basic.html.twig' %}
 
-{# Testing
+{#
 {% set documents = [
     {
         name: 'operations.pdf',
@@ -15,8 +15,14 @@
         name: 'montants.png',
         url: app.adminUrl ~ '/demo/montants.png'
     },{
-        name: 'montants.jpg',
-        url: app.adminUrl ~ '/demo/montants.jpg'
+        name: 'unilever-annual-report-and-accounts-2017_tcm244-516456_en.pdf',
+        url: app.adminUrl ~ '/demo/unilever-annual-report-and-accounts-2017_tcm244-516456_en.pdf'
+    },{
+        name: 'show_download_link.doc',
+        url: app.adminUrl ~ '/demo/show_download_link.doc'
+    },{
+        name: 'show_error.jpg',
+        url: app.adminUrl ~ '/demo/show_error.jpg'
     }
 ] %}
 #}
@@ -169,7 +175,7 @@
               renderPdf: function (fileUrl, index) {
                 var $viewer = this.$elem.find('.docview-viewer').eq(index)
                 var $pdfViewer = $viewer.find('iframe').length ? $viewer.find('iframe').first() : $('<iframe />')
-                var viewFileUrl = this.settings.pdfViewer + '?file=' + fileUrl
+                var viewFileUrl = this.settings.pdfViewer + '?file=' + encodeURIComponent(fileUrl)
 
                 // Do nothing if already loaded
                 if ($pdfViewer.attr('src') === viewFileUrl) return
