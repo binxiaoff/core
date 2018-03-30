@@ -684,7 +684,7 @@ class preteursController extends bootstrap
 
                     if (
                         isset($_POST['statut_valider_preteur'])
-                        && $_POST['statut_valider_preteur'] == 1
+                        && 1 == $_POST['statut_valider_preteur']
                         && $lenderValidationManager->validateClient($this->clients, $this->userEntity)
                     ) {
                         $this->validateBankAccount($_POST['id_bank_account']);

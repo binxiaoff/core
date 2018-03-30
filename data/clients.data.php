@@ -630,7 +630,7 @@ class clients extends clients_crud
               )
             ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
             WHERE csh.id_status IN (:clientStatus)
-              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 800
+              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < 80
               AND last_cvsh.id_client IS NULL";
 
         /** @var \Doctrine\DBAL\Statement $statement */

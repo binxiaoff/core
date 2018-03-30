@@ -56,7 +56,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 /** @var \users_history $userHistory */
                 $userHistory = $entityManagerSimulator->getRepository('users_history');
                 $serialize   = serialize(['id_client' => $client->getIdClient(), 'attachment_data' => $clientData]);
-                $userHistory->histo(UsersHistory::FORM_ID_LENDER, 'validation auto preteur', '0', $serialize);
+                $userHistory->histo(UsersHistory::FORM_ID_LENDER, 'validation auto preteur', Users::USER_ID_CRON, $serialize);
 
                 /** @var \clients_adresses $clientAddress */
                 $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');

@@ -194,9 +194,6 @@ class UsersController extends Controller
             return $this->redirectToRoute('partner_user_creation');
         }
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
         $client = new Clients();
         $client
             ->setNom($request->request->get('lastname'))
