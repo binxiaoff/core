@@ -69,7 +69,7 @@ class ProjectsStatus
     const NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT           = 'infolegale_company_incident';
     const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT   = 'infolegale_current_manager_incident';
     const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
-    const NON_ELIGIBLE_REASON_NO_LEGAL_PERSONALITY                  = 'no_legal_personality';
+    const NON_ELIGIBLE_REASON_NO_LEGAL_STATUS                       = 'no_legal_status';
 
     const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT            = 'infolegale_current_manager_other_companies_incident';
     const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT = 'infolegale_current_manager_depositor_no_role_12months_incident';

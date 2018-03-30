@@ -259,7 +259,7 @@ class ProjectRequestController extends Controller
                 case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
                     $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
                     break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_PERSONALITY:
+                case ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_STATUS:
                     $translation = 'partner-project-request_not-eligible-reason-no-legal-personality';
                     break;
                 case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
