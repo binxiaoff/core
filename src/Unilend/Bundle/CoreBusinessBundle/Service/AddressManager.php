@@ -53,7 +53,7 @@ class AddressManager
             if ($company->getIdClientOwner()->isLender()) {
                 $this->saveLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
             } else {
-                $companyAddress = $this->createNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
+                $companyAddress = $this->saveNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
 
                 if (null !== $companyAddress) {
                     $this->validateCompanyAddress($companyAddress);
@@ -81,7 +81,7 @@ class AddressManager
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
+    private function saveNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
     {
         $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
