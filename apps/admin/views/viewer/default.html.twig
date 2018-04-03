@@ -1,32 +1,5 @@
 {% extends 'layout_basic.html.twig' %}
 
-{#
-{% set documents = [
-    {
-        name: 'operations.pdf',
-        url: app.adminUrl ~ '/demo/operations.pdf'
-    },{
-        name: 'emprunteurs.pdf',
-        url: app.adminUrl ~ '/demo/emprunteurs.pdf'
-    },{
-        name: 'doc-cni.jpg',
-        url: app.adminUrl ~ '/demo/doc-cni.jpg'
-    },{
-        name: 'montants.png',
-        url: app.adminUrl ~ '/demo/montants.png'
-    },{
-        name: 'unilever-annual-report-and-accounts-2017_tcm244-516456_en.pdf',
-        url: app.adminUrl ~ '/demo/unilever-annual-report-and-accounts-2017_tcm244-516456_en.pdf'
-    },{
-        name: 'show_download_link.doc',
-        url: app.adminUrl ~ '/demo/show_download_link.doc'
-    },{
-        name: 'show_error.jpg',
-        url: app.adminUrl ~ '/demo/show_error.jpg'
-    }
-] %}
-#}
-
 {% block pluginsCSS %}
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.css">
     <style>
@@ -119,7 +92,7 @@
 
                 // Unload the file
                 if (!fileUrl || fileUrl === '') {
-                  $viewer.html('<div class="docview-message">Select a document to view</div>')
+                  $viewer.html('<div class="docview-message">Sélectionnez un document à visualiser</div>')
                   return
                 }
 
@@ -129,7 +102,7 @@
                 } else if (/\.(jpe?g|gif|png)$/.test(fileUrl)) {
                   this.renderImg(fileUrl, index)
                 } else {
-                  $viewer.html('<div class="docview-message">File format not supported in viewer<br/><br/><strong><a href="' + fileUrl + '">Download file</a></strong></div>')
+                  $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer<br/><br/><strong><a href="' + fileUrl + '">Télécharger le fichier</a></strong></div>')
                 }
               },
               renderImg: function (fileUrl, index) {
@@ -154,7 +127,7 @@
 
                 // In case an error occurs
                 $imgViewer.on('error', function () {
-                  $viewer.html('<div class="docview-message">Error loading document!</div>')
+                  $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
                 })
 
                 // Set the image src attribute
@@ -182,7 +155,7 @@
 
                 // In case an error occurs
                 $pdfViewer.on('error', function () {
-                  $viewer.html('<div class="docview-message">Error loading document!</div>')
+                  $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
                 })
 
                 // Set the iframe src attribute
@@ -232,10 +205,10 @@
                 <div class="col-md-6">
                     <div class="docview-form">
                         <select class="docview-switcher">
+                            <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"
-                                        {% if document.getId() == currentDocumentId %} selected="selected" {% endif %}>
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"{% if document.getId() == currentDocumentId %} selected="selected"{% endif %}>
                                     {% if document.getOriginalName() is empty %}
                                         {{ document.getPath() }}
                                     {% else %}
@@ -246,13 +219,13 @@
                         </select>
                     </div>
                     <div class="docview-viewer">
-                        <div class="docview-message">Loading...</div>
+                        <div class="docview-message">Chargement ...</div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="docview-form">
                         <select class="docview-switcher">
-                            <option value="">Select document...</option>
+                            <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
                                 <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
@@ -266,7 +239,7 @@
                         </select>
                     </div>
                     <div class="docview-viewer">
-                        <div class="docview-message">Select a document above to view</div>
+                        <div class="docview-message">Sélectionnez un document à visualiser</div>
                     </div>
                 </div>
             </div>
