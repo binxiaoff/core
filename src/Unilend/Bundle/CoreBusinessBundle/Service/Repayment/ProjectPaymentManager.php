@@ -70,11 +70,20 @@ class ProjectPaymentManager
      * @param DebtCollectionMission|null $debtCollectionMission
      * @param float|null                 $debtCollectionFeeRate
      * @param ProjectCharge[]|null       $projectCharges
+     * @param int                        $repaymentType
      *
      * @return bool
      * @throws \Exception
      */
-    public function pay(Receptions $wireTransferIn, Users $user, \DateTime $repayOn = null, DebtCollectionMission $debtCollectionMission = null, $debtCollectionFeeRate = null, $projectCharges = null)
+    public function pay(
+        Receptions $wireTransferIn,
+        Users $user,
+        ?\DateTime $repayOn = null,
+        ?DebtCollectionMission $debtCollectionMission = null,
+        ?float $debtCollectionFeeRate = null,
+        $projectCharges = null,
+        int $repaymentType = ProjectRepaymentTask::TYPE_REGULAR
+    ): bool
     {
         /** @var \echeanciers $repaymentScheduleData */
         $repaymentScheduleData       = $this->entityManagerSimulator->getRepository('echeanciers');
@@ -220,7 +229,8 @@ class ProjectPaymentManager
                     'ordre'     => $paymentSchedule->getOrdre()
                 ]);
 
-                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $repayOn, $wireTransferIn, $user, $debtCollectionMission);
+                $this->projectRepaymentTaskManager->planRepaymentTask($repaymentSchedule, $capitalToPay, $interestToPay, $commissionToPay, $repayOn, $wireTransferIn, $user, $debtCollectionMission,
+                    $repaymentType);
 
                 $paidAmount = round(bcadd(bcadd($capitalToPay, $interestToPay, 4), $commissionToPay, 4), 2);
                 $amount     = round(bcsub($amount, $paidAmount, 4), 2);
@@ -251,6 +261,7 @@ class ProjectPaymentManager
                 'type'             => [
                     ProjectRepaymentTask::TYPE_REGULAR,
                     ProjectRepaymentTask::TYPE_LATE,
+                    ProjectRepaymentTask::TYPE_EARLY,
                 ],
                 'status'           => [
                     ProjectRepaymentTask::STATUS_ERROR,
@@ -268,36 +279,36 @@ class ProjectPaymentManager
             $repaymentScheduleData = $this->entityManagerSimulator->getRepository('echeanciers');
 
             foreach ($projectRepaymentTasksToCancel as $task) {
-                $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
+                if (in_array($task->getType(), [ProjectRepaymentTask::TYPE_REGULAR, ProjectRepaymentTask::TYPE_LATE])) {
+                    $paymentSchedule = $paymentScheduleRepository->findOneBy(['idProject' => $project, 'ordre' => $task->getSequence()]);
 
-                $paidCapital    = $paymentSchedule->getPaidCapital() - bcmul($task->getCapital(), 100);
-                $paidInterest   = $paymentSchedule->getPaidInterest() - bcmul($task->getInterest(), 100);
-                $paidCommission = $paymentSchedule->getPaidCommissionVatIncl() - bcmul($task->getCommissionUnilend(), 100);
+                    $paidCapital    = $paymentSchedule->getPaidCapital() - bcmul($task->getCapital(), 100);
+                    $paidInterest   = $paymentSchedule->getPaidInterest() - bcmul($task->getInterest(), 100);
+                    $paidCommission = $paymentSchedule->getPaidCommissionVatIncl() - bcmul($task->getCommissionUnilend(), 100);
 
-                if (
-                    0 === bccomp($paidCapital, 0, 2)
-                    && 0 === bccomp($paidInterest, 0, 2)
-                    && 0 === bccomp($paidCommission, 0, 2)
-                ) {
-                    $status = EcheanciersEmprunteur::STATUS_PENDING;
-                } else {
-                    $status = EcheanciersEmprunteur::STATUS_PARTIALLY_PAID;
+                    if (
+                        0 === bccomp($paidCapital, 0, 2)
+                        && 0 === bccomp($paidInterest, 0, 2)
+                        && 0 === bccomp($paidCommission, 0, 2)
+                    ) {
+                        $status = EcheanciersEmprunteur::STATUS_PENDING;
+                    } else {
+                        $status = EcheanciersEmprunteur::STATUS_PARTIALLY_PAID;
+                    }
+
+                    $paymentSchedule->setPaidCapital($paidCapital)
+                        ->setPaidInterest($paidInterest)
+                        ->setPaidCommissionVatIncl($paidCommission)
+                        ->setStatusEmprunteur($status)
+                        ->setDateEcheanceEmprunteurReel(null);
+
+                    $this->entityManager->flush($paymentSchedule);
+
+                    // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
+                    $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre(), 'cancel');
                 }
 
-                $paymentSchedule->setPaidCapital($paidCapital)
-                    ->setPaidInterest($paidInterest)
-                    ->setPaidCommissionVatIncl($paidCommission)
-                    ->setStatusEmprunteur($status)
-                    ->setDateEcheanceEmprunteurReel(null);
-
-                $this->entityManager->flush($paymentSchedule);
-
-                // todo: this call can be deleted once all migrations have been done on the usage of these 2 columns.
-                $repaymentScheduleData->updateStatusEmprunteur($project->getIdProject(), $paymentSchedule->getOrdre(), 'cancel');
-
-                if (in_array($task->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
-                    $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
-                }
+                $this->projectRepaymentTaskManager->cancelRepaymentTask($task, $user);
             }
 
             $this->projectChargeManager->cancelProjectCharge($wireTransferIn);

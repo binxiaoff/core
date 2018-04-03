@@ -395,7 +395,7 @@
             <h2 class="content-heading">Synthèse du projet</h2>
             <div class="row">
                 {% if project.getCloseOutNettingDate %}
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Terme déchu le</h3>
@@ -406,7 +406,7 @@
                         </div>
                     </div>
                 {% else %}
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Nombre d'échéances</h3>
@@ -425,7 +425,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Montant remboursement</h3>
@@ -444,7 +444,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Prochaine échéance le</h3>
@@ -456,7 +456,7 @@
                     </div>
                 {% endif %}
                 {% if totalOverdueAmount > 0 %}
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Retard Emprunteur</h3>
@@ -466,7 +466,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">Confié au recouvreur</h3>
@@ -477,7 +477,7 @@
                         </div>
                     </div>
                 {% endif %}
-                <div class="col-md-2">
+                <div class="col-lg-2">
                     <div class="block">
                         <div class="block-header">
                             <h3 class="block-title">Réceptions à traiter</h3>
@@ -489,7 +489,7 @@
                 </div>
                 {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
                     {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
-                    <div class="col-md-2">
+                    <div class="col-lg-2">
                         <div class="block">
                             <div class="block-header">
                                 <h3 class="block-title">{{ companyStatusName|trans }}</h3>
@@ -509,6 +509,7 @@
             {% endif %}
             {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
             {% include 'dossiers/blocs/details_remboursement/receptions.html.twig' %}
+            {% include 'dossiers/blocs/details_remboursement/planned_repayment_task.html.twig' %}
         </div>
     {% endblock %}
 {% endif %}

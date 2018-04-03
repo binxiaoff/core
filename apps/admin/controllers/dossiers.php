@@ -3181,7 +3181,11 @@ class dossiersController extends bootstrap
                     }
 
                     $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
-                    $pendingWireTransferIn  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
+                    $pendingWireTransferIn  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
+                    $plannedRepaymentTasks  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+                        'idProject' => $project,
+                        'status' => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
+                    ]);
 
                     $templateData = [
                         'project'                    => $project,
@@ -3202,6 +3206,7 @@ class dossiersController extends bootstrap
                         'unpaidScheduleCount'        => $unpaidScheduleCount,
                         'unpaidScheduledAmount'      => $unpaidScheduledAmount,
                         'paidScheduledAmount'        => $paidScheduledAmount,
+                        'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     ];
 
                     $this->render(null, $templateData);

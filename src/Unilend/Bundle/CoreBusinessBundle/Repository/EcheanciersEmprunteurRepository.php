@@ -57,10 +57,12 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param int|Projects $project
-     * @param int          $sequence
+     * @param $project
+     * @param $sequence
      *
-     * @return string
+     * @return float
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getRemainingCapitalFrom($project, $sequence)
     {
@@ -71,7 +73,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('project', $project)
             ->setParameter('sequence', $sequence);
 
-        return $queryBuilder->getQuery()->getSingleScalarResult();
+        return (float) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 
     /**

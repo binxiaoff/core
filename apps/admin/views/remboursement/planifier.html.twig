@@ -76,13 +76,21 @@
                     $rateTextInput.addClass('required')
                 }
             })
+
+            $(document).on('change', '#repayment-type', function () {
+                if ({{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') }} === parseInt($(this).val())) {
+                    $('#next-schedule-date').removeClass('visibility-hidden')
+                } else {
+                    $('#next-schedule-date').addClass('visibility-hidden')
+                }
+            })
         })
     </script>
 {% endblock %}
 
 {% block pageHeader %}
     <div class="pull-left">
-        <a href="/dossiers/details_remboursement/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails impayés</a>
+        <a href="/dossiers/details_remboursement/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails remboursement</a>
     </div>
     <div class="pull-right">
         <small>SIREN : <a href="/emprunteurs/edit/{{ reception.idProject.idCompany.idClientOwner.idClient }}">{{ reception.idProject.idCompany.siren }}</a></small>
@@ -205,11 +213,11 @@
                                 <p>Ce projet n'a pas de mission de recouvrement.</p>
                             {% endif %}
                             <div class="push"></div>
-                            {% if project.getCloseOutNettingDate is empty %}
+                            {% if reception.idProject.getCloseOutNettingDate is empty %}
                                 <h4 class="font-w400 push-20">Mode du remboursement</h4>
                                 <div class="row">
                                     <div class="form-group col-md-12">
-                                        <select class="form-control required" name="repayment-mode" required>
+                                        <select class="form-control required" id="repayment-type" name="repayment_type" required>
                                             <option value="">Selectionner un mode</option>
                                             <option value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') }}">
                                                 Remboursement normal
@@ -240,6 +248,7 @@
                                             </p>
                                         {% endif %}
                                     {% endif %}
+                                    <p class="visibility-hidden" id="next-schedule-date">Date de prochaine échéance : {{ nextRepaymentSchedule.getDateEcheance()|localizeddate('short', 'none') }}</p>
                                 </div>
                             </div>
                         </div>
