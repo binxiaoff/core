@@ -1,11 +1,12 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, Wallet, WalletType, Zones
+    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BankAccountManager, LenderOperationsManager
+};
 
 class preteursController extends bootstrap
 {
@@ -71,18 +72,14 @@ class preteursController extends bootstrap
                 die;
             }
 
-            $online = (isset($_POST['nonValide']) && true == $_POST['nonValide']) ? false : true;
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lPreteurs  = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren, $online);
+            $this->lPreteurs  = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
 
-            if (false === empty($this->lPreteurs) && 1 == count($this->lPreteurs)) {
+            if (false === empty($this->lPreteurs) && false === empty($_POST['id']) && 1 == count($this->lPreteurs)) {
                 header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
                 die;
             }
-
-            $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
-            $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
@@ -544,8 +541,8 @@ class preteursController extends bootstrap
                     }
                     if (false === empty($taxExemptionHistory)) {
                         $this->users_history->histo(
-                            \users_history::FORM_ID_LENDER,
-                            \users_history::FORM_NAME_TAX_EXEMPTION,
+                            UsersHistory::FORM_ID_LENDER,
+                            UsersHistory::FORM_NAME_TAX_EXEMPTION,
                             $this->userEntity->getIdUser(),
                             serialize(['id_client' => $this->clients->id_client, 'modifications' => $taxExemptionHistory])
                         );
@@ -554,12 +551,20 @@ class preteursController extends bootstrap
                     $this->clients_adresses->update();
 
                     $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur', $this->userEntity->getIdUser(), $serialize);
+                    $this->users_history->histo(UsersHistory::FORM_ID_LENDER, 'modif info preteur', $this->userEntity->getIdUser(), $serialize);
 
                     if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                        $validation = $lenderValidationManager->validateClient($this->clients, $this->userEntity);
-                        if (true !== $validation) {
-                            $this->changeClientOnlineOfflineStatus($this->clients, Clients::STATUS_OFFLINE, \users_history::FORM_ID_LENDER);
+                        if (false === $lenderValidationManager->validateClient($this->clients, $this->userEntity)) {
+                            $this->users_history->histo(
+                                UsersHistory::FORM_ID_LENDER,
+                                'Compte prêteur fermé cause doublon',
+                                $this->userEntity->getIdUser(),
+                                serialize(['id_client' => $client->getIdClient(), 'status' => $client->getIdClientStatusHistory()->getIdStatus()->getId()])
+                            );
+
+                            $_SESSION['freeow']['title']   = 'Doublon client';
+                            $_SESSION['freeow']['message'] = 'Attention, homonyme d\'un autre client. Compte fermé.';
+
                             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->clients->id_client);
                             die;
                         }
@@ -583,9 +588,6 @@ class preteursController extends bootstrap
                     $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
                     $this->companies->tribunal_com = $_POST['tribunal_com'];
 
-                    ////////////////////////////////////
-                    // On verifie meme adresse ou pas //
-                    ////////////////////////////////////
                     if (false === empty($_POST['meme-adresse'])) {
                         $this->companies->status_adresse_correspondance = Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL;
                         $this->clients_adresses->adresse1               = $_POST['adresse'];
@@ -616,8 +618,7 @@ class preteursController extends bootstrap
 
                     $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
 
-                    //extern ou non dirigeant
-                    if (Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companies->status_client || Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companies->status_client) {
+                    if (in_array($this->companies->status_client, [Companies::CLIENT_STATUS_DELEGATION_OF_POWER, Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT])) {
                         $this->companies->civilite_dirigeant = $_POST['civilite2_e'];
                         $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_e']);
                         $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_e']);
@@ -625,7 +626,6 @@ class preteursController extends bootstrap
                         $this->companies->email_dirigeant    = $_POST['email2_e'];
                         $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone2_e']);
 
-                        // externe
                         if (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companies->status_client) {
                             $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise'];
                             $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
@@ -639,7 +639,6 @@ class preteursController extends bootstrap
                         $this->companies->phone_dirigeant    = '';
                     }
 
-                    // Si form societe ok
                     $this->clients->id_langue       = 'fr';
                     $this->clients->type            = Clients::TYPE_LEGAL_ENTITY;
                     $this->clients->nom_usage       = '';
@@ -676,11 +675,18 @@ class preteursController extends bootstrap
                     $this->clients->update();
                     $this->clients_adresses->update();
 
-                    $serialize = serialize(['id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES]);
-                    $this->users_history->histo(\users_history::FORM_ID_LENDER, 'modif info preteur personne morale', $this->userEntity->getIdUser(), $serialize);
+                    $this->users_history->histo(
+                        UsersHistory::FORM_ID_LENDER,
+                        'modif info preteur personne morale',
+                        $this->userEntity->getIdUser(),
+                        serialize(['id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES])
+                    );
 
-                    if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                        $lenderValidationManager->validateClient($this->clients, $this->userEntity);
+                    if (
+                        isset($_POST['statut_valider_preteur'])
+                        && 1 == $_POST['statut_valider_preteur']
+                        && $lenderValidationManager->validateClient($this->clients, $this->userEntity)
+                    ) {
                         $this->validateBankAccount($_POST['id_bank_account']);
                         $_SESSION['compte_valide'] = true;
                     }
@@ -1022,8 +1028,13 @@ class preteursController extends bootstrap
         $this->clients       = $this->loadData('clients');
 
         if (
-        $this->clients->get($this->params[0], 'id_client')
+            isset($this->params[0])
+            && filter_var($this->params[0], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'id_client')
         ) {
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+
             if (isset($_POST['send_dates'])) {
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
                 $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
@@ -1237,73 +1248,6 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param Clients|\clients $client
-     * @param int              $status
-     * @param int              $origin
-     */
-    private function changeClientOnlineOfflineStatus($client, $status, $origin)
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
-        if ($client instanceof \clients) {
-            $client = $clientRepository->find($client->id_client);
-        }
-
-        if ($client->isLender()) {
-            try {
-                $duplicates = [];
-                if (Clients::STATUS_ONLINE == $status) {
-                    $duplicates = $clientRepository->findBy(['email' => $client->getEmail(), 'status' => Clients::STATUS_ONLINE]);
-                }
-
-                if (empty($duplicates)) {
-                    $client->setStatus($status);
-                    $entityManager->flush($client);
-                } else {
-                    $_SESSION['freeow']['title']   = 'Modification statut prêteur';
-                    $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié car un compte en ligne existe déjà avec cette adresse email.';
-
-                    header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
-                    exit;
-                }
-            } catch (\Doctrine\ORM\OptimisticLockException $exception) {
-                $_SESSION['freeow']['title']   = 'Modification statut prêteur';
-                $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié en raison d’une erreur technique : ' . $exception->getMessage();
-
-                header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
-                exit;
-            }
-
-            $serialize = serialize(['id_client' => $client->getIdClient(), 'status' => $client->getStatus()]);
-            switch ($origin) {
-                case 1:
-                    $this->users_history->histo($origin, 'status preteur', $_SESSION['user']['id_user'], $serialize);
-                    $_SESSION['freeow']['title']   = 'Statut du preteur';
-                    $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
-                    break;
-                case \users_history::FORM_ID_LENDER:
-                    $this->users_history->histo($origin, 'status offline d\'un preteur doublon', $_SESSION['user']['id_user'], $serialize);
-                    $_SESSION['freeow']['title']   = 'Doublon client';
-                    $_SESSION['freeow']['message'] = 'Attention, homonyme d\'un autre client. Client mis hors ligne !';
-                    break;
-                case 12:
-                    $this->users_history->histo($origin, 'status offline-online preteur non inscrit', $_SESSION['user']['id_user'], $serialize);
-                    $_SESSION['freeow']['title']   = 'Statut du preteur non inscrit';
-                    $_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
-                    break;
-            }
-        } else {
-            $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
-            $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
-
-            header('Location: ' . $this->lurl . '/preteurs/edit/' . $client->getIdClient());
-            die;
-        }
-    }
-
-    /**
      * @param Clients $client
      */
     private function sendEmailClosedAccount(Clients $client)
@@ -1485,68 +1429,113 @@ class preteursController extends bootstrap
         }
     }
 
-    public function _lenderOnlineOffline()
+    public function _status()
     {
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $action = empty($this->params[0]) ? null : filter_var($this->params[0], FILTER_SANITIZE_STRING);
-        if (empty($action)) {
-            header('Location: ' . $this->lurl . '/preteurs/search');
-            die;
-        }
-        $clientId = empty($this->params[1]) ? null : filter_var($this->params[1], FILTER_SANITIZE_NUMBER_INT);
+        $clientId = isset($this->params[0]) ? filter_var($this->params[0], FILTER_SANITIZE_NUMBER_INT) : null;
         if (empty($clientId)) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+        /** @var Clients $client */
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+
         if (null === $client) {
             header('Location: ' . $this->lurl . '/preteurs/search');
             die;
         }
-        if (false === in_array($this->params[2], [Clients::STATUS_OFFLINE, Clients::STATUS_ONLINE])) {
-            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+
+        $action = isset($this->params[1]) ? filter_var($this->params[1], FILTER_SANITIZE_STRING) : null;
+        if (empty($action)) {
+            header('Location: ' . $this->lurl . '/preteurs/search');
             die;
+        }
+
+        switch ($action) {
+            case 'close_lender':
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
+                $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_LENDER_REQUEST);
+
+                $this->sendEmailClosedAccount($client);
+                break;
+            case 'close_unilend':
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
+                $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_BY_UNILEND);
+                break;
+            case 'online':
+                if (false === $this->switchOnline($client)) {
+                    header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+                    die;
+                }
+                break;
+            default:
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error(
+                    'Unknown lender status modification action: ' . $action,
+                    ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+
+                $_SESSION['freeow']['title']   = 'Statut prêteur';
+                $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas été modifié en raison d’une erreur technique';
+
+                header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+                die;
+        }
+
+        $this->users_history->histo(
+            UsersHistory::FORM_ID_LENDER_STATUS,
+            UsersHistory::FORM_NAME_LENDER_STATUS,
+            $this->userEntity->getIdUser(),
+            serialize(['id_client' => $client->getIdClient(), 'status' => $client->getIdClientStatusHistory()->getIdStatus()->getId()])
+        );
+
+        $_SESSION['freeow']['title']   = 'Statut prêteur';
+        $_SESSION['freeow']['message'] = 'Le statut du prêteur a été modifié avec succès';
+
+        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+        die;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    private function switchOnline(Clients $client): bool
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $duplicates       = $clientRepository->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+
+        if (false === empty($duplicates)) {
+            $_SESSION['freeow']['title']   = 'Statut prêteur';
+            $_SESSION['freeow']['message'] = 'Le statut du prêteur n’a pas pu être modifié car un compte en ligne existe déjà avec cette adresse email';
+
+            return false;
+        }
+
+        $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
+
+        if (empty($lastTwoStatus[1])) {
+            $status = ClientsStatus::STATUS_TO_BE_CHECKED;
+        } else {
+            $status = $lastTwoStatus[1]->getIdStatus()->getId();
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
+        $clientStatusManager->addClientStatus($client, $this->userEntity->getIdUser(), $status, 'Compte remis en ligne par Unilend');
 
-        if ($action == 'status') {
-            $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
-
-            switch ($this->params[2]) {
-                case Clients::STATUS_OFFLINE:
-                    $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_BY_UNILEND);
-                    break;
-                case Clients::STATUS_ONLINE:
-                    $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
-                    if (false === empty($lastTwoStatus[1])) {
-                        $status = $lastTwoStatus[1]->getIdStatus()->getId();
-                    } else {
-                        $status = ClientsStatus::STATUS_TO_BE_CHECKED;
-                    }
-
-                    $content = 'Compte remis en ligne par Unilend';
-                    $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], $status, $content);
-                    break;
-                default:
-                    //should never arrive here
-                    break;
-            }
-        }
-
-        if ($action == 'deactivate') {
-            $this->changeClientOnlineOfflineStatus($client, $this->params[2], 1);
-            $this->sendEmailClosedAccount($client);
-            $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_LENDER_REQUEST);
-        }
-
-        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
-        die;
+        return true;
     }
 
     public function _bids()
@@ -1661,14 +1650,16 @@ class preteursController extends bootstrap
         $emailRegex    = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Regex validation email'])->getValue();
 
         if (1 !== preg_match($emailRegex, $email)) {
-            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Le format est incorrect';
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Le format est incorrect';
             return false;
         }
 
-        $duplicates = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+        $duplicates = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Clients')
+            ->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
         if (count($duplicates) > 0) {
-            $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisée par un autre compte';
+            $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Cette adresse est déjà utilisée par un autre compte.';
             return false;
         }
 

@@ -59,11 +59,6 @@ class ClientStatusManager
 
         $client->changePassword($client->email, mt_rand());
 
-        if (Clients::STATUS_ONLINE == $client->status) {
-            $client->status = Clients::STATUS_OFFLINE;
-            $client->update();
-        }
-
         $this->addClientStatus($client, $userId, ClientsStatus::STATUS_CLOSED_DEFINITELY, $comment);
     }
 

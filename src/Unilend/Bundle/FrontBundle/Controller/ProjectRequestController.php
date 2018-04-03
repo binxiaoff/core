@@ -156,8 +156,9 @@ class ProjectRequestController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($email, Clients::STATUS_ONLINE)) {
+        if (false === empty($duplicates)) {
             $email .= '-' . time();
         }
 
@@ -167,7 +168,6 @@ class ProjectRequestController extends Controller
         $this->client
             ->setEmail($email)
             ->setIdLangue('fr')
-            ->setStatus(Clients::STATUS_ONLINE)
             ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
             ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
             ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
@@ -504,7 +504,6 @@ class ProjectRequestController extends Controller
             $advisorClient->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
             $advisorClient->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
             $advisorClient->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
-            $advisorClient->status       = Clients::STATUS_OFFLINE;
 
             if (empty($advisorClient->id_client)) {
                 $advisorClient->create();
