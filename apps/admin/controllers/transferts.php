@@ -663,7 +663,7 @@ class transfertsController extends bootstrap
                 if (null === $directDebits) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
                     $borrowerManager   = $this->get('unilend.service.borrower_manager');
-                    $bankTransferLabel = $borrowerManager->getBorrowerBankTransferLabel($project);
+                    $bankTransferLabel = $borrowerManager->getProjectBankTransferLabel($project);
 
                     $paymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(['idProject' => $project]);
 

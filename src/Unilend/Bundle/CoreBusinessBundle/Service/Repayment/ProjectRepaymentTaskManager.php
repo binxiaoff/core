@@ -4,17 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DebtCollectionMission;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTask;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRepaymentTaskLog;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, Users
+};
 use Unilend\core\Loader;
 
 class ProjectRepaymentTaskManager
@@ -493,7 +485,7 @@ class ProjectRepaymentTaskManager
      * @return ProjectRepaymentTaskLog
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function start(ProjectRepaymentTask $projectRepaymentTask, float $repaidAmount = 0.00, int $repaidLoanNb = 0) : ProjectRepaymentTaskLog
+    public function start(ProjectRepaymentTask $projectRepaymentTask, float $repaidAmount = 0.00, int $repaidLoanNb = 0): ProjectRepaymentTaskLog
     {
         $projectRepaymentTask->setStatus(ProjectRepaymentTask::STATUS_IN_PROGRESS);
         $this->entityManager->flush($projectRepaymentTask);
@@ -515,7 +507,7 @@ class ProjectRepaymentTaskManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function end(ProjectRepaymentTaskLog $projectRepaymentTaskLog, int $projectRepaymentTaskStatus) : void
+    public function end(ProjectRepaymentTaskLog $projectRepaymentTaskLog, int $projectRepaymentTaskStatus): void
     {
         $projectRepaymentTaskLog->setEnded(new \DateTime());
 
@@ -534,7 +526,7 @@ class ProjectRepaymentTaskManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function log(ProjectRepaymentTaskLog $projectRepaymentTaskLog, float $repaidAmount, int $repaidLoanNb) : void
+    public function log(ProjectRepaymentTaskLog $projectRepaymentTaskLog, float $repaidAmount, int $repaidLoanNb): void
     {
         $projectRepaymentTaskLog
             ->setRepaidAmount($repaidAmount)
@@ -949,5 +941,22 @@ class ProjectRepaymentTaskManager
         if (0 !== bccomp($projectRepaymentTask->getInterest(), $totalInterestToRepay, 2)) {
             throw new \Exception('The total interest ( ' . $totalInterestToRepay . ') in project_repayment_detail does not equal to the amount in the task (id : ' . $projectRepaymentTask->getId() . ')');
         }
+    }
+
+    public function getPlannedRepaymentTaskAmountByCompany(Companies $company): float
+    {
+        $projects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $company]);
+
+        $amount                = 0;
+        $plannedRepaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+            'idProject' => $projects,
+            'status'    => [ProjectRepaymentTask::STATUS_ERROR, ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS]
+        ]);
+
+        foreach ($plannedRepaymentTasks as $task) {
+            $amount = round(bcadd(bcadd(bcadd($task->getCapital(), $task->getInterest(), 4), $task->getCommissionUnilend(), 4), $amount, 4), 2);
+        }
+
+        return $amount;
     }
 }
