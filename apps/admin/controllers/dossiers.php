@@ -3086,10 +3086,9 @@ class dossiersController extends bootstrap
 
                 $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($this->request->request->get('bank_account'));
                 $wallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
-                $user        = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
                 try {
-                    $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $user, $date, $this->request->request->get('pattern'));
+                    $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount, $this->project, $this->userEntity, $date, $this->request->request->get('pattern'));
                 } catch (\Exception $exception) {
                     $this->get('logger')->error($exception->getMessage(), ['methode' => __METHOD__]);
                     $_SESSION['freeow']['title']   = 'Transfert de fonds échoué';

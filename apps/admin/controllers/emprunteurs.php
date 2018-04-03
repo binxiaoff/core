@@ -57,17 +57,19 @@ class emprunteursController extends bootstrap
         $this->translator = $this->get('translator');
         $this->sectors    = $companySector->select();
 
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
+        if (isset($this->params[0]) && $this->clients->get(filter_var($this->params[0], FILTER_VALIDATE_INT), 'id_client') && $this->clients->isBorrower()) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var NumberFormatter currencyFormatter */
             $this->currencyFormatter = $this->get('currency_formatter');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
+            // used in included template
+            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
 
             $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->params[0]);
             $this->companies->get($this->clients->id_client, 'id_client_owner');
-            $this->companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyEntity = $this->companyRepository->find($this->companies->id_company);
             $walletType          = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
             $borrowerWallet      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $client->getIdClient(), 'idType' => $walletType]);
             if ($borrowerWallet) {
@@ -80,7 +82,6 @@ class emprunteursController extends bootstrap
 
             $this->wireTransferOuts = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy(['idClient' => $client]);
             $this->bankAccountRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount');
-            $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
 
             $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
 

@@ -29,21 +29,20 @@
                 </td>
             </tr>
             <?php if (empty($this->project)) : ?>
-            <tr>
-                <th>
-                    <label for="project">Projet</label>
-                </th>
-                <td>
-                    <select id="project" class="input_large" name="project" required>
-                        <option value="">Sélectionnez un projet concerné</option>
-                        <?php
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
-                        foreach ($this->projects as $project) : ?>
-                            <option value="<?= $project->getIdProject() ?>"><?= $project->getTitle() ?> (<?= $project->getIdProject() ?>)</option>
-                        <?php endforeach; ?>
-                    </select>
-                </td>
-            </tr>
+                <tr>
+                    <th>
+                        <label for="project">Projet</label>
+                    </th>
+                    <td>
+                        <select id="project" class="input_large" name="project" required>
+                            <option value="">Sélectionnez le projet concerné</option>
+                            <?php
+                            foreach ($this->projects as $project) : ?>
+                                <option value="<?= $project->getIdProject() ?>"><?= $project->getTitle() ?> (<?= $project->getIdProject() ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
             <?php else : ?>
                 <input type="hidden" name="project" value="<?= $this->project->getIdProject() ?>">
             <?php endif; ?>
@@ -58,7 +57,7 @@
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount $bankAccount */
                         foreach ($this->bankAccounts as $bankAccount) :
                             $beneficiaryCompany = $this->companyRepository->findOneBy(['idClientOwner' => $bankAccount->getIdClient()->getIdClient()]);
-                        ?>
+                            ?>
                             <option value="<?= $bankAccount->getId() ?>"><?= $beneficiaryCompany->getName() ?> (<?= $bankAccount->getIban() ?>)</option>
                         <?php endforeach; ?>
                     </select>
@@ -80,23 +79,23 @@
     </form>
 </div>
 <script>
-  $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+    $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-  $('#date').datepicker({
-    minDate: 1,
-    showOn: 'both',
-    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-    buttonImageOnly: true,
-    changeMonth: true,
-    changeYear: true,
-    yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
-  });
+    $('#date').datepicker({
+        minDate: 1,
+        showOn: 'both',
+        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+        buttonImageOnly: true,
+        changeMonth: true,
+        changeYear: true,
+        yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
+    });
 
-  $('#mode_delayed').click(function () {
-    $('#date_picker').css('visibility', 'visible');
-  })
-  $('#mode_immediate').click(function () {
-    $('#date').val('');
-    $('#date_picker').css('visibility', 'hidden');
-  })
+    $('#mode_delayed').click(function () {
+        $('#date_picker').css('visibility', 'visible');
+    })
+    $('#mode_immediate').click(function () {
+        $('#date').val('');
+        $('#date_picker').css('visibility', 'hidden');
+    })
 </script>

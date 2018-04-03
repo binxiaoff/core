@@ -27,7 +27,7 @@ class BorrowerManager
      *
      * @return string
      */
-    public function getCompanyBankTransferLabel(Companies $company)
+    public function getCompanyBankTransferLabel(Companies $company): string
     {
         return 'UNILEND' . str_pad($company->getIdCompany(), 6, 0, STR_PAD_LEFT) . 'E' . trim($company->getSiren());
     }
@@ -37,7 +37,7 @@ class BorrowerManager
      *
      * @return string
      */
-    public function getProjectBankTransferLabel(Projects $project)
+    public function getProjectBankTransferLabel(Projects $project): string
     {
         return 'UNILEND' . str_pad($project->getIdProject(), 6, 0, STR_PAD_LEFT) . 'E' . trim($project->getIdCompany()->getSiren());
     }
