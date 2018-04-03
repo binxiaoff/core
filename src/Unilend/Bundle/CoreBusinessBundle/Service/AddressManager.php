@@ -57,7 +57,7 @@ class AddressManager
 
                 if (null !== $companyAddress) {
                     $this->validateCompanyAddress($companyAddress);
-                    $this->use($companyAddress);
+                    $this->useCompanyAddress($companyAddress);
                     $this->archivePreviousCompanyAddress($company, $type);
                 }
             }
@@ -129,7 +129,7 @@ class AddressManager
                 $this->entityManager->flush($newAddress);
 
                 $this->validateCompanyAddress($newAddress);
-                $this->use($newAddress);
+                $this->useCompanyAddress($newAddress);
                 $this->archivePreviousCompanyAddress($company, $type);
 
                 $this->entityManager->commit();
@@ -246,7 +246,7 @@ class AddressManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function use(CompanyAddress $address): void
+    private function useCompanyAddress(CompanyAddress $address): void
     {
         $company = $address->getIdCompany();
 
