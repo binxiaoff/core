@@ -92,7 +92,7 @@ class LenderDashboardController extends Controller
             $publishedProjects[] = [
                 'title'            => $aProject['title'],
                 'slug'             => $aProject['slug'],
-                'company_address'  => (false === empty($company->getIdAddress()) ? $company->getIdAddress()->getCity() . ', ' : '') . $company->getIdAddress()->getZip(),
+                'company_address'  => ($company->getIdAddress() ? $company->getIdAddress()->getCity() . ', ' : '') . $company->getIdAddress()->getZip(),
                 'amount'           => $aProject['amount'],
                 'days_left'        => $aProject['daysLeft'],
                 'risk'             => $aProject['risk'],

@@ -74,6 +74,10 @@ class ClientCreationManager
             $this->walletCreationManager->createWallet($client, $walletType);
 
             $this->entityManager->getConnection()->commit();
+
+            /** In case this method is called in another transaction,
+             * and client is not refreshed after its creation further use of the client does not work properly.
+             * The methods isLender/isBorrower/isPartner return false even if the client has a wallet of the correct type */
             $this->entityManager->refresh($client);
         } catch (\Exception $exception) {
             $this->logger->error(

@@ -175,7 +175,7 @@ class rootController extends bootstrap
 
                 if (null === $companyAddress) {
                     $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedCompanyAddressByType($companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                 }
 
                 $aReplacements = [

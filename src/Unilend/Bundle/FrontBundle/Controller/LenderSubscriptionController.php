@@ -272,8 +272,8 @@ class LenderSubscriptionController extends Controller
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->validateCompany($company, $form);
-        $this->validateCompanyAddress($form);
+        $this->checkCompany($company, $form);
+        $this->checkCompanyAddress($form);
 
         $isValidCaptcha = $this->isValidCaptcha($request);
         if ($isValidCaptcha) {
@@ -285,9 +285,9 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType   = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-            $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
-            $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $password   = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
             $client
                 ->setIdLangue('fr')
@@ -334,8 +334,13 @@ class LenderSubscriptionController extends Controller
                 $entityManager->commit();
             } catch (\Exception $exception) {
                 $entityManager->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(),
-                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]);
+
+                $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(), [
+                    'class'  => __CLASS__,
+                    'method' => __METHOD__,
+                    'file'   => $exception->getFile(),
+                    'line'   => $exception->getLine()
+                ]);
             }
 
             $this->addClientToDataLayer($client);
@@ -351,7 +356,7 @@ class LenderSubscriptionController extends Controller
      * @param Companies     $company
      * @param FormInterface $form
      */
-    private function validateCompany(Companies $company, FormInterface $form): void
+    private function checkCompany(Companies $company, FormInterface $form): void
     {
         $translator = $this->get('translator');
 
@@ -395,7 +400,7 @@ class LenderSubscriptionController extends Controller
     /**
      * @param FormInterface $form
      */
-    private function validateCompanyAddress(FormInterface $form): void
+    private function checkCompanyAddress(FormInterface $form): void
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -550,16 +555,14 @@ class LenderSubscriptionController extends Controller
         if ($client->isNaturalPerson()) {
             $clientAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneByIdClient($client->getIdClient());
             $countryId      = $clientAddress->getIdPaysFiscal();
-            $isLivingAbroad = $countryId > PaysV2::COUNTRY_FRANCE;
         } else {
             $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $countryId      = $companyAddress->getIdCountry()->getIdPays();
-            $isLivingAbroad = $countryId > PaysV2::COUNTRY_FRANCE;
         }
 
-        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
-        $form          = $formManager->getBankInformationForm($client);
+        $formManager = $this->get('unilend.frontbundle.service.form_manager');
+        $form        = $formManager->getBankInformationForm($client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
@@ -574,7 +577,7 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $isLivingAbroad,
+            'isLivingAbroad' => $countryId !== PaysV2::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
@@ -662,11 +665,11 @@ class LenderSubscriptionController extends Controller
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
         $files = [
-            AttachmentType::CNI_PASSPORTE       => $fileBag->get('id_recto'),
-            AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
+            AttachmentType::CNI_PASSPORTE         => $fileBag->get('id_recto'),
+            AttachmentType::CNI_PASSPORTE_VERSO   => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($countryId > PaysV2::COUNTRY_FRANCE) {
+        if ($countryId !== PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())) {
@@ -718,8 +721,8 @@ class LenderSubscriptionController extends Controller
 
         $files = [
             AttachmentType::CNI_PASSPORTE_DIRIGEANT => $fileBag->get('id_recto'),
-            AttachmentType::CNI_PASSPORTE_VERSO     =>  $fileBag->get('id_verso'),
-            AttachmentType::KBIS                    =>  $fileBag->get('company-registration')
+            AttachmentType::CNI_PASSPORTE_VERSO     => $fileBag->get('id_verso'),
+            AttachmentType::KBIS                    => $fileBag->get('company-registration')
         ];
         if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
             $files[AttachmentType::DELEGATION_POUVOIR] = $fileBag->get('delegation-of-authority');

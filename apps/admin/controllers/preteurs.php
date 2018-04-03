@@ -140,7 +140,7 @@ class preteursController extends bootstrap
                 $this->companyAddress = $this->companyEntity->getIdAddress();
                 if (null === $this->companyAddress) {
                     $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedCompanyAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                 }
             }
 
@@ -336,7 +336,7 @@ class preteursController extends bootstrap
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                 $this->companyEntity              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
-                $this->lastModifiedCompanyAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                $this->lastModifiedCompanyAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
 
                 $this->meme_adresse_fiscal = null === $this->companyEntity->getIdPostalAddress();
 

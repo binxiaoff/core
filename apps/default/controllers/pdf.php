@@ -584,7 +584,7 @@ class pdfController extends bootstrap
                         $companyAddress = $company->getIdPostalAddress();
                     } else {
                         $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                            ->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                            ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                     }
                     $this->logWarningAboutNotValidatedLenderAddress($wallet->getIdClient()->getIdClient(), __LINE__);
                 }
@@ -592,9 +592,9 @@ class pdfController extends bootstrap
                 $lenderList[] = [
                     'name'      => $company->getName(),
                     'firstName' => $company->getSiren(),
-                    'address'   => $companyAddress->getAddress(),
-                    'zip'       => $companyAddress->getZip(),
-                    'city'      => $companyAddress->getCity(),
+                    'address'   => null !== $companyAddress ? $companyAddress->getAddress() : '',
+                    'zip'       => null !== $companyAddress ? $companyAddress->getZip() : '',
+                    'city'      => null !== $companyAddress ? $companyAddress->getCity() : '',
                     'amount'    => $this->ficelle->formatNumber($lender['amount'] / 100, 0),
                     'rate'      => $this->ficelle->formatNumber($lender['rate'], 1)
                 ];
@@ -806,7 +806,7 @@ class pdfController extends bootstrap
 
             if (null === $this->lenderCompany->getIdAddress()) {
                 $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                    ->findLastModifiedCompanyAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                    ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
                 $this->lenderCompany->setIdAddress($lastModifiedAddress);
                 $this->logWarningAboutNotValidatedLenderAddress($oClients->id_client, __LINE__);
             }
@@ -912,7 +912,7 @@ class pdfController extends bootstrap
                 $lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
                 if (null === $lenderCompany->getIdAddress()) {
                     $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedCompanyAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
                     $lenderCompany->setIdAddress($lastModifiedAddress);
                     $this->logWarningAboutNotValidatedLenderAddress($this->preteur->id_client, __LINE__);
                 }
@@ -1033,7 +1033,7 @@ class pdfController extends bootstrap
                 $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
                 if (null === $this->company->getIdAddress()) {
                     $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedCompanyAddressByType($this->company, AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($this->company, AddressType::TYPE_MAIN_ADDRESS);
                     $this->company->setIdAddress($lastModifiedAddress);
                     $this->logWarningAboutNotValidatedLenderAddress($this->clients->id_client, __LINE__);
                 }
@@ -1135,7 +1135,7 @@ class pdfController extends bootstrap
         if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             $this->company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
             $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                ->findLastModifiedCompanyAddressByType($this->company, AddressType::TYPE_MAIN_ADDRESS);
+                ->findLastModifiedNotArchivedAddressByType($this->company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */

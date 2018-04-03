@@ -50,13 +50,13 @@ class LenderProfileController extends Controller
         $clientAddress            = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client->getIdClient()]);
         $unattachedClientAddress  = clone $clientAddress;
 
-        $phoneForm             = $this->createForm(PersonPhoneType::class, $client);
+        $phoneForm = $this->createForm(PersonPhoneType::class, $client);
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
             $company                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $unattachedCompany         = clone $company;
-            $lastModifiedMainAddress   = $companyAddressRepository->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-            $lastModifiedPostalAddress = $companyAddressRepository->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
+            $lastModifiedMainAddress   = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $lastModifiedPostalAddress = $company->getIdPostalAddress();
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', LegalEntityProfileType::class, ['data' => $client])
@@ -85,7 +85,7 @@ class LenderProfileController extends Controller
                     $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_PERSONAL_INFORMATION);
 
                     if ($identityForm->isValid()) {
-                        if (isset($request->request->get('form')['company'])) {
+                        if (isset($unattachedCompany, $company)) {
                             $isValid = $this->handleCompanyIdentity($unattachedClient, $client, $unattachedCompany, $company, $identityForm, $request->files);
                         } else {
                             $isValid = $this->handlePersonIdentity($unattachedClient, $client, $identityForm, $request->files);
@@ -436,22 +436,29 @@ class LenderProfileController extends Controller
         $zip       = $form->get('zip')->getData();
         $countryId = $form->get('idCountry')->getData();
 
-        if (AddressType::TYPE_MAIN_ADDRESS === $type) {
-            if (
-                false === empty($zip) && false === empty($countryId)
-                && PaysV2::COUNTRY_FRANCE == $countryId
-                && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])
-            ) {
-                $form->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
-            }
+        switch ($type) {
+            case AddressType::TYPE_MAIN_ADDRESS:
+                if (
+                    false === empty($zip) && false === empty($countryId)
+                    && PaysV2::COUNTRY_FRANCE == $countryId
+                    && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])
+                ) {
+                    $form->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
+                }
 
-            $modifiedContent = ['adresse principale'];
-            $success         = 'fiscalAddressSuccess';
-            $translation     = $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message');
-        } else {
-            $modifiedContent = ['adresse de correspondance'];
-            $success         = 'postalAddressSuccess';
-            $translation     = $translator->trans('lender-profile_information-tab-postal-address-form-success-message');
+                $modifiedContent = ['adresse principale'];
+                $success         = 'fiscalAddressSuccess';
+                $translation     = $translator->trans('lender-profile_information-tab-fiscal-address-form-success-message');
+                break;
+            case AddressType::TYPE_POSTAL_ADDRESS:
+                $modifiedContent = ['adresse de correspondance'];
+                $success         = 'postalAddressSuccess';
+                $translation     = $translator->trans('lender-profile_information-tab-postal-address-form-success-message');
+                break;
+            default:
+                $this->get('logger')->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender subscription',
+                    ['file' => __FILE__, 'line' => __LINE__]);
+                break;
         }
 
         if ($form->isValid()) {
@@ -1171,7 +1178,7 @@ class LenderProfileController extends Controller
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if ($client->getEmail() !== $unattachedClient->getEmail() && $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($client->getEmail())) {
+        if (false === empty($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN))) {
             $form->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
         }
 
@@ -1244,12 +1251,13 @@ class LenderProfileController extends Controller
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning('Could not send email: generation-mot-de-passe - Exception: ' . $exception->getMessage(), [
-                    'id_mail_template' => $message->getTemplateId(),
-                    'id_client'        => $client->getIdClient(),
-                    'method'           => __METHOD__,
-                    'file'             => $exception->getFile(),
-                    'line'             => $exception->getLine()
-                ]);
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __METHOD__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
         }
     }
 

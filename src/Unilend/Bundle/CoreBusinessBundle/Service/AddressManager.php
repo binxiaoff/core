@@ -83,13 +83,13 @@ class AddressManager
      */
     private function createNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
     {
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
 
         if (
             null === $companyAddress && null === $lastModifiedAddress
-            || (null === $companyAddress && null !== $lastModifiedAddress && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
-            || (null !== $companyAddress && $this->addressDataIsDifferent($companyAddress, $address, $zip, $city, $country))
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->isAddressDataDifferent($companyAddress, $address, $zip, $city, $country))
         ){
             return $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
         }
@@ -111,23 +111,33 @@ class AddressManager
     private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
     {
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
 
         if (
             null === $companyAddress && null === $lastModifiedAddress
-            || (null === $companyAddress && null !== $lastModifiedAddress && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
-            || (null !== $companyAddress && $this->addressDataIsDifferent($companyAddress, $address, $zip, $city, $country) && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->isAddressDataDifferent($companyAddress, $address, $zip, $city, $country) && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
         ) {
             $newAddress = $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
         }
 
         if (isset($newAddress) && AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
-            $newAddress->setDateValidated(new \DateTime('NOW'));
-            $this->entityManager->flush($newAddress);
+            $this->entityManager->beginTransaction();
 
-            $this->validateCompanyAddress($newAddress);
-            $this->use($newAddress);
-            $this->archivePreviousCompanyAddress($company, $type);
+            try {
+                $newAddress->setDateValidated(new \DateTime('NOW'));
+                $this->entityManager->flush($newAddress);
+
+                $this->validateCompanyAddress($newAddress);
+                $this->use($newAddress);
+                $this->archivePreviousCompanyAddress($company, $type);
+
+                $this->entityManager->commit();
+            } catch (\Exception $exception) {
+                $this->entityManager->rollback();
+                throw $exception;
+            }
+
         }
     }
 
@@ -140,7 +150,7 @@ class AddressManager
      *
      * @return bool
      */
-    private function addressDataIsDifferent(CompanyAddress $companyAddress, string $address, string $zip, string $city, PaysV2 $country)
+    private function isAddressDataDifferent(CompanyAddress $companyAddress, string $address, string $zip, string $city, PaysV2 $country)
     {
         return
             $address !== $companyAddress->getAddress()
@@ -276,18 +286,19 @@ class AddressManager
 
         if (null === $postalAddress) {
             $postalAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                ->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
+                ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
         }
 
         if (null !== $postalAddress && null === $postalAddress->getDateArchived()) {
             $this->entityManager->beginTransaction();
 
             try {
-                $postalAddress->setDateArchived(new \DateTime('NOW'));
-                $this->entityManager->flush($postalAddress);
+                $type = $company->getIdPostalAddress()->getIdType();
 
                 $company->setIdPostalAddress(null);
                 $this->entityManager->flush($company);
+
+                $this->archivePreviousCompanyAddress($company, $type);
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {

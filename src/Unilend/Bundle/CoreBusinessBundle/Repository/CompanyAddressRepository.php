@@ -17,7 +17,7 @@ class CompanyAddressRepository extends EntityRepository
      * @return CompanyAddress|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findLastModifiedCompanyAddressByType($idCompany, $type): ?CompanyAddress
+    public function findLastModifiedNotArchivedAddressByType($idCompany, $type): ?CompanyAddress
     {
         $typeLabel = $type instanceof AddressType ? $type->getLabel() : $type;
 

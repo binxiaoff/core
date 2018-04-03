@@ -587,7 +587,7 @@ class MainController extends Controller
         $companyAddress = $company->getIdAddress();
 
         if (null === $companyAddress) {
-            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
         $aReplacements = [
@@ -597,7 +597,7 @@ class MainController extends Controller
             '[Fonction]'            => $client->fonction,
             '[Raison_sociale]'      => $company->getName(),
             '[SIREN]'               => $company->getSiren(),
-            '[adresse_fiscale]'     => $companyAddress->getAddredd() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
+            '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
             '[date_validation_cgv]' => $dateAccept
         ];
 

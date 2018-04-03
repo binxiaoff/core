@@ -344,7 +344,7 @@ class sfpmeiController extends bootstrap
 
                     if (null === $companyAddress) {
                         $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                            ->findLastModifiedCompanyAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                            ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                     }
 
                     $this->fiscalAddress = [

@@ -186,24 +186,25 @@ class FormManager
     }
 
     /**
-     * @param $client
-     * @param $formName
-     * @param $serialize
-     * @param $ip
+     * @param Clients|\clients $client
+     * @param string           $formName
+     * @param string           $serialize
+     * @param string           $ip
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveFormSubmission($client, $formName, $serialize, $ip)
+    public function saveFormSubmission($client, string $formName, string $serialize, string $ip)
     {
         if ($client instanceof \clients) {
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
         $clientAction = new ClientsHistoryActions();
-        $clientAction->setNomForm($formName);
-        $clientAction->setIdClient($client);
-        $clientAction->setSerialize($serialize);
-        $clientAction->setIP($ip);
+        $clientAction
+            ->setNomForm($formName)
+            ->setIdClient($client)
+            ->setSerialize($serialize)
+            ->setIP($ip);
 
         $this->entityManager->persist($clientAction);
         $this->entityManager->flush($clientAction);
