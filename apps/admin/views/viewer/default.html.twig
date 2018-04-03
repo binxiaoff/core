@@ -209,11 +209,7 @@
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
                                 <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"{% if document.getId() == currentDocumentId %} selected="selected"{% endif %}>
-                                    {% if document.getOriginalName() is empty %}
-                                        {{ document.getPath() }}
-                                    {% else %}
-                                        {{ document.getOriginalName() }}
-                                    {% endif %}
+                                    {{ document.getType().getLabel() }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -229,11 +225,7 @@
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
                                 <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
-                                    {% if document.getOriginalName() is empty %}
-                                        {{ document.getPath() }}
-                                    {% else %}
-                                        {{ document.getOriginalName() }}
-                                    {% endif %}
+                                    {{ document.getType().getLabel() }}
                                 </option>
                             {% endfor %}
                         </select>
