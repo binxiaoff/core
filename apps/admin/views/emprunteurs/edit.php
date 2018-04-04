@@ -165,18 +165,26 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <label for="status">Statut</label>
                         <select id="status" name="status" class="form-control">
                             <?php if (false === empty($this->companyEntity->getIdStatus()) && false === in_array($this->companyEntity->getIdStatus(), $this->possibleCompanyStatus)) : ?>
-                                <option selected disabled value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()->getLabel()) ?></option>
+                                <option selected disabled
+                                        value="<?= $this->companyEntity->getIdStatus()->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($this->companyEntity->getIdStatus()
+                                        ->getLabel()) ?></option>
                             <?php endif; ?>
                             <?php /** @var $status CompanyStatus */ ?>
                             <?php foreach ($this->possibleCompanyStatus as $status) : ?>
-                                <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?> value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
+                                <option <?= $this->companyEntity->getIdStatus()->getId() == $status->getId() ? 'selected' : '' ?>
+                                        value="<?= $status->getId() ?>"><?= $this->companyManager->getCompanyStatusNameByLabel($status->getLabel()) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label>Solde</label>
-                    <div><?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?></div>
+                    <?php if ($this->restFunds > 0) : ?>
+                        <a href="<?= $this->lurl ?>/dossiers/add_wire_transfer_out_lightbox/<?= \Unilend\Bundle\CoreBusinessBundle\Service\WireTransferOutManager::TRANSFER_OUT_BY_COMPANY ?>/<?= $this->companyEntity->getIdCompany() ?>"
+                           class="thickbox cboxElement"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                    <?php endif; ?>
+                    <p><?= $this->currencyFormatter->formatCurrency($this->availableBalance, 'EUR') ?> (dont <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR') ?> disponible)</p>
+                    <?php $this->fireView('../dossiers/blocs/wire_transfer_out_list'); ?>
                 </div>
             </div>
         </div>
