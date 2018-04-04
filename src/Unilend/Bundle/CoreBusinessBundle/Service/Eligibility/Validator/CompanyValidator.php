@@ -10,20 +10,13 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityAssessment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRule;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectEligibilityRuleSet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsNotes;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Xerfi;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, Projects, ProjectsNotes, ProjectsStatus, Xerfi
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyBalanceSheet;
-use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerHermesCompanyRating;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetails;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementEvent;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ContentiousParticipant;
+use Unilend\Bundle\WSClientBundle\Entity\{
+    Altares\CompanyBalanceSheet, Altares\CompanyIdentityDetail, Euler\CompanyRating as EulerHermesCompanyRating, Infolegale\AnnouncementDetails, Infolegale\AnnouncementEvent, Infolegale\ContentiousParticipant
+};
 
 class CompanyValidator
 {
@@ -54,6 +47,7 @@ class CompanyValidator
         'TC-RISK-020' => 'checkCurrentExecutivesEventsDepositorCompanyRoleComplainant',
         'TC-RISK-021' => 'checkCurrentExecutivesEventsDepositorCompanyNoRole',
         'TC-RISK-022' => 'checkCurrentExecutivesEventsDepositorCompanyCollectiveProceeding',
+        'TC-RISK-023' => 'checkNoLegalStatus',
     ];
 
     /**
@@ -88,6 +82,11 @@ class CompanyValidator
         }
 
         $sirenCheck = $this->checkRule('TC-RISK-001', $siren, $project);
+        if (false === empty($sirenCheck)) {
+            return $sirenCheck;
+        }
+
+        $sirenCheck = $this->checkRule('TC-RISK-023', $siren, $project);
         if (false === empty($sirenCheck)) {
             return $sirenCheck;
         }
@@ -689,6 +688,33 @@ class CompanyValidator
             );
 
             return ['runtime_error'];
+        }
+
+        return [];
+    }
+
+    /**
+     * TC-RISK-023
+     * Exclude SIREN with legal form which does not have a legal personality
+     * Il s'agit ici de prévenir un risque de non-conformité légale i.e. les contrats de prêt (IFP), ou les minibons (CIP)
+     * ne peuvent pas respectivement être engagés, ou émis, par des entités qui sont dépourvues de la personnalité juridique.
+     *
+     * @param $siren
+     *
+     * @return array
+     */
+    private function checkNoLegalStatus($siren)
+    {
+        try {
+            if (null !== $companyIdentity = $this->externalDataManager->getCompanyIdentity($siren)) {
+                if (in_array($companyIdentity->getLegalFormCode(), CompanyIdentityDetail::COMPANIES_WITHOUT_LEGAL_STATUS_CODES)) {
+                    return [ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_STATUS];
+                }
+            } else {
+                return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
+            }
+        } catch (\Exception $exception) {
+            return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
         }
 
         return [];
