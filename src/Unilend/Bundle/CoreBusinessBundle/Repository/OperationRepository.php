@@ -577,7 +577,7 @@ class OperationRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTaxForFiscalState(string $taxOperationType, ?string $taxOperationSubType, \DateTime $start, \DateTime $end, bool $groupByContract = false, bool $regularization = false) : array
+    public function getTaxForFiscalState(string $taxOperationType, ?string $taxOperationSubType, \DateTime $start, \DateTime $end, bool $groupByContract = false, bool $regularization = false): array
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
@@ -691,7 +691,7 @@ class OperationRepository extends EntityRepository
      *
      * @return string
      */
-    private function getDailyStateQuery(string $typeGroupBy = null) : string
+    private function getDailyStateQuery(string $typeGroupBy = null): string
     {
         if ('day' === $typeGroupBy) {
             $select =
@@ -757,7 +757,7 @@ class OperationRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes) : array
+    public function sumMovementsForDailyStateByDay(\DateTime $start, \DateTime $end, array $operationTypes): array
     {
         $start->setTime(0, 0, 0);
         $end->setTime(23, 59, 59);
@@ -787,7 +787,7 @@ class OperationRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes) : array
+    public function sumMovementsForDailyStateByMonth(\DateTime $requestedDate, array $operationTypes): array
     {
         $start = new \DateTime('First day of january ' . $requestedDate->format('Y'));
         $start->setTime(0, 0, 0);
@@ -893,7 +893,7 @@ class OperationRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTotalDebtCollectionRepaymentByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
+    public function getTotalDebtCollectionRepaymentByCohort(bool $isHealthy, bool $groupFirstYears = true): array
     {
         $query = '
             SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
@@ -943,7 +943,7 @@ class OperationRepository extends EntityRepository
      * @return array
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function getTotalDebtCollectionLenderCommissionByCohort(bool $isHealthy, bool $groupFirstYears = true) : array
+    public function getTotalDebtCollectionLenderCommissionByCohort(bool $isHealthy, bool $groupFirstYears = true): array
     {
         $query = '
             SELECT SUM(o.amount) AS amount, ( ' . $this->getCohortQuery($groupFirstYears) . ' ) AS cohort
@@ -1190,30 +1190,23 @@ class OperationRepository extends EntityRepository
         $end->setTime(23, 59, 59);
 
         $query = '
-            SELECT IFNULL(SUM(o_loan.amount), 0) - (
-              SELECT IFNULL(SUM(o_repayment.amount), 0)
-              FROM operation o_repayment
-              INNER JOIN operation_type ot ON ot.id = o_repayment.id_type
-              WHERE o_repayment.added <= :end
-              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT . '"
-              AND o_repayment.id_project IN (:projects)
-            ) - (
-              SELECT IFNULL(SUM(o_repayment_regul.amount), 0)
-              FROM operation o_repayment_regul
-              INNER JOIN operation_type ot ON ot.id = o_repayment_regul.id_type
-              WHERE o_repayment_regul.added <= :end
-              AND ot.label = "' . OperationType::CAPITAL_REPAYMENT_REGULARIZATION . '"
-              AND o_repayment_regul.id_project IN (:projects)
-            )
-            FROM operation o_loan
-            INNER JOIN operation_type ot ON ot.id = o_loan.id_type
-            WHERE o_loan.added <= :end
-            AND ot.label = "' . OperationType::LENDER_LOAN . '"
-            AND o_loan.id_project  IN (:projects)';
+            SELECT SUM(IF(ot.label in (:lender_loan, :capital_regularization), IFNULL(amount, 0), IFNULL(-amount, 0)))
+            FROM operation o
+              INNER JOIN operation_type ot ON ot.id = o.id_type
+            WHERE o.added <= :end
+                  AND ot.label in (:lender_loan, :capital, :capital_regularization)
+                  AND o.id_project IN (:projects)';
 
-        $statement = $this->getEntityManager()
+        $statement = $this
+            ->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, ['end' => $end->format('Y-m-d H:i:s'), 'projects' => $projects], ['end' => \PDO::PARAM_STR, 'projects' => Connection::PARAM_INT_ARRAY]);
+            ->executeQuery($query, [
+                'end'                    => $end->format('Y-m-d H:i:s'),
+                'projects'               => $projects,
+                'lender_loan'            => OperationType::LENDER_LOAN,
+                'capital'                => OperationType::CAPITAL_REPAYMENT,
+                'capital_regularization' => OperationType::CAPITAL_REPAYMENT_REGULARIZATION,
+            ], ['projects' => Connection::PARAM_INT_ARRAY]);
 
         return $statement->fetchColumn();
     }
@@ -1374,7 +1367,7 @@ class OperationRepository extends EntityRepository
      * @return array
      *
      */
-    public function getRetenuALaSourceTaxForPerson(bool $groupByTaskLog = false, ?int $idRepaymentTaskLog = null) : array
+    public function getRetenuALaSourceTaxForPerson(bool $groupByTaskLog = false, ?int $idRepaymentTaskLog = null): array
     {
         $queryBuilder = $this->createQueryBuilder('o');
         $queryBuilder->select('o.id AS id, IDENTITY(o.idLoan) AS idLoan, IDENTITY(o.idRepaymentTaskLog) AS idRepaymentTaskLog')
