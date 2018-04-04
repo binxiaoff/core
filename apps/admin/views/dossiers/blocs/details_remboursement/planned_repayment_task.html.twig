@@ -39,7 +39,7 @@
                             <th style="width: 6%">
                                 Statut
                             </th>
-                            {% if displayOnly is defined and false == displayOnly %}
+                            {% if false == displayOnly %}
                                 <th style="width: 10%">
                                 </th>
                             {% endif %}
@@ -94,7 +94,7 @@
                                         Erreur (contactez IT)
                                     {% endif %}
                                 </td>
-                                {% if displayOnly is defined and false == displayOnly %}
+                                {% if false == displayOnly %}
                                     <td class="text-center">
                                         <a href="/remboursement/confirmation/{{ repaymentTask.idWireTransferIn.idReception }}" class="btn btn-xs btn-default" data-toggle="tooltip"
                                            data-original-title="Voir le détail du remboursement">

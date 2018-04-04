@@ -140,7 +140,7 @@
                 }).done(function (data) {
                     if (data.success == false) {
                         var errorMessage = ''
-                        data.errors.forEach(function(element) {
+                        data.errors.forEach(function (element) {
                             errorMessage += element
                         })
                         alert(errorMessage)
@@ -380,10 +380,11 @@
                 {{ projectLastStatusHistory.idProjectStatus.label }}
             </span>
             <br>
-                <label class="css-input switch switch-sm switch-primary">
-                    <input type="checkbox" name="auto-repayment" {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
-                    Remboursement automatique
-                </label>
+            <label class="css-input switch switch-sm switch-primary">
+                <input type="checkbox" name="auto-repayment"
+                       {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
+                Remboursement automatique
+            </label>
         </div>
         <h1 class="page-heading push">
             Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
@@ -394,21 +395,15 @@
         <div class="content">
             <h2 class="content-heading">Synthèse du projet</h2>
             <div class="row">
-                {% if project.getCloseOutNettingDate %}
-                    <div class="col-lg-2">
-                        <div class="block">
+                {% if project.getCloseOutNettingDate is empty %}
+                    <div class="col-lg-3">
+                        <a class="block" href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les échéances d'emprunteur">
                             <div class="block-header">
-                                <h3 class="block-title">Terme déchu le</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate()|localizeddate('short', 'none') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
+                                <ul class="block-options">
+                                    <li>
+                                        <button type="button"><i class="fa fa-list-ol"></i></button>
+                                    </li>
+                                </ul>
                                 <h3 class="block-title">Nombre d'échéances</h3>
                             </div>
                             <div class="block-content">
@@ -423,11 +418,16 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                    <div class="col-lg-2">
-                        <div class="block">
+                    <div class="col-lg-3">
+                        <a class="block" href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les échéances d'emprunteur">
                             <div class="block-header">
+                                <ul class="block-options">
+                                    <li>
+                                        <button type="button"><i class="fa fa-list-ol"></i></button>
+                                    </li>
+                                </ul>
                                 <h3 class="block-title">Montant remboursement</h3>
                             </div>
                             <div class="block-content">
@@ -442,7 +442,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
                     <div class="col-lg-2">
                         <div class="block">
@@ -454,7 +454,45 @@
                             </div>
                         </div>
                     </div>
+                {% else %}
+                    <div class="col-lg-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Terme déchu le</h3>
+                            </div>
+                            <div class="block-content text-center">
+                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate()|localizeddate('short', 'none') }}</p>
+                            </div>
+                        </div>
+                    </div>
                 {% endif %}
+                <div class="col-lg-2">
+                    <a class="block" href="/dossiers/detail_remb_preteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les détails des prêteurs">
+                        <div class="block-header">
+                            <ul class="block-options">
+                                <li>
+                                    <button type="button"><i class="fa fa-list-ol"></i></button>
+                                </li>
+                            </ul>
+                            <h3 class="block-title">Nombre de prêteurs</h3>
+                        </div>
+                        <div class="block-content text-center">
+                            <p class="text-primary pull-t">{{ lenderNumber|localizednumber }}</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-lg-2">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Réceptions à traiter</h3>
+                        </div>
+                        <div class="block-content text-center">
+                            <p class="text-primary pull-t">{{ pendingWireTransferIn|length|localizednumber }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
                 {% if totalOverdueAmount > 0 %}
                     <div class="col-lg-2">
                         <div class="block">
@@ -477,16 +515,6 @@
                         </div>
                     </div>
                 {% endif %}
-                <div class="col-lg-2">
-                    <div class="block">
-                        <div class="block-header">
-                            <h3 class="block-title">Réceptions à traiter</h3>
-                        </div>
-                        <div class="block-content text-center">
-                            <p class="text-primary pull-t">{{ pendingWireTransferIn|length|localizednumber }}</p>
-                        </div>
-                    </div>
-                </div>
                 {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
                     {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
                     <div class="col-lg-2">
@@ -509,7 +537,7 @@
             {% endif %}
             {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
             {% include 'dossiers/blocs/details_remboursement/receptions.html.twig' %}
-            {% include 'dossiers/blocs/details_remboursement/planned_repayment_task.html.twig' %}
+            {% include 'dossiers/blocs/details_remboursement/planned_repayment_task.html.twig' with {'displayOnly': false} %}
         </div>
     {% endblock %}
 {% endif %}

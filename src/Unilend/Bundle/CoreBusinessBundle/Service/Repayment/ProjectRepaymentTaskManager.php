@@ -114,7 +114,7 @@ class ProjectRepaymentTaskManager
         }
 
         if (ProjectRepaymentTask::TYPE_LATE === $repaymentType && $repayOn <= $repaymentSchedule->getDateEcheance()) {
-            $repaymentType          = ProjectRepaymentTask::TYPE_REGULAR;
+            $repaymentType = ProjectRepaymentTask::TYPE_REGULAR;
         }
 
         $projectRepaymentTask = new ProjectRepaymentTask();
@@ -284,13 +284,18 @@ class ProjectRepaymentTaskManager
 
     /**
      * @param Projects $project
+     * @param Users    $user
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function disableAutomaticRepayment(Projects $project)
+    public function disableAutomaticRepayment(Projects $project): void
     {
         $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy(['idProject' => $project, 'status' => ProjectRepaymentTask::STATUS_READY]);
 
         foreach ($readyRepaymentTask as $task) {
-            $task->setStatus(ProjectRepaymentTask::STATUS_PENDING);
+            $task
+                ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
+                ->setIdUserValidation(null);
         }
 
         $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);
@@ -300,8 +305,11 @@ class ProjectRepaymentTaskManager
 
     /**
      * @param Projects $project
+     * @param Users    $user
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function enableAutomaticRepayment(Projects $project)
+    public function enableAutomaticRepayment(Projects $project, Users $user): void
     {
         $pendingRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
             'idProject' => $project,
@@ -309,7 +317,9 @@ class ProjectRepaymentTaskManager
         ]);
 
         foreach ($pendingRepaymentTask as $task) {
-            $task->setStatus(ProjectRepaymentTask::STATUS_READY);
+            $task
+                ->setStatus(ProjectRepaymentTask::STATUS_READY)
+                ->setIdUserValidation($user);
         }
 
         $project->setRembAuto(Projects::AUTO_REPAYMENT_ON);

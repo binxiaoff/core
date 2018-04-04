@@ -173,7 +173,7 @@ class remboursementController extends bootstrap
                     $projectManager = $this->get('unilend.service.project_manager');
 
                     if ($projectManager->isHealthy($project)) {
-                        $projectRepaymentTaskManager->enableAutomaticRepayment($project);
+                        $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
                         $projectStatusManager = $this->get('unilend.service.project_status_manager');
                         $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::REMBOURSEMENT, $project);
