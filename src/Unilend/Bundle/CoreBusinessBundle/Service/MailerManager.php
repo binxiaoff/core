@@ -1956,33 +1956,35 @@ class MailerManager
     }
 
     /**
-     * @param \clients $client
-     * @param string   $email
+     * @param Clients|\clients $client
+     * @param string           $email
      */
-    public function sendBorrowerAccount(\clients $client, $email = 'ouverture-espace-emprunteur')
+    public function sendBorrowerAccount($client, string $email = 'ouverture-espace-emprunteur'): void
     {
-        /** @var Clients $clientEntity */
-        $clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        $clientStatus = $clientEntity->getIdClientStatusHistory()->getIdStatus()->getId();
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
 
         if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
             /** @var \temporary_links_login $temporaryLink */
             $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
             $keywords      = [
-                'firstName'            => $clientEntity->getPrenom(),
-                'temporaryToken'       => $temporaryLink->generateTemporaryLink($clientEntity->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+                'firstName'            => $client->getPrenom(),
+                'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
                 'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             $message = $this->messageProvider->newMessage($email, $keywords);
 
             try {
-                $message->setTo($clientEntity->getEmail());
+                $message->setTo($client->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $clientEntity->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }
