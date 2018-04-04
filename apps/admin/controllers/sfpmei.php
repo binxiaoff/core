@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -324,27 +324,43 @@ class sfpmeiController extends bootstrap
                         'country'  => $paysV2Repository->find($this->clients_adresses->id_pays_fiscal) ? $paysV2Repository->find($this->clients_adresses->id_pays_fiscal)->getFr() : ''
                     ];
 
+                    $this->postalAddress = [
+                        'address'  => $this->clients_adresses->adresse1,
+                        'postCode' => $this->clients_adresses->cp,
+                        'city'     => $this->clients_adresses->ville,
+                        'country'  => $paysV2Repository->find($this->clients_adresses->id_pays) ? $paysV2Repository->find($this->clients_adresses->id_pays)->getFr() : ''
+                    ];
+
                     $this->settings->get('Liste deroulante origine des fonds', 'type');
                     $this->fundsOriginList = $this->settings->value;
                     $this->fundsOriginList = explode(';', $this->fundsOriginList);
+
                 } else {
                     $this->companies = $this->loadData('companies');
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
+                    $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $companyAddress = $company->getIdAddress();
+
+                    if (null === $companyAddress) {
+                        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                    }
 
                     $this->fiscalAddress = [
-                        'address'  => $this->companies->adresse1,
-                        'postCode' => $this->companies->zip,
-                        'city'     => $this->companies->city,
-                        'country'  => $paysV2Repository->find($this->companies->id_pays) ? $paysV2Repository->find($this->companies->id_pays)->getFr() : ''
+                        'address'  => $companyAddress->getAddress(),
+                        'postCode' => $companyAddress->getZip(),
+                        'city'     => $companyAddress->getCity(),
+                        'country'  => $companyAddress->getIdCountry()->getFr()
+                    ];
+
+                    $this->postalAddress = [
+                        'address'  => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getAddress() : '',
+                        'postCode' => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getZip() : '',
+                        'city'     => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getCity() : '',
+                        'country'  => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getIdCountry()->getFr() : ''
                     ];
                 }
-
-                $this->postalAddress = [
-                    'address'  => $this->clients_adresses->adresse1,
-                    'postCode' => $this->clients_adresses->cp,
-                    'city'     => $this->clients_adresses->ville,
-                    'country'  => $paysV2Repository->find($this->clients_adresses->id_pays) ? $paysV2Repository->find($this->clients_adresses->id_pays)->getFr() : ''
-                ];
 
                 $this->setVigilanceStatusData();
                 break;

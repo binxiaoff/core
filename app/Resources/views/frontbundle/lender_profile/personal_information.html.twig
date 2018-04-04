@@ -124,7 +124,11 @@ classNames: 'user-preter-profile'
                     </div>
                 </header>
                 <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
-                    {% include 'lender_profile/partials/postal_address.html.twig' %}
+                    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                        {% include 'lender_profile/partials/postal_address.html.twig' %}
+                    {% else %}
+                        {% include 'lender_profile/partials/legal_entity_postal_address.html.twig' %}
+                    {% endif %}
                 </section><!-- /.ui-toggle-group -->
             </article><!-- /.panel -->
 

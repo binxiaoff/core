@@ -2422,7 +2422,7 @@ class dossiersController extends bootstrap
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager      = $this->get('doctrine.orm.entity_manager');
-        $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
+        $companyMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($this->projects->id_company, AddressType::TYPE_MAIN_ADDRESS);
 
         if (null === $companyMainAddress) {
             $_SESSION['publish_error'] = 'L\'entreprise n\'a pas d\'adresse principale';

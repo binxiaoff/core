@@ -49,17 +49,20 @@ class AddressManager
         $this->entityManager->beginTransaction();
 
         try {
-            if ($company->getIdClientOwner()->isBorrower()) {
-                $companyAddress = $this->createNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
+
+            if ($company->getIdClientOwner()->isLender()) {
+                $this->saveLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
+            } else {
+                $companyAddress = $this->saveNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
 
                 if (null !== $companyAddress) {
                     $this->validateCompanyAddress($companyAddress);
-                    $this->use($companyAddress);
-                    $this->archivePreviousCompanyAddress($company);
+                    $this->useCompanyAddress($companyAddress);
+                    $this->archivePreviousCompanyAddress($company, $type);
                 }
-
-                $this->entityManager->commit();
             }
+
+            $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
             throw $exception;
@@ -78,15 +81,15 @@ class AddressManager
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
+    private function saveNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
     {
-        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
 
         if (
             null === $companyAddress && null === $lastModifiedAddress
-            || (null === $companyAddress && null !== $lastModifiedAddress && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
-            || (null !== $companyAddress && $this->addressDataIsDifferent($companyAddress, $address, $zip, $city, $country))
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->isAddressDataDifferent($companyAddress, $address, $zip, $city, $country))
         ){
             return $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
         }
@@ -101,10 +104,41 @@ class AddressManager
      * @param string      $city
      * @param PaysV2      $country
      * @param AddressType $type
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
     {
-        // TODO TECH-393
+        $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
+
+        if (
+            null === $companyAddress && null === $lastModifiedAddress
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->isAddressDataDifferent($companyAddress, $address, $zip, $city, $country) && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+        ) {
+            $newAddress = $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
+        }
+
+        if (isset($newAddress) && AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
+            $this->entityManager->beginTransaction();
+
+            try {
+                $newAddress->setDateValidated(new \DateTime('NOW'));
+                $this->entityManager->flush($newAddress);
+
+                $this->validateCompanyAddress($newAddress);
+                $this->useCompanyAddress($newAddress);
+                $this->archivePreviousCompanyAddress($company, $type);
+
+                $this->entityManager->commit();
+            } catch (\Exception $exception) {
+                $this->entityManager->rollback();
+                throw $exception;
+            }
+
+        }
     }
 
     /**
@@ -116,7 +150,7 @@ class AddressManager
      *
      * @return bool
      */
-    private function addressDataIsDifferent(CompanyAddress $companyAddress, string $address, string $zip, string $city, PaysV2 $country)
+    private function isAddressDataDifferent(CompanyAddress $companyAddress, string $address, string $zip, string $city, PaysV2 $country)
     {
         return
             $address !== $companyAddress->getAddress()
@@ -176,14 +210,15 @@ class AddressManager
     }
 
     /**
-     * @param Companies $company
+     * @param Companies   $company
+     * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function archivePreviousCompanyAddress(Companies $company): void
+    private function archivePreviousCompanyAddress(Companies $company, AddressType $type): void
     {
-        $pendingAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'dateArchived' => null]);
-        foreach ($pendingAddress as $addressToArchive) {
+        $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'idType' => $type, 'dateArchived' => null]);
+        foreach ($previousAddress as $addressToArchive) {
             if ($addressToArchive === $company->getIdAddress() || $addressToArchive === $company->getIdPostalAddress()) {
                 continue;
             }
@@ -211,7 +246,7 @@ class AddressManager
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function use(CompanyAddress $address): void
+    private function useCompanyAddress(CompanyAddress $address): void
     {
         $company = $address->getIdCompany();
 
@@ -236,6 +271,40 @@ class AddressManager
         foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
             $this->entityManager->remove($address);
             $this->entityManager->flush($address);
+        }
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
+     */
+    public function companyPostalAddressSameAsMainAddress(Companies $company): void
+    {
+        $postalAddress = $company->getIdPostalAddress();
+
+        if (null === $postalAddress) {
+            $postalAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
+        }
+
+        if (null !== $postalAddress && null === $postalAddress->getDateArchived()) {
+            $this->entityManager->beginTransaction();
+
+            try {
+                $type = $company->getIdPostalAddress()->getIdType();
+
+                $company->setIdPostalAddress(null);
+                $this->entityManager->flush($company);
+
+                $this->archivePreviousCompanyAddress($company, $type);
+
+                $this->entityManager->commit();
+            } catch (\Exception $exception) {
+                $this->entityManager->rollback();
+                throw $exception;
+            }
         }
     }
 }

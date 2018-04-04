@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus
+    AddressType, Clients, ClientsStatus, Wallet
 };
 
 class rootController extends bootstrap
@@ -88,7 +88,7 @@ class rootController extends bootstrap
             $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
             if (false  === file_exists($path . $sNamePdf)) {
-                $this->cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                $this->cgv_preteurs(true, $oPdf, [$this->clients->hash]);
                 $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
             }
 
@@ -96,8 +96,14 @@ class rootController extends bootstrap
         }
     }
 
-    // lecture page du cgv en html
-    private function cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
+    /**
+     * @param bool               $bPdf
+     * @param pdfController|null $oPdf
+     * @param array|null         $aParams
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function cgv_preteurs(bool $bPdf = false, pdfController $oPdf = null, array $aParams = null): void
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
@@ -132,8 +138,11 @@ class rootController extends bootstrap
 
             $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $this->settings->value;
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER);
+
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var Wallet $wallet */
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::LENDER);
 
             /** @var \loans $oLoans */
             $oLoans      = $this->loadData('loans');
@@ -161,34 +170,36 @@ class rootController extends bootstrap
                 $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret']) : '';
             } else {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
+                $companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                $companyAddress = $companyEntity->getIdAddress();
 
-                if ($this->companies->id_pays == 0) {
-                    $this->companies->id_pays = 1;
+                if (null === $companyAddress) {
+                    $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                 }
-                $this->pays->get($this->companies->id_pays, 'id_pays');
 
-                $aReplacements = array(
+                $aReplacements = [
                     '[Civilite]'            => $this->clients->civilite,
                     '[Prenom]'              => utf8_encode($this->clients->prenom),
                     '[Nom]'                 => utf8_encode($this->clients->nom),
                     '[Fonction]'            => utf8_encode($this->clients->fonction),
                     '[Raison_sociale]'      => utf8_encode($this->companies->name),
                     '[SIREN]'               => $this->companies->siren,
-                    '[adresse_fiscale]'     => utf8_encode($this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $this->pays->fr),
+                    '[adresse_fiscale]'     => utf8_encode($companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr()),
                     '[date_validation_cgv]' => $dateAccept
-                );
+                ];
 
                 $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-personne-morale']);
                 $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret-personne-morale']) : '';
             }
         } elseif (isset($this->params[0]) && $this->params[0] == 'morale') {
-            $variables                              = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[SIREN]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $variables                              = ['[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[SIREN]', '[adresse_fiscale]', '[date_validation_cgv]'];
             $tabVariables                           = explode(';', $this->content['contenu-variables-par-defaut-morale']);
             $contentVariables                       = $tabVariables;
             $this->mandat_de_recouvrement           = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
             $this->mandat_de_recouvrement_avec_pret = '';
         } else {
-            $variables                              = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $variables                              = ['[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]'];
             $tabVariables                           = explode(';', $this->content['contenu-variables-par-defaut']);
             $contentVariables                       = $tabVariables;
             $this->mandat_de_recouvrement           = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);

@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -136,6 +136,12 @@ class preteursController extends bootstrap
 
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
+                $this->companyEntity  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                $this->companyAddress = $this->companyEntity->getIdAddress();
+                if (null === $this->companyAddress) {
+                    $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                }
             }
 
             $this->nb_pret  = $loans->counter('id_lender = ' . $wallet->getId() . ' AND status = ' . Loans::STATUS_ACCEPTED);
@@ -302,7 +308,11 @@ class preteursController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
         $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager           = $this->get('unilend.service.translation_manager');
+        $translationManager = $this->get('unilend.service.translation_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+        $addressManager = $this->get('unilend.service.address_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository $companyAddressRepository */
+        $companyAddressRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
         $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
         $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
         /** @var \Psr\Log\LoggerInterface $logger */
@@ -325,10 +335,10 @@ class preteursController extends bootstrap
             if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                $this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
-                $this->adresse_fiscal      = $this->companies->adresse1;
-                $this->city_fiscal         = $this->companies->city;
-                $this->zip_fiscal          = $this->companies->zip;
+                $this->companyEntity              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+                $this->lastModifiedCompanyAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+
+                $this->meme_adresse_fiscal = null === $this->companyEntity->getIdPostalAddress();
 
                 $this->settings->get("Liste deroulante origine des fonds societe", 'type');
                 $this->origine_fonds = $this->settings->value;
@@ -587,23 +597,6 @@ class preteursController extends bootstrap
                     $this->companies->siret        = $_POST['siret']; //(19/11/2014)
                     $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
                     $this->companies->tribunal_com = $_POST['tribunal_com'];
-
-                    if (false === empty($_POST['meme-adresse'])) {
-                        $this->companies->status_adresse_correspondance = Companies::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL;
-                        $this->clients_adresses->adresse1               = $_POST['adresse'];
-                        $this->clients_adresses->ville                  = $_POST['ville'];
-                        $this->clients_adresses->cp                     = $_POST['cp'];
-                    } else {
-                        $this->companies->status_adresse_correspondance = Companies::DIFFERENT_ADDRESS_FOR_POSTAL_AND_FISCAL;
-                        $this->clients_adresses->adresse1               = $_POST['adresse2'];
-                        $this->clients_adresses->ville                  = $_POST['ville2'];
-                        $this->clients_adresses->cp                     = $_POST['cp2'];
-                    }
-
-                    $this->companies->adresse1 = $_POST['adresse'];
-                    $this->companies->city     = $_POST['ville'];
-                    $this->companies->zip      = $_POST['cp'];
-
                     $this->companies->status_client = $_POST['enterprise'];
 
                     $this->clients->civilite = $_POST['civilite_e'];
@@ -645,23 +638,6 @@ class preteursController extends bootstrap
                     $this->clients->naissance       = '0000-00-00';
                     $this->clients->ville_naissance = '';
 
-                    if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
-                        $this->companies->update();
-                    } else {
-                        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
-
-                        $company = new Companies();
-                        $company->setIdClientOwner($client);
-
-                        $entityManager->persist($company);
-                        $entityManager->flush($company);
-
-                        $this->companies->get($company->getIdCompany());
-                    }
-
-                    $this->clients->funds_origin        = $_POST['origine_des_fonds'];
-                    $this->clients->funds_origin_detail = $this->clients->funds_origin == '1000000' ? $_POST['preciser'] : '';
-
                     $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
                     foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                         if ($uploadedFile) {
@@ -673,7 +649,19 @@ class preteursController extends bootstrap
                     }
 
                     $this->clients->update();
-                    $this->clients_adresses->update();
+                    $this->companies->update();
+
+                    if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
+                        $addressManager->saveCompanyAddress($_POST['adresse'], $_POST['cp'], $_POST['ville'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
+                    }
+
+                    if (false === empty($_POST['adresse2']) && false === empty($_POST['ville2']) && false === empty($_POST['cp2']) && empty($_POST['meme-adresse'])) {
+                        $addressManager->saveCompanyAddress($_POST['adresse2'], $_POST['cp2'], $_POST['ville2'], PaysV2::COUNTRY_FRANCE, $this->companyEntity, AddressType::TYPE_POSTAL_ADDRESS);
+                    }
+
+                    if (null !== $this->companyEntity->getIdPostalAddress() && isset($_POST['meme-adresse']) && 'on' === $_POST['meme-adresse']) {
+                        $addressManager->companyPostalAddressSameAsMainAddress($this->companyEntity);
+                    }
 
                     $this->users_history->histo(
                         UsersHistory::FORM_ID_LENDER,
@@ -688,6 +676,7 @@ class preteursController extends bootstrap
                         && $lenderValidationManager->validateClient($this->clients, $this->userEntity)
                     ) {
                         $this->validateBankAccount($_POST['id_bank_account']);
+                        $this->validateAddress($client);
                         $_SESSION['compte_valide'] = true;
                     }
 
@@ -1795,5 +1784,33 @@ class preteursController extends bootstrap
             'message' => 'Echec lors de l\'ajout de la notification',
             'status'  => 'ko'
         ]);
+    }
+
+
+    /**
+     * @param Clients $client
+     *
+     * @throws Exception
+     */
+    private function validateAddress(Clients $client): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager        = $this->get('doctrine.orm.entity_manager');
+        $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
+        $addressManager       = $this->get('unilend.service.address_manager');
+
+        if ($client->isNaturalPerson()) {
+            //todo
+        }
+
+        if (false === $client->isNaturalPerson()) {
+            $kbis = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::KBIS);
+            if (null === $kbis) {
+                throw new \Exception('Company Lender to be validated has no KBIS');
+            }
+
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $addressManager->validateCompanyAddress($company->getIdAddress(), $kbis);
+        }
     }
 }

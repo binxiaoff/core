@@ -3,24 +3,18 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\{
+    CheckboxType, ChoiceType
+};
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsAdresses;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsHistoryActions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\CompanyIdentityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\LegalEntityType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonFiscalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\SecurityQuestionType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsAdresses, ClientsHistoryActions, Companies
+};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
+    BankAccountType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonFiscalAddressType, PersonType, PostalAddressType, SecurityQuestionType
+};
 
 class FormManager
 {
@@ -29,22 +23,22 @@ class FormManager
     /** @var TranslatorInterface */
     private $translator;
     /** EntityManager */
-    private $entityMananger;
+    private $entityManager;
 
     /**
      * @param FormFactory         $formFactory
      * @param TranslatorInterface $translator
-     * @param EntityManager       $entityMananger
+     * @param EntityManager       $entityManager
      */
     public function __construct(
         FormFactory $formFactory,
         TranslatorInterface $translator,
-        EntityManager $entityMananger
+        EntityManager $entityManager
     )
     {
-        $this->formFactory    = $formFactory;
-        $this->translator     = $translator;
-        $this->entityMananger = $entityMananger;
+        $this->formFactory   = $formFactory;
+        $this->translator    = $translator;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -107,19 +101,19 @@ class FormManager
     }
 
     /**
-     * @param Clients         $client
-     * @param Companies       $company
-     * @param ClientsAdresses $clientAddress
+     * @param Clients   $client
+     * @param Companies $company
      *
      * @return \Symfony\Component\Form\FormInterface
      */
-    public function getLenderSubscriptionLegalEntityIdentityForm(Clients $client, Companies $company, ClientsAdresses $clientAddress)
+    public function getLenderSubscriptionLegalEntityIdentityForm(Clients $client, Companies $company)
     {
         $form = $this->formFactory->createBuilder()
             ->add('client', LegalEntityType::class, ['data' => $client])
             ->add('company', CompanyIdentityType::class, ['data' => $company])
-            ->add('fiscalAddress', CompanyAddressType::class, ['data' => $company])
-            ->add('postalAddress', PostalAddressType::class, ['data' => $clientAddress])
+            ->add('mainAddress', CompanyAddressType::class)
+            ->add('samePostalAddress', CheckboxType::class)
+            ->add('postalAddress', CompanyAddressType::class)
             ->add('security', SecurityQuestionType::class, ['data' => $client])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
@@ -196,20 +190,23 @@ class FormManager
      * @param string           $formName
      * @param string           $serialize
      * @param string           $ip
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveFormSubmission($client, $formName, $serialize, $ip)
+    public function saveFormSubmission($client, string $formName, string $serialize, string $ip)
     {
         if ($client instanceof \clients) {
-            $client = $this->entityMananger->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
         $clientAction = new ClientsHistoryActions();
-        $clientAction->setNomForm($formName);
-        $clientAction->setIdClient($client);
-        $clientAction->setSerialize($serialize);
-        $clientAction->setIP($ip);
+        $clientAction
+            ->setNomForm($formName)
+            ->setIdClient($client)
+            ->setSerialize($serialize)
+            ->setIP($ip);
 
-        $this->entityMananger->persist($clientAction);
-        $this->entityMananger->flush($clientAction);
+        $this->entityManager->persist($clientAction);
+        $this->entityManager->flush($clientAction);
     }
 }
