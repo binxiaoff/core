@@ -39,8 +39,6 @@ class LenderSubscriptionController extends Controller
      * @param Request $request
      *
      * @return Response
-     * @throws \Doctrine\DBAL\ConnectionException
-     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function personalInformationAction(Request $request): Response
     {
