@@ -103,7 +103,7 @@ class rootController extends bootstrap
      *
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null): void
+    private function cgv_preteurs(bool $bPdf = false, pdfController $oPdf = null, array $aParams = null): void
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
