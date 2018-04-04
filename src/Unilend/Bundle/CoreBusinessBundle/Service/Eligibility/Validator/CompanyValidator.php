@@ -696,6 +696,8 @@ class CompanyValidator
     /**
      * TC-RISK-023
      * Exclude SIREN with legal form which does not have a legal personality
+     * Il s'agit ici de prévenir un risque de non-conformité légale i.e. les contrats de prêt (IFP), ou les minibons (CIP)
+     * ne peuvent pas respectivement être engagés, ou émis, par des entités qui sont dépourvues de la personnalité juridique.
      *
      * @param $siren
      *
