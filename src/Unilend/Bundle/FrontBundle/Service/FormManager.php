@@ -11,10 +11,10 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, ClientsAdresses, ClientsHistoryActions, Companies, CompanyAddress
+    AddressType, ClientAddress, Clients, ClientsHistoryActions, Companies, CompanyAddress
 };
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, ClientAddressType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonFiscalAddressType, PersonType, SecurityQuestionType
+    BankAccountType, ClientAddressType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonType, SecurityQuestionType
 };
 
 class FormManager
@@ -47,10 +47,9 @@ class FormManager
      * @param object $formObject
      *
      * @return array
-     *
      * @throws \Exception
      */
-    public function getModifiedContent($dbObject, $formObject)
+    public function getModifiedContent(object $dbObject, object $formObject): array
     {
         if (get_class($dbObject) !== get_class($formObject)) {
             throw new \Exception('The objects to be compared are not of the same class');
@@ -74,17 +73,19 @@ class FormManager
     }
 
     /**
-     * @param Clients         $client
-     * @param ClientsAdresses $clientAddress
+     * @param Clients $client
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    public function getLenderSubscriptionPersonIdentityForm(Clients $client, ClientsAdresses $clientAddress)
+    public function getLenderSubscriptionPersonIdentityForm(Clients $client): FormInterface
     {
         $form = $this->formFactory->createBuilder()
             ->add('client', PersonType::class, ['data' => $client])
-            ->add('fiscalAddress', PersonFiscalAddressType::class, ['data' => $clientAddress])
-            ->add('postalAddress', ClientAddressType::class, ['data' => $clientAddress])
+            ->add('mainAddress', ClientAddressType::class)
+            ->add('samePostalAddress', CheckboxType::class)
+            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
+            ->add('noUsPerson', CheckboxType::class, ['required' => false])
+            ->add('postalAddress', ClientAddressType::class)
             ->add('security', SecurityQuestionType::class, ['data' => $client])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
@@ -134,9 +135,9 @@ class FormManager
     /**
      * @param Clients $client
      *
-     * @return \Symfony\Component\Form\FormInterface
+     * @return FormInterface
      */
-    public function getBankInformationForm(Clients $client)
+    public function getBankInformationForm(Clients $client): FormInterface
     {
         $form = $this->formFactory->createBuilder()
             ->add('bankAccount', BankAccountType::class)
@@ -150,11 +151,11 @@ class FormManager
     }
 
     /**
-     * @param  array $post
+     * @param array $post
      *
-     * @return mixed
+     * @return array
      */
-    public function cleanPostData($post)
+    public function cleanPostData(array $post): array
     {
         foreach ($post as $key => $value) {
             if (is_array($value)) {
@@ -174,7 +175,7 @@ class FormManager
      *
      * @return array
      */
-    public function getNamesOfFiles($files)
+    public function getNamesOfFiles(array $files): array
     {
         $fileNames = [];
         foreach($files as $name => $file) {
@@ -212,7 +213,7 @@ class FormManager
     }
 
     /**
-     * @param null|CompanyAddress $address
+     * @param CompanyAddress|null $address
      * @param string              $type
      *
      * @return FormInterface
@@ -232,7 +233,7 @@ class FormManager
 
     /**
      * @param ClientAddress|null $address
-     * @param string              $type
+     * @param string             $type
      *
      * @return FormInterface
      */

@@ -22,7 +22,6 @@ use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderProfileController extends Controller
 {
@@ -1277,22 +1276,6 @@ class LenderProfileController extends Controller
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
-    }
-
-    /**
-     * @return \clients_adresses
-     */
-    private function getClientAddress(): \clients_adresses
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($clientId, 'id_client');
-
-        return $clientAddress;
     }
 
     /**
