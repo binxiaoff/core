@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
+    AttachmentType, Bids, ClientsGestionTypeNotif, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -452,7 +452,7 @@ class transfertsController extends bootstrap
                     ]);
 
                     $this->clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
-                    $this->clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                    $this->clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT;
                     $this->clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification           = $this->notifications->id_notification;
                     $this->clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
@@ -464,7 +464,7 @@ class transfertsController extends bootstrap
                         $preteurs->update();
                     }
 
-                    if ($this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
+                    if ($this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
                         $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                         $this->clients_gestion_mails_notif->immediatement = 1;
                         $this->clients_gestion_mails_notif->update();
@@ -710,7 +710,7 @@ class transfertsController extends bootstrap
 
                     foreach ($loansForBid as $loan) {
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
-                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            $notificationManager->createEmailNotification($notification->id_notification, ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
                                 $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
                                 $loan['id_loan']);
                             $lastLoans[] = $loan['id_loan'];

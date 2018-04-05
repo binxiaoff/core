@@ -5,11 +5,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator
+};
 
 /**
  * Class BidManager
@@ -233,7 +234,7 @@ class BidManager
         if ($sendNotification) {
             $this->notificationManager->create(
                 Notifications::TYPE_BID_PLACED,
-                $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
+                $bid->getAutobid() !== null ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_PLACED,
                 $clientId,
                 'sendBidConfirmation',
                 $projectId,
@@ -392,7 +393,7 @@ class BidManager
         if (WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()) {
             $this->notificationManager->create(
                 Notifications::TYPE_BID_REJECTED,
-                $bid->getAutobid() !== null ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                $bid->getAutobid() !== null ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_REJECTED,
                 $bid->getIdLenderAccount()->getIdClient()->getIdClient(),
                 'sendBidRejected',
                 $bid->getProject()->getIdProject(),
