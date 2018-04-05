@@ -70,18 +70,22 @@
                         <p>{% trans %} lender-landing-page_footer-warning {% endtrans %}</p>
                     </div>
                 </div>
-                <div class="col-conditions col-lg-4 col-md-4">
-                    <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
-                </div>
+                {% if showWelcomeOffer is defined and showWelcomeOffer == true %}
+                    <div class="col-conditions col-lg-4 col-md-4">
+                        <p>* <a href="#dialog-conditions-content" class="fancybox-html">{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %}</a></p>
+                    </div>
+                {% endif %}
             </div>
         </div><!-- /.block-copy-lp-footer -->
 
         {# Hidden text until made visible through the fancybox #}
         <div class="hide-accessible">
-            <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
-                <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
-                {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
-            </div><!-- /#dialog-conditions-content -->
+            {% if showWelcomeOffer is defined and showWelcomeOffer == true %}
+                <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
+                    <h3>{% trans %} lender-landing-page_welcome-offer-conditions-title {% endtrans %} </h3>
+                    {% trans %} lender-landing-page_welcome-offer-conditions-text {% endtrans %}
+                </div><!-- /#dialog-conditions-content -->
+            {% endif %}
         </div><!-- /.hide-accessible -->
     </article><!-- /.page -->
 {% endblock %}
