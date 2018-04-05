@@ -12,7 +12,6 @@ class transfertsController extends bootstrap
     {
         parent::initialize();
 
-        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->menu_admin       = 'transferts';
         $this->statusOperations = [
             Receptions::STATUS_PENDING         => 'En attente',
@@ -42,6 +41,7 @@ class transfertsController extends bootstrap
             $this->hideDecoration();
             $this->view = 'csv';
         } else {
+            $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
             $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => false]);
         }
     }
@@ -56,6 +56,7 @@ class transfertsController extends bootstrap
             $this->hideDecoration();
             $this->view = 'csv';
         } else {
+            $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
             $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => false]);
         }
     }
@@ -203,6 +204,8 @@ class transfertsController extends bootstrap
 
     public function _non_attribues()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
@@ -320,6 +323,7 @@ class transfertsController extends bootstrap
 
     public function _attribution()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
 
         $this->receptions = $this->loadData('receptions');
@@ -328,6 +332,7 @@ class transfertsController extends bootstrap
 
     public function _attribution_preteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
         $this->lPreteurs = [];
 
@@ -380,6 +385,7 @@ class transfertsController extends bootstrap
 
     public function _recherche_projet()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
@@ -401,6 +407,7 @@ class transfertsController extends bootstrap
 
     public function _attribuer_preteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -500,6 +507,7 @@ class transfertsController extends bootstrap
 
     public function _ignore()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -529,6 +537,7 @@ class transfertsController extends bootstrap
 
     public function _comment()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
         $this->autoFireView = false;
 
@@ -548,6 +557,7 @@ class transfertsController extends bootstrap
 
     public function _deblocage()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         ini_set('memory_limit', '512M');
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -827,6 +837,7 @@ class transfertsController extends bootstrap
 
     public function _succession()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
@@ -1068,6 +1079,7 @@ class transfertsController extends bootstrap
 
     public function _validate_lightbox()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         $this->hideDecoration();
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1108,6 +1120,7 @@ class transfertsController extends bootstrap
 
     public function _virement_emprunteur()
     {
+        $this->users->checkAccess(Zones::ZONE_LABEL_TRANSFERS);
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \NumberFormatTest currencyFormatter */
