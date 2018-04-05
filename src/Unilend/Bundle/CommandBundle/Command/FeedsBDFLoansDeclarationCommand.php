@@ -2,15 +2,15 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{
     InputArgument, InputInterface, InputOption
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Echeanciers, TransmissionSequence, UnderlyingContract
+    CompanyStatus, Echeanciers, UnderlyingContract
 };
+use Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager;
 use Unilend\core\Loader;
 
@@ -100,20 +100,33 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         }
 
         if (empty($cipData + $ifpData)) {
-            $logger->info('No data found for CIP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
             return;
         }
 
         $output->writeln('Generating files..');
 
         $ifpFileName = BdfLoansDeclarationManager::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
-        $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP);
+        try {
+            $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP);
+        } catch (\Exception $exception) {
+            $logger->error(
+                sprintf('Could not generate IFP declaration file. Error: %s', $exception->getMessage()),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
 
         $output->writeln('IFP file processed');
 
         $this->recordLineNumber = 1;
         $cipFileName            = BdfLoansDeclarationManager::UNILEND_CIP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
-        $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_CIP);
+        try {
+            $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_CIP);
+        } catch (\Exception $exception) {
+            $logger->error(
+                sprintf('Could not generate CIP declaration file. Error: %s', $exception->getMessage()),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
 
         $output->writeln('CIP file processed');
 
@@ -172,17 +185,20 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         if (false === $fileManager->exists($filePath)) {
             $fileManager->mkdir($filePath);
         }
-        $absoluteFilePath               = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+
+        $absoluteFilePath = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
+        /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
         $transmissionSequenceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
-        /** @var TransmissionSequence $sequence */
-        $sequence = $transmissionSequenceRepository->findOneBy(['elementName' => $fileName]);
+        $sequence                       = $transmissionSequenceRepository->findOneBy(['elementName' => $fileName]);
 
         if (null !== $sequence && $fileManager->exists($absoluteFilePath)) {
             $currentName = pathinfo($absoluteFilePath, PATHINFO_FILENAME);
+
             if (false === $fileManager->exists($fileArchivePath)) {
                 $fileManager->mkdir($fileArchivePath);
             }
+
             try {
                 $fileManager->rename($absoluteFilePath, implode(DIRECTORY_SEPARATOR, [$fileArchivePath, $currentName . '_' . $sequence->getSequence() . '.txt']), true);
             } catch (\Exception $exception) {
@@ -200,9 +216,11 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
             foreach ($data as $row) {
                 $loanRecord = $this->getLoanRecord($row, $declarerId);
+
                 if (null !== $loanRecord) {
                     $fileManager->appendToFile($absoluteFilePath, $loanRecord);
                 }
+
             }
             $fileManager->appendToFile($absoluteFilePath, $this->getEndDeclarerRecord($declarerId));
             $fileManager->appendToFile($absoluteFilePath, $this->getEndSenderRecord($declarerId));
@@ -244,14 +262,14 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      *
      * @return string
      *
-     * @throws \Exception
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function getStartSenderRecord(string $fileName, string $declarerId): string
     {
-        /** @var TransmissionSequence $sequence */
-        $sequence = $this->getContainer()->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')
-            ->getNextSequence($fileName);
+        /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
+        $transmissionSequenceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+        $sequence                       = $transmissionSequenceRepository->getNextSequence($fileName);
 
         return str_pad($this->getStartingRecord('01', $declarerId) . str_pad($sequence->getSequence(), 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
@@ -501,7 +519,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                 if (null !== $repayment) {
                     return $repayment->getDateEcheance()->format('Ymd');
                 }
-            } catch (NonUniqueResultException $exception) {
+            } catch (\Exception $exception) {
                 $this->getContainer()->get('monolog.logger.console')->error(
                         sprintf('Could not get the first overdue schedule for project %s. Please check the output file. Exception: %s', $projectId, $exception->getMessage()),
                         ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]

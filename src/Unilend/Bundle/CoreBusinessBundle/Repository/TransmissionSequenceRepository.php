@@ -11,7 +11,6 @@ class TransmissionSequenceRepository extends EntityRepository
      * @param string $elementName
      *
      * @return TransmissionSequence
-     *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function getNextSequence(string $elementName): TransmissionSequence
