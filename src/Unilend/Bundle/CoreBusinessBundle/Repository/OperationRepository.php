@@ -1190,11 +1190,11 @@ class OperationRepository extends EntityRepository
         $end->setTime(23, 59, 59);
 
         $query = '
-            SELECT SUM(IF(ot.label in (:lender_loan, :capital_regularization), IFNULL(amount, 0), IFNULL(-amount, 0)))
+            SELECT SUM(IF(ot.label IN (:lender_loan, :capital_regularization), IFNULL(amount, 0), IFNULL(-amount, 0)))
             FROM operation o
               INNER JOIN operation_type ot ON ot.id = o.id_type
             WHERE o.added <= :end
-                  AND ot.label in (:lender_loan, :capital, :capital_regularization)
+                  AND ot.label IN (:lender_loan, :capital, :capital_regularization)
                   AND o.id_project IN (:projects)';
 
         $statement = $this
