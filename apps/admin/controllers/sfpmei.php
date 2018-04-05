@@ -427,10 +427,10 @@ class sfpmeiController extends bootstrap
 
         switch ($this->params[0]) {
             case 'preteurs':
-                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true]);
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true, 'disableGlobalSearch' => true]);
                 break;
             case 'emprunteurs':
-                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true]);
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true, 'disableGlobalSearch' => true]);
                 break;
             case 'non_attribues':
                 $this->receptions = $receptionsRepository->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);
