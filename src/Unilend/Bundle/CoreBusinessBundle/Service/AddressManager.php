@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Companies, CompanyAddress, PaysV2
+    AddressType, Attachment, AttachmentType, Companies, CompanyAddress, PaysV2
 };
 
 class AddressManager
@@ -172,14 +172,9 @@ class AddressManager
                     $this->entityManager->flush($currentAddress);
                 }
 
-                $companyAddress
-                    ->setDateValidated(new \DateTime('NOW'))
-                    ->setIdAttachment($kbis);
-
-                $this->entityManager->flush($companyAddress);
+                $this->validateCompanyAddress($companyAddress, $kbis);
                 $this->use($companyAddress);
             }
-
             $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
@@ -197,6 +192,36 @@ class AddressManager
         if ($coordinates) {
             $address->setLatitude($coordinates['latitude']);
             $address->setLongitude($coordinates['longitude']);
+        }
+    }
+
+    /**
+     * @param CompanyAddress $companyAddress
+     * @param Attachment     $kbis
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function validateCompanyAddress(CompanyAddress $companyAddress, Attachment $kbis)
+    {
+        $companyAddress
+            ->setDateValidated(new \DateTime('NOW'))
+            ->setIdAttachment($kbis);
+
+        $company = $companyAddress->getIdCompany();
+
+        $this->entityManager->flush([$companyAddress, $company]);
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function deleteCompanyAddresses(Companies $company)
+    {
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company]) as $address) {
+            $this->entityManager->remove($address);
+            $this->entityManager->flush($address);
         }
     }
 }

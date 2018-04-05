@@ -3,23 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType,
-    Bids,
-    Factures,
-    LenderStatisticQueue,
-    Notifications,
-    OperationSubType,
-    OperationType,
-    Prelevements,
-    ProjectRepaymentTask,
-    ProjectsPouvoir,
-    ProjectsStatus,
-    Receptions,
-    UniversignEntityInterface,
-    Virements,
-    Wallet,
-    WalletType,
-    Zones
+    AttachmentType, Bids, ClientsGestionTypeNotif, ClientsStatus, Factures, LenderStatisticQueue, Notifications, OperationSubType, OperationType, Prelevements, ProjectRepaymentTask, ProjectsPouvoir, ProjectsStatus, Receptions, UniversignEntityInterface, Virements, Wallet, WalletType, Zones
 };
 
 class transfertsController extends bootstrap
@@ -468,7 +452,7 @@ class transfertsController extends bootstrap
                     ]);
 
                     $this->clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
-                    $this->clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                    $this->clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT;
                     $this->clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification           = $this->notifications->id_notification;
                     $this->clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
@@ -480,7 +464,7 @@ class transfertsController extends bootstrap
                         $preteurs->update();
                     }
 
-                    if ($this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
+                    if ($this->clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
                         $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                         $this->clients_gestion_mails_notif->immediatement = 1;
                         $this->clients_gestion_mails_notif->update();
@@ -726,7 +710,7 @@ class transfertsController extends bootstrap
 
                     foreach ($loansForBid as $loan) {
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
-                            $notificationManager->createEmailNotification($notification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            $notificationManager->createEmailNotification($notification->id_notification, ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
                                 $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
                                 $loan['id_loan']);
                             $lastLoans[] = $loan['id_loan'];
@@ -844,8 +828,6 @@ class transfertsController extends bootstrap
     public function _succession()
     {
         if (isset($_POST['succession_check']) || isset($_POST['succession_validate'])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
             /** @var \clients $originalClient */
@@ -853,33 +835,35 @@ class transfertsController extends bootstrap
             /** @var \clients $newOwner */
             $newOwner = $this->loadData('clients');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository $walletRepository */
-            $walletRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-            $clientStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
+            $entityManager    = $this->get('doctrine.orm.entity_manager');
+            $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
             if (
                 false === empty($_POST['id_client_to_transfer'])
-                && (false === is_numeric($_POST['id_client_to_transfer'])
+                && (
+                    false === is_numeric($_POST['id_client_to_transfer'])
                     || false === $originalClient->get($_POST['id_client_to_transfer'])
-                    || false === $clientManager->isLender($originalClient))
+                    || false === $originalClient->isLender()
+                )
             ) {
                 $this->addErrorMessageAndRedirect('Le défunt n\'est pas un prêteur');
             }
 
             if (
                 false === empty($_POST['id_client_receiver'])
-                && (false === is_numeric($_POST['id_client_receiver'])
+                && (
+                    false === is_numeric($_POST['id_client_receiver'])
                     || false === $newOwner->get($_POST['id_client_receiver'])
-                    || false === $clientManager->isLender($newOwner))
+                    || false === $newOwner->isLender()
+                )
             ) {
                 $this->addErrorMessageAndRedirect('L\'héritier n\'est pas un prêteur');
             }
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus $lastStatusEntity */
-            $lastStatusEntity = $clientStatusRepository->getLastClientStatus($newOwner->id_client);
-            $lastStatus       = (null === $lastStatusEntity) ? null : $lastStatusEntity->getStatus();
 
-            if ($lastStatus != \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus::VALIDATED) {
+            $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
+            $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
+
+            if ($newOwnerStatus !== ClientsStatus::VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 
@@ -915,7 +899,7 @@ class transfertsController extends bootstrap
             if (isset($_POST['succession_validate'])) {
                 $transferDocument = $this->request->files->get('transfer_document');
                 if (null === $transferDocument) {
-                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfer');
+                    $this->addErrorMessageAndRedirect('Il manque le justificatif de transfert');
                 }
 
                 $entityManager->getConnection()->beginTransaction();
@@ -954,17 +938,25 @@ class transfertsController extends bootstrap
                         $numberLoans += 1;
                     }
 
-                    $lenderStatQueueOriginal = new LenderStatisticQueue();
-                    $lenderStatQueueOriginal->setIdWallet($originalWallet);
-                    $entityManager->persist($lenderStatQueueOriginal);
-                    $lenderStatQueueNew = new LenderStatisticQueue();
-                    $lenderStatQueueNew->setIdWallet($newWallet);
-                    $entityManager->persist($lenderStatQueueNew);
+                    $lenderStatQueueRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderStatisticQueue');
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $originalWallet])) {
+                        $lenderStatQueueOriginal = new LenderStatisticQueue();
+                        $lenderStatQueueOriginal->setIdWallet($originalWallet);
+                        $entityManager->persist($lenderStatQueueOriginal);
+                    }
+
+                    if (null === $lenderStatQueueRepository->findOneBy(['idWallet' => $newWallet])) {
+                        $lenderStatQueueNew = new LenderStatisticQueue();
+                        $lenderStatQueueNew->setIdWallet($newWallet);
+                        $entityManager->persist($lenderStatQueueNew);
+                    }
+
                     $entityManager->flush();
 
                     $comment = 'Compte soldé . ' . $this->ficelle->formatNumber($originalClientBalance) . ' EUR et ' . $numberLoans . ' prêts transferés sur le compte client ' . $newOwner->id_client;
                     try {
-                        $clientStatusManager->closeAccount($originalClient, $_SESSION['user']['id_user'], $comment);
+                        $clientStatusManager->closeLenderAccount($originalClient, $_SESSION['user']['id_user'], $comment);
                     } catch (\Exception $exception) {
                         $this->addErrorMessageAndRedirect('Le status client n\'a pas pu être changé ' . $exception->getMessage());
                         throw $exception;
@@ -973,7 +965,7 @@ class transfertsController extends bootstrap
                     $clientStatusManager->addClientStatus(
                         $newOwner,
                         $_SESSION['user']['id_user'],
-                        $lastStatus,
+                        $newOwnerStatus,
                         'Reçu solde (' . $this->ficelle->formatNumber($originalClientBalance) . ') et prêts (' . $numberLoans . ') du compte ' . $originalClient->id_client
                     );
 
@@ -982,6 +974,7 @@ class transfertsController extends bootstrap
                     $entityManager->getConnection()->rollback();
                     throw $exception;
                 }
+
                 $_SESSION['succession']['success'] = [
                     'accountBalance' => $originalClientBalance,
                     'numberLoans'    => $numberLoans,

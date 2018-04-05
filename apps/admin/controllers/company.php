@@ -1,12 +1,12 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\CompanyIdentityDetail;
-use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, AttachmentType, Clients, Companies, PaysV2, Zones
+};
+use Unilend\Bundle\WSClientBundle\Entity\Altares\{
+    CompanyIdentityDetail, EstablishmentIdentityDetail
+};
 
 class companyController extends bootstrap
 {
@@ -37,8 +37,8 @@ class companyController extends bootstrap
         if (isset($this->params[0])) {
             $this->siren = $this->params[0];
         }
-        $this->client  = new Clients();
-        $this->company = new Companies();
+        $this->client         = new Clients();
+        $this->company        = new Companies();
 
         if ($this->request->isMethod(Request::METHOD_POST)) {
             if ($this->save()) {
@@ -145,13 +145,16 @@ class companyController extends bootstrap
 
     /**
      * @return bool
+     * @throws \Doctrine\DBAL\ConnectionException
      */
-    private function save()
+    private function save(): bool
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+        $addressManager = $this->get('unilend.service.address_manager');
 
         $siren               = substr(filter_var($this->request->request->get('siren'), FILTER_SANITIZE_STRING), 0, 9);
         $corporateName       = filter_var($this->request->request->get('corporate_name'), FILTER_SANITIZE_STRING);
@@ -175,6 +178,7 @@ class companyController extends bootstrap
         }
 
         $entityManager->beginTransaction();
+
         try {
             $this->client
                 ->setEmail($email)
@@ -196,9 +200,6 @@ class companyController extends bootstrap
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($invoiceEmail)
                 ->setIdClientOwner($this->client)
-                ->setAdresse1($address)
-                ->setZip($postCode)
-                ->setCity($city)
                 ->setPhone($phone);
 
             if (false === $entityManager->contains($this->company)) {
@@ -206,13 +207,17 @@ class companyController extends bootstrap
             }
             $entityManager->flush($this->company);
 
+            $addressManager->saveCompanyAddress($address, $postCode, $city, PaysV2::COUNTRY_FRANCE, $this->company, AddressType::TYPE_MAIN_ADDRESS);
+
             if ($bankAccountDocument) {
                 $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);
                 $attachmentManager->upload($this->client, $attachmentTypeRib, $bankAccountDocument);
             }
             if ($registryForm) {
                 $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
+                $attachment         = $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
+
+                $addressManager->validateCompanyAddress($this->company->getIdAddress(), $attachment);
             }
 
             $entityManager->commit();

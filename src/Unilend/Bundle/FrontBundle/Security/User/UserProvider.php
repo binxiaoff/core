@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Exception\{
     UnsupportedUserException, UsernameNotFoundException
@@ -11,18 +12,15 @@ use Symfony\Component\Security\Core\User\{
     UserInterface, UserProviderInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Wallet, WalletType
+    Clients, ClientsStatus, Companies, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ClientManager, LenderManager, SlackManager, TermsOfSaleManager
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class UserProvider implements UserProviderInterface
 {
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
     /** @var ClientManager */
@@ -35,42 +33,44 @@ class UserProvider implements UserProviderInterface
     private $slackManager;
     /** @var TermsOfSaleManager */
     private $termsOfSaleManager;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
-     * @param EntityManagerSimulator     $entityManagerSimulator
      * @param EntityManager              $entityManager
      * @param ClientManager              $clientManager
      * @param NotificationDisplayManager $notificationDisplayManager
      * @param LenderManager              $lenderManager
      * @param SlackManager               $slackManager
      * @param TermsOfSaleManager         $termsOfSaleManager
+     * @param LoggerInterface            $logger
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         EntityManager $entityManager,
         ClientManager $clientManager,
         NotificationDisplayManager $notificationDisplayManager,
         LenderManager $lenderManager,
         SlackManager $slackManager,
-        TermsOfSaleManager $termsOfSaleManager
+        TermsOfSaleManager $termsOfSaleManager,
+        LoggerInterface $logger
     )
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
         $this->entityManager              = $entityManager;
         $this->clientManager              = $clientManager;
         $this->notificationDisplayManager = $notificationDisplayManager;
         $this->lenderManager              = $lenderManager;
         $this->slackManager               = $slackManager;
         $this->termsOfSaleManager         = $termsOfSaleManager;
+        $this->logger                     = $logger;
     }
 
     /**
      * @inheritDoc
      */
-    public function loadUserByUsername($username)
+    public function loadUserByUsername($username): UserInterface
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findBy(['email' => $username, 'status' => Clients::STATUS_ONLINE]);
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($username, ClientsStatus::GRANTED_LOGIN);
             $usersCount = count($users);
 
             if ($usersCount > 0) {
@@ -97,7 +97,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function refreshUser(UserInterface $user)
+    public function refreshUser(UserInterface $user): UserInterface
     {
         if (false === $user instanceof BaseUser) {
             throw new UnsupportedUserException(
@@ -111,7 +111,7 @@ class UserProvider implements UserProviderInterface
     /**
      * @inheritDoc
      */
-    public function supportsClass($class)
+    public function supportsClass($class): bool
     {
         return $class === 'FrontBundle\Security\User\BaseUser';
     }
@@ -119,23 +119,40 @@ class UserProvider implements UserProviderInterface
     /**
      * @param Clients $client
      *
-     * @return UserBorrower|UserLender|UserPartner
+     * @return UserInterface
      */
-    private function setUser(Clients $client)
+    private function setUser(Clients $client): UserInterface
     {
         $initials = $this->clientManager->getInitials($client);
         $isActive = $this->clientManager->isActive($client);
         $roles    = ['ROLE_USER'];
 
         if ($client->isLender()) {
+            $roles[] = 'ROLE_LENDER';
+
             /** @var Wallet $wallet */
             $wallet                  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-            /** @var ClientsStatus $clientStatusEntity */
-            $clientStatusEntity      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->getLastClientStatus($client);
             $hasAcceptedCurrentTerms = $this->termsOfSaleManager->hasAcceptedCurrentVersion($client);
-            $notifications           = $this->notificationDisplayManager->getLastLenderNotifications($client);
-            $userLevel               = $this->lenderManager->getDiversificationLevel($client);
-            $roles[]                 = 'ROLE_LENDER';
+
+            try {
+                $notifications = $this->notificationDisplayManager->getLastLenderNotifications($client);
+            } catch (\Exception $exception) {
+                $notifications = [];
+                $this->logger->error(
+                    'Unable to retrieve last lender notifications',
+                    ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
+
+            try {
+                $userLevel = $this->lenderManager->getDiversificationLevel($client);
+            } catch (\Exception $exception) {
+                $userLevel = 0;
+                $this->logger->error(
+                    'Unable to retrieve lender diversification level',
+                    ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
 
             return new UserLender(
                 $client->getEmail(),
@@ -146,11 +163,11 @@ class UserProvider implements UserProviderInterface
                 $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $wallet->getAvailableBalance(),
                 $initials,
                 $client->getPrenom(),
                 $client->getNom(),
-                (null === $clientStatusEntity) ? null : $clientStatusEntity->getStatus(),
                 $hasAcceptedCurrentTerms,
                 $notifications,
                 $client->getEtapeInscriptionPreteur(),
@@ -160,12 +177,11 @@ class UserProvider implements UserProviderInterface
         }
 
         if ($client->isBorrower()) {
-            /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
-            /** @var \companies $company */
-            $company = $this->entityManagerSimulator->getRepository('companies');
-            $company->get($client->getIdClient(), 'id_client_owner');
             $roles[] = 'ROLE_BORROWER';
+
+            /** @var Wallet $wallet */
+            $wallet  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
 
             return new UserBorrower(
                 $client->getEmail(),
@@ -176,9 +192,10 @@ class UserProvider implements UserProviderInterface
                 $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $client->getPrenom(),
                 $client->getNom(),
-                $company->siren,
+                $company->getSiren(),
                 $wallet->getAvailableBalance(),
                 $client->getLastlogin()
             );
@@ -191,6 +208,7 @@ class UserProvider implements UserProviderInterface
             $roles[] = UserPartner::ROLE_DEFAULT;
             $roles[] = $partnerRole->getRole();
 
+            /** @var Companies $rootCompany */
             $rootCompany = $partnerRole->getIdCompany();
 
             while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {
@@ -208,6 +226,7 @@ class UserProvider implements UserProviderInterface
                 $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
+                $client->getIdClientStatusHistory()->getIdStatus()->getId(),
                 $client->getPrenom(),
                 $client->getNom(),
                 $partnerRole->getIdCompany(),
@@ -217,24 +236,27 @@ class UserProvider implements UserProviderInterface
         }
     }
 
-
     /**
      * @param string $hash
      *
-     * @return UserBorrower|UserLender
+     * @return UserInterface
      */
-    public function loadUserByHash($hash)
+    public function loadUserByHash(string $hash): UserInterface
     {
         if (1 !== preg_match('/^[a-z0-9-]{32,36}$/', $hash)) {
             throw new NotFoundHttpException('Invalid client hash');
         }
 
-        if ($clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $hash, 'status' => Clients::STATUS_ONLINE])) {
+        $clientEntity = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Clients')
+            ->findOneByHashAndStatus($hash, ClientsStatus::GRANTED_LOGIN);
+
+        if ($clientEntity) {
             return $this->setUser($clientEntity);
         }
 
         throw new NotFoundHttpException(
-            sprintf('Hash "%s" does not exist.', $hash)
+            sprintf('No client with hash "%s" can log in.', $hash)
         );
     }
 }

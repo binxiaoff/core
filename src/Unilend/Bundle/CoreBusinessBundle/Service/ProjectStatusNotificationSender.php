@@ -8,7 +8,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    CompanyStatus, Echeanciers, Notifications, Projects, ProjectsStatus, Wallet
+    ClientsGestionTypeNotif, CompanyStatus, Echeanciers, Notifications, Projects, ProjectsStatus, Wallet
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -364,10 +364,10 @@ class ProjectStatusNotificationSender
 
                 if (
                     $forceNotification
-                    || $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
+                    || $clientsGestionNotifications->getNotif($wallet->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM, 'immediatement')
                 ) {
                     $clientsGestionMailsNotif->id_client       = $wallet->getIdClient()->getIdClient();
-                    $clientsGestionMailsNotif->id_notif        = \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM;
+                    $clientsGestionMailsNotif->id_notif        = ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM;
                     $clientsGestionMailsNotif->id_notification = $notificationsData->id_notification;
                     $clientsGestionMailsNotif->date_notif      = date('Y-m-d H:i:s');
                     $clientsGestionMailsNotif->id_loan         = 0;

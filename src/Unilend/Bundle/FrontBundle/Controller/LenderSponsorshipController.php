@@ -2,14 +2,19 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Route, Security
+};
+use Symfony\Bundle\FrameworkBundle\{
+    Controller\Controller
+};
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
@@ -19,16 +24,21 @@ class LenderSponsorshipController extends Controller
      * @Route("/parrainage", name="lender_sponsorship")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
+     *
      * @return Response
      */
-    public function sponsorshipAction(Request $request)
+    public function sponsorshipAction(Request $request): Response
     {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
+            return $this->redirectToRoute('lender_dashboard');
+        }
+
         $sponsorshipManager         = $this->get('unilend.service.sponsorship_manager');
-        $isValidatedClient          = $this->getUser()->getClientStatus() >= ClientsStatus::VALIDATED;
         $currentSponsorshipCampaign = $sponsorshipManager->getCurrentSponsorshipCampaign();
         $isBlacklisted              = $sponsorshipManager->isClientCurrentlyBlacklisted($this->getClient());
 
-        if (false == $isValidatedClient || empty($currentSponsorshipCampaign) || $isBlacklisted) {
+        if (empty($currentSponsorshipCampaign) || $isBlacklisted) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -67,11 +77,12 @@ class LenderSponsorshipController extends Controller
 
     /**
      * @Route("/p/{sponsorCode}", name="lender_sponsorship_redirect")
+     *
      * @param string $sponsorCode
      *
      * @return Response
      */
-    public function sponsorshipRedirect($sponsorCode)
+    public function sponsorshipRedirect(string $sponsorCode): Response
     {
         return $this->redirectToRoute('lender_sponsorship_landing_page', [
             'utm_source'   => SponsorshipManager::UTM_SOURCE,
@@ -85,13 +96,12 @@ class LenderSponsorshipController extends Controller
     /**
      * @return Clients
      */
-    private function getClient()
+    private function getClient(): Clients
     {
         /** @var UserLender $user */
         $user     = $this->getUser();
         $clientId = $user->getClientId();
-        /** @var Clients $client */
-        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+        $client   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
 
         return $client;
     }

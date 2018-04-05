@@ -3,9 +3,9 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
-use Symfony\Component\Security\Core\User\EquatableInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\{
+    AdvancedUserInterface, EquatableInterface, UserInterface
+};
 
 class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
@@ -25,7 +25,9 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     private $clientId;
     /** @var string */
     private $hash;
-    /** @var string|\DateTime */
+    /** @var int */
+    private $clientStatus;
+    /** @var \DateTime */
     private $lastLoginDate;
     /** @var string */
     private $encoderName;
@@ -34,22 +36,24 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      * @param string         $username
      * @param string|null    $password
      * @param string         $email
-     * @param string         $salt
-     * @param array          $roles
+     * @param string|null    $salt
+     * @param string[]       $roles
      * @param bool           $isActive
      * @param int            $clientId
      * @param string         $hash
+     * @param int            $clientStatus
      * @param \DateTime|null $lastLoginDate
      */
     public function __construct(
         string $username,
         ?string $password,
         string $email,
-        string $salt,
+        ?string $salt,
         array $roles,
         bool $isActive,
         int $clientId,
         string $hash,
+        int $clientStatus,
         ?\DateTime $lastLoginDate = null
     )
     {
@@ -61,13 +65,14 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
         $this->isActive      = $isActive;
         $this->clientId      = $clientId;
         $this->hash          = $hash;
+        $this->clientStatus  = $clientStatus;
         $this->lastLoginDate = $lastLoginDate;
     }
 
     /**
      * @inheritDoc
      */
-    public function getRoles()
+    public function getRoles(): array
     {
         return $this->roles;
     }
@@ -75,12 +80,12 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function getPassword()
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -88,7 +93,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function getSalt()
+    public function getSalt(): ?string
     {
         return $this->salt;
     }
@@ -96,7 +101,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -104,7 +109,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function getEncoderName()
+    public function getEncoderName(): ?string
     {
         if ('default' === $this->encoderName) {
             return null;
@@ -117,7 +122,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
         return null; // use the default encoder
     }
 
-    public function useDefaultEncoder()
+    public function useDefaultEncoder(): void
     {
         $this->encoderName = 'default';
     }
@@ -125,7 +130,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @return bool
      */
-    public function getIsActive()
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }
@@ -133,7 +138,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @return int
      */
-    public function getClientId()
+    public function getClientId(): int
     {
         return $this->clientId;
     }
@@ -141,15 +146,31 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return $this->hash;
     }
 
     /**
+     * @return int
+     */
+    public function getClientStatus(): int
+    {
+        return $this->clientStatus;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getLastLoginDate(): ?\DateTime
+    {
+        return $this->lastLoginDate;
+    }
+
+    /**
      * @inheritDoc
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // TODO: Implement eraseCredentials() method.
     }
@@ -159,7 +180,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
      *
      * @return bool
      */
-    public function isEqualTo(UserInterface $user)
+    public function isEqualTo(UserInterface $user): bool
     {
         if (false === $user instanceof BaseUser) {
             return false;
@@ -186,7 +207,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function isAccountNonExpired()
+    public function isAccountNonExpired(): bool
     {
         return true;
     }
@@ -194,7 +215,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function isCredentialsNonExpired()
+    public function isCredentialsNonExpired(): bool
     {
         return true;
     }
@@ -202,7 +223,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function isEnabled()
+    public function isEnabled(): bool
     {
         return true;
     }
@@ -210,16 +231,8 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface, EncoderAwar
     /**
      * @inheritDoc
      */
-    public function isAccountNonLocked()
+    public function isAccountNonLocked(): bool
     {
         return $this->isActive;
-    }
-
-    /**
-     * @return \DateTime|null
-     */
-    public function getLastLoginDate()
-    {
-        return $this->lastLoginDate;
     }
 }

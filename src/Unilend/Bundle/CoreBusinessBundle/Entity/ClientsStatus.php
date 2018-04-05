@@ -7,20 +7,62 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ClientsStatus
  *
- * @ORM\Table(name="clients_status")
- * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository")
+ * @ORM\Table(name="clients_status", uniqueConstraints={@ORM\UniqueConstraint(name="unq_client_status_label", columns={"label"})})
+ * @ORM\Entity
  */
 class ClientsStatus
 {
+    const CREATION              = 5;
     const TO_BE_CHECKED         = 10;
     const COMPLETENESS          = 20;
     const COMPLETENESS_REMINDER = 30;
     const COMPLETENESS_REPLY    = 40;
     const MODIFICATION          = 50;
     const VALIDATED             = 60;
-    const CLOSED_LENDER_REQUEST = 70;
-    const CLOSED_BY_UNILEND     = 80;
+    const SUSPENDED             = 65;
+    const DISABLED              = 70;
+    const CLOSED_LENDER_REQUEST = 80;
+    const CLOSED_BY_UNILEND     = 90;
     const CLOSED_DEFINITELY     = 100;
+
+    const GRANTED_LOGIN = [
+        self::CREATION,
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_ACCOUNT_READ = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_DEPOSIT = [
+        self::TO_BE_CHECKED,
+        self::COMPLETENESS,
+        self::COMPLETENESS_REMINDER,
+        self::COMPLETENESS_REPLY,
+        self::MODIFICATION,
+        self::VALIDATED
+    ];
+
+    const GRANTED_LENDER_WITHDRAW = [
+        self::VALIDATED,
+        self::SUSPENDED
+    ];
+
+    const GRANTED_LENDER_SPONSORSHIP = [
+        self::VALIDATED
+    ];
 
     /**
      * @var string
@@ -32,18 +74,11 @@ class ClientsStatus
     /**
      * @var integer
      *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_client_status", type="integer")
+     * @ORM\Column(name="id", type="integer")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $idClientStatus;
+    private $id;
 
 
 
@@ -72,36 +107,12 @@ class ClientsStatus
     }
 
     /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return ClientsStatus
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
+     * Get id
      *
      * @return integer
      */
-    public function getStatus()
+    public function getId()
     {
-        return $this->status;
-    }
-
-    /**
-     * Get idClientStatus
-     *
-     * @return integer
-     */
-    public function getIdClientStatus()
-    {
-        return $this->idClientStatus;
+        return $this->id;
     }
 }

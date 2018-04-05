@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, WalletType, Zones
+    Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsAdresses, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UniversignEntityInterface, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager;
@@ -9,6 +9,9 @@ use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class preteursController extends bootstrap
 {
+    /** @var Wallet */
+    protected $wallet;
+
     public function initialize()
     {
         parent::initialize();
@@ -287,9 +290,6 @@ class preteursController extends bootstrap
         $this->settings                = $this->loadData('settings');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->clients_status          = $this->loadData('clients_status');
-        $this->clients_status_history  = $this->loadData('clients_status_history');
-        $this->clientsStatusForHistory = $this->loadData('clients_status');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 
@@ -360,9 +360,6 @@ class preteursController extends bootstrap
                 $this->naissance = '';
             }
 
-            /** @var BankAccount $currentBankAccount */
-            $this->currentBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-
             if ($this->clients->telephone != '') {
                 trim(chunk_split($this->clients->telephone, 2, ' '));
             }
@@ -373,17 +370,20 @@ class preteursController extends bootstrap
                 $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2, ' '));
             }
 
-            $this->clients_status->getLastStatut($this->clients->id_client);
-            $this->lActions                = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
             $this->aTaxationCountryHistory = $this->getTaxationHistory($wallet->getId());
-
-            $this->clientStatusMessage = $this->getMessageAboutClientStatus();
+            $this->clientStatusMessage     = $this->getMessageAboutClientStatus();
+            $this->statusHistory           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
+                ['idClient' => $this->clients->id_client],
+                ['added' => 'DESC', 'id' => 'DESC']
+            );
 
             $attachments     = $client->getAttachments();
             $attachmentTypes = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
-            $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
-            $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
+
+            $this->currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+            $this->treeRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree');
+            $this->legalDocuments     = $entityManager->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $identityDocument = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORTE);
             if ($identityDocument && $identityDocument->getGreenpointAttachment()) {
@@ -780,18 +780,23 @@ class preteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->clients                = $this->loadData('clients');
+        $this->clients = $this->loadData('clients');
         $this->clients->get($this->params[0], 'id_client');
 
-        $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-        $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
-        $month          = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $timeCreate    = \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added);
 
+        if (false === empty($this->clients->id_client_status_history)) {
+            $statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->find($this->clients->id_client_status_history);
+            $timeCreate    = $statusHistory->getAdded();
+        }
+
+        $month    = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client),
             'frontUrl'         => $this->furl,
@@ -804,8 +809,6 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $mailTemplateRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates');
         $mailTemplate           = $mailTemplateRepository->findOneBy([
             'type'   => 'completude',
@@ -1019,8 +1022,14 @@ class preteursController extends bootstrap
         $this->clients       = $this->loadData('clients');
 
         if (
-        $this->clients->get($this->params[0], 'id_client')
+            isset($this->params[0])
+            && filter_var($this->params[0], FILTER_VALIDATE_INT)
+            && $this->clients->get($this->params[0], 'id_client')
         ) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+
             if (isset($_POST['send_dates'])) {
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
                 $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
@@ -1034,7 +1043,7 @@ class preteursController extends bootstrap
 
             $this->aInfosNotifications['vos-offres-et-vos-projets']['title']           = 'Offres et Projets';
             $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications']   = [
-                \clients_gestion_type_notif::TYPE_NEW_PROJECT                   => [
+                ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => [
                     'title'           => 'Annonce des nouveaux projets',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1043,7 +1052,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_BID_PLACED                    => [
+                ClientsGestionTypeNotif::TYPE_BID_PLACED                    => [
                     'title'           => 'Offres réalisées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1051,7 +1060,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_BID_REJECTED                  => [
+                ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => [
                     'title'           => 'Offres refusées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1059,7 +1068,7 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED                 => [
+                ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => [
                     'title'           => 'Offres acceptées',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1069,14 +1078,14 @@ class preteursController extends bootstrap
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM               => [
+                ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => [
                     'title'           => 'Problème sur un projet',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
+                ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
                     'title'           => 'Autolend : offre réalisée ou rejetée',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1086,7 +1095,7 @@ class preteursController extends bootstrap
             ];
             $this->aInfosNotifications['vos-remboursements']['title']                  = 'Offres et Projets';
             $this->aInfosNotifications['vos-remboursements']['notifications']          = [
-                \clients_gestion_type_notif::TYPE_REPAYMENT => [
+                ClientsGestionTypeNotif::TYPE_REPAYMENT => [
                     'title'           => 'Remboursement(s)',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1099,21 +1108,21 @@ class preteursController extends bootstrap
             ];
             $this->aInfosNotifications['mouvements-sur-votre-compte']['title']         = 'Mouvements sur le compte';
             $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = [
-                \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => [
+                ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT => [
                     'title'           => 'Alimentation de votre compte par virement',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => [
+                ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT   => [
                     'title'           => 'Alimentation de votre compte par carte bancaire',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                         \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
-                \clients_gestion_type_notif::TYPE_DEBIT                => [
+                ClientsGestionTypeNotif::TYPE_DEBIT                => [
                     'title'           => 'retrait',
                     'available_types' => [
                         \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
@@ -1326,12 +1335,12 @@ class preteursController extends bootstrap
 
     private function sendCompletenessRequest()
     {
-        $timeCreate = empty($this->lActions[0]['added']) ? strtotime($this->clients->added) : strtotime($this->lActions[0]['added']);
-        $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+        $timeCreate = empty($this->statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $this->statusHistory[0]->getAdded();
+        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords   = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'          => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client)
         ];
@@ -1354,50 +1363,50 @@ class preteursController extends bootstrap
     /**
      * @return string
      */
-    private function getMessageAboutClientStatus()
+    private function getMessageAboutClientStatus(): string
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientStatusRepository $clientStatusRepository */
-        $clientStatusRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatus');
-        /** @var ClientsStatus $currentStatus */
-        $currentStatus       = $clientStatusRepository->getLastClientStatus($this->clients->id_client);
-        $creationTime        = strtotime($this->clients->added);
-        $clientStatusMessage = '';
+        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
 
-        if (null === $currentStatus) {
-            return $clientStatusMessage;
+        if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $this->clients->id_client]);
+
+            return '';
         }
-        switch ($currentStatus->getStatus()) {
-            case ClientsStatus::TO_BE_CHECKED :
-                $clientStatusMessage = '<div class="attention">Attention : compte non validé - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+
+        switch ($clientStatusHistory->getIdStatus()->getId()) {
+            case ClientsStatus::CREATION:
+                $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
+                break;
+            case ClientsStatus::TO_BE_CHECKED:
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::COMPLETENESS:
             case ClientsStatus::COMPLETENESS_REMINDER:
             case ClientsStatus::COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $creationTime) . ' </div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
                 break;
             case ClientsStatus::MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $creationTime) . '</div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::CLOSED_LENDER_REQUEST:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
+                $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
             case ClientsStatus::CLOSED_BY_UNILEND:
-                $clientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
+                $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
                 break;
             case ClientsStatus::VALIDATED:
                 $clientStatusMessage = '';
                 break;
             case ClientsStatus::CLOSED_DEFINITELY:
-                $clientStatusMessage = '<div class="attention">Attention : compte définitivement fermé </div>';
+                $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';
                 break;
             default:
-                if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION == $this->clients->etape_inscription_preteur) {
-                    $clientStatusMessage = '<div class="attention">Attention : Inscription non terminé </div>';
-                } else {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->warning('Unknown client status "' . $currentStatus->getStatus() . '"', ['client' => $this->clients->id_client]);
-                }
+                $clientStatusMessage = '';
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $this->clients->id_client]);
                 break;
         }
 
@@ -1522,8 +1531,7 @@ class preteursController extends bootstrap
                 case Clients::STATUS_ONLINE:
                     $lastTwoStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findLastTwoClientStatus($client->getIdClient());
                     if (false === empty($lastTwoStatus[1])) {
-                        $clientStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatus')->find($lastTwoStatus[1]->getIdClientStatus());
-                        $status       = $clientStatus->getStatus();
+                        $status = $lastTwoStatus[1]->getIdStatus()->getId();
                     } else {
                         $status = ClientsStatus::TO_BE_CHECKED;
                     }

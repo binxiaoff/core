@@ -220,10 +220,10 @@ class ProjectDisplayManager
             $projectData['projectPending'] = true;
         }
 
-        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE])) {
-            $lastStatusHistory                = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
-            $lastStatusHistory                = array_shift($lastStatusHistory);
-            $projectData['dateLastRepayment'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
+        if (in_array($projectData['status'], [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::LOSS])) {
+            $lastStatusHistory             = $projectStatusHistory->select('id_project = ' . $project->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
+            $lastStatusHistory             = array_shift($lastStatusHistory);
+            $projectData['dateLastStatus'] = date('d/m/Y', strtotime($lastStatusHistory['added']));
         }
 
         if (ProjectsStatus::EN_FUNDING <= $projectData['status']) {
@@ -250,6 +250,8 @@ class ProjectDisplayManager
                 'activeBidsCount' => array_sum(array_column($bidsSummary, 'activeBidsCount'))
             ];
         }
+
+        $projectData['isCloseOutNetting'] = $project->close_out_netting_date && '0000-00-00' !== $project->close_out_netting_date;
 
         return $projectData;
     }
@@ -462,7 +464,7 @@ class ProjectDisplayManager
 
         if (null !== $client) {
             if ($user instanceof UserLender) {
-                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED])) {
+                if (in_array($user->getClientStatus(), [ClientsStatus::MODIFICATION, ClientsStatus::VALIDATED, ClientsStatus::SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

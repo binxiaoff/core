@@ -30,11 +30,6 @@
             <tag name="kernel.event_subscriber" />
         </service>
 
-        <service id="unilend.frontbundle.event.client_access_authorization_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\ClientAuthorizationAccessSubscriber">
-            <argument type="service" id="unilend.service.client_manager" />
-            <tag name="kernel.event_subscriber" />
-        </service>
-
         <service id="unilend.frontbundle.event.response_listener" class="Unilend\Bundle\FrontBundle\EventSubscriber\ResponseListener">
             <tag name="kernel.event_listener" event="kernel.response" method="onKernelResponse" />
         </service>
