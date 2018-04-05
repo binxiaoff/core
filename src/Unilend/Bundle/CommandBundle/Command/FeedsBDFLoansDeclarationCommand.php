@@ -80,8 +80,8 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
         try {
             $output->writeln('Getting data..');
-            $ifpData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_IFP]);
-            $cipData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_MINIBON]);
+            $ifpData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_IFP]);
+            $cipData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_MINIBON]);
         } catch (\Exception $exception) {
             $logger->error(
                 sprintf('Could not get data to generate BDF loan declarations. Error: %s', $exception->getMessage()),
@@ -293,7 +293,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     private function getLoanRecord(array $projectData, string $declarerId): ?string
     {
-        $projectData = $this->getProjectInformation($projectData);
+        $projectData = $this->getProjectInformation($projectData, $declarerId);
 
         if (null !== $projectData) {
             return $this->multiBytePad($this->getStartingRecord('11', $declarerId) . $projectData, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
@@ -327,14 +327,15 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
      * @return string|null
      * @throws \Exception
      */
-    private function getProjectInformation(array $data): ?string
+    private function getProjectInformation(array $data, string $declarerId): ?string
     {
-        $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $amount            = $this->getUnpaidAmountAndComingCapital($data, $declarerId);
         $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
 
         if ($roundedDueCapital == 0) {
@@ -344,7 +345,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo = $this->checkSiren($data['siren']);
         $projectLineInfo .= $this->checkName($data['name']);
         $projectLineInfo .= $this->checkLoanType($data['loan_type']);
-        $projectLineInfo .= $this->checkAmounts($data['loan_amount']);
+        $projectLineInfo .= $this->checkAmounts($data['partial_loan_amount']);
         $projectLineInfo .= \DateTime::createFromFormat('Y-m-d H:i:s', $data['loan_date'])->format('Ymd');
         $projectLineInfo .= $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo .= $this->checkLoanAvgRate($data['average_loan_rate']);
@@ -363,12 +364,13 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
      * @return array
      * @throws \Exception
      */
-    private function getUnpaidAmountAndComingCapital(array $data): array
+    private function getUnpaidAmountAndComingCapital(array $data, string $declarerId): array
     {
         /** @var \echeanciers $repayment */
         $repayment = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('echeanciers');
@@ -389,6 +391,19 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $unpaidAmount = $repayment->getUnpaidAmountAtDate($data['id_project'], $date);
             $owedCapital  = $repayment->getTotalComingCapitalByProject($data['id_project'], $date);
             $return       = ['unpaid_amount' => $unpaidAmount, 'owed_capital' => bcadd($unpaidAmount, $owedCapital, 2)];
+        }
+
+        /**
+         * Calculate the prorata of owed amount based on total loan amount and the partial total amount of aggregated underlying contract types
+         */
+        $return['owed_capital'] = bcmul($return['owed_capital'], bcdiv($data['partial_loan_amount'], $data['loan_amount'], 6), 2);
+
+        /**
+         * The unpaid amount will only be declared in the IFP file to avoid to have smaller prorated amounts, which can
+         * induce declaring 0 unpaid amounts after rounding to the thousand
+         */
+        if (BdfLoansDeclarationManager::UNILEND_CIP_ID === $declarerId) {
+            $return['unpaid_amount'] = 0;
         }
 
         return $return;
@@ -608,19 +623,20 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
         $fileManager->appendToFile($csvAbsolutePath, implode(';', $header) . PHP_EOL);
         foreach ($data as $row) {
-            $fileManager->appendToFile($csvAbsolutePath, $this->getProjectInformationCsv($row));
+            $fileManager->appendToFile($csvAbsolutePath, $this->getProjectInformationCsv($row, $declarerId));
         }
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
      * @return string|null
      * @throws \Exception
      */
-    private function getProjectInformationCsv(array $data): ?string
+    private function getProjectInformationCsv(array $data, string $declarerId): ?string
     {
-        $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $amount            = $this->getUnpaidAmountAndComingCapital($data, $declarerId);
         $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
 
         if ($roundedDueCapital == 0) {

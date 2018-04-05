@@ -1152,6 +1152,7 @@ class projects extends projects_crud
             WHEN p.id_project_need IN (13) THEN 'ST'
             ELSE 'AU'
           END AS loan_type,
+          ROUND(SUM(l.amount) / 100, 0) AS partial_loan_amount,
           p.amount AS loan_amount,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status AND ps.status = :statusRepayment WHERE psh.id_project = p.id_project) AS loan_date,
           CASE
