@@ -247,7 +247,7 @@
                 <th colspan="4" style="text-align:left;"><br>Coordonnées du siège social</th>
             </tr>
             <tr>
-                <td colspan="2" style="background: lightgray">Attention! Seulement des adresses complètes sont enregistrées.</td>
+                <td colspan="2" style="background: lightgray">Seulement des adresses complètes sont enregistrées.</td>
             </tr>
             <tr>
                 <th><label for="address_etape2">Adresse</label></th>

@@ -30,7 +30,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->addOrderBy('csh.id', 'ASC')
             ->setMaxResults(1)
             ->setParameter('idClient', $idClient)
-            ->setParameter('status', ClientsStatus::VALIDATED);
+            ->setParameter('status', ClientsStatus::STATUS_VALIDATED);
         $query  = $queryBuilder->getQuery();
         $result = $query->getOneOrNullResult();
 
@@ -56,7 +56,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             FROM (
               SELECT MIN(added) AS added, id_client
               FROM clients_status_history
-              WHERE id_status = ' . ClientsStatus::VALIDATED . '
+              WHERE id_status = ' . ClientsStatus::STATUS_VALIDATED . '
               GROUP BY id_client
             ) AS min_csh_validated
             INNER JOIN clients_status_history csh ON min_csh_validated.added = csh.added AND min_csh_validated.id_client = csh.id_client
@@ -113,7 +113,7 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ->where('csh.idClient = :idClient')
             ->andWhere('csh.idStatus = :validated')
             ->setParameter('idClient', $client)
-            ->setParameter('validated', ClientsStatus::VALIDATED);
+            ->setParameter('validated', ClientsStatus::STATUS_VALIDATED);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
     }

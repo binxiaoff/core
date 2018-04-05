@@ -1,6 +1,6 @@
 <script type="text/javascript">
     $(function() {
-        $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
+        $(".tablesorter").tablesorter();
 
         <?php if ($this->nb_lignes != '') : ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
@@ -34,9 +34,9 @@
         </div>
         <div class="col-md-6">
             <form method="post" name="recupCSV">
-                <input type="hidden" name="recup"/>
-                <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
-                <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
+                <input type="hidden" name="recup">
+                <input type="hidden" name="date1" value="<?= $_POST['date1'] ?>">
+                <input type="hidden" name="date2" value="<?= $_POST['date2'] ?>">
             </form>
             <a role="button" onclick="document.forms['recupCSV'].submit();" class="btn-primary pull-right">Récupération du CSV</a>
         </div>
@@ -49,7 +49,6 @@
                         <td style="padding-top:23px;"><label>Date debut</label><br/><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?= $_POST['date1'] ?>"/></td>
                         <td style="padding-top:23px;"><label>Date fin</label><br/><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= $_POST['date2'] ?>"/></td>
                         <td style="padding-top:33px;">
-                            <input type="hidden" name="spy_search" id="spy_search"/>
                             <button type="submit" name="send_dossier" id="send_dossier" class="btn-primary">Rechercher</button>
                         </td>
                     </tr>

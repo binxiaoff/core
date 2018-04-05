@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -272,7 +272,7 @@ class ajaxController extends bootstrap
                     $errors[] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $client->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findBy(['email' => $email, 'status' => Clients::STATUS_ONLINE]);
+                    $duplicates       = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
                     if (false === empty($duplicates)) {
                         $errors[] = 'Cette adresse email est déjà utilisée par un autre compte';
@@ -1092,24 +1092,27 @@ class ajaxController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
         $this->autoFireView = false;
 
-        if (isset($_POST['id_client'], $_POST['type'])) {
-            /** @var \clients $client */
-            $client = $this->loadData('clients');
-            $client->get($_POST['id_client'], 'id_client');
+        $clientId = $this->request->request->getInt('id_client');
+        $type     = $this->request->request->filter('type', FILTER_SANITIZE_STRING);
 
-            switch ($_POST['type']) {
+        if (false === empty($clientId)) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
+
+            switch ($type) {
                 case 'open':
-                    $sTypeEmail = 'ouverture-espace-emprunteur';
+                    $emailType = 'ouverture-espace-emprunteur';
                     break;
                 case 'initialize':
                 default:
-                    $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
+                    $emailType = 'mot-de-passe-oublie-emprunteur';
                     break;
             }
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
-            $mailerManager->sendBorrowerAccount($client, $sTypeEmail);
+            $mailerManager->sendBorrowerAccount($client, $emailType);
         }
     }
 

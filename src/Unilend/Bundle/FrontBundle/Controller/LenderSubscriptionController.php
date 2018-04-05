@@ -216,7 +216,6 @@ class LenderSubscriptionController extends Controller
                 ->setType($clientType)
                 ->setIdLangue('fr')
                 ->setSlug($slug)
-                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
@@ -237,7 +236,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($clientAddress);
                 $entityManager->flush($clientAddress);
 
-                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
 
                 $entityManager->commit();
@@ -336,7 +335,6 @@ class LenderSubscriptionController extends Controller
                 ->setIdLangue('fr')
                 ->setSlug($slug)
                 ->setPassword($password)
-                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
@@ -372,7 +370,7 @@ class LenderSubscriptionController extends Controller
                 $entityManager->persist($company);
                 $entityManager->flush($company);
 
-                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::CREATION);
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
 
                 $entityManager->commit();
@@ -444,20 +442,21 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients       $clientEntity
+     * @param Clients       $client
      * @param FormInterface $form
      */
-    private function checkSecuritySection(Clients $clientEntity, FormInterface $form): void
+    private function checkSecuritySection(Clients $client, FormInterface $form): void
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
 
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail(), Clients::STATUS_ONLINE)) {
+        if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
             $this->get('session')->set(self::SESSION_NAME_CAPTCHA, true);
         }
 
-        if (false === BCryptPasswordEncoder::isPasswordSafe($clientEntity->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
+        if (false === BCryptPasswordEncoder::isPasswordSafe($client->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
     }
@@ -581,7 +580,7 @@ class LenderSubscriptionController extends Controller
             $bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
 
             $clientStatusManager = $this->get('unilend.service.client_status_manager');
-            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::TO_BE_CHECKED);
+            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_TO_BE_CHECKED);
 
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($client->getIdClient());
             $this->sendFinalizedSubscriptionConfirmationEmail($client);
@@ -986,17 +985,17 @@ class LenderSubscriptionController extends Controller
 
         if ($client) {
             switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
-                case ClientsStatus::CREATION:
-                case ClientsStatus::TO_BE_CHECKED:
+                case ClientsStatus::STATUS_CREATION:
+                case ClientsStatus::STATUS_TO_BE_CHECKED:
                     $redirectPath = $this->getLenderSubscriptionStepRoute($client);
                     break;
-                case ClientsStatus::COMPLETENESS:
-                case ClientsStatus::COMPLETENESS_REMINDER:
+                case ClientsStatus::STATUS_COMPLETENESS:
+                case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
                     return $this->redirectToRoute('lender_completeness');
-                case ClientsStatus::COMPLETENESS_REPLY:
-                case ClientsStatus::MODIFICATION:
-                case ClientsStatus::VALIDATED:
-                case ClientsStatus::SUSPENDED:
+                case ClientsStatus::STATUS_COMPLETENESS_REPLY:
+                case ClientsStatus::STATUS_MODIFICATION:
+                case ClientsStatus::STATUS_VALIDATED:
+                case ClientsStatus::STATUS_SUSPENDED:
                 default:
                     return $this->redirectToRoute('lender_dashboard');
             }

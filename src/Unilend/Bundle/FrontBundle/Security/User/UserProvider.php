@@ -124,7 +124,6 @@ class UserProvider implements UserProviderInterface
     private function setUser(Clients $client): UserInterface
     {
         $initials = $this->clientManager->getInitials($client);
-        $isActive = $this->clientManager->isActive($client);
         $roles    = ['ROLE_USER'];
 
         if ($client->isLender()) {
@@ -160,7 +159,6 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
                 $client->getIdClientStatusHistory()->getIdStatus()->getId(),
@@ -189,7 +187,6 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
                 $client->getIdClientStatusHistory()->getIdStatus()->getId(),
@@ -223,7 +220,6 @@ class UserProvider implements UserProviderInterface
                 $client->getEmail(),
                 '',
                 $roles,
-                $isActive,
                 $client->getIdClient(),
                 $client->getHash(),
                 $client->getIdClientStatusHistory()->getIdStatus()->getId(),

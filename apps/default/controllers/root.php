@@ -56,7 +56,7 @@ class rootController extends bootstrap
             exit;
         }
 
-        if (ClientsStatus::TO_BE_CHECKED > $user->getClientStatus()) {
+        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getClientStatus()) {
             header('Location: ' . $this->lurl . '/inscription-preteurs');
             exit;
         }

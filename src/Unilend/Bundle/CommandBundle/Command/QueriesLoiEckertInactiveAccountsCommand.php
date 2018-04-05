@@ -3,9 +3,12 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Symfony\Component\Console\{
+    Input\InputInterface, Output\OutputInterface
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus
+};
 
 class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
 {
@@ -14,7 +17,9 @@ class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('queries:loi_eckert')->setDescription('Extract information of inactive accounts according to Loi Eckert definition');
+        $this
+            ->setName('queries:loi_eckert')
+            ->setDescription('Extract information of inactive accounts according to Loi Eckert definition');
     }
 
     /**
@@ -68,7 +73,7 @@ class QueriesLoiEckertInactiveAccountsCommand extends ContainerAwareCommand
             }
             $activeSheet->setCellValueExplicit('J' . $row, $client['availableBalance'], \PHPExcel_Cell_DataType::TYPE_NUMERIC);
             $activeSheet->getStyle('J' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
-            $activeSheet->setCellValue('K' . $row, Clients::STATUS_ONLINE == $client['status'] ? 'compte actif' : 'compte desactivé');
+            $activeSheet->setCellValue('K' . $row, in_array($client['id_status'], ClientsStatus::GRANTED_LOGIN) ? 'compte actif' : 'compte desactivé');
             if (null == $client['validationDate']) {
                 $activeSheet->setCellValue('L' . $row, '');
             } else {

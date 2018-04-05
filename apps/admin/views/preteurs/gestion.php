@@ -37,7 +37,7 @@
                     <td data-lender-id="<?= $client['id_client'] ?>"><?= $client['prenom_ou_dirigeant'] ?></td>
                     <td data-lender-id="<?= $client['id_client'] ?>"><?= $client['email'] ?></td>
                     <td data-lender-id="<?= $client['id_client'] ?>"><?= $client['telephone'] ?></td>
-                    <td data-lender-id="<?= $client['id_client'] ?>"><?= $client['status'] == \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ? 'en ligne' : 'hors ligne' ?></td>
+                    <td data-lender-id="<?= $client['id_client'] ?>"><?= $client['status'] ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $client['id_client'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $client['nom_ou_societe'] . ' ' . $client['prenom_ou_dirigeant'] ?>"/>

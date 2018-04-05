@@ -4,20 +4,12 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SepaRejectionReason;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Symfony\Component\Console\{
+    Input\InputInterface, Input\InputOption, Output\OutputInterface
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsGestionTypeNotif, ClientsStatus, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
@@ -25,10 +17,10 @@ class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
     const FILE_ROOT_NAME                 = 'UNILEND-00040631007-';
     const FRENCH_BANK_TRANSFER_BNPP_CODE = '0568';
 
-    /** @var LoggerInterface $logger */
+    /** @var LoggerInterface */
     private $logger;
 
-    /** @var EntityManagerSimulator $entityManagerSimulator */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
 
     protected function configure()
@@ -394,7 +386,7 @@ EOF
                             $entityManager->flush($client);
                         }
 
-                        if ($client->getStatus() == Clients::STATUS_ONLINE) {
+                        if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN)) {
                             $notifications->type      = Notifications::TYPE_BANK_TRANSFER_CREDIT;
                             $notifications->id_lender = $wallet->getId();
                             $notifications->amount    = $reception->getMontant();
@@ -407,13 +399,13 @@ EOF
                             ]);
 
                             $clients_gestion_mails_notif->id_client                 = $client->getIdClient();
-                            $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                            $clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT;
                             $clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
                             $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                             $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                             $clients_gestion_mails_notif->create();
 
-                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
                                 $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                 $clients_gestion_mails_notif->immediatement = 1;
                                 $clients_gestion_mails_notif->update();

@@ -7,8 +7,9 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Autobid, Clients, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\{
+    Contract\ContractManager, ProductManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -38,6 +39,8 @@ class AutoBidSettingsManager
     private $termsOfSaleManager;
     /** @var LoggerInterface */
     private $logger;
+    /** @var MailerManager */
+    private $mailerManager;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -50,6 +53,7 @@ class AutoBidSettingsManager
      * @param ContractManager        $contractManager
      * @param TermsOfSaleManager     $termsOfSaleManager
      * @param LoggerInterface        $logger
+     * @param MailerManager          $mailerManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -61,7 +65,8 @@ class AutoBidSettingsManager
         ProductManager $productManager,
         ContractManager $contractManager,
         TermsOfSaleManager $termsOfSaleManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        MailerManager $mailerManager
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -74,32 +79,28 @@ class AutoBidSettingsManager
         $this->contractManager        = $contractManager;
         $this->termsOfSaleManager     = $termsOfSaleManager;
         $this->logger                 = $logger;
+        $this->mailerManager          = $mailerManager;
     }
 
     /**
      * @param Clients $client
+     * @param bool    $notifyLender
      *
      * @throws \Exception
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function on(Clients $client): void
+    public function on(Clients $client, bool $notifyLender): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
 
-        if (false === empty($client) && $this->isQualified($client) && $this->lenderManager->canBid($client)) {
+        if ($this->isQualified($client) && $this->lenderManager->canBid($client)) {
             $this->clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON);
 
-            if (null === $autobidRepository->findOneBy(['idLender' => $wallet])) {
-                $this->notificationManager->create(
-                    Notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
-                    \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
-                    $client->getIdClient(),
-                    'sendFirstAutoBidActivation'
-                );
+            if ($notifyLender) {
+                $notification = $this->notificationManager->createNotification(Notifications::TYPE_AUTOBID_FIRST_ACTIVATION, $client->getIdClient());
+                $this->mailerManager->sendFirstAutoBidActivation($notification);
             }
         }
     }
@@ -595,5 +596,17 @@ class AutoBidSettingsManager
         }
 
         return $badSettings;
+    }
+
+    /**
+     * @param Wallet $lenderWallet
+     *
+     * @return bool
+     */
+    public function isFirstAutobidActivation(Wallet $lenderWallet): bool
+    {
+        $autobidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
+
+        return null === $autobidRepository->findOneBy(['idLender' => $lenderWallet]);
     }
 }

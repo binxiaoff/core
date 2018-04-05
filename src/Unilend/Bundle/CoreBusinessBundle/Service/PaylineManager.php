@@ -8,10 +8,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Backpayline;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Notifications;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Backpayline, ClientsGestionTypeNotif, Notifications, OperationType, Wallet
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -237,7 +236,7 @@ class PaylineManager
         $notification->create();
 
         $clientMailNotification->id_client                 = $backPayline->getWallet()->getIdClient()->getIdClient();
-        $clientMailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
+        $clientMailNotification->id_notif                  = ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT;
         $clientMailNotification->date_notif                = date('Y-m-d H:i:s');
         $clientMailNotification->id_notification           = $notification->id_notification;
         $clientMailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();

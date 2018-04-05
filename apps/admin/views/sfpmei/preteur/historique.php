@@ -19,14 +19,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatusHistory $historyEntry */ ?>
                 <?php foreach ($this->statusHistory as $historyEntry) : ?>
                     <?php switch ($historyEntry->getIdStatus()->getId()) :
-                        case ClientsStatus::CREATION: ?>
+                        case ClientsStatus::STATUS_CREATION: ?>
                             <tr>
                                 <td>Création de compte</td>
                                 <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::TO_BE_CHECKED: ?>
+                        case ClientsStatus::STATUS_TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
                                     <?php if (empty($historyEntry->getContent())) : ?>
@@ -40,7 +40,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::COMPLETENESS: ?>
+                        case ClientsStatus::STATUS_COMPLETENESS: ?>
                             <tr>
                                 <td>
                                     Complétude<br>
@@ -50,7 +50,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::COMPLETENESS_REMINDER: ?>
+                        case ClientsStatus::STATUS_COMPLETENESS_REMINDER: ?>
                             <tr>
                                 <td>
                                     Complétude relance<br>
@@ -60,7 +60,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::COMPLETENESS_REPLY: ?>
+                        case ClientsStatus::STATUS_COMPLETENESS_REPLY: ?>
                             <tr>
                                 <td>
                                     Complétude réponse<br>
@@ -70,7 +70,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::MODIFICATION: ?>
+                        case ClientsStatus::STATUS_MODIFICATION: ?>
                             <tr>
                                 <td>
                                     Compte modifié<br>
@@ -80,7 +80,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::VALIDATED: ?>
+                        case ClientsStatus::STATUS_VALIDATED: ?>
                             <tr>
                                 <td>
                                     <?php if (empty($historyEntry->getContent())) : ?>
@@ -93,14 +93,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td class="text-nowrap"><?= (-1 === $historyEntry->getIdUser()->getIdUser()) ? 'Validation automatique Greenpoint' : $historyEntry->getIdUser()->getFirstname() . ' ' . $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
+                        case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST: ?>
                             <tr>
                                 <td>Compte clôturé à la demande du prêteur</td>
                                 <td><?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                 <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::CLOSED_BY_UNILEND: ?>
+                        case ClientsStatus::STATUS_CLOSED_BY_UNILEND: ?>
                             <tr>
                                 <td>
                                     Compte clôturé par Unilend<br>
@@ -110,7 +110,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                                 <td class="text-nowrap"><?= $historyEntry->getIdUser()->getFirstname() ?> <?= $historyEntry->getIdUser()->getName() ?></td>
                             </tr>
                             <?php break;
-                        case ClientsStatus::CLOSED_DEFINITELY: ?>
+                        case ClientsStatus::STATUS_CLOSED_DEFINITELY: ?>
                             <tr>
                                 <td>
                                     Compte définitvement fermé<br>
