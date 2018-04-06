@@ -53,20 +53,20 @@ class LenderProfileController extends Controller
         $phoneForm = $this->createForm(PersonPhoneType::class, $client);
 
         if ($client->isNaturalPerson()) {
-            $lastModifiedMainAddress   = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            $lastModifiedPostalAddress = $client->getIdPostalAddress();
+            $lastModifiedMainAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $postalAddress           = $client->getIdPostalAddress();
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
             $mainAddressForm     = $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
-            $postalAddressForm   = $formManager->getClientAddressForm($lastModifiedPostalAddress, AddressType::TYPE_POSTAL_ADDRESS);
-            $hasPostalAddress    = null === $lastModifiedPostalAddress;
+            $postalAddressForm   = $formManager->getClientAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $hasPostalAddress    = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
-            $company                   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $unattachedCompany         = clone $company;
-            $lastModifiedMainAddress   = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-            $lastModifiedPostalAddress = $company->getIdPostalAddress();
+            $company                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $unattachedCompany       = clone $company;
+            $lastModifiedMainAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $postalAddress           = $company->getIdPostalAddress();
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', LegalEntityProfileType::class, ['data' => $client])
@@ -74,8 +74,8 @@ class LenderProfileController extends Controller
             $identityFormBuilder->get('company')->remove('siren');
 
             $mainAddressForm   = $formManager->getCompanyAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
-            $postalAddressForm = $formManager->getCompanyAddressForm($lastModifiedPostalAddress, AddressType::TYPE_POSTAL_ADDRESS);
-            $hasPostalAddress  = null === $lastModifiedPostalAddress;
+            $postalAddressForm = $formManager->getCompanyAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         }
 
