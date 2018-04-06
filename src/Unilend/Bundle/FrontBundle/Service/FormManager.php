@@ -7,13 +7,14 @@ use Symfony\Component\Form\Extension\Core\Type\{
     CheckboxType, ChoiceType
 };
 use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsAdresses, ClientsHistoryActions, Companies
+    AddressType, ClientAddress, Clients, ClientsAdresses, ClientsHistoryActions, Companies, CompanyAddress
 };
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonFiscalAddressType, PersonType, PostalAddressType, SecurityQuestionType
+    BankAccountType, ClientAddressType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonFiscalAddressType, PersonType, SecurityQuestionType
 };
 
 class FormManager
@@ -83,7 +84,7 @@ class FormManager
         $form = $this->formFactory->createBuilder()
             ->add('client', PersonType::class, ['data' => $client])
             ->add('fiscalAddress', PersonFiscalAddressType::class, ['data' => $clientAddress])
-            ->add('postalAddress', PostalAddressType::class, ['data' => $clientAddress])
+            ->add('postalAddress', ClientAddressType::class, ['data' => $clientAddress])
             ->add('security', SecurityQuestionType::class, ['data' => $client])
             ->add('clientType', ChoiceType::class, [
                 'choices'  => [
@@ -208,5 +209,50 @@ class FormManager
 
         $this->entityManager->persist($clientAction);
         $this->entityManager->flush($clientAction);
+    }
+
+    /**
+     * @param null|CompanyAddress $address
+     * @param string              $type
+     *
+     * @return FormInterface
+     */
+    public function getCompanyAddressForm(?CompanyAddress $address, string $type): FormInterface
+    {
+        $form = $this->formFactory->createNamed($type, CompanyAddressType::class);
+
+        if (null !== $address) {
+            $form->get('address')->setData($address->getAddress());
+            $form->get('zip')->setData($address->getZip());
+            $form->get('city')->setData($address->getCity());
+            $form->get('idCountry')->setData($address->getIdCountry()->getIdPays());
+        }
+        return $form;
+    }
+
+    /**
+     * @param ClientAddress|null $address
+     * @param string              $type
+     *
+     * @return FormInterface
+     */
+    public function getClientAddressForm(?ClientAddress $address, string $type): FormInterface
+    {
+        $form = $this->formFactory->createNamed($type, ClientAddressType::class);
+
+        if (null !== $address) {
+            $form->get('address')->setData($address->getAddress());
+            $form->get('zip')->setData($address->getZip());
+            $form->get('city')->setData($address->getCity());
+            $form->get('idCountry')->setData($address->getIdCountry()->getIdPays());
+
+            if ($address->getIdClient()->isLender() && AddressType::TYPE_MAIN_ADDRESS === $type) {
+                $form
+                    ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
+                    ->add('noUsPerson', CheckboxType::class, ['required' => false]);
+            }
+        }
+
+        return $form;
     }
 }
