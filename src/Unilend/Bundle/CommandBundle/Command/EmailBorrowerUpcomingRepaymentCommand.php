@@ -43,9 +43,20 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
 
             $firstName   = $company->getPrenomDirigeant();
             $clientEmail = $company->getEmailDirigeant();
-            if ((empty($firstName) || empty($firstName)) && $company->getIdClientOwner() instanceof Clients) {
-                $firstName   = $company->getIdClientOwner()->getPrenom();
-                $clientEmail = $company->getIdClientOwner()->getEmail();
+            if ((empty($firstName) || empty($clientEmail))) {
+                $output->writeln('email dirigeant vide' . $firstName .' ' . $clientEmail);
+                if ($company->getIdClientOwner() instanceof Clients) {
+                    $firstName   = $company->getIdClientOwner()->getPrenom();
+                    $clientEmail = $company->getIdClientOwner()->getEmail();
+                } else {
+                    $this->getContainer()->get('monolog.logger.console')
+                        ->error(
+                            'Could not send email "mail-echeance-emprunteur". Company manager email empty, and could not find client owner',
+                            ['function' => __FUNCTION__, 'class' => __CLASS__, 'id_project' => $project->getIdProject(), 'id_company' => $company->getIdCompany()]
+                        );
+
+                    continue;
+                }
             }
 
             $amount = round(bcdiv($directDebit->getMontant(), 100, 4), 2);
