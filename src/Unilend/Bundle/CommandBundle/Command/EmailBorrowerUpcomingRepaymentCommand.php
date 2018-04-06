@@ -44,7 +44,6 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
             $firstName   = $company->getPrenomDirigeant();
             $clientEmail = $company->getEmailDirigeant();
             if ((empty($firstName) || empty($clientEmail))) {
-                $output->writeln('email dirigeant vide' . $firstName .' ' . $clientEmail);
                 if ($company->getIdClientOwner() instanceof Clients) {
                     $firstName   = $company->getIdClientOwner()->getPrenom();
                     $clientEmail = $company->getIdClientOwner()->getEmail();
