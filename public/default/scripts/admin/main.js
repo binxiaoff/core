@@ -131,7 +131,36 @@ Memo.prototype.close = function() {
 
 /* Elements Jquery */
 $(document).ready(function() {
-    $(".thickbox").colorbox()
+    $('.thickbox').colorbox()
+
+    // Load colorbox in iframe mode
+    $('.colorbox-iframe').colorbox({
+      // fastIframe: false,
+      iframe: true,
+      initialWidth: 300,
+      initialHeight: 300
+    })
+
+    $(document).on('cbox_complete', function () {
+      // When colorbox is loading iframe, it doesn't autosize itself correctly
+      var $cboxIframe = $('#cboxLoadedContent .cboxIframe')
+
+      // If it exists, resize to 90% of window's width/height
+      if ($cboxIframe.length) {
+        var cboxIframeWin = $cboxIframe[0].contentWindow
+        var winWidth = (cboxIframeWin.outerWidth >= window.outerWidth
+          ? window.outerWidth * 0.9
+          : cboxIframeWin.outerWidth)
+        var winHeight = (cboxIframeWin.outerHeight >= window.outerHeight
+          ? window.outerHeight * 0.9
+          : cboxIframeWin.outerHeight)
+
+        $.colorbox.resize({
+          width: winWidth,
+          height: winHeight
+        })
+      }
+    })
 
     $('.extract_rib_btn').colorbox({
         onComplete: function() {

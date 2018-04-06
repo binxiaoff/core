@@ -21,7 +21,6 @@ class ClientsGestionTypeNotif
     const TYPE_CREDIT_CARD_CREDIT            = 7;
     const TYPE_DEBIT                         = 8;
     const TYPE_PROJECT_PROBLEM               = 9;
-    const TYPE_AUTOBID_BALANCE_LOW           = 10;
     const TYPE_AUTOBID_ACCEPTED_REJECTED_BID = 13;
     /**
      * @var string
@@ -46,8 +45,6 @@ class ClientsGestionTypeNotif
      */
     private $idClientGestionTypeNotif;
 
-
-
     /**
      * Set nom
      *
@@ -55,7 +52,7 @@ class ClientsGestionTypeNotif
      *
      * @return ClientsGestionTypeNotif
      */
-    public function setNom($nom)
+    public function setNom(string $nom): ClientsGestionTypeNotif
     {
         $this->nom = $nom;
 
@@ -67,7 +64,7 @@ class ClientsGestionTypeNotif
      *
      * @return string
      */
-    public function getNom()
+    public function getNom(): string
     {
         return $this->nom;
     }
@@ -79,7 +76,7 @@ class ClientsGestionTypeNotif
      *
      * @return ClientsGestionTypeNotif
      */
-    public function setOrdre($ordre)
+    public function setOrdre(int $ordre): ClientsGestionTypeNotif
     {
         $this->ordre = $ordre;
 
@@ -91,7 +88,7 @@ class ClientsGestionTypeNotif
      *
      * @return integer
      */
-    public function getOrdre()
+    public function getOrdre(): int
     {
         return $this->ordre;
     }
@@ -101,7 +98,7 @@ class ClientsGestionTypeNotif
      *
      * @return integer
      */
-    public function getIdClientGestionTypeNotif()
+    public function getIdClientGestionTypeNotif(): int
     {
         return $this->idClientGestionTypeNotif;
     }

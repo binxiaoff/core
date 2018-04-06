@@ -119,6 +119,7 @@ class ReceptionsRepository extends EntityRepository
             $queryBuilder->andWhere('r.added <= :to OR o.added <= :to')
                 ->setParameter('to', $to);
         }
+
         return $queryBuilder->getQuery()->getArrayResult();
     }
 
@@ -140,7 +141,7 @@ class ReceptionsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:Operation', 'o', Join::WITH, 'o.idWireTransferIn = r.idReception')
             ->innerJoin('UnilendCoreBusinessBundle:OperationType', 'ot', Join::WITH, 'ot.id = o.idType')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.idClient = r.idClient')
-            ->where('r.idProject IS NOT NULL')
+            ->where('r.idClient IS NOT NULL')
             ->andWhere('ot.label IN (:provisionOrReject)')
             ->andWhere('w.idType = :walletType')
             ->setParameter('provisionOrReject', [OperationType::BORROWER_PROVISION, OperationType::BORROWER_PROVISION_CANCEL])
