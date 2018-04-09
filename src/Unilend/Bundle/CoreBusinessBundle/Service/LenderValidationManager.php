@@ -2,15 +2,16 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Doctrine\DBAL\DBALException;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, Users, WalletType
+};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
+    TemplateMessage, TemplateMessageProvider
+};
 
 /**
  * Class LenderValidationManager
@@ -79,22 +80,20 @@ class LenderValidationManager
     /**
      * @param Clients|\clients $client
      * @param Users            $user
+     * @param int[]            $duplicates
      *
-     * @return bool|int
+     * @return bool
      */
-    public function validateClient($client, Users $user)
+    public function validateClient($client, Users $user, array &$duplicates = []): bool
     {
         if ($client instanceof \clients) {
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        $message = $user->getIdUser() == Users::USER_ID_CRON ? 'Validation automatique basée sur Green Point': '';
+        $message = $user->getIdUser() === Users::USER_ID_CRON ? 'Validation automatique basée sur Green Point' : null;
 
-        if ($client->isNaturalPerson()) {
-            $duplicateClient = $this->checkLenderUniqueness($client, $user);
-            if (true !== $duplicateClient) {
-                return $duplicateClient;
-            }
+        if (false === $this->checkLenderUniqueness($client, $user, $duplicates)) {
+            return false;
         }
 
         if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($client)) {
@@ -155,20 +154,40 @@ class LenderValidationManager
 
     /**
      * @param Clients $client
-     * @param Users  $user
+     * @param Users   $user
+     * @param int[]   $duplicates
      *
-     * @return int|bool
+     * @return bool
      */
-    private function checkLenderUniqueness(Clients $client, Users $user)
+    private function checkLenderUniqueness(Clients $client, Users $user, array &$duplicates = []): bool
     {
-        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $existingClient   = $clientRepository->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
-        $existingClient   = array_shift($existingClient);
+        if (false === $client->isNaturalPerson()) {
+            return true;
+        }
 
-        if (false === empty($existingClient) && $existingClient['id_client'] != $client->getIdClient()) {
-            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $existingClient['id_client']);
+        try {
+            $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+            $existingClient   = $clientRepository->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
+        } catch (DBALException $exception) {
+            $this->logger->error(
+                'Unable to find lender duplicates. Exception: ' . $exception->getMessage(),
+                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
 
-            return $existingClient['id_client'];
+            return false;
+        }
+
+        $existingClient = array_column($existingClient, 'id_client', 'id_client');
+
+        if (isset($existingClient[$client->getIdClient()])) {
+            unset($existingClient[$client->getIdClient()]);
+        }
+
+        if (count($existingClient) > 0) {
+            $duplicates = $existingClient;
+            $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec clients ID : ' . implode(', ', $existingClient));
+
+            return false;
         }
 
         return true;

@@ -12,7 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UsersHistory
 {
-    const FORM_ID_BULK_PROJECT_CREATION   = 13;
+    const FORM_ID_LENDER_STATUS         = 1;
+    const FORM_ID_LENDER                = 3;
+    const FORM_ID_BULK_PROJECT_CREATION = 13;
+
+    const FORM_NAME_LENDER_STATUS         = 'Statut prêteur';
+    const FORM_NAME_TAX_EXEMPTION         = 'modification exoneration fiscale';
     const FROM_NAME_BULK_PROJECT_CREATION = 'depot_dossier_en_masse';
 
     /**

@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
+    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectStatusManager
@@ -642,11 +642,12 @@ class BorrowerAccountController extends Controller
             $temporaryLinks->accessed = $now->format('Y-m-d H:i:s');
             $temporaryLinks->update();
 
-            /** @var \clients $client */
-            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            $client->get($temporaryLinks->id_client);
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            /** @var Clients $client */
+            $client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
+            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
 
-            if (Clients::STATUS_ONLINE != $client->status) {
+            if (false === in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
                 $displayForm = false;
                 $translator  = $this->get('translator');
                 $this->addFlash('error', $translator->trans('borrower-profile_security-offline-account'));
@@ -654,7 +655,7 @@ class BorrowerAccountController extends Controller
                 $translator = $this->get('translator');
                 $formData   = $request->request->get('borrower_security', []);
                 $error      = false;
-                $borrower   = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->email);
+                $borrower   = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->getEmail());
 
                 try {
                     if (empty($formData['password'])) {
@@ -679,10 +680,11 @@ class BorrowerAccountController extends Controller
                 }
 
                 if (false === $error) {
-                    $client->password         = $password;
-                    $client->secrete_question = filter_var($formData['question'], FILTER_SANITIZE_STRING);
-                    $client->secrete_reponse  = md5($formData['answer']);
-                    $client->update();
+                    $client
+                        ->setPassword($password)
+                        ->setSecreteQuestion(filter_var($formData['question'], FILTER_SANITIZE_STRING))
+                        ->setSecreteReponse(md5($formData['answer']));
+                    $entityManager->flush($client);
 
                     return $this->redirectToRoute('login');
                 } else {

@@ -216,7 +216,6 @@ class LenderSubscriptionController extends Controller
                 ->setType($clientType)
                 ->setIdLangue('fr')
                 ->setSlug($slug)
-                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
@@ -336,7 +335,6 @@ class LenderSubscriptionController extends Controller
                 ->setIdLangue('fr')
                 ->setSlug($slug)
                 ->setPassword($password)
-                ->setStatus(Clients::STATUS_ONLINE)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
@@ -444,20 +442,21 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients       $clientEntity
+     * @param Clients       $client
      * @param FormInterface $form
      */
-    private function checkSecuritySection(Clients $clientEntity, FormInterface $form): void
+    private function checkSecuritySection(Clients $client, FormInterface $form): void
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
 
-        if ($entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->existEmail($clientEntity->getEmail(), Clients::STATUS_ONLINE)) {
+        if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
             $this->get('session')->set(self::SESSION_NAME_CAPTCHA, true);
         }
 
-        if (false === BCryptPasswordEncoder::isPasswordSafe($clientEntity->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
+        if (false === BCryptPasswordEncoder::isPasswordSafe($client->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
     }

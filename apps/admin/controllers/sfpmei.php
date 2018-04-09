@@ -67,7 +67,7 @@ class sfpmeiController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName, null, true);
+            $this->lenders    = $clientRepository->findLenders($clientId, $email, $lastName, null, $companyName);
 
             if (false === empty($this->lenders) && 1 === count($this->lenders)) {
                 header('Location: ' . $this->lurl . '/sfpmei/preteur/' . $this->lenders[0]['id_client']);
@@ -427,10 +427,10 @@ class sfpmeiController extends bootstrap
 
         switch ($this->params[0]) {
             case 'preteurs':
-                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true]);
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::LENDER, 'readOnly' => true, 'disableGlobalSearch' => true]);
                 break;
             case 'emprunteurs':
-                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true]);
+                $this->render('transferts/attributions.html.twig', ['walletType' => WalletType::BORROWER, 'readOnly' => true, 'disableGlobalSearch' => true]);
                 break;
             case 'non_attribues':
                 $this->receptions = $receptionsRepository->findBy(['statusBo' => Receptions::STATUS_PENDING], ['added' => 'DESC', 'idReception' => 'DESC']);

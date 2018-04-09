@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Backpayline, BankAccount, Clients, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType
+    Backpayline, BankAccount, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType
 };
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -213,7 +213,7 @@ class LenderWalletController extends Controller
                         ]);
 
                         $clientMailNotification->id_client                 = $client->getIdClient();
-                        $clientMailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_DEBIT;
+                        $clientMailNotification->id_notif                  = ClientsGestionTypeNotif::TYPE_DEBIT;
                         $clientMailNotification->date_notif                = date('Y-m-d H:i:s');
                         $clientMailNotification->id_notification           = $notification->id_notification;
                         $clientMailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
