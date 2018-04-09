@@ -49,10 +49,12 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                     $clientEmail = $company->getIdClientOwner()->getEmail();
                 } else {
                     $this->getContainer()->get('monolog.logger.console')
-                        ->error(
-                            'Could not send email "mail-echeance-emprunteur". Company manager email empty, and could not find client owner',
-                            ['function' => __FUNCTION__, 'class' => __CLASS__, 'id_project' => $project->getIdProject(), 'id_company' => $company->getIdCompany()]
-                        );
+                        ->error('Could not send email "mail-echeance-emprunteur". Company manager email is empty, and cannot not find client owner', [
+                            'id_company' => $company->getIdCompany(),
+                            'id_project' => $project->getIdProject(),
+                            'function'   => __FUNCTION__,
+                            'class'      => __CLASS__,
+                        ]);
 
                     continue;
                 }
