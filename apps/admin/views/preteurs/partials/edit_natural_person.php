@@ -134,17 +134,17 @@
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '') ?>>
             <div class="form-group col-md-6">
                 <label for="adresse2">Adresse postale</label>
-                <input type="text" name="adresse2" id="adresse2" value="<?= $this->client->getIdPostalAddress()->getAddress() ?? '' ?>" class="form-control">
+                <input type="text" name="adresse2" id="adresse2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getAddress() : '' ?>" class="form-control">
             </div>
         </div>
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '')?>>
             <div class="form-group col-md-3">
                 <label for="cp2">Code postal</label>
-                <input type="text" name="cp2" id="cp2" value="<?= $this->client->getIdPostalAddress()->getZip() ?? '' ?>" class="form-control">
+                <input type="text" name="cp2" id="cp2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getZip() : '' ?>" class="form-control">
             </div>
             <div class="form-group col-md-3">
                 <label for="ville2">Ville</label>
-                <input type="text" name="ville2" id="ville2" value="<?= $this->client->getIdPostalAddress()->getCity() ?? '' ?>" class="form-control">
+                <input type="text" name="ville2" id="ville2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getCity() : '' ?>" class="form-control">
             </div>
         </div>
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '')?>>

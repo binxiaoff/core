@@ -100,19 +100,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             });
         });
 
-
-        <?php if (Companies::CLIENT_STATUS_MANAGER == $this->companyEntity->getStatusClient()) : ?>
-        $('.statut_dirigeant_e').hide('slow');
-        $('.statut_dirigeant_e3').hide('slow');
-        <?php elseif(Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companyEntity->getStatusClient()) : ?>
-        $('.statut_dirigeant_e').show('slow');
-        $('.statut_dirigeant_e3').hide('slow');
-        <?php elseif(Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient()) : ?>
-        $('.statut_dirigeant_e').show('slow');
-        $('.statut_dirigeant_e3').show('slow');
+        <?php if (isset($this->companyEntity) && null !== $this->companyEntity) : ?>
+            <?php if (Companies::CLIENT_STATUS_MANAGER == $this->companyEntity->getStatusClient()) : ?>
+                $('.statut_dirigeant_e').hide('slow');
+                $('.statut_dirigeant_e3').hide('slow');
+            <?php elseif(Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companyEntity->getStatusClient()) : ?>
+                $('.statut_dirigeant_e').show('slow');
+                $('.statut_dirigeant_e3').hide('slow');
+            <?php elseif(Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient()) : ?>
+                $('.statut_dirigeant_e').show('slow');
+                $('.statut_dirigeant_e3').show('slow');
+            <?php endif; ?>
         <?php endif; ?>
-
-
 
         $('#enterprise1').click(function() {
             if ($(this).prop('checked')) {

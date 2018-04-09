@@ -1377,8 +1377,7 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $client                       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->clients->id_client);
-        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $client], ['id' => 'DESC']);
+        $this->vigilanceStatusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findBy(['client' => $this->client], ['id' => 'DESC']);
 
         if (empty($this->vigilanceStatusHistory)) {
             $this->vigilanceStatus = [
@@ -1388,7 +1387,7 @@ class preteursController extends bootstrap
             $this->userRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             return;
         }
-        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $client], ['added' => 'DESC']);
+        $this->clientAtypicalOperations = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAtypicalOperation')->findBy(['client' => $this->client], ['added' => 'DESC']);
 
         switch ($this->vigilanceStatusHistory[0]->getVigilanceStatus()) {
             case VigilanceRule::VIGILANCE_STATUS_LOW:
