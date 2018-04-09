@@ -43,13 +43,13 @@ class FormManager
     }
 
     /**
-     * @param object $dbObject
-     * @param object $formObject
+     * @param $dbObject
+     * @param $formObject
      *
      * @return array
      * @throws \Exception
      */
-    public function getModifiedContent(object $dbObject, object $formObject): array
+    public function getModifiedContent($dbObject, $formObject): array
     {
         if (get_class($dbObject) !== get_class($formObject)) {
             throw new \Exception('The objects to be compared are not of the same class');
@@ -171,11 +171,11 @@ class FormManager
     }
 
     /**
-     * @param array $files
+     * @param $files
      *
      * @return array
      */
-    public function getNamesOfFiles(array $files): array
+    public function getNamesOfFiles($files): array
     {
         $fileNames = [];
         foreach($files as $name => $file) {

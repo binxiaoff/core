@@ -150,10 +150,10 @@ class LenderProfileController extends Controller
         $templateData = [
             'client'               => $client,
             'clientMainAddress'    => $lastModifiedMainAddress,
-            'clientPostalAddress'  => $lastModifiedPostalAddress,
+            'clientPostalAddress'  => $postalAddress,
             'company'              => isset($company) ? $company : null,
             'companyMainAddress'   => $lastModifiedMainAddress,
-            'companyPostalAddress' => $lastModifiedPostalAddress,
+            'companyPostalAddress' => $postalAddress,
             'isCIPActive'          => $this->isCIPActive(),
             'forms'                => [
                 'identity'      => $identityForm->createView(),
