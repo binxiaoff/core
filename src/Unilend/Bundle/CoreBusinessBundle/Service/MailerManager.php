@@ -4,11 +4,11 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\{
+    Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType
+    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
@@ -894,7 +894,7 @@ class MailerManager
                                         <td class="td text-center">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . '&nbsp;€</td>
                                         <td class="td text-center">' . $sContractType . '</td></tr>';
 
-                    if (true == $clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, 'immediatement')) {
+                    if (true == $clientNotifications->getNotif($loan->getIdLender()->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED, 'immediatement')) {
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $loan->getIdLender()->getIdClient()->getIdClient() . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
@@ -986,7 +986,7 @@ class MailerManager
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+        $oNotificationsLog->id_notif = ClientsGestionTypeNotif::TYPE_NEW_PROJECT;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
         $oNotificationsLog->fin      = '0000-00-00 00:00:00';
@@ -1006,7 +1006,7 @@ class MailerManager
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = [];
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aMailNotifications) {
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, ClientsGestionTypeNotif::TYPE_NEW_PROJECT) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
@@ -1124,7 +1124,7 @@ class MailerManager
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_PLACED;
+        $oNotificationsLog->id_notif = ClientsGestionTypeNotif::TYPE_BID_PLACED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
         $oNotificationsLog->fin      = '0000-00-00 00:00:00';
@@ -1141,7 +1141,7 @@ class MailerManager
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_PLACED) as $aMailNotifications) {
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, ClientsGestionTypeNotif::TYPE_BID_PLACED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
@@ -1259,7 +1259,7 @@ class MailerManager
         $oCustomerNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_REJECTED;
+        $oNotificationsLog->id_notif = ClientsGestionTypeNotif::TYPE_BID_REJECTED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
         $oNotificationsLog->fin      = '0000-00-00 00:00:00';
@@ -1276,7 +1276,7 @@ class MailerManager
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = [];
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_REJECTED) as $aMailNotifications) {
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, ClientsGestionTypeNotif::TYPE_BID_REJECTED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
@@ -1402,7 +1402,7 @@ class MailerManager
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
+        $oNotificationsLog->id_notif = ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
         $oNotificationsLog->fin      = '0000-00-00 00:00:00';
@@ -1425,7 +1425,7 @@ class MailerManager
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = [];
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) as $aMailNotifications) {
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
@@ -1563,7 +1563,7 @@ class MailerManager
 
         /** @var \clients_gestion_notif_log $oNotificationsLog */
         $oNotificationsLog           = $this->entityManagerSimulator->getRepository('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_REPAYMENT;
+        $oNotificationsLog->id_notif = ClientsGestionTypeNotif::TYPE_REPAYMENT;
         $oNotificationsLog->type     = $sFrequency;
         $oNotificationsLog->debut    = date('Y-m-d H:i:s');
         $oNotificationsLog->fin      = '0000-00-00 00:00:00';
@@ -1586,7 +1586,7 @@ class MailerManager
 
         foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = [];
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_REPAYMENT) as $aMailNotifications) {
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, ClientsGestionTypeNotif::TYPE_REPAYMENT) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
@@ -1956,33 +1956,35 @@ class MailerManager
     }
 
     /**
-     * @param \clients $client
-     * @param string   $email
+     * @param Clients|\clients $client
+     * @param string           $email
      */
-    public function sendBorrowerAccount(\clients $client, $email = 'ouverture-espace-emprunteur')
+    public function sendBorrowerAccount($client, string $email = 'ouverture-espace-emprunteur'): void
     {
-        /** @var Clients $clientEntity */
-        $clientEntity = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        $clientStatus = $clientEntity->getIdClientStatusHistory()->getIdStatus()->getId();
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
+
+        $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
 
         if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
             /** @var \temporary_links_login $temporaryLink */
             $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
             $keywords      = [
-                'firstName'            => $clientEntity->getPrenom(),
-                'temporaryToken'       => $temporaryLink->generateTemporaryLink($clientEntity->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+                'firstName'            => $client->getPrenom(),
+                'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
                 'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
             ];
 
             $message = $this->messageProvider->newMessage($email, $keywords);
 
             try {
-                $message->setTo($clientEntity->getEmail());
+                $message->setTo($client->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->oLogger->warning(
                     'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $clientEntity->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }

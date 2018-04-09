@@ -196,11 +196,15 @@ class AutolendController extends Controller
         }
 
         try {
+            $wallet          = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getWalletByType($client, WalletType::LENDER);
+            $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);
+
             $autoBidSettingsManager->saveNoviceSetting($client, $autolendRateMin, $autolendAmount);
 
             try {
                 if (false === $autoBidSettingsManager->isOn($client)) {
-                    $autoBidSettingsManager->on($client);
+                    $autoBidSettingsManager->on($client, $firstActivation);
                     $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_ON, $request);
                 }
             } catch (\Exception $exception) {
@@ -328,6 +332,10 @@ class AutolendController extends Controller
         $entityManager->getConnection()->beginTransaction();
 
         try {
+            $wallet          = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getWalletByType($client, WalletType::LENDER);
+            $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);
+
             foreach ($post['data'] as $setting) {
                 $rate = $ficelle->cleanFormatedNumber($setting['interest']);
                 $rate = filter_var($rate, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
@@ -339,7 +347,7 @@ class AutolendController extends Controller
 
             try {
                 if (false === $autoBidSettingsManager->isOn($client)) {
-                    $autoBidSettingsManager->on($client);
+                    $autoBidSettingsManager->on($client, $firstActivation);
                     $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_ON, $request);
                 }
             } catch (\Exception $exception) {

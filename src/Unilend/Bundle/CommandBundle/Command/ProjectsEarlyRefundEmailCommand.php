@@ -7,7 +7,7 @@ use Symfony\Component\Console\{
     Input\InputInterface, Input\InputOption, Output\OutputInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Notifications, OperationSubType, OperationType
+    Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, OperationSubType, OperationType
 };
 
 class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
@@ -113,12 +113,12 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                     $emailNotification->unsetData();
                     $emailNotification->id_client                 = $client->getIdClient();
-                    $emailNotification->id_notif                  = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                    $emailNotification->id_notif                  = ClientsGestionTypeNotif::TYPE_REPAYMENT;
                     $emailNotification->date_notif                = $earlyRepaymentOperation->getAdded()->format('Y-m-d H:i:s');
                     $emailNotification->id_notification           = $notification->id_notification;
                     $emailNotification->id_wallet_balance_history = $walletBalanceHistory->getId();
 
-                    if ($notificationSettings->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                    if ($notificationSettings->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_REPAYMENT, 'immediatement')) {
                         $emailNotification->immediatement = 1;
 
                         $loan->get($projectLender['id_loan'], 'id_loan');

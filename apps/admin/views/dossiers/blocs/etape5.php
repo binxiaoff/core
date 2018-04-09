@@ -44,7 +44,8 @@
                     <th width="250">Nom</th>
                     <th>Fichier</th>
                     <th width="100">Statut</th>
-                    <th width="300"></th>
+                    <th width="300">&nbsp;</th>
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,6 +81,11 @@
                         <td class="statut_fichier_<?= $attachmentType->getId() ?>"></td>
                     <?php endif; ?>
                         <td><input type="file" name="<?= $attachmentType->getId() ?>" id="fichier_project_<?= $attachmentType->getId() ?>"/></td>
+                    <?php if ($currentAttachment) : ?>
+                        <td><a href="<?= $this->lurl ?>/viewer/<?= $this->projects->id_project ?>/<?= $currentAttachment->getId() ?>" class="colorbox-iframe">Voir</a></td>
+                    <?php else :?>
+                        <td>&nbsp;</td>
+                    <?php endif; ?>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

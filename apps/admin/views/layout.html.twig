@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/edits.css">
 </head>
 <body>
+
 <div id="page-container" class="sidebar-l side-scroll header-navbar-fixed sidebar-o">
     <nav id="sidebar">
         <div id="sidebar-scroll">
@@ -46,6 +47,7 @@
             </div>
         </div>
     </nav>
+
     <header id="header-navbar" class="content-mini content-mini-full">
         <ul class="nav-header pull-right">
             <li>
@@ -74,6 +76,7 @@
                 </div>
             </li>
         </ul>
+        {% if disableGlobalSearch is not defined or false == disableGlobalSearch %}
         <ul class="nav-header pull-left">
             <li class="header-search">
                 <input class="form-control" type="text" id="quick-search" name="quick-search" placeholder="Recherche ...">
@@ -85,7 +88,9 @@
                 </button>
             </li>
         </ul>
+        {% endif %}
     </header>
+
     <div id="main-container">
         <div class="content bg-gray-lighter">
             {% block pageHeader %} {% endblock %}
@@ -137,7 +142,6 @@
 </div>
 {% block modals %} {% endblock %}
 
-
 <!-- OneUI Core JS -->
 <script src="{{ app.adminUrl }}/oneui/js/core/jquery.min.js"></script>
 <script src="{{ app.adminUrl }}/oneui/js/core/bootstrap.min.js"></script>
@@ -154,5 +158,7 @@
 
 <!-- Page Specific JS Scripts -->
 {% block pageScripts %} {% endblock %}
+
+
 </body>
 </html>
