@@ -2,13 +2,10 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use SensioLabs\Security\SecurityChecker;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\{
-    ArrayInput, InputInterface
-};
-use Symfony\Component\Console\Output\{
-    BufferedOutput, OutputInterface
-};
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class SecurityCheckNotificationCommand extends ContainerAwareCommand
 {
@@ -23,19 +20,19 @@ class SecurityCheckNotificationCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $command = $this->getApplication()->find('security:check');
+        $checker         = new SecurityChecker();
+        $lockFile        = $this->getContainer()->get('kernel')->getProjectDir() . DIRECTORY_SEPARATOR . 'composer.lock';
+        $vulnerabilities = $checker->check($lockFile);
 
-        $arguments = array(
-            'command' => 'security:check',
-        );
-
-        $securityCheckInput  = new ArrayInput($arguments);
-        $securityCheckOutput = new BufferedOutput();
-        $returnCode          = $command->run($securityCheckInput, $securityCheckOutput);
-
-        if ($returnCode > 0) {
-            $content = $securityCheckOutput->fetch();
-
+        if ($checker->getLastVulnerabilityCount() > 0) {
+            $content = 'Vulnerabilities detected in current composer.lock:' . PHP_EOL;
+            foreach ($vulnerabilities as $packageName => $vulnerability) {
+                $content .= $packageName . ': ';
+                foreach ($vulnerability['advisories'] as $advisory) {
+                    $content .= $advisory['title'] . '(' . $advisory['cve'] . '). ';
+                }
+                $content .= PHP_EOL;
+            }
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
             $slackManager->sendMessage($content, '#it-monitoring');
 
@@ -61,6 +58,9 @@ class SecurityCheckNotificationCommand extends ContainerAwareCommand
                     );
                 }
             }
+            $output->writeln('Vulnerabilities detected. See Slack or email for more details.');
+        } else {
+            $output->writeln('No vulnerability detected');
         }
     }
 }

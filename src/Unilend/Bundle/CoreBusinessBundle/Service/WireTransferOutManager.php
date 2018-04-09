@@ -5,18 +5,19 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Symfony\Component\Routing\{
+    Generator\UrlGeneratorInterface, RouterInterface
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    BankAccount, Projects, Users, Virements, Wallet, WalletType
+};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class WireTransferOutManager
 {
+    const TRANSFER_OUT_BY_PROJECT = 'project';
+    const TRANSFER_OUT_BY_COMPANY = 'company';
+
     /** @var EntityManager */
     private $entityManager;
     /** @var ProjectManager */
@@ -100,7 +101,8 @@ class WireTransferOutManager
         Users $requestUser = null,
         \DateTime $transferAt = null,
         $wireTransferPattern = null
-    ) {
+    )
+    {
         switch ($wallet->getIdType()->getLabel()) {
             case WalletType::LENDER:
                 $type = Virements::TYPE_LENDER;
@@ -208,9 +210,10 @@ class WireTransferOutManager
             $bankAccount = $wireTransferOut->getBankAccount();
 
             if ($bankAccount) {
-                $universignLink = $this->router->generate('wire_transfer_out_request_pdf', ['clientHash'        => $wireTransferOut->getClient()->getHash(),
-                                                                                            'wireTransferOutId' => $wireTransferOut->getIdVirement()
-                    ], UrlGeneratorInterface::ABSOLUTE_PATH);
+                $universignLink = $this->router->generate('wire_transfer_out_request_pdf', [
+                    'clientHash'        => $wireTransferOut->getClient()->getHash(),
+                    'wireTransferOutId' => $wireTransferOut->getIdVirement()
+                ], UrlGeneratorInterface::ABSOLUTE_PATH);
 
                 $keywords = [
                     'firstName'       => $wireTransferOut->getClient()->getPrenom(),
@@ -262,14 +265,35 @@ class WireTransferOutManager
                 $this->mailer->send($message);
             } catch (\Exception $exception) {
                 $this->logger->error('Could not send email : wire-transfer-out-to-validate-staff-notification - Exception: ' . $exception->getMessage(), [
-                        'id_mail_template' => $message->getTemplateId(),
-                        'email_address'    => $settings->getValue(),
-                        'class'            => __CLASS__,
-                        'function'         => __FUNCTION__,
-                        'exceptionFile'    => $exception->getFile(),
-                        'exceptionLine'    => $exception->getLine()
-                    ]);
+                    'id_mail_template' => $message->getTemplateId(),
+                    'email_address'    => $settings->getValue(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__,
+                    'exceptionFile'    => $exception->getFile(),
+                    'exceptionLine'    => $exception->getLine()
+                ]);
             }
         }
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     */
+    public function getCommittedAmount(Wallet $wallet): float
+    {
+        $amount = 0;
+
+        $wireTransferOuts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Virements')->findBy([
+            'idClient' => $wallet->getIdClient(),
+            'status'   => [Virements::STATUS_PENDING, Virements::STATUS_CLIENT_VALIDATED]
+        ]);
+
+        foreach ($wireTransferOuts as $wireTransferOut) {
+            $amount = round(bcadd($amount, bcdiv($wireTransferOut->getMontant(), 100, 4), 4), 2);
+        }
+
+        return $amount;
     }
 }

@@ -177,6 +177,13 @@ class ProjectPaymentManager
                     $interestToPay   = $unpaidInterest;
                     $commissionToPay = $unpaidCommission;
                 } else {
+                    $today               = new \DateTime('today midnight');
+                    $paymentScheduleDate = $paymentSchedule->getDateEcheanceEmprunteur()->setTime(0, 0);
+
+                    if ($paymentScheduleDate > $today) {
+                        break;
+                    }
+
                     $proportion         = bcdiv($amount, $unpaidMonthlyAmount, 10);
                     $netRepaymentAmount = round(bcmul($unpaidNetRepaymentAmount, $proportion, 4), 2);
 

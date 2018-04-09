@@ -15,14 +15,13 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderProfileController extends Controller
 {
@@ -151,10 +150,10 @@ class LenderProfileController extends Controller
         $templateData = [
             'client'               => $client,
             'clientMainAddress'    => $lastModifiedMainAddress,
-            'clientPostalAddress'  => $lastModifiedPostalAddress,
+            'clientPostalAddress'  => $postalAddress,
             'company'              => isset($company) ? $company : null,
             'companyMainAddress'   => $lastModifiedMainAddress,
-            'companyPostalAddress' => $lastModifiedPostalAddress,
+            'companyPostalAddress' => $postalAddress,
             'isCIPActive'          => $this->isCIPActive(),
             'forms'                => [
                 'identity'      => $identityForm->createView(),
@@ -693,39 +692,39 @@ class LenderProfileController extends Controller
 
         if (empty($notificationSetting)) {
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($this->getUser()->getClientId());
-            $notificationSetting  = $notificationSettings->getNotifs($this->getUser()->getClientId());
+            $notificationSetting = $notificationSettings->getNotifs($this->getUser()->getClientId());
         }
 
         $templateData['notification_settings']['immediate'] = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT                   => $notificationSetting[\clients_gestion_type_notif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_BID_PLACED                    => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_BID_REJECTED                  => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED                 => $notificationSetting[\clients_gestion_type_notif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM               => $notificationSetting[\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => $notificationSetting[\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_REPAYMENT                     => $notificationSetting[\clients_gestion_type_notif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT          => $notificationSetting[\clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT            => $notificationSetting[\clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            \clients_gestion_type_notif::TYPE_DEBIT                         => $notificationSetting[\clients_gestion_type_notif::TYPE_DEBIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BID_PLACED                    => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => $notificationSetting[ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => $notificationSetting[ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT                     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT          => $notificationSetting[ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT            => $notificationSetting[ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_DEBIT                         => $notificationSetting[ClientsGestionTypeNotif::TYPE_DEBIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
         ];
 
         $templateData['notification_settings']['daily'] = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT   => $notificationSetting[\clients_gestion_type_notif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            \clients_gestion_type_notif::TYPE_BID_PLACED    => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            \clients_gestion_type_notif::TYPE_BID_REJECTED  => $notificationSetting[\clients_gestion_type_notif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => $notificationSetting[\clients_gestion_type_notif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            \clients_gestion_type_notif::TYPE_REPAYMENT     => $notificationSetting[\clients_gestion_type_notif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY]
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_BID_PLACED    => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED  => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY]
         ];
 
         $templateData['notification_settings']['weekly'] = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT   => $notificationSetting[\clients_gestion_type_notif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => $notificationSetting[\clients_gestion_type_notif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
-            \clients_gestion_type_notif::TYPE_REPAYMENT     => $notificationSetting[\clients_gestion_type_notif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY]
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY]
         ];
 
         $templateData['notification_settings']['monthly'] = [
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => $notificationSetting[\clients_gestion_type_notif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY],
-            \clients_gestion_type_notif::TYPE_REPAYMENT     => $notificationSetting[\clients_gestion_type_notif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY]
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY]
         ];
     }
 
@@ -751,33 +750,33 @@ class LenderProfileController extends Controller
 
         /* Put it temporary here, because we don't need it after the project refectory notification  */
         $immediateTypes = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-            \clients_gestion_type_notif::TYPE_BID_PLACED,
-            \clients_gestion_type_notif::TYPE_BID_REJECTED,
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM,
-            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
-            \clients_gestion_type_notif::TYPE_REPAYMENT,
-            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
-            \clients_gestion_type_notif::TYPE_DEBIT
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+            ClientsGestionTypeNotif::TYPE_BID_PLACED,
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED,
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
+            ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM,
+            ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
+            ClientsGestionTypeNotif::TYPE_REPAYMENT,
+            ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT,
+            ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT,
+            ClientsGestionTypeNotif::TYPE_DEBIT
         ];
         $dailyTypes     = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-            \clients_gestion_type_notif::TYPE_BID_PLACED,
-            \clients_gestion_type_notif::TYPE_BID_REJECTED,
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-            \clients_gestion_type_notif::TYPE_REPAYMENT
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+            ClientsGestionTypeNotif::TYPE_BID_PLACED,
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED,
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
+            ClientsGestionTypeNotif::TYPE_REPAYMENT
         ];
         $weeklyTypes    = [
-            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-            \clients_gestion_type_notif::TYPE_REPAYMENT
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
+            ClientsGestionTypeNotif::TYPE_REPAYMENT
         ];
 
         $monthlyTypes = [
-            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-            \clients_gestion_type_notif::TYPE_REPAYMENT
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
+            ClientsGestionTypeNotif::TYPE_REPAYMENT
         ];
 
         $error = false;
@@ -1277,22 +1276,6 @@ class LenderProfileController extends Controller
                 ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
-    }
-
-    /**
-     * @return \clients_adresses
-     */
-    private function getClientAddress(): \clients_adresses
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->get('unilend.service.entity_manager')->getRepository('clients_adresses');
-        $clientAddress->get($clientId, 'id_client');
-
-        return $clientAddress;
     }
 
     /**

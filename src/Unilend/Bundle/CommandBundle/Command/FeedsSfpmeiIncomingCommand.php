@@ -8,7 +8,7 @@ use Symfony\Component\Console\{
     Input\InputInterface, Input\InputOption, Output\OutputInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet, WalletType
+    Clients, ClientsGestionTypeNotif, ClientsStatus, EcheanciersEmprunteur, Notifications, Prelevements, Projects, ProjectsStatus, Receptions, SepaRejectionReason, Users, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -399,13 +399,13 @@ EOF
                             ]);
 
                             $clients_gestion_mails_notif->id_client                 = $client->getIdClient();
-                            $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                            $clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT;
                             $clients_gestion_mails_notif->date_notif                = date('Y-m-d H:i:s');
                             $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                             $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
                             $clients_gestion_mails_notif->create();
 
-                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
+                            if ($clients_gestion_notifications->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement')) {
                                 $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                 $clients_gestion_mails_notif->immediatement = 1;
                                 $clients_gestion_mails_notif->update();

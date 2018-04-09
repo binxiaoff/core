@@ -7,7 +7,7 @@ use Symfony\Component\Console\{
     Input\InputInterface, Output\OutputInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Notifications, ProjectRepaymentDetail, ProjectRepaymentTask
+    Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, ProjectRepaymentDetail, ProjectRepaymentTask
 };
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
@@ -60,7 +60,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $walletBalanceHistory = $walletBalanceHistoryRepository->findOneBy(['idOperation' => $repaymentOperation, 'idWallet' => $wallet]);
 
                         $clients_gestion_mails_notif->id_client                 = $wallet->getIdClient()->getIdClient();
-                        $clients_gestion_mails_notif->id_notif                  = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                        $clients_gestion_mails_notif->id_notif                  = ClientsGestionTypeNotif::TYPE_REPAYMENT;
                         $clients_gestion_mails_notif->date_notif                = $repaymentSchedule->getDateEcheanceReel()->format('Y-m-d H:i:s');
                         $clients_gestion_mails_notif->id_notification           = $notifications->id_notification;
                         $clients_gestion_mails_notif->id_wallet_balance_history = $walletBalanceHistory->getId();
@@ -68,7 +68,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 
                         if ($repaymentDetail->getIdTask()->getType() === ProjectRepaymentTask::TYPE_LATE) {
                             $projectRepaymentNotificationSender->sendRegularisationRepaymentMailToLender($repaymentSchedule);
-                        } elseif (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement')) {
+                        } elseif (true === $clients_gestion_notifications->getNotif($wallet->getIdClient()->getIdClient(), ClientsGestionTypeNotif::TYPE_REPAYMENT, 'immediatement')) {
                             $clients_gestion_mails_notif->get($clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                             $clients_gestion_mails_notif->immediatement = 1;
                             $clients_gestion_mails_notif->update();
