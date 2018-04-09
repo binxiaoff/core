@@ -263,12 +263,12 @@
     <fieldset class="panel">
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.email.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-email">
+                <label for="form-lender-legal-entity-email">
                     {% trans %} common_email {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.client.email.first, {
-                    'id' : 'form-lender-' ~ idClientType ~ '-email',
+                    'id' : 'form-lender-legal-entity-email',
                     'attr' :  {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true'
@@ -277,17 +277,17 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.email.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-email-conf">
+                <label for="form-lender-legal-entity-email-conf">
                     {% trans %} common_email-confirmation {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group">
                     {{ form_widget(companyIdentityForm.client.email.second, {
-                        'id' : 'form-lender-'~ idClientType ~'-email-conf',
+                        'id' : 'form-lender-legal-entity-email-conf',
                         'attr' :  {
                             'class' : 'input-field',
                             'data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-email'
+                            'data-formvalidation-samevalueas' : '#form-lender-legal-entity-email'
                         }
                     }) }}
                 </div>
@@ -300,12 +300,12 @@
                 <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
             </div>
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.password.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-pwd">
+                <label for="form-lender-legal-entity-pwd">
                     {% trans %} common_password {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.client.password.first, {
-                    'id' : 'form-lender-'~ idClientType ~'-pwd',
+                    'id' : 'form-lender-legal-entity-pwd',
                     'attr' : {
                         'class' : 'input-field',
                         'data-passwordcheck data-formvalidation-input data-formvalidation-required' : 'true',
@@ -315,17 +315,17 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.password.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-pwd-conf">
+                <label for="form-lender-legal-entity-pwd-conf">
                     {% trans %} common_password-confirmation {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group">
                     {{ form_widget(companyIdentityForm.client.password.second, {
-                        'id' : 'form-lender-'~ idClientType ~'-pwd-conf',
+                        'id' : 'form-lender-legal-entity-pwd-conf',
                         'attr' : {
                             'class' : 'input-field',
                             'data-passwordcheck data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-pwd'
+                            'data-formvalidation-samevalueas' : '#form-lender-legal-entity-pwd'
                         }
                     }) }}
                 </div>
@@ -335,12 +335,12 @@
 
         <div class="row">
             <div class="form-field{% if companyIdentityForm.security.secreteQuestion.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-security-question">
+                <label for="form-lender-legal-entity-security-question">
                     {% trans %} lender-subscription_security-form-secret-question-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.security.secreteQuestion, {
-                    'id' : 'form-lender-'~ idClientType ~'-security-question',
+                    'id' : 'form-lender-legal-entity-security-question',
                     'attr' :  {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true'
@@ -353,12 +353,12 @@
 
         <div class="row">
             <div class="form-field{% if companyIdentityForm.security.secreteReponse.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-{{ idClientType }}-security-answer">
+                <label for="form-lender-legal-entity-security-answer">
                     {% trans %} lender-subscription_security-form-secret-answer-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.security.secreteReponse, {
-                    'id' : 'form-lender-'~ idClientType ~'-security-answer',
+                    'id' : 'form-lender-legal-entity-security-answer',
                     'attr' : {
                         'autocomplete' : 'off',
                         'class' : 'input-field',
@@ -410,7 +410,7 @@
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.company.prenomDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
                 <label for="form-lender-legal-entity-director-first-name">
-                    {% trans %} common_firstname{% endtrans %}
+                    {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.company.prenomDirigeant, {
@@ -602,22 +602,22 @@
         </div>
     </fieldset>
 
-    <fieldset id="form-lender-{{ idClientType }}-fieldset-postal-address" class="form-lender-fieldset-postal-address panel collapse"
+    <fieldset id="form-lender-legal-entity-fieldset-postal-address" class="form-lender-fieldset-postal-address panel collapse"
             {% if companyIdentityForm.samePostalAddress %} aria-expanded="true" {% else %} aria-expanded="false" style="height : 0;" {% endif %}>
 
         <h3 class="h3">{% trans %} lender-subscription_address-form-postal-address-title {% endtrans %}</h3>
-        <div id="form-preter-{{ idClientType }}-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
+        <div id="form-preter-legal-entity-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
             <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
         </div>
 
         <div class="row">
         <div class="form-field{% if companyIdentityForm.postalAddress.address.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-{{ idClientType }}-postal-address-street">
+            <label for="form-lender-legal-entity-postal-address-street">
                 {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(companyIdentityForm.postalAddress.address, {
-                'id' : 'form-lender-'~ idClientType ~'-postal-address-street',
+                'id' : 'form-lender-legal-entity-postal-address-street',
                 'attr' : {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true'
@@ -629,53 +629,53 @@
 
         <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.zip.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-{{ idClientType }}-postal-address-zip">
+            <label for="form-lender-legal-entity-postal-address-zip">
                 {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group set-right">
                 {{ form_widget(companyIdentityForm.postalAddress.zip, {
-                    'id' : 'form-lender-'~ idClientType ~'-postal-address-zip',
+                    'id' : 'form-lender-legal-entity-postal-address-zip',
                     'attr' : {
                         'class' : 'input-field',
                         'autocomplete' : 'off',
                         'data-formvalidation-input data-formvalidation-required' : 'true',
                         'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_zip'),
-                        'data-autocomplete-address-countryelem' : '#form-lender-'~ idClientType ~'-postal-address-country',
-                        'data-autocomplete-address-cityelem' : '#form-lender-'~ idClientType ~'-postal-address-city',
-                        'data-autocomplete-address-zipelem' : '#form-lender-'~ idClientType ~'-postal-address-zip',
-                        'data-has-spinner' : '#form-lender-'~ idClientType ~'-postal-zip-autocomplete-spinner'
+                        'data-autocomplete-address-countryelem' : '#form-lender-legal-entity-postal-address-country',
+                        'data-autocomplete-address-cityelem' : '#form-lender-legal-entity-postal-address-city',
+                        'data-autocomplete-address-zipelem' : '#form-lender-legal-entity-postal-address-zip',
+                        'data-has-spinner' : '#form-lender-legal-entity-postal-zip-autocomplete-spinner'
                     }})
                 }}
                 {{ form_errors(companyIdentityForm.postalAddress.zip) }}
                 <div class="btn-group">
-                    <span id="{{ idClientType }}-postal-zip-autocomplete-spinner" class="ui-is-spinner"></span>
+                    <span id="legal-entity-postal-zip-autocomplete-spinner" class="ui-is-spinner"></span>
                 </div>
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
 
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.city.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-{{ idClientType }}-postal-address-city">
+            <label for="form-lender-legal-entity-postal-address-city">
                 {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group set-right">
                 {{ form_widget(companyIdentityForm.postalAddress.city, {
-                    'id' : 'form-lender-'~ idClientType ~'-postal-address-city',
+                    'id' : 'form-lender-legal-entity-postal-address-city',
                     'attr' : {
                         'class' : 'input-field',
                         'autocomplete' : 'off',
                         'data-formvalidation-input data-formvalidation-required' : 'true',
                         'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_city'),
-                        'data-autocomplete-address-countryelem' : '#form-lender-'~ idClientType ~'-postal-address-country',
-                        'data-autocomplete-address-cityelem' : '#form-lender-'~ idClientType ~'-postal-address-city',
-                        'data-autocomplete-address-zipelem' : '#form-lender-'~ idClientType ~'-postal-address-zip',
-                        'data-has-spinner' : '#form-lender-'~ idClientType ~'-postal-city-autocomplete-spinner'
+                        'data-autocomplete-address-countryelem' : '#form-lender-legal-entity-postal-address-country',
+                        'data-autocomplete-address-cityelem' : '#form-lender-legal-entity-postal-address-city',
+                        'data-autocomplete-address-zipelem' : '#form-lender-legal-entity-postal-address-zip',
+                        'data-has-spinner' : '#form-lender-legal-entity-postal-city-autocomplete-spinner'
                     }})
                 }}
                 {{ form_errors(companyIdentityForm.postalAddress.city) }}
                 <div class="btn-group">
-                    <span id="{{ idClientType }}-postal-city-autocomplete-spinner" class="ui-is-spinner"></span>
+                    <span id="legal-entity-postal-city-autocomplete-spinner" class="ui-is-spinner"></span>
                 </div>
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
@@ -683,12 +683,12 @@
 
         <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-{{ idClientType }}-postal-address-country">
+            <label for="form-lender-legal-entity-postal-address-country">
                 {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(companyIdentityForm.postalAddress.idCountry, {
-                'id' : 'form-lender-'~ idClientType ~'-postal-address-country',
+                'id' : 'form-lender-legal-entity-postal-address-country',
                 'attr' : {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true'
