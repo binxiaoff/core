@@ -717,7 +717,7 @@ class ClientsRepository extends EntityRepository
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN clients_status cs ON csh.id_status = cs.id
             LEFT JOIN companies co ON co.id_client_owner = c.id_client
-            WHERE c.status_inscription_preteur = 1' ;
+            WHERE 1' ;
 
         $parameters = [];
 
