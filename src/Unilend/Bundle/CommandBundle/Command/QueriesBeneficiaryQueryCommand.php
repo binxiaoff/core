@@ -169,11 +169,8 @@ EOF
                 false === $clientEntity->isNaturalPerson()
                 && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity])
             ) {
-                $idPays         = (0 == $company->getIdPays()) ? PaysV2::COUNTRY_FRANCE : $company->getIdPays();
-                $companyCountry = $countryRepository->find($idPays);
-
-                $fiscalAndLocationData['isoFiscal']   = $companyCountry->getIso();
-                $fiscalAndLocationData['inseeFiscal'] = $locationManager->getInseeCode($company->getZip(), $company->getCity());
+                $fiscalAndLocationData['isoFiscal']   = $company->getIdAddress()->getIdCountry()->getIso();
+                $fiscalAndLocationData['inseeFiscal'] = $locationManager->getInseeCode($company->getIdAddress()->getZip(), $company->getIdAddress()->getCity());
                 $data[]                               = $this->addLegalEntityLineToBeneficiaryQueryData($company, $wallet, $fiscalAndLocationData);
             }
         }
@@ -228,7 +225,7 @@ EOF
      *
      * @return array
      */
-    private function addLegalEntityLineToBeneficiaryQueryData(Companies $company, Wallet $wallet, array $fiscalAndLocationData)
+    private function addLegalEntityLineToBeneficiaryQueryData(Companies $company, Wallet $wallet, array $fiscalAndLocationData): array
     {
         $client = $wallet->getIdClient();
 
@@ -249,8 +246,8 @@ EOF
             str_replace(';', ',', $company->getAdresse1()),
             $fiscalAndLocationData['inseeFiscal'],
             '',
-            $company->getZip(),
-            $company->getCity(),
+            $company->getIdAddress()->getZip(),
+            $company->getIdAddress()->getCity(),
             $fiscalAndLocationData['isoFiscal'],
             '',
             $company->getPhone(),

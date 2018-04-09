@@ -2,12 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
-use Symfony\Component\Form\{
-    AbstractType, FormBuilderInterface
-};
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
 
-class CompanyAddressType extends AbstractType
+class ClientAddressType extends AbstractType
 {
     /**
      * @param FormBuilderInterface $builder

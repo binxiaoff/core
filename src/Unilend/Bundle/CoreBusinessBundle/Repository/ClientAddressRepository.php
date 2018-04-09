@@ -5,19 +5,19 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress
+    AddressType, ClientAddress, Clients
 };
 
-class CompanyAddressRepository extends EntityRepository
+class ClientAddressRepository extends EntityRepository
 {
     /**
-     * @param Companies|int      $idCompany
+     * @param Clients|int      $idClient
      * @param AddressType|string $type
      *
-     * @return CompanyAddress|null
+     * @return ClientAddress|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findLastModifiedNotArchivedAddressByType($idCompany, $type): ?CompanyAddress
+    public function findLastModifiedNotArchivedAddressByType($idClient, $type): ?ClientAddress
     {
         $typeLabel = $type instanceof AddressType ? $type->getLabel() : $type;
 
@@ -25,11 +25,11 @@ class CompanyAddressRepository extends EntityRepository
         $queryBuilder
             ->select('ca', 'COALESCE(ca.updated, ca.datePending) AS HIDDEN dateOrder')
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
-            ->where('ca.idCompany = :idCompany')
+            ->where('ca.idClient = :idClient')
             ->andWhere('at.label = :type')
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('dateOrder', 'DESC')
-            ->setParameter('idCompany', $idCompany)
+            ->setParameter('idClient', $idClient)
             ->setParameter('type', $typeLabel)
             ->setMaxResults(1);
 
@@ -37,22 +37,22 @@ class CompanyAddressRepository extends EntityRepository
     }
 
     /**
-     * @param Companies|int $idCompany
+     * @param Clients|int $idClient
      *
-     * @return null|CompanyAddress
+     * @return null|ClientAddress
      * @throws \Doctrine\ORM\NonUniqueResultException,
      */
-    public function findValidatedMainCompanyAddress($idCompany): ?CompanyAddress
+    public function findValidatedMainClientAddress($idClient): ?ClientAddress
     {
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
-            ->where('ca.idCompany = :idCompany')
+            ->where('ca.idClient = :idClient')
             ->andWhere('at.label = :type')
             ->andWhere('ca.dateValidated IS NOT NULL')
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('ca.dateValidated', 'DESC')
-            ->setParameter(':idCompany', $idCompany)
+            ->setParameter(':idClient', $idClient)
             ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
             ->setMaxResults(1);
 

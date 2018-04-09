@@ -19,11 +19,11 @@
     <div style="float: right;">
         <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= date('d/m/Y') ?></b>
         <br/><br/><br/>
-        <?php if (false === empty($this->companies->id_company)) : ?>
-            <b><?= $this->companies->name ?></b><br/>
+        <?php if (false === empty($this->company)) : ?>
+            <b><?= $this->company->getName() ?></b><br/>
             <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
-            <?= $this->companies->adresse1 ?><br/>
-            <?= $this->companies->zip . ' ' . $this->companies->city ?>
+            <?= $this->lastModifiedAddress->getAddress() ?><br/>
+            <?= $this->lastModifiedAddress->getZip() . ' ' . $this->lastModifiedAddress->getCity() ?>
         <?php else : ?>
             <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
             <?= $this->clients_adresses->adresse1 ?><br/>
@@ -33,7 +33,7 @@
     <div style="clear:both;"></div>
     <br/>
     <strong>Historique des projets financés par votre compte Unilend n°<?= $this->clients->id_client ?></strong><br/>
-    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= empty($this->companies->id_company) ? $this->clients->prenom . ' ' . $this->clients->nom : $this->companies->name ?>
+    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= empty($this->company) ? $this->clients->prenom . ' ' . $this->clients->nom : $this->company->getName() ?>
     <br/>
     <?php if (false === empty($this->companies->id_company)) : ?>
         <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>

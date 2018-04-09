@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Route
 };
@@ -16,7 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Backpayline, Clients, ClientsAdresses, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, OffresBienvenues, PaysV2, Users, WalletType
+    AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, OffresBienvenues, PaysV2, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     GoogleRecaptchaManager, SponsorshipManager
@@ -48,7 +47,6 @@ class LenderSubscriptionController extends Controller
         }
 
         $client        = new Clients();
-        $clientAddress = new ClientsAdresses();
         $company       = new Companies();
         $sponsorCode   = $this->get('session')->get('sponsorCode');
 
@@ -82,15 +80,15 @@ class LenderSubscriptionController extends Controller
         }
 
         $formManager         = $this->get('unilend.frontbundle.service.form_manager');
-        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client, $clientAddress);
-        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($client, $company, $clientAddress);
+        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client);
+        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($client, $company);
 
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
 
         if ($request->isMethod(Request::METHOD_POST)) {
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
-                $isValid = $this->handleIdentityPersonForm($client, $clientAddress, $identityForm, $request);
+                $isValid = $this->handlePersonForm($client, $identityForm, $request);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
                     if (false === empty($sponsorCode)) {
@@ -106,7 +104,7 @@ class LenderSubscriptionController extends Controller
             }
 
             if ($companyIdentityForm->isSubmitted() && $companyIdentityForm->isValid()) {
-                $isValid = $this->handleLegalEntityForm($client, $clientAddress, $company, $companyIdentityForm, $request);
+                $isValid = $this->handleLegalEntityForm($client, $company, $companyIdentityForm, $request);
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
                     if (false === empty($sponsorCode)) {
@@ -138,24 +136,28 @@ class LenderSubscriptionController extends Controller
 
     /**
      * @param Clients         $client
-     * @param ClientsAdresses $clientAddress
      * @param FormInterface   $form
      * @param Request         $request
      *
      * @return bool
+     * @throws \Doctrine\DBAL\ConnectionException
      */
-    private function handleIdentityPersonForm(Clients $client, ClientsAdresses $clientAddress, FormInterface $form, Request $request): bool
+    private function handlePersonForm(Clients $client, FormInterface $form, Request $request): bool
     {
         /** @var \ficelle $ficelle */
-        $ficelle       = Loader::loadLib('ficelle');
-        $translator    = $this->get('translator');
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $ficelle        = Loader::loadLib('ficelle');
+        $translator     = $this->get('translator');
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $addressManager = $this->get('unilend.service.address_manager');
 
         if (false === $this->isAtLeastEighteenYearsOld($client->getNaissance())) {
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
-        if (PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal() && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])) {
+        $countryId = $form->get('mainAddress')->get('idCountry')->getData();
+        $zip       = $form->get('mainAddress')->get('zip')->getData();
+
+        if (PaysV2::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -176,7 +178,7 @@ class LenderSubscriptionController extends Controller
 
         if ($countryCheck) {
             if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
-                $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByInsee($client->getInseeBirth());
+                $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['insee' => $client->getInseeBirth()]);
 
                 if (null !== $cityByInsee) {
                     $client->setVilleNaissance($cityByInsee->getVille());
@@ -192,8 +194,8 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        if (false == $clientAddress->getMemeAdresseFiscal()) {
-            $this->checkPostalAddressSection($clientAddress, $form);
+        if (false === $form->get('samePostalAddress')->getData()) {
+            $this->checkPostalAddressSection($form);
         }
 
         $isValidCaptcha = $this->isValidCaptcha($request);
@@ -220,27 +222,37 @@ class LenderSubscriptionController extends Controller
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
                 ->setType($clientType);
 
-            if ($clientAddress->getMemeAdresseFiscal()) {
-                $clientAddress
-                    ->setAdresse1($clientAddress->getAdresseFiscal())
-                    ->setCp($clientAddress->getCpFiscal())
-                    ->setVille($clientAddress->getVilleFiscal())
-                    ->setIdPays($clientAddress->getIdPaysFiscal());
-            }
-
             $entityManager->beginTransaction();
 
             try {
                 $entityManager->persist($client);
-                $clientAddress->setIdClient($client);
-                $entityManager->persist($clientAddress);
-                $entityManager->flush($clientAddress);
+                $entityManager->flush($client);
 
                 $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
                 $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
 
+                $addressManager->saveClientAddress(
+                    $form->get('mainAddress')->get('address')->getData(),
+                    $form->get('mainAddress')->get('zip')->getData(),
+                    $form->get('mainAddress')->get('city')->getData(),
+                    $form->get('mainAddress')->get('idCountry')->getData(),
+                    $client,
+                    AddressType::TYPE_MAIN_ADDRESS
+                );
+
+                if (false === $form->get('samePostalAddress')->getData()) {
+                    $addressManager->saveClientAddress(
+                        $form->get('postalAddress')->get('address')->getData(),
+                        $form->get('postalAddress')->get('zip')->getData(),
+                        $form->get('postalAddress')->get('city')->getData(),
+                        $form->get('postalAddress')->get('idCountry')->getData(),
+                        $client,
+                        AddressType::TYPE_POSTAL_ADDRESS
+                    );
+                }
+
                 $entityManager->commit();
-            } catch (ORMException $exception) {
+            } catch (\Exception $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
             }
@@ -254,20 +266,108 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients         $client
-     * @param ClientsAdresses $clientAddress
-     * @param Companies       $company
-     * @param FormInterface   $form
-     * @param Request         $request
+     * @param Clients        $client
+     * @param Companies      $company
+     * @param FormInterface  $form
+     * @param Request        $request
      *
      * @return bool
+     * @throws \Doctrine\DBAL\ConnectionException
      */
-    private function handleLegalEntityForm(Clients $client, ClientsAdresses $clientAddress, Companies $company, FormInterface $form, Request $request): bool
+    private function handleLegalEntityForm(Clients $client, Companies $company, FormInterface $form, Request $request): bool
     {
         /** @var \ficelle $ficelle */
         $ficelle       = Loader::loadLib('ficelle');
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $this->checkCompany($company, $form);
+        $this->checkCompanyAddress($form);
+
+        $isValidCaptcha = $this->isValidCaptcha($request);
+        if ($isValidCaptcha) {
+            $this->checkSecuritySection($client, $form);
+        }
+
+        if (false === $form->get('tos')->getData()) {
+            $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
+        }
+
+        if ($isValidCaptcha && $form->isValid()) {
+            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $password   = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+
+            $client
+                ->setIdLangue('fr')
+                ->setSlug($slug)
+                ->setPassword($password)
+                ->setStatusInscriptionPreteur(1)
+                ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
+                ->setType($clientType);
+
+            $entityManager->beginTransaction();
+
+            try {
+                $entityManager->persist($client);
+                $entityManager->flush($client);
+
+                $company->setIdClientOwner($client);
+                $entityManager->persist($company);
+                $entityManager->flush($company);
+
+                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
+
+                $addressManager = $this->get('unilend.service.address_manager');
+                $addressManager->saveCompanyAddress(
+                    $form->get('mainAddress')->get('address')->getData(),
+                    $form->get('mainAddress')->get('zip')->getData(),
+                    $form->get('mainAddress')->get('city')->getData(),
+                    $form->get('mainAddress')->get('idCountry')->getData(),
+                    $company,
+                    AddressType::TYPE_MAIN_ADDRESS
+                );
+
+                if (false === $form->get('samePostalAddress')->getData()) {
+                    $addressManager->saveCompanyAddress(
+                        $form->get('postalAddress')->get('address')->getData(),
+                        $form->get('postalAddress')->get('zip')->getData(),
+                        $form->get('postalAddress')->get('city')->getData(),
+                        $form->get('postalAddress')->get('idCountry')->getData(),
+                        $company,
+                        AddressType::TYPE_POSTAL_ADDRESS
+                    );
+                }
+                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+
+                $entityManager->commit();
+            } catch (\Exception $exception) {
+                $entityManager->getConnection()->rollBack();
+
+                $this->get('logger')->error('An error occurred while creating client. Message: ' . $exception->getMessage(), [
+                    'class'  => __CLASS__,
+                    'method' => __METHOD__,
+                    'file'   => $exception->getFile(),
+                    'line'   => $exception->getLine()
+                ]);
+            }
+
+            $this->addClientToDataLayer($client);
+            $this->sendSubscriptionStartConfirmationEmail($client);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Companies     $company
+     * @param FormInterface $form
+     */
+    private function checkCompany(Companies $company, FormInterface $form): void
+    {
+        $translator = $this->get('translator');
 
         if (
             Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $company->getStatusClient()
@@ -304,87 +404,50 @@ class LenderSubscriptionController extends Controller
             }
         }
 
-        if (
-            false === empty($company->getIdPays())
-            && PaysV2::COUNTRY_FRANCE == $company->getIdPays()
-            && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneByCp($company->getZip())
-        ) {
+    }
+
+    /**
+     * @param FormInterface $form
+     */
+    private function checkCompanyAddress(FormInterface $form): void
+    {
+        $translator    = $this->get('translator');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        if (empty($form->get('mainAddress')->get('address')->getData())) {
+            $form->get('mainAddress')->get('address')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-main-address')));
+        }
+
+        if (empty($form->get('mainAddress')->get('city')->getData())) {
+            $form->get('mainAddress')->get('city')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-main-address-city')));
+        }
+        $zip = $form->get('mainAddress')->get('zip')->getData();
+        if (empty($zip)) {
+            $form->get('mainAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-main-address-zip')));
+        }
+
+        $countryId = $form->get('mainAddress')->get('idCountry')->getData();
+        if (false === empty($countryId) && PaysV2::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
-        if (false == $clientAddress->getMemeAdresseFiscal()) {
-            $this->checkPostalAddressSection($clientAddress, $form);
-        }
-
-        $isValidCaptcha = $this->isValidCaptcha($request);
-
-        if ($isValidCaptcha) {
-            $this->checkSecuritySection($client, $form);
-        }
-
-        if (false === $form->get('tos')->getData()) {
-            $form->get('tos')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-terms-of-use')));
-        }
-
-        if ($isValidCaptcha && $form->isValid()) {
-            $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-            $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
-            $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
-
-            $client
-                ->setIdLangue('fr')
-                ->setSlug($slug)
-                ->setPassword($password)
-                ->setStatusInscriptionPreteur(1)
-                ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
-                ->setType($clientType);
-
-            $company->setStatusAdresseCorrespondance($clientAddress->getMemeAdresseFiscal());
-
-            if ($clientAddress->getMemeAdresseFiscal()) {
-                $clientAddress
-                    ->setAdresse1($company->getAdresse1())
-                    ->setCp($company->getZip())
-                    ->setVille($company->getCity())
-                    ->setIdPays($company->getIdPays());
-            } else {
-                $clientAddress
-                    ->setAdresseFiscal($company->getAdresse1())
-                    ->setCpFiscal($company->getZip())
-                    ->setVilleFiscal($company->getCity())
-                    ->setIdPaysFiscal($company->getIdPays());
+        if (false === $form->get('samePostalAddress')->getData()) {
+            if (empty($form->get('postalAddress')->get('address')->getData())) {
+                $form->get('postalAddress')->get('address')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address')));
             }
 
-            $entityManager->beginTransaction();
-
-            try {
-                $entityManager->persist($client);
-
-                $clientAddress->setIdClient($client);
-
-                $entityManager->persist($clientAddress);
-                $entityManager->flush($clientAddress);
-
-                $company->setIdClientOwner($client);
-
-                $entityManager->persist($company);
-                $entityManager->flush($company);
-
-                $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::LENDER, Users::USER_ID_FRONT, ClientsStatus::STATUS_CREATION);
-                $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
-
-                $entityManager->commit();
-            } catch (ORMException $exception) {
-                $entityManager->getConnection()->rollBack();
-                $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            if (empty($form->get('postalAddress')->get('city')->getData())) {
+                $form->get('postalAddress')->get('city')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-city')));
             }
 
-            $this->addClientToDataLayer($client);
-            $this->sendSubscriptionStartConfirmationEmail($client);
+            if (empty($form->get('postalAddress')->get('zip')->getData())) {
+                $form->get('postalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-zip')));
+            }
 
-            return true;
+            if (empty($form->get('postalAddress')->get('idCountry')->getData())) {
+                $form->get('postalAddress')->get('idCountry')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-country')));
+            }
         }
-        return false;
     }
 
     /**
@@ -423,11 +486,8 @@ class LenderSubscriptionController extends Controller
      */
     private function sendSubscriptionStartConfirmationEmail(Clients $client): void
     {
-        $keywords = [
-            'firstName' => $client->getPrenom()
-        ];
-
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $keywords);
+        $keywords = ['firstName' => $client->getPrenom()];
+        $message  = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $keywords);
 
         try {
             $message->setTo($client->getEmail());
@@ -462,24 +522,23 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param ClientsAdresses $clientAddressEntity
      * @param FormInterface   $form
      */
-    private function checkPostalAddressSection(ClientsAdresses $clientAddressEntity, FormInterface $form): void
+    private function checkPostalAddressSection(FormInterface $form): void
     {
         $translator = $this->get('translator');
 
-        if (empty($clientAddressEntity->getAdresse1())) {
-            $form->get('postalAddress')->get('adresse1')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address')));
+        if (empty($form->get('postalAddress')->get('address'))) {
+            $form->get('postalAddress')->get('address')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address')));
         }
-        if (empty($clientAddressEntity->getVille())) {
-            $form->get('postalAddress')->get('ville')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-city')));
+        if (empty($form->get('postalAddress')->get('city'))) {
+            $form->get('postalAddress')->get('city')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-city')));
         }
-        if (empty($clientAddressEntity->getCp())) {
-            $form->get('postalAddress')->get('cp')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-zip')));
+        if (empty($form->get('postalAddress')->get('zip'))) {
+            $form->get('postalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-zip')));
         }
-        if (empty($clientAddressEntity->getIdPays())) {
-            $form->get('postalAddress')->get('idPays')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-country')));
+        if (empty($form->get('postalAddress')->get('idCountry'))) {
+            $form->get('postalAddress')->get('idCountry')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-missing-postal-address-country')));
         }
     }
 
@@ -490,6 +549,9 @@ class LenderSubscriptionController extends Controller
      * @param Request $request
      *
      * @return Response
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function documentsAction(string $clientHash, Request $request): Response
     {
@@ -498,16 +560,26 @@ class LenderSubscriptionController extends Controller
             return $response;
         }
 
-        $client        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneByHash($clientHash);
-        $clientAddress = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneByIdClient($client->getIdClient());
-        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
-        $form          = $formManager->getBankInformationForm($client);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
+
+        if ($client->isNaturalPerson()) {
+            $clientAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $countryId      = $clientAddress->getIdCountry()->getIdPays();
+        } else {
+            $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $countryId      = $companyAddress->getIdCountry()->getIdPays();
+        }
+
+        $formManager = $this->get('unilend.frontbundle.service.form_manager');
+        $form        = $formManager->getBankInformationForm($client);
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
             if ($form->isValid()) {
-                $isValid = $this->handleDocumentsForm($clientAddress, $form, $request->files);
+                $isValid = $this->handleDocumentsForm($form, $request->files, $countryId);
                 if ($isValid) {
                     return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
                 }
@@ -516,13 +588,13 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $countryId !== PaysV2::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
 
         if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $template['company'] = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $template['company'] = $company;
         }
 
         return $this->render('lender_subscription/documents.html.twig', $template);
@@ -530,13 +602,15 @@ class LenderSubscriptionController extends Controller
 
 
     /**
-     * @param ClientsAdresses $clientAddress
-     * @param FormInterface   $form
-     * @param FileBag         $fileBag
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     * @param int           $countryId
      *
      * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function handleDocumentsForm(ClientsAdresses $clientAddress, FormInterface $form, FileBag $fileBag): bool
+    private function handleDocumentsForm(FormInterface $form, FileBag $fileBag, int $countryId): bool
     {
         $translator  = $this->get('translator');
         /** @var Clients $client */
@@ -565,8 +639,8 @@ class LenderSubscriptionController extends Controller
             $form->addError(new FormError($translator->trans('lender-subscription_documents-missing-rib')));
         }
 
-        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $this->validateAttachmentsPerson($form, $client, $clientAddress, $fileBag);
+        if ($client->isNaturalPerson()) {
+            $this->validateAttachmentsPerson($form, $client, $fileBag, $countryId);
         } else {
             $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $this->validateAttachmentsLegalEntity($form, $client, $company, $fileBag);
@@ -591,22 +665,22 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param FormInterface     $form
-     * @param Clients           $client
-     * @param ClientsAdresses   $clientAddress
-     * @param FileBag           $fileBag
+     * @param FormInterface $form
+     * @param Clients       $client
+     * @param FileBag       $fileBag
+     * @param int           $countryId
      */
-    private function validateAttachmentsPerson(FormInterface $form, Clients $client, ClientsAdresses $clientAddress, FileBag $fileBag): void
+    private function validateAttachmentsPerson(FormInterface $form, Clients $client, FileBag $fileBag, int $countryId): void
     {
         $translator         = $this->get('translator');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
         $files = [
-            AttachmentType::CNI_PASSPORTE       => $fileBag->get('id_recto'),
-            AttachmentType::CNI_PASSPORTE_VERSO => $fileBag->get('id_verso'),
+            AttachmentType::CNI_PASSPORTE         => $fileBag->get('id_recto'),
+            AttachmentType::CNI_PASSPORTE_VERSO   => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($clientAddress->getIdPaysFiscal() > PaysV2::COUNTRY_FRANCE) {
+        if ($countryId !== PaysV2::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())) {
@@ -658,8 +732,8 @@ class LenderSubscriptionController extends Controller
 
         $files = [
             AttachmentType::CNI_PASSPORTE_DIRIGEANT => $fileBag->get('id_recto'),
-            AttachmentType::CNI_PASSPORTE_VERSO     =>  $fileBag->get('id_verso'),
-            AttachmentType::KBIS                    =>  $fileBag->get('company-registration')
+            AttachmentType::CNI_PASSPORTE_VERSO     => $fileBag->get('id_verso'),
+            AttachmentType::KBIS                    => $fileBag->get('company-registration')
         ];
         if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
             $files[AttachmentType::DELEGATION_POUVOIR] = $fileBag->get('delegation-of-authority');
@@ -1040,15 +1114,15 @@ class LenderSubscriptionController extends Controller
     {
         $formManager = $this->get('unilend.frontbundle.service.form_manager');
         $post        = $formManager->cleanPostData($request->request->all());
-        $files       = $request->files;
+        $files       = $request->files->all();
 
         if (1 == $step) {
             $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
             $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
             $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
-            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
+            $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
         } else {
-            $formType = in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]) ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
+            $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;
         }
 
         if (false === empty($files)) {
@@ -1284,12 +1358,12 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Clients $clientEntity
+     * @param Clients $client
      */
-    private function addClientToDataLayer(Clients $clientEntity): void
+    private function addClientToDataLayer(Clients $client): void
     {
-        $this->get('session')->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $clientEntity->getEmail());
-        $this->get('session')->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $clientEntity->getIdClient());
+        $this->get('session')->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
+        $this->get('session')->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->getIdClient());
     }
 
     /**
@@ -1299,7 +1373,7 @@ class LenderSubscriptionController extends Controller
      */
     private function isAtLeastEighteenYearsOld(\DateTime $birthDay): bool
     {
-        $now = new \DateTime('NOW');
+        $now      = new \DateTime('NOW');
         $dateDiff = $birthDay->diff($now);
 
         return $dateDiff->y >= 18;

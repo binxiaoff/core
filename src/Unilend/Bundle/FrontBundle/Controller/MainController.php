@@ -5,33 +5,28 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, RedirectResponse, Request, Response
+};
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Tree;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Clients, OffresBienvenues, Tree, Users, WalletType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\ContentManager;
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
+use Unilend\Bundle\FrontBundle\Service\{
+    ContentManager, ProjectDisplayManager, SourceManager, TestimonialManager
+};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -584,39 +579,25 @@ class MainController extends Controller
         $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
     }
 
+
     private function getTOSReplacementsForLegalEntity(\clients $client, $dateAccept, $loansCount, $content, &$template)
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->id_client]);
+        $companyAddress = $company->getIdAddress();
 
-        /** @var \clients_adresses $clientAddresses */
-        $clientAddresses = $entityManagerSimulator->getRepository('clients_adresses');
-        $clientAddresses->get($client->id_client, 'id_client');
-
-        if ($clientAddresses->id_pays_fiscal == 0) {
-            $clientAddresses->id_pays_fiscal = 1;
+        if (null === $companyAddress) {
+            $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
-
-        /** @var \companies $companies */
-        $company = $entityManagerSimulator->getRepository('companies');
-        $company->get($client->id_client, 'id_client_owner');
-
-        if ($company->id_pays == 0) {
-            $company->id_pays = 1;
-        }
-
-        /** @var \pays_v2 $country */
-        $country = $entityManagerSimulator->getRepository('pays_v2');
-        $country->get($company->id_pays, 'id_pays');
 
         $aReplacements = [
             '[Civilite]'            => $client->civilite,
             '[Prenom]'              => $client->prenom,
             '[Nom]'                 => $client->nom,
             '[Fonction]'            => $client->fonction,
-            '[Raison_sociale]'      => $company->name,
-            '[SIREN]'               => $company->siren,
-            '[adresse_fiscale]'     => $company->adresse1 . ', ' . $company->zip . ', ' . $company->city . ', ' . $country->fr,
+            '[Raison_sociale]'      => $company->getName(),
+            '[SIREN]'               => $company->getSiren(),
+            '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
             '[date_validation_cgv]' => $dateAccept
         ];
 
