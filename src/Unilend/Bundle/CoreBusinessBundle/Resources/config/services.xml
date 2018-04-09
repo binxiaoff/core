@@ -540,5 +540,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.location_manager"/>
         </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer" autowire="true"/>
     </services>
 </container>
