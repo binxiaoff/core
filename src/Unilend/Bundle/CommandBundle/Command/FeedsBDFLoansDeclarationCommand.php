@@ -107,7 +107,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 
         $ifpFileName = BdfLoansDeclarationManager::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
         try {
-            $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP);
+            $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP_BDC);
         } catch (\Exception $exception) {
             $logger->error(
                 sprintf('Could not generate IFP declaration file. Error: %s', $exception->getMessage()),
@@ -120,7 +120,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $this->recordLineNumber = 1;
         $cipFileName            = BdfLoansDeclarationManager::UNILEND_CIP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
         try {
-            $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_CIP);
+            $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_MINIBON);
         } catch (\Exception $exception) {
             $logger->error(
                 sprintf('Could not generate CIP declaration file. Error: %s', $exception->getMessage()),
@@ -168,18 +168,18 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $fileManager                = $this->getContainer()->get('filesystem');
 
         switch ($type) {
-            case BdfLoansDeclarationManager::TYPE_IFP:
+            case BdfLoansDeclarationManager::TYPE_IFP_BDC:
                 $declarerId      = BdfLoansDeclarationManager::UNILEND_IFP_ID;
                 $filePath        = $bdfLoansDeclarationManager->getIfpPath();
                 $fileArchivePath = $bdfLoansDeclarationManager->getIfpArchivePath();
                 break;
-            case BdfLoansDeclarationManager::TYPE_CIP:
+            case BdfLoansDeclarationManager::TYPE_MINIBON:
                 $declarerId      = BdfLoansDeclarationManager::UNILEND_CIP_ID;
                 $filePath        = $bdfLoansDeclarationManager->getCipPath();
                 $fileArchivePath = $bdfLoansDeclarationManager->getCipArchivePath();
                 break;
             default:
-                throw new \Exception(sprintf('Unknown declarer type, expected types are: ("%s", "%s")', BdfLoansDeclarationManager::TYPE_IFP, BdfLoansDeclarationManager::TYPE_CIP));
+                throw new \Exception(sprintf('Unknown declarer type, expected types are: ("%s", "%s")', BdfLoansDeclarationManager::TYPE_IFP_BDC, BdfLoansDeclarationManager::TYPE_MINIBON));
         }
 
         if (false === $fileManager->exists($filePath)) {

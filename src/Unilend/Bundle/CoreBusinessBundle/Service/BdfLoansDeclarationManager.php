@@ -6,8 +6,8 @@ class BdfLoansDeclarationManager
 {
     const DECLARATION_FILE_PATH = 'bdf/emissions/declarations_mensuelles';
 
-    const TYPE_IFP = 'ifp';
-    const TYPE_CIP = 'cip';
+    const TYPE_IFP_BDC = 'ifp';
+    const TYPE_MINIBON = 'cip';
 
     const UNILEND_IFP_ID = 'IF010';
     const UNILEND_CIP_ID = 'CI004';
@@ -36,7 +36,7 @@ class BdfLoansDeclarationManager
      */
     public function getIfpPath(): string
     {
-        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_IFP]);
+        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_IFP_BDC]);
     }
 
     /**
@@ -52,7 +52,7 @@ class BdfLoansDeclarationManager
      */
     public function getCipPath(): string
     {
-        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_CIP]);
+        return implode(DIRECTORY_SEPARATOR, [$this->getBaseDir(), self::TYPE_MINIBON]);
     }
 
     /**

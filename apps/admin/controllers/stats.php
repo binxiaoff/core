@@ -651,8 +651,8 @@ class statsController extends bootstrap
         $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findBy([], ['added' => 'DESC']);
         $declarationList            = [];
         $documentTypes              = [
-            BdfLoansDeclarationManager::TYPE_IFP,
-            BdfLoansDeclarationManager::TYPE_CIP
+            BdfLoansDeclarationManager::TYPE_IFP_BDC,
+            BdfLoansDeclarationManager::TYPE_MINIBON
         ];
 
         if (isset($this->params[0], $this->params[1]) && in_array($this->params[0], $documentTypes)) {
@@ -668,10 +668,10 @@ class statsController extends bootstrap
 
         foreach ($declarations as $declaration) {
             if (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_IFP_ID)) {
-                $type            = BdfLoansDeclarationManager::TYPE_IFP;
+                $type            = BdfLoansDeclarationManager::TYPE_IFP_BDC;
                 $declarationPath = $bdfLoansDeclarationManager->getIfpPath();
             } elseif (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_CIP_ID)) {
-                $type            = BdfLoansDeclarationManager::TYPE_CIP;
+                $type            = BdfLoansDeclarationManager::TYPE_MINIBON;
                 $declarationPath = $bdfLoansDeclarationManager->getCipPath();
             } else {
                 $this->get('logger')->warning(
@@ -703,10 +703,10 @@ class statsController extends bootstrap
                 $declarationList[$year][$month]['declarationDate'] = $declarationDate;
 
                 switch ($type) {
-                    case BdfLoansDeclarationManager::TYPE_IFP:
+                    case BdfLoansDeclarationManager::TYPE_IFP_BDC:
                         $declarationList[$year][$month]['ifpFileName'] = $declaration->getElementName();
                         break;
-                    case BdfLoansDeclarationManager::TYPE_CIP:
+                    case BdfLoansDeclarationManager::TYPE_MINIBON:
                         $declarationList[$year][$month]['cipFileName'] = $declaration->getElementName();
                         break;
                     default:
