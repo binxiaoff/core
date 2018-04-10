@@ -1346,10 +1346,7 @@ class dossiersController extends bootstrap
             && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
             && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
         ) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
-
-            if (false === $clientManager->isBorrower($clientEntity)) {
+            if (false === $clientEntity->isBorrower()) {
                 $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
                 $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur';
 
