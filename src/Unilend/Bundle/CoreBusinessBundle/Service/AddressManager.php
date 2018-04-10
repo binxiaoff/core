@@ -142,7 +142,7 @@ class AddressManager
     }
 
     /**
-     * @param CompanyAddress|ClientAddress $companyAddress
+     * @param CompanyAddress|ClientAddress $addressObject
      * @param string                       $address
      * @param string                       $zip
      * @param string                       $city
@@ -150,13 +150,13 @@ class AddressManager
      *
      * @return bool
      */
-    private function isAddressDataDifferent($companyAddress, string $address, string $zip, string $city, PaysV2 $country): bool
+    private function isAddressDataDifferent($addressObject, string $address, string $zip, string $city, PaysV2 $country): bool
     {
         return
-            $address !== $companyAddress->getAddress()
-            || $zip !== $companyAddress->getZip()
-            || $city !== $companyAddress->getCity()
-            || $country !== $companyAddress->getIdCountry();
+            $address !== $addressObject->getAddress()
+            || $zip !== $addressObject->getZip()
+            || $city !== $addressObject->getCity()
+            || $country !== $addressObject->getIdCountry();
     }
 
     /**
@@ -366,7 +366,7 @@ class AddressManager
         if (
             null === $clientAddress && null === $lastModifiedAddress
             || (null === $clientAddress && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
-            || (null !== $clientAddress && $this->isAddressDataDifferent($clientAddress, $address, $zip, $city, $country) && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $clientAddress && $this->isAddressDataDifferent($clientAddress, $address, $zip, $city, $country) && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
         ) {
             $newAddress = $this->createClientAddress($client, $address, $zip, $city, $country, $type);
         }
