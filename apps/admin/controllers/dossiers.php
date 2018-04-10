@@ -233,9 +233,21 @@ class dossiersController extends bootstrap
             $this->longitude = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLongitude();
 
             $this->aAnnualAccountsDates = [];
-            $this->aAnalysts            = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_RISK . ') OR id_user = ' . $this->projects->id_analyste);
-            $this->aSalesPersons        = $this->users->select('(status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL . ') OR id_user = ' . Users::USER_ID_ARNAUD_SCHWARTZ . ' OR id_user = ' . $this->projects->id_commercial);
-            $this->projectComments      = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            /** @var \Doctrine\Common\Collections\ArrayCollection analysts */
+            $this->analysts = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_RISK]);
+            if (false === empty($this->projects->id_analyste) && $currentAnalyst = $userRepository->find($this->projects->id_analyste)) {
+                if (false === in_array($currentAnalyst, $this->analysts)) {
+                    $this->analysts[] = $currentAnalyst;
+                }
+            }
+            $this->salesPersons = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_COMMERCIAL]);
+            if (false === empty($this->projects->id_commercial) && $currentSalesPerson = $userRepository->find($this->projects->id_commercial)) {
+                if (false === in_array($currentSalesPerson, $this->salesPersons)) {
+                    $this->salesPersons[] = $currentSalesPerson;
+                }
+            }
+           $this->projectComments      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 

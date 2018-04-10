@@ -67,7 +67,7 @@ class ProjectRequestController extends Controller
     public function landingPageStartAction(Request $request)
     {
         if ($request->isMethod(Request::METHOD_GET)) {
-            return $this->redirect($this->generateUrl('home_borrower') . '#homeemp-section-esim');
+            return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
         $projectManager = $this->get('unilend.service.project_manager');
         $translator     = $this->get('translator');
@@ -157,28 +157,28 @@ class ProjectRequestController extends Controller
             $email .= '-' . time();
         }
 
-        $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
-
-        $client = new Clients();
-        $client
-            ->setEmail($email)
-            ->setIdLangue('fr')
-            ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
-            ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
-            ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
-            ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
-        $company = new Companies();
-        $company->setSiren($siren)
-            ->setSiret($siret)
-            ->setStatusAdresseCorrespondance(1)
-            ->setEmailDirigeant($email)
-            ->setEmailFacture($email);
-
-        $entityManager->beginTransaction();
-
+        $entityManager->getConnection()->beginTransaction();
         try {
+            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+
+            $client = new Clients();
+            $client
+                ->setEmail($email)
+                ->setIdLangue('fr')
+                ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
+                ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
+                ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
+                ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
+
+            $company = new Companies();
+            $company->setSiren($siren)
+                ->setSiret($siret)
+                ->setStatusAdresseCorrespondance(1)
+                ->setEmailDirigeant($email)
+                ->setEmailFacture($email);
+
             $entityManager->persist($client);
+            $entityManager->flush($client);
 
             $company->setIdClientOwner($client);
 
@@ -214,32 +214,36 @@ class ProjectRequestController extends Controller
             $project
                 ->setIdCompany($company)
                 ->setAmount($amount)
+                ->setPeriod($duration)
                 ->setIdBorrowingMotive($reason)
-                ->setCaDeclaraClient(0)
-                ->setResultatExploitationDeclaraClient(0)
-                ->setFondsPropresDeclaraClient(0)
                 ->setStatus(ProjectsStatus::INCOMPLETE_REQUEST)
-                ->setIdPartner($partner);
+                ->setIdPartner($partner)
+                ->setCreateBo(false)
+                ->setDisplay(Projects::AUTO_REPAYMENT_ON);
 
             $entityManager->persist($project);
+
             $entityManager->flush($project);
 
             /** @var ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
-            $entityManager->commit();
+            $entityManager->getConnection()->commit();
+
+            return $this->start($project);
         } catch (\Exception $exception) {
-            $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine()
             ]);
-        }
 
-        return $this->start($project);
+            $entityManager->getConnection()->rollBack();
+
+            return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
+        }
     }
 
     /**
@@ -395,6 +399,7 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
@@ -521,7 +526,6 @@ class ProjectRequestController extends Controller
                 $advisorAddress->telephone = $request->request->get('advisor')['mobile'];
                 $advisorAddress->create();
 
-                $entityManager  = $this->get('doctrine.orm.entity_manager');
                 $advisorCompany = new Companies();
 
                 $entityManager->persist($advisorCompany);
@@ -981,7 +985,9 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute(self::PAGE_ROUTE_PARTNER, ['hash' => $project->getHash()]);
         }
 
-        $this->saveContactDetails($request->request->get('contact')['email'],
+        $this->saveContactDetails(
+            $project->getIdCompany(),
+            $request->request->get('contact')['email'],
             $request->request->get('contact')['civility'],
             $request->request->get('contact')['firstname'],
             $request->request->get('contact')['lastname'],
@@ -1542,8 +1548,9 @@ class ProjectRequestController extends Controller
         if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($company->getIdClientOwner()->getEmail()) !== $email) {
             $email = $email . '-' . time();
         }
+        $client = $company->getIdClientOwner();
 
-        $company->getIdClientOwner()->setEmail($email)
+        $client->setEmail($email)
             ->setCivilite($formOfAddress)
             ->setPrenom($firstName)
             ->setNom($lastName)
@@ -1555,7 +1562,7 @@ class ProjectRequestController extends Controller
         $company->setEmailDirigeant($email)->setEmailFacture($email);
 
         try {
-            $entityManager->flush($company);
+            $entityManager->flush([$company, $client]);
         } catch (\Exception $exception) {
             $this->get('logger')->error('Cannot update the company.', [
                 'company_id' => $company->getIdCompany(),

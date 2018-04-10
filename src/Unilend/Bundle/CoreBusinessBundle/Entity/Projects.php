@@ -5,6 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
+use Ramsey\Uuid\Uuid;
 
 /**
  * Projects
@@ -39,7 +41,7 @@ class Projects
     /**
      * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=191, nullable=false)
+     * @ORM\Column(name="slug", type="string", length=191, nullable=true)
      */
     private $slug;
 
@@ -66,21 +68,7 @@ class Projects
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=false)
-     */
-    private $idPartenaire;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=false)
-     */
-    private $idPartenaireSubcode;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_prescripteur", type="integer", nullable=false)
+     * @ORM\Column(name="id_prescripteur", type="integer", nullable=true)
      */
     private $idPrescripteur;
 
@@ -101,7 +89,7 @@ class Projects
     /**
      * @var string
      *
-     * @ORM\Column(name="title", type="string", length=191, nullable=false)
+     * @ORM\Column(name="title", type="string", length=191, nullable=true)
      */
     private $title;
 
@@ -115,58 +103,44 @@ class Projects
     /**
      * @var string
      *
-     * @ORM\Column(name="photo_projet", type="string", length=191, nullable=false)
+     * @ORM\Column(name="photo_projet", type="string", length=191, nullable=true)
      */
     private $photoProjet;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="comments", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="comments", type="text", length=16777215, nullable=true)
      */
     private $comments;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="nature_project", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="nature_project", type="text", length=16777215, nullable=true)
      */
     private $natureProject;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="objectif_loan", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="objectif_loan", type="text", length=16777215, nullable=true)
      */
     private $objectifLoan;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="presentation_company", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="presentation_company", type="text", length=16777215, nullable=true)
      */
     private $presentationCompany;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="means_repayment", type="text", length=16777215, nullable=false)
+     * @ORM\Column(name="means_repayment", type="text", length=16777215, nullable=true)
      */
     private $meansRepayment;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="type", type="integer", nullable=false)
-     */
-    private $type;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="stand_by", type="integer", nullable=false)
-     */
-    private $standBy;
 
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users
@@ -191,70 +165,70 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_publication", type="datetime", nullable=false)
+     * @ORM\Column(name="date_publication", type="datetime", nullable=true)
      */
     private $datePublication;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_funded", type="datetime", nullable=false)
+     * @ORM\Column(name="date_funded", type="datetime", nullable=true)
      */
     private $dateFunded;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_retrait", type="datetime", nullable=false)
+     * @ORM\Column(name="date_retrait", type="datetime", nullable=true)
      */
     private $dateRetrait;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="date_fin", type="datetime", nullable=false)
+     * @ORM\Column(name="date_fin", type="datetime", nullable=true)
      */
     private $dateFin;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_dernier_bilan", type="integer", nullable=false)
+     * @ORM\Column(name="id_dernier_bilan", type="integer", nullable=true)
      */
     private $idDernierBilan;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="balance_count", type="integer", nullable=false)
+     * @ORM\Column(name="balance_count", type="integer", nullable=true)
      */
     private $balanceCount;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_company_rating_history", type="integer", nullable=false)
+     * @ORM\Column(name="id_company_rating_history", type="integer", nullable=true)
      */
     private $idCompanyRatingHistory;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_project_need", type="integer", nullable=false)
+     * @ORM\Column(name="id_project_need", type="integer", nullable=true)
      */
     private $idProjectNeed;
 
     /**
-     * @var integer
+     * @var bool
      *
-     * @ORM\Column(name="create_bo", type="integer", nullable=false)
+     * @ORM\Column(name="create_bo", type="boolean", nullable=false)
      */
     private $createBo;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="risk", type="string", length=2, nullable=false)
+     * @ORM\Column(name="risk", type="string", length=2, nullable=true)
      */
     private $risk;
 
@@ -282,21 +256,21 @@ class Projects
     /**
      * @var integer
      *
-     * @ORM\Column(name="remb_auto", type="integer", nullable=false)
+     * @ORM\Column(name="remb_auto", type="integer", nullable=true)
      */
     private $rembAuto;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="display", type="integer", nullable=false)
+     * @ORM\Column(name="display", type="integer", nullable=true)
      */
     private $display;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_rate", type="integer", nullable=false)
+     * @ORM\Column(name="id_rate", type="integer", nullable=true)
      */
     private $idRate;
 
@@ -347,7 +321,7 @@ class Projects
     /**
      * @var integer
      *
-     * @ORM\Column(name="id_product", type="integer", nullable=false)
+     * @ORM\Column(name="id_product", type="integer", nullable=true)
      */
     private $idProduct;
 
@@ -361,7 +335,7 @@ class Projects
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -384,7 +358,7 @@ class Projects
     /**
      * @var float
      *
-     * @ORM\Column(name="interest_rate", type="decimal", precision=4, scale=2)
+     * @ORM\Column(name="interest_rate", type="decimal", precision=4, scale=2, nullable=true)
      */
     private $interestRate;
 
@@ -565,54 +539,6 @@ class Projects
     public function getIdTargetCompany()
     {
         return $this->idTargetCompany;
-    }
-
-    /**
-     * Set idPartenaire
-     *
-     * @param integer $idPartenaire
-     *
-     * @return Projects
-     */
-    public function setIdPartenaire($idPartenaire)
-    {
-        $this->idPartenaire = $idPartenaire;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaire
-     *
-     * @return integer
-     */
-    public function getIdPartenaire()
-    {
-        return $this->idPartenaire;
-    }
-
-    /**
-     * Set idPartenaireSubcode
-     *
-     * @param integer $idPartenaireSubcode
-     *
-     * @return Projects
-     */
-    public function setIdPartenaireSubcode($idPartenaireSubcode)
-    {
-        $this->idPartenaireSubcode = $idPartenaireSubcode;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaireSubcode
-     *
-     * @return integer
-     */
-    public function getIdPartenaireSubcode()
-    {
-        return $this->idPartenaireSubcode;
     }
 
     /**
@@ -880,54 +806,6 @@ class Projects
     }
 
     /**
-     * Set type
-     *
-     * @param integer $type
-     *
-     * @return Projects
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Get type
-     *
-     * @return integer
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Set standBy
-     *
-     * @param integer $standBy
-     *
-     * @return Projects
-     */
-    public function setStandBy($standBy)
-    {
-        $this->standBy = $standBy;
-
-        return $this;
-    }
-
-    /**
-     * Get standBy
-     *
-     * @return integer
-     */
-    public function getStandBy()
-    {
-        return $this->standBy;
-    }
-
-    /**
      * Set idAnalyste
      *
      * @param Users $idAnalyste
@@ -1170,7 +1048,7 @@ class Projects
     /**
      * Set createBo
      *
-     * @param integer $createBo
+     * @param bool $createBo
      *
      * @return Projects
      */
@@ -1184,7 +1062,7 @@ class Projects
     /**
      * Get createBo
      *
-     * @return integer
+     * @return bool
      */
     public function getCreateBo()
     {
@@ -1785,5 +1663,28 @@ class Projects
     public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return string
+     */
+    private function generateHash()
+    {
+        $uuid4 = Uuid::uuid4();
+        return $uuid4->toString();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setHashValue()
+    {
+        if (is_null($this->hash)) {
+            try {
+                $this->hash = $this->generateHash();
+            } catch (UnsatisfiedDependencyException $exception) {
+                $this->hash = md5(uniqid());
+            }
+        }
     }
 }
