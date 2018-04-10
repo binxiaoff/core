@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, PaysV2, ProjectNotification, ProjectsStatus, UniversignEntityInterface, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, PaysV2, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -136,24 +136,24 @@ class preteursController extends bootstrap
             $this->lastModifiedAddress = null;
 
             try {
-                if ($this->wallet->getIdClient()->isNaturalPerson()) {
-                    $this->validatedAddress    = $wallet->getIdClient()->getIdAddress();
+                if ($this->client->isNaturalPerson()) {
+                    $this->validatedAddress    = $this->client->getIdAddress();
                     $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
-                        ->findLastModifiedNotArchivedAddressByType($wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($this->client, AddressType::TYPE_MAIN_ADDRESS);
                 } else {
-                    $this->companies->get($this->clients->id_client, 'id_client_owner');
+                    $this->companies->get($this->client->getIdClient(), 'id_client_owner');
                     $this->companyEntity       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
                     $this->validatedAddress    = $this->companyEntity->getIdAddress();
                     $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
                         ->findLastModifiedNotArchivedAddressByType($this->companyEntity, AddressType::TYPE_MAIN_ADDRESS);
                 }
             } catch (\Exception $exception) {
-                $this->get('logger')->error('An exception occurred while getting lender address. Message: ' . $exception->getMessage(), [
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'class' => __CLASS__,
-                    'function' => __METHOD__,
-                    'idLCient' => $wallet->getIdClient()->getIdClient()
+                $logger->error('An exception occurred while getting lender address. Message: ' . $exception->getMessage(), [
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_client' => $this->client->getIdClient()
                 ]);
             }
 
@@ -172,14 +172,22 @@ class preteursController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Operation $firstProvision */
             $firstProvision       = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWalletCreditor' => $wallet, 'idType' => $provisionType], ['id' => 'ASC']);
             $this->SumInscription = null !== $firstProvision ? $firstProvision->getAmount() : 0;
-
-            $this->echeanciers = $this->loadData('echeanciers');
-            $this->sumRembInte = $this->echeanciers->getRepaidInterests(['id_lender' => $wallet->getId()]);
+            $this->sumRembInte    = $this->echeanciers->getRepaidInterests(['id_lender' => $wallet->getId()]);
 
             try {
-                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange($wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
+                $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange(
+                    $wallet->getId(),
+                    (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'),
+                    (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59')
+                );
             } catch (\Exception $exception) {
-                $logger->error('Could not get next repayment amount (id_client = ' . $this->clients->id_client . ')', ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $wallet->getId()]);
+                $logger->error('Could not get next repayment amount (id_client = ' . $this->client->getIdClient() . ')', [
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_lender' => $wallet->getId()
+                ]);
                 $this->nextRemb = 0;
             }
 
@@ -309,7 +317,9 @@ class preteursController extends bootstrap
         $this->lPays  = $this->pays->select('', 'ordre ASC');
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
@@ -322,10 +332,10 @@ class preteursController extends bootstrap
         $addressManager = $this->get('unilend.service.address_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
         $taxManager = $this->get('unilend.service.tax_manager');
-        $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
-        $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
+
+        $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
@@ -346,7 +356,7 @@ class preteursController extends bootstrap
             try {
                 if ($this->client->isNaturalPerson()) {
                     $this->lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
-                        ->findLastModifiedNotArchivedAddressByType($wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
+                        ->findLastModifiedNotArchivedAddressByType($this->client, AddressType::TYPE_MAIN_ADDRESS);
                     $this->samePostalAddress   = null === $this->client->getIdPostalAddress();
                 } else {
                     /** @var Companies companyEntity */
@@ -357,11 +367,11 @@ class preteursController extends bootstrap
                 }
             } catch (\Exception $exception) {
                 $logger->error('An exception occurred while getting lender address. Message: ' . $exception->getMessage(), [
-                    'file'     => $exception->getFile(),
-                    'line'     => $exception->getLine(),
-                    'class'    => __CLASS__,
-                    'function' => __METHOD__,
-                    'idClient' => $wallet->getIdClient()->getIdClient()
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_client' => $this->client->getIdClient()
                 ]);
             }
 
@@ -384,7 +394,7 @@ class preteursController extends bootstrap
             $this->taxationCountryHistory = $this->getTaxationHistory($wallet->getId());
             $this->clientStatusMessage    = $this->getMessageAboutClientStatus();
             $this->statusHistory          = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-                ['idClient' => $this->client->getIdClient()],
+                ['idClient' => $this->client],
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
@@ -449,7 +459,7 @@ class preteursController extends bootstrap
                         $birthday = \DateTime::createFromFormat('d/m/Y', $birthday);
                     }
 
-                    if (false !== $mainAddressCountry && $this->lastModifiedAddress->getIdCountry()->getIdPays() != $mainAddressCountry) {
+                    if (0 !== $mainAddressCountry && $this->lastModifiedAddress->getIdCountry()->getIdPays() != $mainAddressCountry) {
                         $applyTaxCountry = true;
                     }
 
@@ -499,7 +509,7 @@ class preteursController extends bootstrap
                         }
 
                         if (true === $applyTaxCountry) {
-                            $taxManager->addTaxToApply($wallet->getIdClient(), $this->userEntity->getIdUser());
+                            $taxManager->addTaxToApply($this->client, $this->userEntity->getIdUser());
                         }
 
                         $this->saveUserHistory($this->client->getIdClient());
@@ -522,11 +532,11 @@ class preteursController extends bootstrap
                     } catch (\Exception $exception) {
                         $entityManager->rollback();
                         $logger->error('An exception occurred while updating client in the backoffice. Message: ' . $exception->getMessage(), [
-                            'file'     => $exception->getFile(),
-                            'line'     => $exception->getLine(),
-                            'class'    => __CLASS__,
-                            'method'   => __FUNCTION__,
-                            'idClient' => $this->client->getIdClient()
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'id_client' => $this->client->getIdClient()
                         ]);
 
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
@@ -556,7 +566,7 @@ class preteursController extends bootstrap
                             ->setCivilite($_POST['civilite_e'])
                             ->setNom($this->ficelle->majNom($_POST['nom_e']))
                             ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
-                            ->setFunction($_POST['fonction_e'])
+                            ->setFonction($_POST['fonction_e'])
                             ->setEmail($email)
                             ->setTelephone(str_replace(' ', '', $_POST['phone_e']))
                             ->setIdLangue('fr')
@@ -572,7 +582,7 @@ class preteursController extends bootstrap
                                 ->setPhoneDirigeant(str_replace(' ', '', $_POST['phone2_e']));
 
 
-                            if ($_POST['enterprise'] === Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
+                            if ($_POST['enterprise'] == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                                 $this->companyEntity
                                     ->setStatusConseilExterneEntreprise($_POST['status_conseil_externe_entreprise'])
                                     ->setPreciserConseilExterneEntreprise($_POST['preciser_conseil_externe_entreprise']);
@@ -629,11 +639,11 @@ class preteursController extends bootstrap
                     } catch (\Exception $exception) {
                         $entityManager->rollback();
                         $logger->error('An exception occurred while updating client in the backoffice. Message: ' . $exception->getMessage(), [
-                            'file'     => $exception->getFile(),
-                            'line'     => $exception->getLine(),
-                            'class'    => __CLASS__,
-                            'method'   => __FUNCTION__,
-                            'idClient' => $this->client->getIdClient()
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'id_client' => $this->client->getIdClient()
                         ]);
 
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
@@ -1325,11 +1335,12 @@ class preteursController extends bootstrap
     private function getMessageAboutClientStatus(): string
     {
         $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
+        $client              = $this->wallet->getIdClient();
 
         if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $this->clients->id_client]);
+            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $client->getIdClient()]);
 
             return '';
         }
@@ -1339,15 +1350,15 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
             case ClientsStatus::STATUS_TO_BE_CHECKED:
-                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_COMPLETENESS:
             case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
             case ClientsStatus::STATUS_COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . ' </div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . $client->getAdded()->format('d/m/Y') . ' </div>';
                 break;
             case ClientsStatus::STATUS_MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
@@ -1365,7 +1376,7 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '';
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $this->clients->id_client]);
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $client->getIdClient()]);
                 break;
         }
 
