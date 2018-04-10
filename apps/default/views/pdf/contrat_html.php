@@ -58,16 +58,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
                         <li>Nom<div class="col-small"><?= $this->clients->nom ?></div></li>
                         <li>Prénom<div class="col-small"><?= $this->clients->prenom ?></div></li>
                         <li>Date de naissance<div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div></li>
-                        <li>Adresse<div class="col-small"><?= $this->clients_adresses->adresse1 ?></div></li>
-                        <li>Code postal<div class="col-small"><?= $this->clients_adresses->cp ?></div></li>
-                        <li>Ville<div class="col-small"><?= $this->clients_adresses->ville ?></div></li>
+                        <li>Adresse<div class="col-small"><?= $this->lenderAddress->getAddress() ?></div></li>
+                        <li>Code postal<div class="col-small"><?= $this->lenderAddress->getZip() ?></div></li>
+                        <li>Ville<div class="col-small"><?= $this->lenderAddress->getCity() ?></div></li>
                     <?php else: ?>
                         <li>Raison sociale<div class="col-small"><?= $this->lenderCompany->getName() ?></div></li>
                         <li>Forme juridique<div class="col-small"><?= $this->lenderCompany->getForme() ?></div></li>
                         <li>Capital social<div class="col-small"><?= $this->ficelle->formatNumber($this->lenderCompany->getCapital(), 0) ?>&nbsp;&euro;</div></li>
-                        <li>Adresse du siège social<div class="col-small"><?= $this->lenderCompany->getIdAddress()->getAddress() ?></div></li>
-                        <li>Code postal<div class="col-small"><?= $this->lenderCompany->getIdAddress()->getZip() ?></div></li>
-                        <li>Ville<div class="col-small"><?= $this->lenderCompany->getIdAddress()->getCity() ?></div></li>
+                        <li>Adresse du siège social<div class="col-small"><?= $this->lenderAddress->getAddress() ?></div></li>
+                        <li>Code postal<div class="col-small"><?= $this->lenderAddress->getZip() ?></div></li>
+                        <li>Ville<div class="col-small"><?= $this->lenderAddress->getCity() ?></div></li>
                         <li>Tribunal de commerce<div class="col-small"><?= $this->lenderCompany->getTribunalCom() ?></div></li>
                         <li>R.C.S.<div class="col-small"><?= $this->lenderCompany->getSiren() ?></div></li>
                     <? endif; ?>

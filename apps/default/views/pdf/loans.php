@@ -22,13 +22,11 @@
         <?php if (false === empty($this->company)) : ?>
             <b><?= $this->company->getName() ?></b><br/>
             <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
-            <?= $this->lastModifiedAddress->getAddress() ?><br/>
-            <?= $this->lastModifiedAddress->getZip() . ' ' . $this->lastModifiedAddress->getCity() ?>
         <?php else : ?>
             <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
-            <?= $this->clients_adresses->adresse1 ?><br/>
-            <?= $this->clients_adresses->cp . ' ' . $this->clients_adresses->ville ?>
         <? endif; ?>
+        <?= $this->lenderAddress->getAddress() ?><br/>
+        <?= $this->lenderAddress->getZip() . ' ' . $this->lenderAddress->getCity() ?>
     </div>
     <div style="clear:both;"></div>
     <br/>

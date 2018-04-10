@@ -62,7 +62,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
                 $clientAddress->get($client->getIdClient(), 'id_client');
                 $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
-                $taxManager->addTaxToApply($client, $clientAddress, Users::USER_ID_CRON);
+                $taxManager->addTaxToApply($client, Users::USER_ID_CRON);
             }
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');

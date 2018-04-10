@@ -10,7 +10,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Loans, PaysV2, ProjectsStatus
+    ClientAddress, CompanyAddress, Loans, PaysV2, ProjectsStatus
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -69,11 +69,6 @@ EOF
             $loans = $loan->select('status = ' . Loans::STATUS_ACCEPTED .' AND fichier_declarationContratPret IS NULL AND id_project IN (' . implode(', ', array_column($projects, 'id_project')) . ')', 'id_loan ASC', 0, $limit);
 
             if (count($loans) > 0) {
-                /** @var \clients_adresses $clientAddress */
-                $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
-                /** @var \companies $lenderCompany */
-                $lenderCompany = $entityManagerSimulator->getRepository('companies');
-
                 foreach ($loans as $loanArray) {
                     $loan->get($loanArray['id_loan'], 'id_loan');
                     $project->get($loan->id_project, 'id_project');
@@ -85,16 +80,28 @@ EOF
                     }
 
                     if ($wallet->getIdClient()->isNaturalPerson()) {
-                        $clientAddress->get($wallet->getIdClient()->getIdClient(), 'id_client');
-
-                        if ($clientAddress->id_pays > PaysV2::COUNTRY_FRANCE) {
-                            $lenderCode = '99';
-                        } else {
-                            $lenderCode = substr(trim($clientAddress->cp), 0, 2);
-                        }
+                        /** @var ClientAddress $validatedLenderAddress */
+                        $validatedLenderAddress = $wallet->getIdClient()->getIdAddress();
                     } else {
-                        $lenderCompany->get($wallet->getIdClient()->getIdClient(), 'id_client_owner');
-                        $lenderCode = substr(trim($lenderCompany->zip), 0, 2);
+                        $lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+                        /** @var CompanyAddress $validatedLenderAddress */
+                        $validatedLenderAddress = $lenderCompany->getIdAddress();
+                    }
+
+                    if (null === $validatedLenderAddress) {
+                        $logger->error('Clienter lender ' . $wallet->getIdClient()->getIdClient() . ' has no validated main address. His contract can not been generated. ', [
+                            'class'      => __CLASS__,
+                            'line'       => __LINE__,
+                            'id_client'  => $wallet->getIdClient()->getIdClient(),
+                            'id_company' => isset($lenderCompany) ? $lenderCompany->getIdCompany() : 'lender is natural person'
+                        ]);
+                        continue;
+                    }
+
+                    if ($validatedLenderAddress->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
+                        $lenderCode = '99';
+                    } else {
+                        $lenderCode = substr(trim($validatedLenderAddress->getZip()), 0, 2);
                     }
 
                     $basePath     = $sRootDir . '/../protected/pdf/cerfa/2062/';

@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, ProjectsStatus, UnderlyingContract, Wallet, WalletType
+    AddressType, ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, ProjectsStatus, UnderlyingContract, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -927,20 +927,42 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $clientAddress           = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $wallet->getIdClient()->getIdClient()]);
+        $client                  = $wallet->getIdClient();
 
-        if (false === $wallet->getIdClient()->isNaturalPerson()) {
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
+        if (false === $client->isNaturalPerson()) {
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
         $filters          = $session->get('lenderOperationsFilters');
         $operations       = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
+        $lenderAddress    = $client->isNaturalPerson() ? $client->getIdAddress() : $company->getIdAddress();
+
+        if (null === $lenderAddress) {
+            try {
+                if ($client->isNaturalPerson()) {
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                } else {
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                }
+                $lenderAddress = $lastModifiedAddress;
+            } catch (\Exception $exception) {
+                $this->get('logger')->warning('Client has no main address', [
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'id_client'  => $client->getIdClient(),
+                    'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person'
+                ]);
+            }
+        }
+
         $fileName         = 'vos_operations_' . date('Y-m-d') . '.pdf';
         $pdfContent       = $this->renderView('pdf/lender_operations.html.twig', [
             'lenderOperations'  => $lenderOperations,
-            'client'            => $wallet->getIdClient(),
-            'clientAddress'     => $clientAddress,
+            'client'            => $client,
+            'lenderAddress'     => $lenderAddress,
             'company'           => empty($company) ? null : $company,
             'available_balance' => $wallet->getAvailableBalance()
         ]);

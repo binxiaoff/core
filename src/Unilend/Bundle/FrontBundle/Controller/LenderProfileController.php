@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsAdresses, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
@@ -1418,36 +1418,6 @@ class LenderProfileController extends Controller
         }
 
         return $result;
-    }
-
-    /**
-     * @param ClientsAdresses|Companies $address
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function updateFiscalAndPostalAddress($address): void
-    {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        if ($address instanceof ClientsAdresses) {
-            $address->setMemeAdresseFiscal(true);
-            $address->setAdresse1($address->getAdresseFiscal());
-            $address->setCp($address->getCpFiscal());
-            $address->setVille($address->getVilleFiscal());
-            $address->setIdPays($address->getIdPaysFiscal());
-            $entityManager->flush($address);
-        }
-
-        if ($address instanceof Companies) {
-            $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $address->getIdClientOwner()]);
-
-            $clientAddress->setMemeAdresseFiscal(true);
-            $clientAddress->setAdresse1($address->getAdresse1());
-            $clientAddress->setCp($address->getZip());
-            $clientAddress->setVille($address->getCity());
-            $clientAddress->setIdPays($address->getIdPays());
-            $entityManager->flush($clientAddress);
-        }
     }
 
     /**
