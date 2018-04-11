@@ -18,7 +18,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class ClientsRepository extends EntityRepository
 {
-
     /**
      * @param integer|Clients $idClient
      *
@@ -42,12 +41,11 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param string   $email
-     * @param int|null $status
+     * @param string $email
      *
      * @return bool
      */
-    public function existEmail($email, $status = null)
+    public function existEmail($email)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -59,13 +57,7 @@ class ClientsRepository extends EntityRepository
             ->where('c.email = :email')
             ->setParameter('email', $email);
 
-        if (null !== $status) {
-            $queryBuilder
-                ->andWhere('c.status = :status')
-                ->setParameter('status', $status, \PDO::PARAM_INT);
-        }
-
-        $query  = $queryBuilder->getQuery();
+        $query = $queryBuilder->getQuery();
 
         try {
             $result = $query->getSingleScalarResult();
@@ -648,8 +640,7 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
             ->setParameter('lenderWalletType', WalletType::LENDER)
             ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
-            ->orderBy('c.added', 'DESC')
-            ->addOrderBy('c.status', 'DESC');
+            ->orderBy('c.added', 'DESC');
 
         if (filter_var($search, FILTER_VALIDATE_INT)) {
             $queryBuilder
