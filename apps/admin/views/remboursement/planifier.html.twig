@@ -90,7 +90,7 @@
 
 {% block pageHeader %}
     <div class="pull-left">
-        <a href="/dossiers/details_remboursement/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails remboursement</a>
+        <a href="/remboursement/projet/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails remboursement</a>
     </div>
     <div class="pull-right">
         <small>SIREN : <a href="/emprunteurs/edit/{{ reception.idProject.idCompany.idClientOwner.idClient }}">{{ reception.idProject.idCompany.siren }}</a></small>

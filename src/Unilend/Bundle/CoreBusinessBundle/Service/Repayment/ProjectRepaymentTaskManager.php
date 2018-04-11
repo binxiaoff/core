@@ -1004,7 +1004,7 @@ class ProjectRepaymentTaskManager
         $amount                = 0;
         $plannedRepaymentTasks = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
             'idProject' => $projects,
-            'status'    => [ProjectRepaymentTask::STATUS_ERROR, ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS]
+            'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
 
         foreach ($plannedRepaymentTasks as $task) {

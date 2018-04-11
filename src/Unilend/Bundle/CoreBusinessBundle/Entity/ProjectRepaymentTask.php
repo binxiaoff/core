@@ -35,6 +35,13 @@ class ProjectRepaymentTask
     const STATUS_REPAID      = 4;
     const STATUS_CANCELLED   = 5;
 
+    const STATUS_PLANNED = [
+        self::STATUS_ERROR,
+        self::STATUS_PENDING,
+        self::STATUS_READY,
+        self::STATUS_IN_PROGRESS
+    ];
+
     /**
      * @var string
      *

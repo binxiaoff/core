@@ -2,7 +2,7 @@
 
 {% block pageHeader %}
     <div class="pull-left">
-        <a href="/remboursement/validation" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Remboursements à valider</a>
+        <a href="/remboursement/projet/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails remboursements</a>
     </div>
     <div class="pull-right">
         <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
@@ -350,6 +350,6 @@
                 </form>
             </div>
         </div>
-        {% include 'dossiers/blocs/details_remboursement/planned_repayment_task.html.twig' with {'displayOnly': true} %}
+        {% include 'remboursement/blocs/projet/planned_repayment_task.html.twig' with {'displayOnly': true} %}
     </div>
 {% endblock %}

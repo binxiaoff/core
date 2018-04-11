@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    DebtCollectionFeeDetail, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones
+    DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\{
     ProjectCloseOutNettingPaymentManager, ProjectPaymentManager
@@ -300,7 +300,7 @@ class remboursementController extends bootstrap
             }
             $paymentManager->rejectPayment($reception, $this->userEntity);
 
-            header('Location: ' . $this->url . '/dossiers/details_remboursement/' . $reception->getIdProject()->getIdProject());
+            header('Location: ' . $this->url . '/remboursement/projet/' . $reception->getIdProject()->getIdProject());
         }
 
         if ($this->request->request->get('validate')) {
@@ -378,5 +378,197 @@ class remboursementController extends bootstrap
             'remainingCapital'                 => $remainingCapital,
             'plannedRepaymentTasks'            => $projectRepaymentTasks,
         ]);
+    }
+
+    public function _projet()
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        if (false === empty($this->params[0])) {
+            $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+
+            $missionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+            $projectId                        = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $latePaymentData                  = [];
+            $project                          = $projectRepository->find($projectId);
+
+            if (null !== $project && $project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+                $projectManager = $this->get('unilend.service.project_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+                $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
+
+                $projectStatus            = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+                $lastCompanyStatus        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC']);
+                $totalOverdueAmounts      = $projectManager->getOverdueAmounts($project);
+                $totalOverdueAmount       = round(bcadd(bcadd($totalOverdueAmounts['capital'], $totalOverdueAmounts['interest'], 4), $totalOverdueAmounts['commission'], 4), 2);
+                $entrustedToDebtCollector = $missionPaymentScheduleRepository->getEntrustedAmount($project);
+
+                $unpaidScheduleCount   = 0;
+                $paidScheduleCount     = 0;
+                $paidScheduledAmount   = 0;
+                $unpaidScheduledAmount = 0;
+                $nextUnpaidSchedule    = null;
+                if (null === $project->getCloseOutNettingDate()) {
+                    $latePaymentData           = $this->getLatePaymentsData($project);
+                    $paymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+                    $unpaidScheduleCount       = count($paymentScheduleRepository->findBy([
+                        'idProject'        => $project,
+                        'statusEmprunteur' => [
+                            EcheanciersEmprunteur::STATUS_PENDING,
+                            EcheanciersEmprunteur::STATUS_PARTIALLY_PAID
+                        ]
+                    ]));
+                    $paidScheduleCount         = count($paymentScheduleRepository->findBy(['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PAID]));
+                    $nextUnpaidSchedule        = $paymentScheduleRepository->findOneBy(
+                        ['idProject' => $project, 'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]],
+                        ['ordre' => 'ASC']
+                    );
+                    $paidScheduledAmount       = $paymentScheduleRepository->getPaidScheduledAmount($project);
+                    $unpaidScheduledAmount     = $paymentScheduleRepository->getUnpaidScheduledAmount($project);
+                } else {
+                    $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $project]);
+                    $totalAmount            = round(bcadd($closeOutNettingPayment->getCommissionTaxIncl(), bcadd($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getInterest(), 4),
+                        4), 2);
+                    $paidAmount             = round(bcadd($closeOutNettingPayment->getPaidCommissionTaxIncl(),
+                        bcadd($closeOutNettingPayment->getPaidCapital(), $closeOutNettingPayment->getPaidInterest(), 4), 4), 2);
+
+                    $latePaymentData[] = [
+                        'date'                     => $project->getCloseOutNettingDate(),
+                        'label'                    => 'Prêt déchu',
+                        'amount'                   => $totalAmount,
+                        'entrustedToDebtCollector' => (0 == $entrustedToDebtCollector) ? 'Non' : ($entrustedToDebtCollector < $totalOverdueAmount ? 'Partiellement' : 'Oui'),
+                        'remainingAmount'          => round(bcsub($totalAmount, $paidAmount, 4), 2)
+                    ];
+                }
+
+                $debtCollectionMissions = $project->getDebtCollectionMissions(true, ['id' => 'DESC']);
+                $pendingWireTransferIn  = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->findPendingWireTransferIn($project);
+                $plannedRepaymentTasks  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+                    'idProject' => $project,
+                    'status'    => ProjectRepaymentTask::STATUS_PLANNED
+                ]);
+
+                $templateData = [
+                    'project'                    => $project,
+                    'projectStatus'              => $projectStatus,
+                    'companyLastStatusHistory'   => $lastCompanyStatus,
+                    'totalOverdueAmount'         => $totalOverdueAmount,
+                    'entrustedToDebtCollector'   => $entrustedToDebtCollector,
+                    'canBeDeclined'              => $projectCloseOutNettingManager->canBeDeclined($project),
+                    'latePaymentsData'           => $latePaymentData,
+                    'debtCollector'              => $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
+                        ->findOneBy(['hash' => \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager::CLIENT_HASH_PROGERIS]),
+                    'debtCollectionMissionsData' => $debtCollectionMissions,
+                    'pendingWireTransferIn'      => $pendingWireTransferIn,
+                    'projectCharges'             => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectCharge')->findBy(['idProject' => $project]),
+                    'projectChargeTypes'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectChargeType')->findAll(),
+                    'nextUnpaidSchedule'         => $nextUnpaidSchedule,
+                    'paidScheduleCount'          => $paidScheduleCount,
+                    'unpaidScheduleCount'        => $unpaidScheduleCount,
+                    'unpaidScheduledAmount'      => $unpaidScheduledAmount,
+                    'paidScheduledAmount'        => $paidScheduledAmount,
+                    'plannedRepaymentTasks'      => $plannedRepaymentTasks,
+                    'lenderCount'                => $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project)
+                ];
+
+                $this->render(null, $templateData);
+                return;
+            }
+        }
+        header('Location: ' . $this->lurl . '/dossiers');
+        die;
+    }
+
+    public function _switch_auto_repayment_ajax()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        $error = [];
+        if ($this->request->isXmlHttpRequest() && $this->request->isMethod(\Symfony\Component\HttpFoundation\Request::METHOD_POST)) {
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+            $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+
+            $switch = $this->request->request->getBoolean('switch');
+
+            if (
+                null !== $switch
+                && false === empty($this->params[0])
+                && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
+                && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($this->params[0], FILTER_VALIDATE_INT))) {
+                try {
+                    if ($switch) {
+                        $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
+                    } else {
+                        $projectRepaymentTaskManager->disableAutomaticRepayment($project);
+                    }
+                } catch (Exception $exception) {
+                    $error[] = $exception->getMessage();
+                    $this->get('logger')->error($exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine()
+                    ]);
+                }
+            } else {
+                $error[] = 'un des paramètres invalide.';
+            }
+        } else {
+            $error[] = 'accès non autorisé.';
+        }
+
+        echo json_encode([
+            'success' => empty($error),
+            'errors'  => $error
+        ]);
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    private function getLatePaymentsData(Projects $project)
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager                    = $this->get('doctrine.orm.entity_manager');
+        $paymentRepository                = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $missionPaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMissionPaymentSchedule');
+        $latePaymentData                  = [];
+
+        $pendingPayments = $paymentRepository->findBy(
+            [
+                'idProject'        => $project,
+                'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]
+            ],
+            ['dateEcheanceEmprunteur' => 'ASC']
+        );
+        $yesterday       = (new \DateTime('yesterday 23:59:59'));
+
+        foreach ($pendingPayments as $payment) {
+            if ($payment->getDateEcheanceEmprunteur() > $yesterday) {
+                continue;
+            }
+            $paymentAmount            = round(bcdiv(bcadd(bcadd(bcadd($payment->getCapital(), $payment->getInterets()), $payment->getCommission()), $payment->getTva()), 100, 4), 2);
+            $paidAmount               = round(bcdiv(bcadd(bcadd($payment->getPaidCapital(), $payment->getPaidInterest()), $payment->getPaidCommissionVatIncl()), 100, 4), 2);
+            $remainingAmount          = bcsub($paymentAmount, $paidAmount, 4);
+            $entrustedToDebtCollector = $missionPaymentScheduleRepository->findBy([
+                'idMission'         => $project->getDebtCollectionMissions()->toArray(),
+                'idPaymentSchedule' => $payment->getIdEcheancierEmprunteur()
+            ]);
+
+            $latePaymentData[] = [
+                'date'                     => $payment->getDateEcheanceEmprunteur(),
+                'label'                    => 'Écheance ' . strftime('%B %Y', $payment->getDateEcheanceEmprunteur()->getTimestamp()),
+                'amount'                   => $paymentAmount,
+                'entrustedToDebtCollector' => empty($entrustedToDebtCollector) ? 'Non' : 'Oui',
+                'remainingAmount'          => round($remainingAmount, 2)
+            ];
+        }
+        return $latePaymentData;
     }
 }

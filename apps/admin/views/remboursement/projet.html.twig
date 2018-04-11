@@ -135,7 +135,7 @@
             })
 
             var autoRepayment = function (onOff) {
-                $.post("{{ app.adminUrl }}/dossiers/switch_auto_repayment_ajax/{{ project.idProject }}", {
+                $.post("{{ app.adminUrl }}/remboursement/switch_auto_repayment_ajax/{{ project.idProject }}", {
                     switch: onOff
                 }).done(function (data) {
                     if (data.success == false) {
@@ -377,7 +377,7 @@
                 ID Projet : <a href="/dossiers/edit/{{ project.idProject }}">{{ project.idProject }}</a>
             </small>
             <span class="label push-10-l ui-project-status-{{ project.status }}-bg ui-company-status-{{ project.idCompany.idStatus.label }}-bg">
-                {{ projectLastStatusHistory.idProjectStatus.label }}
+                {{ projectStatus.label }}
             </span>
             <br>
             <label class="css-input switch switch-sm switch-primary">
@@ -477,7 +477,7 @@
                             <h3 class="block-title">Nombre de prêteurs</h3>
                         </div>
                         <div class="block-content text-center">
-                            <p class="text-primary pull-t">{{ lenderNumber|localizednumber }}</p>
+                            <p class="text-primary pull-t">{{ lenderCount|localizednumber }}</p>
                         </div>
                     </a>
                 </div>
@@ -530,14 +530,14 @@
                 {% endif %}
             </div>
             {% if totalOverdueAmount > 0 %}
-                {% include 'dossiers/blocs/details_remboursement/retards.html.twig' %}
+                {% include 'remboursement/blocs/projet/retards.html.twig' %}
             {% endif %}
             {% if debtCollectionMissionsData|length > 0 %}
-                {% include 'dossiers/blocs/details_remboursement/recouvrements.html.twig' %}
+                {% include 'remboursement/blocs/projet/recouvrements.html.twig' %}
             {% endif %}
-            {% include 'dossiers/blocs/details_remboursement/frais.html.twig' %}
-            {% include 'dossiers/blocs/details_remboursement/receptions.html.twig' %}
-            {% include 'dossiers/blocs/details_remboursement/planned_repayment_task.html.twig' with {'displayOnly': false} %}
+            {% include 'remboursement/blocs/projet/frais.html.twig' %}
+            {% include 'remboursement/blocs/projet/receptions.html.twig' %}
+            {% include 'remboursement/blocs/projet/planned_repayment_task.html.twig' with {'displayOnly': false} %}
         </div>
     {% endblock %}
 {% endif %}
