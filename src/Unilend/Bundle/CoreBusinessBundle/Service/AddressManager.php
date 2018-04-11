@@ -49,7 +49,9 @@ class AddressManager
         $this->entityManager->beginTransaction();
 
         try {
-            if ($company->getIdClientOwner()->isBorrower()) {
+            if (null !== $company->getIdClientOwner() && $company->getIdClientOwner()->isLender()) {
+                //c'est moche, mais ca sera corrigé au prochain merge. Enfin il y aura qqn dans ce if.
+            } else {
                 $companyAddress = $this->createNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
 
                 if (null !== $companyAddress) {
