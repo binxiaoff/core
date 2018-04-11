@@ -211,7 +211,7 @@ class ProjectRequestController extends Controller
             }
 
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $amount, $duration, $reason, $partner);
+            $project               = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $partner, $amount, $duration, $reason);
 
             $entityManager->getConnection()->commit();
 
@@ -811,7 +811,10 @@ class ProjectRequestController extends Controller
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
         }
 
-        $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        $product = null;
+        if ($project->getIdProduct()) {
+            $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
+        }
         if ($product && Product::PRODUCT_BLEND === $product->getLabel()) {
             return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND);
         }

@@ -150,7 +150,10 @@ trait CompanyChecker
         $partialAcceptableStatus = [ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION, ProjectsStatus::ABANDONED];
 
         foreach ($projects as $project) {
-            $product = $productRepository->find($project->getIdProduct());
+            $product = null;
+            if ($project->getIdProduct()) {
+                $product = $productRepository->find($project->getIdProduct());
+            }
             if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
                 continue;
             }
@@ -191,7 +194,10 @@ trait CompanyChecker
         $projects = $projectRepository->findBySiren($company->getSiren());
 
         foreach ($projects as $project) {
-            $product = $productRepository->find($project->getIdProduct());
+            $product = null;
+            if ($project->getIdProduct()) {
+                $product = $productRepository->find($project->getIdProduct());
+            }
             if (null === $product || Product::PRODUCT_BLEND === $product->getLabel()) {
                 continue;
             }
@@ -227,7 +233,10 @@ trait CompanyChecker
         $projects = $projectRepository->findBySiren($company->getSiren());
 
         foreach ($projects as $project) {
-            $product = $productRepository->find($project->getIdProduct());
+            $product = null;
+            if ($project->getIdProduct()) {
+                $product = $productRepository->find($project->getIdProduct());
+            }
             if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
                 continue;
             }

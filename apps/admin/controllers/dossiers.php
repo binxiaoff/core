@@ -1429,7 +1429,7 @@ class dossiersController extends bootstrap
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $project               = $projectRequestManager->createProject($this->userEntity, $company, $partner);
+        $project               = $projectRequestManager->createProject($this->userEntity, $company, $partner, null, null, null, null, true);
 
         $serialize = serialize(['id_project' => $project->getIdProject()]);
         $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);

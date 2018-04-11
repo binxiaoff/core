@@ -72,7 +72,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 
-                    $project = $projectRequestManager->createProject($user, $company, $partner, $amount);
+                    $project = $projectRequestManager->createProject($user, $company, $partner, $amount, null, null, null, true);
                     $createdProjects[] = $project->getIdProject();
 
                     $columnIndex = 'A';
