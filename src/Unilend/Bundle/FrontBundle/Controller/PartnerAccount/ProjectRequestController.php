@@ -157,47 +157,36 @@ class ProjectRequestController extends Controller
 
             $companyManager->addCompanyStatus($company, $statusInBonis, $user);
 
+            if (empty($client->getIdClient())) {
+                return $this->redirect($request->headers->get('referer'));
+            }
+
+            /** @var UserPartner $user */
+            $user = $this->getUser();
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+
+            $project   = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $user->getPartner(), $amount, $duration, $motive, null, false, ProjectsStatus::SIMULATION);
+            $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $project->setIdClientSubmitter($submitter)
+                ->setIdCompanySubmitter($user->getCompany());
+
+            $entityManager->flush($project);
+
+            $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+
+            if (null === $riskCheck) {
+                $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+            }
+
             $entityManager->commit();
+
+            return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
             $entityManager->getConnection()->rollBack();
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
         }
 
-        if (empty($client->getIdClient())) {
-            return $this->redirect($request->headers->get('referer'));
-        }
-
-        /** @var UserPartner $user */
-        $user = $this->getUser();
-
-        /** @var \projects $project */
-        $project                                       = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $project->id_company                           = $company->getIdCompany();
-        $project->amount                               = $amount;
-        $project->period                               = $duration;
-        $project->id_borrowing_motive                  = $motive;
-        $project->ca_declara_client                    = 0;
-        $project->resultat_exploitation_declara_client = 0;
-        $project->fonds_propres_declara_client         = 0;
-        $project->status                               = ProjectsStatus::SIMULATION;
-        $project->id_partner                           = $user->getPartner()->getId();
-        $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-        $project->id_company_submitter                 = $user->getCompany()->getIdCompany();
-        $project->id_client_submitter                  = $user->getClientId();
-        $project->create();
-
-        $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::SIMULATION, $project);
-
-        $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
-
-        if (null === $riskCheck) {
-            $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
-        }
-
-        return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->hash]);
+        return $this->redirectToRoute('partner_project_request');
     }
 
     /**

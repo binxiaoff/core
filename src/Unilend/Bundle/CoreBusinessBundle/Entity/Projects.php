@@ -11,7 +11,19 @@ use Ramsey\Uuid\Uuid;
 /**
  * Projects
  *
- * @ORM\Table(name="projects", indexes={@ORM\Index(name="id_company", columns={"id_company"}), @ORM\Index(name="slug", columns={"slug"}), @ORM\Index(name="status", columns={"status"}), @ORM\Index(name="display", columns={"display"}), @ORM\Index(name="date_retrait", columns={"date_retrait"}), @ORM\Index(name="hash", columns={"hash"}), @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}), @ORM\Index(name="id_commercial", columns={"id_commercial"}), @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}), @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}), @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})})
+ * @ORM\Table(name="projects", indexes={
+ *     @ORM\Index(name="id_company", columns={"id_company"}),
+ *     @ORM\Index(name="slug", columns={"slug"}),
+ *     @ORM\Index(name="status", columns={"status"}),
+ *     @ORM\Index(name="display", columns={"display"}),
+ *     @ORM\Index(name="date_retrait", columns={"date_retrait"}),
+ *     @ORM\Index(name="hash", columns={"hash"}),
+ *     @ORM\Index(name="id_prescripteur", columns={"id_prescripteur"}),
+ *     @ORM\Index(name="id_commercial", columns={"id_commercial"}),
+ *     @ORM\Index(name="id_dernier_bilan", columns={"id_dernier_bilan"}),
+ *     @ORM\Index(name="fk_projects_id_company_submitter", columns={"id_company_submitter"}),
+ *     @ORM\Index(name="fk_projects_id_client_submitter", columns={"id_client_submitter"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -20,6 +32,7 @@ class Projects
     const AUTO_REPAYMENT_ON  = 0;
     const AUTO_REPAYMENT_OFF = 1;
 
+    // project rating mapping (letter to start)
     const RISK_A = 5;
     const RISK_B = 4.5;
     const RISK_C = 4;
@@ -30,6 +43,9 @@ class Projects
     const RISK_H = 1.5;
     const RISK_I = 1;
     const RISK_J = 0;
+
+    const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
+    const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
 
     /**
      * @var string
@@ -75,14 +91,14 @@ class Projects
     /**
      * @var float
      *
-     * @ORM\Column(name="amount", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="amount", type="float", precision=10, scale=0, nullable=true)
      */
     private $amount;
 
     /**
      * @var integer
      *
-     * @ORM\Column(name="period", type="integer", nullable=false)
+     * @ORM\Column(name="period", type="integer", nullable=true)
      */
     private $period;
 

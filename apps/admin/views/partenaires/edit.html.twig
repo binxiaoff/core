@@ -283,7 +283,7 @@
                             <select name="product" class="form-control required" title="Liste des produits">
                                 <option value="0">Sélectionner un produit</option>
                                 {% for productType in productTypes %}
-                                    <option value="{{ productType.idProduct }}" data-funds="{{ constant('\projects::DEFAULT_COMMISSION_RATE_FUNDS') }}" data-repayment="{{ constant('\projects::DEFAULT_COMMISSION_RATE_REPAYMENT') }}">
+                                    <option value="{{ productType.idProduct }}" data-funds="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::DEFAULT_COMMISSION_RATE_FUNDS') }}" data-repayment="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::DEFAULT_COMMISSION_RATE_REPAYMENT') }}">
                                         {{ productType.label }}
                                     </option>
                                 {% endfor %}

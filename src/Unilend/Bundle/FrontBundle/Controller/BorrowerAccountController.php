@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
+    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, Projects, ProjectsStatus, Users, Virements, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectStatusManager
@@ -120,23 +120,25 @@ class BorrowerAccountController extends Controller
                 $this->addFlash('error', $translator->trans('borrower-demand_message-error'));
             }
             if (false === $error) {
-                $company        = $this->getCompany();
-                $partnerManager = $this->get('unilend.service.partner_manager');
+                $company               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->getCompany()->id_company);
+                $partnerManager        = $this->get('unilend.service.partner_manager');
+                $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-                /** @var \projects $project */
-                $project                                       = $this->get('unilend.service.entity_manager')->getRepository('projects');
-                $project->id_company                           = $company->id_company;
-                $project->amount                               = str_replace(array(',', ' '), array('.', ''), $formData['amount']);
-                $project->ca_declara_client                    = 0;
-                $project->resultat_exploitation_declara_client = 0;
-                $project->fonds_propres_declara_client         = 0;
-                $project->comments                             = $formData['message'];
-                $project->period                               = $formData['duration'];
-                $project->status                               = \projects_status::COMPLETE_REQUEST;
-                $project->id_partner                           = $partnerManager->getDefaultPartner()->getId();
-                $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-                $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-                $project->create();
+                try {
+                    $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $partnerManager->getDefaultPartner(), str_replace(array(',', ' '), array('.', ''), $formData['amount']),
+                        $formData['duration'], null, $formData['message']);
+                } catch (\Exception $exception) {
+                    $this->addFlash('error', $translator->trans('borrower-demand_error'));
+                    $this->get('logger')->error('Creation project failed. Exception : ' . $exception->getMessage(), [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'company_id' => $company->getIdCompany()
+                    ]);
+
+                    return ['project_form' => $projectForm->createView()];
+                }
 
                 /** @var ProjectStatusManager $projectStatusManager */
                 $projectStatusManager = $this->get('unilend.service.project_status_manager');

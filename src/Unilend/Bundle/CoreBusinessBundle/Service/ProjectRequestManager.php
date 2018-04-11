@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, CompanyRating, CompanyStatus, Projects, ProjectsStatus, TaxType, Users, WalletType
+    Clients, ClientsStatus, Companies, CompanyRating, CompanyStatus, Partner, Projects, ProjectsStatus, TaxType, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -105,8 +105,8 @@ class ProjectRequestManager
         $taxType->get(TaxType::TYPE_VAT);
         $fVATRate = $taxType->rate / 100;
 
-        $fCommission    = ($oFinancial->PMT(round(bcdiv(\projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2) / 12, $period, - $amount) - $oFinancial->PMT(0, $period, - $amount)) * (1 + $fVATRate);
-        $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, - $amount) + $fCommission);
+        $fCommission    = ($oFinancial->PMT(round(bcdiv(Projects::DEFAULT_COMMISSION_RATE_REPAYMENT, 100, 4), 2) / 12, $period, -$amount) - $oFinancial->PMT(0, $period, -$amount)) * (1 + $fVATRate);
+        $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, -$amount) + $fCommission);
 
         return $monthlyPayment;
     }
@@ -115,14 +115,12 @@ class ProjectRequestManager
      * @param array $formData
      * @param Users $user
      *
-     * @return \projects
+     * @return Projects
      *
      * @throws \Exception
      */
     public function saveSimulatorRequest($formData, Users $user)
     {
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
         $anyWhiteSpaces = '/\s/';
 
         if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
@@ -193,27 +191,74 @@ class ProjectRequestManager
                 ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
             $this->companyManager->addCompanyStatus($company, $statusInBonis, $user);
 
+            $project = $this->createProject($user, $company, $this->partnerManager->getDefaultPartner(), $formData['amount'], $formData['duration'], $formData['reason']);
+
             $this->entityManager->commit();
+
+            return $project;
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating client ', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->logger->error('An error occurred while creating project ', [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
             throw $exception;
         }
+    }
 
-        $project->id_company                           = $company->getIdCompany();
-        $project->amount                               = $formData['amount'];
-        $project->period                               = $formData['duration'];
-        $project->id_borrowing_motive                  = $formData['reason'];
-        $project->ca_declara_client                    = 0;
-        $project->resultat_exploitation_declara_client = 0;
-        $project->fonds_propres_declara_client         = 0;
-        $project->status                               = ProjectsStatus::INCOMPLETE_REQUEST;
-        $project->id_partner                           = $this->partnerManager->getDefaultPartner()->getId();
-        $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-        $project->create();
+    /**
+     * @param Users|int   $user
+     * @param Companies   $company
+     * @param Partner     $partner
+     * @param int|null    $amount
+     * @param int|null    $duration
+     * @param int|null    $reason
+     * @param string|null $comments
+     * @param int         $status
+     * @param bool        $createdInBO
+     * @param int         $display
+     * @param float       $fundsCommissionRate
+     * @param float       $repaymentCommissionRate
+     *
+     * @return Projects
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function createProject(
+        $user,
+        Companies $company,
+        Partner $partner,
+        ?int $amount = null,
+        ?int $duration = null,
+        ?int $reason = null,
+        ?string $comments = null,
+        bool $createdInBO = false,
+        int $status = ProjectsStatus::INCOMPLETE_REQUEST,
+        int $display = Projects::AUTO_REPAYMENT_ON,
+        float $fundsCommissionRate = Projects::DEFAULT_COMMISSION_RATE_FUNDS,
+        float $repaymentCommissionRate = Projects::DEFAULT_COMMISSION_RATE_REPAYMENT
+    )
+    {
+        $project = new Projects();
+        $project
+            ->setIdCompany($company)
+            ->setAmount($amount)
+            ->setPeriod($duration)
+            ->setIdBorrowingMotive($reason)
+            ->setComments($comments)
+            ->setStatus($status)
+            ->setIdPartner($partner)
+            ->setCommissionRateFunds($fundsCommissionRate)
+            ->setCommissionRateRepayment($repaymentCommissionRate)
+            ->setCreateBo($createdInBO)
+            ->setDisplay($display);
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $this->entityManager->persist($project);
+
+        $this->entityManager->flush($project);
+
+        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::INCOMPLETE_REQUEST, $project);
 
         return $project;
     }

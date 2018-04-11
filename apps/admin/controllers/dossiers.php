@@ -1358,10 +1358,7 @@ class dossiersController extends bootstrap
             && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
             && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
         ) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
-
-            if (false === $clientManager->isBorrower($clientEntity)) {
+            if (false === $clientEntity->isBorrower()) {
                 $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
                 $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur';
 
@@ -1370,20 +1367,17 @@ class dossiersController extends bootstrap
             }
 
             $companyEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
-            $this->createProject($companyEntity, $defaultPartner->getId());
+            $project       = $this->createProject($companyEntity, $defaultPartner);
 
-            header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+            header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
             exit;
-        } elseif (
-            isset($this->params[0])
-            && 'nouveau' === $this->params[0]
-        ) {
+        } elseif (isset($this->params[0]) && 'nouveau' === $this->params[0]) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
-            $companyEntity = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
-            $this->createProject($companyEntity, $defaultPartner->getId());
+            $companyEntity  = $companyManager->createBorrowerBlankCompany(null, $this->userEntity->getIdUser());
+            $project        = $this->createProject($companyEntity, $defaultPartner);
 
-            header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+            header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
             exit;
         } elseif (
             isset($this->params[0], $this->params[1])
@@ -1393,13 +1387,13 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
             $companyManager = $this->get('unilend.service.company_manager');
             $companyEntity  = $companyManager->createBorrowerBlankCompany($this->params[1], $this->userEntity->getIdUser());
-            $this->createProject($companyEntity, $defaultPartner->getId());
+            $project        = $this->createProject($companyEntity, $defaultPartner);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $projectRequestManager->checkProjectRisk($this->projects, $_SESSION['user']['id_user']);
+            $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
 
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
             exit;
         } elseif (
             isset($this->params[0])
@@ -1407,11 +1401,11 @@ class dossiersController extends bootstrap
             && $this->projects->get($this->params[0])
             && 0 == $this->projects->create_bo
         ) {
-            $_SESSION['freeow']['title']   = 'Création de dossier';
-            $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
+                $_SESSION['freeow']['title']   = 'Création de dossier';
+                $_SESSION['freeow']['message'] = 'Ce dossier n\'a pas été créé dans le back office';
 
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
-            exit;
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                exit;
         }
 
         if (false === empty($this->projects->id_company)) {
@@ -1425,25 +1419,22 @@ class dossiersController extends bootstrap
     }
 
     /**
-     * @param Companies $companyEntity
-     * @param int       $partnerId
+     * @param Companies $company
+     * @param Partner   $partner
+     *
+     * @return Projects
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createProject(Companies $companyEntity, $partnerId)
+    private function createProject(Companies $company, Partner $partner)
     {
-        $this->projects->id_company                = $companyEntity->getIdCompany();
-        $this->projects->create_bo                 = 1;
-        $this->projects->status                    = ProjectsStatus::INCOMPLETE_REQUEST;
-        $this->projects->id_partner                = $partnerId;
-        $this->projects->commission_rate_funds     = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $this->projects->commission_rate_repayment = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-        $this->projects->create();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $project               = $projectRequestManager->createProject($this->userEntity, $company, $partner);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-        $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::INCOMPLETE_REQUEST, $this->projects);
-
-        $serialize = serialize(['id_project' => $this->projects->id_project]);
+        $serialize = serialize(['id_project' => $project->getIdProject()]);
         $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
+
+        return $project;
     }
 
     public function _funding()

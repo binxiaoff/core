@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, ClientsStatus, Companies, CompanyStatus, Product, Projects, ProjectsStatus, Users, WalletType
+    AttachmentType, Clients, ClientsStatus, Companies, CompanyStatus, Partner, Product, Projects, ProjectsStatus, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Service\{
@@ -210,24 +210,8 @@ class ProjectRequestController extends Controller
                 $partner        = $partnerManager->getDefaultPartner();
             }
 
-            $project = new Projects();
-            $project
-                ->setIdCompany($company)
-                ->setAmount($amount)
-                ->setPeriod($duration)
-                ->setIdBorrowingMotive($reason)
-                ->setStatus(ProjectsStatus::INCOMPLETE_REQUEST)
-                ->setIdPartner($partner)
-                ->setCreateBo(false)
-                ->setDisplay(Projects::AUTO_REPAYMENT_ON);
-
-            $entityManager->persist($project);
-
-            $entityManager->flush($project);
-
-            /** @var ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+            $project               = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $amount, $duration, $reason, $partner);
 
             $entityManager->getConnection()->commit();
 

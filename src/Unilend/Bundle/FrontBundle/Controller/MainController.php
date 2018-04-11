@@ -206,17 +206,14 @@ class MainController extends Controller
     {
         $formData = $request->request->get('esim');
         $session  = $request->getSession();
-        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')
-            ->find(Users::USER_ID_FRONT);
+        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
         try {
+
             /** @var ProjectRequestManager $projectRequestManager */
             $projectRequestManager = $this->get('unilend.service.project_request_manager');
             $project               = $projectRequestManager->saveSimulatorRequest($formData, $user);
-
-            $session->remove('esim');
-
-            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
+            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
             $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
