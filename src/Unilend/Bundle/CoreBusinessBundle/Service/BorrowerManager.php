@@ -56,6 +56,7 @@ class BorrowerManager
         if ($company) {
             $balance = round(bcsub($balance, $this->projectRepaymentTaskManager->getPlannedRepaymentTaskAmountByCompany($company), 4), 2);
         }
-        return $balance;
+
+        return max($balance, 0);
     }
 }

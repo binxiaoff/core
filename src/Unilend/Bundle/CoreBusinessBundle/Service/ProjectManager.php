@@ -261,7 +261,7 @@ class ProjectManager
             }
         }
 
-        return $fundsToRelease;
+        return max($fundsToRelease, 0);
     }
 
     /**
