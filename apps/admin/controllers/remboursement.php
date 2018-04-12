@@ -436,7 +436,6 @@ class remboursementController extends bootstrap
 
                     $latePaymentData[] = [
                         'date'                     => $project->getCloseOutNettingDate(),
-                        'label'                    => 'Prêt déchu',
                         'amount'                   => $totalAmount,
                         'entrustedToDebtCollector' => (0 == $entrustedToDebtCollector) ? 'Non' : ($entrustedToDebtCollector < $totalOverdueAmount ? 'Partiellement' : 'Oui'),
                         'remainingAmount'          => round(bcsub($totalAmount, $paidAmount, 4), 2)
@@ -564,7 +563,6 @@ class remboursementController extends bootstrap
 
             $latePaymentData[] = [
                 'date'                     => $payment->getDateEcheanceEmprunteur(),
-                'label'                    => 'Écheance ' . strftime('%B %Y', $payment->getDateEcheanceEmprunteur()->getTimestamp()),
                 'amount'                   => $paymentAmount,
                 'entrustedToDebtCollector' => empty($entrustedToDebtCollector) ? 'Non' : 'Oui',
                 'remainingAmount'          => round($remainingAmount, 2)
