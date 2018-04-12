@@ -354,11 +354,11 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo .= $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_amount'], $data['partial_loan_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_legal_entity_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_legal_entity_amount'], $data['partial_loan_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_credit_institution_number'], 'credit_institution');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_credit_institution_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_credit_institution_amount'], $data['partial_loan_amount']);
 
         return $projectLineInfo;
     }
@@ -572,16 +572,24 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param float|null $percentage
+     * @param float|null $contributionAmount
+     * @param float|null $partialLoanAmount
      *
      * @return string
      * @throws \Exception
      */
-    private function checkLoanContributorPercentage(?float $percentage): string
+    private function checkLoanContributorPercentage(?float $contributionAmount, ?float $partialLoanAmount): string
     {
-        if ($percentage > 100) {
-            throw new \Exception('wrong contributor percentage : ' . $percentage);
+        if ($partialLoanAmount === 0) {
+            throw new \Exception(sprintf('Wrong loan amount error in method: "%s", at line: %s', __METHOD__, __LINE__));
         }
+
+        $percentage = bcmul(bcdiv($contributionAmount, $partialLoanAmount, 4), 100, 4);
+
+        if ($percentage > 100) {
+            throw new \Exception(sprintf('Wrong contributor percentage error in method: "%s", at line: %s. Value: %s ', __METHOD__, __LINE__, $percentage));
+        }
+
         return str_pad(round($percentage, 0), 3, self::PADDING_NUMBER, STR_PAD_LEFT);
     }
 
@@ -646,7 +654,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $this->checkSiren($data['siren']);
         $projectLineInfo[] = $this->checkName($data['name']);
         $projectLineInfo[] = $this->checkLoanType($data['loan_type']);
-        $projectLineInfo[] = $this->checkAmounts($data['loan_amount']);
+        $projectLineInfo[] = $this->checkAmounts($data['partial_loan_amount']);
         $projectLineInfo[] = \DateTime::createFromFormat('Y-m-d H:i:s', $data['loan_date'])->format('Y-m-d');
         $projectLineInfo[] = $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo[] = $this->checkLoanAvgRate($data['average_loan_rate']);
@@ -655,11 +663,11 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_amount'], $data['partial_loan_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_legal_entity_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_legal_entity_amount'], $data['partial_loan_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_credit_institution_number'], 'credit_institution');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_credit_institution_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_credit_institution_amount'], $data['partial_loan_amount']);
 
         return implode(';', $projectLineInfo) . PHP_EOL;
     }
