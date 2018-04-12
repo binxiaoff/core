@@ -132,6 +132,8 @@
             })
 
             var autoRepayment = function (elm, onOff) {
+                var spinner = $('#auto-repayment-spinner')
+                spinner.removeClass('visibility-hidden')
                 $.post("{{ app.adminUrl }}/remboursement/switch_auto_repayment_ajax/{{ project.idProject }}", {
                     switch: onOff
                 })
@@ -151,7 +153,10 @@
                         }
                     })
                     .fail(function () {
-                        alert('Une erreur est survenu. Vous ne pouvez pas modifier la configuration de remboursement automatique');
+                        alert('Une erreur est survenue. Vous ne pouvez pas modifier la configuration de remboursement automatique');
+                    })
+                    .always(function () {
+                        spinner.addClass('visibility-hidden')
                     })
             }
         })
@@ -390,7 +395,7 @@
         <label class="css-input switch switch-sm switch-primary">
             <input type="checkbox" name="auto-repayment"
                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
-            Remboursement automatique
+            Remboursement automatique  <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>
     <h1 class="page-heading push">
