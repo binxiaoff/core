@@ -673,6 +673,7 @@ class LenderSubscriptionController extends Controller
     private function validateAttachmentsPerson(FormInterface $form, Clients $client, FileBag $fileBag, int $countryId): void
     {
         $translator         = $this->get('translator');
+        $addressManager     = $this->get('unilend.service.address_manager');
         $uploadErrorMessage = $translator->trans('lender-subscription_documents-upload-files-error-message');
 
         $files = [
@@ -690,7 +691,10 @@ class LenderSubscriptionController extends Controller
         foreach ($files as $attachmentTypeId => $file) {
             if ($file instanceof UploadedFile) {
                 try {
-                    $this->upload($client,  $attachmentTypeId, $file);
+                    $attachement = $this->upload($client,  $attachmentTypeId, $file);
+                    if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE) {
+                        $addressManager->linkAttachmentToAddress($client, $attachement);
+                    }
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage . $attachmentTypeId . ' error : ' . $exception->getMessage()));
                 }

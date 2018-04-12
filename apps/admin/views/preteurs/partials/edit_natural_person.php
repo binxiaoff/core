@@ -1,4 +1,4 @@
-<div class="row">
+ <div class="row">
     <div class="col-md-12">
         <div class="row">
             <div class="form-group col-md-3">
@@ -104,23 +104,23 @@
             <div class="row">
                 <div class="form-group col-md-12">
                     <label for="adresse">Adresse</label>
-                    <input type="text" name="adresse" id="adresse" value="<?= $this->lastModifiedAddress->getAddress() ?>" class="form-control">
+                    <input type="text" name="adresse" id="adresse" value="<?= $this->lastModifiedAddress->getAddress() ?>" class="form-control" disabled>
                 </div>
             </div>
             <div class="row">
                 <div class="form-group col-md-6">
                     <label for="cp">Code postal</label>
-                    <input type="text" name="cp" id="cp" value="<?= $this->lastModifiedAddress->getZip() ?>" class="form-control">
+                    <input type="text" name="cp" id="cp" value="<?= $this->lastModifiedAddress->getZip() ?>" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="ville">Ville</label>
-                    <input type="text" name="ville" id="ville" value="<?= $this->lastModifiedAddress->getCity() ?>" class="form-control">
+                    <input type="text" name="ville" id="ville" value="<?= $this->lastModifiedAddress->getCity() ?>" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="id_pays">Pays</label>
-                    <select name="id_pays" id="id_pays" class="form-control">
+                    <select name="id_pays" id="id_pays" class="form-control" disabled>
                         <?php foreach ($this->lPays as $pays) : ?>
-                            <option <?= ($this->lastModifiedAddress->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '') ?> value="<?= $pays['id_pays'] ?>">
+                            <option <?= ($this->lastModifiedAddress->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '') ?> value="<?= $pays['id_pays'] ?> ">
                                 <?= $pays['fr'] ?>
                             </option>
                         <?php endforeach; ?>
@@ -134,23 +134,23 @@
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '') ?>>
             <div class="form-group col-md-6">
                 <label for="adresse2">Adresse postale</label>
-                <input type="text" name="adresse2" id="adresse2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getAddress() : '' ?>" class="form-control">
+                <input type="text" name="adresse2" id="adresse2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getAddress() : '' ?>" class="form-control" disabled>
             </div>
         </div>
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '')?>>
             <div class="form-group col-md-3">
                 <label for="cp2">Code postal</label>
-                <input type="text" name="cp2" id="cp2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getZip() : '' ?>" class="form-control">
+                <input type="text" name="cp2" id="cp2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getZip() : '' ?>" class="form-control" disabled>
             </div>
             <div class="form-group col-md-3">
                 <label for="ville2">Ville</label>
-                <input type="text" name="ville2" id="ville2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getCity() : '' ?>" class="form-control">
+                <input type="text" name="ville2" id="ville2" value="<?= $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getCity() : '' ?>" class="form-control" disabled>
             </div>
         </div>
         <div class="row meme-adresse" <?= ($this->samePostalAddress ? 'style="display:none;"' : '')?>>
             <div class="form-group col-md-6">
                 <label for="id_pays2">Pays</label>
-                <select name="id_pays2" id="id_pays2" class="form-control">
+                <select name="id_pays2" id="id_pays2" class="form-control" disabled>
                     <?php foreach ($this->lPays as $pays) : ?>
                         <option <?= (null !== $this->client->getIdPostalAddress() ? $this->client->getIdPostalAddress()->getIdCountry()->getIdPays() == $pays['id_pays'] ? 'selected' : '' : '' ) ?> value="<?= $pays['id_pays'] ?>">
                             <?= $pays['fr'] ?>

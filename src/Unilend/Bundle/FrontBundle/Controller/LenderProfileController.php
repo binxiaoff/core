@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
@@ -106,7 +106,7 @@ class LenderProfileController extends Controller
 
                     if ($mainAddressForm->isValid()) {
                         if ($client->isNaturalPerson()) {
-                            $isValid = $this->handlePersonAddress($client, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS);
+                            $isValid = $this->handlePersonAddress($client, $lastModifiedMainAddress, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS);
                         } else {
                             $isValid = $this->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
                         }
@@ -122,7 +122,7 @@ class LenderProfileController extends Controller
 
                     if ($postalAddressForm->isValid()) {
                         if ($client->isNaturalPerson()) {
-                            $isValid = $this->handlePersonAddress($client, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS);
+                            $isValid = $this->handlePersonAddress($client, $postalAddress, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS);
                         } else {
                             $isValid = $this->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
                         }
@@ -333,20 +333,23 @@ class LenderProfileController extends Controller
 
     /**
      * @param Clients       $client
+     * @param ClientAddress $address
      * @param FormInterface $form
      * @param FileBag       $fileBag
      * @param string        $type
      *
      * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type): bool
+    private function handlePersonAddress(Clients $client, ClientAddress $address, FormInterface $form, FileBag $fileBag, string $type): bool
     {
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $translator     = $this->get('translator');
-        $addressManager = $this->get('unilend.service.address_manager');
-        $modifications  = [];
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $translator         = $this->get('translator');
+        $addressManager     = $this->get('unilend.service.address_manager');
+        $modifications      = [];
+        $housingCertificate = null;
 
         $zip       = $form->get('zip')->getData();
         $countryId = $form->get('idCountry')->getData();
@@ -369,10 +372,27 @@ class LenderProfileController extends Controller
                     $files[AttachmentType::ATTESTATION_HEBERGEMENT_TIERS] = $fileBag->get('housed-by-third-person-declaration');
                     $files[AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT] = $fileBag->get('id-third-person-housing');
                 }
+
+                if (
+                    AddressType::TYPE_MAIN_ADDRESS === $type
+                    && (
+                        $address->getAddress() !== $form->get('address')->getData()
+                        || $address->getZip() !== $form->get('zip')->getData()
+                        || $address->getCity() !== $form->get('city')->getData()
+                        || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+                    )
+                    && empty($files[AttachmentType::JUSTIFICATIF_DOMICILE])
+                ) {
+                    $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-missing-housing-certificate')));
+                }
+
                 foreach ($files as $attachmentTypeId => $file) {
                     if ($file instanceof UploadedFile) {
                         try {
-                            $this->upload($client, $attachmentTypeId, $file);
+                            $attachement = $this->upload($client, $attachmentTypeId, $file);
+                            if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachmentTypeId) {
+                                $housingCertificate = $attachement;
+                            }
                             $modifications[] = $translator->trans('projet_document-type-' . $attachmentTypeId);
                         } catch (\Exception $exception) {
                             $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
@@ -424,7 +444,18 @@ class LenderProfileController extends Controller
                     $type);
             }
 
-            //TODO will be changed with BLD-147
+            if (AddressType::TYPE_MAIN_ADDRESS === $type) {
+                if (null !== $housingCertificate) {
+                    $addressManager->linkAttachmentToAddress($client, $housingCertificate);
+                } else {
+                    $this->get('logger')->error('Lender main address has no attachment.', [
+                        'class'     => __CLASS__,
+                        'line'      => __LINE__,
+                        'id_client' => $client->getIdClient()
+                    ]);
+                }
+            }
+
             $this->updateClientStatusAndNotifyClient($client, $modifiedContent);
 
             $this->addFlash($success, $translation);

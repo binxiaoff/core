@@ -172,14 +172,6 @@ class bootstrap extends Controller
                     'uri'   => 'parrainage'
                 ],
                 [
-                    'title' => 'Matching ville fiscale',
-                    'uri'   => 'preteurs/control_fiscal_city'
-                ],
-                [
-                    'title' => 'Matching ville de naissance',
-                    'uri'   => 'preteurs/control_birth_city'
-                ],
-                [
                     'title' => 'Notifications',
                     'uri'   => 'preteurs/notifications'
                 ],

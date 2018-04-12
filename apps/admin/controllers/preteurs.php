@@ -1,11 +1,11 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, PaysV2, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BankAccountManager, LenderOperationsManager
+    LenderOperationsManager
 };
 
 class preteursController extends bootstrap
@@ -434,14 +434,44 @@ class preteursController extends bootstrap
                 die;
             }
 
+            if (isset($_POST['valider_preteur'])) {
+                $addressId     = null;
+                $bankAccountId = null;
+
+                if (isset($_POST['id_last_modified_main_address'])) {
+                    $addressId = $this->request->request->getInt('id_last_modified_main_address');
+                }
+
+                if (isset($_POST['id_bank_account'])) {
+                    $bankAccountId = $this->request->request->getInt('id_bank_account');
+                }
+
+                try {
+                    $duplicates        = [];
+                    $clientIsValidated = $lenderValidationManager->validateClient($this->client, $this->userEntity, $duplicates, $bankAccountId, $addressId);
+                    if ($clientIsValidated) {
+                        $_SESSION['compte_valide'] = true;
+                    }
+                } catch (\Exception $exception) {
+                    $logger->error('An exception occurred during lender validation process. Lender could not be validated. Message: ' . $exception->getMessage(), [
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'id_client' => $this->client->getIdClient()
+                    ]);
+                }
+
+                header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
+                die;
+            }
+
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
                     $birthCountry       = $this->request->request->getInt('id_pays_naissance');
                     $type               = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $email              = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
                     $birthday           = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
-                    $applyTaxCountry    = false;
-                    $mainAddressCountry = $this->request->request->getInt('id_pays');
 
                     if (false === $this->checkEmail($email, $clientData)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
@@ -457,10 +487,6 @@ class preteursController extends bootstrap
 
                     if (false !== $birthday && 1 === preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $birthday)) {
                         $birthday = \DateTime::createFromFormat('d/m/Y', $birthday);
-                    }
-
-                    if (0 !== $mainAddressCountry && $this->lastModifiedAddress->getIdCountry()->getIdPays() != $mainAddressCountry) {
-                        $applyTaxCountry = true;
                     }
 
                     $entityManager->beginTransaction();
@@ -483,52 +509,12 @@ class preteursController extends bootstrap
 
                         $entityManager->flush($this->client);
 
-                        if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
-                            $addressManager->saveClientAddress(
-                                $this->request->request->get('adresse'),
-                                $this->request->request->get('cp'),
-                                $this->request->request->get('ville'),
-                                $mainAddressCountry,
-                                $this->client,
-                                AddressType::TYPE_MAIN_ADDRESS
-                            );
-                        }
-
-                        if (empty($_POST['meme-adresse']) && false === empty($_POST['adresse2']) && false === empty($_POST['ville2']) && false === empty($_POST['cp2'])) {
-                            $addressManager->saveClientAddress(
-                                $this->request->request->get('adresse2'),
-                                $this->request->request->get('cp2'),
-                                $this->request->request->get('ville2'),
-                                $this->request->request->get('id_pays2'),
-                                $this->client,
-                                AddressType::TYPE_POSTAL_ADDRESS);
-                        }
-
-                        if (null !== $this->client->getIdPostalAddress() && isset($_POST['meme-adresse']) && 'on' === $_POST['meme-adresse']) {
-                            $addressManager->clientPostalAddressSameAsMainAddress($this->client);
-                        }
-
-                        if (true === $applyTaxCountry) {
-                            $taxManager->addTaxToApply($this->client, $this->userEntity->getIdUser());
-                        }
-
                         $this->saveUserHistory($this->client->getIdClient());
-
-                        if (
-                            isset($_POST['statut_valider_preteur'])
-                            && 1 == $_POST['statut_valider_preteur']
-                            && $lenderValidationManager->validateClient($clientData, $this->userEntity)
-                        ) {
-                            $this->validateBankAccount($_POST['id_bank_account']);
-                            $this->validateAddress($this->client);
-                            $_SESSION['compte_valide'] = true;
-                        }
 
                         $entityManager->commit();
 
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
-
                     } catch (\Exception $exception) {
                         $entityManager->rollback();
                         $logger->error('An exception occurred while updating client in the backoffice. Message: ' . $exception->getMessage(), [
@@ -597,43 +583,7 @@ class preteursController extends bootstrap
                                 ->setPhoneDirigeant(null);
                         }
 
-                        if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
-                            $addressManager->saveCompanyAddress(
-                                $_POST['adresse'],
-                                $_POST['cp'],
-                                $_POST['ville'],
-                                PaysV2::COUNTRY_FRANCE,
-                                $this->companyEntity,
-                                AddressType::TYPE_MAIN_ADDRESS
-                            );
-                        }
-
-                        if (false === empty($_POST['adresse2']) && false === empty($_POST['ville2']) && false === empty($_POST['cp2']) && empty($_POST['meme-adresse'])) {
-                            $addressManager->saveCompanyAddress(
-                                $_POST['adresse2'],
-                                $_POST['cp2'],
-                                $_POST['ville2'],
-                                PaysV2::COUNTRY_FRANCE,
-                                $this->companyEntity,
-                                AddressType::TYPE_POSTAL_ADDRESS
-                            );
-                        }
-
-                        if (null !== $this->companyEntity->getIdPostalAddress() && isset($_POST['meme-adresse']) && 'on' === $_POST['meme-adresse']) {
-                            $addressManager->companyPostalAddressSameAsMainAddress($this->companyEntity);
-                        }
-
                         $this->saveUserHistory($this->client->getIdClient());
-
-                        if (
-                            isset($_POST['statut_valider_preteur'])
-                            && 1 == $_POST['statut_valider_preteur']
-                            && $lenderValidationManager->validateClient($clientData, $this->userEntity)
-                        ) {
-                            $this->validateBankAccount($_POST['id_bank_account']);
-                            $this->validateAddress($this->client);
-                            $_SESSION['compte_valide'] = true;
-                        }
 
                         $entityManager->commit();
                     } catch (\Exception $exception) {
@@ -648,18 +598,6 @@ class preteursController extends bootstrap
 
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
-                    }
-                }
-            }
-
-            if (isset($_POST['send_attachments'])) {
-                $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-                foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
-                    if ($uploadedFile) {
-                        $attachmentType = $attachmentTypeRepository->find($attachmentTypeId);
-                        if ($attachmentType) {
-                            $attachmentManager->upload($this->client, $attachmentType, $uploadedFile);
-                        }
                     }
                 }
             }
@@ -1264,20 +1202,6 @@ class preteursController extends bootstrap
         }
     }
 
-    public function _control_fiscal_city()
-    {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        $this->aLenders   = $clientRepository->getLendersToMatchCity(200);
-    }
-
-    public function _control_birth_city()
-    {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
-        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-        $this->aLenders   = $clientRepository->getLendersToMatchBirthCity(200);
-    }
-
     /**
      * @param Clients $client
      */
@@ -1340,7 +1264,7 @@ class preteursController extends bootstrap
         if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $client->getIdClient()]);
+            $logger->warning('Lender client has no status ' . $this->client->getIdClient(), ['client' => $client->getIdClient()]);
 
             return '';
         }
@@ -1721,26 +1645,6 @@ class preteursController extends bootstrap
         return $data;
     }
 
-    /**
-     * @param string $idBankAccount
-     *
-     * @throws Exception
-     */
-    private function validateBankAccount($idBankAccount)
-    {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var BankAccount $currentBankAccount */
-        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
-
-        if (null === $bankAccount) {
-            throw new Exception('BankAccount could not be found with id : ' . $idBankAccount);
-        }
-
-        /** @var BankAccountManager $bankAccountManager */
-        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-        $bankAccountManager->validateBankAccount($bankAccount);
-    }
-
     public function _operations_export()
     {
         if (
@@ -1826,33 +1730,5 @@ class preteursController extends bootstrap
             'message' => 'Echec lors de l\'ajout de la notification',
             'status'  => 'ko'
         ]);
-    }
-
-
-    /**
-     * @param Clients $client
-     *
-     * @throws Exception
-     */
-    private function validateAddress(Clients $client): void
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
-        $addressManager       = $this->get('unilend.service.address_manager');
-
-        if ($client->isNaturalPerson()) {
-            //todo
-        }
-
-        if (false === $client->isNaturalPerson()) {
-            $kbis = $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::KBIS);
-            if (null === $kbis) {
-                throw new \Exception('Company Lender to be validated has no KBIS');
-            }
-
-            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $addressManager->validateCompanyAddress($company->getIdAddress(), $kbis);
-        }
     }
 }

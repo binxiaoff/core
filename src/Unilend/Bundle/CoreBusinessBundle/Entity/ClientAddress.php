@@ -44,16 +44,6 @@ class ClientAddress
     private $city;
 
     /**
-     * @var Attachment
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
-     * })
-     */
-    private $idAttachment;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="date_pending", type="datetime", nullable=false)
@@ -198,30 +188,6 @@ class ClientAddress
     public function getCity(): string
     {
         return $this->city;
-    }
-
-    /**
-     * Set idAttachment
-     *
-     * @param Attachment|null $idAttachment
-     *
-     * @return ClientAddress
-     */
-    public function setIdAttachment(?Attachment $idAttachment): ClientAddress
-    {
-        $this->idAttachment = $idAttachment;
-
-        return $this;
-    }
-
-    /**
-     * Get idAttachment
-     *
-     * @return Attachment|null
-     */
-    public function getIdAttachment(): ?Attachment
-    {
-        return $this->idAttachment;
     }
 
     /**

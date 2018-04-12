@@ -3,19 +3,16 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Doctrine\ORM\ORMException;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachmentDetail;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\librairies\greenPoint\greenPoint;
-use Unilend\librairies\greenPoint\greenPointStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Attachment, AttachmentType, ClientAddressAttachment, Clients, ClientsStatus, GreenpointAttachment, GreenpointAttachmentDetail
+};
+use Unilend\librairies\greenPoint\{
+    greenPoint, greenPointStatus
+};
+
 
 class GreenPointValidationCommand extends ContainerAwareCommand
 {
@@ -136,9 +133,19 @@ EOF
                 }
                 if (false === empty($requests)) {
                     $response = $greenPoint->sendRequests();
-                    $this->processGreenPointResponse($response, $requests);
-                    unset($response, $requests);
-                    greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
+                    try {
+                        $this->processGreenPointResponse($response, $requests);
+                        unset($response, $requests);
+                        greenPointStatus::addCustomer($client->getIdClient(), $greenPoint, $greenPointKyc);
+                    } catch (\Exception $exception) {
+                        $logger->error('An exception occurred during process of Greenpoint response.', [
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'id_client' => $client->getIdClient()
+                        ]);
+                    }
                 }
             }
         }
@@ -150,8 +157,10 @@ EOF
      * @param string     $type
      *
      * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
      */
-    private function getGreenPointData(Clients $client, Attachment $attachment, $type)
+    private function getGreenPointData(Clients $client, Attachment $attachment, string $type): array
     {
         $attachmentManager = $this->getContainer()->get('unilend.service.attachment_manager');
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -177,24 +186,22 @@ EOF
                 }
                 break;
             case greenPoint::REQUEST_TYPE_ADDRESS:
-                if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-                    $clientAddress       = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
-                    $data['adresse']     = $clientAddress->getAdresseFiscal();
-                    $data['code_postal'] = $clientAddress->getCpFiscal();
-                    $data['ville']       = $clientAddress->getVilleFiscal();
-                    $countryId           = $clientAddress->getIdPaysFiscal();
+                if ($client->isNaturalPerson()) {
+                    $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                 } else {
-                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-                    $data['adresse']     = $company->getAdresse1() . ' ' . $company->getAdresse2();
-                    $data['code_postal'] = $company->getZip();
-                    $data['ville']       = $company->getCity();
-                    $countryId           = $company->getIdPays();
+                    $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                    $address = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
                 }
-                $country = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($countryId);
-                if (null === $country) {
-                    $country = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find(PaysV2::COUNTRY_FRANCE);
+
+                if (null === $address) {
+                    throw new \Exception('Client/Company has no last modified address');
                 }
-                $data['pays'] = strtoupper($country->getFr());
+
+                $data['adresse']     = $address->getAddress();
+                $data['code_postal'] = $address->getZip();
+                $data['ville']       = $address->getCity();
+                $data['pays']        = strtoupper($address->getIdCountry()->getFr());
+
                 break;
             default:
                 break;
@@ -221,10 +228,14 @@ EOF
     /**
      * @param array $response
      * @param array $requests
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
-    private function processGreenPointResponse(array $response, array $requests)
+    private function processGreenPointResponse(array $response, array $requests): void
     {
         $bankAccountManager = $this->getContainer()->get('unilend.service.bank_account_manager');
+        $addressManager     = $this->getContainer()->get('unilend.service.address_manager');
         $logger             = $this->getContainer()->get('monolog.logger.console');
         /**
          * @var  int                  $requestId
@@ -265,6 +276,16 @@ EOF
                 }
             }
 
+            if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                /** @var ClientAddressAttachment $addressAttachment */
+                $addressAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddressAttachment')->findOneBy(['idAttachment' => $attachment]);
+                if (null === $addressAttachment || null === $addressAttachment->getIdClientAddress()) {
+                    $logger->error('Lender housing certificate has no associated address - Client: ' . $attachment->getClient()->getIdClient(), ['methode' => __METHOD__]);
+                } else {
+                    $addressManager->validateLenderAddress($addressAttachment->getIdClientAddress());
+                }
+            }
+
             $greenPointAttachmentDetails = new GreenpointAttachmentDetail();
             $greenPointAttachmentDetails->setIdGreenpointAttachment($greenPointAttachment)
                 ->setDocumentType($greenPointData['greenpoint_attachment_detail']['document_type'])
@@ -292,5 +313,4 @@ EOF
             $entityManager->flush($greenPointAttachmentDetails);
         }
     }
-
 }

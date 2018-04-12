@@ -3,11 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, PaysV2, TaxType, UnderlyingContract, Users, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
@@ -55,11 +53,11 @@ class TaxManager
 
     /**
      * @param Clients $client
-     * @param int     $userId
+     * @param Users   $user
      *
      * @throws \Exception
      */
-    public function addTaxToApply(Clients $client, int $userId): void
+    public function addTaxToApply(Clients $client, Users $user): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -83,17 +81,18 @@ class TaxManager
         $lenderImpositionHistory->id_lender         = $wallet->getId();
         $lenderImpositionHistory->resident_etranger = $foreigner;
         $lenderImpositionHistory->id_pays           = $client->getIdAddress()->getIdCountry()->getIdPays();
-        $lenderImpositionHistory->id_user           = $userId;
+        $lenderImpositionHistory->id_user           = $user->getIdUser();
         $lenderImpositionHistory->create();
     }
 
     /**
      * @param Clients            $client
-     * @param float              $interestsGross
-     * @param UnderlyingContract $underlyingContract
+     * @param                    $interestsGross
      * @param \DateTime          $taxDate
+     * @param UnderlyingContract $underlyingContract
      *
      * @return array
+     * @throws \Exception
      */
     public function getLenderRepaymentInterestTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract)
     {
