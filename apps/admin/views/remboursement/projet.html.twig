@@ -118,34 +118,41 @@
                 App.blocks(block, 'state_loading')
             })
 
-            $(document).on('change', 'input[name="auto-repayment"]', function () {
-                if (this.checked) {
-                    if (confirm('Voulez-vous activer le remboursement automatique ?')) {
-                        autoRepayment(true)
-                    } else {
-                        $(this).prop('checked', false)
+            $(document).on('click', 'input[name="auto-repayment"]', function (e) {
+                e.preventDefault()
+                if (false === $(this).prop('checked')) {
+                    if (confirm('Voulez-vous désactiver le remboursement automatique ?')) {
+                        autoRepayment($(this), false)
                     }
                 } else {
-                    if (confirm('Voulez-vous desactiver le remboursement automatique ?')) {
-                        autoRepayment(false)
-                    } else {
-                        $(this).prop('checked', true)
+                    if (confirm('Voulez-vous activer le remboursement automatique ?')) {
+                        autoRepayment($(this), true)
                     }
                 }
             })
 
-            var autoRepayment = function (onOff) {
+            var autoRepayment = function (elm, onOff) {
                 $.post("{{ app.adminUrl }}/remboursement/switch_auto_repayment_ajax/{{ project.idProject }}", {
                     switch: onOff
-                }).done(function (data) {
-                    if (data.success == false) {
-                        var errorMessage = ''
-                        data.errors.forEach(function (element) {
-                            errorMessage += element
-                        })
-                        alert(errorMessage)
-                    }
-                });
+                })
+                    .done(function (data) {
+                        if (data.success === false) {
+                            var errorMessage = ''
+                            data.errors.forEach(function (element) {
+                                errorMessage += element
+                            })
+                            alert(errorMessage)
+                        } else {
+                            if (onOff) {
+                                elm.prop('checked', true)
+                            } else {
+                                elm.prop('checked', false)
+                            }
+                        }
+                    })
+                    .fail(function () {
+                        alert('Une erreur est survenu. Vous ne pouvez pas modifier la configuration de remboursement automatique');
+                    })
             }
         })
     </script>
@@ -368,176 +375,175 @@
         </form>
     </div>
 {% endblock %}
-{% if haseAccessRight %}
-    {% block pageHeader %}
-        <div class="pull-right">
-            <small>
-                SIREN : <a href="/emprunteurs/edit/{{ project.idCompany.idClientOwner.idClient }}">{{ project.idCompany.siren }}</a>
-                |
-                ID Projet : <a href="/dossiers/edit/{{ project.idProject }}">{{ project.idProject }}</a>
-            </small>
-            <span class="label push-10-l ui-project-status-{{ project.status }}-bg ui-company-status-{{ project.idCompany.idStatus.label }}-bg">
-                {{ projectStatus.label }}
-            </span>
-            <br>
-            <label class="css-input switch switch-sm switch-primary">
-                <input type="checkbox" name="auto-repayment"
-                       {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
-                Remboursement automatique
-            </label>
-        </div>
-        <h1 class="page-heading push">
-            Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
-        </h1>
-    {% endblock %}
 
-    {% block content %}
-        <div class="content">
-            <h2 class="content-heading">Synthèse du projet</h2>
-            <div class="row">
-                {% if project.getCloseOutNettingDate is empty %}
-                    <div class="col-lg-3">
-                        <a class="block" href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les échéances d'emprunteur">
-                            <div class="block-header">
-                                <ul class="block-options">
-                                    <li>
-                                        <button type="button"><i class="fa fa-list-ol"></i></button>
-                                    </li>
-                                </ul>
-                                <h3 class="block-title">Nombre d'échéances</h3>
-                            </div>
-                            <div class="block-content">
-                                <div class="row items-push text-center pull-t">
-                                    <div class="col-xs-6 border-r">
-                                        <div class="text-primary">{{ paidScheduleCount }}</div>
-                                        <div class="text-muted">remboursées</div>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <div class="text-primary">{{ unpaidScheduleCount }}</div>
-                                        <div class="text-muted">à venir</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-3">
-                        <a class="block" href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les échéances d'emprunteur">
-                            <div class="block-header">
-                                <ul class="block-options">
-                                    <li>
-                                        <button type="button"><i class="fa fa-list-ol"></i></button>
-                                    </li>
-                                </ul>
-                                <h3 class="block-title">Montant remboursement</h3>
-                            </div>
-                            <div class="block-content">
-                                <div class="row items-push text-center pull-t">
-                                    <div class="col-xs-6 border-r">
-                                        <div class="text-primary">{{ paidScheduledAmount|localizedcurrency('EUR') }}</div>
-                                        <div class="text-muted">remboursés</div>
-                                    </div>
-                                    <div class="col-xs-6">
-                                        <div class="text-primary">{{ unpaidScheduledAmount|localizedcurrency('EUR') }}</div>
-                                        <div class="text-muted">à percevoir</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
-                                <h3 class="block-title">Prochaine échéance le</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ nextUnpaidSchedule.getDateEcheanceEmprunteur()|localizeddate('short', 'none') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
-                                <h3 class="block-title">Terme déchu le</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ project.getCloseOutNettingDate()|localizeddate('short', 'none') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                <div class="col-lg-2">
-                    <a class="block" href="/dossiers/detail_remb_preteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher les détails des prêteurs">
+{% block pageHeader %}
+    <div class="pull-right">
+        <small>
+            SIREN : <a href="/emprunteurs/edit/{{ project.idCompany.idClientOwner.idClient }}">{{ project.idCompany.siren }}</a>
+            |
+            ID Projet : <a href="/dossiers/edit/{{ project.idProject }}">{{ project.idProject }}</a>
+        </small>
+        <span class="label push-10-l ui-project-status-{{ project.status }}-bg ui-company-status-{{ project.idCompany.idStatus.label }}-bg">
+            {{ projectStatus.label }}
+        </span>
+        <br>
+        <label class="css-input switch switch-sm switch-primary">
+            <input type="checkbox" name="auto-repayment"
+                   {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
+            Remboursement automatique
+        </label>
+    </div>
+    <h1 class="page-heading push">
+        Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <h2 class="content-heading">Synthèse du projet</h2>
+        <div class="row">
+            {% if project.getCloseOutNettingDate is empty %}
+                <div class="col-lg-3">
+                    <div class="block">
                         <div class="block-header">
                             <ul class="block-options">
                                 <li>
-                                    <button type="button"><i class="fa fa-list-ol"></i></button>
+                                    <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher l'échéancier emprunteur">
+                                        <i class="fa fa-list-ol"></i>
+                                    </a>
                                 </li>
                             </ul>
-                            <h3 class="block-title">Nombre de prêteurs</h3>
+                            <h3 class="block-title">Nombre d'échéances</h3>
                         </div>
-                        <div class="block-content text-center">
-                            <p class="text-primary pull-t">{{ lenderCount|localizednumber }}</p>
+                        <div class="block-content">
+                            <div class="row items-push text-center pull-t">
+                                <div class="col-xs-6 border-r">
+                                    <div class="text-primary">{{ paidScheduleCount }}</div>
+                                    <small class="text-muted">remboursées</small>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="text-primary">{{ unpaidScheduleCount }}</div>
+                                    <small class="text-muted">à venir</small>
+                                </div>
+                            </div>
                         </div>
-                    </a>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="block">
+                        <div class="block-header">
+                            <ul class="block-options">
+                                <li>
+                                    <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher l'échéancier emprunteur">
+                                        <i class="fa fa-list-ol"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                            <h3 class="block-title">Montant remboursement</h3>
+                        </div>
+                        <div class="block-content">
+                            <div class="row items-push text-center pull-t">
+                                <div class="col-xs-6 border-r">
+                                    <div class="text-primary">{{ paidScheduledAmount|localizedcurrency('EUR') }}</div>
+                                    <small class="text-muted">remboursés</small>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="text-primary">{{ unpaidScheduledAmount|localizedcurrency('EUR') }}</div>
+                                    <small class="text-muted">à percevoir</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-lg-2">
                     <div class="block">
                         <div class="block-header">
-                            <h3 class="block-title">Réceptions à traiter</h3>
+                            <h3 class="block-title">Prochaine échéance le</h3>
                         </div>
-                        <div class="block-content text-center">
-                            <p class="text-primary pull-t">{{ pendingWireTransferIn|length|localizednumber }}</p>
+                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                            <p class="text-primary pull-t">{{ nextUnpaidSchedule.getDateEcheanceEmprunteur()|localizeddate('short', 'none') }}</p>
                         </div>
                     </div>
                 </div>
+            {% else %}
+                <div class="col-lg-2">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Terme déchu le</h3>
+                        </div>
+                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                            <p class="text-primary pull-t">{{ project.getCloseOutNettingDate()|localizeddate('short', 'none') }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="col-lg-2">
+                <div class="block">
+                    <div class="block-header">
+                        <ul class="block-options">
+                            <li>
+                                <a href="/dossiers/detail_remb_preteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher la liste de prêts">
+                                    <i class="fa fa-list-ol"></i>
+                                </a>
+                            </li>
+                        </ul>
+                        <h3 class="block-title">Nombre de prêteurs</h3>
+                    </div>
+                    <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                        <p class="text-primary pull-t">{{ lenderCount|localizednumber }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="row">
-                {% if totalOverdueAmount > 0 %}
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
-                                <h3 class="block-title">Retard Emprunteur</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ totalOverdueAmount|localizedcurrency('EUR') }}</p>
-                            </div>
-                        </div>
+            <div class="col-lg-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Réceptions à traiter</h3>
                     </div>
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
-                                <h3 class="block-title">Confié au recouvreur</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ entrustedToDebtCollector > 0 ? entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</p>
-                            </div>
-                        </div>
+                    <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                        <p class="text-primary pull-t">{{ pendingWireTransferIn|length|localizednumber }}</p>
                     </div>
-                {% endif %}
-                {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                    {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
-                    <div class="col-lg-2">
-                        <div class="block">
-                            <div class="block-header">
-                                <h3 class="block-title">{{ companyStatusName|trans }}</h3>
-                            </div>
-                            <div class="block-content text-center">
-                                <p class="text-primary pull-t">{{ companyLastStatusHistory.changedOn|localizeddate('short', 'none') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
+                </div>
             </div>
             {% if totalOverdueAmount > 0 %}
-                {% include 'remboursement/blocs/projet/retards.html.twig' %}
+                <div class="col-lg-2">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Retard Emprunteur</h3>
+                        </div>
+                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                            <p class="text-primary pull-t">{{ totalOverdueAmount|localizedcurrency('EUR') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Confié au recouvreur</h3>
+                        </div>
+                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                            <p class="text-primary pull-t">{{ entrustedToDebtCollector > 0 ? entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</p>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
-            {% if debtCollectionMissionsData|length > 0 %}
-                {% include 'remboursement/blocs/projet/recouvrements.html.twig' %}
+            {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+                {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
+                <div class="col-lg-2">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">{{ companyStatusName|trans }}</h3>
+                        </div>
+                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                            <p class="text-primary pull-t">{{ companyLastStatusHistory.changedOn|localizeddate('short', 'none') }}</p>
+                        </div>
+                    </div>
+                </div>
             {% endif %}
-            {% include 'remboursement/blocs/projet/frais.html.twig' %}
-            {% include 'remboursement/blocs/projet/receptions.html.twig' %}
-            {% include 'remboursement/blocs/projet/planned_repayment_task.html.twig' with {'displayOnly': false} %}
         </div>
-    {% endblock %}
-{% endif %}
+        {% include 'remboursement/blocs/projet/retards.html.twig' %}
+        {% include 'remboursement/blocs/projet/recouvrements.html.twig' %}
+        {% include 'remboursement/blocs/projet/frais.html.twig' %}
+        {% include 'remboursement/blocs/projet/receptions.html.twig' %}
+        {% include 'remboursement/blocs/projet/planned_repayment_task.html.twig' with {'displayOnly': false} %}
+    </div>
+{% endblock %}

@@ -64,7 +64,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getRemainingCapitalFrom($project, $sequence)
+    public function getRemainingCapitalFrom($project, $sequence): float
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select('ROUND(SUM(ee.capital - ee.paidCapital) / 100, 2)')
@@ -266,7 +266,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getUnpaidScheduledAmount($project)
+    public function getUnpaidScheduledAmount($project): float
     {
         $queryBuilder = $this->createQueryBuilder('ee')
             ->select('ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva - ee.paidCapital - ee.paidInterest - ee.paidCommissionVatIncl) / 100, 2)')
@@ -283,7 +283,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getPaidScheduledAmount($project)
+    public function getPaidScheduledAmount($project): float
     {
         $queryBuilder = $this->createQueryBuilder('ee')
             ->select('ROUND(SUM(ee.paidCapital + ee.paidInterest + ee.paidCommissionVatIncl) / 100, 2)')

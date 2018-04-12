@@ -216,7 +216,7 @@ class ProjectRepaymentTaskManager
 
             return $projectRepaymentTask;
         } else {
-            throw new \Exception('The received amount (' . $receivedAmount . ') is not enough for a early repayment. Needs ' . $remainingCapital);
+            throw new \Exception('The received amount (' . $receivedAmount . ') is not enough for an early repayment. ' . $remainingCapital . ' euros needed.');
         }
     }
 
@@ -276,7 +276,6 @@ class ProjectRepaymentTaskManager
 
     /**
      * @param Projects $project
-     * @param Users    $user
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */

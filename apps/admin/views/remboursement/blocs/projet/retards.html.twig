@@ -1,100 +1,99 @@
-<div class="row">
-    <div class="col-lg-12">
-        <div id="retards" class="block">
-            <div class="block-header">
-                <h3 class="block-title">Retards</h3>
-            </div>
-            <div class="block-content block-content-full">
-                <table class="table table-bordered table-hover table-header-bg">
-                    <thead>
-                    <tr>
-                        <th style="width: 20%">
-                            Date
-                        </th>
-                        <th style="width: 20%">
-                            Retards
-                        </th>
-                        <th style="width: 20%">
-                            Montant
-                        </th>
-                        <th style="width: 20%">
-                            Confié au recouvreur
-                        </th>
-                        <th style="width: 20%">
-                            Retard emprunteur
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% set totalPaymentsAmount = 0 %}
-
-                    {% for payment in latePaymentsData %}
+{% if totalOverdueAmount > 0 %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div id="retards" class="block">
+                <div class="block-header">
+                    <h3 class="block-title">Retards</h3>
+                </div>
+                <div class="block-content block-content-full">
+                    <table class="table table-bordered table-hover table-header-bg">
+                        <thead>
                         <tr>
-                            <td>
-                                {{ payment.date|localizeddate('short', 'none') }}
-                            </td>
-                            <td>
-                                {{ payment.label }}
-                            </td>
-                            <td class="text-right">
-                                {{ payment.amount|localizedcurrency('EUR') }}
-                            </td>
-                            <td>
-                                {{ payment.entrustedToDebtCollector }}
-                            </td>
-                            <td class="text-right">
-                                {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
-                            </td>
-                        </tr>
-                        {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}
-                    {% endfor %}
-                    </tbody>
-                    {% if latePaymentsData|length > 1 %}
-                        <tfoot>
-                        <tr>
-                            <th colspan="2" style="width: 40%;">
-                                Total
+                            <th style="width: 20%">
+                                Date
                             </th>
-                            <th class="text-right" style="width: 20%;">
-                                {{ totalPaymentsAmount|localizedcurrency('EUR') }}
+                            <th style="width: 20%">
+                                Retards
                             </th>
-                            <th style="width: 20%;">
-                                &nbsp;
+                            <th style="width: 20%">
+                                Montant
                             </th>
-                            <th class="text-right" style="width: 20%;">
-                                {{ totalOverdueAmount > 0 ? totalOverdueAmount|localizedcurrency('EUR') : 'N/A' }}
+                            <th style="width: 20%">
+                                Confié au recouvreur
+                            </th>
+                            <th style="width: 20%">
+                                Retard emprunteur
                             </th>
                         </tr>
-                        </tfoot>
-                    {% endif %}
-                </table>
-                <div class="text-right">
-                    {% if canBeDeclined %}
-                        <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
-                    {% endif %}
+                        </thead>
+                        <tbody>
+                        {% set totalPaymentsAmount = 0 %}
 
-                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == project.status %}
-                        <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
-                    {% endif %}
-
-                    {% if totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}
-                        {% if pendingWireTransferIn|length > 0 %}
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" disabled>Missionner un recouvreur
-                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
-                            </button>
-                            <div class="text-muted">
-                                <small>
-                                    <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
-                                </small>
-                            </div>
-                        {% else %}
-                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection">Missionner un recouvreur
-                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
-                            </button>
+                        {% for payment in latePaymentsData %}
+                            <tr>
+                                <td>
+                                    {{ payment.date|localizeddate('short', 'none') }}
+                                </td>
+                                <td>
+                                    {{ payment.label }}
+                                </td>
+                                <td class="text-right">
+                                    {{ payment.amount|localizedcurrency('EUR') }}
+                                </td>
+                                <td>
+                                    {{ payment.entrustedToDebtCollector }}
+                                </td>
+                                <td class="text-right">
+                                    {{ payment.remainingAmount > 0 ? payment.remainingAmount|localizedcurrency('EUR') : 'N/A' }}
+                                </td>
+                            </tr>
+                            {% set totalPaymentsAmount = totalPaymentsAmount + payment.amount %}
+                        {% endfor %}
+                        </tbody>
+                        {% if latePaymentsData|length > 1 %}
+                            <tfoot>
+                            <tr>
+                                <th colspan="2" style="width: 40%;">
+                                    Total
+                                </th>
+                                <th class="text-right" style="width: 20%;">
+                                    {{ totalPaymentsAmount|localizedcurrency('EUR') }}
+                                </th>
+                                <th style="width: 20%;">
+                                    &nbsp;
+                                </th>
+                                <th class="text-right" style="width: 20%;">
+                                    {{ totalOverdueAmount > 0 ? totalOverdueAmount|localizedcurrency('EUR') : 'N/A' }}
+                                </th>
+                            </tr>
+                            </tfoot>
                         {% endif %}
-                    {% endif %}
+                    </table>
+                    <div class="text-right">
+                        {% if canBeDeclined %}
+                            <button type="button" class="btn btn-default push-10-r" data-toggle="modal" data-target="#modal-close-out-netting">Déchoir le terme</button>
+                        {% endif %}
+
+                        {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::REMBOURSEMENT') == project.status %}
+                            <button type="button" class="btn btn-primary push-10-r" data-toggle="modal" data-target="#modal-status-problem">Passer en statut problème</button>
+                        {% endif %}
+
+                        {% if totalOverdueAmount > 0 and constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-debt-collection" {% if pendingWireTransferIn|length > 0 %}disabled{% endif %}>
+                                Missionner un recouvreur
+                                ({{ totalOverdueAmount|localizedcurrency('EUR') }})
+                            </button>
+                            {% if pendingWireTransferIn|length > 0 %}
+                                <div class="text-muted">
+                                    <small>
+                                        <em style="display: inline-block; max-width: 300px; margin-top: 3px;">Merci de traiter les derniers remboursements avant de créer une nouvelle mission.</em>
+                                    </small>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+{% endif %}

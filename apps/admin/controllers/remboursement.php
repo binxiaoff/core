@@ -119,7 +119,7 @@ class remboursementController extends bootstrap
                     $activeDebtCollectionMissions = $reception->getIdProject()->getDebtCollectionMissions(false, ['id' => 'DESC']);
                     // Only display error when we having ongoing debt collection mission. Because a project may have the mission in the past, but it has been back to the normal repayment
                     if (count($activeDebtCollectionMissions) > 0) {
-                        $errors[] = 'Mission recouvrement n\'est pas défini.';
+                        $errors[] = 'Impossible de récupérer la mission de recouvrement';
                     }
                 }
             }
@@ -335,7 +335,9 @@ class remboursementController extends bootstrap
         if ($reception->getIdProject()->getCloseOutNettingDate()) {
             $closeOutNettingPayment = $entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingPayment')->findOneBy(['idProject' => $reception->getIdProject()]);
         } else {
-            if (ProjectRepaymentTask::TYPE_EARLY !== current($projectRepaymentTasks)->getType()) {
+            $firstProjectRepaymentTask = current($projectRepaymentTasks);
+            // All tasks created by a wire transfer have the same type.
+            if (ProjectRepaymentTask::TYPE_EARLY !== $firstProjectRepaymentTask->getType()) {
                 $sequences = [];
                 foreach ($projectRepaymentTasks as $task) {
                     $sequences[] = $task->getSequence();
@@ -343,9 +345,8 @@ class remboursementController extends bootstrap
 
                 $paidPaymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(['idProject' => $reception->getIdProject(), 'ordre' => $sequences]);
             } else {
-                $projectRepaymentTask = current($projectRepaymentTasks);
-                $nextRepayment        = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
-                    ->findNextPendingScheduleAfter($projectRepaymentTask->getRepayAt(), $reception->getIdProject());
+                $nextRepayment = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')
+                    ->findNextPendingScheduleAfter($firstProjectRepaymentTask->getRepayAt(), $reception->getIdProject());
 
                 if ($nextRepayment) {
                     $remainingCapital = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
@@ -515,10 +516,10 @@ class remboursementController extends bootstrap
                     ]);
                 }
             } else {
-                $error[] = 'un des paramètres invalide.';
+                $error[] = 'paramètres invalides.';
             }
         } else {
-            $error[] = 'accès non autorisé.';
+            $error[] = 'paramètres ou requête incorrects';
         }
 
         echo json_encode([
