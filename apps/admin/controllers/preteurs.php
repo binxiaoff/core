@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, PaysV2, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, BankAccount, Bids, ClientAddress, Clients, ClientsGestionTypeNotif, ClientsStatus, Companies, CompanyAddress, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, PaysV2, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -12,6 +12,8 @@ class preteursController extends bootstrap
 {
     /** @var Wallet */
     protected $wallet;
+    /** @var Clients */
+    protected $client;
 
     public function initialize()
     {
@@ -310,7 +312,6 @@ class preteursController extends bootstrap
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->settings                = $this->loadData('settings');
-        $clientData                 = $this->loadData('clients');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
         $this->lNatio = $this->nationalites->select();
@@ -342,9 +343,8 @@ class preteursController extends bootstrap
         $this->exemptionYears  = [];
 
         if (
-            $this->params[0]
+            isset($this->params[0])
             && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
-            && $clientData->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
@@ -393,8 +393,9 @@ class preteursController extends bootstrap
 
             $this->taxationCountryHistory = $this->getTaxationHistory($wallet->getId());
             $this->clientStatusMessage    = $this->getMessageAboutClientStatus();
+            $this->dataHistory            = $this->getDataHistory($this->client);
             $this->statusHistory          = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-                ['idClient' => $this->client],
+                ['idClient' => $this->client, 'idStatus' => [ClientsStatus::STATUS_CREATION, ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED, ClientsStatus::STATUS_DISABLED, ClientsStatus::STATUS_CLOSED_LENDER_REQUEST, ClientsStatus::STATUS_CLOSED_BY_UNILEND, ClientsStatus::STATUS_CLOSED_DEFINITELY]], // All but "Complétude (Relance)" which is only a "technical" status
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
@@ -420,6 +421,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest();
+
                 $clientStatusManager->addClientStatus(
                     $this->client,
                     $this->userEntity->getIdUser(),
@@ -443,7 +445,7 @@ class preteursController extends bootstrap
                     $applyTaxCountry    = false;
                     $mainAddressCountry = $this->request->request->getInt('id_pays');
 
-                    if (false === $this->checkEmail($email, $clientData)) {
+                    if (false === $this->checkEmail($email, $this->client)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
                     }
@@ -517,7 +519,7 @@ class preteursController extends bootstrap
                         if (
                             isset($_POST['statut_valider_preteur'])
                             && 1 == $_POST['statut_valider_preteur']
-                            && $lenderValidationManager->validateClient($clientData, $this->userEntity)
+                            && $lenderValidationManager->validateClient($this->client, $this->userEntity)
                         ) {
                             $this->validateBankAccount($_POST['id_bank_account']);
                             $this->validateAddress($this->client);
@@ -544,7 +546,7 @@ class preteursController extends bootstrap
                     }
                 } else {
                     $email = trim($_POST['email_e']);
-                    if (false === $this->checkEmail($email, $clientData)) {
+                    if (false === $this->checkEmail($email, $this->client)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
                     }
@@ -580,7 +582,6 @@ class preteursController extends bootstrap
                                 ->setFonctionDirigeant($_POST['fonction2_e'])
                                 ->setEmailDirigeant($_POST['email2_e'])
                                 ->setPhoneDirigeant(str_replace(' ', '', $_POST['phone2_e']));
-
 
                             if ($_POST['enterprise'] == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                                 $this->companyEntity
@@ -628,7 +629,7 @@ class preteursController extends bootstrap
                         if (
                             isset($_POST['statut_valider_preteur'])
                             && 1 == $_POST['statut_valider_preteur']
-                            && $lenderValidationManager->validateClient($clientData, $this->userEntity)
+                            && $lenderValidationManager->validateClient($this->client, $this->userEntity)
                         ) {
                             $this->validateBankAccount($_POST['id_bank_account']);
                             $this->validateAddress($this->client);
@@ -747,6 +748,248 @@ class preteursController extends bootstrap
         }
 
         return $aResult;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return array
+     */
+    private function getDataHistory(Clients $client): array
+    {
+        $history = [];
+
+        $this->addClientDataHistory($client, $history);
+        $this->addBankAccountHistory($client, $history);
+        $this->addAddressHistory($client, $history);
+        $this->addAttachmentHistory($client, $history);
+
+        krsort($history);
+
+        return $history;
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addClientDataHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $clientData    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientDataHistory')->findBy(
+            ['idClient' => $client],
+            ['datePending' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($clientData as $dataHistory) {
+            $history[$dataHistory->getDatePending()->getTimestamp()][] = [
+                'type' => 'data',
+                'date' => $dataHistory->getDatePending(),
+                'name' => ucfirst($dataHistory->getField()),
+                'old'  => $dataHistory->getOldValue(),
+                'new'  => $dataHistory->getNewValue(),
+                'user' => $dataHistory->getIdUser()
+            ];
+        }
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addBankAccountHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $previousBankAccount = null;
+        $bankAccounts        = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->findBy(
+            ['idClient' => $client],
+            ['datePending' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($bankAccounts as $bankAccount) {
+            if (null !== $bankAccount->getDatePending()) {
+                $history[$bankAccount->getDatePending()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDatePending(),
+                    'name' => 'Modification RIB',
+                    'old'  => $previousBankAccount ? $this->formatBankAccountHistory($previousBankAccount) : '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+
+                $previousBankAccount = $bankAccount;
+            }
+
+            if (
+                null !== $bankAccount->getDateValidated()
+                && $bankAccount->getDatePending()->getTimestamp() !== $bankAccount->getDateValidated()->getTimestamp()
+            ) {
+                $history[$bankAccount->getDateValidated()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDateValidated(),
+                    'name' => 'Validation RIB',
+                    'old'  => '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+            }
+
+            if (null !== $bankAccount->getDateArchived()) {
+                $history[$bankAccount->getDateArchived()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDateArchived(),
+                    'name' => 'Archivage RIB',
+                    'old'  => '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param BankAccount $bankAccount
+     *
+     * @return string
+     */
+    private function formatBankAccountHistory(BankAccount $bankAccount): string
+    {
+        return
+            'IBAN : ' . $bankAccount->getIban() . '<br>' .
+            'BIC : ' . $bankAccount->getBic();
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addAddressHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $previousAddress = [
+            AddressType::TYPE_MAIN_ADDRESS   => null,
+            AddressType::TYPE_POSTAL_ADDRESS => null
+        ];
+
+        if ($client->isNaturalPerson()) {
+            $addresses = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findBy(
+                ['idClient' => $client],
+                ['datePending' => 'ASC', 'id' => 'ASC']
+            );
+        } else {
+            $company   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $addresses = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(
+                ['idCompany' => $company],
+                ['datePending' => 'ASC', 'id' => 'ASC']
+            );
+        }
+
+        foreach ($addresses as $address) {
+            $addressType = AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel() ? 'principale' : 'postale';
+
+            if (null !== $address->getDatePending()) {
+                $history[$address->getDatePending()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDatePending(),
+                    'name' => 'Modification adresse ' . $addressType,
+                    'old'  => $previousAddress[$address->getIdType()->getLabel()] ? $this->formatAddressHistory($previousAddress[$address->getIdType()->getLabel()]) : '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+
+                $previousAddress[$address->getIdType()->getLabel()] = $address;
+            }
+
+            if (
+                null !== $address->getDateValidated()
+                && $address->getDatePending()->getTimestamp() !== $address->getDateValidated()->getTimestamp()
+            ) {
+                $history[$address->getDateValidated()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDateValidated(),
+                    'name' => 'Validation adresse ' . $addressType,
+                    'old'  => '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+            }
+
+            if (null !== $address->getDateArchived()) {
+                $history[$address->getDateArchived()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDateArchived(),
+                    'name' => 'Archivage adresse ' . $addressType,
+                    'old'  => '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param ClientAddress|CompanyAddress $address
+     *
+     * @return string
+     */
+    private function formatAddressHistory($address): string
+    {
+        return
+            ($address->getAddress() ?? '') . '<br>' .
+            ($address->getZip() ?? '') . ' ' . ($address->getCity() ?? '') . '<br>' .
+            ($address->getIdCountry() ? $address->getIdCountry()->getFr() : '');
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addAttachmentHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $attachments   = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(
+            ['idClient' => $client],
+            ['added' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($attachments as $attachment) {
+            $history[$attachment->getAdded()->getTimestamp()][] = [
+                'type' => 'attachment',
+                'date' => $attachment->getAdded(),
+                'name' => 'Chargement ' . $attachment->getType()->getLabel(),
+                'old'  => '',
+                'new'  => $this->formatAttachmentHistory($attachment),
+                'user' => null
+            ];
+
+            if (null !== $attachment->getArchived()) {
+                $history[$attachment->getArchived()->getTimestamp()][] = [
+                    'type' => 'attachment',
+                    'date' => $attachment->getArchived(),
+                    'name' => 'Archivage ' . $attachment->getType()->getLabel(),
+                    'old'  => '',
+                    'new'  => $this->formatAttachmentHistory($attachment),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return string
+     */
+    private function formatAttachmentHistory(Attachment $attachment): string
+    {
+        return
+            '<a href="' . $this->url . '/attachment/download/id/' . $attachment->getId() . '/file/' . urlencode($attachment->getPath()) . '">' .
+            ($attachment->getOriginalName() ?? $attachment->getPath()) .
+            '</a>';
     }
 
     public function _activation()
@@ -1065,6 +1308,7 @@ class preteursController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+            $this->client  = $this->wallet->getIdClient();
 
             if (isset($_POST['send_dates'])) {
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
@@ -1212,6 +1456,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet          = $wallet;
+            $this->client          = $wallet->getIdClient();
             $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId());
             $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
 
@@ -1304,28 +1549,30 @@ class preteursController extends bootstrap
 
     private function sendCompletenessRequest()
     {
-        $timeCreate = empty($this->statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $this->statusHistory[0]->getAdded();
+        $timeCreate = empty($this->statusHistory[0]) ? $this->client->getAdded() : $this->statusHistory[0]->getAdded();
         $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords   = [
-            'firstName'        => $this->clients->prenom,
+            'firstName'        => $this->client->getPrenom(),
             'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
-            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
+            'content'          => $_SESSION['content_email_completude'][$this->client->getIdClient()],
             'uploadLink'       => $this->furl . '/profile/documents',
-            'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client)
+            'lenderPattern'    => $this->wallet->getWireTransferPattern()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
 
         try {
-            $message->setTo($this->clients->email);
+            $message->setTo($this->client->getEmail());
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
-            $this->get('logger')->warning(
-                'Could not send email: completude - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->get('logger')->warning('Could not send email "completude" - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $this->client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
         }
     }
 
@@ -1334,13 +1581,12 @@ class preteursController extends bootstrap
      */
     private function getMessageAboutClientStatus(): string
     {
-        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
-        $client              = $this->wallet->getIdClient();
+        $clientStatusHistory = $this->client->getIdClientStatusHistory();
 
         if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->warning('Lender client has no status ' . $this->clients->id_client, ['client' => $client->getIdClient()]);
+            $logger->warning('Lender client has no status ' . $this->client->getIdClient(), ['id_client' => $this->client->getIdClient()]);
 
             return '';
         }
@@ -1350,15 +1596,15 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
             case ClientsStatus::STATUS_TO_BE_CHECKED:
-                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . $this->client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_COMPLETENESS:
             case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
             case ClientsStatus::STATUS_COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . $client->getAdded()->format('d/m/Y') . ' </div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . $this->client->getAdded()->format('d/m/Y') . ' </div>';
                 break;
             case ClientsStatus::STATUS_MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . $this->client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_VALIDATED:
                 $clientStatusMessage = '';
@@ -1382,7 +1628,7 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '';
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $client->getIdClient()]);
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['id_client' => $this->client->getIdClient()]);
                 break;
         }
 
@@ -1410,25 +1656,25 @@ class preteursController extends bootstrap
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
-                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
-                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
-                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:
@@ -1590,6 +1836,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
+            $this->client              = $wallet->getIdClient();
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
 
             if (isset($_POST['send_dates'])) {
@@ -1671,14 +1918,14 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param string   $email
-     * @param \clients $client
+     * @param string  $email
+     * @param Clients $client
      *
      * @return bool
      */
-    private function checkEmail(string $email, \clients $client): bool
+    private function checkEmail(string $email, Clients $client): bool
     {
-        if ($email === $client->email) {
+        if ($email === $client->getEmail()) {
             return true;
         }
 

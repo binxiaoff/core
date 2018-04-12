@@ -1,6 +1,5 @@
 <h2>Informations bancaires</h2>
 <table class="form" style="margin: auto;">
-    <input type="hidden" value="<?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getId() : ''?>" name="id_bank_account" id="id_bank_account">
     <tr>
         <th>BIC :</th>
         <td><?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getBic() : '' ?></td>

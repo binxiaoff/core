@@ -753,25 +753,25 @@ class sfpmeiController extends bootstrap
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
-                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
-                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
-                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:

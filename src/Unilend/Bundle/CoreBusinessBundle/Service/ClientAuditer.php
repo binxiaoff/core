@@ -16,17 +16,17 @@ class ClientAuditer
         'civilite',
         'prenom',
         'nom',
-        'nom_usage',
+        'nomUsage',
         'mobile',
         'telephone',
         'fonction',
-        'id_nationalite',
+        'idNationalite',
         'naissance',
-        'ville_naissance',
-        'insee_birth',
-        'id_pays_naissance',
-        'funds_origin',
-        'funds_origin_detail'
+        'villeNaissance',
+        'inseeBirth',
+        'idPaysNaissance',
+        'fundsOrigin',
+        'fundsOriginDetail'
     ];
 
     /** @var EntityManager */
@@ -47,8 +47,10 @@ class ClientAuditer
     /**
      * @param Clients $client
      * @param Users   $user
+     *
+     * @return array
      */
-    public function logChanges(Clients $client, Users $user): void
+    public function logChanges(Clients $client, Users $user): array
     {
         $classMetaData = $this->entityManager->getClassMetadata(Clients::class);
         $unitOfWork    = $this->entityManager->getUnitOfWork();
@@ -78,5 +80,7 @@ class ClientAuditer
                 'line'      => $exception->getLine()
             ]);
         }
+
+        return array_intersect_key($changeSet, array_flip(self::LOGGED_FIELDS));
     }
 }

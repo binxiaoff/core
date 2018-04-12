@@ -7,9 +7,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 ?>
 <script type="text/javascript">
     $(function() {
-        $(".histo_status_client").tablesorter({headers: {8: {sorter: false}}});
-
-        $(".cgv_accept").tablesorter({headers: {}});
+        $('#lender-tabs').tabs()
+        $('.cgv_accept').tablesorter()
 
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
@@ -44,15 +43,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         initAutocompleteCity($('#ville2'), $('#cp2'));
         initAutocompleteCity($('#com-naissance'), $('#insee_birth'));
 
-        <?php if (false === $this->samePostalAddress) : ?>
-        $('.meme-adresse').show();
-        <?php endif; ?>
-
-        $('#meme-adresse').click(function () {
+        $('#meme-adresse').on('change', function () {
             if ($(this).prop('checked')) {
-                $('.meme-adresse').hide();
+                $('.postal-address').slideUp();
             } else {
-                $('.meme-adresse').show();
+                $('.postal-address').slideDown();
             }
         });
 
@@ -81,7 +76,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $('.message_completude').slideToggle();
         });
 
-        $("#valider_preteur").click(function() {
+        $(document).on('click', '#valider_preteur', function() {
             $("#statut_valider_preteur").val('1');
             $("#form_etape1").submit();
         });
@@ -100,51 +95,45 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             });
         });
 
-        <?php if (isset($this->companyEntity) && null !== $this->companyEntity) : ?>
-            <?php if (Companies::CLIENT_STATUS_MANAGER == $this->companyEntity->getStatusClient()) : ?>
-                $('.statut_dirigeant_e').hide('slow');
-                $('.statut_dirigeant_e3').hide('slow');
-            <?php elseif(Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companyEntity->getStatusClient()) : ?>
-                $('.statut_dirigeant_e').show('slow');
-                $('.statut_dirigeant_e3').hide('slow');
-            <?php elseif(Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient()) : ?>
-                $('.statut_dirigeant_e').show('slow');
-                $('.statut_dirigeant_e3').show('slow');
-            <?php endif; ?>
-        <?php endif; ?>
+        $('input[name=enterprise]').on('change', function() {
+            var status = $('input[name=enterprise]:checked').val()
 
-        $('#enterprise1').click(function() {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_e').hide('slow');
-                $('.statut_dirigeant_e3').hide('slow');
+            switch (status) {
+                default:
+                case '<?= Companies::CLIENT_STATUS_MANAGER ?>':
+                    $('.statut_dirigeant_e').slideUp()
+                    $('.statut_dirigeant_e3').slideUp()
+                    break
+                case '<?= Companies::CLIENT_STATUS_DELEGATION_OF_POWER ?>':
+                    $('.statut_dirigeant_e').slideDown()
+                    $('.statut_dirigeant_e3').slideUp()
+                    break
+                case '<?= Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT ?>':
+                    $('.statut_dirigeant_e').slideDown()
+                    $('.statut_dirigeant_e3').slideDown()
+                    break
             }
-        });
-        $('#enterprise2').click(function() {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_e').show('slow');
-                $('.statut_dirigeant_e3').hide('slow');
-            }
-        });
-        $('#enterprise3').click(function() {
-            if ($(this).prop('checked')) {
-                $('.statut_dirigeant_e').show('slow');
-                $('.statut_dirigeant_e3').show('slow');
-            }
-        });
+        })
 
         // Lender Vigilance / Atypical Operations
-        $('#btn-show-lender-vigilance-history').click(function () {
+        $(document).on('click', '#btn-show-lender-vigilance-history', function () {
             $('#lender-vigilance-history').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir l\'historique de vigilance' ? 'Cacher l\'historique' : 'Voir l\'historique de vigilance'
             })
         })
 
-        $('#btn-show-lender-atypical-operation').click(function () {
+        $(document).on('click', '#btn-show-lender-atypical-operation', function () {
             $('#lender-atypical-operation').toggle();
             $(this).text(function (i, text) {
                 return text === 'Voir les détections' ? 'Cacher les détections' : 'Voir les détections'
             })
+        })
+
+        $('.tooltip').tooltip({
+            content: function () {
+                return $(this).prop('title')
+            }
         })
     });
 </script>
@@ -159,42 +148,35 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         <div class="row">&nbsp;</div>
         <div class="row">&nbsp;</div>
         <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->client->getIdClient() ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->client->getIdClient() ?>" class="btn_link">Consulter Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->client->getIdClient() ?>" class="btn_link">Historique des emails</a>
-            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->client->getIdClient() ?>" class="btn_link">Portefeuille & Performances</a>
+            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->client->getIdClient() ?>" class="btn-primary">Enchères</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->client->getIdClient() ?>" class="btn-primary">Consulter Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->client->getIdClient() ?>" class="btn-primary">Historique des emails</a>
+            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->client->getIdClient() ?>" class="btn-primary">Portefeuille & Performances</a>
         </div>
         <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
             <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
             <?php unset($_SESSION['error_email_exist']); ?>
         <?php endif; ?>
         <hr>
-        <form method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
+        <form id="form_etape1" method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
+            <input type="hidden" value="<?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getId() : '' ?>" name="id_bank_account">
+            <input type="hidden" id="statut_valider_preteur" name="statut_valider_preteur" value="0">
+            <input type="hidden" name="send_edit_preteur" id="send_edit_preteur">
             <?php if ($this->client->isNaturalPerson()) : ?>
                 <?php $this->fireView('partials/edit_natural_person') ?>
             <?php else : ?>
                 <?php $this->fireView('partials/edit_legal_entity') ?>
             <?php endif; ?>
             <div class="text-right">
-                <input type="hidden" name="send_edit_preteur" id="send_edit_preteur"/>
                 <button type="submit" class="btn-primary">Sauvegarder</button>
             </div>
         </form>
         <hr>
         <div>
-            <input style="font-size: 11px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->client->getIdClient() ?>')">
-            <span style="margin-left:5px;color:green; display:none;" class="success">Email envoyé</span>
-            <span style="margin-left:5px;color:orange; display:none;" class="warning">Email non envoyé</span>
-            <span style="margin-left:5px;color:red; display:none;" class="error">Erreur</span>
-        </div>
-        <hr>
-        <div class="row">
-            <div class="col-md-6">
-                <?php $this->fireView('partials/bank_info') ?>
-            </div>
-            <div class="col-md-6">
-                <?php $this->fireView('partials/mrz_info') ?>
-            </div>
+            <input type="button" value="Générer un nouveau mot de passe" class="btn-primary" onclick="generer_le_mdp('<?= $this->client->getIdClient() ?>')">
+            <span style="margin-left:5px; color: green; display: none;" class="success">Email envoyé</span>
+            <span style="margin-left:5px; color: orange; display: none;" class="warning">Email non envoyé</span>
+            <span style="margin-left:5px; color: red; display: none;" class="error">Erreur</span>
         </div>
         <hr>
         <div class="row">
@@ -202,7 +184,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 <h3>Statut de surveillance</h3>
                 <div class="row">
                     <div class="col-md-7">
-                        <div class="attention vigilance-status-<?= $this->vigilanceStatus['status'] ?>" style="margin-left: 0px;color: black;">
+                        <div class="attention vigilance-status-<?= $this->vigilanceStatus['status'] ?>" style="margin-left: 0; color: black;">
                             <?= $this->vigilanceStatus['message'] ?>
                         </div>
                     </div>
@@ -217,10 +199,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 <div class="row">
                     <div class="col-md-6">
                         <?php if (false === empty($this->clientAtypicalOperations)) : ?>
-                            <button class="btn" id="btn-show-lender-atypical-operation">Voir les détections</button>
+                            <button class="btn-primary" id="btn-show-lender-atypical-operation">Voir les détections</button>
                         <?php endif; ?>
                         <?php if (false === empty($this->vigilanceStatusHistory)) : ?>
-                            <button class="btn" id="btn-show-lender-vigilance-history">Voir l'historique de vigilance</button>
+                            <button class="btn-primary" id="btn-show-lender-vigilance-history">Voir l'historique de vigilance</button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -254,22 +236,56 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             </div>
         </div>
         <hr>
-        <?php $this->fireView('partials/lender_attachments') ?>
-        <?php if ($this->client->isNaturalPerson()) : ?>
-            <hr>
-            <?php $this->fireView('partials/fiscal_history') ?>
-        <?php endif; ?>
-        <hr>
-        <?php $this->fireView('partials/client_status') ?>
-        <?php if ($this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId() !== ClientsStatus::STATUS_CLOSED_DEFINITELY) : ?>
-            <hr>
-            <div class="row">
-                <div class="col-md-12">
-                    <?php $this->fireView('partials/lender_completeness') ?>
+        <div id="lender-tabs">
+            <ul>
+                <li><a href="#client-status-tab">Historique des statuts</a></li>
+                <li><a href="#data-history-tab">Historique données personnelles</a></li>
+                <li><a href="#bank-information-tab">Informations bancaires</a></li>
+                <li><a href="#mrz-information-tab">MRZ</a></li>
+                <li><a href="#attachments-tab">Pièces jointes</a></li>
+                <?php if ($this->client->isNaturalPerson()) : ?>
+                    <li><a href="#fiscal-history-tab">Historique fiscal</a></li>
+                <?php endif; ?>
+                <li><a href="#tos-tab">Acceptation CGV</a></li>
+            </ul>
+            <div id="client-status-tab">
+                <div class="row">
+                    <div class="col-md-8">
+                        <?php $this->fireView('partials/client_status') ?>
+                    </div>
+                    <div class="col-md-4">
+                        <?php $this->fireView('partials/actions') ?>
+                    </div>
                 </div>
+                <?php if ($this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId() !== ClientsStatus::STATUS_CLOSED_DEFINITELY) : ?>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <?php $this->fireView('partials/lender_completeness') ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
-        <hr>
-        <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
+            <div id="data-history-tab">
+                <?php $this->fireView('partials/data_history') ?>
+            </div>
+            <div id="bank-information-tab">
+                <?php $this->fireView('partials/bank_info') ?>
+            </div>
+            <div id="mrz-information-tab">
+                <?php $this->fireView('partials/mrz_info') ?>
+            </div>
+            <div id="attachments-tab">
+                <?php $this->fireView('partials/lender_attachments') ?>
+            </div>
+            <?php if ($this->client->isNaturalPerson()) : ?>
+                <div id="fiscal-history-tab">
+                    <?php $this->fireView('partials/fiscal_history') ?>
+                </div>
+            <?php endif; ?>
+            <div id="tos-tab">
+                <?php $this->fireView('../blocs/acceptedLegalDocumentList'); ?>
+            </div>
+        </div>
     <?php endif; ?>
 </div>

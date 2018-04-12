@@ -78,18 +78,14 @@ class LenderValidationManager
     }
 
     /**
-     * @param Clients|\clients $client
-     * @param Users            $user
-     * @param int[]            $duplicates
+     * @param Clients $client
+     * @param Users   $user
+     * @param int[]   $duplicates
      *
      * @return bool
      */
-    public function validateClient($client, Users $user, array &$duplicates = []): bool
+    public function validateClient(Clients $client, Users $user, array &$duplicates = []): bool
     {
-        if ($client instanceof \clients) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-        }
-
         $message = $user->getIdUser() === Users::USER_ID_CRON ? 'Validation automatique basée sur Green Point' : null;
 
         if (false === $this->checkLenderUniqueness($client, $user, $duplicates)) {
