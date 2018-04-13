@@ -446,7 +446,8 @@ class LenderProfileController extends Controller
 
             if (AddressType::TYPE_MAIN_ADDRESS === $type) {
                 if (null !== $housingCertificate) {
-                    $addressManager->linkAttachmentToAddress($client, $housingCertificate);
+                    $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                    $addressManager->linkAttachmentToAddress($address, $housingCertificate);
                 } else {
                     $this->get('logger')->error('Lender main address has no attachment.', [
                         'class'     => __CLASS__,

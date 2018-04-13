@@ -129,13 +129,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                 <div class="row">
                     <div class="form-group col-md-6">
                         <?php if (null !== $this->currentBankAccount && null === $this->currentBankAccount->getDateValidated()) : ?>
-                            <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
+                            <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account">
                         <?php endif; ?>
                         <?php if (null !== $this->lastModifiedAddress && $this->lastModifiedAddress !== $this->client->getIdAddress()): ?>
                             <input type="hidden" value="<?= $this->lastModifiedAddress->getId() ?>" name="id_last_modified_main_address" id="id_last_modified_main_address">
                         <?php endif; ?>
-                        <input type="hidden" name="valider_preteur">
-                        <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+                        <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur" name="valider_preteur">
                     </div>
                 </div>
             </form>

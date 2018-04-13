@@ -118,14 +118,14 @@ class LenderValidationManager
 
         if (null !== $idAddress) {
             if ($client->isNaturalPerson()) {
-                $clientAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->find($idAddress);
-                if (null === $clientAddress) {
+                $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->find($idAddress);
+                if (null === $address) {
                     throw new \InvalidArgumentException('ClientAddress could not be found with id: ' . $idAddress);
                 }
 
             } else {
-                $companyAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->find($idAddress);
-                if (null === $companyAddress) {
+                $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->find($idAddress);
+                if (null === $address) {
                     throw new \InvalidArgumentException('CompanyAddress could not be found with id: ' . $idAddress);
                 }
             }
@@ -141,10 +141,12 @@ class LenderValidationManager
             }
 
             if (null !== $idAddress) {
-                $this->addressManager->validateLenderAddress($clientAddress);
+                $this->addressManager->validateLenderAddress($address);
             }
 
-            $this->taxManager->addTaxToApply($client, $user);
+            if ($client->isNaturalPerson()) {
+                $this->taxManager->applyFiscalCountry($client, $user);
+            }
 
             if ($this->clientStatusManager->hasBeenValidatedAtLeastOnce($client)) {
                 $this->clientStatusManager->addClientStatus($client, $user->getIdUser(), ClientsStatus::STATUS_VALIDATED, $message);

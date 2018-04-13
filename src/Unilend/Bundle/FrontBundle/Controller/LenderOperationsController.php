@@ -936,26 +936,22 @@ class LenderOperationsController extends Controller
         $filters          = $session->get('lenderOperationsFilters');
         $operations       = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
-        $lenderAddress    = $client->isNaturalPerson() ? $client->getIdAddress() : $company->getIdAddress();
 
-        if (null === $lenderAddress) {
-            try {
-                if ($client->isNaturalPerson()) {
-                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
-                        ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-                } else {
-                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                        ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-                }
-                $lenderAddress = $lastModifiedAddress;
-            } catch (\Exception $exception) {
-                $this->get('logger')->warning('Client has no main address', [
-                    'class'      => __CLASS__,
-                    'function'   => __FUNCTION__,
-                    'id_client'  => $client->getIdClient(),
-                    'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person'
-                ]);
+        try {
+            if ($client->isNaturalPerson()) {
+                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            } else {
+                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             }
+        } catch (\Exception $exception) {
+            $this->get('logger')->warning('Client has no main address', [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'id_client'  => $client->getIdClient(),
+                'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person'
+            ]);
         }
 
         $fileName         = 'vos_operations_' . date('Y-m-d') . '.pdf';

@@ -171,12 +171,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         </div>
         <div class="row">
             <div class="form-group col-md-12">
-                <input <?= (Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companyEntity->getStatusClient() ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>            <label for="enterprise2">Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
+                <input <?= (Companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companyEntity->getStatusClient() ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
+                <label for="enterprise2">Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
             </div>
         </div>
         <div class="row">
             <div class="form-group col-md-12">
-                <input <?= (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT === $this->companyEntity->getStatusClient() ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>           <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
+                <input <?= (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT === $this->companyEntity->getStatusClient() ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
+                <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
             </div>
         </div>
     </div>
