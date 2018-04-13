@@ -212,7 +212,8 @@ class sfpmeiController extends bootstrap
                     $this->endDate   = \DateTime::createFromFormat('d/m/Y', $_POST['end']);
                 }
 
-                $this->lenderOperations = $this->get('unilend.service.lender_operations_manager')->getLenderOperations($this->wallet, $this->startDate, $this->endDate, null, LenderOperationsManager::ALL_TYPES);
+                $this->lenderOperations = $this->get('unilend.service.lender_operations_manager')
+                    ->getLenderOperations($this->wallet, $this->startDate, $this->endDate, null, LenderOperationsManager::ALL_TYPES);
                 break;
             case 'portefeuille':
                 $this->hideDecoration();
@@ -267,9 +268,6 @@ class sfpmeiController extends bootstrap
                 $writer->save('php://output');
                 break;
             default:
-                $this->clients_adresses = $this->loadData('clients_adresses');
-                $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
                 $this->dataHistory   = $this->getDataHistory($this->wallet->getIdClient());
                 $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
                     ['idClient' => $this->wallet->getIdClient()],
@@ -304,7 +302,7 @@ class sfpmeiController extends bootstrap
                 $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
                 $this->averageLoanRate                = $this->loans->getAvgPrets($this->wallet->getId());
                 $this->currentBankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->clients->id_client);
-                $this->isPhysicalPerson               = in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
+                $this->isPhysicalPerson               = $this->wallet->getIdClient()->isNaturalPerson();
                 $this->attachments                    = $this->wallet->getIdClient()->getAttachments();
                 $this->attachmentTypes                = $this->get('unilend.service.attachment_manager')->getAllTypesForLender();
                 $this->transfers                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($this->wallet->getIdClient());
@@ -318,19 +316,8 @@ class sfpmeiController extends bootstrap
                 }
 
                 if ($this->isPhysicalPerson) {
-                    $this->fiscalAddress = [
-                        'address'  => $this->clients_adresses->adresse_fiscal,
-                        'postCode' => $this->clients_adresses->cp_fiscal,
-                        'city'     => $this->clients_adresses->ville_fiscal,
-                        'country'  => $paysV2Repository->find($this->clients_adresses->id_pays_fiscal) ? $paysV2Repository->find($this->clients_adresses->id_pays_fiscal)->getFr() : ''
-                    ];
-
-                    $this->postalAddress = [
-                        'address'  => $this->clients_adresses->adresse1,
-                        'postCode' => $this->clients_adresses->cp,
-                        'city'     => $this->clients_adresses->ville,
-                        'country'  => $paysV2Repository->find($this->clients_adresses->id_pays) ? $paysV2Repository->find($this->clients_adresses->id_pays)->getFr() : ''
-                    ];
+                    $mainAddress   = $this->wallet->getIdClient()->getIdAddress();
+                    $postalAddress = $this->wallet->getIdClient()->getIdPostalAddress();
 
                     $this->settings->get('Liste deroulante origine des fonds', 'type');
                     $this->fundsOriginList = $this->settings->value;
@@ -340,28 +327,45 @@ class sfpmeiController extends bootstrap
                     $this->companies = $this->loadData('companies');
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies $company */
-                    $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
-                    $companyAddress = $company->getIdAddress();
-
-                    if (null === $companyAddress) {
-                        $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                            ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-                    }
-
-                    $this->fiscalAddress = [
-                        'address'  => $companyAddress->getAddress(),
-                        'postCode' => $companyAddress->getZip(),
-                        'city'     => $companyAddress->getCity(),
-                        'country'  => $companyAddress->getIdCountry()->getFr()
-                    ];
-
-                    $this->postalAddress = [
-                        'address'  => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getAddress() : '',
-                        'postCode' => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getZip() : '',
-                        'city'     => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getCity() : '',
-                        'country'  => null !== $company->getIdPostalAddress() ? $company->getIdPostalAddress()->getIdCountry()->getFr() : ''
-                    ];
+                    $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $this->clients->id_client]);
+                    $mainAddress   = $company->getIdAddress();
+                    $postalAddress = $company->getIdPostalAddress();
                 }
+
+                try {
+                    if (null === $mainAddress ) {
+                        if ($this->wallet->getIdClient()->isNaturalPerson()) {
+                            $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                                ->findLastModifiedNotArchivedAddressByType($this->wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
+                        } else {
+                            $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                                ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                        }
+                    }
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error('An exception occurred when executing findLastModifiedNotArchivedAddressByType for client ' . $this->wallet->getIdClient()->getIdClient() . ' Message: ' . $exception->getMessage(), [
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $this->wallet->getIdClient()->getIdClient(),
+                        'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person'
+                    ]);
+                }
+
+                $this->fiscalAddress = [
+                    'address'  => null !== $mainAddress ? $mainAddress->getAddress() : '',
+                    'postCode' => null !== $mainAddress ? $mainAddress->getZip() : '',
+                    'city'     => null !== $mainAddress ? $mainAddress->getCity() : '',
+                    'country'  => null !== $mainAddress ? $mainAddress->getIdCountry()->getFr() : ''
+                ];
+
+                $this->postalAddress = [
+                    'address'  => null !== $postalAddress ? $postalAddress->getAddress() : '',
+                    'postCode' => null !== $postalAddress ? $postalAddress->getZip() : '',
+                    'city'     => null !== $postalAddress ? $postalAddress->getCity() : '',
+                    'country'  => null !== $postalAddress ? $postalAddress->getIdCountry()->getFr() : ''
+                ];
 
                 $this->setVigilanceStatusData();
                 break;

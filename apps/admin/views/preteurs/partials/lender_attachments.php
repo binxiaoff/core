@@ -55,72 +55,41 @@
 </style>
 <h2>Pièces jointes<span></span></h2>
 <div class="form-style-10">
-    <form method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>" enctype="multipart/form-data">
-        <?php foreach ($this->attachmentGroups as $key => $attachmentGroup) : ?>
-            <div class="section"><span><?= $key + 1 ?></span><?= $attachmentGroup['title'] ?></div>
-            <div class="inner-wrap">
-                <table id="identity-attachments" class="add-attachment">
-                    <?php
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
-                    foreach ($attachmentGroup['attachments'] as $attachment) :
-                        $greenpointLabel       = 'Non Contrôlé par GreenPoint';
-                        $greenpointColor       = 'error';
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
-                        $greenPointAttachment  = $attachment->getGreenpointAttachment();
-                        if ($greenPointAttachment) {
-                            $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
-                            if (0 == $greenPointAttachment->getValidationStatus()) {
-                                $greenpointColor = 'error';
-                            } elseif (8 > $greenPointAttachment->getValidationStatus()) {
-                                $greenpointColor = 'warning';
-                            } else {
-                                $greenpointColor = 'valid';
-                            }
+    <?php foreach ($this->attachmentGroups as $key => $attachmentGroup) : ?>
+        <div class="section"><span><?= $key + 1 ?></span><?= $attachmentGroup['title'] ?></div>
+        <div class="inner-wrap">
+            <table id="identity-attachments" class="add-attachment">
+                <?php
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+                foreach ($attachmentGroup['attachments'] as $attachment) :
+                    $greenpointLabel       = 'Non Contrôlé par GreenPoint';
+                    $greenpointColor       = 'error';
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $greenPointAttachment */
+                    $greenPointAttachment  = $attachment->getGreenpointAttachment();
+                    if ($greenPointAttachment) {
+                        $greenpointLabel = $greenPointAttachment->getValidationStatusLabel();
+                        if (0 == $greenPointAttachment->getValidationStatus()) {
+                            $greenpointColor = 'error';
+                        } elseif (8 > $greenPointAttachment->getValidationStatus()) {
+                            $greenpointColor = 'warning';
+                        } else {
+                            $greenpointColor = 'valid';
                         }
-                        ?>
-                        <tr>
-                            <th><?= $attachment->getType()->getLabel() ?></th>
-                            <td>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                                    <?= $attachment->getPath() ?>
-                                </a>
-                            </td>
-                            <td class="td-greenPoint-status-<?= $greenpointColor?>">
-                                <?= $greenpointLabel ?>
-                            </td>
-                            <td>
-                                <input type="file" name="<?= $attachment->getType()->getId() ?>" id="fichier_project_<?= $attachment->getType()->getId() ?>"/>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr class="row row-upload">
-                        <td>
-                            <select class="select">
-                                <option value="">Selectionnez un document</option>
-                                <?php
-                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
-                                foreach ($attachmentGroup['typeToAdd'] as $attachmentType) :
-                                    ?>
-                                    <option value="<?= $attachmentType->getId() ?>"><?= $attachmentType->getLabel() ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                        <td>
-                            <input type="file" class="file-field">
-                        </td>
-                    </tr>
+                    }
+                    ?>
                     <tr>
-                        <td>
-                            <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
+                        <th width="25%"><?= $attachment->getType()->getLabel() ?></th>
+                        <td width="45%">
+                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                                <?= $attachment->getPath() ?>
+                            </a>
+                        </td>
+                        <td class="td-greenPoint-status-<?= $greenpointColor?>" width="25%">
+                            <?= $greenpointLabel ?>
                         </td>
                     </tr>
-                </table>
-            </div>
-        <?php endforeach; ?>
-        <div class="text-right">
-            <input type="hidden" name="send_attachments" id="send_attachments"/>
-            <button type="submit" class="btn-primary">Sauvegarder</button>
+                <?php endforeach; ?>
+            </table>
         </div>
-    </form>
+    <?php endforeach; ?>
 </div>

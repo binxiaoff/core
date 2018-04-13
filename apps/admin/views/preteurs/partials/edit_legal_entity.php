@@ -69,17 +69,17 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
             <div class="row">
                 <div class="form-group col-md-12">
                     <label for="adresse">Adresse</label>
-                    <input type="text" name="adresse" id="adresse" value="<?= $this->lastModifiedAddress->getAddress() ?? '' ?>" class="form-control">
+                    <input type="text" name="adresse" id="adresse" value="<?= $this->lastModifiedAddress->getAddress() ?? '' ?>" class="form-control" disabled>
                 </div>
             </div>
             <div class="row">
                 <div class="form-group col-md-6">
                     <label for="cp">Code postal</label>
-                    <input type="text" name="cp" id="cp" value="<?= $this->lastModifiedAddress->getZip() ?? '' ?>" class="form-control">
+                    <input type="text" name="cp" id="cp" value="<?= $this->lastModifiedAddress->getZip() ?? '' ?>" class="form-control" disabled>
                 </div>
                 <div class="form-group col-md-6">
                     <label for="ville">Ville</label>
-                    <input type="text" name="ville" id="ville" value="<?= $this->lastModifiedAddress->getCity() ?? '' ?>" class="form-control">
+                    <input type="text" name="ville" id="ville" value="<?= $this->lastModifiedAddress->getCity() ?? '' ?>" class="form-control" disabled>
                 </div>
             </div>
         </div>
@@ -87,7 +87,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 </div>
 <hr>
 <div class="form-group">
-    <input type="checkbox" name="meme-adresse" id="meme-adresse"<?= ($this->samePostalAddress ? ' checked' : '') ?>>
+    <input type="checkbox" name="meme-adresse" id="meme-adresse"<?= ($this->samePostalAddress ? ' checked' : '') ?> disabled>
     <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale</label>
 </div>
 <div class="postal-address"<?= ($this->samePostalAddress ? ' style="display:none;"' : '') ?>>
@@ -95,17 +95,17 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
     <div class="row">
         <div class="form-group col-md-6">
             <label for="adresse2">Adresse</label>
-            <input type="text" name="adresse2" id="adresse2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getAddress() : '' ?>" class="form-control">
+            <input type="text" name="adresse2" id="adresse2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getAddress() : '' ?>" class="form-control" disabled>
         </div>
     </div>
     <div class="row">
         <div class="form-group col-md-3">
             <label for="cp2">Code postal</label>
-            <input type="text" name="cp2" id="cp2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getZip(): '' ?>" class="form-control">
+            <input type="text" name="cp2" id="cp2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getZip(): '' ?>" class="form-control" disabled>
         </div>
         <div class="form-group col-md-3">
             <label for="ville2">Ville</label>
-            <input type="text" name="ville2" id="ville2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getCity() : '' ?>" class="form-control">
+            <input type="text" name="ville2" id="ville2" value="<?= null !== $this->companyEntity->getIdPostalAddress() ? $this->companyEntity->getIdPostalAddress()->getCity() : '' ?>" class="form-control" disabled>
         </div>
     </div>
 </div>

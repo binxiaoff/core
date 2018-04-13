@@ -149,26 +149,24 @@
             <h5>Désignation du prêteur</h5>
             <div class="list">
                 <ul>
-                    <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
-                        <li>Nom
-                            <div class="col-small"><?= $this->clients->nom ?></div>
-                        </li>
-                        <li>Prénom
-                            <div class="col-small"><?= $this->clients->prenom ?></div>
-                        </li>
-                        <li>Date de naissance
-                            <div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div>
-                        </li>
-                        <li>Adresse
-                            <div class="col-small"><?= $this->clients_adresses->adresse1 ?></div>
-                        </li>
-                        <li>Code postal
-                            <div class="col-small"><?= $this->clients_adresses->cp ?></div>
-                        </li>
-                        <li>Ville
-                            <div class="col-small"><?= $this->clients_adresses->ville ?></div>
-                        </li>
-                    <?php endif; ?>
+                    <li>Nom
+                        <div class="col-small"><?= $this->clients->nom ?></div>
+                    </li>
+                    <li>Prénom
+                        <div class="col-small"><?= $this->clients->prenom ?></div>
+                    </li>
+                    <li>Date de naissance
+                        <div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div>
+                    </li>
+                    <li>Adresse
+                        <div class="col-small"><?= $this->lenderAddress->getAddress() ?></div>
+                    </li>
+                    <li>Code postal
+                        <div class="col-small"><?= $this->lenderAddress->getZip() ?></div>
+                    </li>
+                    <li>Ville
+                        <div class="col-small"><?= $this->lenderAddress->getCity() ?></div>
+                    </li>
                 </ul>
                 <p>En présence de :</p>
                 <?= $this->bloc_pdf_contrat['description-unilend'] ?>

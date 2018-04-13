@@ -11,15 +11,12 @@
     <div class="creancier">
         <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br/>
-            <?= $this->clients_adresses->adresse_fiscal ?><br/>
-            <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?><br/>
-            <?= $this->pays_fiscal ?>
         <?php else :  ?>
             <?= $this->company->getName() ?><br/>
-            <?= $this->company->getIdAddress()->getAddress() ?><br/>
-            <?= $this->company->getIdAddress()->getZip() ?> <?= $this->company->getIdAddress()->getCity() ?><br/>
-            <?= $this->pays_fiscal ?>
         <?php endif; ?>
+        <?= $this->lenderAddress->getAddress() ?><br/>
+        <?= $this->lenderAddress->getZip() ?> <?= $this->lenderAddress->getCity() ?><br/>
+        <?= $this->lenderAddress->getIdCountry()->getFr() ?>
         <br/><br/>
         n°de <?= $this->translator->trans('contract-type-label_' . $this->contract->getLabel()); ?> :  <?= $this->loan->getIdLoan() ?>
     </div>
@@ -67,11 +64,7 @@
     </div>
     <div style="clear:both;"></div>
     <div class="fait_a">
-        <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
-            <?= $this->clients_adresses->ville_fiscal ?>
-        <?php else : ?>
-            <?= $this->company->getIdAddress->getCity()?>
-        <?php endif; ?>
+        <?= $this->lenderAddress->getCity() ?>
     </div>
     <div class="fait_le">
         <?= date('d/m/Y') ?>

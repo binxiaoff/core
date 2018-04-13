@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Users, UsersHistory, VigilanceRule
+    ClientsStatus, Users, VigilanceRule
 };
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
@@ -52,14 +52,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                     );
                     continue;
                 }
-
-                /** @var \users_history $userHistory */
-                $userHistory = $entityManagerSimulator->getRepository('users_history');
-                $serialize   = serialize(['id_client' => $client->getIdClient(), 'attachment_data' => $clientData]);
-                $userHistory->histo(UsersHistory::FORM_ID_LENDER, 'validation auto preteur', Users::USER_ID_CRON, $serialize);
-
-                $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
-                $taxManager->addTaxToApply($client, Users::USER_ID_CRON);
             }
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');

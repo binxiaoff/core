@@ -647,8 +647,6 @@ class ProjectLifecycleManager
         $oLoan = $this->entityManagerSimulator->getRepository('loans');
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
-        /** @var \clients_adresses $oClientAdresse */
-        $oClientAdresse = $this->entityManagerSimulator->getRepository('clients_adresses');
 
         if ($project->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $project->id_project);
@@ -662,7 +660,6 @@ class ProjectLifecycleManager
 
             foreach ($lLoans as $l) {
                 $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($l['id_lender']);
-                $oClientAdresse->get($wallet->getIdClient()->getIdClient(), 'id_client');
                 $oLoan->get($l['id_loan']);
 
                 $aRepaymentSchedule = array();

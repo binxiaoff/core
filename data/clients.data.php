@@ -616,7 +616,7 @@ class clients extends clients_crud
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-            INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+            INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = " . PaysV2::COUNTRY_FRANCE . "
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
             LEFT JOIN (

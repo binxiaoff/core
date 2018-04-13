@@ -88,17 +88,17 @@
                         </li>
                         <li>
                             <div class="col-long">Adresse du siège social</div>
-                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getAddress() ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getAddress() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Code postal</div>
-                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getZip() ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getZip() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Ville</div>
-                            <div class="col-small"><?= $this->lenderCompany->getIdAddress()->getCity() ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getCity() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
@@ -129,17 +129,17 @@
                         </li>
                         <li>
                             <div class="col-long">Adresse</div>
-                            <div class="col-small"><?= $this->clients_adresses->adresse1 ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getAddress() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Code postal</div>
-                            <div class="col-small"><?= $this->clients_adresses->cp ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getZip() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
                             <div class="col-long">Ville</div>
-                            <div class="col-small"><?= $this->clients_adresses->ville ?></div>
+                            <div class="col-small"><?= $this->lenderAddress->getCity() ?></div>
                             <div class="cl">&nbsp;</div>
                         </li>
                     <?php endif; ?>
