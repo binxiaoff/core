@@ -1,0 +1,67 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">
+        Fichiers des déclarations mensuelles Banque De France
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="block block-rounded">
+            <div class="block-content">
+                {% if declarations|length > 0 %}
+                    <table class="table table-condensed">
+                        <thead>
+                        <tr role="row">
+                            <th>Mois de centralisation</th>
+                            <th>Déclaration des prêts IFP</th>
+                            <th>Déclaration des prêts CIP</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for declarationFiles in declarations %}
+                            {% for declarationDetails in declarationFiles %}
+                                <tr role="row">
+                                    <td>{{ declarationDetails.declarationDate|localizeddate('medium', 'none', null, null, 'LLLL Y')|capitalize }}</td>
+                                    <td>
+                                        {% if declarationDetails.ifpFileName is defined %}
+                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/ifp/{{ declarationDetails.ifpFileName }}"
+                                               class="btn btn-default btn-xs push-10-r"
+                                               data-toggle="tooltip" data-original-title="{{ declarationDetails.ifpFileName }}">
+                                                <i class="fa fa-download fa-2x"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if declarationDetails.cipFileName is defined %}
+                                            <a href="{{ app.adminUrl }}/stats/declarations_bdf/cip/{{ declarationDetails.cipFileName }}"
+                                               class="btn btn-default btn-xs push-10-r"
+                                               data-toggle="tooltip" data-original-title="{{ declarationDetails.cipFileName }}">
+                                                <i class="fa fa-download fa-2x"></i>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="bg-warning">
+                        <p class="content content-full">Aucun fichier de déclaration disponible.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

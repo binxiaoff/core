@@ -707,14 +707,20 @@ class sfpmeiController extends bootstrap
             case ClientsStatus::STATUS_MODIFICATION:
                 $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . (new \DateTime($this->clients->added))->format('d/m/Y') . '</div>';
                 break;
+            case ClientsStatus::STATUS_VALIDATED:
+                $clientStatusMessage = '';
+                break;
+            case ClientsStatus::STATUS_SUSPENDED:
+                $clientStatusMessage = '<div class="attention">Compte suspendu</div>';
+                break;
+            case ClientsStatus::STATUS_DISABLED:
+                $clientStatusMessage = '<div class="attention">Compte désactivé</div>';
+                break;
             case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST:
                 $clientStatusMessage = '<div class="attention">Compte clôturé à la demande du prêteur</div>';
                 break;
             case ClientsStatus::STATUS_CLOSED_BY_UNILEND:
                 $clientStatusMessage = '<div class="attention">Compte clôturé par Unilend</div>';
-                break;
-            case ClientsStatus::STATUS_VALIDATED:
-                $clientStatusMessage = '';
                 break;
             case ClientsStatus::STATUS_CLOSED_DEFINITELY:
                 $clientStatusMessage = '<div class="attention">Compte définitivement fermé</div>';

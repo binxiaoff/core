@@ -543,5 +543,9 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.location_manager"/>
         </service>
+
+        <service id="unilend.service.bdf_loans_declaration_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager">
+            <argument>%path.protected%</argument>
+        </service>
     </services>
 </container>

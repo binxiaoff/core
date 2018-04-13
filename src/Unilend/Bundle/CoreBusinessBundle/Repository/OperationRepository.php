@@ -1191,7 +1191,7 @@ class OperationRepository extends EntityRepository
 
         $query = '
             SELECT SUM(IF(ot.label IN (:lender_loan, :capital_regularization), IFNULL(amount, 0), IFNULL(-amount, 0)))
-            FROM operation o
+            FROM operation o USE INDEX (fk_id_project_idx)
               INNER JOIN operation_type ot ON ot.id = o.id_type
             WHERE o.added <= :end
                   AND ot.label IN (:lender_loan, :capital, :capital_regularization)
