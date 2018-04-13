@@ -3017,8 +3017,9 @@ class dossiersController extends bootstrap
                 $this->projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $this->company]);
                 foreach ($this->projects as $project) {
                     $overDueAmounts = $projectManager->getOverdueAmounts($project);
-                    if ($overDueAmounts['capital'] > 0 || $overDueAmounts['interest'] || $overDueAmounts['commission']) {
+                    if ($overDueAmounts['capital'] > 0 || $overDueAmounts['interest'] > 0 || $overDueAmounts['commission'] > 0) {
                         $this->hasOverdue = true;
+                        break;
                     }
                 }
                 if (1 === count($this->projects)) {
