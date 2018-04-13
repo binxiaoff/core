@@ -3,7 +3,7 @@
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, BankAccount, Bids, Clients, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -270,8 +270,9 @@ class sfpmeiController extends bootstrap
                 $this->clients_adresses = $this->loadData('clients_adresses');
                 $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+                $this->dataHistory   = $this->getDataHistory($this->wallet->getIdClient());
                 $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-                    ['idClient' => $this->clients->id_client],
+                    ['idClient' => $this->wallet->getIdClient()],
                     ['added' => 'DESC', 'id' => 'DESC']
                 );
 
@@ -303,7 +304,7 @@ class sfpmeiController extends bootstrap
                 $this->averageBidAmount               = $this->bids->getAvgPreteur($this->wallet->getId(), 'amount', implode(', ', [Bids::STATUS_ACCEPTED, Bids::STATUS_REJECTED]));
                 $this->averageLoanRate                = $this->loans->getAvgPrets($this->wallet->getId());
                 $this->currentBankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->clients->id_client);
-                $this->isPhysicalPerson               = in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER]);
+                $this->isPhysicalPerson               = in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER]);
                 $this->attachments                    = $this->wallet->getIdClient()->getAttachments();
                 $this->attachmentTypes                = $this->get('unilend.service.attachment_manager')->getAllTypesForLender();
                 $this->transfers                      = $entityManager->getRepository('UnilendCoreBusinessBundle:Transfer')->findTransferByClient($this->wallet->getIdClient());
@@ -825,6 +826,250 @@ class sfpmeiController extends bootstrap
         }
 
         return $data;
+    }
+
+    // All data history code is duplicated from "preteurs" controller and use the same template
+
+    /**
+     * @param Clients $client
+     *
+     * @return array
+     */
+    private function getDataHistory(Clients $client): array
+    {
+        $history = [];
+
+        $this->addClientDataHistory($client, $history);
+        $this->addBankAccountHistory($client, $history);
+        $this->addAddressHistory($client, $history);
+        $this->addAttachmentHistory($client, $history);
+
+        krsort($history);
+
+        return $history;
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addClientDataHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $clientData    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientDataHistory')->findBy(
+            ['idClient' => $client],
+            ['datePending' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($clientData as $dataHistory) {
+            $history[$dataHistory->getDatePending()->getTimestamp()][] = [
+                'type' => 'data',
+                'date' => $dataHistory->getDatePending(),
+                'name' => ucfirst($dataHistory->getField()),
+                'old'  => $dataHistory->getOldValue(),
+                'new'  => $dataHistory->getNewValue(),
+                'user' => $dataHistory->getIdUser()
+            ];
+        }
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addBankAccountHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
+        $previousBankAccount = null;
+        $bankAccounts        = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->findBy(
+            ['idClient' => $client],
+            ['datePending' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($bankAccounts as $bankAccount) {
+            if (null !== $bankAccount->getDatePending()) {
+                $history[$bankAccount->getDatePending()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDatePending(),
+                    'name' => 'Modification RIB',
+                    'old'  => $previousBankAccount ? $this->formatBankAccountHistory($previousBankAccount) : '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+
+                $previousBankAccount = $bankAccount;
+            }
+
+            if (
+                null !== $bankAccount->getDateValidated()
+                && $bankAccount->getDatePending()->getTimestamp() !== $bankAccount->getDateValidated()->getTimestamp()
+            ) {
+                $history[$bankAccount->getDateValidated()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDateValidated(),
+                    'name' => 'Validation RIB',
+                    'old'  => '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+            }
+
+            if (null !== $bankAccount->getDateArchived()) {
+                $history[$bankAccount->getDateArchived()->getTimestamp()][] = [
+                    'type' => 'bank_account',
+                    'date' => $bankAccount->getDateArchived(),
+                    'name' => 'Archivage RIB',
+                    'old'  => '',
+                    'new'  => $this->formatBankAccountHistory($bankAccount),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param BankAccount $bankAccount
+     *
+     * @return string
+     */
+    private function formatBankAccountHistory(BankAccount $bankAccount): string
+    {
+        return
+            'IBAN : ' . $bankAccount->getIban() . '<br>' .
+            'BIC : ' . $bankAccount->getBic();
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addAddressHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+        $previousAddress = [
+            AddressType::TYPE_MAIN_ADDRESS   => null,
+            AddressType::TYPE_POSTAL_ADDRESS => null
+        ];
+
+        if ($client->isNaturalPerson()) {
+            $addresses = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findBy(
+                ['idClient' => $client],
+                ['datePending' => 'ASC', 'id' => 'ASC']
+            );
+        } else {
+            $company   = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $addresses = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(
+                ['idCompany' => $company],
+                ['datePending' => 'ASC', 'id' => 'ASC']
+            );
+        }
+
+        foreach ($addresses as $address) {
+            $addressType = AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel() ? 'principale' : 'postale';
+
+            if (null !== $address->getDatePending()) {
+                $history[$address->getDatePending()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDatePending(),
+                    'name' => 'Modification adresse ' . $addressType,
+                    'old'  => $previousAddress[$address->getIdType()->getLabel()] ? $this->formatAddressHistory($previousAddress[$address->getIdType()->getLabel()]) : '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+
+                $previousAddress[$address->getIdType()->getLabel()] = $address;
+            }
+
+            if (
+                null !== $address->getDateValidated()
+                && $address->getDatePending()->getTimestamp() !== $address->getDateValidated()->getTimestamp()
+            ) {
+                $history[$address->getDateValidated()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDateValidated(),
+                    'name' => 'Validation adresse ' . $addressType,
+                    'old'  => '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+            }
+
+            if (null !== $address->getDateArchived()) {
+                $history[$address->getDateArchived()->getTimestamp()][] = [
+                    'type' => 'address',
+                    'date' => $address->getDateArchived(),
+                    'name' => 'Archivage adresse ' . $addressType,
+                    'old'  => '',
+                    'new'  => $this->formatAddressHistory($address),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param ClientAddress|CompanyAddress $address
+     *
+     * @return string
+     */
+    private function formatAddressHistory($address): string
+    {
+        return
+            ($address->getAddress() ?? '') . '<br>' .
+            ($address->getZip() ?? '') . ' ' . ($address->getCity() ?? '') . '<br>' .
+            ($address->getIdCountry() ? $address->getIdCountry()->getFr() : '');
+    }
+
+    /**
+     * @param Clients $client
+     * @param array   $history
+     */
+    private function addAttachmentHistory(Clients $client, array &$history): void
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $attachments   = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(
+            ['idClient' => $client],
+            ['added' => 'ASC', 'id' => 'ASC']
+        );
+
+        foreach ($attachments as $attachment) {
+            $history[$attachment->getAdded()->getTimestamp()][] = [
+                'type' => 'attachment',
+                'date' => $attachment->getAdded(),
+                'name' => 'Chargement ' . $attachment->getType()->getLabel(),
+                'old'  => '',
+                'new'  => $this->formatAttachmentHistory($attachment),
+                'user' => null
+            ];
+
+            if (null !== $attachment->getArchived()) {
+                $history[$attachment->getArchived()->getTimestamp()][] = [
+                    'type' => 'attachment',
+                    'date' => $attachment->getArchived(),
+                    'name' => 'Archivage ' . $attachment->getType()->getLabel(),
+                    'old'  => '',
+                    'new'  => $this->formatAttachmentHistory($attachment),
+                    'user' => null
+                ];
+            }
+        }
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return string
+     */
+    private function formatAttachmentHistory(Attachment $attachment): string
+    {
+        return
+            '<a href="' . $this->url . '/attachment/download/id/' . $attachment->getId() . '/file/' . urlencode($attachment->getPath()) . '">' .
+            ($attachment->getOriginalName() ?? $attachment->getPath()) .
+            '</a>';
     }
 
     /**
