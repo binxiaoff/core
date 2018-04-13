@@ -3,7 +3,9 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Bids, Clients, ClientsAdresses, ClientsStatus, CompanyRating, OperationType, PaysV2, Product, ProjectProductAssessment, Projects, TaxType, Wallet, WalletType, Zones
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BdfLoansDeclarationManager, IfuManager
+};
 
 class statsController extends bootstrap
 {
@@ -368,32 +370,77 @@ class statsController extends bootstrap
     public function _declarations_bdf()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $declarationList       = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findAll();
-        $declarationPath       = $this->getParameter('path.sftp') . 'bdf/emissions/declarations_mensuelles/';
-        $this->declarationList = [];
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var BdfLoansDeclarationManager $bdfLoansDeclarationManager */
+        $bdfLoansDeclarationManager = $this->get('unilend.service.bdf_loans_declaration_manager');
+        $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findBy([], ['added' => 'DESC']);
+        $declarationList            = [];
+        $documentTypes              = [
+            BdfLoansDeclarationManager::TYPE_IFP_BDC,
+            BdfLoansDeclarationManager::TYPE_MINIBON
+        ];
 
-        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
-            $this->download($declarationPath . $this->params[1]);
-        }
-        foreach ($declarationList as $declaration) {
-            $absoluteFileName = $declarationPath . $declaration->getElementName();
+        if (isset($this->params[0], $this->params[1]) && in_array($this->params[0], $documentTypes)) {
+            $fileNamePattern = '/^(' . BdfLoansDeclarationManager::UNILEND_IFP_ID . '|' . BdfLoansDeclarationManager::UNILEND_CIP_ID . ')_[0-9]{6}\.txt$/';
 
-            if (file_exists($absoluteFileName)) {
-                if ('01' === $declaration->getAdded()->format('m')) {
-                    $year = $declaration->getAdded()->format('Y') - 1;
-                } else {
-                    $year = $declaration->getAdded()->format('Y');
-                }
-                $declarationDate                = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
-                $this->declarationList[$year][] = [
-                    'declarationDate' => strftime('%B %Y', $declarationDate->getTimestamp()),
-                    'creationDate'    => $declaration->getAdded()->format('d/m/Y H:i'),
-                    'link'            => '/stats/declarations_bdf/file/' . $declaration->getElementName(),
-                    'fileName'        => $declaration->getElementName()
-                ];
+            if (preg_match($fileNamePattern, $this->params[1])) {
+                $this->download(implode(DIRECTORY_SEPARATOR, [$bdfLoansDeclarationManager->getBaseDir(), $this->params[0], $this->params[1]]));
+            } else {
+                header('Location: /stats/declarations_bdf');
+                die();
             }
         }
+
+        foreach ($declarations as $declaration) {
+            if (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_IFP_ID)) {
+                $type            = BdfLoansDeclarationManager::TYPE_IFP_BDC;
+                $declarationPath = $bdfLoansDeclarationManager->getIfpPath();
+            } elseif (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_CIP_ID)) {
+                $type            = BdfLoansDeclarationManager::TYPE_MINIBON;
+                $declarationPath = $bdfLoansDeclarationManager->getCipPath();
+            } else {
+                $this->get('logger')->warning(
+                    'Could not find the (BDF) loan declaration type. Unexpected file name format: ' . $declaration->getElementName(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                continue;
+            }
+
+            $declarationDate = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
+
+            if (false === $declarationDate instanceof \DateTime) {
+                $this->get('logger')->warning(
+                    'Could not calculate the (BDF) loan declaration date. Unexpected file name format: ' . $declaration->getElementName(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                continue;
+            }
+
+            $absoluteFileName = implode(DIRECTORY_SEPARATOR, [$declarationPath, $declaration->getElementName()]);
+
+            if (file_exists($absoluteFileName)) {
+                $year  = $declarationDate->format('Y');
+                $month = $declarationDate->format('M');
+
+                if (false === isset($declarationList[$year][$month])) {
+                    $declarationList[$year][$month] = [];
+                }
+                $declarationList[$year][$month]['declarationDate'] = $declarationDate;
+
+                switch ($type) {
+                    case BdfLoansDeclarationManager::TYPE_IFP_BDC:
+                        $declarationList[$year][$month]['ifpFileName'] = $declaration->getElementName();
+                        break;
+                    case BdfLoansDeclarationManager::TYPE_MINIBON:
+                        $declarationList[$year][$month]['cipFileName'] = $declaration->getElementName();
+                        break;
+                    default:
+                        continue;
+                }
+            }
+        }
+
+        $this->render(null, ['declarations' => $declarationList]);
     }
 
     /**

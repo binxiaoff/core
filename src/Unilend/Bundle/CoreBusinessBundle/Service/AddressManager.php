@@ -50,7 +50,7 @@ class AddressManager
 
         try {
 
-            if ($company->getIdClientOwner()->isLender()) {
+            if (null !== $company->getIdClientOwner() && $company->getIdClientOwner()->isLender()) {
                 $this->saveLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
             } else {
                 $companyAddress = $this->saveNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
