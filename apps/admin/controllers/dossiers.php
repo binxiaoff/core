@@ -3006,6 +3006,7 @@ class dossiersController extends bootstrap
             $this->currencyFormatter = $this->get('currency_formatter');
 
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->hasOverdue        = false;
 
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
                 $this->project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
@@ -3020,6 +3021,13 @@ class dossiersController extends bootstrap
                 $this->restFunds     = $borrowerManager->getRestOfFundsToRelease($wallet);
 
                 $this->projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $this->company]);
+                foreach ($this->projects as $project) {
+                    $overDueAmounts = $projectManager->getOverdueAmounts($project);
+                    if ($overDueAmounts['capital'] > 0 || $overDueAmounts['interest'] > 0 || $overDueAmounts['commission'] > 0) {
+                        $this->hasOverdue = true;
+                        break;
+                    }
+                }
                 if (1 === count($this->projects)) {
                     $this->project = current($this->projects);
                 }
