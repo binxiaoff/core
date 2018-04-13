@@ -58,11 +58,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 $serialize   = serialize(['id_client' => $client->getIdClient(), 'attachment_data' => $clientData]);
                 $userHistory->histo(UsersHistory::FORM_ID_LENDER, 'validation auto preteur', Users::USER_ID_CRON, $serialize);
 
-                /** @var \clients_adresses $clientAddress */
-                $clientAddress = $entityManagerSimulator->getRepository('clients_adresses');
-                $clientAddress->get($client->getIdClient(), 'id_client');
                 $taxManager = $this->getContainer()->get('unilend.service.tax_manager');
-                $taxManager->addTaxToApply($client, $clientAddress, Users::USER_ID_CRON);
+                $taxManager->addTaxToApply($client, Users::USER_ID_CRON);
             }
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');

@@ -5,7 +5,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BankAccountManager, LenderOperationsManager
+    BankAccountManager, ClientAuditer, LenderOperationsManager
 };
 
 class preteursController extends bootstrap
@@ -466,6 +466,7 @@ class preteursController extends bootstrap
                     }
 
                     $entityManager->beginTransaction();
+
                     try {
                         $this->client
                             ->setCivilite($_POST['civilite'])
@@ -482,6 +483,10 @@ class preteursController extends bootstrap
                             ->setIdNationalite($_POST['nationalite'])
                             ->setIdLangue('fr')
                             ->setType($type);
+
+                        /** @var ClientAuditer $clientAuditer */
+                        $clientAuditer = $this->get(ClientAuditer::class);
+                        $clientAuditer->logChanges($this->client, $this->userEntity);
 
                         $entityManager->flush($this->client);
 
@@ -527,10 +532,6 @@ class preteursController extends bootstrap
                         }
 
                         $entityManager->commit();
-
-                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                        die;
-
                     } catch (\Exception $exception) {
                         $entityManager->rollback();
                         $logger->error('An exception occurred while updating client in the backoffice. Message: ' . $exception->getMessage(), [
@@ -540,9 +541,6 @@ class preteursController extends bootstrap
                             'function'  => __FUNCTION__,
                             'id_client' => $this->client->getIdClient()
                         ]);
-
-                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                        die;
                     }
                 } else {
                     $email = trim($_POST['email_e']);
@@ -563,16 +561,6 @@ class preteursController extends bootstrap
                             ->setPhone(str_replace(' ', '', $_POST['phone-societe']))
                             ->setTribunalCom($_POST['tribunal_com'])
                             ->setStatusClient($_POST['enterprise']);
-
-                        $this->client
-                            ->setCivilite($_POST['civilite_e'])
-                            ->setNom($this->ficelle->majNom($_POST['nom_e']))
-                            ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
-                            ->setFonction($_POST['fonction_e'])
-                            ->setEmail($email)
-                            ->setTelephone(str_replace(' ', '', $_POST['phone_e']))
-                            ->setIdLangue('fr')
-                            ->setType(Clients::TYPE_LEGAL_ENTITY);
 
                         if (in_array($_POST['enterprise'], [Companies::CLIENT_STATUS_DELEGATION_OF_POWER, Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT])) {
                             $this->companyEntity
@@ -597,6 +585,20 @@ class preteursController extends bootstrap
                                 ->setEmailDirigeant(null)
                                 ->setPhoneDirigeant(null);
                         }
+
+                        $this->client
+                            ->setCivilite($_POST['civilite_e'])
+                            ->setNom($this->ficelle->majNom($_POST['nom_e']))
+                            ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
+                            ->setFonction($_POST['fonction_e'])
+                            ->setEmail($email)
+                            ->setTelephone(str_replace(' ', '', $_POST['phone_e']))
+                            ->setIdLangue('fr')
+                            ->setType(Clients::TYPE_LEGAL_ENTITY);
+
+                        /** @var ClientAuditer $clientAuditer */
+                        $clientAuditer = $this->get(ClientAuditer::class);
+                        $clientAuditer->logChanges($this->client, $this->userEntity);
 
                         if (false === empty($_POST['adresse']) && false === empty($_POST['ville']) && false === empty($_POST['cp'])) {
                             $addressManager->saveCompanyAddress(
@@ -646,11 +648,11 @@ class preteursController extends bootstrap
                             'function'  => __FUNCTION__,
                             'id_client' => $this->client->getIdClient()
                         ]);
-
-                        header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                        die;
                     }
                 }
+
+                header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
+                die;
             }
 
             if (isset($_POST['send_attachments'])) {
