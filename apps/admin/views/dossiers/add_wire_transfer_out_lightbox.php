@@ -1,6 +1,9 @@
 <div id="popup">
     <h1>Création du transfert</h1>
     <p>Fonds restants : <?= $this->currencyFormatter->formatCurrency($this->restFunds, 'EUR'); ?></p>
+    <?php if ($this->hasOverdue): ?>
+        <p>Attention, cet emprunteur a un ou plusieurs retards de payment à régulariser.</p>
+    <?php endif; ?>
     <form method="post" enctype="multipart/form-data" action="/dossiers/add_wire_transfer_out_lightbox/<?= $this->params[0] ?>/<?= $this->params[1] ?>">
         <table class="formColor">
             <tr>

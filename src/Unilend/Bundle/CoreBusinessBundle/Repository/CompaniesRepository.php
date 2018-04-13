@@ -165,6 +165,8 @@ class CompaniesRepository extends EntityRepository
             ->where('p.status > :firstProjectStatus')
             ->andWhere('p.status NOT IN (:excludedStatus)')
             ->andWhere($queryBuilder->expr()->not($queryBuilder->expr()->exists($sirenExistSubQuery->getDQL())))
+            ->andWhere('co.siren != \'\'')
+            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('excludedStatus', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS)
             ->setParameter('firstProjectStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
 
@@ -204,7 +206,9 @@ class CompaniesRepository extends EntityRepository
           WHERE p.status >= ' . ProjectsStatus::COMPLETE_REQUEST . ' 
             AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
             AND rdm.end <= NOW() 
-            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL';
+            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL
+            AND co.siren !=\'\'
+            AND co.siren IS NOT NULL';
 
         return $this->getEntityManager()
             ->getConnection()

@@ -87,6 +87,10 @@ class MonitoringManger
      */
     public function projectHasMonitoringEvents(Projects $project): bool
     {
+        if (empty($project->getIdCompany()->getSiren())) {
+            return false;
+        }
+
         $countCallLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->getCountCallLogsForSirenAfterDate($project->getIdCompany()->getSiren(), $project->getAdded());
 
         return $countCallLogs > 0;
