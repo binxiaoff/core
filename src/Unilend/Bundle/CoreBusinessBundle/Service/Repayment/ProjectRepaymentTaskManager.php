@@ -276,17 +276,21 @@ class ProjectRepaymentTaskManager
 
     /**
      * @param Projects $project
+     * @param Users    $user
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function disableAutomaticRepayment(Projects $project): void
+    public function disableAutomaticRepayment(Projects $project, Users $user): void
     {
-        $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy(['idProject' => $project, 'status' => ProjectRepaymentTask::STATUS_READY]);
+        $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
+            'idProject' => $project,
+            'status' => ProjectRepaymentTask::STATUS_READY
+        ]);
 
         foreach ($readyRepaymentTask as $task) {
             $task
                 ->setStatus(ProjectRepaymentTask::STATUS_PENDING)
-                ->setIdUserValidation(null);
+                ->setIdUserSuspending($user);
         }
 
         $project->setRembAuto(Projects::AUTO_REPAYMENT_OFF);

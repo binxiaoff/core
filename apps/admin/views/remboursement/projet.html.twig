@@ -15,151 +15,151 @@
 
 {% block pageScripts %}
     <script>
-        $(function () {
-            // Page helpers are initialised in app.js and can be called quickly using their name
-            App.initHelpers(['validation', 'datepicker', 'datatables']);
-            // Popup form submit
-            $(document).on('submit', '#modal-status-problem form, #modal-debt-collection form, #modal-additional-fees form', function (e) {
-                e.preventDefault()
-                var $form = $(this)
-                var $modal = $form.closest('.modal')
-                var block = $form.find('.block')[0]
-                // Don't allow negative values for amount
-                if ($modal.is('#modal-additional-fees')) {
-                    var errorToDisplay = '<small class="amount-error text-muted push-10-l"><em>Le montant est incorrect</em></small>'
-                    var $amountVatFree = $form.find('[name=fee-amount-vat-free]')
-                    var $amountVat = $form.find('[name=fee-amount-vat]')
-                    if (parseFloat($amountVatFree.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
-                        $amountVatFree.parent().addClass('has-error')
-                        $amountVatFree.parent().find('label').append(errorToDisplay)
-                        return
-                    }
-                    if (parseFloat($amountVat.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
-                        $amountVat.parent().addClass('has-error')
-                        $amountVat.parent().find('label').append(errorToDisplay)
-                        return
-                    }
-                }
-                // Ajax if no errors
-                if (!$form.find('.has-error').length) {
-                    App.blocks(block, 'state_loading')
-                    $.ajax({
-                        url: $form.attr('action'),
-                        type: 'POST',
-                        data: $form.serialize(),
-                        dataType: 'json',
-                        success: function (response) {
-                            if (response.success) {
-                                location.reload()
-                            } else {
-                                var html = '<div class="alert alert-error">'
-                                $.each(response.error, function (i, message) {
-                                    html += '<p>' + message + '</p>'
-                                })
-                                html += '</div>'
-                                $form.find('.messages').html(html)
-                                App.blocks(block, 'state_normal')
-                            }
-                        },
-                        error: function (jqXHR, exception) {
-                            console.log(jqXHR.status + ' : ' + exception)
-                            $form.find('.messages').html('Une erreur est survenue.')
-                            App.blocks(block, 'state_normal')
-                        }
-                    })
-                }
-            })
-            // Reset popup on hide
-            $(document).on('hidden.bs.modal', '#modal-status-problem, #modal-debt-collection, #modal-additional-fees', function (e) {
-                var $modal = $(this)
-                // Reset values
-                $modal.find('.form-control').each(function () {
-                    if ($(this).is('select') && $(this).val() == 0) {
-                        // do nothing
-                    } else {
-                        $(this).val('')
-                    }
-                })
-                // Reset errors
-                $modal.find('.form-group').each(function () {
-                    if ($(this).is('.has-error')) {
-                        $(this).removeClass('has-error')
-                    }
-                })
-                $modal.find('.messages').html('')
-                $modal.find('.amount-error').remove()
-            })
-
-            $(document).on('change', 'input[name=debt-collection-zero-rate]', function () {
-                var $rateTextInput = $('input[name=debt-collection-rate]')
-                if (this.checked) {
-                    $rateTextInput.val('')
-                    $rateTextInput.prop('disabled', true)
-                    $rateTextInput.prop('required', false)
-                    $rateTextInput.removeClass('required')
-                } else {
-                    $rateTextInput.prop('disabled', false)
-                    $rateTextInput.prop('required', true)
-                    $rateTextInput.addClass('required')
-                }
-            })
-
-            $(document).on('change', '#include-unilend-commission', function () {
-                var responseSpan = $('#option-response-unilend-commission')
-                if (this.checked) {
-                    responseSpan.html('Oui')
-                } else {
-                    responseSpan.html('Non')
-                }
-            })
-
-            $(document).on('click', '#close-out-netting-validation', function () {
-                var block = $('#modal-close-out-netting').find('.block')
-                App.blocks(block, 'state_loading')
-            })
-
-            $(document).on('click', 'input[name="auto-repayment"]', function (e) {
-                e.preventDefault()
-                if (false === $(this).prop('checked')) {
-                    if (confirm('Voulez-vous désactiver le remboursement automatique ?')) {
-                        autoRepayment($(this), false)
-                    }
-                } else {
-                    if (confirm('Voulez-vous activer le remboursement automatique ?')) {
-                        autoRepayment($(this), true)
-                    }
-                }
-            })
-
-            var autoRepayment = function (elm, onOff) {
-                var spinner = $('#auto-repayment-spinner')
-                spinner.removeClass('visibility-hidden')
-                $.post("{{ app.adminUrl }}/remboursement/switch_auto_repayment_ajax/{{ project.idProject }}", {
-                    switch: onOff
-                })
-                    .done(function (data) {
-                        if (data.success === false) {
-                            var errorMessage = ''
-                            data.errors.forEach(function (element) {
-                                errorMessage += element
-                            })
-                            alert(errorMessage)
-                        } else {
-                            if (onOff) {
-                                elm.prop('checked', true)
-                            } else {
-                                elm.prop('checked', false)
-                            }
-                        }
-                    })
-                    .fail(function () {
-                        alert('Une erreur est survenue. Vous ne pouvez pas modifier la configuration de remboursement automatique');
-                    })
-                    .always(function () {
-                        spinner.addClass('visibility-hidden')
-                    })
+      $(function () {
+        // Page helpers are initialised in app.js and can be called quickly using their name
+        App.initHelpers(['validation', 'datepicker', 'datatables']);
+        // Popup form submit
+        $(document).on('submit', '#modal-status-problem form, #modal-debt-collection form, #modal-additional-fees form', function (e) {
+          e.preventDefault()
+          var $form = $(this)
+          var $modal = $form.closest('.modal')
+          var block = $form.find('.block')[0]
+          // Don't allow negative values for amount
+          if ($modal.is('#modal-additional-fees')) {
+            var errorToDisplay = '<small class="amount-error text-muted push-10-l"><em>Le montant est incorrect</em></small>'
+            var $amountVatFree = $form.find('[name=fee-amount-vat-free]')
+            var $amountVat = $form.find('[name=fee-amount-vat]')
+            if (parseFloat($amountVatFree.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
+              $amountVatFree.parent().addClass('has-error')
+              $amountVatFree.parent().find('label').append(errorToDisplay)
+              return
             }
+            if (parseFloat($amountVat.val().replace(',', '.')) <= 0 || isNaN($amountVatFree.val().replace(',', '.'))) {
+              $amountVat.parent().addClass('has-error')
+              $amountVat.parent().find('label').append(errorToDisplay)
+              return
+            }
+          }
+          // Ajax if no errors
+          if (!$form.find('.has-error').length) {
+            App.blocks(block, 'state_loading')
+            $.ajax({
+              url: $form.attr('action'),
+              type: 'POST',
+              data: $form.serialize(),
+              dataType: 'json',
+              success: function (response) {
+                if (response.success) {
+                  location.reload()
+                } else {
+                  var html = '<div class="alert alert-error">'
+                  $.each(response.error, function (i, message) {
+                    html += '<p>' + message + '</p>'
+                  })
+                  html += '</div>'
+                  $form.find('.messages').html(html)
+                  App.blocks(block, 'state_normal')
+                }
+              },
+              error: function (jqXHR, exception) {
+                console.log(jqXHR.status + ' : ' + exception)
+                $form.find('.messages').html('Une erreur est survenue.')
+                App.blocks(block, 'state_normal')
+              }
+            })
+          }
         })
+        // Reset popup on hide
+        $(document).on('hidden.bs.modal', '#modal-status-problem, #modal-debt-collection, #modal-additional-fees', function (e) {
+          var $modal = $(this)
+          // Reset values
+          $modal.find('.form-control').each(function () {
+            if ($(this).is('select') && $(this).val() == 0) {
+              // do nothing
+            } else {
+              $(this).val('')
+            }
+          })
+          // Reset errors
+          $modal.find('.form-group').each(function () {
+            if ($(this).is('.has-error')) {
+              $(this).removeClass('has-error')
+            }
+          })
+          $modal.find('.messages').html('')
+          $modal.find('.amount-error').remove()
+        })
+
+        $(document).on('change', 'input[name=debt-collection-zero-rate]', function () {
+          var $rateTextInput = $('input[name=debt-collection-rate]')
+          if (this.checked) {
+            $rateTextInput.val('')
+            $rateTextInput.prop('disabled', true)
+            $rateTextInput.prop('required', false)
+            $rateTextInput.removeClass('required')
+          } else {
+            $rateTextInput.prop('disabled', false)
+            $rateTextInput.prop('required', true)
+            $rateTextInput.addClass('required')
+          }
+        })
+
+        $(document).on('change', '#include-unilend-commission', function () {
+          var responseSpan = $('#option-response-unilend-commission')
+          if (this.checked) {
+            responseSpan.html('Oui')
+          } else {
+            responseSpan.html('Non')
+          }
+        })
+
+        $(document).on('click', '#close-out-netting-validation', function () {
+          var block = $('#modal-close-out-netting').find('.block')
+          App.blocks(block, 'state_loading')
+        })
+
+        $(document).on('click', 'input[name="auto-repayment"]', function (e) {
+          e.preventDefault()
+          if (false === $(this).prop('checked')) {
+            if (confirm('Voulez-vous désactiver le remboursement automatique ?')) {
+              autoRepayment($(this), false)
+            }
+          } else {
+            if (confirm('Voulez-vous activer le remboursement automatique ?')) {
+              autoRepayment($(this), true)
+            }
+          }
+        })
+
+        var autoRepayment = function (elm, onOff) {
+          var spinner = $('#auto-repayment-spinner')
+          spinner.removeClass('visibility-hidden')
+          $.post("{{ app.adminUrl }}/remboursement/switch_auto_repayment_ajax/{{ project.idProject }}", {
+            switch: onOff
+          })
+            .done(function (data) {
+              if (data.success === false) {
+                var errorMessage = ''
+                data.errors.forEach(function (element) {
+                  errorMessage += element
+                })
+                alert(errorMessage)
+              } else {
+                if (onOff) {
+                  elm.prop('checked', true)
+                } else {
+                  elm.prop('checked', false)
+                }
+              }
+            })
+            .fail(function () {
+              alert('Une erreur est survenue. Vous ne pouvez pas modifier la configuration de remboursement automatique');
+            })
+            .always(function () {
+              spinner.addClass('visibility-hidden')
+            })
+        }
+      })
     </script>
 {% endblock %}
 
@@ -382,6 +382,9 @@
 {% endblock %}
 
 {% block pageHeader %}
+    <div class="pull-left">
+        <a href="/dossiers/remboursements" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Remboursements</a>
+    </div>
     <div class="pull-right">
         <small>
             SIREN : <a href="/emprunteurs/edit/{{ project.idCompany.idClientOwner.idClient }}">{{ project.idCompany.siren }}</a>
@@ -395,10 +398,10 @@
         <label class="css-input switch switch-sm switch-primary">
             <input type="checkbox" name="auto-repayment"
                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
-            Remboursement automatique  <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
+            Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>
-    <h1 class="page-heading push">
+    <h1 class="page-heading push" style="clear:both;margin:30px 0 30px;">
         Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
     </h1>
 {% endblock %}
@@ -407,7 +410,7 @@
     <div class="content">
         <h2 class="content-heading">Synthèse du projet</h2>
         <div class="row">
-            {% if project.getCloseOutNettingDate is empty %}
+            {% if project.getCloseOutNettingDate() is empty %}
                 <div class="col-lg-3">
                     <div class="block">
                         <div class="block-header">
@@ -427,7 +430,7 @@
                                     <small class="text-muted">remboursées</small>
                                 </div>
                                 <div class="col-xs-6">
-                                    <div class="text-primary">{{ unpaidScheduleCount }}</div>
+                                    <div class="text-primary">{{ futureScheduleCount }}</div>
                                     <small class="text-muted">à venir</small>
                                 </div>
                             </div>
@@ -453,23 +456,25 @@
                                     <small class="text-muted">remboursés</small>
                                 </div>
                                 <div class="col-xs-6">
-                                    <div class="text-primary">{{ unpaidScheduledAmount|localizedcurrency('EUR') }}</div>
+                                    <div class="text-primary">{{ futureScheduledAmount|localizedcurrency('EUR') }}</div>
                                     <small class="text-muted">à percevoir</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-2">
-                    <div class="block">
-                        <div class="block-header">
-                            <h3 class="block-title">Prochaine échéance le</h3>
-                        </div>
-                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
-                            <p class="text-primary pull-t">{{ nextUnpaidSchedule.getDateEcheanceEmprunteur()|localizeddate('short', 'none') }}</p>
+                {% if futurSchedule is not null %}
+                    <div class="col-lg-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Prochaine échéance</h3>
+                            </div>
+                            <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                                <p class="text-primary pull-t">{{ futurSchedule.getDateEcheanceEmprunteur()|localizeddate('short', 'none') }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
             {% else %}
                 <div class="col-lg-2">
                     <div class="block">
@@ -510,26 +515,58 @@
                 </div>
             </div>
             {% if totalOverdueAmount > 0 %}
-                <div class="col-lg-2">
-                    <div class="block">
-                        <div class="block-header">
-                            <h3 class="block-title">Retard Emprunteur</h3>
-                        </div>
-                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
-                            <p class="text-primary pull-t">{{ totalOverdueAmount|localizedcurrency('EUR') }}</p>
+                {% if project.getCloseOutNettingDate() is empty %}
+                    <div class="col-lg-3">
+                        <div class="block">
+                            <div class="block-header">
+                                <ul class="block-options">
+                                    <li>
+                                        <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top"
+                                           data-original-title="Afficher l'échéancier emprunteur">
+                                            <i class="fa fa-list-ol"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <h3 class="block-title">Retard Emprunteur</h3>
+                            </div>
+                            <div class="block-content">
+                                <div class="row items-push text-center pull-t">
+                                    <div class="col-xs-6 border-r">
+                                        <div class="text-primary">{{ totalOverdueAmount|localizedcurrency('EUR') }}</div>
+                                        <small class="text-muted">dû</small>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <div class="text-primary">{{ latePaymentsData|length|localizednumber }}</div>
+                                        <small class="text-muted">échéance(s)</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="block">
-                        <div class="block-header">
-                            <h3 class="block-title">Confié au recouvreur</h3>
-                        </div>
-                        <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
-                            <p class="text-primary pull-t">{{ entrustedToDebtCollector > 0 ? entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}</p>
+                {% else %}
+                    <div class="col-lg-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Retard Emprunteur</h3>
+                            </div>
+                            <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                                <p class="text-primary pull-t">{{ totalOverdueAmount|localizedcurrency('EUR') }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
+                {% if entrustedToDebtCollector > 0 %}
+                    <div class="col-lg-2">
+                        <div class="block">
+                            <div class="block-header">
+                                <h3 class="block-title">Confié au recouvreur</h3>
+                            </div>
+                            <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
+                                <p class="text-primary pull-t">{{ entrustedToDebtCollector|localizedcurrency('EUR') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             {% endif %}
             {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
                 {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}

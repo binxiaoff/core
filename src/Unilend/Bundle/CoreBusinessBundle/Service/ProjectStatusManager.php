@@ -350,7 +350,7 @@ class ProjectStatusManager
                 $this->universignManager->cancelProxyAndMandate($project);
                 break;
             case ProjectsStatus::PROBLEME:
-                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project);
+                $this->projectRepaymentTaskManager->disableAutomaticRepayment($project, $user);
                 break;
         }
     }

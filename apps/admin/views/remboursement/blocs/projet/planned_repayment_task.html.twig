@@ -21,6 +21,9 @@
                             <th style="width: 5%">
                                 Numéro de l'échéance
                             </th>
+                            <th style="width: 5%">
+                                Date de l'échéance
+                            </th>
                             <th style="width: 10%">
                                 Type
                             </th>
@@ -59,6 +62,11 @@
                                 </td>
                                 <td>
                                     {{ repaymentTask.sequence }}
+                                </td>
+                                <td>
+                                    {% if paymentSchedules[repaymentTask.sequence] is defined %}
+                                        {{ paymentSchedules[repaymentTask.sequence].dateEcheanceEmprunteur|localizeddate('short', 'none') }}
+                                    {% endif %}
                                 </td>
                                 <td>
                                     {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') == repaymentTask.type %}
