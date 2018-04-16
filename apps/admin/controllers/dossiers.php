@@ -1346,10 +1346,7 @@ class dossiersController extends bootstrap
             && false !== filter_var($_POST['id_client'], FILTER_VALIDATE_INT)
             && null !== ($clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($_POST['id_client']))
         ) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $clientManager */
-            $clientManager = $this->get('unilend.service.client_manager');
-
-            if (false === $clientManager->isBorrower($clientEntity)) {
+            if (false === $clientEntity->isBorrower()) {
                 $_SESSION['freeow']['title']   = 'Impossible de créer le projet';
                 $_SESSION['freeow']['message'] = 'Le client selectioné n\'est pas un emprunteur';
 
@@ -2816,6 +2813,7 @@ class dossiersController extends bootstrap
             $this->currencyFormatter = $this->get('currency_formatter');
 
             $this->companyRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->hasOverdue        = false;
 
             if (WireTransferOutManager::TRANSFER_OUT_BY_PROJECT === $this->params[0]) {
                 $this->project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
@@ -2830,6 +2828,13 @@ class dossiersController extends bootstrap
                 $this->restFunds     = $borrowerManager->getRestOfFundsToRelease($wallet);
 
                 $this->projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $this->company]);
+                foreach ($this->projects as $project) {
+                    $overDueAmounts = $projectManager->getOverdueAmounts($project);
+                    if ($overDueAmounts['capital'] > 0 || $overDueAmounts['interest'] > 0 || $overDueAmounts['commission'] > 0) {
+                        $this->hasOverdue = true;
+                        break;
+                    }
+                }
                 if (1 === count($this->projects)) {
                     $this->project = current($this->projects);
                 }

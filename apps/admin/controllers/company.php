@@ -240,9 +240,7 @@ class companyController extends bootstrap
             }
             if ($registryForm) {
                 $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                $attachment         = $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
-
-                $addressManager->validateCompanyAddress($this->company->getIdAddress(), $attachment);
+                $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
             }
 
             $entityManager->commit();
