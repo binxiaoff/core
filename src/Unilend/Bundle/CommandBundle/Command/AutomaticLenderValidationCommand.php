@@ -56,7 +56,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');
             $logger->error('Could not validate the lender. Exception message: ' . $exception->getMessage(),
-                ['id_client' => $client->id_client, 'class' => __CLASS__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]);
+                ['class' => __CLASS__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_client' => isset($client) ? $client->getIdClient() : '']);
         }
     }
 }
