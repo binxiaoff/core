@@ -208,11 +208,35 @@ class MainController extends Controller
         $session  = $request->getSession();
         $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
-        try {
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-            /** @var ProjectRequestManager $projectRequestManager */
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($formData, $user);
+        try {
+            if (empty($formData['email'])) {
+                throw new \InvalidArgumentException('Invalid email', ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL);
+            }
+
+            if (empty($formData['siren']) || false === $siren = $projectRequestManager->validateSiren($formData['siren'])) {
+                throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN);
+            }
+
+            if (empty($formData['amount'])) {
+                throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT);
+            }
+
+            if (empty($formData['duration'])) {
+                throw new \InvalidArgumentException('Invalid duration', ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION);
+            }
+
+            if (empty($formData['reason'])) {
+                throw new \InvalidArgumentException('Invalid reason', ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON);
+            }
+            // We accept in the same field both siren and siret
+            $siret = $projectRequestManager->validateSiret($formData['siren']);
+
+            $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
+
+            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret === false ? null : $siret, $formData['email'], $formData['duration'], $formData['reason']);
+
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
             $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);

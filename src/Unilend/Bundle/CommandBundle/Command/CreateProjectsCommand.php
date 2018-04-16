@@ -6,16 +6,12 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
 {
-    const DEFAULT_PROJECT_AMOUNT = 10000;
-
     protected function configure()
     {
         $this->setName('projects:create')
@@ -25,7 +21,6 @@ class CreateProjectsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $companyManager          = $this->getContainer()->get('unilend.service.company_manager');
         $projectRequestManager   = $this->getContainer()->get('unilend.service.project_request_manager');
         $partnerManager          = $this->getContainer()->get('unilend.service.partner_manager');
         $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
@@ -62,8 +57,8 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
                         continue;
                     }
-                    $company = $companyManager->createBorrowerBlankCompany($siren, $user->getIdUser());
-                    $amount  = self::DEFAULT_PROJECT_AMOUNT;
+
+                    $amount  = ProjectRequestManager::DEFAULT_PROJECT_AMOUNT;
                     if (isset($inputRow[1]) && filter_var(FILTER_VALIDATE_INT, $inputRow[1])) {
                         $amount = filter_var(FILTER_VALIDATE_INT, $inputRow[1]);
                     }
@@ -72,7 +67,8 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 
-                    $project = $projectRequestManager->createProject($user, $company, $partner, $amount, null, null, null, true);
+                    $project = $projectRequestManager->newProject($user, $partner, $amount, $siren);
+                    $company = $project->getIdCompany();
                     $createdProjects[] = $project->getIdProject();
 
                     $columnIndex = 'A';

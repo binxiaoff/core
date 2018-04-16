@@ -14,9 +14,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsStatus, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
 };
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
-use Unilend\Bundle\FrontBundle\Service\SourceManager;
 use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
@@ -33,13 +33,12 @@ class ProjectRequestController extends Controller
     public function projectRequestAction(Request $request)
     {
         $projectManager  = $this->get('unilend.service.project_manager');
-        $borrowingMotive = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive');
 
         $template = [
             'loanPeriods'      => $projectManager->getPossibleProjectPeriods(),
             'projectAmountMin' => $projectManager->getMinProjectAmount(),
             'projectAmountMax' => $projectManager->getMaxProjectAmount(),
-            'borrowingMotives' => $borrowingMotive->findBy([], ['rank' => 'ASC']),
+            'borrowingMotives' => $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']),
             'form'             => $request->getSession()->get('partnerProjectRequest', [])
         ];
 
@@ -59,138 +58,74 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestFormAction(Request $request)
     {
-        $translator     = $this->get('translator');
-        $projectManager = $this->get('unilend.service.project_manager');
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $companyManager = $this->get('unilend.service.company_manager');
+        $translator            = $this->get('translator');
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
 
-        $amount   = null;
-        $motive   = null;
-        $duration = null;
-        $siren    = null;
+        $formData = $request->request->get('simulator');
+        $amount   = $formData['amount'] ?? null;
+        $reason   = $formData['motive'] ?? null;
+        $duration = $formData['duration'] ?? null;
+        $siren    = $projectRequestManager->validateSiren($formData['siren']);
 
         try {
-            $formData = $request->request->get('simulator');
-
             if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
 
-            $minimumAmount = $projectManager->getMinProjectAmount();
-            $maximumAmount = $projectManager->getMaxProjectAmount();
-            $amount        = str_replace([' ', '€'], '', $formData['amount']);
+            $siret     = $projectRequestManager->validateSiret($formData['siren']);
+            $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+            /** @var UserPartner $partnerUser */
+            $partnerUser = $this->getUser();
 
-            if (false === filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $minimumAmount, 'max_range' => $maximumAmount]])) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_amount-value-error'));
-            }
+            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret === false ? null : $siret, null, $duration, $reason);
 
-            if (false === filter_var($formData['motive'], FILTER_VALIDATE_INT)) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            $motive = $formData['motive'];
-
-            if (false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            $duration    = $formData['duration'];
-            $siren       = str_replace(' ', '', $formData['siren']);
-            $sirenLength = strlen($siren);
-
-            if (
-                1 !== preg_match('/^[0-9]*$/', $siren)
-                || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
-            ) {
-                throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
-            }
-
-            $siren = substr($siren, 0, 9);
-        } catch (InvalidArgumentException $exception) {
-            $this->addFlash('partnerProjectRequestErrors', $exception->getMessage());
-
-            $request->getSession()->set('partnerProjectRequest', [
-                'values' => [
-                    'amount'   => $amount,
-                    'siren'    => $siren,
-                    'motive'   => $motive,
-                    'duration' => $duration
-                ]
-            ]);
-
-            return $this->redirect($request->headers->get('referer'));
-        }
-
-        $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
-
-        $client = new Clients();
-        $client
-            ->setIdLangue('fr')
-            ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
-            ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
-            ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
-            ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
-        $siret   = $sirenLength === 14 ? str_replace(' ', '', $formData['siren']) : null;
-        $company = new Companies();
-        $company
-            ->setSiren($siren)
-            ->setSiret($siret)
-            ->setStatusAdresseCorrespondance(1);
-
-        $entityManager->beginTransaction();
-        try {
-            $entityManager->persist($client);
-
-            $company->setIdClientOwner($client);
-
-            $entityManager->persist($company);
-            $entityManager->flush($company);
-
-            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
-
-            /** @var CompanyStatus $statusInBonis */
-            $statusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
-            /** @var Users $user */
-            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-
-            $companyManager->addCompanyStatus($company, $statusInBonis, $user);
-
-            if (empty($client->getIdClient())) {
-                return $this->redirect($request->headers->get('referer'));
-            }
-
-            /** @var UserPartner $user */
-            $user = $this->getUser();
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-
-            $project   = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $user->getPartner(), $amount, $duration, $motive, null, false, ProjectsStatus::SIMULATION);
-            $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+            $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
             $project->setIdClientSubmitter($submitter)
-                ->setIdCompanySubmitter($user->getCompany());
+                ->setIdCompanySubmitter($partnerUser->getCompany());
 
             $entityManager->flush($project);
 
-            $riskCheck             = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+            $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
             if (null === $riskCheck) {
                 $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
             }
 
-            $entityManager->commit();
-
             return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
+
+        } catch (InvalidArgumentException $exception) {
+            $errorMessageTranslationLabel = 'partner-project-request_required-fields-error';
+            if (ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT === $exception->getCode()) {
+                $errorMessageTranslationLabel = 'partner-project-request_amount-value-error';
+            }
+
+            $this->addFlash('partnerProjectRequestErrors', $translator->trans($errorMessageTranslationLabel));
+
+            $request->getSession()->set('partnerProjectRequest', [
+                'values' => [
+                    'amount'   => $amount,
+                    'siren'    => $siren,
+                    'motive'   => $reason,
+                    'duration' => $duration
+                ]
+            ]);
+
+            return $this->redirect($request->headers->get('referer'));
         } catch (\Exception $exception) {
-            $entityManager->getConnection()->rollBack();
-            $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            $this->get('logger')->error('An error occurred while creating project: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
         }
 
         return $this->redirectToRoute('partner_project_request');
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[0-9a-z]{32,36}"})
+     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[a-z0-9-]{32,36}"})
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -308,7 +243,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[0-9a-z]{32,36}"})
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[a-z0-9-]{32,36}"})
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -375,7 +310,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[0-9a-z]{32,36}"})
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[a-z0-9-]{32,36}"})
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
@@ -621,7 +556,7 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[0-9a-z]{32,36}"})
+     * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[a-z0-9-]{32,36}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string $hash

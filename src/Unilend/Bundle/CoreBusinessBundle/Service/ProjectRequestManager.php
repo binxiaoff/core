@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, CompanyRating, CompanyStatus, Partner, Projects, ProjectsStatus, TaxType, Users, WalletType
+    BorrowingMotive, Companies, CompanyRating, Partner, Projects, ProjectsStatus, TaxType, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -18,6 +18,8 @@ class ProjectRequestManager
     const EXCEPTION_CODE_INVALID_AMOUNT   = 102;
     const EXCEPTION_CODE_INVALID_DURATION = 103;
     const EXCEPTION_CODE_INVALID_REASON   = 104;
+
+    const DEFAULT_PROJECT_AMOUNT = 10000;
 
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
@@ -39,6 +41,8 @@ class ProjectRequestManager
     private $companyManager;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
+    /** @var ProjectManager */
+    private $projectManager;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -51,6 +55,7 @@ class ProjectRequestManager
      * @param PartnerProductManager  $partnerProductManager
      * @param CompanyManager         $companyManager
      * @param ProjectStatusManager   $projectStatusManager
+     * @param ProjectManager         $projectManager
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -62,7 +67,8 @@ class ProjectRequestManager
         LoggerInterface $logger,
         PartnerProductManager $partnerProductManager,
         CompanyManager $companyManager,
-        ProjectStatusManager $projectStatusManager
+        ProjectStatusManager $projectStatusManager,
+        ProjectManager $projectManager
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -75,6 +81,7 @@ class ProjectRequestManager
         $this->partnerProductManager  = $partnerProductManager;
         $this->companyManager         = $companyManager;
         $this->projectStatusManager   = $projectStatusManager;
+        $this->projectManager         = $projectManager;
     }
 
     /**
@@ -112,93 +119,97 @@ class ProjectRequestManager
     }
 
     /**
-     * @param array $formData
-     * @param Users $user
+     * @param Users       $user
+     * @param Partner     $partner
+     * @param null|string $amount
+     * @param null|string $siren
+     * @param null|string $siret
+     * @param null|string $email
+     * @param null|int    $durationInMonth
+     * @param null|int    $reason
      *
      * @return Projects
-     *
      * @throws \Exception
      */
-    public function saveSimulatorRequest($formData, Users $user)
+    public function newProject(
+        Users $user,
+        Partner $partner,
+        ?string $amount = null,
+        ?string $siren = null,
+        ?string $siret = null,
+        ?string $email = null,
+        ?int $durationInMonth = null,
+        ?int $reason = null
+    )
     {
         $anyWhiteSpaces = '/\s/';
 
-        if (empty($formData['email']) || false === filter_var($formData['email'], FILTER_VALIDATE_EMAIL)) {
+        if (null !== $email && false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
 
-        if (false === empty($formData['siren'])) {
-            $formData['siren'] = preg_replace($anyWhiteSpaces, '', $formData['siren']);
-        }
-        if (empty($formData['siren']) || 1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $formData['siren'])) {
-            throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], self::EXCEPTION_CODE_INVALID_SIREN);
+        if (null !== $siren) {
+            if (false === empty($siren)) {
+                $siren = preg_replace($anyWhiteSpaces, '', $siren);
+            }
+
+            if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
+                throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
+            }
         }
 
-        if (false === empty($formData['amount'])) {
-            $formData['amount'] = preg_replace([$anyWhiteSpaces, '/€/'], '', $formData['amount']);
-        }
-        if (empty($formData['amount']) || false === filter_var($formData['amount'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], self::EXCEPTION_CODE_INVALID_AMOUNT);
+        if (false === empty($siret)) {
+            $siret = preg_replace($anyWhiteSpaces, '', $siret);
         }
 
-        if (empty($formData['duration']) || false === filter_var($formData['duration'], FILTER_VALIDATE_INT)) {
+        if (1 !== preg_match('/^([0-9]{14})$/', $siren)) {
+            $siret = null;
+        }
+
+        if (null !== $amount) {
+            $amount        = preg_replace([$anyWhiteSpaces, '/€/'], '', $amount);
+            $minimumAmount = $this->projectManager->getMinProjectAmount();
+            $maximumAmount = $this->projectManager->getMaxProjectAmount();
+
+            if (empty($amount) || false === filter_var($amount, FILTER_VALIDATE_INT, ['options' => ['min_range' => $minimumAmount, 'max_range' => $maximumAmount]])) {
+                throw new \InvalidArgumentException('Invalid amount = ' . $amount, self::EXCEPTION_CODE_INVALID_AMOUNT);
+            }
+        }
+
+        if (null !== $email && (empty($durationInMonth) || false === filter_var($durationInMonth, FILTER_VALIDATE_INT))) {
             throw new \InvalidArgumentException('Invalid duration', self::EXCEPTION_CODE_INVALID_DURATION);
         }
 
-        if (empty($formData['reason']) || false === filter_var($formData['reason'], FILTER_VALIDATE_INT)) {
-            throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
+        if (null !== $reason) {
+            if (false === empty($reason) && filter_var($reason, FILTER_VALIDATE_INT)) {
+                $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($reason);
+            }
+
+            if (false === $reason instanceof BorrowingMotive) {
+                throw new \InvalidArgumentException('Invalid reason', self::EXCEPTION_CODE_INVALID_REASON);
+            }
         }
-
-        $email      = $formData['email'];
-        $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
-        if (false === empty($duplicates)) {
-            $email .= '-' . time();
-        }
-
-        $client = new Clients();
-        $client
-            ->setEmail($email)
-            ->setIdLangue('fr')
-            ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
-            ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
-            ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
-            ->setSlugOrigine($this->sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
-        $siren = substr($formData['siren'], 0, 9);
-        $siret = strlen($formData['siren']) === 14 ? $formData['siren'] : '';
-
-        $company = new Companies();
-        $company
-            ->setSiren($siren)
-            ->setSiret($siret)
-            ->setStatusAdresseCorrespondance(1)
-            ->setEmailDirigeant($email)
-            ->setEmailFacture($email);
 
         $this->entityManager->beginTransaction();
-
         try {
-            $this->entityManager->persist($client);
+            $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret);
+            $client  = $company->getIdClientOwner();
+            $client
+                ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))
+                ->setSource2($this->sourceManager->getSource(SourceManager::SOURCE2))
+                ->setSource3($this->sourceManager->getSource(SourceManager::SOURCE3))
+                ->setSlugOrigine($this->sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-            $company->setIdClientOwner($client);
+            $this->entityManager->flush($client);
 
-            $this->entityManager->persist($company);
-            $this->entityManager->flush($company);
-
-            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
-
-            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
-            $this->companyManager->addCompanyStatus($company, $statusInBonis, $user);
-
-            $project = $this->createProject($user, $company, $this->partnerManager->getDefaultPartner(), $formData['amount'], $formData['duration'], $formData['reason']);
+            $project = $this->createProjectByCompany($user, $company, $partner, $amount, $durationInMonth, $reason);
 
             $this->entityManager->commit();
 
             return $project;
         } catch (\Exception $exception) {
             $this->entityManager->getConnection()->rollBack();
-            $this->logger->error('An error occurred while creating project ', [
+            $this->logger->error('An error occurred while creating project. Error message : ' . $exception->getMessage(), [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
@@ -209,50 +220,35 @@ class ProjectRequestManager
     }
 
     /**
-     * @param Users|int   $user
-     * @param Companies   $company
-     * @param Partner     $partner
-     * @param int|null    $amount
-     * @param int|null    $duration
-     * @param int|null    $reason
-     * @param string|null $comments
-     * @param int         $status
-     * @param bool        $createdInBO
-     * @param int         $display
-     * @param float       $fundsCommissionRate
-     * @param float       $repaymentCommissionRate
+     * @param Users                $user
+     * @param Companies            $company
+     * @param Partner              $partner
+     * @param int|null             $amount
+     * @param int|null             $duration
+     * @param BorrowingMotive|null $reason
+     * @param string|null          $comments
      *
      * @return Projects
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createProject(
-        $user,
-        Companies $company,
-        Partner $partner,
-        ?int $amount = null,
-        ?int $duration = null,
-        ?int $reason = null,
-        ?string $comments = null,
-        bool $createdInBO = false,
-        int $status = ProjectsStatus::INCOMPLETE_REQUEST,
-        int $display = Projects::AUTO_REPAYMENT_ON,
-        float $fundsCommissionRate = Projects::DEFAULT_COMMISSION_RATE_FUNDS,
-        float $repaymentCommissionRate = Projects::DEFAULT_COMMISSION_RATE_REPAYMENT
-    )
+    public function createProjectByCompany(Users $user, Companies $company, Partner $partner, ?int $amount = null, ?int $duration = null, ?BorrowingMotive $reason = null, ?string $comments = null): Projects
     {
+        $createdInBO = $user->getIdUser() === Users::USER_ID_FRONT ? false : true;
+        $reasonId    = null === $reason ? null : $reason->getIdMotive();
+
         $project = new Projects();
         $project
             ->setIdCompany($company)
             ->setAmount($amount)
             ->setPeriod($duration)
-            ->setIdBorrowingMotive($reason)
+            ->setIdBorrowingMotive($reasonId)
             ->setComments($comments)
-            ->setStatus($status)
+            ->setStatus(ProjectsStatus::INCOMPLETE_REQUEST)
             ->setIdPartner($partner)
-            ->setCommissionRateFunds($fundsCommissionRate)
-            ->setCommissionRateRepayment($repaymentCommissionRate)
+            ->setCommissionRateFunds(Projects::DEFAULT_COMMISSION_RATE_FUNDS)
+            ->setCommissionRateRepayment(Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
             ->setCreateBo($createdInBO)
-            ->setDisplay($display);
+            ->setDisplay(Projects::AUTO_REPAYMENT_ON);
 
         $this->entityManager->persist($project);
 
@@ -421,5 +417,37 @@ class ProjectRequestManager
         }
 
         return 0;
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return bool|string
+     */
+    public function validateSiren(string $siren)
+    {
+        $siren = preg_replace('/\s/', '', $siren);
+
+        if (1 !== preg_match('/^([0-9]{9}|[0-9]{14})$/', $siren)) {
+            return false;
+        }
+
+        return substr($siren, 0, 9);
+    }
+
+    /**
+     * @param string $siret
+     *
+     * @return bool|string
+     */
+    public function validateSiret(string $siret)
+    {
+        $siret = preg_replace('/\s/', '', $siret);
+
+        if (1 !== preg_match('/^[0-9]{14}$/', $siret)) {
+            return false;
+        }
+
+        return $siret;
     }
 }

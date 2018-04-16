@@ -13,8 +13,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, ClientsStatus, Companies, CompanyStatus, Partner, Product, Projects, ProjectsStatus, Users, WalletType
+    AttachmentType, Clients, Companies, Product, Projects, ProjectsStatus, Users
 };
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 use Unilend\Bundle\FrontBundle\Service\{
     DataLayerCollector, SourceManager
@@ -69,72 +70,54 @@ class ProjectRequestController extends Controller
         if ($request->isMethod(Request::METHOD_GET)) {
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
-        $projectManager = $this->get('unilend.service.project_manager');
-        $translator     = $this->get('translator');
 
-        $amount   = null;
-        $siren    = null;
-        $email    = null;
-        $reason   = null;
-        $duration = null;
+        $translator            = $this->get('translator');
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        if (empty($request->request->get('amount'))) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $amount = filter_var(str_replace([' ', '€'], '', $request->request->get('amount')), FILTER_VALIDATE_INT);
+        $amount    = $request->request->get('amount');
+        $siren     = $request->request->get('siren');
+        $email     = $request->request->get('email');
+        $reason    = $request->request->getInt('reason');
+        $duration  = $request->request->getInt('duration');
+        $partnerId = $request->request->getInt('partner');
 
-            if (false === $amount) {
-                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-            } elseif ($amount < $projectManager->getMinProjectAmount() || $amount > $projectManager->getMaxProjectAmount()) {
-                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
-            }
-        }
-
-        if (empty($request->request->get('reason'))) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $reason = $request->request->getInt('reason');
-
-            if (0 === $reason) {
-                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-            }
-        }
-
-        if (empty($request->request->get('duration'))) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $duration = $request->request->getInt('duration');
-
-            if (0 === $duration) {
-                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-            }
-        }
-
-        $siren       = str_replace(' ', '', $request->request->get('siren', ''));
-        $sirenLength = strlen($siren);
-        $siret       = $sirenLength === 14 ? $siren : '';
-
-        if (
-            1 !== preg_match('/^[0-9]*$/', $siren)
-            || false === in_array($sirenLength, [9, 14]) // SIRET numbers also allowed
-        ) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $siren = substr($siren, 0, 9);
+        if (empty($partnerId) || null === $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
+            $partnerManager = $this->get('unilend.service.partner_manager');
+            $partner        = $partnerManager->getDefaultPartner();
         }
 
         if ($request->getSession()->get('partnerProjectRequest')) {
-            $email = '';
-        } elseif (
-            empty($request->request->get('email'))
-            || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)
-        ) {
-            $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
-        } else {
-            $email = $request->request->get('email');
+            $email = null;
         }
 
-        if ($this->get('session')->getFlashBag()->has('borrowerLandingPageErrors')) {
+        try {
+            if (null === $siren || null === $amount || (null === $email && empty($request->getSession()->get('partnerProjectRequest'))) || 0 === $reason || 0 === $duration) {
+                throw new \InvalidArgumentException();
+            }
+
+            $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+            $siret = $projectRequestManager->validateSiren($siren);
+            $siren = $projectRequestManager->validateSiren($siren);
+
+            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret === false ? null : $siret, $email, $duration, $reason);
+
+            $client = $project->getIdCompany()->getIdClientOwner();
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
+            $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $client->getIdClient());
+
+            if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
+                $this->get('security.token_storage')->setToken(null);
+            }
+
+            return $this->start($project);
+        } catch (\InvalidArgumentException $exception) {
+            if (ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT === $exception->getCode()) {
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_amount-value-error'));
+            } else {
+                $this->addFlash('borrowerLandingPageErrors', $translator->trans('borrower-landing-page_required-fields-error'));
+            }
+
             $request->getSession()->set('projectRequest', [
                 'values' => [
                     'amount' => $amount,
@@ -144,78 +127,6 @@ class ProjectRequestController extends Controller
             ]);
 
             return $this->redirect($request->headers->get('referer'));
-        }
-
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
-            $this->get('security.token_storage')->setToken(null);
-        }
-
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
-
-        if (false === empty($duplicates)) {
-            $email .= '-' . time();
-        }
-
-        $entityManager->getConnection()->beginTransaction();
-        try {
-            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
-
-            $client = new Clients();
-            $client
-                ->setEmail($email)
-                ->setIdLangue('fr')
-                ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
-                ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
-                ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
-                ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
-            $company = new Companies();
-            $company->setSiren($siren)
-                ->setSiret($siret)
-                ->setStatusAdresseCorrespondance(1)
-                ->setEmailDirigeant($email)
-                ->setEmailFacture($email);
-
-            $entityManager->persist($client);
-            $entityManager->flush($client);
-
-            $company->setIdClientOwner($client);
-
-            $entityManager->persist($company);
-            $entityManager->flush($company);
-
-            $companyManager       = $this->get('unilend.service.company_manager');
-            $companyStatusInBonis = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')
-                ->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
-            $companyManager->addCompanyStatus(
-                $company,
-                $companyStatusInBonis,
-                $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT)
-            );
-
-            $this->get('unilend.service.client_creation_manager')->createAccount($client, WalletType::BORROWER, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
-
-            if (empty($client->getIdClient())) {
-                return $this->redirect($request->headers->get('referer'));
-            } else {
-                $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
-                $request->getSession()->set(DataLayerCollector::SESSION_KEY_BORROWER_CLIENT_ID, $client->getIdClient());
-            }
-
-            $partnerId = $request->request->getInt('partner');
-
-            if (empty($partnerId) || null === $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
-                $partnerManager = $this->get('unilend.service.partner_manager');
-                $partner        = $partnerManager->getDefaultPartner();
-            }
-
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $partner, $amount, $duration, $reason);
-
-            $entityManager->getConnection()->commit();
-
-            return $this->start($project);
         } catch (\Exception $exception) {
             $this->get('logger')->error('An error occurred while creating client: ' . $exception->getMessage(), [
                 'class'    => __CLASS__,
@@ -223,8 +134,6 @@ class ProjectRequestController extends Controller
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine()
             ]);
-
-            $entityManager->getConnection()->rollBack();
 
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
@@ -571,7 +480,6 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \companies_actif_passif $companyAssetsDebts */
         $companyAssetsDebts = $entityManagerSimulator->getRepository('companies_actif_passif');
@@ -1532,9 +1440,14 @@ class ProjectRequestController extends Controller
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($company->getIdClientOwner()->getEmail()) !== $email) {
-            $email = $email . '-' . time();
+        if ($this->removeEmailSuffix($company->getIdClientOwner()->getEmail()) !== $email) {
+            if ($clientRepository->existEmail($email)) {
+                $email = $email . '-' . time();
+            }
+        } else {
+            $email = $company->getIdClientOwner()->getEmail();
         }
+
         $client = $company->getIdClientOwner();
 
         $client->setEmail($email)

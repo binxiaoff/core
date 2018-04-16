@@ -124,9 +124,11 @@ class BorrowerAccountController extends Controller
                 $partnerManager        = $this->get('unilend.service.partner_manager');
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
+                $amount    = str_replace([',', ' '], ['.', ''], $formData['amount']);
+                $frontUser = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+
                 try {
-                    $projectRequestManager->createProject(Users::USER_ID_FRONT, $company, $partnerManager->getDefaultPartner(), str_replace(array(',', ' '), array('.', ''), $formData['amount']),
-                        $formData['duration'], null, $formData['message']);
+                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), $amount, $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
                     $this->get('logger')->error('Creation project failed. Exception : ' . $exception->getMessage(), [
@@ -739,7 +741,10 @@ class BorrowerAccountController extends Controller
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-being-on-line';
                     break;
             }
-            $predictAmountAutoBid                        = $this->get('unilend.service.autobid_settings_manager')->predictAmount($project['risk'], $project['period']);
+            $predictAmountAutoBid = 0;
+            if (false === empty($project['risk']) && false === empty($project['period'])) {
+                $predictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($project['risk'], $project['period']);
+            }
             $projectsPreFunding[$key]['predict_autobid'] = round(($predictAmountAutoBid / $project['amount']) * 100, 1);
         }
         return $projectsPreFunding;

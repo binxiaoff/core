@@ -8,6 +8,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType
 };
+use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class CompanyManager
 {
@@ -120,6 +121,69 @@ class CompanyManager
                 }
             }
         }
+    }
+
+    /**
+     * @param Users       $user
+     * @param null|string $email
+     * @param null|string $siren
+     * @param null|string $siret
+     *
+     * @return Companies
+     * @throws \Exception
+     */
+    public function createBorrowerCompany(Users $user, ?string $email = null, ?string $siren = null, ?string $siret = null): Companies
+    {
+        $client  = new Clients();
+        $company = new Companies();
+
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            if (null !== $email) {
+                $duplicates = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+                if (false === empty($duplicates)) {
+                    $email .= '-' . time();
+                }
+            }
+
+            $client
+                ->setEmail($email)
+                ->setIdLangue('fr');
+
+            $this->entityManager->persist($client);
+            $this->entityManager->flush($client);
+
+            $company
+                ->setSiren($siren)
+                ->setSiret($siret)
+                ->setStatusAdresseCorrespondance(1)
+                ->setEmailDirigeant($email)
+                ->setEmailFacture($email)
+                ->setIdClientOwner($client);
+
+            $this->entityManager->persist($company);
+            $this->entityManager->flush($company);
+
+            $this->clientCreationManager->createAccount($client, WalletType::BORROWER, $user->getIdUser(), ClientsStatus::STATUS_VALIDATED);
+
+            $statusInBonis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus')->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+            $this->addCompanyStatus($company, $statusInBonis, $user);
+            $this->entityManager->getConnection()->commit();
+
+        } catch (\Exception $exception) {
+            $this->entityManager->getConnection()->rollBack();
+            $this->logger->error(
+                'Could not create company for SIREN: ' . $siren . ' Error: ' . $exception->getMessage(), [
+                    'class' => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file' => $exception->getFile(),
+                    'line' => $exception->getLine()
+                ]);
+
+            throw $exception;
+        }
+
+        return $company;
     }
 
     /**
