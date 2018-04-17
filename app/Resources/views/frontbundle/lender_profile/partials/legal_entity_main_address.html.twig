@@ -7,13 +7,13 @@
 
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
-        <dd id="profile-address-street-output">{{ companyMainAddress.address }}</dd>
+        <dd id="profile-address-street-output">{{ companyMainAddress.address|default('') }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}</dt>
-        <dd id="profile-address-code-output">{{ companyMainAddress.zip }}</dd>
+        <dd id="profile-address-code-output">{{ companyMainAddress.zip|default('') }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}</dt>
-        <dd id="profile-address-ville-output">{{ companyMainAddress.city }}</dd>
+        <dd id="profile-address-ville-output">{{ companyMainAddress.city|default('') }}</dd>
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}</dt>
-        <dd id="profile-address-pays-output">{{ companyMainAddress.idCountry.fr }}</dd>
+        <dd id="profile-address-pays-output">{{ companyMainAddress.idCountry.fr|default('') }}</dd>
     </dl>
 
 </section><!-- /.profile-address-view -->

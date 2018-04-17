@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsAdresses, ClientsStatus, CompanyRating, OperationType, PaysV2, Product, ProjectProductAssessment, Projects, TaxType, Wallet, WalletType, Zones
+    Bids, ClientsStatus, CompanyRating, OperationType, Product, ProjectProductAssessment, Projects, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BdfLoansDeclarationManager, IfuManager

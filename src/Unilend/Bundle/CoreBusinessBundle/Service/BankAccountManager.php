@@ -4,34 +4,29 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Validator\Constraints\Bic;
-use Symfony\Component\Validator\Constraints\Iban;
+use Symfony\Component\Validator\Constraints\{
+    Bic, Iban
+};
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Attachment, BankAccount, Clients
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class BankAccountManager
 {
     /** @var EntityManager */
     private $entityManager;
-
-    /** @var  EntityManagerSimulator */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
-
-    /** @var  LenderManager */
+    /** @var LenderManager */
     private $lenderManager;
-
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $logger;
-
     /** @var ValidatorInterface */
     private $validator;
 
     /**
-     * BankAccountManager constructor.
-     *
      * @param EntityManager          $entityManager
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param LenderManager          $lenderManager

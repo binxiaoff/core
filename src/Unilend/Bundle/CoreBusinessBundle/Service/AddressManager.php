@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, Companies, CompanyAddress, PaysV2
+    AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, PaysV2
 };
 
 class AddressManager
@@ -130,7 +130,7 @@ class AddressManager
 
                 $this->validateCompanyAddress($newAddress);
                 $this->useCompanyAddress($newAddress);
-                $this->archivePreviousCompanyAddress($company, $type);
+                $this->archivePreviousCompanyAddress($company, $type->getLabel());
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {
@@ -188,11 +188,40 @@ class AddressManager
     }
 
     /**
+     * @param CompanyAddress|ClientAddress $address
+     *
+     * @throws \Exception
+     */
+    public function validateLenderAddress($address)
+    {
+        $this->entityManager->beginTransaction();
+
+        try {
+            if ($address instanceof ClientAddress) {
+                $this->validateClientAddress($address);
+                $this->useClientAddress($address);
+                $this->archivePreviousClientAddress($address->getIdClient(), $address->getIdType());
+            }
+
+            if ($address instanceof CompanyAddress) {
+                $this->validateCompanyAddress($address);
+                $this->useCompanyAddress($address);
+                $this->archivePreviousCompanyAddress($address->getIdCompany(), $address->getIdType()->getLabel());
+            }
+
+            $this->entityManager->commit();
+        } catch (\Exception $exception) {
+            $this->entityManager->rollback();
+            throw $exception;
+        }
+    }
+
+    /**
      * @param CompanyAddress $address
      *
      * @throws \Exception
      */
-    public function validateCompanyAddress(CompanyAddress $address): void
+    private function validateCompanyAddress(CompanyAddress $address): void
     {
         $this->entityManager->beginTransaction();
         try {
@@ -421,30 +450,10 @@ class AddressManager
      *
      * @throws \Exception
      */
-    public function validateClientAddress(ClientAddress $address): void
+    private function validateClientAddress(ClientAddress $address): void
     {
-        $this->entityManager->beginTransaction();
-        try {
-
-            switch ($address->getIdType()) {
-                case AddressType::TYPE_POSTAL_ADDRESS:
-                    $address->setDateValidated(new \DateTime('NOW'));
-                    $this->entityManager->flush($address);
-                    break;
-                case AddressType::TYPE_MAIN_ADDRESS:
-                    //TODO
-
-
-                    break;
-                default:
-                    break;
-            }
-
-            $this->entityManager->commit();
-        } catch (\Exception $exception) {
-            $this->entityManager->rollback();
-            throw $exception;
-        }
+        $address->setDateValidated(new \DateTime('NOW'));
+        $this->entityManager->flush($address);
     }
 
     /**
@@ -519,5 +528,23 @@ class AddressManager
                 throw $exception;
             }
         }
+    }
+
+    /**
+     * @param ClientAddress $address
+     * @param Attachment    $attachment
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function linkAttachmentToAddress(ClientAddress $address, Attachment $attachment)
+    {
+        $clientAddressAttachement = new ClientAddressAttachment();
+        $clientAddressAttachement
+            ->setIdClientAddress($address)
+            ->setIdAttachment($attachment);
+
+        $this->entityManager->persist($clientAddressAttachement);
+
+        $this->entityManager->flush($clientAddressAttachement);
     }
 }

@@ -148,23 +148,22 @@ class rootController extends bootstrap
             $oLoans      = $this->loadData('loans');
             $iLoansCount = $oLoans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if (in_array($this->clients->type, array(Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER))) {
-                $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-                if ($this->clients_adresses->id_pays_fiscal == 0) {
-                    $this->clients_adresses->id_pays_fiscal = 1;
+            if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
+                $clientAddress = $wallet->getIdClient()->getIdAddress();
+                if (null === $clientAddress) {
+                    $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        ->findLastModifiedNotArchivedAddressByType($wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
                 }
-                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
 
-                $aReplacements = array(
+                $aReplacements = [
                     '[Civilite]'            => $this->clients->civilite,
-                    '[Prenom]'              => utf8_encode($this->clients->prenom),
-                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[Prenom]'              => $this->clients->prenom,
+                    '[Nom]'                 => $this->clients->nom,
                     '[date]'                => date('d/m/Y', strtotime($this->clients->naissance)),
-                    '[ville_naissance]'     => utf8_encode($this->clients->ville_naissance),
-                    '[adresse_fiscale]'     => utf8_encode($this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $this->pays->fr),
+                    '[ville_naissance]'     => $this->clients->ville_naissance,
+                    '[adresse_fiscale]'     => $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr(),
                     '[date_validation_cgv]' => $dateAccept
-                );
+                ];
 
                 $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
                 $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret']) : '';
@@ -180,12 +179,12 @@ class rootController extends bootstrap
 
                 $aReplacements = [
                     '[Civilite]'            => $this->clients->civilite,
-                    '[Prenom]'              => utf8_encode($this->clients->prenom),
-                    '[Nom]'                 => utf8_encode($this->clients->nom),
-                    '[Fonction]'            => utf8_encode($this->clients->fonction),
-                    '[Raison_sociale]'      => utf8_encode($this->companies->name),
+                    '[Prenom]'              => $this->clients->prenom,
+                    '[Nom]'                 => $this->clients->nom,
+                    '[Fonction]'            => $this->clients->fonction,
+                    '[Raison_sociale]'      => $this->companies->name,
                     '[SIREN]'               => $this->companies->siren,
-                    '[adresse_fiscale]'     => utf8_encode($companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr()),
+                    '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
                     '[date_validation_cgv]' => $dateAccept
                 ];
 
