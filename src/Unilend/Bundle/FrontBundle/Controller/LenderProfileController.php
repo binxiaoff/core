@@ -58,6 +58,10 @@ class LenderProfileController extends Controller
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
             $mainAddressForm     = $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+            $mainAddressForm
+                ->add('noUsPerson', CheckboxType::class, ['required' => false])
+                ->add('housedByThirdPerson', CheckboxType::class, ['required' => false]);
+
             $postalAddressForm   = $formManager->getClientAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
             $hasPostalAddress    = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
@@ -106,7 +110,7 @@ class LenderProfileController extends Controller
 
                     if ($mainAddressForm->isValid()) {
                         if ($client->isNaturalPerson()) {
-                            $isValid = $this->handlePersonAddress($client, $lastModifiedMainAddress, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS);
+                            $isValid = $this->handlePersonAddress($client, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                         } else {
                             $isValid = $this->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
                         }
@@ -122,7 +126,7 @@ class LenderProfileController extends Controller
 
                     if ($postalAddressForm->isValid()) {
                         if ($client->isNaturalPerson()) {
-                            $isValid = $this->handlePersonAddress($client, $postalAddress, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS);
+                            $isValid = $this->handlePersonAddress($client, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                         } else {
                             $isValid = $this->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
                         }
@@ -161,7 +165,7 @@ class LenderProfileController extends Controller
                 'postalAddress' => $postalAddressForm->createView(),
                 'phone'         => $phoneForm->createView()
             ],
-            'isLivingAbroad'       => ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE)
+            'isLivingAbroad'       => (null !== $lastModifiedMainAddress ? $lastModifiedMainAddress->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE : false)
         ];
 
         $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
@@ -332,18 +336,18 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Clients       $client
-     * @param ClientAddress $address
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
-     * @param string        $type
+     * @param Clients            $client
+     * @param FormInterface      $form
+     * @param FileBag            $fileBag
+     * @param string             $type
+     * @param ClientAddress|null $address
      *
      * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function handlePersonAddress(Clients $client, ClientAddress $address, FormInterface $form, FileBag $fileBag, string $type): bool
+    private function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address = null): bool
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');

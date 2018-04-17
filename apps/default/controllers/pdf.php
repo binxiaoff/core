@@ -553,7 +553,7 @@ class pdfController extends bootstrap
                 $validatedAddress = $client->getIdAddress();
             } else {
                 $lenderCompany    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
-                    ->findOneBy(['idClientOwner' => $client->id_client]);
+                    ->findOneBy(['idClientOwner' => $client->getIdClient()]);
                 $validatedAddress = $lenderCompany->getIdAddress();
             }
 
@@ -1271,15 +1271,16 @@ class pdfController extends bootstrap
     }
 
     /**
-     * @param int $clientId
-     * @param int $line
+     * @param Clients $client
+     * @param int     $line
      */
-    private function logWarningAboutNotValidatedLenderAddress(int $clientId, int $line): void
+    private function logWarningAboutNotValidatedLenderAddress(Clients $client, int $line): void
     {
-        $this->get('logger')->warning('Client ' . $clientId . ' has no validated main address. Only validated addresses should be used in official documents.', [
+        $this->get('logger')
+            ->warning('Client ' . $client->getIdClient() . ' has no validated main address. Only validated addresses should be used in official documents.', [
             'file'      => __FILE__,
             'line'      => $line,
-            'id_client' => $clientId
+            'id_client' => $client->getIdClient()
         ]);
     }
 }
