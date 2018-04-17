@@ -379,15 +379,17 @@ class LenderProfileController extends Controller
 
                 if (
                     AddressType::TYPE_MAIN_ADDRESS === $type
-                    && (
-                        $address->getAddress() !== $form->get('address')->getData()
-                        || $address->getZip() !== $form->get('zip')->getData()
-                        || $address->getCity() !== $form->get('city')->getData()
-                        || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+                    && (null === $address
+                        || (
+                            $address->getAddress() !== $form->get('address')->getData()
+                            || $address->getZip() !== $form->get('zip')->getData()
+                            || $address->getCity() !== $form->get('city')->getData()
+                            || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+                        )
                     )
                     && empty($files[AttachmentType::JUSTIFICATIF_DOMICILE])
                 ) {
-                    $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-missing-housing-certificate')));
+                    $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-change-message')));
                 }
 
                 foreach ($files as $attachmentTypeId => $file) {

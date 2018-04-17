@@ -833,8 +833,9 @@ class pdfController extends bootstrap
                     'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
                 ]);
             }
+        }
 
-        if (null === $this->lenderAddress)
+        if (null === $this->lenderAddress){
             $this->oLogger->error('Lender has no main address. Contract could not be generated.', [
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
