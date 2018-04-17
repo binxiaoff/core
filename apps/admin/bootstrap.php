@@ -597,22 +597,11 @@ class bootstrap extends Controller
      */
     public function render($template = null, array $context = [], $return = false)
     {
-        $user = null;
-        if (false === empty($_SESSION['user'])) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $user          = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
-            $userManager = $this->get('unilend.service.back_office_user_manager');
-        }
-
-        $navigation = self::MENU;
-
         $context['app'] = [
-            'navigation' => $navigation,
+            'navigation' => self::MENU,
             'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
             'session'    => $_SESSION,
-            'user'       => $user,
+            'user'       => $this->userEntity,
             'userZones'  => isset($this->lZonesHeader) ? $this->lZonesHeader : []
         ];
 

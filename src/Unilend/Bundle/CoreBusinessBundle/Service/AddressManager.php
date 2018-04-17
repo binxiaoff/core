@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Companies, CompanyAddress, PaysV2
+    AddressType, Companies, CompanyAddress, PaysV2
 };
 
 class AddressManager
@@ -47,54 +47,21 @@ class AddressManager
         }
 
         $this->entityManager->beginTransaction();
+
         try {
-            $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
-            $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type ? $company->getIdAddress() : $company->getIdPostalAddress();
+            if (null !== $company->getIdClientOwner() && $company->getIdClientOwner()->isLender()) {
+                //c'est moche, mais ca sera corrigé au prochain merge. Enfin il y aura qqn dans ce if.
+            } else {
+                $companyAddress = $this->createNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
 
-            if (
-                null === $companyAddress && null === $lastModifiedAddress
-                || (
-                    null !== $lastModifiedAddress
-                    && ($address !== $lastModifiedAddress->getAddress()
-                        || $zip !== $lastModifiedAddress->getZip()
-                        || $city !== $lastModifiedAddress->getCity()
-                        || $idCountry !== $lastModifiedAddress->getIdCountry()->getIdPays()
-                    )
-                )
-            ) {
-                $companyAddress = new CompanyAddress();
-                $companyAddress->setIdCompany($company);
-            }
-
-            if (null === $companyAddress->getDateValidated()) {
-                $companyAddress
-                    ->setAddress($address)
-                    ->setZip($zip)
-                    ->setCity($city)
-                    ->setIdCountry($country)
-                    ->setIdType($addressType);
-
-                if (false === $this->entityManager->contains($companyAddress)) {
-                    $this->entityManager->persist($companyAddress);
+                if (null !== $companyAddress) {
+                    $this->validateCompanyAddress($companyAddress);
+                    $this->use($companyAddress);
+                    $this->archivePreviousCompanyAddress($company);
                 }
 
-                $this->addLatitudeAndLongitude($companyAddress);
-                $this->entityManager->flush($companyAddress);
-
-                $this->use($companyAddress);
-            } elseif (
-                $address !== $companyAddress->getAddress()
-                || $zip !== $companyAddress->getZip()
-                || $city !== $companyAddress->getCity()
-                || $idCountry !== $companyAddress->getIdCountry()->getIdPays()
-            ) {
-                $companyAddress->setDateArchived(new \DateTime('NOW'));
-                $this->entityManager->flush($companyAddress);
-
-                $this->createCompanyAddress($companyAddress->getIdCompany(), $address, $zip, $city, $country, $addressType);
+                $this->entityManager->commit();
             }
-
-            $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
             throw $exception;
@@ -109,9 +76,69 @@ class AddressManager
      * @param PaysV2      $country
      * @param AddressType $type
      *
+     * @return CompanyAddress|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): void
+    private function createNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
+    {
+        $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedCompanyAddressByType($company, $type);
+        $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
+
+        if (
+            null === $companyAddress && null === $lastModifiedAddress
+            || (null === $companyAddress && null !== $lastModifiedAddress && $this->addressDataIsDifferent($lastModifiedAddress, $address, $zip, $city, $country))
+            || (null !== $companyAddress && $this->addressDataIsDifferent($companyAddress, $address, $zip, $city, $country))
+        ){
+            return $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param Companies   $company
+     * @param string      $address
+     * @param string      $zip
+     * @param string      $city
+     * @param PaysV2      $country
+     * @param AddressType $type
+     */
+    private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
+    {
+        // TODO TECH-393
+    }
+
+    /**
+     * @param CompanyAddress $companyAddress
+     * @param string         $address
+     * @param string         $zip
+     * @param string         $city
+     * @param PaysV2         $country
+     *
+     * @return bool
+     */
+    private function addressDataIsDifferent(CompanyAddress $companyAddress, string $address, string $zip, string $city, PaysV2 $country)
+    {
+        return
+            $address !== $companyAddress->getAddress()
+            || $zip !== $companyAddress->getZip()
+            || $city !== $companyAddress->getCity()
+            || $country !== $companyAddress->getIdCountry();
+    }
+
+    /**
+     * @param Companies   $company
+     * @param string      $address
+     * @param string      $zip
+     * @param string      $city
+     * @param PaysV2      $country
+     * @param AddressType $type
+     *
+     * @return CompanyAddress
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): CompanyAddress
     {
         $companyAddress = new CompanyAddress();
         $companyAddress
@@ -122,63 +149,49 @@ class AddressManager
             ->setIdCountry($country)
             ->setIdType($type);
 
-        $this->addLatitudeAndLongitude($companyAddress);
-
         $this->entityManager->persist($companyAddress);
         $this->entityManager->flush($companyAddress);
 
-        $this->use($companyAddress);
+        return $companyAddress;
     }
 
     /**
      * @param CompanyAddress $address
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function use(CompanyAddress $address): void
-    {
-        if (AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel()) {
-            $address->getIdCompany()->setIdAddress($address);
-        }
-
-        if (AddressType::TYPE_POSTAL_ADDRESS === $address->getIdType()->getLabel()) {
-            $address->getIdCompany()->setIdPostalAddress($address);
-        }
-
-        $this->entityManager->flush($address->getIdCompany());
-    }
-
-    /**
-     * @param CompanyAddress $companyAddress
-     * @param int            $projectId
-     *
      * @throws \Exception
      */
-    public function validateBorrowerCompanyAddress(CompanyAddress $companyAddress, int $projectId): void
+    public function validateCompanyAddress(CompanyAddress $address): void
     {
-        $kbis = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
-            ->getProjectAttachmentByType($projectId, AttachmentType::KBIS);
-
-        if (null === $kbis) {
-            throw new \InvalidArgumentException('Project ' . $projectId . ' has no valid KBIS. Address can not be validated');
-        }
-
         $this->entityManager->beginTransaction();
         try {
-            $currentAddress = $companyAddress->getIdCompany()->getIdAddress();
-            if ($currentAddress !== $companyAddress) {
-                if ($currentAddress) {
-                    $currentAddress->setDateArchived(new \DateTime('NOW'));
-                    $this->entityManager->flush($currentAddress);
-                }
+            $this->addLatitudeAndLongitude($address);
 
-                $this->validateCompanyAddress($companyAddress, $kbis);
-                $this->use($companyAddress);
-            }
+            $address->setDateValidated(new \DateTime('NOW'));
+
+            $this->entityManager->flush($address);
+
             $this->entityManager->commit();
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
             throw $exception;
+        }
+    }
+
+    /**
+     * @param Companies $company
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function archivePreviousCompanyAddress(Companies $company): void
+    {
+        $pendingAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'dateArchived' => null]);
+        foreach ($pendingAddress as $addressToArchive) {
+            if ($addressToArchive === $company->getIdAddress() || $addressToArchive === $company->getIdPostalAddress()) {
+                continue;
+            }
+
+            $addressToArchive->setDateArchived(new \DateTime());
+            $this->entityManager->flush($addressToArchive);
         }
     }
 
@@ -196,20 +209,23 @@ class AddressManager
     }
 
     /**
-     * @param CompanyAddress $companyAddress
-     * @param Attachment     $kbis
+     * @param CompanyAddress $address
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function validateCompanyAddress(CompanyAddress $companyAddress, Attachment $kbis)
+    private function use(CompanyAddress $address): void
     {
-        $companyAddress
-            ->setDateValidated(new \DateTime('NOW'))
-            ->setIdAttachment($kbis);
+        $company = $address->getIdCompany();
 
-        $company = $companyAddress->getIdCompany();
+        if (AddressType::TYPE_MAIN_ADDRESS === $address->getIdType()->getLabel()) {
+            $company->setIdAddress($address);
+        }
 
-        $this->entityManager->flush([$companyAddress, $company]);
+        if (AddressType::TYPE_POSTAL_ADDRESS === $address->getIdType()->getLabel()) {
+            $company->setIdPostalAddress($address);
+        }
+
+        $this->entityManager->flush($company);
     }
 
     /**

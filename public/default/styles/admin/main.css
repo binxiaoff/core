@@ -244,6 +244,37 @@ table.lng label { cursor: pointer; font-weight: bold; }
 
 .clear { clear: both; }
 
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+ }
+
+.alert-info {
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+.alert-warning {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+.alert-danger {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
 .attention{
     background-color: #FFE8E8;
     color: #C84747;
@@ -254,10 +285,10 @@ table.lng label { cursor: pointer; font-weight: bold; }
     width: 600px;
 }
 
-.tabLesStatuts td{padding-right: 5px; padding-top: 5px;}
-.tabLesStatuts .btn_link{display:block;}
-.btnCompletude{background-color:#5591EC;border-color:#5591EC;}
-.tabLesStatuts .btnBackListe{background-color:#BCC2CB;border-color:#BCC2CB;}
+.lender-status-action > div {margin: 10px 0;}
+.lender-status-action .btn_link{display:inline-block;}
+.lender-status-action .btnCompletude{background-color:#5591EC; border-color:#5591EC;}
+.lender-status-action .btnBackListe{background-color:#BCC2CB; border-color:#BCC2CB;}
 
 .form.tableNotes th {width:15%}
 .form.tableNotes td {width:10%}
@@ -271,7 +302,7 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .content_li_wording{border:1px solid; width:100%;min-height:25px;text-align:center;}
 
 #content_email_completude{width:100%;height:150px; color: #b20066;font: 12px Arial,Helvetica,sans-serif;border: 1px solid #a1a5a7;background:#ececec;}
-.message_completude{display:none;}
+.lender-status-action > div.message_completude{display:none; margin-top: 15px;}
 
 .selectMini { width: 65px; background: #ECECEC;  border: 1px solid #A1A5A7; margin: 0; padding: 5px 3px; font: 12px Arial, Helvetica, sans-serif; color: #b20066; }
 

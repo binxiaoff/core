@@ -624,12 +624,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <?php foreach ($this->statusHistory as $historyEntry) : ?>
                         <?php
                             switch ($historyEntry->getIdStatus()->getId()) {
-                                case ClientsStatus::CREATION: ?>
+                                case ClientsStatus::STATUS_CREATION: ?>
                                     <tr>
                                         <td>Création de compte le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?></td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::TO_BE_CHECKED: ?>
+                                case ClientsStatus::STATUS_TO_BE_CHECKED: ?>
                                     <tr>
                                         <td>
                                             <?php if (empty($historyEntry->getContent())) : ?>
@@ -641,7 +641,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS: ?>
                                     <tr>
                                         <td>
                                             Complétude le <?= $historyEntry->getAdded()->format('d/m/Y H:i:s') ?><br>
@@ -650,7 +650,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS_REMINDER: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS_REMINDER: ?>
                                     <tr>
                                         <td>
                                             Complétude Relance le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -658,7 +658,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::COMPLETENESS_REPLY: ?>
+                                case ClientsStatus::STATUS_COMPLETENESS_REPLY: ?>
                                     <tr>
                                         <td>
                                             Complétude Reponse le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -666,7 +666,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::MODIFICATION: ?>
+                                case ClientsStatus::STATUS_MODIFICATION: ?>
                                     <tr>
                                         <td>
                                             Compte modifié le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -674,7 +674,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::VALIDATED: ?>
+                                case ClientsStatus::STATUS_VALIDATED: ?>
                                     <tr>
                                         <td>
                                             <?php if ($historyEntry->getIdUser()->getIdUser() > 0) : ?>
@@ -687,7 +687,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_LENDER_REQUEST: ?>
+                                case ClientsStatus::STATUS_CLOSED_LENDER_REQUEST: ?>
                                     <tr>
                                         <td>
                                             Compte clôturé à la demande du prêteur (mis hors ligne)<br>
@@ -696,7 +696,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_BY_UNILEND: ?>
+                                case ClientsStatus::STATUS_CLOSED_BY_UNILEND: ?>
                                     <tr>
                                         <td>
                                             Compte clôturé par Unilend (mis hors ligne)<br>
@@ -706,7 +706,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                         </td>
                                     </tr>
                                     <?php break;
-                                case ClientsStatus::CLOSED_DEFINITELY: ?>
+                                case ClientsStatus::STATUS_CLOSED_DEFINITELY: ?>
                                     <tr>
                                         <td>
                                             Compte définitvement fermé le <?= $historyEntry->getAdded()->format('d/m/Y H:i') ?><br>
@@ -741,106 +741,100 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </table>
                 <?php endif; ?>
             </div>
-            <div class="droite">
+            <div class="droite lender-status-action">
                 <?php $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId(); ?>
-                <?php if ($clientStatus != ClientsStatus::CLOSED_DEFINITELY) : ?>
-                    <table class="tabLesStatuts">
-                        <tr>
-                            <td>
-                                <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
-                                    || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
-                                <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
-                                    <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
-                                    <span style="color:green;">Votre email a été envoyé</span>
-                                    <?php unset($_SESSION['email_completude_confirm']); ?>
-                                    <?php unset($_SESSION['compte_valide']); ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <?php if (ClientsStatus::VALIDATED != $clientStatus && Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                                    <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <?php if (false === in_array($clientStatus, [ClientsStatus::CLOSED_BY_UNILEND, ClientsStatus::CLOSED_LENDER_REQUEST])) : ?>
-                                    <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
-                        <tr>
-                            <td colspan="2">
-                                <?php if (Clients::STATUS_ONLINE == $this->clients->status) : ?>
-                                    <input type="button"
-                                           onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son statut en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_OFFLINE ?>';}"
-                                           class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
-                                           value="Hors ligne / Clôturé par Unilend">
-                                <?php else: ?>
-                                    <input type="button"
-                                           onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au statut avant la mise hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->clients->id_client ?>/<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::STATUS_ONLINE ?>';}"
-                                           class="btn-primary"
-                                           value="En ligne / Statut avant mise hors ligne">
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <?php if ($clientStatus != ClientsStatus::CLOSED_LENDER_REQUEST) : ?>
-                                    <input type="button"
-                                           onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->clients->id_client ?>/<?= Clients::STATUS_OFFLINE ?>';}"
-                                           class="btn-primary" value="Hors ligne / Clôturé à la demande du client" style="background: #FF0000; border: 1px solid #FF0000;">
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    </table>
-                    <br/>
-                    <div class="message_completude">
-                        <h2>Complétude - Personnalisation du message</h2>
+                <?php if ($clientStatus !== ClientsStatus::STATUS_CLOSED_DEFINITELY) : ?>
+                    <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
+                        <div>
+                            <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email">
+                            Votre email a été envoyé
+                        </div>
+                        <div>
+                            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste de contôle</a>
+                        </div>
+                        <?php unset($_SESSION['email_completude_confirm']); ?>
+                    <?php endif; ?>
 
-                        <div class="liwording">
-                            <table>
-                                <?php foreach($this->completude_wording as $key => $message) : ?>
+                    <?php if (isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
+                        <div>
+                            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste de contôle</a>
+                        </div>
+                        <?php unset($_SESSION['compte_valide']); ?>
+                    <?php endif; ?>
+
+                    <?php if (ClientsStatus::STATUS_VALIDATED !== $clientStatus && in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+                        <div>
+                            <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (false === in_array($clientStatus, [ClientsStatus::STATUS_CLOSED_BY_UNILEND, ClientsStatus::STATUS_CLOSED_LENDER_REQUEST])) : ?>
+                        <div>
+                            <input type="button" id="completude_edit" class="btn-primary btnCompletude" value="Complétude">
+                        </div>
+
+                        <div class="message_completude">
+                            <h2>Complétude - Personnalisation du message</h2>
+                            <div class="liwording">
+                                <table>
+                                    <?php foreach ($this->completude_wording as $key => $message) : ?>
+                                        <tr>
+                                            <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                            <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
+                                        </tr>
+                                        <?php if (substr($key, -1, 1) == 3) : ?>
+                                            <tr><td colspan="2">&nbsp;</td></tr>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </table>
+                            </div>
+                            <br/>
+                            <h3 class="test">Listes : </h3>
+                            <div class="content_li_wording"></div>
+                            <fieldset style="width:100%;">
+                                <table class="formColor" style="width:100%;">
                                     <tr>
-                                        <td><img class="add" id="add-<?= $key ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
-                                        <td><span class="content-add-<?= $key ?>"><?= $message ?></span></td>
+                                        <td>
+                                            <label for="id">Saisir votre message :</label>
+                                            <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
+                                        </td>
                                     </tr>
-                                    <?php if (substr($key, -1, 1) == 3) : ?>
-                                        <tr><td colspan="2">&nbsp;</td></tr>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </table>
+                                    <tr>
+                                        <th>
+                                            <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
+                                            <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
+                                        </th>
+                                    </tr>
+                                </table>
+                            </fieldset>
                         </div>
-                        <br/>
-                        <h3 class="test">Listes : </h3>
-                        <div class="content_li_wording">
+
+                        <div style="padding-bottom: 25px;"></div>
+                    <?php endif; ?>
+
+                    <?php if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+                        <div>
+                            <input type="button"
+                                onclick="if (confirm('Voulez-vous clôturer le compte à l’initiative d’Unilend ?')){window.location = '<?= $this->lurl ?>/preteurs/status/<?= $this->clients->id_client ?>/close_unilend';}"
+                                class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
+                                value="Clôturer le compte à l’initiative d’Unilend">
                         </div>
-                        <fieldset style="width:100%;">
-                            <table class="formColor" style="width:100%;">
-                                <tr>
-                                    <td>
-                                        <label for="id">Saisir votre message :</label>
-                                        <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <a id="completude_preview" href="<?= $this->lurl ?>/preteurs/completude_preview/<?= $this->clients->id_client ?>" class="thickbox"></a>
-                                        <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
-                                    </th>
-                                </tr>
-                            </table>
-                        </fieldset>
-                        <br/><br/>
-                    </div>
+                        <div>
+                            <input type="button"
+                                onclick="if (confirm('Voulez-vous clôturer le compte à la demande du prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/status/<?= $this->clients->id_client ?>/close_lender';}"
+                                class="btn-primary" style="background: #FF0000; border: 1px solid #FF0000;"
+                                value="Clôturer le compte à la demande du prêteur">
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (false === in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+                        <div>
+                            <input type="button"
+                                onclick="if (confirm('Voulez-vous réactiver le compte à son précédent statut ?')){window.location = '<?= $this->lurl ?>/preteurs/status/<?= $this->clients->id_client ?>/online';}"
+                                class="btn-primary"
+                                value="Réactiver le compte à son précédent statut">
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="clear"></div>
@@ -893,7 +887,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         });
 
         $.post(add_url + "/ajax/session_content_email_completude", {id_client: "<?=$this->clients->id_client?>", content: content, liste: input}).done(function (data) {
-            if (data != 'nok') {
+            if (data !== 'nok') {
                 $("#completude_preview").get(0).click();
             }
         });

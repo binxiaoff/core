@@ -340,7 +340,7 @@ class LenderProfileController extends Controller
         $modifications = [];
 
         if (
-            $unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal()
+            ($unattachedClientAddress->getCpFiscal() !== $clientAddress->getCpFiscal() || $unattachedClientAddress->getIdPaysFiscal() !== $clientAddress->getIdPaysFiscal())
             && PaysV2::COUNTRY_FRANCE == $clientAddress->getIdPaysFiscal()
             && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $clientAddress->getCpFiscal()])
         ) {
@@ -797,7 +797,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction(): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])) {
+        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -821,7 +821,7 @@ class LenderProfileController extends Controller
         $template['bankForm'] = $bankAccountForm->createView();
 
         $completenessRequest = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(
-            ['idClient' => $this->getUser()->getClientId(), 'idStatus' => ClientsStatus::COMPLETENESS],
+            ['idClient' => $this->getUser()->getClientId(), 'idStatus' => ClientsStatus::STATUS_COMPLETENESS],
             ['added' => 'DESC', 'id' => 'DESC']
         );
 
@@ -854,7 +854,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessFormAction(Request $request): RedirectResponse
     {
-        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::COMPLETENESS, ClientsStatus::COMPLETENESS_REMINDER])) {
+        if (false === in_array($this->getUser()->getClientStatus(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
         }
 

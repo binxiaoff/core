@@ -43,9 +43,21 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
 
             $firstName   = $company->getPrenomDirigeant();
             $clientEmail = $company->getEmailDirigeant();
-            if ((empty($firstName) || empty($firstName)) && $company->getIdClientOwner() instanceof Clients) {
-                $firstName   = $company->getIdClientOwner()->getPrenom();
-                $clientEmail = $company->getIdClientOwner()->getEmail();
+            if ((empty($firstName) || empty($clientEmail))) {
+                if ($company->getIdClientOwner() instanceof Clients && false === empty($company->getIdClientOwner()->getEmail())) {
+                    $firstName   = $company->getIdClientOwner()->getPrenom();
+                    $clientEmail = $company->getIdClientOwner()->getEmail();
+                } else {
+                    $this->getContainer()->get('monolog.logger.console')
+                        ->error('Could not send email "mail-echeance-emprunteur". Company manager email or first name is empty, and no client owner email found', [
+                            'id_company' => $company->getIdCompany(),
+                            'id_project' => $project->getIdProject(),
+                            'function'   => __FUNCTION__,
+                            'class'      => __CLASS__,
+                        ]);
+
+                    continue;
+                }
             }
 
             $amount = round(bcdiv($directDebit->getMontant(), 100, 4), 2);
@@ -69,10 +81,14 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                 $mailer = $this->getContainer()->get('mailer');
                 $mailer->send($message);
             } catch (\Exception $exception) {
-                $this->getContainer()->get('monolog.logger.console')->warning(
-                    'Could not send email: mail-echeance-emprunteur - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $company->getIdClientOwner()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->getContainer()->get('monolog.logger.console')->warning('Could not send email: mail-echeance-emprunteur - Exception: ' . $exception->getMessage(), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $company->getIdClientOwner()->getIdClient(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__,
+                    'file'             => $exception->getFile(),
+                    'line'             => $exception->getLine()
+                ]);
             }
         }
     }

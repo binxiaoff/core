@@ -27,7 +27,7 @@ class LenderDashboardController extends Controller
      */
     public function indexAction(): Response
     {
-        if (ClientsStatus::CREATION === $this->getUser()->getClientStatus()) {
+        if (ClientsStatus::STATUS_CREATION === $this->getUser()->getClientStatus()) {
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $this->getUser()->getHash()]);
         }
 

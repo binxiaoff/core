@@ -8,7 +8,7 @@ use Symfony\Component\{
     Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, WalletType
+    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
@@ -131,18 +131,19 @@ class MailerManager
     }
 
     /**
-     * @param \projects $oProject
+     * @param \projects $project
      */
-    public function sendFundFailedToLender(\projects $oProject)
+    public function sendFundFailedToLender(\projects $project): void
     {
         $bids = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Bids')
-            ->findBy(['idProject' => $oProject->id_project], ['rate' => 'ASC', 'added' => 'ASC']);
+            ->findBy(['idProject' => $project->id_project], ['rate' => 'ASC', 'added' => 'ASC']);
 
-        /** @var Bids $bid */
         foreach ($bids as $bid) {
-            $wallet = $bid->getIdLenderAccount();
-            if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
+            $wallet       = $bid->getIdLenderAccount();
+            $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+
+            if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
                 $keywords = [
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'firstName'     => $wallet->getIdClient()->getPrenom(),
@@ -153,7 +154,6 @@ class MailerManager
                     'lenderPattern' => $wallet->getWireTransferPattern()
                 ];
 
-                /** @var TemplateMessage $message */
                 $message = $this->messageProvider->newMessage('preteur-dossier-funding-ko', $keywords);
 
                 try {
@@ -169,25 +169,28 @@ class MailerManager
         }
     }
 
-    public function sendFundedToBorrower(\projects $oProject)
+    /**
+     * @param \projects $project
+     */
+    public function sendFundedToBorrower(\projects $project): void
     {
-        /** @var \companies $oCompany */
-        $oCompany = $this->entityManagerSimulator->getRepository('companies');
-        /** @var \clients $oBorrower */
-        $oBorrower = $this->entityManagerSimulator->getRepository('clients');
+        /** @var Clients $borrower */
+        $borrower = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Companies')
+            ->find($project->id_company)
+            ->getIdClientOwner();
 
         if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info(
-                'Project funded - sending email to borrower (project ' . $oProject->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                'Project funded - sending email to borrower (project ' . $project->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
             );
         }
 
-        $oCompany->get($oProject->id_company, 'id_company');
-        $oBorrower->get($oCompany->id_client_owner, 'id_client');
+        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
 
-        if ($oBorrower->status == Clients::STATUS_ONLINE) {
-            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $oProject->date_retrait);
+        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
 
             if ($inter['mois'] > 0) {
                 $remainingDuration = $inter['mois'] . ' mois';
@@ -202,21 +205,20 @@ class MailerManager
             }
 
             $keywords = [
-                'firstName'         => $oBorrower->prenom,
-                'averageRate'       => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1),
+                'firstName'         => $borrower->getPrenom(),
+                'averageRate'       => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
                 'remainingDuration' => $remainingDuration,
             ];
 
-            /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $keywords);
 
             try {
-                $message->setTo($oBorrower->email);
+                $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception){
                 $this->oLogger->warning(
                     'Could not send email: emprunteur-dossier-funde - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oBorrower->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }
@@ -341,7 +343,10 @@ class MailerManager
         }
     }
 
-    public function sendBidAccepted(\projects $project)
+    /**
+     * @param \projects $project
+     */
+    public function sendBidAccepted(\projects $project): void
     {
         /** @var \loans $loanData */
         $loanData = $this->entityManagerSimulator->getRepository('loans');
@@ -372,9 +377,11 @@ class MailerManager
         }
 
         foreach ($lenders as $lender) {
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
+            /** @var Wallet $wallet */
+            $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
+            $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
-            if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
+            if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
                 $company->get($project->id_company, 'id_company');
                 $loansOfLender          = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
                 $numberOfLoansForLender = count($loansOfLender);
@@ -459,16 +466,20 @@ class MailerManager
         }
     }
 
-    public function sendBidRejected(\notifications $notification)
+    /**
+     * @param \notifications $notification
+     */
+    public function sendBidRejected(\notifications $notification): void
     {
         /** @var \bids $bids */
         $bids = $this->entityManagerSimulator->getRepository('bids');
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');
         /** @var Bids $bid */
-        $bid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
+        $bid          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
+        $clientStatus = $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
-        if (Clients::STATUS_ONLINE === $bid->getIdLenderAccount()->getIdClient()->getStatus()) {
+        if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
             /**
              * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
              * and date_fin cannot be NULL
@@ -551,8 +562,8 @@ class MailerManager
                 }
             }
 
-            /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage($mailTemplate, $keyWords);
+
             try {
                 $message->setTo($bid->getIdLenderAccount()->getIdClient()->getEmail());
                 $this->mailer->send($message);
@@ -565,31 +576,33 @@ class MailerManager
         }
     }
 
-    public function sendFundFailedToBorrower(\projects $oProject)
+    /**
+     * @param \projects $project
+     */
+    public function sendFundFailedToBorrower(\projects $project): void
     {
-        /** @var \companies $oCompany */
-        $oCompany = $this->entityManagerSimulator->getRepository('companies');
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
+        /** @var Clients $borrower */
+        $borrower = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Companies')
+            ->find($project->id_company)
+            ->getIdClientOwner();
 
-        $oCompany->get($oProject->id_company, 'id_company');
-        $oClient->get($oCompany->id_client_owner, 'id_client');
+        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
 
-        if ($oClient->status == Clients::STATUS_ONLINE) {
+        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
             $keywords = [
-                'firstName' => $oClient->prenom
+                'firstName' => $borrower->getPrenom()
             ];
 
-            /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $keywords);
 
             try {
-                $message->setTo($oClient->email);
+                $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception){
                 $this->oLogger->warning(
                     'Could not send email: emprunteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $oClient->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
                 );
             }
         }
@@ -642,19 +655,24 @@ class MailerManager
         }
     }
 
-    public function sendFirstAutoBidActivation(\notifications $notification)
+    /**
+     * @param \notifications $notification
+     */
+    public function sendFirstAutoBidActivation(\notifications $notification): void
     {
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
+        /** @var Wallet $wallet */
+        $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
+        $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
-        if (Clients::STATUS_ONLINE === $wallet->getIdClient()->getStatus()) {
+        if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
             $keyWords = [
                 'firstName'              => $wallet->getIdClient()->getPrenom(),
                 'autolendActivationTime' => $this->getActivationTime($wallet->getIdClient()->getIdClient())->format('G\hi'),
                 'lenderPattern'          => $wallet->getWireTransferPattern(),
             ];
 
-            /** @var TemplateMessage $message */
             $message = $this->messageProvider->newMessage('preteur-autobid-activation', $keyWords);
+
             try {
                 $message->setTo($wallet->getIdClient()->getEmail());
                 $this->mailer->send($message);
@@ -1938,29 +1956,37 @@ class MailerManager
     }
 
     /**
-     * @param \clients $client
-     * @param string   $email
+     * @param Clients|\clients $client
+     * @param string           $email
      */
-    public function sendBorrowerAccount(\clients $client, $email = 'ouverture-espace-emprunteur')
+    public function sendBorrowerAccount($client, string $email = 'ouverture-espace-emprunteur'): void
     {
-        /** @var \temporary_links_login $temporaryLink */
-        $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
-        $keywords      = [
-            'firstName'            => $client->prenom,
-            'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->id_client, \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
-            'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
-        ];
+        if ($client instanceof \clients) {
+            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+        }
 
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($email, $keywords);
-        try {
-            $message->setTo($client->email);
-            $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+        $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+
+        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+            /** @var \temporary_links_login $temporaryLink */
+            $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
+            $keywords      = [
+                'firstName'            => $client->getPrenom(),
+                'temporaryToken'       => $temporaryLink->generateTemporaryLink($client->getIdClient(), \temporary_links_login::PASSWORD_TOKEN_LIFETIME_LONG),
+                'borrowerServiceEmail' => $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue()
+            ];
+
+            $message = $this->messageProvider->newMessage($email, $keywords);
+
+            try {
+                $message->setTo($client->getEmail());
+                $this->mailer->send($message);
+            } catch (\Exception $exception) {
+                $this->oLogger->warning(
+                    'Could not send email: ' . $email . ' - Exception: ' . $exception->getMessage(),
+                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+            }
         }
     }
 }

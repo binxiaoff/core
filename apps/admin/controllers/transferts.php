@@ -378,7 +378,7 @@ class transfertsController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lPreteurs    = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName);
+            $this->lPreteurs    = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, null, true);
             $this->id_reception = $_POST['id_reception'];
         }
     }
@@ -673,7 +673,7 @@ class transfertsController extends bootstrap
                 if (null === $directDebits) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
                     $borrowerManager   = $this->get('unilend.service.borrower_manager');
-                    $bankTransferLabel = $borrowerManager->getBorrowerBankTransferLabel($project);
+                    $bankTransferLabel = $borrowerManager->getProjectBankTransferLabel($project);
 
                     $paymentSchedules = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->findBy(['idProject' => $project]);
 
@@ -874,7 +874,7 @@ class transfertsController extends bootstrap
             $newOwnerEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($newOwner->id_client);
             $newOwnerStatus = $newOwnerEntity->getIdClientStatusHistory() ? $newOwnerEntity->getIdClientStatusHistory()->getIdStatus()->getId() : null;
 
-            if ($newOwnerStatus !== ClientsStatus::VALIDATED) {
+            if ($newOwnerStatus !== ClientsStatus::STATUS_VALIDATED) {
                 $this->addErrorMessageAndRedirect('Le compte de l\'héritier n\'est pas validé');
             }
 

@@ -1,8 +1,9 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Clients, Companies, PaysV2, Zones
+    AddressType, AttachmentType, Clients, ClientsStatus, Companies, PaysV2, Zones
 };
 use Unilend\Bundle\WSClientBundle\Entity\Altares\{
     CompanyIdentityDetail, EstablishmentIdentityDetail
@@ -10,6 +11,15 @@ use Unilend\Bundle\WSClientBundle\Entity\Altares\{
 
 class companyController extends bootstrap
 {
+    /** @var TranslatorInterface */
+    protected $translator;
+    /** @var Clients */
+    protected $client;
+    /** @var Companies */
+    protected $company;
+    /** @var string */
+    protected $siren;
+
     public function initialize()
     {
         parent::initialize();
@@ -172,9 +182,25 @@ class companyController extends bootstrap
         $registryForm        = $this->request->files->get('kbis');
 
         if (1 !== preg_match('/^\d{9}$/', $siren)) {
-            $_SESSION['freeow']['title']   = 'Une erreur survenue !';
-            $_SESSION['freeow']['message'] = 'SIREN n\'est pas valide.';
-            header('Location: ' . $this->url . '/company/add' . (isset($this->params[0]) ? '/' . $this->params[0] : ''));
+            $_SESSION['freeow']['title']   = 'Une erreur est survenue';
+            $_SESSION['freeow']['message'] = 'Le SIREN n‘est pas valide.';
+
+            header('Location: ' . $this->lurl . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+
+        if ($email !== $this->client->getEmail()) {
+            $duplicates = $entityManager
+                ->getRepository('UnilendCoreBusinessBundle:Clients')
+                ->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+
+            if (false === empty($duplicates)) {
+                $_SESSION['freeow']['title']   = 'Une erreur est survenue';
+                $_SESSION['freeow']['message'] = 'Cette adresse email est déjà utilisée par un autre client.';
+
+                header('Location: ' . $this->lurl . $_SERVER['REQUEST_URI']);
+                exit;
+            }
         }
 
         $entityManager->beginTransaction();
@@ -183,7 +209,6 @@ class companyController extends bootstrap
             $this->client
                 ->setEmail($email)
                 ->setIdLangue('fr')
-                ->setStatus(Clients::STATUS_OFFLINE)
                 ->setCivilite($title)
                 ->setNom($name)
                 ->setPrenom($firstName);
@@ -215,9 +240,7 @@ class companyController extends bootstrap
             }
             if ($registryForm) {
                 $attachmentTypeKbis = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::KBIS);
-                $attachment         = $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
-
-                $addressManager->validateCompanyAddress($this->company->getIdAddress(), $attachment);
+                $attachmentManager->upload($this->client, $attachmentTypeKbis, $registryForm);
             }
 
             $entityManager->commit();

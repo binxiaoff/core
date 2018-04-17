@@ -12,56 +12,56 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientsStatus
 {
-    const CREATION              = 5;
-    const TO_BE_CHECKED         = 10;
-    const COMPLETENESS          = 20;
-    const COMPLETENESS_REMINDER = 30;
-    const COMPLETENESS_REPLY    = 40;
-    const MODIFICATION          = 50;
-    const VALIDATED             = 60;
-    const SUSPENDED             = 65;
-    const DISABLED              = 70;
-    const CLOSED_LENDER_REQUEST = 80;
-    const CLOSED_BY_UNILEND     = 90;
-    const CLOSED_DEFINITELY     = 100;
+    const STATUS_CREATION              = 5;
+    const STATUS_TO_BE_CHECKED         = 10;
+    const STATUS_COMPLETENESS          = 20;
+    const STATUS_COMPLETENESS_REMINDER = 30;
+    const STATUS_COMPLETENESS_REPLY    = 40;
+    const STATUS_MODIFICATION          = 50;
+    const STATUS_VALIDATED             = 60;
+    const STATUS_SUSPENDED             = 65;
+    const STATUS_DISABLED              = 70;
+    const STATUS_CLOSED_LENDER_REQUEST = 80;
+    const STATUS_CLOSED_BY_UNILEND     = 90;
+    const STATUS_CLOSED_DEFINITELY     = 100;
 
     const GRANTED_LOGIN = [
-        self::CREATION,
-        self::TO_BE_CHECKED,
-        self::COMPLETENESS,
-        self::COMPLETENESS_REMINDER,
-        self::COMPLETENESS_REPLY,
-        self::MODIFICATION,
-        self::VALIDATED,
-        self::SUSPENDED
+        self::STATUS_CREATION,
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
     ];
 
     const GRANTED_LENDER_ACCOUNT_READ = [
-        self::TO_BE_CHECKED,
-        self::COMPLETENESS,
-        self::COMPLETENESS_REMINDER,
-        self::COMPLETENESS_REPLY,
-        self::MODIFICATION,
-        self::VALIDATED,
-        self::SUSPENDED
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
     ];
 
     const GRANTED_LENDER_DEPOSIT = [
-        self::TO_BE_CHECKED,
-        self::COMPLETENESS,
-        self::COMPLETENESS_REMINDER,
-        self::COMPLETENESS_REPLY,
-        self::MODIFICATION,
-        self::VALIDATED
+        self::STATUS_TO_BE_CHECKED,
+        self::STATUS_COMPLETENESS,
+        self::STATUS_COMPLETENESS_REMINDER,
+        self::STATUS_COMPLETENESS_REPLY,
+        self::STATUS_MODIFICATION,
+        self::STATUS_VALIDATED
     ];
 
     const GRANTED_LENDER_WITHDRAW = [
-        self::VALIDATED,
-        self::SUSPENDED
+        self::STATUS_VALIDATED,
+        self::STATUS_SUSPENDED
     ];
 
     const GRANTED_LENDER_SPONSORSHIP = [
-        self::VALIDATED
+        self::STATUS_VALIDATED
     ];
 
     /**

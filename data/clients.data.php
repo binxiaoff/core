@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\DBAL\Driver\Statement;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, PaysV2, WalletType
 };
@@ -73,43 +74,43 @@ class clients extends clients_crud
         );
     }
 
-    public function checkAccess()
+    /**
+     * @return bool
+     * @throws Exception
+     */
+    public function checkAccess(): bool
     {
-        if (! isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
+        if (false === isset($_SESSION['auth']) || true !== $_SESSION['auth']) {
             return false;
         }
 
-        if (trim($_SESSION['token']) == '') {
+        if (false === isset($_SESSION['token']) || empty(trim($_SESSION['token']))) {
             return false;
         }
 
-        $sql = '
+        $query = '
             SELECT COUNT(*) 
-            FROM clients 
-            WHERE id_client = "' . $_SESSION['client']['id_client'] . '" 
-                AND password = "' . $_SESSION['client']['password'] . '" 
-                AND status = ' . ClientEntity::STATUS_ONLINE;
-        $res = $this->bdd->query($sql);
+            FROM clients c
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id 
+            WHERE c.id_client = ' . intval($_SESSION['client']['id_client']) . ' 
+              AND c.password = "' . $this->bdd->escape_string($_SESSION['client']['password']) . '" 
+              AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')';
+        $statement = $this->bdd->query($query);
 
-        if ($this->bdd->result($res, 0) != 1) {
-            return false;
-        } else {
-            return true;
-        }
+        return 1 != $this->bdd->result($statement, 0);
     }
 
     /**
-     * @param string   $searchType
-     * @param string   $nom
-     * @param string   $prenom
-     * @param string   $email
-     * @param string   $societe
-     * @param string   $siren
-     * @param int|null $status
+     * @param string $searchType
+     * @param string $nom
+     * @param string $prenom
+     * @param string $email
+     * @param string $societe
+     * @param string $siren
      *
      * @return array
      */
-    public function searchEmprunteurs($searchType, $nom = '', $prenom = '', $email = '', $societe = '', $siren = '', int $status = null) : array
+    public function searchEmprunteurs($searchType, $nom = '', $prenom = '', $email = '', $societe = '', $siren = ''): array
     {
         $conditions = [];
 
@@ -131,10 +132,6 @@ class clients extends clients_crud
 
         if (false === empty($siren)) {
             $conditions[] = 'co.siren LIKE "%' . $siren . '%"';
-        }
-
-        if (null !== $status) {
-            $conditions[] = 'c.status = ' . $status;
         }
 
         $borrowers = [];
@@ -174,17 +171,17 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function selectPreteursByStatus($status, $where = '', $order = '', $start = '', $nb = ''): array
+    /**
+     * @param int         $status
+     * @param string|null $order
+     * @param int|null    $start
+     * @param int|null    $nb
+     *
+     * @return array
+     */
+    public function selectPreteursByStatus(int $status, ?string $order = null, ?int $start = null, ?int $nb = null): array
     {
-        if ($where != '') {
-            $where = ' AND ' . $where;
-        }
-
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
+        $query = '
             SELECT
               c.*,
               csh.added AS added_status
@@ -192,13 +189,25 @@ class clients extends clients_crud
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id
-            WHERE csh.id_status IN (' . $status . ') AND wt.label = "lender"' .
-              $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            WHERE csh.id_status IN (' . $status . ') AND wt.label = "' . WalletType::LENDER . '"';
 
-        $result   = [];
-        $resultat = $this->bdd->query($sql);
+        if (null !== $order) {
+            $query .= ' 
+                ORDER BY ' . $order;
+        }
 
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
+        if (null !== $start && null !== $nb) {
+            $query .= '
+                LIMIT ' . $start . ', ' . $nb;
+        } elseif (null !== $nb) {
+            $query .= '
+                LIMIT ' . $nb;
+        }
+
+        $result    = [];
+        $statement = $this->bdd->query($query);
+
+        while ($record = $this->bdd->fetch_assoc($statement)) {
             $result[] = $record;
         }
         return $result;
@@ -326,7 +335,7 @@ class clients extends clients_crud
                     SELECT MAX(csh.added)
                     FROM clients_status_history csh
                     INNER JOIN clients ON clients.id_client = csh.id_client
-                    WHERE csh.id_status = ' . ClientsStatus::VALIDATED . ' AND c.id_client = csh.id_client
+                    WHERE csh.id_status = ' . ClientsStatus::STATUS_VALIDATED . ' AND c.id_client = csh.id_client
                     ORDER BY csh.added DESC
                     LIMIT 1
                 ) AS date_validation
@@ -403,15 +412,14 @@ class clients extends clients_crud
             $oEndDate = new \DateTime('NOW');
         }
 
-        $sQuery = 'SELECT
-                        c.source
-                    FROM
-                        clients c
-                        INNER JOIN companies com on c.id_client = com.id_client_owner
-                    WHERE
-                    com.siren = ' . $sSiren . '
-                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-                    ORDER BY c.added ASC LIMIT 1';
+        $sQuery = '
+            SELECT c.source
+            FROM clients c
+            INNER JOIN companies com on c.id_client = com.id_client_owner
+            WHERE com.siren = ' . $sSiren . '
+              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+            ORDER BY c.added ASC 
+            LIMIT 1';
 
         $rQuery = $this->bdd->query($sQuery);
         return ($this->bdd->result($rQuery, 0));
@@ -424,21 +432,24 @@ class clients extends clients_crud
             $oEndDate = new \DateTime('NOW');
         }
 
-        $sQuery = 'SELECT
-                        c.source
-                    FROM
-                        clients c
-                        INNER JOIN companies com on c.id_client = com.id_client_owner
-                    WHERE
-                    com.siren = ' . $sSiren . '
-                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-                    ORDER BY c.added DESC LIMIT 1';
+        $sQuery = '
+            SELECT c.source
+            FROM clients c
+            INNER JOIN companies com on c.id_client = com.id_client_owner
+            WHERE com.siren = ' . $sSiren . '
+              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+            ORDER BY c.added DESC 
+            LIMIT 1';
 
         $rQuery = $this->bdd->query($sQuery);
         return ($this->bdd->result($rQuery, 0));
     }
 
-    public function getBorrowersSalesForce()
+    /**
+     * @return Statement
+     * @throws Exception
+     */
+    public function getBorrowersSalesForce(): Statement
     {
         $query = "
             SELECT
@@ -471,8 +482,8 @@ class clients extends clients_crud
                 WHEN 3 THEN 'Physique'
                 ELSE 'Morale'
               END AS 'TypeContact',
-              CASE c.status
-                WHEN " . ClientEntity::STATUS_ONLINE . " THEN 'oui'
+              CASE csh.id_status
+                WHEN " . ClientsStatus::STATUS_VALIDATED . " THEN 'oui'
                 ELSE 'non'
               END AS 'Valide',
               CASE c.added
@@ -495,6 +506,7 @@ class clients extends clients_crud
               acountry.fr AS 'Pays',
               '012240000002G4e' as 'Sfcompte'
             FROM clients c
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
               INNER JOIN companies co on c.id_client = co.id_client_owner
               INNER JOIN projects p ON p.id_company = co.id_company
               LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "') 
@@ -506,63 +518,56 @@ class clients extends clients_crud
         return $this->bdd->executeQuery($query);
     }
 
-    public function countClientsByRegion()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public function countClientsByRegion(): array
     {
-        $query = 'SELECT
-                      CASE
-                      WHEN LEFT(client_base.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88)
-                        THEN "44"
-                      WHEN LEFT(client_base.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87)
-                        THEN "75"
-                      WHEN LEFT(client_base.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74)
-                        THEN "84"
-                      WHEN LEFT(client_base.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90)
-                        THEN "27"
-                      WHEN LEFT(client_base.cp, 2) IN (22, 29, 35, 56)
-                        THEN "53"
-                      WHEN LEFT(client_base.cp, 2) IN (18, 28, 36, 37, 41, 45)
-                        THEN "24"
-                      WHEN LEFT(client_base.cp, 2) IN (20)
-                        THEN "94"
-                      WHEN LEFT(client_base.cp, 3) IN (971)
-                        THEN "01"
-                      WHEN LEFT(client_base.cp, 3) IN (973)
-                        THEN "03"
-                      WHEN LEFT(client_base.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95)
-                        THEN "11"
-                      WHEN LEFT(client_base.cp, 3) IN (974)
-                        THEN "04"
-                      WHEN LEFT(client_base.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82)
-                        THEN "76"
-                      WHEN LEFT(client_base.cp, 3) IN (972)
-                        THEN "02"
-                      WHEN LEFT(client_base.cp, 3) IN (976)
-                        THEN "06"
-                      WHEN LEFT(client_base.cp, 2) IN (02, 59, 60, 62, 80)
-                        THEN "32"
-                      WHEN LEFT(client_base.cp, 2) IN (14, 27, 50, 61, 76)
-                        THEN "28"
-                      WHEN LEFT(client_base.cp, 2) IN (44, 49, 53, 72, 85)
-                        THEN "52"
-                      WHEN LEFT(client_base.cp, 2) IN (04, 05, 06, 13, 83, 84)
-                        THEN "93"
-                      ELSE "0"
-                      END AS insee_region_code,
-                      COUNT(*) AS count
-                    FROM (SELECT clients.id_client,
-                         CASE WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal ELSE companies.zip END AS cp
-                         FROM clients
-                             LEFT JOIN clients_adresses USING (id_client)
-                             LEFT JOIN companies ON clients.id_client = companies.id_client_owner
-                             INNER JOIN wallet w ON clients.id_client = w.id_client
-                             INNER JOIN wallet_type wt ON w.id_type = wt.id
-                         WHERE clients.status = '. ClientEntity::STATUS_ONLINE .'
-                         AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')) AS client_base
-                    GROUP BY insee_region_code
-                    HAVING insee_region_code != "0"';
+        $query = '
+            SELECT
+              CASE
+                WHEN LEFT(client_base.cp, 2) IN (08, 10, 51, 52, 54, 55, 57, 67, 68, 88) THEN "44"
+                WHEN LEFT(client_base.cp, 2) IN (16, 17, 19, 23, 24, 33, 40, 47, 64, 79, 86, 87) THEN "75"
+                WHEN LEFT(client_base.cp, 2) IN (01, 03, 07, 15, 26, 38, 42, 43, 63, 69, 73, 74) THEN "84"
+                WHEN LEFT(client_base.cp, 2) IN (21, 25, 39, 58, 70, 71, 89, 90) THEN "27"
+                WHEN LEFT(client_base.cp, 2) IN (22, 29, 35, 56) THEN "53"
+                WHEN LEFT(client_base.cp, 2) IN (18, 28, 36, 37, 41, 45) THEN "24"
+                WHEN LEFT(client_base.cp, 2) IN (20) THEN "94"
+                WHEN LEFT(client_base.cp, 3) IN (971) THEN "01"
+                WHEN LEFT(client_base.cp, 3) IN (973) THEN "03"
+                WHEN LEFT(client_base.cp, 2) IN (75, 77, 78, 91, 92, 93, 94, 95) THEN "11"
+                WHEN LEFT(client_base.cp, 3) IN (974) THEN "04"
+                WHEN LEFT(client_base.cp, 2) IN (09, 11, 12, 30, 31, 32, 34, 46, 48, 65, 66, 81, 82) THEN "76"
+                WHEN LEFT(client_base.cp, 3) IN (972) THEN "02"
+                WHEN LEFT(client_base.cp, 3) IN (976) THEN "06"
+                WHEN LEFT(client_base.cp, 2) IN (02, 59, 60, 62, 80) THEN "32"
+                WHEN LEFT(client_base.cp, 2) IN (14, 27, 50, 61, 76) THEN "28"
+                WHEN LEFT(client_base.cp, 2) IN (44, 49, 53, 72, 85) THEN "52"
+                WHEN LEFT(client_base.cp, 2) IN (04, 05, 06, 13, 83, 84) THEN "93"
+                ELSE "0"
+              END AS insee_region_code,
+              COUNT(*) AS count
+            FROM (
+              SELECT clients.id_client,
+                CASE 
+                  WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal
+                  ELSE companies.zip 
+                END AS cp
+              FROM clients
+              LEFT JOIN clients_adresses USING (id_client)
+              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
+              INNER JOIN wallet w ON clients.id_client = w.id_client
+              INNER JOIN wallet_type wt ON w.id_type = wt.id
+              INNER JOIN clients_status_history csh ON clients.id_client_status_history = csh.id
+              WHERE csh.id_status IN ('. implode(',', ClientsStatus::GRANTED_LOGIN) . ')
+                AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')
+            ) AS client_base
+            GROUP BY insee_region_code
+            HAVING insee_region_code != "0"';
 
         $statement = $this->bdd->executeQuery($query);
-        $regionsCount  = [];
+        $regionsCount = [];
         while ($row = $statement->fetch(\PDO::FETCH_ASSOC)) {
             $regionsCount[] = $row;
         }
