@@ -1192,27 +1192,27 @@ class projects extends projects_crud
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
             INNER JOIN wallet w ON w.id = l.id_lender
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
-          WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_percentage,
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_amount,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
             INNER JOIN wallet w ON w.id = l.id_lender
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
             INNER JOIN wallet w ON w.id = l.id_lender
             INNER JOIN clients c ON c.id_client = w.id_client
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
-          WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_percentage,
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_amount,
           (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
           WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
             INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
-          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_percentage
+          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_amount
         FROM projects p
           INNER JOIN companies com ON  com.id_company = p.id_company
           INNER JOIN loans l ON l.id_project = p.id_project AND l.status = :loanAccepted
