@@ -63,26 +63,6 @@
                                                     </div><!-- /.input-group -->
                                                 </div><!-- /.form-field -->
 
-                                                <div class="form-field col-lg-6 col-md-6">
-                                                    <div class="field-label">
-                                                        {% trans %} project-request_step-1-company-siren-field-label {% endtrans %}
-                                                    </div>
-                                                    <div class="input-group">
-                                                        <strong>{{ project.siren }}</strong>
-                                                    </div><!-- /.input-group -->
-                                                </div><!-- /.form-field -->
-                                            </div>
-
-                                            <div class="row row-multi-col-computer">
-                                                <div class="form-field col-lg-6 col-md-6">
-                                                    <div class="field-label">
-                                                        {% trans %} project-request_step-1-company-name-field-label {% endtrans %}
-                                                    </div>
-                                                    <div class="input-group">
-                                                        <strong>{{ project.company_name }}</strong>
-                                                    </div><!-- /.input-group -->
-                                                </div><!-- /.form-field -->
-
                                                 <div class="form-field col-lg-6 col-md-6{% if form.errors.project.duration is defined %} ui-formvalidation-error{% endif %}">
                                                     <div class="field-label">
                                                         <label for="form-project-create-duration">
@@ -100,6 +80,70 @@
                                                         <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required-select {% endtrans %}</li></ul>
                                                     {% endif %}
                                                 </div><!-- /.form-field -->
+                                            </div>
+                                        </fieldset>
+
+                                        <fieldset class="panel">
+                                            <h3 class="h3">{% trans %} project-request_step-1-company-information-title {% endtrans %}</h3>
+
+                                            <div class="row">
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-name-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ project.idCompany.name }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-siren-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ project.idCompany.siren }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+                                                {% if project.idCompany.dateCreation is not empty %}
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-creation-date-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ project.idCompany.dateCreation|localizeddate('short', 'none') }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if project.idCompany.capital is not empty %}
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-capital-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ project.idCompany.capital }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if project.idCompany.idAddress is not null %}
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-address-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ project.idCompany.idAddress.address }}<br>{{ project.idCompany.idAddress.zip }} {{ project.idCompany.idAddress.city }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if lastBalanceSheet is not null %}
+                                                <div class="form-field col-lg-6 col-md-6">
+                                                    <div class="field-label">
+                                                        {% trans %} project-request_step-1-company-last-balance-sheet-date-field-label {% endtrans %}
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <strong>{{ lastBalanceSheet.clotureExerciceFiscal|localizeddate('short', 'none') }}</strong>
+                                                    </div><!-- /.input-group -->
+                                                </div><!-- /.form-field -->
+                                                {% endif %}
                                             </div>
                                         </fieldset>
 
@@ -334,7 +378,7 @@
                                                         {% trans %} project-request_project-motive-label {% endtrans %}
                                                     </div>
                                                     <div class="input-group">
-                                                        <strong>{{ ('borrowing-motive_motive-' ~ project.motive)|trans }}</strong>
+                                                        <strong>{{ ('borrowing-motive_motive-' ~ project.idBorrowingMotive)|trans }}</strong>
                                                     </div>
                                                 </div><!-- /.form-field -->
                                             </div>
@@ -391,7 +435,7 @@
                                                 <dt id="esim-label-amount">{% trans %} project-request_simulator-panel-amount-label {% endtrans %}</dt>
                                                 <dd id="esim-output-amount">{{ project.amount|localizednumber }}&nbsp;€</dd>
                                                 <dt id="esim-label-duration">{% trans %} project-request_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
-                                                <dd id="esim-output-duration">{% transchoice project.averageFundingDuration with {'%averageFundingDuration%' : project.averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
+                                                <dd id="esim-output-duration">{% transchoice averageFundingDuration with {'%averageFundingDuration%' : averageFundingDuration} %} project-request_simulator-panel-estimated-funding-time-value {% endtranschoice %}</dd>
                                             </dl>
                                         </div>
                                         <footer class="emprunter-sim-mini-footer">
