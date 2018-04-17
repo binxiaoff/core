@@ -70,12 +70,20 @@ class ProjectRequestController extends Controller
         $siren    = $projectRequestManager->validateSiren($formData['siren']);
 
         try {
-            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren'])) {
+            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
-            // We accept in the same field both siren and siret
-            $siret = $projectRequestManager->validateSiret($formData['siren']);
-            $siret = $siret === false ? null : $siret;
+
+            if (false === empty($formData['siren'])) {
+                $siren = $projectRequestManager->validateSiren($formData['siren']);
+                $siren = $siren === false ? null : $siren;
+                // We accept in the same field both siren and siret
+                $siret = $projectRequestManager->validateSiret($formData['siren']);
+                $siret = $siret === false ? null : $siret;
+            } else {
+                $siren = null;
+                $siret = null;
+            }
 
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
             /** @var UserPartner $partnerUser */

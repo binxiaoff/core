@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, Product, Projects, ProjectsStatus, Users
+    AttachmentType, BorrowingMotive, Clients, Companies, Product, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -93,15 +93,20 @@ class ProjectRequestController extends Controller
         }
 
         try {
-            if (null === $siren || null === $amount || (null === $email && empty($request->getSession()->get('partnerProjectRequest'))) || 0 === $reason || 0 === $duration) {
+            if (null === $amount || (null === $email && empty($request->getSession()->get('partnerProjectRequest'))) || 0 === $reason || 0 === $duration) {
                 throw new \InvalidArgumentException();
             }
-
+            if (false === empty($siren)) {
+                $siren = $projectRequestManager->validateSiren($siren);
+                $siren = $siren === false ? null : $siren;
+                // We accept in the same field both siren and siret
+                $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
+                $siret = $siret === false ? null : $siret;
+            } else {
+                $siren = null;
+                $siret = null;
+            }
             $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            $siren = $projectRequestManager->validateSiren($siren);
-            // We accept in the same field both siren and siret
-            $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
-            $siret = $siret === false ? null : $siret;
 
             $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $email, $duration, $reason);
 
@@ -173,7 +178,13 @@ class ProjectRequestController extends Controller
     private function start(Projects $project)
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+        if ($project->getIdCompany()->getSiren()) {
+            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::COMPLETE_REQUEST);
+        } else {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
+        }
 
         if (ProjectsStatus::NOT_ELIGIBLE == $project->getStatus()) {
             return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);

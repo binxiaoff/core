@@ -85,7 +85,7 @@
                                         <label for="borrower-lp-input-reason" class="field-label">{% trans %} borrower-landing-page_reason-placeholder {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
-                                        <select id="borrower-lp-input-reason" name="reason" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                        <select id="borrower-lp-input-reason" name="reason" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-reason-select>
                                             <option value="">{% trans %} borrower-landing-page_reason-title {% endtrans %}</option>
                                             {% for reason in form.values.reasons %}
                                                 <option value="{{ reason.idMotive }}">{{ ('borrowing-motive_motive-' ~ reason.idMotive)|trans }}</option>
@@ -97,13 +97,18 @@
 
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-siren" class="field-label">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <label for="borrower-lp-input-siren" class="field-label" data-siren-label>
+                                            {% trans %} borrower-landing-page_siren-placeholder {% endtrans %}&nbsp;
+                                            <span class="field-required" data-siren-required-marker>*</span>
+                                            <span class="sr-only">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}</span>
+                                        </label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
                                         <input type="text" id="borrower-lp-input-siren" name="siren" value="{{ form.values.siren }}" class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
-                                               data-formvalidation-type="siren">
+                                               data-formvalidation-type="siren"
+                                               data-siren-input>
                                         <ul class="ui-formvalidation-messages"></ul>
                                     </div>
                                 </div><!-- /.form-field -->
@@ -245,3 +250,8 @@
     <![endif]-->
 {% endblock %}
 
+{% block pageScripts %}
+    <script>
+
+    </script>
+{% endblock %}

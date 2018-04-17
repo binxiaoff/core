@@ -32,7 +32,7 @@
                                 </div>
                                 <div class="form-field col-lg-4 col-md-4">
                                     <label for="simulator-input-reason">{% trans %} partner-project-request_simulator-borrowing-motif-title {% endtrans %}</label>
-                                    <select id="simulator-input-reason" name="simulator[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
+                                    <select id="simulator-input-reason" name="simulator[motive]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive" data-reason-select>
                                         <option value="">{% trans %} partner-project-request_simulator-borrowing-motif-select {% endtrans %}</option>
                                         {% for motive in borrowingMotives %}
                                             <option value="{{ motive.idMotive }}"{% if form.values.motive is defined and form.values.motive == motive.idMotive %} selected{% endif %}>{{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}</option>
@@ -40,12 +40,13 @@
                                     </select>
                                 </div>
                                 <div class="form-field bottom col-lg-4 col-md-4">
-                                    <label for="simulator-input-siren">{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
+                                    <label for="simulator-input-siren" data-siren-label>{% trans %} partner-project-request_simulator-siren-field-label {% endtrans %}</label>
                                     <input type="text" id="simulator-input-siren" name="simulator[siren]" value="{% if form.values.siren is defined %}{{ form.values.siren|e('html_attr') }}{% endif %}"
                                            class="input-field"
                                            data-formvalidation-input
                                            data-formvalidation-required="true"
-                                           data-formvalidation-type="siren">
+                                           data-formvalidation-type="siren"
+                                           data-siren-input>
                                 </div><!-- /.form-field -->
                             </div>
                             <div class="row columns-with-space">

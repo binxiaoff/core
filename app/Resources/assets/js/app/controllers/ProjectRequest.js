@@ -3,8 +3,7 @@
  */
 
 var $ = require('jquery')
-var Utility = require('Utility')
-
+var __ = require('__')
 var $doc = $(document)
 
 $doc.on('ready', function () {
@@ -18,6 +17,38 @@ $doc.on('ready', function () {
       $('#form-project-create .toggle-if-manager').collapse('show')
     }
   }
+
+  function handleBorrowingReason(reasonSelect, sirenInput, sirenLabel, sirenRequiredMarker, franchiserCreationReasonId, shareBuyBackReasonId, defaultLabelValue, defaultLabelText, defaultRequiredValue) {
+    var reason = parseInt(reasonSelect.val());
+    switch (reason) {
+      case franchiserCreationReasonId:
+        sirenInput.attr('data-formvalidation-required', false)
+        sirenLabel.html(defaultLabelText)
+        break
+      case shareBuyBackReasonId:
+        sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
+        sirenLabel.html(__.__('Target siren', 'targetSirenLabel')).append(sirenRequiredMarker)
+        break
+      default:
+        sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
+        sirenLabel.html(defaultLabelValue)
+        break
+    }
+  }
+
+  var reasonSelect = $('select[data-reason-select]'),
+    sirenInput = $('input[data-siren-input]'),
+    sirenLabel = $('label[data-siren-label]'),
+    sirenRequiredMarker = $('span[data-siren-required-marker]'),
+    defaultRequiredValue = sirenInput.attr('data-formvalidation-required'),
+    defaultLabelValue = sirenLabel.html(),
+    defaultLabelText = sirenLabel.text(),
+    franchiserCreationReasonId = 8,
+    shareBuyBackReasonId = 9
+
+  $(document).on('change', reasonSelect, function () {
+    handleBorrowingReason(reasonSelect, sirenInput, sirenLabel, sirenRequiredMarker, franchiserCreationReasonId, shareBuyBackReasonId, defaultLabelValue, defaultLabelText, defaultRequiredValue)
+  })
 
   checkIsManager()
 

@@ -219,10 +219,12 @@
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
-                                        <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
+                                        <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive" data-reason-select>
                                             <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
                                             {% for motive in borrowingMotives %}
-                                                <option value="{{ motive.id_motive }}"{% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.id_motive %} selected{% endif %}>{{ ('borrowing-motive_motive-' ~ motive.id_motive)|trans }}</option>
+                                                <option value="{{ motive.idMotive }}"{% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.idMotive %} selected{% endif %}>
+                                                    {{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}
+                                                </option>
                                             {% endfor %}
                                         </select>
                                     </div>
@@ -264,12 +266,13 @@
                                 </div>
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
+                                        <label for="esim-input-siren" data-siren-label>{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
                                         <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
                                                class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
-                                               data-formvalidation-type="siren">
+                                               data-formvalidation-type="siren"
+                                               data-siren-input>
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>

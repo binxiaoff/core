@@ -156,6 +156,10 @@ class ProjectRequestManager
             if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
                 throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
             }
+        } else {
+            if (Users::USER_ID_FRONT === $user->getIdUser() && BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $reason) {
+                throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
+            }
         }
 
         if (false === empty($siret)) {
