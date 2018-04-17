@@ -12,10 +12,11 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, CompanyStatus, PartnerProjectAttachment, Projects, ProjectsStatus, Users, WalletType
+    Clients, ClientsStatus, Companies, PartnerProjectAttachment, Projects, ProjectsStatus, Users
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ProjectRequestManager, ProjectStatusManager
+};
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
@@ -72,13 +73,15 @@ class ProjectRequestController extends Controller
             if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
+            // We accept in the same field both siren and siret
+            $siret = $projectRequestManager->validateSiret($formData['siren']);
+            $siret = $siret === false ? null : $siret;
 
-            $siret     = $projectRequestManager->validateSiret($formData['siren']);
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
             /** @var UserPartner $partnerUser */
             $partnerUser = $this->getUser();
 
-            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret === false ? null : $siret, null, $duration, $reason);
+            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret, null, $duration, $reason);
 
             $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
             $project->setIdClientSubmitter($submitter)

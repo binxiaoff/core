@@ -150,11 +150,11 @@ trait CompanyChecker
         $partialAcceptableStatus = [ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION, ProjectsStatus::ABANDONED];
 
         foreach ($projects as $project) {
-            $product = null;
+            $usedProduct = null;
             if ($project->getIdProduct()) {
-                $product = $productRepository->find($project->getIdProduct());
+                $usedProduct = $productRepository->find($project->getIdProduct());
             }
-            if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
+            if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
             if (in_array($project->getStatus(), $acceptableStatus)) {
@@ -194,11 +194,11 @@ trait CompanyChecker
         $projects = $projectRepository->findBySiren($company->getSiren());
 
         foreach ($projects as $project) {
-            $product = null;
+            $usedProduct = null;
             if ($project->getIdProduct()) {
-                $product = $productRepository->find($project->getIdProduct());
+                $usedProduct = $productRepository->find($project->getIdProduct());
             }
-            if (null === $product || Product::PRODUCT_BLEND === $product->getLabel()) {
+            if (null === $usedProduct || Product::PRODUCT_BLEND === $usedProduct->getLabel()) {
                 continue;
             }
             $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);
@@ -233,11 +233,11 @@ trait CompanyChecker
         $projects = $projectRepository->findBySiren($company->getSiren());
 
         foreach ($projects as $project) {
-            $product = null;
+            $usedProduct = null;
             if ($project->getIdProduct()) {
-                $product = $productRepository->find($project->getIdProduct());
+                $usedProduct = $productRepository->find($project->getIdProduct());
             }
-            if (null === $product || Product::PRODUCT_BLEND !== $product->getLabel()) {
+            if (null === $usedProduct || Product::PRODUCT_BLEND !== $usedProduct->getLabel()) {
                 continue;
             }
             $lastIncidentStatus = $projectStatusHistoryRepository->findStatusLastOccurrence($project, [ProjectsStatus::PROBLEME]);

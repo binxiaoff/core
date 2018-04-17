@@ -5,7 +5,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager
+    TermsOfSaleManager, WireTransferOutManager
 };
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -150,6 +150,8 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $this->beneficialOwnerDeclaration = null;
 
@@ -235,13 +237,13 @@ class dossiersController extends bootstrap
             $this->aAnnualAccountsDates = [];
             $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             /** @var \Doctrine\Common\Collections\ArrayCollection analysts */
-            $this->analysts = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_RISK]);
+            $this->analysts = $userManager->getAnalysts();
             if (false === empty($this->projects->id_analyste) && $currentAnalyst = $userRepository->find($this->projects->id_analyste)) {
                 if (false === in_array($currentAnalyst, $this->analysts)) {
                     $this->analysts[] = $currentAnalyst;
                 }
             }
-            $this->salesPersons = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_COMMERCIAL]);
+            $this->salesPersons = $userManager->getSalesPersons();
             if (false === empty($this->projects->id_commercial) && $currentSalesPerson = $userRepository->find($this->projects->id_commercial)) {
                 if (false === in_array($currentSalesPerson, $this->salesPersons)) {
                     $this->salesPersons[] = $currentSalesPerson;
@@ -1372,13 +1374,13 @@ class dossiersController extends bootstrap
 
                 $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
                 $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner);
-                $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], serialize(['id_project' => $project->getIdProject()]));
+                $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
                 exit;
             } elseif (isset($this->params[0]) && 'nouveau' === $this->params[0]) {
                 $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner);
-                $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], serialize(['id_project' => $project->getIdProject()]));
+                $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
                 exit;
@@ -1388,11 +1390,11 @@ class dossiersController extends bootstrap
                 && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
             ) {
                 $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, null, $this->params[1]);
-                $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], serialize(['id_project' => $project->getIdProject()]));
+                $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
-                $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
+                $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser());
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
                 exit;

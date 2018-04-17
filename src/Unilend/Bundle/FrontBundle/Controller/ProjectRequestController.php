@@ -15,8 +15,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AttachmentType, Clients, Companies, Product, Projects, ProjectsStatus, Users
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ProjectRequestManager, ProjectStatusManager
+};
 use Unilend\Bundle\FrontBundle\Service\{
     DataLayerCollector, SourceManager
 };
@@ -97,10 +98,12 @@ class ProjectRequestController extends Controller
             }
 
             $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            $siret = $projectRequestManager->validateSiren($siren);
             $siren = $projectRequestManager->validateSiren($siren);
+            // We accept in the same field both siren and siret
+            $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
+            $siret = $siret === false ? null : $siret;
 
-            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret === false ? null : $siret, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
@@ -233,6 +236,16 @@ class ProjectRequestController extends Controller
 
         $session = $request->getSession()->get('projectRequest');
         $values  = isset($session['values']) ? $session['values'] : [];
+
+        if (null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
+            $this->get('logger')->error('An error occurred while creating project. Client or Company is empty', [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'id_project' => $project->getIdProject()
+            ]);
+
+            return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
+        }
 
         $template['form'] = [
             'errors' => isset($session['errors']) ? $session['errors'] : [],
@@ -1406,7 +1419,7 @@ class ProjectRequestController extends Controller
         /** @var ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
-        if ($project->getStatus() != $projectStatus) {
+        if ($project->getStatus() !== $projectStatus) {
             $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $project, 0, $message);
         }
 
@@ -1450,7 +1463,8 @@ class ProjectRequestController extends Controller
 
         $client = $company->getIdClientOwner();
 
-        $client->setEmail($email)
+        $client
+            ->setEmail($email)
             ->setCivilite($formOfAddress)
             ->setPrenom($firstName)
             ->setNom($lastName)
@@ -1459,13 +1473,15 @@ class ProjectRequestController extends Controller
             ->setIdLangue('fr')
             ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
 
-        $company->setEmailDirigeant($email)->setEmailFacture($email);
+        $company
+            ->setEmailDirigeant($email)
+            ->setEmailFacture($email);
 
         try {
             $entityManager->flush([$company, $client]);
         } catch (\Exception $exception) {
             $this->get('logger')->error('Cannot update the company.', [
-                'company_id' => $company->getIdCompany(),
+                'id_company' => $company->getIdCompany(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),

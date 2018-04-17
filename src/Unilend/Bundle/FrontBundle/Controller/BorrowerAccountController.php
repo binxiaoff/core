@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, Projects, ProjectsStatus, Users, Virements, WalletType
+    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectStatusManager
@@ -131,12 +131,12 @@ class BorrowerAccountController extends Controller
                     $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), $amount, $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
-                    $this->get('logger')->error('Creation project failed. Exception : ' . $exception->getMessage(), [
+                    $this->get('logger')->error('Project Creation failed. Exception : ' . $exception->getMessage(), [
                         'class'      => __CLASS__,
                         'function'   => __FUNCTION__,
                         'file'       => $exception->getFile(),
                         'line'       => $exception->getLine(),
-                        'company_id' => $company->getIdCompany()
+                        'id_company' => $company->getIdCompany()
                     ]);
 
                     return ['project_form' => $projectForm->createView()];

@@ -174,11 +174,11 @@ class CompanyManager
             $this->entityManager->getConnection()->rollBack();
             $this->logger->error(
                 'Could not create company for SIREN: ' . $siren . ' Error: ' . $exception->getMessage(), [
-                    'class' => __CLASS__,
-                    'function' => __FUNCTION__,
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine()
-                ]);
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
 
             throw $exception;
         }

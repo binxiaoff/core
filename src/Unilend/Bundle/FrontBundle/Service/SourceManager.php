@@ -88,7 +88,7 @@ class SourceManager
      *
      * @return string|null
      */
-    public function getSource($key)
+    public function getSource(string $key)
     {
         if (in_array($key, array_keys($this->sources))) {
             if ($request = $this->requestStack->getCurrentRequest()) {

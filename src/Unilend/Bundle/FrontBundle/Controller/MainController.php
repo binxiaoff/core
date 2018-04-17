@@ -232,10 +232,11 @@ class MainController extends Controller
             }
             // We accept in the same field both siren and siret
             $siret = $projectRequestManager->validateSiret($formData['siren']);
+            $siret = $siret === false ? null : $siret;
 
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret === false ? null : $siret, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
@@ -454,7 +455,7 @@ class MainController extends Controller
                     'email'              => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
                     'partner'            => $content['partenaire'],
                     'reasons'            => $borrowingReasons,
-                    'availableDurations' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
+                    'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
                 ],
             ],
         ];

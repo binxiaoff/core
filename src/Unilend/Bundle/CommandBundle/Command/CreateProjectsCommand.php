@@ -2,12 +2,12 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Users, UsersHistory
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand

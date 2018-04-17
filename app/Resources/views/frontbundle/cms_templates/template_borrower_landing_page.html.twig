@@ -115,8 +115,8 @@
                                     <div class="col-lg-8 col-md-8">
                                         <select id="borrower-lp-input-duration" name="duration" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
                                             <option value="">{% trans %} borrower-landing-page_duration-select {% endtrans %}</option>
-                                            {% for duration in form.values.availableDurations %}
-                                                <option value="{{ duration }}">{% transchoice duration with { '%count%' : duration } %} common_month {% endtranschoice %}</option>
+                                            {% for period in form.values.availablePeriods %}
+                                                <option value="{{ period }}">{% transchoice period with { '%count%' : period } %} common_month {% endtranschoice %}</option>
                                             {% endfor %}
                                         </select>
                                     </div>

@@ -121,12 +121,12 @@ class ProjectRequestManager
     /**
      * @param Users       $user
      * @param Partner     $partner
-     * @param null|string $amount
-     * @param null|string $siren
-     * @param null|string $siret
-     * @param null|string $email
-     * @param null|int    $durationInMonth
-     * @param null|int    $reason
+     * @param string|null $amount
+     * @param string|null $siren
+     * @param string|null $siret
+     * @param string|null $email
+     * @param int|null    $durationInMonth
+     * @param int|null    $reason
      *
      * @return Projects
      * @throws \Exception
@@ -176,7 +176,7 @@ class ProjectRequestManager
             }
         }
 
-        if (null !== $email && (empty($durationInMonth) || false === filter_var($durationInMonth, FILTER_VALIDATE_INT))) {
+        if (null !== $durationInMonth && (empty($durationInMonth) || false === filter_var($durationInMonth, FILTER_VALIDATE_INT))) {
             throw new \InvalidArgumentException('Invalid duration', self::EXCEPTION_CODE_INVALID_DURATION);
         }
 
