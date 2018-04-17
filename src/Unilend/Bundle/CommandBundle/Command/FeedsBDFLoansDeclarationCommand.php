@@ -581,13 +581,13 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     private function checkLoanContributorPercentage(?float $contributionAmount, ?float $partialLoanAmount): string
     {
         if ($partialLoanAmount === 0) {
-            throw new \Exception(sprintf('Wrong loan amount error in method: "%s", at line: %s', __METHOD__, __LINE__));
+            throw new \Exception('Wrong loan amount error. Loan amount cannot be 0');
         }
 
         $percentage = bcmul(bcdiv($contributionAmount, $partialLoanAmount, 4), 100, 4);
 
         if ($percentage > 100) {
-            throw new \Exception(sprintf('Wrong contributor percentage error in method: "%s", at line: %s. Value: %s ', __METHOD__, __LINE__, $percentage));
+            throw new \Exception('Wrong contributor percentage error. Percentage cannot exceed 100%, but calculated value is : ' . $percentage);
         }
 
         return str_pad(round($percentage, 0), 3, self::PADDING_NUMBER, STR_PAD_LEFT);
