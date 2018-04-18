@@ -229,6 +229,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <th>Montant</th>
                         <th>PDF</th>
                         <th>Factures</th>
+                        <?php if ($this->hasRepaymentAccess) : ?>
+                            <th>Remboursement</th>
+                        <?php endif; ?>
                         <th>&nbsp;</th>
                     </tr>
                     </thead>
@@ -258,6 +261,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Factures">
                                 </a>
                             </td>
+                            <?php if ($this->hasRepaymentAccess) : ?>
+                                <td align="center">
+                                    <a href="<?= $this->lurl ?>/remboursement/projet/<?= $project['id_project'] ?>">
+                                        <img src="<?= $this->surl ?>/images/admin/duplique.png" alt="Remboursement">
+                                    </a>
+                                </td>
+                            <?php endif; ?>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails">

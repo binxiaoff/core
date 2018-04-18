@@ -128,6 +128,7 @@ class projects extends projects_crud
         $sql = '
             SELECT
                 p.*,
+                co.id_client_owner,
                 co.siren,
                 co.name,
                 ps.label,
@@ -148,6 +149,7 @@ class projects extends projects_crud
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
+
         return $result;
     }
 

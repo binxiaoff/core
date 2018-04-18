@@ -102,6 +102,10 @@ class dossiersController extends bootstrap
 
         $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
+        $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
+        $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
+        $this->hasRepaymentAccess = $backOfficeUserManager->hasAccessToZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
+
         if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
             die;
@@ -1438,35 +1442,6 @@ class dossiersController extends bootstrap
         $this->bids      = $this->loadData('bids');
 
         $this->lProjects = $this->projects->selectProjectsByStatus([ProjectsStatus::EN_FUNDING]);
-    }
-
-    public function _remboursements()
-    {
-        $this->setView('remboursements');
-        $this->pageTitle = 'Remboursements';
-        $this->listing([ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT]);
-    }
-
-    public function _no_remb()
-    {
-        $this->setView('remboursements');
-        $this->pageTitle = 'Incidents de remboursement';
-        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
-    }
-
-    private function listing(array $aStatus)
-    {
-        $this->projects               = $this->loadData('projects');
-        $this->companies              = $this->loadData('companies');
-        $this->clients                = $this->loadData('clients');
-        $this->echeanciers            = $this->loadData('echeanciers');
-        $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-        if (isset($_POST['form_search_remb'])) {
-            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus, $_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
-        } else {
-            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus);
-        }
     }
 
     public function _detail_remb_preteur()

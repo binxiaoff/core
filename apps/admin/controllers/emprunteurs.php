@@ -180,6 +180,9 @@ class emprunteursController extends bootstrap
             $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+
+            $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
+            $this->hasRepaymentAccess = $backOfficeUserManager->hasAccessToZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             exit;
