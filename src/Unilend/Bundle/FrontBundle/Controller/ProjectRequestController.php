@@ -181,7 +181,7 @@ class ProjectRequestController extends Controller
         if ($project->getIdCompany()->getSiren()) {
             $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
         } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::COMPLETE_REQUEST);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
         } else {
             return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
         }
@@ -502,6 +502,10 @@ class ProjectRequestController extends Controller
 
         if ($project instanceof Response) {
             return $project;
+        }
+
+        if (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::COMPLETE_REQUEST);
         }
 
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -1380,6 +1384,7 @@ class ProjectRequestController extends Controller
                 break;
             case ProjectsStatus::INCOMPLETE_REQUEST:
                 if (empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
+                    var_dump('toto');die;
                     return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
                 } elseif (false === empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);

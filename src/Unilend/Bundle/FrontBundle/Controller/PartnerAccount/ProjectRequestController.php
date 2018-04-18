@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, PartnerProjectAttachment, Projects, ProjectsStatus, Users
+    BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -97,10 +97,14 @@ class ProjectRequestController extends Controller
 
             $entityManager->flush($project);
 
-            $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+            if ($siret) {
+                $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
-            if (null === $riskCheck) {
-                $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+                if (null === $riskCheck) {
+                    $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+                }
+            } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $project->getIdBorrowingMotive()) {
+                throw new \InvalidArgumentException();
             }
 
             return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
