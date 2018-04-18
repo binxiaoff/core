@@ -427,9 +427,9 @@ class EcheanciersRepository extends EntityRepository
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->where('e.idProject = :project')
             ->andWhere('e.status = :pending')
-            ->andWhere('e.dateEcheance >= :date')
+            ->andWhere('date(e.dateEcheance) > :date')
             ->setParameter('project', $project)
-            ->setParameter('date', $date)
+            ->setParameter('date', $date->format('Y-m-d'))
             ->setParameter('pending', Echeanciers::STATUS_PENDING)
             ->orderBy('e.ordre', 'ASC')
             ->setMaxResults(1);

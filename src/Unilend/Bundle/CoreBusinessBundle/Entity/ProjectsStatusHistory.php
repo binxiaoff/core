@@ -21,9 +21,12 @@ class ProjectsStatusHistory
     private $idProject;
 
     /**
-     * @var integer
+     * @var ProjectsStatus
      *
-     * @ORM\Column(name="id_project_status", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project_status", referencedColumnName="id_project_status")
+     * })
      */
     private $idProjectStatus;
 
@@ -100,11 +103,11 @@ class ProjectsStatusHistory
     /**
      * Set idProjectStatus
      *
-     * @param integer $idProjectStatus
+     * @param ProjectsStatus $idProjectStatus
      *
      * @return ProjectsStatusHistory
      */
-    public function setIdProjectStatus($idProjectStatus)
+    public function setIdProjectStatus(ProjectsStatus $idProjectStatus)
     {
         $this->idProjectStatus = $idProjectStatus;
 
@@ -114,7 +117,7 @@ class ProjectsStatusHistory
     /**
      * Get idProjectStatus
      *
-     * @return integer
+     * @return ProjectsStatus
      */
     public function getIdProjectStatus()
     {

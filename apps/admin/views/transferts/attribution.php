@@ -62,18 +62,6 @@
                     <label for="id_project">ID projet</label>
                     <input class="form-control" type="text" id="id_project" name="id_project">
                 </div>
-
-                <div class="form-group">
-                    <p style="margin-bottom: 5px;">Type de remboursement</p>
-                    <label style="display: inline-block; margin-right: 10px;">
-                        <input type="radio" name="type_remb" value="remboursement_anticipe">
-                        Anticipé
-                    </label>
-                    <label>
-                        <input type="radio" name="type_remb" value="regularisation">
-                        Régularisation
-                    </label>
-                </div>
             </fieldset>
             <div class="text-right">
                 <input type="hidden" name="id_reception" value="<?= $this->receptions->id_reception ?>">
@@ -122,11 +110,6 @@
 
     $('#project-form').submit(function (e) {
         e.preventDefault();
-
-        if ($('[name=type_remb]:checked').val() === undefined) {
-            alert('Vous devez renseigner le type de remboursement');
-            return;
-        }
 
         if ($('#id_project').val() === '') {
             alert('Vous devez renseigner le numéro de projet');
