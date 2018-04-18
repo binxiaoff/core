@@ -19,15 +19,15 @@ $doc.on('ready', function () {
   }
 
   function handleBorrowingReason(reasonSelect, sirenInput, sirenLabel, sirenRequiredMarker, franchiserCreationReasonId, shareBuyBackReasonId, defaultLabelValue, defaultLabelText, defaultRequiredValue) {
-    var reason = parseInt(reasonSelect.val());
-    switch (reason) {
+    switch (parseInt(reasonSelect.val())) {
       case franchiserCreationReasonId:
         sirenInput.attr('data-formvalidation-required', false)
-        sirenLabel.html(defaultLabelText)
+        sirenLabel.html(defaultLabelValue)
+        $('span[data-siren-required-marker]').hide()
         break
       case shareBuyBackReasonId:
         sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
-        sirenLabel.html(__.__('Target siren', 'targetSirenLabel')).append(sirenRequiredMarker)
+        sirenLabel.html(__.__('Target siren', 'targetSirenLabel')+'&nbsp').append(sirenRequiredMarker)
         break
       default:
         sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
