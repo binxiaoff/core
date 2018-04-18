@@ -51,7 +51,7 @@ class beneficiaires_effectifsController extends bootstrap
         $existingDeclarations                        = [];
 
         if (null !== $currentDeclaration) {
-            $currentOwners        = $this->formatOwnerList($currentDeclaration->getBeneficialOwner());
+            $currentOwners        = $this->formatOwnerList($currentDeclaration->getBeneficialOwners());
             $existingDeclarations = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findAllDeclarationsForCompany($company);
 
             if (empty($existingDeclarations)) {
@@ -78,6 +78,12 @@ class beneficiaires_effectifsController extends bootstrap
         $passportType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::CNI_PASSPORTE);
         $passport     = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($company->getIdClientOwner(), $passportType);
 
+        $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $company->getIdClientOwner()]);
+        $fiscalCountryId = 0;
+        if ($address) {
+            $fiscalCountryId = $address->getIdPaysFiscal();
+        }
+
         $this->render(null, [
             'companyOwner'         => $company->getIdClientOwner(),
             'companyOwnerAddress'  => $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findBy(['idClient' => $company->getIdClientOwner()]),
@@ -89,7 +95,8 @@ class beneficiaires_effectifsController extends bootstrap
             'company'              => $company,
             'projectDeclarations'  => $existingDeclarations,
             'emailStatusErrors'    => empty($emailStatusErrors) ? null : $emailStatusErrors,
-            'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess
+            'emailStatusSuccess'   => empty($emailStatusSuccess) ? null : $emailStatusSuccess,
+            'fiscalCountryId'      => $fiscalCountryId
         ]);
     }
 
@@ -475,7 +482,9 @@ class beneficiaires_effectifsController extends bootstrap
             ];
         }
 
-        switch ($owner->getIdDeclaration()->getStatus()) {
+        $currentDeclaration = $owner->getIdDeclaration();
+
+        switch ($currentDeclaration->getStatus()) {
             case CompanyBeneficialOwnerDeclaration::STATUS_PENDING:
                 $declaration = $owner->getIdDeclaration();
 
@@ -485,15 +494,24 @@ class beneficiaires_effectifsController extends bootstrap
                 $this->get('unilend.service.beneficial_owner_manager')->modifyPendingCompanyDeclaration($declaration);
                 break;
             case CompanyBeneficialOwnerDeclaration::STATUS_VALIDATED:
-                $newDeclaration = clone $owner->getIdDeclaration();
+                $currentDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED);
+                $entityManager->flush($currentDeclaration);
+
+                $newDeclaration       = clone $owner->getIdDeclaration();
+                $newDeclarationOwners = $newDeclaration->getBeneficialOwners();
+                $newDeclarationOwners->removeElement($owner);
+
                 $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
 
                 $entityManager->persist($newDeclaration);
                 $entityManager->flush($newDeclaration);
 
-                $ownerToArchive = $entityManager->getRepository('UnilendCoreBusinessBundle:BeneficialOwner')->findOneBy(['idClient' => $owner->getIdClient(), 'idDeclaration' => $newDeclaration->getId()]);
-                $entityManager->remove($ownerToArchive);
-                $entityManager->flush($ownerToArchive);
+                foreach ($newDeclarationOwners as $newDeclarationOwner) {
+                    $entityManager->detach($newDeclarationOwner);
+                    $newDeclarationOwner->setIdDeclaration($newDeclaration);
+                    $entityManager->persist($newDeclarationOwner);
+                    $entityManager->flush($newDeclarationOwner);
+                }
                 break;
             default:
                 break;
