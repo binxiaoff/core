@@ -206,14 +206,6 @@ class bootstrap extends Controller
                     'uri'   => 'dossiers/funding '
                 ],
                 [
-                    'title' => 'Remboursements',
-                    'uri'   => 'dossiers/remboursements'
-                ],
-                [
-                    'title' => 'Erreurs remboursements',
-                    'uri'   => 'dossiers/no_remb'
-                ],
-                [
                     'title' => 'Suivi statuts projets',
                     'uri'   => 'dossiers/status'
                 ],
