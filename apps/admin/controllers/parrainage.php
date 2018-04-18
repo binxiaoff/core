@@ -313,12 +313,17 @@ class parrainageController extends bootstrap
 
             try {
                 if (OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE == $typeReward) {
-                    $sponsorshipManager->attributeSponseeReward($sponsorship->getIdClientSponsee());
-                    $_SESSION['pay_out_sponsorship']['success'] = 'La prime du filleul a été versée';
+                    if ($sponsorshipManager->attributeSponseeReward($sponsorship->getIdClientSponsee())) {
+                        $_SESSION['pay_out_sponsorship']['success'] = 'La prime du filleul a été versée';
+                    } else {
+                        $_SESSION['pay_out_sponsorship']['errors'][] = 'La prime du filleul n\'a pas pu être versée';
+                    }
                 }
                 if (OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR == $typeReward) {
                     if ($sponsorshipManager->attributeSponsorReward($sponsorship->getIdClientSponsee())) {
                         $_SESSION['pay_out_sponsorship']['success'] = 'La prime du parrain a été versée';
+                    } else {
+                        $_SESSION['pay_out_sponsorship']['errors'][] = 'La prime du parrain n\'a pas pu être versée';
                     }
                 }
             } catch (\Exception $exception) {

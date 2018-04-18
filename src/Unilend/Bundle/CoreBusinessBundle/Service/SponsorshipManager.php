@@ -4,20 +4,14 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Sponsorship;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipBlacklist;
-use Unilend\Bundle\CoreBusinessBundle\Entity\SponsorshipCampaign;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, OperationSubType, OperationType, Sponsorship, SponsorshipBlacklist, SponsorshipCampaign, Users, WalletType
+};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
+    TemplateMessage, TemplateMessageProvider
+};
 
 class SponsorshipManager
 {
@@ -43,8 +37,6 @@ class SponsorshipManager
     private $logger;
     /** @var RouterInterface */
     private $router;
-    private $staticUrl;
-    private $frontUrl;
 
     /**
      * @param EntityManager           $entityManager
@@ -55,9 +47,6 @@ class SponsorshipManager
      * @param \Swift_Mailer           $mailer
      * @param LoggerInterface         $logger
      * @param RouterInterface         $router
-     * @param Packages                $assetsPackages
-     * @param                         $schema
-     * @param                         $frontHost
      */
     public function __construct(
         EntityManager $entityManager,
@@ -161,7 +150,7 @@ class SponsorshipManager
      * @return bool
      * @throws \Exception
      */
-    public function attributeSponsorReward(Clients $sponsee)
+    public function attributeSponsorReward(Clients $sponsee): bool
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
         if (null === $sponsorship) {
@@ -178,23 +167,29 @@ class SponsorshipManager
             throw new \Exception('Client ' . $sponsorship->getIdClientSponsor()->getIdClient() . ' has no lender wallet (only lenders can be sponsors)', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
-        $this->operationManager->newSponsorReward($sponsorWallet, $sponsorship);
+        if ($this->isEnoughMoneyAvailable($sponsorship->getIdCampaign()->getAmountSponsor())) {
+            $this->operationManager->newSponsorReward($sponsorWallet, $sponsorship);
 
-        $sponsorship->setStatus(Sponsorship::STATUS_SPONSOR_PAID);
+            $sponsorship->setStatus(Sponsorship::STATUS_SPONSOR_PAID);
 
-        $this->entityManager->flush($sponsorship);
+            $this->entityManager->flush($sponsorship);
 
-        $this->sendSponsorRewardEmail($sponsorship);
+            $this->sendSponsorRewardEmail($sponsorship);
 
-        return true;
+            return true;
+        }
+
+        return false;
     }
 
     /**
      * @param Clients $sponsee
      *
+     * @return bool
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function attributeSponseeReward(Clients $sponsee)
+    public function attributeSponseeReward(Clients $sponsee): bool
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $sponsee]);
         if (null === $sponsorship) {
@@ -215,20 +210,26 @@ class SponsorshipManager
             throw new \Exception('Client ' . $sponsorship->getIdClientSponsee()->getIdClient() . ' has already received the sponsee reward', self::SPONSORSHIP_MANAGER_EXCEPTION_CODE);
         }
 
-        $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
-        $sponsorship->setStatus(Sponsorship::STATUS_SPONSEE_PAID);
-        $this->entityManager->flush($sponsorship);
-        $this->sendSponseeRewardEmail($sponsorship);
+        if ($this->isEnoughMoneyAvailable($sponsorship->getIdCampaign()->getAmountSponsee())) {
+            $this->operationManager->newSponseeReward($sponseeWallet, $sponsorship);
+            $sponsorship->setStatus(Sponsorship::STATUS_SPONSEE_PAID);
+            $this->entityManager->flush($sponsorship);
+            $this->sendSponseeRewardEmail($sponsorship);
 
-        if (false === $this->isClientBlacklistedForSponsorship($sponsorship)) {
-            $this->informSponsorAboutSponsee($sponsorship);
+            if (false === $this->isClientBlacklistedForSponsorship($sponsorship)) {
+                $this->informSponsorAboutSponsee($sponsorship);
+            }
+
+            return true;
         }
+
+        return false;
     }
 
     /**
      * @param Sponsorship $sponsorship
      */
-    private function sendSponsorRewardEmail(Sponsorship $sponsorship)
+    private function sendSponsorRewardEmail(Sponsorship $sponsorship): void
     {
         $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keywords = [
@@ -257,7 +258,7 @@ class SponsorshipManager
     /**
      * @param Sponsorship $sponsorship
      */
-    private function sendSponseeRewardEmail(Sponsorship $sponsorship)
+    private function sendSponseeRewardEmail(Sponsorship $sponsorship): void
     {
         $wallet   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
@@ -288,7 +289,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function cancelSponsorReward(Sponsorship $sponsorship)
+    public function cancelSponsorReward(Sponsorship $sponsorship): bool
     {
         $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $rewardCancelSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')
@@ -316,7 +317,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function cancelSponseeReward(Sponsorship $sponsorship)
+    public function cancelSponseeReward(Sponsorship $sponsorship): bool
     {
         $sponseeWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsee(), WalletType::LENDER);
         $rewardCancelSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')
@@ -341,8 +342,10 @@ class SponsorshipManager
      * @param Clients                  $client
      * @param Users                    $user
      * @param SponsorshipCampaign|null $campaign
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function blacklistClientAsSponsor(Clients $client, Users $user, SponsorshipCampaign $campaign = null)
+    public function blacklistClientAsSponsor(Clients $client, Users $user, ?SponsorshipCampaign $campaign = null): void
     {
         $blacklisted = new SponsorshipBlacklist();
         $blacklisted->setIdClient($client)
@@ -361,8 +364,10 @@ class SponsorshipManager
      * @param string  $email
      * @param string  $sponseeNames
      * @param string  $message
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function sendSponsorshipInvitation(Clients $sponsor, $email, $sponseeNames, $message)
+    public function sendSponsorshipInvitation(Clients $sponsor, string $email, string $sponseeNames, string $message): void
     {
         $currentCampaign = $this->getCurrentSponsorshipCampaign();
 
@@ -393,7 +398,7 @@ class SponsorshipManager
     /**
      * @param Sponsorship $sponsorship
      */
-    private function informSponsorAboutSponsee(Sponsorship $sponsorship)
+    private function informSponsorAboutSponsee(Sponsorship $sponsorship): void
     {
         $wallet          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $keyWords = [
@@ -421,7 +426,7 @@ class SponsorshipManager
     /**
      * @param Clients $sponsor
      */
-    private function sendMaxSponseeNotification(Clients $sponsor)
+    private function sendMaxSponseeNotification(Clients $sponsor): void
     {
         $wallet          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsor, WalletType::LENDER);
         $keyWords        = [
@@ -447,7 +452,7 @@ class SponsorshipManager
     /**
      * @param Clients $sponsor
      */
-    private function sendInternalMaxSponseeNotification(Clients $sponsor)
+    private function sendInternalMaxSponseeNotification(Clients $sponsor): void
     {
         $keyWords = [
             'sponsorFirstName' => $sponsor->getPrenom(),
@@ -472,10 +477,14 @@ class SponsorshipManager
     }
 
     /**
-     * @param Clients $sponsee
-     * @param         $sponsorCode
+     * @param Clients                  $sponsee
+     * @param string                   $sponsorCode
+     * @param SponsorshipCampaign|null $campaign
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createSponsorship(Clients $sponsee, $sponsorCode, SponsorshipCampaign $campaign = null)
+    public function createSponsorship(Clients $sponsee, string $sponsorCode, ?SponsorshipCampaign $campaign = null): void
     {
         $sponsor = $this->getSponsorBySponsorCode($sponsorCode);
 
@@ -499,8 +508,10 @@ class SponsorshipManager
      * @param Sponsorship $sponsorship
      *
      * @return array
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function isEligibleForSponsorReward(Sponsorship $sponsorship)
+    private function isEligibleForSponsorReward(Sponsorship $sponsorship): array
     {
         if ($this->isClientBlacklistedForSponsorship($sponsorship)) {
             return ['isEligible' => false, 'reason' => 'Client is blacklisted'];
@@ -531,7 +542,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function hasReachedMaxAmountSponsee(Sponsorship $sponsorship)
+    public function hasReachedMaxAmountSponsee(Sponsorship $sponsorship): bool
     {
         $walletRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -553,7 +564,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function isEligibleForSponseeReward(Clients $client)
+    public function isEligibleForSponseeReward(Clients $client): bool
     {
         $sponsorship = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Sponsorship')->findOneBy(['idClientSponsee' => $client]);
         if (null === $sponsorship) {
@@ -572,7 +583,7 @@ class SponsorshipManager
      *
      * @return bool
      */
-    public function isClientBlacklistedForSponsorship(Sponsorship $sponsorship)
+    public function isClientBlacklistedForSponsorship(Sponsorship $sponsorship): bool
     {
         $blacklistRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist');
         $blacklist           = $blacklistRepository->findBlacklistForClient($sponsorship->getIdClientSponsor(), $sponsorship->getIdCampaign());
@@ -584,8 +595,9 @@ class SponsorshipManager
      * @param Clients $client
      *
      * @return bool
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function isClientCurrentlyBlacklisted(Clients $client)
+    public function isClientCurrentlyBlacklisted(Clients $client): bool
     {
         $currentCampaign     = $this->getCurrentSponsorshipCampaign();
         $blacklistRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:SponsorshipBlacklist');
@@ -599,7 +611,7 @@ class SponsorshipManager
      *
      * @return float
      */
-    public function getUnusedSponseeRewardAmount(Clients $client)
+    public function getUnusedSponseeRewardAmount(Clients $client): float
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $sponseeWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
@@ -623,7 +635,7 @@ class SponsorshipManager
      *
      * @return float
      */
-    public function getUnusedSponsorRewardAmount(Clients $client)
+    public function getUnusedSponsorRewardAmount(Clients $client): float
     {
         $unusedAmount        = 0;
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -658,7 +670,7 @@ class SponsorshipManager
      *
      * @return float
      */
-    public function getUnusedSponsorRewardAmountFromSponsorship(Sponsorship $sponsorship)
+    public function getUnusedSponsorRewardAmountFromSponsorship(Sponsorship $sponsorship): float
     {
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $sponsorWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
@@ -683,9 +695,9 @@ class SponsorshipManager
     /**
      * @param string $sponsorCode
      *
-     * @return null|Clients
+     * @return Clients|null
      */
-    public function getSponsorBySponsorCode($sponsorCode)
+    public function getSponsorBySponsorCode(string $sponsorCode): ?Clients
     {
         $sponsor = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['sponsorCode' => $sponsorCode]);
         if (null !== $sponsor) {
@@ -698,5 +710,18 @@ class SponsorshipManager
         }
 
         return null;
+    }
+
+    /**
+     * @param string $amount
+     *
+     * @return bool
+     */
+    private function isEnoughMoneyAvailable(string $amount): bool
+    {
+        $unilendPromotionalWalletType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::UNILEND_PROMOTIONAL_OPERATION]);
+        $unilendPromotionalWallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idType' => $unilendPromotionalWalletType]);
+
+        return $unilendPromotionalWallet->getAvailableBalance() >= bcdiv($amount, 100, 2);
     }
 }
