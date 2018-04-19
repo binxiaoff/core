@@ -125,7 +125,7 @@
                                                                 {% trans %} project-request_step-1-company-capital-field-label {% endtrans %}
                                                             </div>
                                                             <div class="input-group">
-                                                                <strong>{{ project.idCompany.capital }}</strong>
+                                                                <strong>{{ project.idCompany.capital|localizedcurrency('EUR') }}</strong>
                                                             </div><!-- /.input-group -->
                                                         </div><!-- /.form-field -->
                                                     {% endif %}
