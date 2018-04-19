@@ -51,9 +51,9 @@ classNames: 'user-preter-profile'
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
                                 <dd id="profile-fiscalite-bank-origin-output">{% if lender.fiscal_info.fundsOrigin[client.fundsOrigin] is defined %}{{ lender.fiscal_info.fundsOrigin[client.fundsOrigin] }}{% else %}-{% endif %}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-bic-output">{{ bankAccount.bic }}</dd>
+                                <dd id="profile-fiscalite-bank-bic-output">{{ bankAccount.bic|default('') }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
-                                <dd id="profile-fiscalite-bank-iban-output">{{ bankAccount.iban }}</dd>
+                                <dd id="profile-fiscalite-bank-iban-output">{{ bankAccount.iban|default('') }}</dd>
                                 <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
                                 {% if lender.fiscal_info.rib %}
                                 <dd id="profile-fiscalite-bank-fichier-rib-output">
