@@ -207,6 +207,7 @@ class ProjectRequestController extends Controller
         }
 
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \settings $settings */
         $settings = $entityManagerSimulator->getRepository('settings');
 
@@ -226,10 +227,6 @@ class ProjectRequestController extends Controller
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['id_tree' => $settings->value]);
         $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
-
-        /** @var \borrowing_motive $borrowingMotive */
-        $borrowingMotive               = $entityManagerSimulator->getRepository('borrowing_motive');
-        $template['borrowing_motives'] = $borrowingMotive->select('rank');
 
         $settings->get('Durée des prêts autorisées', 'type');
         $template['loan_periods'] = explode(',', $settings->value);
@@ -274,14 +271,14 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        $template['project'] = [
-            'company_name'           => $project->getIdCompany()->getName(),
-            'siren'                  => $project->getIdCompany()->getSiren(),
-            'amount'                 => $project->getAmount(),
-            'motive'                 => $project->getIdBorrowingMotive(),
-            'averageFundingDuration' => $this->get('unilend.service.project_manager')->getAverageFundingDuration($project->getAmount()),
-            'hash'                   => $project->getHash()
-        ];
+        $template['project']                = $project;
+        $template['averageFundingDuration'] = $this->get('unilend.service.project_manager')->getAverageFundingDuration($project->getAmount());
+
+        $lastBalanceSheet = null;
+        if ($project->getIdDernierBilan()) {
+            $lastBalanceSheet = $entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans')->find($project->getIdDernierBilan());
+        }
+        $template['lastBalanceSheet'] = $lastBalanceSheet;
 
         $request->getSession()->remove('projectRequest');
 
