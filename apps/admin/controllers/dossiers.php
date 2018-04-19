@@ -96,7 +96,7 @@ class dossiersController extends bootstrap
             $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
             $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial,
                 $iNbStartPagination, $this->nb_lignes);
-        } elseif (isset($this->params[0])) {
+        } elseif (isset($this->params[0]) && 1 === preg_match('/[0-9,]+/', $this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 

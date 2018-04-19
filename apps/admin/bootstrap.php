@@ -1,10 +1,9 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\LoginConnectionAdmin;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UserAccess;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones
+};
 
 class bootstrap extends Controller
 {
@@ -204,6 +203,13 @@ class bootstrap extends Controller
                 [
                     'title' => 'Projets en funding',
                     'uri'   => 'dossiers/funding '
+                ],
+                [    'title' => 'Remboursements',
+                     'uri'   => 'dossiers/'.ProjectsStatus::FUNDE.','.ProjectsStatus::REMBOURSEMENT.','.ProjectsStatus::REMBOURSE.','.ProjectsStatus::REMBOURSEMENT_ANTICIPE
+                ],
+                [
+                    'title' => 'Erreurs remboursements',
+                    'uri'   => 'dossiers/'.ProjectsStatus::PROBLEME.','.ProjectsStatus::LOSS
                 ],
                 [
                     'title' => 'Suivi statuts projets',
