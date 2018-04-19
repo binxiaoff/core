@@ -271,7 +271,7 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        $template['project'] = $project;
+        $template['project']                = $project;
         $template['averageFundingDuration'] = $this->get('unilend.service.project_manager')->getAverageFundingDuration($project->getAmount());
 
         $lastBalanceSheet = null;
