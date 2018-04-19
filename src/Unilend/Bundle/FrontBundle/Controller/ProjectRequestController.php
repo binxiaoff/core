@@ -1384,7 +1384,6 @@ class ProjectRequestController extends Controller
                 break;
             case ProjectsStatus::INCOMPLETE_REQUEST:
                 if (empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_SIMULATOR_START) {
-                    var_dump('toto');die;
                     return $this->redirectToRoute(self::PAGE_ROUTE_SIMULATOR_START, ['hash' => $hash]);
                 } elseif (false === empty($project->getIdCompanyRatingHistory()) && $route !== self::PAGE_ROUTE_CONTACT && empty($request->getSession()->get('partnerProjectRequest'))) {
                     return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $hash]);
