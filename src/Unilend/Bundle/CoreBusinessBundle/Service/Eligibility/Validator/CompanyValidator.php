@@ -635,7 +635,6 @@ class CompanyValidator
      */
     private function checkCurrentExecutivesEventsOtherManagerCompanies($depositorSiren)
     {
-        $this->externalDataManager->refreshExecutiveChanges($depositorSiren);
         $otherCompaniesOfActiveExecutives = $this->externalDataManager->getAllMandatesExceptGivenSirenOnActiveExecutives($depositorSiren, new \DateTime('5 years ago'));
 
         try {
@@ -669,7 +668,6 @@ class CompanyValidator
      */
     private function checkPreviousExecutivesHistory($siren)
     {
-        $this->externalDataManager->refreshExecutiveChanges($siren);
         $allMandates = $this->externalDataManager->getAllPreviousExecutivesMandatesSince($siren, new \DateTime('3 years ago'));
 
         try {

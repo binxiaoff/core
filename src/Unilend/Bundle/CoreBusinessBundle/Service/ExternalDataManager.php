@@ -335,21 +335,6 @@ class ExternalDataManager
     }
 
     /**
-     * @param string $siren
-     *
-     * @return Executive[]|array
-     */
-    public function getExecutives($siren)
-    {
-        $executives = $this->infolegaleManager->getExecutives($siren);
-        if (null !== $executives) {
-            return $executives->getExecutives();
-        }
-
-        return [];
-    }
-
-    /**
      * @param int $executiveId
      *
      * @return Mandate[]|array
@@ -417,7 +402,9 @@ class ExternalDataManager
                 if (null === $change) {
                     try {
                         $change = new InfolegaleExecutivePersonalChange();
-                        $change->setIdExecutive($executive->getExecutiveId())
+                        $change
+                            ->setIdExecutive($executive->getExecutiveId())
+                            ->setTitle($executive->getTitle())
                             ->setFirstName($executive->getFirstName())
                             ->setLastName($executive->getName())
                             ->setSiren($mandate->getSiren())
@@ -433,6 +420,8 @@ class ExternalDataManager
                         );
                         continue;
                     }
+                } elseif (null === $change->getTitle() && false === empty($executive->getTitle())) { // As we added the "title" column after the table had been created, we need to catch it up.
+                    $change->setTitle($executive->getTitle());
                 }
 
                 if (null === $change->getNominated()) {
@@ -451,9 +440,12 @@ class ExternalDataManager
      * @param \DateTime $sinceDate
      *
      * @return array
+     * @throws \Exception
      */
     public function getAllMandatesExceptGivenSirenOnActiveExecutives($siren, \DateTime $sinceDate) : array
     {
+        $this->refreshExecutiveChanges($siren);
+
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
             ->getAllMandatesExceptGivenSirenOnActiveExecutives($siren, $sinceDate);
     }
@@ -463,9 +455,12 @@ class ExternalDataManager
      * @param $sinceDate
      *
      * @return InfolegaleExecutivePersonalChange[]
+     * @throws \Exception
      */
     public function getAllPreviousExecutivesMandatesSince($siren, $sinceDate) : array
     {
+        $this->refreshExecutiveChanges($siren);
+
         $previousExecutives = $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')
             ->getPreviousExecutivesLeftAfter($siren, $sinceDate);
 
@@ -658,5 +653,18 @@ class ExternalDataManager
                 ['method' => __METHOD__, 'id_company' => $this->companyRatingHistory->getIdCompany()->getIdCompany(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return iterable
+     * @throws \Exception
+     */
+    public function getActiveExecutives(string $siren): iterable
+    {
+        $this->refreshExecutiveChanges($siren);
+
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
     }
 }

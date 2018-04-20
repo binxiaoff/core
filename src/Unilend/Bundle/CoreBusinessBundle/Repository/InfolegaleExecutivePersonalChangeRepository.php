@@ -21,13 +21,14 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
     public function getActiveExecutives(string $siren) : array
     {
         $qb = $this->createQueryBuilder('iepc');
-        $qb->select('DISTINCT iepc.idExecutive')
+        $qb->distinct()
             ->where('iepc.siren = :siren')
             ->andWhere('iepc.ended IS NULL')
             ->setParameter('siren', $siren);
 
         return $qb->getQuery()->getArrayResult();
     }
+
 
     /**
      * @param string    $siren

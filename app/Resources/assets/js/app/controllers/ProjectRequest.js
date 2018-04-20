@@ -3,25 +3,53 @@
  */
 
 var $ = require('jquery')
-var Utility = require('Utility')
-
 var $doc = $(document)
 
 $doc.on('ready', function () {
-  // Show/hide manager details panel and confirm TOS checkbox if user is/is not manager
-  function checkIsManager() {
-    if ($('#form-project-create input[name="manager"]:checked').val() === 'no') {
-      $('#form-project-create .toggle-if-not-manager').collapse('show')
-      $('#form-project-create .toggle-if-manager').collapse('hide')
+  function autofillExecutive() {
+    var executiveSelector = $('#identity-executive-selector');
+    var titleField = $('[name=title]'),
+      lastNameField = $('[name=lastName]'),
+      firstNameField = $('[name=firstName]'),
+      functionField = $('[name=function]'),
+      executiveContent = $('.toggle-if-executive'),
+      selectedExecutive = executiveSelector.find(':selected')
+
+    if (0 === executiveSelector.length || '' === executiveSelector.val()) {
+      titleField.children().prop('disabled', false);
+      lastNameField.prop('readonly', false)
+      firstNameField.prop('readonly', false)
+      functionField.prop('readonly', false)
+      executiveContent.collapse('hide')
     } else {
-      $('#form-project-create .toggle-if-not-manager').collapse('hide')
-      $('#form-project-create .toggle-if-manager').collapse('show')
+      titleField.filter(':not(:checked)').prop('disabled', true);
+      titleField.filter(':checked').prop('disabled', false);
+      lastNameField.prop('readonly', true).val(selectedExecutive.data('executiveLastName'))
+      firstNameField.prop('readonly', true).val(selectedExecutive.data('executiveFirstName'))
+      functionField.prop('readonly', true).val(selectedExecutive.data('executiveFunction'))
+      executiveContent.collapse('show')
     }
+
+    if ('M' === selectedExecutive.data('executiveTitle')) {
+      titleField.filter('[value="M."]').prop('checked', true)
+    } else {
+      titleField.filter('[value=Mme]').prop('checked', true)
+    }
+    titleField.filter(':not(:checked)').prop('disabled', true)
+    titleField.filter(':checked').prop('disabled', false)
+    if (0 === executiveSelector.length || '' === executiveSelector.val()) {
+      titleField.filter(':not(:checked)').prop('disabled', false)
+    }
+
+    lastNameField.val(selectedExecutive.data('executiveLastName'))
+    firstNameField.val(selectedExecutive.data('executiveFirstName'))
+    functionField.val(selectedExecutive.data('executiveFunction'))
   }
 
-  checkIsManager()
+  autofillExecutive()
 
-  $doc.on('change', '#form-project-create input[name="manager"]', function () {
-    checkIsManager()
+  $doc.on('change', '#identity-executive-selector', function () {
+    $('#form-project-create-1').uiFormValidation('clearAll')
+    autofillExecutive()
   })
 })

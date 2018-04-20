@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, Product, Projects, ProjectsStatus, Users
+    AttachmentType, Clients, Companies, InfolegaleExecutivePersonalChange, Prescripteurs, Product, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -21,6 +21,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{
 use Unilend\Bundle\FrontBundle\Service\{
     DataLayerCollector, SourceManager
 };
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
 use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
@@ -206,30 +207,21 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
+        $advisorClient = null;
         if (false === empty($project->getIdPrescripteur())) {
-            /** @var \prescripteurs $advisor */
-            $advisor = $entityManagerSimulator->getRepository('prescripteurs');
-            /** @var \clients $advisorClient */
-            $advisorClient = $entityManagerSimulator->getRepository('clients');
-
-            $advisor->get($project->getIdPrescripteur());
-            $advisorClient->get($advisor->id_client);
+            $advisor       = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
+            $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
         }
 
-        $settings->get('Lien conditions generales depot dossier', 'type');
+        $settingsRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+        $treeId                         = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
+        $tree                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree')->findOneBy(['idTree' => $treeId->getValue()]);
+        $template['terms_of_sale_link'] = $this->generateUrl($tree->getSlug());
 
-        /** @var \tree $tree */
-        $tree = $entityManagerSimulator->getRepository('tree');
-        $tree->get(['id_tree' => $settings->value]);
-        $template['terms_of_sale_link'] = $this->generateUrl($tree->slug);
-
-        $settings->get('Durée des prêts autorisées', 'type');
-        $template['loan_periods'] = explode(',', $settings->value);
+        $availablePeriods         = $settingsRepository->findOneBy(['type' => 'Durée des prêts autorisées']);
+        $template['loan_periods'] = explode(',', $availablePeriods->getValue());
 
         $session = $request->getSession()->get('projectRequest');
         $values  = isset($session['values']) ? $session['values'] : [];
@@ -244,29 +236,47 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
 
+        $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
+        $firstExecutiveFound          = $template['activeExecutives'][0] ?? null;
+
+        $contact   = $advisorClient ?? $project->getIdCompany()->getIdClientOwner();
+        $title     = $values['contact']['title'] ?? $contact->getCivilite();
+        $lastName  = $values['contact']['lastname'] ?? $contact->getNom();
+        $firstName = $values['contact']['firstname'] ?? $contact->getPrenom();
+        $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($contact->getEmail());
+        $mobile    = $values['contact']['mobile'] ?? $contact->getMobile();
+        $function  = $values['contact']['function'] ?? $contact->getFonction();
+
+        // If one (last name) of these fields is empty, we can consider that all the field is empty
+        if (empty($lastName) && null !== $firstExecutiveFound) {
+            $title     = $firstExecutiveFound['title'];
+            $lastName  = $firstExecutiveFound['lastName'];
+            $firstName = $firstExecutiveFound['firstName'];
+            $function  = $firstExecutiveFound['position'];
+        }
+
         $template['form'] = [
             'errors' => isset($session['errors']) ? $session['errors'] : [],
             'values' => [
                 'contact' => [
-                    'civility'  => isset($values['contact']['civility']) ? $values['contact']['civility'] : $project->getIdCompany()->getIdClientOwner()->getCivilite(),
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
-                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
-                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
+                    'title'     => $title,
+                    'lastName'  => $lastName,
+                    'firstName' => $firstName,
+                    'email'     => $email,
+                    'mobile'    => $mobile,
+                    'function'  => $function
                 ],
-                'manager' => isset($values['manager']) ? $values['manager'] : (isset($advisorClient) ? 'no' : 'yes'),
-                'advisor' => [
-                    'civility'  => isset($values['advisor']['civility']) ? $values['advisor']['civility'] : (isset($advisorClient) ? $advisorClient->civilite : ''),
-                    'lastname'  => isset($values['advisor']['lastname']) ? $values['advisor']['lastname'] : (isset($advisorClient) ? $advisorClient->nom : ''),
-                    'firstname' => isset($values['advisor']['firstname']) ? $values['advisor']['firstname'] : (isset($advisorClient) ? $advisorClient->prenom : ''),
-                    'email'     => isset($values['advisor']['email']) ? $values['advisor']['email'] : (isset($advisorClient) ? $this->removeEmailSuffix($advisorClient->email) : ''),
-                    'mobile'    => isset($values['advisor']['mobile']) ? $values['advisor']['mobile'] : (isset($advisorClient) ? $advisorClient->telephone : ''),
-                    'function'  => isset($values['advisor']['function']) ? $values['advisor']['function'] : (isset($advisorClient) ? $advisorClient->fonction : '')
+                'otherContact' => [
+                    'title'     => $advisorClient ? $advisorClient->getCivilite() : '',
+                    'lastName'  => $advisorClient ? $advisorClient->getNom() : '',
+                    'firstName' => $advisorClient ? $advisorClient->getPrenom() : '',
+                    'email'     => $advisorClient ? $this->removeEmailSuffix($advisorClient->getEmail()) : '',
+                    'mobile'    => $advisorClient ? $advisorClient->getMobile() : '',
+                    'function'  => $advisorClient ? $advisorClient->getFonction() : ''
                 ],
                 'project' => [
-                    'duration'    => isset($values['project']['duration']) ? $values['project']['duration'] : $project->getPeriod(),
-                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $project->getComments()
+                    'duration'    => $values['project']['duration'] ?? $project->getPeriod(),
+                    'description' => $values['project']['description'] ?? $project->getComments()
                 ]
             ]
         ];
@@ -304,62 +314,44 @@ class ProjectRequestController extends Controller
 
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
 
-        $settings->get('Durée des prêts autorisées', 'type');
-        $loanPeriods = explode(',', $settings->value);
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+
+        $availablePeriods = $settingsRepository->findOneBy(['type' => 'Durée des prêts autorisées']);
+
+        $title       = $request->request->get('title');
+        $lastName    = $request->request->get('lastName');
+        $firstName   = $request->request->get('firstName');
+        $email       = $request->request->get('email', FILTER_VALIDATE_EMAIL);
+        $mobile      = $request->request->filter('mobile');
+        $function    = $request->request->get('function');
+        $duration    = $request->request->get('duration');
+        $description = $request->request->get('description');
 
         $errors = [];
-
-        if (empty($request->request->get('contact')['civility']) || false === in_array($request->request->get('contact')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
-            $errors['contact']['civility'] = true;
+        if (empty($title) || false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
+            $errors['contact']['title'] = true;
         }
-        if (empty($request->request->get('contact')['lastname'])) {
-            $errors['contact']['lastname'] = true;
+        if (empty($lastName)) {
+            $errors['contact']['lastName'] = true;
         }
-        if (empty($request->request->get('contact')['firstname'])) {
-            $errors['contact']['firstname'] = true;
+        if (empty($firstName)) {
+            $errors['contact']['firstName'] = true;
         }
-        if (empty($request->request->get('contact')['email']) || false === filter_var($request->request->get('contact')['email'], FILTER_VALIDATE_EMAIL)) {
+        if (empty($email)) {
             $errors['contact']['email'] = true;
         }
-        if (empty($request->request->get('contact')['mobile'])) {
+        if (empty($mobile)) {
             $errors['contact']['mobile'] = true;
         }
-        if (empty($request->request->get('contact')['function'])) {
+        if (empty($function)) {
             $errors['contact']['function'] = true;
         }
-        if (empty($request->request->get('manager')) || false === in_array($request->request->get('manager'), ['yes', 'no'])) {
-            $errors['manager'] = true;
-        }
-        if (empty($request->request->get('project')['duration']) || false === in_array($request->request->get('project')['duration'], $loanPeriods)) {
+        if (empty($duration) || ($availablePeriods && false === in_array($duration, explode(',', $availablePeriods->getValue())))) {
             $errors['project']['duration'] = true;
         }
-        if (empty($request->request->get('project')['description'])) {
+        if (empty($description)) {
             $errors['project']['description'] = true;
-        }
-        if ('no' === $request->request->get('manager')) {
-            if (empty($request->request->get('advisor')['civility']) || false === in_array($request->request->get('advisor')['civility'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
-                $errors['advisor']['civility'] = true;
-            }
-            if (empty($request->request->get('advisor')['lastname'])) {
-                $errors['advisor']['lastname'] = true;
-            }
-            if (empty($request->request->get('advisor')['firstname'])) {
-                $errors['advisor']['firstname'] = true;
-            }
-            if (empty($request->request->get('advisor')['email']) || false === filter_var($request->request->get('advisor')['email'], FILTER_VALIDATE_EMAIL)) {
-                $errors['advisor']['email'] = true;
-            }
-            if (empty($request->request->get('advisor')['mobile'])) {
-                $errors['advisor']['mobile'] = true;
-            }
-            if (empty($request->request->get('advisor')['function'])) {
-                $errors['advisor']['function'] = true;
-            }
-        } elseif ('yes' === $request->request->get('manager') && empty($request->request->get('terms'))) {
-            $errors['terms'] = true;
         }
 
         if (false === empty($errors)) {
@@ -370,63 +362,65 @@ class ProjectRequestController extends Controller
 
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
         }
+        if ($request->request->get('executive')) {
+            $this->saveContactDetails($project->getIdCompany(), $email, $title, $firstName, $lastName, $function, $mobile);
+            $project->setIdPrescripteur(0);
 
-        $this->saveContactDetails(
-            $project->getIdCompany(),
-            $request->request->get('contact')['email'],
-            $request->request->get('contact')['civility'],
-            $request->request->get('contact')['firstname'],
-            $request->request->get('contact')['lastname'],
-            $request->request->get('contact')['function'],
-            $request->request->get('contact')['mobile']
-        );
+            /** @var \acceptations_legal_docs $tosAcceptation */
+            $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
 
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
+            $treeId = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
 
-        if ('no' === $request->request->get('manager')) {
-            /** @var \prescripteurs $advisor */
-            $advisor = $entityManagerSimulator->getRepository('prescripteurs');
-            /** @var \clients $advisorClient */
-            $advisorClient = $entityManagerSimulator->getRepository('clients');
+            if ($tosAcceptation->get($treeId->getValue(), 'id_client = ' . $project->getIdCompany()->getIdClientOwner()->getIdClient() . ' AND id_legal_doc')) {
+                $tosAcceptation->update();
+            } else {
+                $tosAcceptation->id_legal_doc = $treeId->getValue();
+                $tosAcceptation->id_client    = $project->getIdCompany()->getIdClientOwner()->getIdClient();
+                $tosAcceptation->create();
+            }
+        } else {
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+            $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+
+            $advisorClient = new Clients();
+            $newAdvisor        = true;
 
             if (false === empty($project->getIdPrescripteur())) {
-                $advisor->get($project->getIdPrescripteur());
-                $advisorClient->get($advisor->id_client);
+                $advisor = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
+                if ($advisor && false === empty($project->getIdPrescripteur($advisor->getIdClient()))) {
+                    $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
+                    $newAdvisor = false;
+                }
             }
 
-            $clientRepo = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $email      = $request->request->get('advisor')['email'];
-            if (
-                $clientRepo->existEmail($email)
-                && $this->removeEmailSuffix($advisorClient->email) !== $email
-            ) {
+            if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($advisorClient->getEmail()) !== $email) {
                 $email = $email . '-' . time();
             }
 
-            $advisorClient->email        = $email;
-            $advisorClient->civilite     = $request->request->get('advisor')['civility'];
-            $advisorClient->prenom       = $request->request->get('advisor')['firstname'];
-            $advisorClient->nom          = $request->request->get('advisor')['lastname'];
-            $advisorClient->fonction     = $request->request->get('advisor')['function'];
-            $advisorClient->telephone    = $request->request->get('advisor')['mobile'];
-            $advisorClient->slug         = $ficelle->generateSlug($advisorClient->prenom . '-' . $advisorClient->nom);
-            $advisorClient->source       = $sourceManager->getSource(SourceManager::SOURCE1);
-            $advisorClient->source2      = $sourceManager->getSource(SourceManager::SOURCE2);
-            $advisorClient->source3      = $sourceManager->getSource(SourceManager::SOURCE3);
-            $advisorClient->slug_origine = $sourceManager->getSource(SourceManager::ENTRY_SLUG);
+            $advisorClient
+                ->setEmail($email)
+                ->setCivilite($title)
+                ->setNom($lastName)
+                ->setPrenom($firstName)
+                ->setFonction($function)
+                ->setMobile($mobile)
+                ->setSlug($firstName . ' '. $lastName)
+                ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
+                ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
+                ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
+                ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
-            if (empty($advisorClient->id_client)) {
-                $advisorClient->create();
+            if ($newAdvisor) {
+                $entityManager->persist($advisorClient);
+                $entityManager->flush($advisorClient);
 
                 /** @var \clients_adresses $advisorAddress */
                 $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
-                $advisorAddress->id_client = $advisorClient->id_client;
-                $advisorAddress->civilite  = $request->request->get('advisor')['civility'];
-                $advisorAddress->prenom    = $request->request->get('advisor')['firstname'];
-                $advisorAddress->nom       = $request->request->get('advisor')['lastname'];
-                $advisorAddress->telephone = $request->request->get('advisor')['mobile'];
+                $advisorAddress->id_client = $advisorClient->getIdClient();
+                $advisorAddress->civilite  = $title;
+                $advisorAddress->prenom    = $firstName;
+                $advisorAddress->nom       = $lastName;
+                $advisorAddress->mobile    = $mobile;
                 $advisorAddress->create();
 
                 $advisorCompany = new Companies();
@@ -434,33 +428,25 @@ class ProjectRequestController extends Controller
                 $entityManager->persist($advisorCompany);
                 $entityManager->flush($advisorCompany);
 
-                $advisor->id_client = $advisorClient->id_client;
+                $advisor = new Prescripteurs();
+                $advisor
+                    ->setIdClient($advisorClient->getIdClient())
+                    ->setIdEntite($advisorCompany->getIdCompany())
+                    ->setIdEnseigne(0)
+                    ->setTypeDepotDossier(0);
+                $advisor->id_client = $advisorClient->getIdClient();
                 $advisor->id_entite = $advisorCompany->getIdCompany();
-                $advisor->create();
 
-                $project->setIdPrescripteur($advisor->id_prescripteur);
+                $entityManager->persist($advisor);
+                $entityManager->flush($advisor);
+
+                $project->setIdPrescripteur($advisor->getIdPrescripteur());
             } else {
-                $advisorClient->update();
-            }
-        } else {
-            $project->setIdPrescripteur(0);
-
-            /** @var \acceptations_legal_docs $tosAcceptation */
-            $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
-            $settings->get('Lien conditions generales depot dossier', 'type');
-
-            if ($tosAcceptation->get($settings->value, 'id_client = ' . $project->getIdCompany()->getIdClientOwner()->getIdClient() . ' AND id_legal_doc')) {
-                $tosAcceptation->update();
-            } else {
-                $tosAcceptation->id_legal_doc = $settings->value;
-                $tosAcceptation->id_client    = $project->getIdCompany()->getIdClientOwner()->getIdClient();
-                $tosAcceptation->create();
+                $entityManager->flush($advisorClient);
             }
         }
 
-        if ($duration = filter_var($request->request->get('project')['duration'], FILTER_VALIDATE_INT)) {
-            $project->setPeriod($duration);
-        }
+        $project->setPeriod($duration);
         $project->setComments($request->request->get('project')['description']);
 
         $entityManager->flush($project);
@@ -802,7 +788,7 @@ class ProjectRequestController extends Controller
                     'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
                     'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
                     'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getMobile(),
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ],
                 'project' => [
@@ -968,7 +954,7 @@ class ProjectRequestController extends Controller
                     'lastname'  => isset($values['lastname']) ? $values['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
                     'firstname' => isset($values['firstname']) ? $values['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
                     'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
+                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getMobile(),
                     'function'  => isset($values['function']) ? $values['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ]
             ],
@@ -1466,7 +1452,7 @@ class ProjectRequestController extends Controller
             ->setPrenom($firstName)
             ->setNom($lastName)
             ->setFonction($position)
-            ->setTelephone($mobilePhone)
+            ->setMobile($mobilePhone)
             ->setIdLangue('fr')
             ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
 
@@ -1477,7 +1463,7 @@ class ProjectRequestController extends Controller
         try {
             $entityManager->flush([$company, $client]);
         } catch (\Exception $exception) {
-            $this->get('logger')->error('Cannot update the company.', [
+            $this->get('logger')->error('Cannot update the company. Error '. $exception->getMessage(), [
                 'id_company' => $company->getIdCompany(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,

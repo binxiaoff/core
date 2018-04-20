@@ -21,6 +21,13 @@ class InfolegaleExecutivePersonalChange
     private $idExecutive;
 
     /**
+     * @var ?string
+     *
+     * @ORM\Column(name="title", type="string", length=50, nullable=true)
+     */
+    private $title;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="first_name", type="string", length=50, nullable=false)
@@ -358,5 +365,25 @@ class InfolegaleExecutivePersonalChange
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return InfolegaleExecutivePersonalChange
+     */
+    public function setTitle(string $title): InfolegaleExecutivePersonalChange
+    {
+        $this->title = $title;
+
+        return $this;
     }
 }
