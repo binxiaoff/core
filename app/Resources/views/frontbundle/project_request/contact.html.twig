@@ -164,7 +164,7 @@
                                                     <div class="form-field col-lg-9 col-md-9">
                                                         <select id="identity-executive-selector" name="executive" class="input-field">
                                                             {% for executive in activeExecutives %}
-                                                                <option value="{{ executive.idExecutive }}"
+                                                                <option value="{{ executive.idExecutive|escape('html_attr') }}"
                                                                         {% if executive.lastName ~ executive.firstName == form.values.contact.lastName ~ form.values.contact.firstName %} selected{% endif %}
                                                                         data-executive-title="{{ executive.title|escape('html_attr') }}"
                                                                         data-executive-last-name="{{ executive.lastName|escape('html_attr') }}"
@@ -221,7 +221,7 @@
                                                         {% trans %} common_name {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-nom" type="text" name="lastName" value="{{ form.values.contact.lastName }}" class="input-field"
+                                                    <input id="form-project-create-identity-nom" type="text" name="lastName" value="{{ form.values.contact.lastName|escape('html_attr') }}" class="input-field"
                                                            data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name" readonly/>
                                                     {% if form.errors.contact.lastName is defined %}
                                                         <ul class="ui-formvalidation-messages">
@@ -235,7 +235,7 @@
                                                         {% trans %} common_firstname {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-prenom" type="text" name="firstName" value="{{ form.values.contact.firstName }}"
+                                                    <input id="form-project-create-identity-prenom" type="text" name="firstName" value="{{ form.values.contact.firstName|escape('html_attr') }}"
                                                            class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name" readonly/>
                                                     {% if form.errors.contact.firstName is defined %}
                                                         <ul class="ui-formvalidation-messages">
@@ -251,7 +251,7 @@
                                                         {% trans %} common_email {% endtrans %}
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
-                                                    <input id="form-project-create-identity-email" type="email" name="email" value="{{ form.values.contact.email }}" class="input-field"
+                                                    <input id="form-project-create-identity-email" type="email" name="email" value="{{ form.values.contact.email|escape('html_attr') }}" class="input-field"
                                                            data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email"/>
                                                     {% if form.errors.contact.email is defined %}
                                                         <ul class="ui-formvalidation-messages">
@@ -268,7 +268,7 @@
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
-                                                        <input id="form-project-create-identity-mobile" type="text" name="mobile" value="{{ form.values.contact.mobile }}" class="input-field"
+                                                        <input id="form-project-create-identity-mobile" type="text" name="mobile" value="{{ form.values.contact.mobile|escape('html_attr') }}" class="input-field"
                                                                data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
                                                         {% if form.errors.contact.mobile is defined %}
                                                             <ul class="ui-formvalidation-messages">
@@ -284,7 +284,7 @@
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <div class="input-group">
-                                                        <input id="form-project-create-identity-function" type="text" name="function" value="{{ form.values.contact.function }}"
+                                                        <input id="form-project-create-identity-function" type="text" name="function" value="{{ form.values.contact.function|escape('html_attr') }}"
                                                                class="input-field" data-formvalidation-input data-formvalidation-required="true" readonly/>
                                                         {% if form.errors.contact.function is defined %}
                                                             <ul class="ui-formvalidation-messages">

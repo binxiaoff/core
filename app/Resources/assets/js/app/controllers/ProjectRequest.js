@@ -49,7 +49,7 @@ $doc.on('ready', function () {
   autofillExecutive()
 
   $doc.on('change', '#identity-executive-selector', function () {
-    $('#form-project-create-1').uiFormValidation('clearAll')
+    $('#form-project-create').uiFormValidation('clearAll')
     autofillExecutive()
   })
 })

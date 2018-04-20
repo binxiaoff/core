@@ -224,7 +224,7 @@ class ProjectRequestController extends Controller
         $template['loan_periods'] = explode(',', $availablePeriods->getValue());
 
         $session = $request->getSession()->get('projectRequest');
-        $values  = isset($session['values']) ? $session['values'] : [];
+        $values  = $session['values'] ?? [];
 
         if (null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
             $this->get('logger')->error('An error occurred while creating project. Client or Company is empty', [
@@ -236,18 +236,17 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
 
-        $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
-        $firstExecutiveFound          = $template['activeExecutives'][0] ?? null;
-
         $contact   = $advisorClient ?? $project->getIdCompany()->getIdClientOwner();
         $title     = $values['contact']['title'] ?? $contact->getCivilite();
         $lastName  = $values['contact']['lastname'] ?? $contact->getNom();
         $firstName = $values['contact']['firstname'] ?? $contact->getPrenom();
         $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($contact->getEmail());
-        $mobile    = $values['contact']['mobile'] ?? $contact->getMobile();
+        $mobile    = $values['contact']['mobile'] ?? $contact->getTelephone();
         $function  = $values['contact']['function'] ?? $contact->getFonction();
 
+        $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
         // If one (last name) of these fields is empty, we can consider that all the field is empty
+        $firstExecutiveFound          = $template['activeExecutives'][0] ?? null;
         if (empty($lastName) && null !== $firstExecutiveFound) {
             $title     = $firstExecutiveFound['title'];
             $lastName  = $firstExecutiveFound['lastName'];
@@ -256,7 +255,7 @@ class ProjectRequestController extends Controller
         }
 
         $template['form'] = [
-            'errors' => isset($session['errors']) ? $session['errors'] : [],
+            'errors' => $session['errors'] ?? [],
             'values' => [
                 'contact' => [
                     'title'     => $title,
@@ -271,7 +270,7 @@ class ProjectRequestController extends Controller
                     'lastName'  => $advisorClient ? $advisorClient->getNom() : '',
                     'firstName' => $advisorClient ? $advisorClient->getPrenom() : '',
                     'email'     => $advisorClient ? $this->removeEmailSuffix($advisorClient->getEmail()) : '',
-                    'mobile'    => $advisorClient ? $advisorClient->getMobile() : '',
+                    'mobile'    => $advisorClient ? $advisorClient->getTelephone() : '',
                     'function'  => $advisorClient ? $advisorClient->getFonction() : ''
                 ],
                 'project' => [
@@ -403,7 +402,7 @@ class ProjectRequestController extends Controller
                 ->setNom($lastName)
                 ->setPrenom($firstName)
                 ->setFonction($function)
-                ->setMobile($mobile)
+                ->setTelephone($mobile)
                 ->setSlug($firstName . ' '. $lastName)
                 ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
                 ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
@@ -788,7 +787,7 @@ class ProjectRequestController extends Controller
                     'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
                     'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
                     'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getMobile(),
+                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
                     'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ],
                 'project' => [
@@ -954,7 +953,7 @@ class ProjectRequestController extends Controller
                     'lastname'  => isset($values['lastname']) ? $values['lastname'] : $project->getIdCompany()->getIdClientOwner()->getNom(),
                     'firstname' => isset($values['firstname']) ? $values['firstname'] : $project->getIdCompany()->getIdClientOwner()->getPrenom(),
                     'email'     => isset($values['email']) ? $values['email'] : $this->removeEmailSuffix($project->getIdCompany()->getIdClientOwner()->getEmail()),
-                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getMobile(),
+                    'mobile'    => isset($values['mobile']) ? $values['mobile'] : $project->getIdCompany()->getIdClientOwner()->getTelephone(),
                     'function'  => isset($values['function']) ? $values['function'] : $project->getIdCompany()->getIdClientOwner()->getFonction()
                 ]
             ],
@@ -1452,7 +1451,7 @@ class ProjectRequestController extends Controller
             ->setPrenom($firstName)
             ->setNom($lastName)
             ->setFonction($position)
-            ->setMobile($mobilePhone)
+            ->setTelephone($mobilePhone)
             ->setIdLangue('fr')
             ->setSlug($ficelle->generateSlug($firstName . '-' . $lastName));
 

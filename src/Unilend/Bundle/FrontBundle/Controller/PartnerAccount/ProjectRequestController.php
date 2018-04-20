@@ -33,7 +33,7 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestAction(Request $request)
     {
-        $projectManager  = $this->get('unilend.service.project_manager');
+        $projectManager = $this->get('unilend.service.project_manager');
 
         $template = [
             'loanPeriods'      => $projectManager->getPossibleProjectPeriods(),
@@ -226,11 +226,11 @@ class ProjectRequestController extends Controller
             $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
 
             $template = $template + [
-                    'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
-                    'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-                    'prospect'                 => false === $this->getUser()->getPartner()->getProspect(),
-                    'payment'                  => [
-                        'monthly' => [
+                    'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
+                    'abandonReasons'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+                    'prospect'               => false === $this->getUser()->getPartner()->getProspect(),
+                    'payment'                => [
+                        'monthly'   => [
                             'min' => $monthlyPaymentBoundaries['minimum'],
                             'max' => $monthlyPaymentBoundaries['maximum']
                         ],
@@ -271,40 +271,70 @@ class ProjectRequestController extends Controller
 
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $projectManager = $this->get('unilend.service.project_manager');
-        $client         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($project->getIdCompany()->getIdClientOwner());
+        $client         = $project->getIdCompany()->getIdClientOwner();
         $template       = [
-            'project'        => [
-                'company'                  => $project->getIdCompany()->getName(),
-                'siren'                    => $project->getIdCompany()->getSiren(),
-                'amount'                   => $project->getAmount(),
-                'duration'                 => $project->getPeriod(),
-                'hash'                     => $project->getHash(),
-                'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
-                'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment())
-            ],
-            'abandonReasons' => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
-            'attachments'    => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()], ['rank' => 'ASC'])
+            'project'                  => $project,
+            'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
+            'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
+            'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()],
+                ['rank' => 'ASC']),
+            'activeExecutives'         => $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren())
         ];
 
         $session = $request->getSession()->get('partnerProjectRequest');
-        $errors  = isset($session['errors']) ? $session['errors'] : [];
-        $values  = isset($session['values']) ? $session['values'] : [];
+        $values  = $session['values'] ?? [];
 
         $request->getSession()->remove('partnerProjectRequest');
 
+        $title     = $values['contact']['title'] ?? $client->getCivilite();
+        $lastName  = $values['contact']['lastName'] ?? $client->getNom();
+        $firstName = $values['contact']['firstName'] ?? $client->getPrenom();
+        $email     = $values['contact']['email'] ?? $this->removeEmailSuffix($client->getEmail());
+        $mobile    = $values['contact']['mobile'] ?? $client->getTelephone();
+        $function  = $values['contact']['function'] ?? $client->getFonction();
+        // If one (last name) of these fields is empty, we can consider that all the field is empty
+        $firstExecutiveFound = $template['activeExecutives'][0] ?? null;
+        if (empty($lastName) && null !== $firstExecutiveFound) {
+            $title     = $firstExecutiveFound['title'];
+            $lastName  = $firstExecutiveFound['lastName'];
+            $firstName = $firstExecutiveFound['firstName'];
+            $function  = $firstExecutiveFound['position'];
+        }
+        $otherContact = [
+            'title'     => '',
+            'lastName'  => '',
+            'firstName' => '',
+            'function'  => ''
+        ];
+        if ($client->getNom() && false === empty($template['activeExecutives'])) {
+            foreach ($template['activeExecutives'] as $executive) {
+                if ($client->getNom() . $client->getPrenom() !== $executive['lastName'] . $executive['firstName']) {
+                    $otherContact = [
+                        'title'     => $executive['title'],
+                        'lastName'  => $executive['lastName'],
+                        'firstName' => $executive['firstName'],
+                        'function'  => $executive['position']
+                    ];
+                    break;
+                }
+            }
+        }
+
         $template['form'] = [
-            'errors' => $errors,
+            'errors' => $session['errors'] ?? [],
             'values' => [
-                'contact' => [
-                    'title'     => isset($values['contact']['title']) ? $values['contact']['title'] : $client->getCivilite(),
-                    'lastname'  => isset($values['contact']['lastname']) ? $values['contact']['lastname'] : $client->getNom(),
-                    'firstname' => isset($values['contact']['firstname']) ? $values['contact']['firstname'] : $client->getPrenom(),
-                    'email'     => isset($values['contact']['email']) ? $values['contact']['email'] : $this->removeEmailSuffix($client->getEmail()),
-                    'mobile'    => isset($values['contact']['mobile']) ? $values['contact']['mobile'] : $client->getTelephone(),
-                    'function'  => isset($values['contact']['function']) ? $values['contact']['function'] : $client->getFonction()
+                'contact'      => [
+                    'title'     => $title,
+                    'lastName'  => $lastName,
+                    'firstName' => $firstName,
+                    'email'     => $email,
+                    'mobile'    => $mobile,
+                    'function'  => $function
                 ],
-                'project' => [
-                    'description' => isset($values['project']['description']) ? $values['project']['description'] : $project->getComments()
+                'otherContact' => $otherContact,
+                'project'      => [
+                    'description' => $values['project']['description'] ?? $project->getComments()
                 ]
             ]
         ];
@@ -335,36 +365,35 @@ class ProjectRequestController extends Controller
         $action     = $request->request->get('action', 'submit');
         $checkEmpty = 'save' !== $action;
 
+        $title       = $request->request->get('title');
+        $lastName    = $request->request->get('lastName');
+        $firstName   = $request->request->get('firstName');
+        $email       = $request->request->get('email', FILTER_VALIDATE_EMAIL);
+        $mobile      = $request->request->filter('mobile');
+        $function    = $request->request->get('function');
+        $description = $request->request->get('description');
+
         if (
-            $checkEmpty && empty($request->request->get('contact')['title'])
-            || false === empty($request->request->get('contact')['title']) && false === in_array($request->request->get('contact')['title'], [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
+            $checkEmpty && empty($title)
+            || false === empty($title) && false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
             $errors['contact']['title'] = true;
         }
-        if ($checkEmpty && empty($request->request->get('contact')['lastname'])) {
-            $errors['contact']['lastname'] = true;
+        if ($checkEmpty && empty($lastName)) {
+            $errors['contact']['lastName'] = true;
         }
-        if ($checkEmpty && empty($request->request->get('contact')['firstname'])) {
-            $errors['contact']['firstname'] = true;
+        if ($checkEmpty && empty($firstName)) {
+            $errors['contact']['firstName'] = true;
         }
-        if (
-            $checkEmpty
-            && (
-                empty($request->request->get('contact')['email'])
-                || false === filter_var($request->request->get('contact')['email'], FILTER_VALIDATE_EMAIL)
-            )
-        ) {
+        if ($checkEmpty && empty($email)) {
             $errors['contact']['email'] = true;
         }
-        if (
-            $checkEmpty && empty($request->request->get('contact')['mobile'])
-            || false === empty($request->request->get('contact')['mobile']) && false === Loader::loadLib('ficelle')->isMobilePhoneNumber($request->request->get('contact')['mobile'])
-        ) {
+        if ($checkEmpty && empty($mobile) || false === empty($mobile) && false === Loader::loadLib('ficelle')->isMobilePhoneNumber($mobile)) {
             $errors['contact']['mobile'] = true;
         }
-        if ($checkEmpty && empty($request->request->get('contact')['function'])) {
+        if ($checkEmpty && empty($function)) {
             $errors['contact']['function'] = true;
         }
-        if ($checkEmpty && empty($request->request->get('project')['description'])) {
+        if ($checkEmpty && empty($description)) {
             $errors['project']['description'] = true;
         }
 
@@ -376,7 +405,8 @@ class ProjectRequestController extends Controller
 
         if ($checkEmpty) {
             foreach ($partnerAttachments as $partnerAttachment) {
-                if ($partnerAttachment->getMandatory() && (false === isset($documents[$partnerAttachment->getAttachmentType()->getId()]) || false === ($documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile))) {
+                if ($partnerAttachment->getMandatory() && (false === isset($documents[$partnerAttachment->getAttachmentType()
+                                ->getId()]) || false === ($documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile))) {
                     $errors['documents'][$partnerAttachment->getAttachmentType()->getId()] = true;
                 }
             }
@@ -410,17 +440,16 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
         }
 
-        if (isset($request->request->get('contact')['title'])) {
-            $client->setCivilite($request->request->get('contact')['title']);
+        if ($title) {
+            $client->setCivilite($title);
         }
-        if (isset($request->request->get('contact')['lastname'])) {
-            $client->setNom($request->request->get('contact')['lastname']);
+        if ($lastName) {
+            $client->setNom($lastName);
         }
-        if (isset($request->request->get('contact')['firstname'])) {
-            $client->setPrenom($request->request->get('contact')['firstname']);
+        if ($firstName) {
+            $client->setPrenom($firstName);
         }
-        if (isset($request->request->get('contact')['email'])) {
-            $email      = $request->request->get('contact')['email'];
+        if ($email) {
             $duplicates = $clientRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
 
             if (false === empty($duplicates)) {
@@ -442,17 +471,17 @@ class ProjectRequestController extends Controller
 
             $entityManager->flush($project->getIdCompany());
         }
-        if (isset($request->request->get('contact')['mobile'])) {
-            $client->setTelephone($request->request->get('contact')['mobile']);
+        if ($mobile) {
+            $client->setTelephone($mobile);
         }
-        if (isset($request->request->get('contact')['function'])) {
-            $client->setFonction($request->request->get('contact')['function']);
+        if ($function) {
+            $client->setFonction($function);
         }
 
         $entityManager->flush($client);
 
-        if (isset($request->request->get('project')['description'])) {
-            $project->setComments($request->request->get('project')['description']);
+        if ($description) {
+            $project->setComments($description);
 
             $entityManager->flush($project);
         }
@@ -464,18 +493,16 @@ class ProjectRequestController extends Controller
                 $termsOfSaleManager = $this->get('unilend.service.terms_of_sale_manager');
                 $termsOfSaleManager->sendBorrowerEmail($project, $project->getIdCompanySubmitter());
             } catch (\Exception $exception) {
-                $this->get('logger')->error(
-                    'Error while sending terms of sale to partner borrower for project ' . $project->getIdProject(),
-                    ['id_project' => $project->getIdProject(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->get('logger')->error('Error while sending terms of sale to partner borrower for project ' . $project->getIdProject(), [
+                    'id_project' => $project->getIdProject(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine()
+                ]);
             }
 
-            /** @var \projects $projectData */
-            $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
-            $projectData->get($project->getIdProject());
-
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $projectData);
+            $this->get('unilend.service.project_status_manager')->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::COMPLETE_REQUEST, $project);
         }
 
         return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);
@@ -579,7 +606,7 @@ class ProjectRequestController extends Controller
         switch ($project->getStatus()) {
             case ProjectsStatus::ABANDONED:
                 $template = [
-                    'title' => $translator->trans('partner-project-end_status-abandon-title'),
+                    'title'   => $translator->trans('partner-project-end_status-abandon-title'),
                     'message' => $translator->trans('partner-project-end_status-abandon-message'),
                 ];
                 break;
@@ -587,7 +614,7 @@ class ProjectRequestController extends Controller
             case ProjectsStatus::COMPLETE_REQUEST:
             default:
                 $template = [
-                    'title' => $translator->trans('partner-project-end_status-completed-title'),
+                    'title'   => $translator->trans('partner-project-end_status-completed-title'),
                     'message' => $translator->trans('partner-project-end_status-completed-message'),
                 ];
                 break;
@@ -626,7 +653,7 @@ class ProjectRequestController extends Controller
 
         foreach ($childCompanies as $company) {
             $tree[] = $company;
-            $tree = $this->getCompanyTree($company, $tree);
+            $tree   = $this->getCompanyTree($company, $tree);
         }
 
         return $tree;
