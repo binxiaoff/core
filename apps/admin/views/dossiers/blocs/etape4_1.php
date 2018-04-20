@@ -109,9 +109,9 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                 <?php endif; ?>
                 <tbody>
                 <tr>
-                    <th style="width: 300px"><label>Préscore Unilend</label></th>
+                    <th style="width: 300px">Préscore Unilend</th>
                     <td style="width: 250px">
-                        <span class="rating-tooltip" title="prescore_unilend"><?= $this->projects_notes->pre_scoring ?></span>
+                        <span><?= $this->projects_notes->pre_scoring ?></span>
                     </td>
                 </tr>
                 <tr>
