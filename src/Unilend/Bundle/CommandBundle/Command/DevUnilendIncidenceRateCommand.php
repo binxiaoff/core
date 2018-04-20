@@ -29,118 +29,9 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
-//        $unilendStatistics = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats')->findBy(['typeStat' => UnilendStats::TYPE_STAT_FRONT_STATISTIC]);
-
-//        /** @var UnilendStats $statistic */
-//        foreach ($unilendStatistics as $statistic) {
-//            $this->separateIncidenceRateFromUnilendFrontStatistic($statistic);
-//        }
-//
-//        $this->createMissingIFPIncidenceRateData();
-//        $this->createMissingCIPIncidenceRateData();
         $this->saveRatioIFP();
         $this->saveRatioCIP();
         $this->createQuarterEntries();
-    }
-
-    /**
-     * @param UnilendStats $frontStatistic
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function separateIncidenceRateFromUnilendFrontStatistic(UnilendStats $frontStatistic)
-    {
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $content       = json_decode($frontStatistic->getValue(), true);
-        $incidenceRate = $content['incidenceRate'];
-        unset ($content['incidenceRate']);
-
-        $frontStatistic->setValue(json_encode($content));
-        $entityManager->flush($frontStatistic);
-
-        if (isset($incidenceRate['ratioIFP'])) {
-            unset($incidenceRate['ratioIFP']);
-        }
-
-        if (isset($incidenceRate['ratioCIP'])) {
-            unset($incidenceRate['ratioCIP']);
-        }
-
-        $incidenceRateStat = new UnilendStats();
-        $incidenceRateStat
-            ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
-            ->setValue(json_encode($incidenceRate))
-            ->setAdded($frontStatistic->getAdded())
-            ->setUpdated(new \DateTime('NOW'));
-
-        $entityManager->persist($incidenceRateStat);
-        $entityManager->flush($incidenceRateStat);
-    }
-
-    /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function createMissingIFPIncidenceRateData()
-    {
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $startIFP      = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_IFP);
-        $end           = new \DateTime(StatisticsManager::START_FRONT_STATISTICS_HISTORY);
-        $interval      = \DateInterval::createFromDateString('1 day');
-        $period        = new \DatePeriod($startIFP, $interval, $end);
-
-        $incidenceRate = [
-            'amountIFP'   => 0.00,
-            'projectsIFP' => 0.00
-        ];
-
-        foreach ($period as $day) {
-            $incidenceRateStat = new UnilendStats();
-            $incidenceRateStat
-                ->setTypeStat(UnilendStats::TYPE_INCIDENCE_RATE)
-                ->setValue(json_encode($incidenceRate))
-                ->setAdded($day)
-                ->setUpdated(new \DateTime('NOW'));
-
-            $entityManager->persist($incidenceRateStat);
-            $entityManager->flush($incidenceRateStat);
-        }
-    }
-
-    /**
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function createMissingCIPIncidenceRateData()
-    {
-        $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $unilendStatisticsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-
-        $startCIP = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_CIP);
-        $end      = new \DateTime('NOW');
-        $interval = \DateInterval::createFromDateString('1 day');
-        $period   = new \DatePeriod($startCIP, $interval, $end);
-
-        $incidenceRate = [
-            'amountCIP'   => 0.00,
-            'projectsCIP' => 0.00
-        ];
-
-        foreach ($period as $day) {
-            /** @var UnilendStats $incidenceRateStat */
-            $incidenceRateStat = $unilendStatisticsRepository->findStatisticAtDate($day, UnilendStats::TYPE_INCIDENCE_RATE);
-            if (null !== $incidenceRateStat) {
-                $incidenceRateData = json_decode($incidenceRateStat->getValue(), true);
-
-                if (false === isset($incidenceRateData['amountCIP'])) {
-                    $incidenceRateStat->setValue(json_encode(array_merge($incidenceRate, $incidenceRateData)));
-
-                    $entityManager->flush($incidenceRateStat);
-                } else {
-                    break;
-                }
-            }
-        }
     }
 
     /**
@@ -192,7 +83,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
     private function saveRatioCIP()
     {
         $start         = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_CIP);
-        $end           = new \DateTime('Last day of last month');
+        $end           = new \DateTime('Last day of this month');
         $monthInterval = \DateInterval::createFromDateString('1 month');
         $period        = new \DatePeriod($start, $monthInterval, $end);
 
