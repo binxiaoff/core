@@ -384,7 +384,7 @@
                 <?php endif; ?>
             </tr>
             <tr>
-                <th><label for="phone_new_etape2">Téléphone</label></th>
+                <th><label for="phone_new_etape2">Téléphone fixe </label></th>
                 <td>
                     <input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>">
                     <a class="btn-small btn_link phone-call">Appeler</a>
@@ -393,6 +393,18 @@
                     <th style="background-color: #ececec;">Téléphone agence</th>
                     <td style="background-color: #ececec;"><a href="tel:0<?= str_replace([' ', '.', '-'], '', $this->projectEntity->getIdCompanySubmitter()->getPhone()) ?>"><?= $this->projectEntity->getIdCompanySubmitter()->getPhone() ?></a></td>
                 <?php elseif ($this->hasAdvisor) : ?>
+                    <td colspan="2" style="background-color: #ececec; color: #c84747;">Un prescripteur est une personne non enregistrée en tant que partenaire qui a fait un dépôt de dossier via le site.</td>
+                <?php else : ?>
+                    <td colspan="2"></td>
+                <?php endif; ?>
+            </tr>
+            <tr>
+                <th><label for="mobile_new_etape2">Téléphone mobile</label></th>
+                <td>
+                    <input type="text" name="mobile_new_etape2" id="mobile_new_etape2" class="input_moy" value="<?= $this->clients->mobile ?>">
+                    <a class="btn-small btn_link phone-call">Appeler</a>
+                </td>
+                <?php if ($this->hasAdvisor) : ?>
                     <td colspan="2" style="background-color: #ececec; color: #c84747;">Un prescripteur est une personne non enregistrée en tant que partenaire qui a fait un dépôt de dossier via le site.</td>
                 <?php else : ?>
                     <td colspan="2"></td>
