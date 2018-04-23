@@ -6,7 +6,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ProjectAbandonReason, Projects, ProjectsStatus, Users
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
@@ -29,8 +31,8 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        /** @var EntityManager $entityManagerSimulator */
+        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
@@ -38,17 +40,13 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $ficelle = Loader::loadLib('ficelle');
 
         /** @var \prescripteurs $prescripteur */
-        $prescripteur = $entityManager->getRepository('prescripteurs');
+        $prescripteur = $entityManagerSimulator->getRepository('prescripteurs');
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $entityManager->getRepository('projects_status_history');
+        $projectStatusHistory = $entityManagerSimulator->getRepository('projects_status_history');
         /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        /** @var \clients $client */
-        $client = $entityManager->getRepository('clients');
-        /** @var \companies $company */
-        $company = $entityManager->getRepository('companies');
+        $settings = $entityManagerSimulator->getRepository('settings');
+        /** @var \projects $projectData */
+        $projectData = $entityManagerSimulator->getRepository('projects');
 
         $settings->get('Intervales relances emprunteurs', 'type');
         $aReminderIntervals = json_decode($settings->value, true);
@@ -66,6 +64,13 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
 
+
+
+        $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectAbandonReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            ->findBy(['label' => ProjectAbandonReason::BORROWER_FOLLOW_UP_UNSUCCESSFUL]);
+
         foreach ($aReminderIntervals as $sStatus => $aIntervals) {
             if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
                 $iStatus                       = (int) $aMatches[1];
@@ -75,49 +80,65 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                 foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
                     $iDaysSincePreviousReminder = $iDaysInterval - $iPreviousReminderDaysInterval;
 
-                    foreach ($project->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
+                    foreach ($projectData->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
                         try {
-                            $project->get($iProjectId, 'id_project');
-                            $company->get($project->id_company, 'id_company');
+                            /** @var Projects $project */
+                            $project = $projectsRepository->find($iProjectId);
 
-                            if ($project->id_prescripteur > 0) {
-                                $prescripteur->get($project->id_prescripteur, 'id_prescripteur');
-                                $client->get($prescripteur->id_client, 'id_client');
+                            if (null === $project) {
+                                $logger->error('The identifier ' . $iProjectId . ' does not correpond to any project.', [
+                                    'class'    => __CLASS__,
+                                    'function' => __FUNCTION__
+                                ]);
+                                continue;
+                            }
+                            $company = $project->getIdCompany();
+
+                            if ($project->getIdPrescripteur() > 0 && $prescripteur->get($project->getIdPrescripteur(), 'id_prescripteur')) {
+                                $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($prescripteur->id_client);
+                            } elseif (null !== $company->getIdClientOwner()) {
+                                $client = $company->getIdClientOwner();
                             } else {
-                                $client->get($company->id_client_owner, 'id_client');
+                                $logger->error('Cannot send reminder (project ' . $project->getIdProject() . '). No associated client found.', [
+                                    'id_project' => $project->getIdProject(),
+                                    'class'      => __CLASS__,
+                                    'function'   => __FUNCTION__
+                                ]);
+
+                                continue;
                             }
 
-                            $email = preg_replace('/^(.*)-[0-9]+$/', '$1', $client->email);
+                            $email = preg_replace('/^(.*)-[0-9]+$/', '$1', $client->getEmail());
 
                             if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                                $projectStatusHistory->loadLastProjectHistory($project->id_project);
+                                $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
 
-                                $oSubmissionDate = new \DateTime($project->added);
+                                $oSubmissionDate = $project->getAdded();
 
                                 // @todo arbitrary default value
                                 $iAverageFundingDuration = 15;
                                 reset($aAverageFundingDurations);
                                 foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
-                                    if ($project->amount >= $aAverageFundingDuration['min'] && $project->amount <= $aAverageFundingDuration['max']) {
+                                    if ($project->getAmount() >= $aAverageFundingDuration['min'] && $project->getAmount() <= $aAverageFundingDuration['max']) {
                                         $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
                                         break;
                                     }
                                 }
 
                                 $keywords = [
-                                    'firstName'                  => $client->prenom,
+                                    'firstName'                  => $client->getPrenom(),
                                     'requestDate'                => strftime('%d %B %Y', $oSubmissionDate->getTimestamp()),
-                                    'companyName'                => $company->name,
-                                    'continueRequestLink'        => $sUrl . '/depot_de_dossier/reprise/' . $project->hash,
-                                    'stopReminderEmails'         => $sUrl . '/depot_de_dossier/emails/' . $project->hash,
+                                    'companyName'                => $company->getName(),
+                                    'continueRequestLink'        => $sUrl . '/depot_de_dossier/reprise/' . $project->getHash(),
+                                    'stopReminderEmails'         => $sUrl . '/depot_de_dossier/emails/' . $project->getHash(),
                                     'fundingPercentage'          => $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100),
                                     'borrowerServicePhoneNumber' => $sBorrowerPhoneNumber,
                                     'borrowerServiceEmail'       => $sBorrowerEmail,
-                                    'amount'                     => $ficelle->formatNumber($project->amount, 0)
+                                    'amount'                     => $ficelle->formatNumber($project->getAmount(), 0)
                                 ];
 
-                                if (in_array($iStatus, [\projects_status::INCOMPLETE_REQUEST, \projects_status::COMPLETE_REQUEST])) {
-                                    $oCompletenessDate                       = $projectStatusHistory->getDateProjectStatus($project->id_project, \projects_status::INCOMPLETE_REQUEST, true);
+                                if (in_array($iStatus, [ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST])) {
+                                    $oCompletenessDate        = $projectStatusHistory->getDateProjectStatus($project->getIdProject(), ProjectsStatus::INCOMPLETE_REQUEST, true);
                                     $keywords['date_demande'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                 }
 
@@ -130,8 +151,12 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                     $mailer->send($message);
                                 } catch (\Exception $exception) {
                                     $logger->warning(
-                                        'Could not send email: depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex . ' - Exception: ' . $exception->getMessage(),
-                                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                                        'Could not send email: depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex . ' - Exception: ' . $exception->getMessage(), [
+                                            'id_mail_template' => $message->getTemplateId(),
+                                            'id_client'        => $client->getIdClient(),
+                                            'class'            => __CLASS__,
+                                            'function'         => __FUNCTION__
+                                        ]
                                     );
                                 }
                             }
@@ -140,12 +165,16 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                              * When project is pending documents, abort status is not automatic and must be set manually in BO
                              */
                             if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::COMMERCIAL_REVIEW) {
-                                $projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::ABANDONED, $project, $iReminderIndex, $projectStatusHistory->content);
+                                $projectStatusManager->abandonProject($project, $projectAbandonReason, Users::USER_ID_CRON, $iReminderIndex);
                             } else {
                                 $projectStatusManager->addProjectStatus(Users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
-                        } catch (\Exception $oException) {
-                            $logger->error('Cannot send reminder (project ' . $project->id_project . ') - Message: "' . $oException->getMessage() . '"', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+                        } catch (\Exception $exception) {
+                            $logger->error('Cannot send reminder (project ' . $project->getIdProject() . ') - Message: "' . $exception->getMessage() . '"', [
+                                'class'      => __CLASS__,
+                                'function'   => __FUNCTION__,
+                                'id_project' => $project->getIdProject()
+                            ]);
                         }
                     }
 

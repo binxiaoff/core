@@ -313,6 +313,33 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
+     * @param string         $siren
+     * @param array          $projectStatus
+     * @param \DateTime|null $createdBefore
+     *
+     * @return Projects[]
+     */
+    public function findBySirenAndStatus(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        if (false === empty($projectStatus)) {
+            $queryBuilder->andWhere('p.status IN (:projectStatus)')
+                ->setParameter('projectStatus', $projectStatus);
+        }
+
+        if (null !== $createdBefore) {
+            $queryBuilder->andWhere('p.added <= :createdBefore')
+                ->setParameter('createdBefore', $createdBefore);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
      * @param string    $select
      * @param \DateTime $start
      * @param \DateTime $end

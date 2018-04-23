@@ -5,9 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, Users
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
@@ -110,59 +110,11 @@ class ProjectStatusManager
      *
      * @return string
      */
-    public function getRejectionReasonTranslation($reason)
+    private function getWsCallFailureReasonTranslation(string $reason): string
     {
-        switch ($this->getMainRejectionReason($reason)) {
+        switch ($reason) {
             case '':
                 return '';
-            case ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-too-much-payment-incidents');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-unauthorized-payment-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-elimination-xerfi-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-altares-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-altares-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-low-infolegale-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-vs-altares-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-traffic-light-vs-xerfi-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-xerfi-vs-euler-grade');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-vs-altares-score');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infogreffe-privileges');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-defaults');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-social-security-privileges');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-treasury-tax-privileges');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-company-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-previous-manager-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-current-manager-other-companies');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-no-role-12-months-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-collective-proceeding-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-target-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-complainant-incident');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT:
-                return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-infolegale-depositor-role-missing-incident');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-altares-identity-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'codinf_incident':
@@ -183,67 +135,73 @@ class ProjectStatusManager
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-euler-grade-error');
             case ProjectsStatus::UNEXPECTED_RESPONSE . 'ellisphere_report':
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-ellisphere-report-error');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
-                return $this->translator->trans('project-rejection-reason-bo_collective-proceeding');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
-                return $this->translator->trans('project-rejection-reason-bo_inactive-siren');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
-                return $this->translator->trans('project-rejection-reason-bo_no-siren');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
-            case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
-            case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
-            case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER:
-                return $this->translator->trans('project-rejection-reason-bo_negative-operating-result');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
-                return $this->translator->trans('project-rejection-reason-bo_product-not-found');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
-                return $this->translator->trans('project-rejection-reason-bo_product-blend');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
-                return $this->translator->trans('project-rejection-reason-bo_company-location');
-            case ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_STATUS:
-                return $this->translator->trans('project-rejection-reason-bo_not-eligible-reason-no-legal-personality');
             default:
                 return $this->translator->trans('project-rejection-reason-bo_external-rating-rejection-default');
         }
     }
 
     /**
-     * @param string $reason
+     * @param Projects|\projects|null $project
+     * @param string|null             $reasonLabel
+     * @param string|null             $type
      *
-     * @return string
+     * @return array
      */
-    public function getMainRejectionReason($reason)
+    public function getStatusReasonText($project = null, ?string $reasonLabel = null, ?string $type = null): array
     {
-        $reasons      = explode(',', $reason);
-        $reasonsCount = count($reasons);
+        if (null !== $project) {
+            if ($project instanceof \projects) {
+                /** @var Projects $project */
+                $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                    ->find($project->id_project);
+            }
+            $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+                ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
-        if (1 === $reasonsCount) {
-            return $reasons[0];
+            switch ($project->getStatus()) {
+                case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
+                    return [$this->getWsCallFailureReasonTranslation($lastProjectStatusHistory->getContent())];
+                default:
+                    $reasonText = [];
+                    /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+                    $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
+                    if (count($rejectionReasons) > 0) {
+                        foreach ($rejectionReasons as $reason) {
+                            $reasonText[] = $reason->getIdRejectionReason()->getReason();
+                        }
+
+                        return $reasonText;
+                    }
+                    /** @var ProjectStatusHistoryReason[] $abandonReasons */
+                    $abandonReasons = $lastProjectStatusHistory->getAbandonReasons();
+                    if (count($abandonReasons) > 0) {
+                        foreach ($abandonReasons as $reason) {
+                            $reasonText[] = $reason->getIdAbandonReason()->getReason();
+                        }
+
+                        return $reasonText;
+                    }
+            }
+        } elseif (
+            null !== $reasonLabel
+            && ProjectsStatus::UNEXPECTED_RESPONSE === substr($reasonLabel, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE))
+        ) {
+            return [$this->getWsCallFailureReasonTranslation($reasonLabel)];
+        } elseif (null !== $reasonLabel) {
+            $reason = null;
+            switch ($type) {
+                case 'rejection':
+                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findOneBy(['label' => $reasonLabel]);
+                    break;
+                case 'abandon':
+                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findOneBy(['label' => $reasonLabel]);
+                    break;
+            }
+            return null !== $reason ? [$reason->getReason()] : [];
         }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL;
-        }
-        if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER, $reasons)) {
-            return ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER;
-        }
-        return ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND;
+
+        return [''];
     }
-
 
     /**
      * @param Users|int          $user
@@ -310,7 +268,7 @@ class ProjectStatusManager
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, Projects $project, Users $user)
     {
         if ($project->getStatus() >= ProjectsStatus::COMPLETE_REQUEST) {
-            $message        = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
+            $message = $this->slackManager->getProjectName($project) . ' passé en statut *' . $projectStatus->label . '*';
 
             if ($user) {
                 $message .= ' par ' . $user->getFirstname() . ' ' . $user->getName();
@@ -341,7 +299,14 @@ class ProjectStatusManager
             case ProjectsStatus::COMMERCIAL_REJECTION:
             case ProjectsStatus::ANALYSIS_REJECTION:
             case ProjectsStatus::COMITY_REJECTION:
-                $this->abandonOlderProjects($project, $user);
+                $abandonReason    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                    ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
+                $previousProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                    ->findBySirenAndStatus($project->getIdCompany()->getSiren(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST], $project->getAdded());
+
+                foreach ($previousProjects as $previousProject) {
+                    $this->abandonProject($previousProject, $abandonReason, $user);
+                }
                 break;
             case ProjectsStatus::A_FUNDER:
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
@@ -356,21 +321,109 @@ class ProjectStatusManager
     }
 
     /**
-     * @param Projects $project
-     * @param Users    $user
+     * @param Projects|\projects       $project
+     * @param int                      $rejectionStatus
+     * @param ProjectRejectionReason[] $rejectionReasons
+     * @param Users|int                $user
+     *
+     * @return bool
+     * @throws \Exception
      */
-    private function abandonOlderProjects(Projects $project, Users $user)
+    public function rejectProject($project, int $rejectionStatus, array $rejectionReasons, $user): bool
     {
-        /** @var \projects $projectData */
-        $projectData       = $this->entityManagerSimulator->getRepository('projects');
-        $previousProjects  = $projectData->getPreviousProjectsWithSameSiren($project->getIdCompany()->getSiren(), $project->getAdded()->format('Y-m-d H:i:s'));
-        $projectRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $rejectionStatusList = [
+            ProjectsStatus::NOT_ELIGIBLE,
+            ProjectsStatus::COMMERCIAL_REJECTION,
+            ProjectsStatus::ANALYSIS_REJECTION,
+            ProjectsStatus::COMITY_REJECTION
+        ];
 
-        foreach ($previousProjects as $previousProject) {
-            $previousProjectEntity = $projectRepository->find($previousProject['id_project']);
-            if (in_array($previousProjectEntity->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST])) {
-                $this->addProjectStatus($user, ProjectsStatus::ABANDONED, $previousProjectEntity, 0, 'Un autre projet de la société a été rejeté');
-            }
+        if (false === in_array($rejectionStatus, $rejectionStatusList)) {
+            throw new \Exception('Incorrect project status, expected values: ' . implode(', ', $rejectionStatusList));
         }
+        return $this->rejectOrAbandonProject($project, $rejectionStatus, $user, $rejectionReasons);
+    }
+
+    /**
+     * @param Projects|\projects     $project
+     * @param ProjectAbandonReason[] $abandonReasons
+     * @param Users|int              $user
+     * @param int                    $reminder
+     *
+     * @return bool
+     */
+    public function abandonProject($project, array $abandonReasons, $user, ?int $reminder = 0): bool
+    {
+        return $this->rejectOrAbandonProject($project, ProjectsStatus::ABANDONED, $user, $abandonReasons, $reminder);
+    }
+
+    /**
+     * @param Projects|\projects $project
+     * @param int                $projectStatus
+     * @param Users|int          $user
+     * @param array              $reasons
+     * @param int                $reminder
+     *
+     * @return bool
+     */
+    private function rejectOrAbandonProject($project, int $projectStatus, $user, array $reasons, ?int $reminder = 0): bool
+    {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                ->find($project->id_project);
+        }
+        $this->addProjectStatus($user, $projectStatus, $project, $reminder);
+
+        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+
+        if (null !== $lastProjectStatusHistory && $lastProjectStatusHistory->getIdProjectStatus()->getStatus() === $projectStatus) {
+            $historyReasons = [];
+
+            foreach ($reasons as $reason) {
+                $projectStatusHistoryReason = new ProjectStatusHistoryReason();
+                $projectStatusHistoryReason
+                    ->setIdProjectStatusHistory($lastProjectStatusHistory);
+                if ($reason instanceof ProjectAbandonReason) {
+                    $projectStatusHistoryReason
+                        ->setIdAbandonReason($reason);
+                } elseif ($reason instanceof ProjectRejectionReason) {
+                    $projectStatusHistoryReason
+                        ->setIdRejectionReason($reason);
+                }
+                $this->entityManager->persist($projectStatusHistoryReason);
+                $historyReasons[] = $projectStatusHistoryReason;
+            }
+            try {
+                $this->entityManager->flush($historyReasons);
+
+                return true;
+            } catch (\Exception $exception) {
+                $action = ProjectsStatus::ABANDONED === $projectStatus ? 'abandon' : 'rejection';
+                $this->logger->error('Could not save the project ' . $action . ' reasons. Exception message: ' . $exception->getMessage(), [
+                    'id_project' => $project->getIdProject(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine()
+                ]);
+            }
+        } else {
+            $action    = ProjectsStatus::ABANDONED === $projectStatus ? 'abandon' : 'rejection';
+            $reasonsId = [];
+            foreach ($reasons as $reason) {
+                $reasonsId[] = $reason instanceof ProjectRejectionReason ? $reason->getIdRejection() : $reason->getIdAbandon();
+            }
+
+            $failureMessage = null === $lastProjectStatusHistory ? 'Last project status was not found' : 'Project status was not successfully updated to ' . $projectStatus;
+            $this->logger->error('Could not insert the project ' . $action . ' reasons on project: ' . $project->getIdProject() . '. Error: ' . $failureMessage, [
+                'id_project'         => $project->getIdProject(),
+                $action . '_reasons' => $reasonsId,
+                'class'              => __CLASS__,
+                'function'           => __FUNCTION__
+            ]);
+        }
+
+        return false;
     }
 }

@@ -1,16 +1,13 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UniversignEntityInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
+};
 
 ?>
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
-        background: #d2d2d2!important;
+        background: #d2d2d2 !important;
         text-align: right;
     }
 
@@ -47,7 +44,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
     }
 
     .project-partner th {
-        vertical-align: top!important;
+        vertical-align: top !important;
     }
 
     .project-partner .select + .select {
@@ -125,7 +122,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
     }
 
     table.annual-accounts .sub-total td {
-        background-color: #d2d2d2!important;
+        background-color: #d2d2d2 !important;
         font-weight: bold;
     }
 
@@ -535,48 +532,55 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                     }
                 }
             })
-    })
+        })
 
-    $(document).on('click', '.memo-privacy-switch', function (event) {
-        event.preventDefault()
+        $(document).on('click', '.memo-privacy-switch', function (event) {
+            event.preventDefault()
 
-        var $switch = $(this)
-        var commentId = $switch.closest('[data-comment-id]').data('comment-id')
-        var privacy = $switch.hasClass('public')
+            var $switch = $(this)
+            var commentId = $switch.closest('[data-comment-id]').data('comment-id')
+            var privacy = $switch.hasClass('public')
 
-        if ($switch.hasClass('loading')) {
-            alert('La visibilité du mémo est en cours de modification, veuillez patienter')
-            return
-        }
-
-        $.ajax({
-            url: '<?= $this->lurl ?>/dossiers/memo',
-            method: 'POST',
-            dataType: 'json',
-            data: {
-                commentId: commentId,
-                public: privacy ? 0 : 1
-            },
-            beforeSend: function () {
-                $switch.removeClass('public private').addClass('loading')
-            },
-            success: function (response) {
-                if (response.success) {
-                    $switch.removeClass('loading').addClass(privacy ? 'private' : 'public')
-                } else if (response.error) {
-                    $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
-                    alert(response.error)
-                }
-            },
-            error: function () {
-                $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
-                alert('Impossible de modifier la visibilité du mémo (erreur inconnue)')
+            if ($switch.hasClass('loading')) {
+                alert('La visibilité du mémo est en cours de modification, veuillez patienter')
+                return
             }
+
+            $.ajax({
+                url: '<?= $this->lurl ?>/dossiers/memo',
+                method: 'POST',
+                dataType: 'json',
+                data: {
+                    commentId: commentId,
+                    public: privacy ? 0 : 1
+                },
+                beforeSend: function () {
+                    $switch.removeClass('public private').addClass('loading')
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $switch.removeClass('loading').addClass(privacy ? 'private' : 'public')
+                    } else if (response.error) {
+                        $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
+                        alert(response.error)
+                    }
+                },
+                error: function () {
+                    $switch.removeClass('loading').addClass(privacy ? 'public' : 'private')
+                    alert('Impossible de modifier la visibilité du mémo (erreur inconnue)')
+                }
+            })
+        })
+        $('#reason').select2({
+            width: 'resolve',
+            dropdownParent: $('#abandon-project-memo')
         })
     })
-})
 </script>
+<link rel="stylesheet" href="/oneui/js/plugins/select2/select2.min.css">
+<link rel="stylesheet" href="/oneui/js/plugins/select2/select2-bootstrap.min.css">
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
+<script src="/oneui/js/plugins/select2/select2.min.js"></script>
 <div id="contenu">
     <?php if (false === empty($this->projectStatusHeader)) : ?>
         <div class="attention">
@@ -594,7 +598,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         <?php if ($this->projects->status >= ProjectsStatus::A_FUNDER) : ?>
                             <tr>
                                 <th>Lien projet</th>
-                                <td><a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a></td>
+                                <td>
+                                    <a href="<?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?>" target="_blank"><?= $this->furl ?>/projects/detail/<?= $this->projects->slug ?></a>
+                                </td>
                             </tr>
                         <?php endif; ?>
                         <tr>
@@ -673,19 +679,27 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                         </tr>
                         <tr>
                             <th><label for="title">Titre du projet</label></th>
-                            <td><input type="text" name="title" id="title" class="input_large" value="<?= htmlspecialchars($this->projects->title) ?>"></td>
+                            <td>
+                                <input type="text" name="title" id="title" class="input_large" value="<?= htmlspecialchars($this->projects->title) ?>">
+                            </td>
                         </tr>
                         <tr>
                             <th><label for="societe">Raison sociale</label></th>
-                            <td><input type="text" name="societe" id="societe" class="input_large" value="<?= htmlspecialchars($this->companies->name) ?>"></td>
+                            <td>
+                                <input type="text" name="societe" id="societe" class="input_large" value="<?= htmlspecialchars($this->companies->name) ?>">
+                            </td>
                         </tr>
                         <tr>
                             <th><label for="tribunal_com">Tribunal de commerce</label></th>
-                            <td><input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= htmlspecialchars($this->companies->tribunal_com) ?>"></td>
+                            <td>
+                                <input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= htmlspecialchars($this->companies->tribunal_com) ?>">
+                            </td>
                         </tr>
                         <tr>
                             <th><label for="activite">Activité</label></th>
-                            <td><input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : htmlspecialchars($this->xerfi->label)) : htmlspecialchars($this->companies->activite) ?>"></td>
+                            <td>
+                                <input type="text" name="activite" id="activite" class="input_large" value="<?= empty($this->companies->activite) ? (empty($this->xerfi->naf) ? '' : htmlspecialchars($this->xerfi->label)) : htmlspecialchars($this->companies->activite) ?>">
+                            </td>
                         </tr>
                     </table>
                     <br><br>
@@ -693,7 +707,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                     <table class="form project-attributes">
                         <tr>
                             <th><label for="montant">Montant du prêt&nbsp;*</label></th>
-                            <td><input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €</td>
+                            <td>
+                                <input type="text" name="montant" id="montant" class="input_moy"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?> value="<?= empty($this->projects->amount) ? '' : $this->ficelle->formatNumber($this->projects->amount, 0) ?>"> €
+                            </td>
                         </tr>
                         <tr>
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
@@ -942,12 +958,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <!-- Useful for backward compatibility purpose. Should not be useful -->
                                     <input type="hidden" name="status" value="<?= $this->projects->status ?>">
                                     <?= $this->projects_status->label ?>
-                                    <?php if (
-                                        $this->get('unilend.service.back_office_user_manager')->isGrantedRisk($this->userEntity)
-                                        && in_array($this->projects->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
-                                    ) : ?>
-                                        <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/0/<?= $this->projects->id_project ?>" title="Modifier le motif de rejet" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier le motif de rejet"></a>
-                                    <?php endif; ?>
                                 <?php else : ?>
                                     <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                                     <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
@@ -967,17 +977,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                             </td>
                         </tr>
                         <!-- Rejection/abandon reason -->
-                        <?php if (false === empty($this->sRejectionReason) || in_array($this->projects->status, [ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::ABANDONED]) && false === empty($this->projects_status_history->content)) : ?>
+                        <?php if (count($this->statusReasonText) > 1 || '' !== $this->statusReasonText[0]) : ?>
                             <tr>
-                                <th><label for="status">Motif</label></th>
+                                <th><label for="status">Motif(s)</label></th>
                                 <td>
-                                    <?php if (false === empty($this->sRejectionReason)) : ?>
-                                        <?= $this->sRejectionReason ?>
-                                    <?php elseif ($this->projects->status == ProjectsStatus::ABANDONED) : ?>
-                                        <?= $this->projects_status_history->content ?>
-                                    <?php else : ?>
-                                        <?= $this->rejectionReasonMessage ?>
-                                    <?php endif; ?>
+                                    <?php foreach ($this->statusReasonText as $reason) : ?>
+                                        <?= $reason ?><br>
+                                    <?php endforeach; ?>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -1214,13 +1220,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <?php endswitch; ?>
 
                                 <div id="abandon-project-memo" style="display: none;">
-                                    <label style="display: block; margin: 0 0 10px;">Motif d'abandon *</label>
-                                    <select name="reason" id="reason" class="select">
+                                    <label for="reason" style="display: block; margin: 0 0 10px;">Motif d'abandon *</label>
+                                    <select style="width: 80%;" name="reason[]" id="reason" class="js-select2 form-control required select" data-placeholder="Séléctionnez un ou plusieurs motifs.." multiple>
                                         <option value=""></option>
-                                        <?php $reasons = $this->loadData('project_abandon_reason'); ?>
-                                        <?php $reasons = $reasons->select('', 'label'); ?>
-                                        <?php foreach ($reasons as $reason) : ?>
-                                            <option value="<?= $reason['id_abandon'] ?>"><?= $reason['label'] ?></option>
+                                        <?php foreach ($this->projectAbandonReasonList as $abandonReason) : ?>
+                                            <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAbandonReason $abandonReason */ ?>
+                                            <option value="<?= $abandonReason->getIdAbandon() ?>"><?= $abandonReason->getReason() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

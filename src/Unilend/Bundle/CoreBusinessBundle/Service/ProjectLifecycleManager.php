@@ -381,9 +381,9 @@ class ProjectLifecycleManager
      */
     public function buildLoans(\projects $project) : void
     {
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::BID_TERMINATED, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::BID_TERMINATED, $project);
         $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDE, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDE, $project);
         $this->acceptBids($project);
 
         /** @var \product $product */

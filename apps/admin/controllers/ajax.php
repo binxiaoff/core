@@ -2,7 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -221,12 +221,12 @@ class ajaxController extends bootstrap
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
-                $result                = $projectRequestManager->checkProjectRisk($project, $_SESSION['user']['id_user']);
+                $result                = $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser());
 
                 // NAF code may be filled in in checkProjectRisk method
                 $company->get($project->id_company, 'id_company');
 
-                if (true === is_array($result) && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN === $result['motive']) {
+                if (true === is_array($result) && ProjectRejectionReason::UNKNOWN_SIREN === $result['motive']) {
                     echo json_encode([
                         'success' => false,
                         'error'   => 'SIREN inconu'
@@ -591,54 +591,37 @@ class ajaxController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $project);
-
-        if ($project->status == ProjectsStatus::COMMERCIAL_REJECTION) {
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->id_project);
-
-            /** @var \projects_status_history_details $historyDetails */
-            $historyDetails                              = $this->loadData('projects_status_history_details');
-            $historyDetails->id_project_status_history   = $projectStatusHistory->id_project_status_history;
-            $historyDetails->commercial_rejection_reason = $_POST['rejection_reason'];
-            $historyDetails->create();
-
+        if ($_POST['status'] == ProjectsStatus::COMMERCIAL_REJECTION) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+            /** @var ProjectRejectionReason[] $rejectionReasons */
+            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                ->findBy(['idRejection' => $_POST['rejection_reason']]);
+            if (empty($rejectionReasons) || count($rejectionReasons) !== count($_POST['rejection_reason'])) {
+                $this->get('logger')->error('Could not update the project status to : ' . ProjectsStatus::COMMERCIAL_REJECTION . '. At least one of the submitted rejection reasons is unknown.', [
+                    'id_project'        => $project->id_project,
+                    'rejection_reasons' => $_POST['rejection_reason'],
+                    'class'             => __CLASS__,
+                    'function'          => __FUNCTION__
+                ]);
 
-            $projectCommentEntity = new ProjectsComments();
-            $projectCommentEntity->setIdProject($projectEntity);
-            $projectCommentEntity->setIdUser($this->userEntity);
-            $projectCommentEntity->setContent('<p><u>Rejet commercial</u><p>' . $_POST['comment'] . '</p>');
-            $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
-
-            $entityManager->persist($projectCommentEntity);
-            $entityManager->flush($projectCommentEntity);
-
-            if (false === empty($client->email) && '1' === $_POST['send_email']) {
-                $keywords = [
-                    'firstName' => $client->prenom
-                ];
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-
-                try {
-                    $message->setTo($client->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->warning(
-                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                }
+                echo 'nok';
+                return;
             }
-        }
+            $result = $this->rejectProject($project, ProjectsStatus::COMMERCIAL_REJECTION, $rejectionReasons, '1' === $_POST['send_email'], true);
 
-        echo 'ok';
+            if ($result['success']) {
+                echo 'ok';
+            } else {
+                echo 'nok';
+            }
+            return;
+        } else {
+            $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $project);
+
+            echo 'ok';
+            return;
+        }
     }
 
     public function _valid_rejete_etape6()
@@ -648,10 +631,12 @@ class ajaxController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository $projectsRepository */
+        $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         if (
             false === isset($_POST['id_project'], $_POST['status'])
-            || null === ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($_POST['id_project']))
+            || null === ($project = $projectsRepository->find($_POST['id_project']))
             || $_POST['status'] == 1 && (
                 empty($_POST['structure']) || $_POST['structure'] > 10
                 || empty($_POST['rentabilite']) || $_POST['rentabilite'] > 10
@@ -720,44 +705,26 @@ class ajaxController extends bootstrap
         if ($_POST['status'] == 1) {
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REVIEW, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ANALYSIS_REJECTION, $project);
+            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
+            if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
+                $result = $this->rejectProject($project, ProjectsStatus::ANALYSIS_REJECTION, $rejectionReasons, '1' === $_POST['send_email']);
 
-            /** @var \projects_status_history_details $historyDetails */
-            $historyDetails                            = $this->loadData('projects_status_history_details');
-            $historyDetails->id_project_status_history = $projectStatusHistory->id_project_status_history;
-            $historyDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
-            $historyDetails->create();
+                echo json_encode($result);
+                return;
+            } else {
+                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::ANALYSIS_REJECTION . ': At least one of the rejection reasons is unknown.', [
+                    'id_project'       => $project->getIdProject(),
+                    'rejection_reason' => $_POST['rejection_reason'],
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__
+                ]);
 
-            $client = $project->getIdCompany()->getIdClientOwner();
-
-            if ($client instanceof Clients && false === empty($client->getEmail()) && '1' === $_POST['send_email']) {
-                $keywords = [
-                    'firstName' => $client->getPrenom()
-                ];
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-
-                try {
-                    $message->setTo($client->getEmail());
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->warning(
-                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                    echo json_encode(['success' => false, 'error' => 'Email non envoyé à l\'emprunteur.']);
-                    return;
-                }
+                echo json_encode(['success' => false, 'error' => 'Le projet n\'a pas été rejeté. Le motif est incorrect.']);
+                return;
             }
         }
-
-        echo json_encode(['success' => true]);
     }
 
     public function _valid_rejete_etape7()
@@ -855,45 +822,32 @@ class ajaxController extends bootstrap
             }
 
             if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
-               /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
                 $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
             }
 
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $project);
         } elseif ($_POST['status'] == 2) {
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REJECTION, $project);
+            /** @var ProjectRejectionReason[] $rejectionReasons */
+            $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->loadData('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
+            if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
+                $result = $this->rejectProject($project, ProjectsStatus::COMITY_REJECTION, $rejectionReasons, '1' === $_POST['send_email']);
 
-            /** @var \projects_status_history_details $historyDetails */
-            $historyDetails                            = $this->loadData('projects_status_history_details');
-            $historyDetails->id_project_status_history = $projectStatusHistory->id_project_status_history;
-            $historyDetails->comity_rejection_reason   = $_POST['rejection_reason'];
-            $historyDetails->create();
+                echo json_encode($result);
+                return;
+            } else {
+                $this->get('logger')->error('Could not update the project status to ' . ProjectsStatus::COMITY_REJECTION . ': At least one of the submitted rejection reasons is unknown.', [
+                    'id_project'       => $project->getIdProject(),
+                    'rejection_reason' => $_POST['rejection_reason'],
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__
+                ]);
 
-            if (false === empty($client->email) && '1' === $_POST['send_email']) {
-                $keywords = [
-                    'firstName' => $client->prenom
-                ];
-
-                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-
-                try {
-                    $message->setTo($client->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->warning(
-                        'Could not send email : emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
-                    echo json_encode(['success' => false, 'error' => 'Email non envoyé à l\'emprunteur.']);
-                    return;
-                }
+                echo json_encode(['success' => false, 'error' => 'Le projet n\'a pas été rejeté. Le motif est incorrect']);
+                return;
             }
         } elseif ($_POST['status'] == 4) {
             $projectCommentEntity = new \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments();
@@ -1113,5 +1067,114 @@ class ajaxController extends bootstrap
 
         header('Content-Type: application/json');
         echo json_encode($result);
+    }
+
+    /**
+     * @param Projects|\projects $project
+     * @param int      $rejectionStatus
+     * @param array    $rejectionReasons
+     * @param bool     $sendBorrowerEmail
+     * @param bool     $addProjectComment
+     *
+     * @return array
+     */
+    private function rejectProject($project, int $rejectionStatus, array $rejectionReasons, bool $sendBorrowerEmail = false, bool $addProjectComment = false): array
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+        $projectStatusManager = $this->get('unilend.service.project_status_manager');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $error         = null;
+
+        if ($project instanceof \projects) {
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
+                ->find($project->id_project);
+        }
+
+        try {
+            $success = $projectStatusManager->rejectProject($project, $_POST['status'], $rejectionReasons, $this->userEntity);
+
+            if (false === $success) {
+                return ['success' => false, 'error' => 'Le projet n\'a pas été rejeté.'];
+            }
+
+            if ($addProjectComment) {
+                switch ($rejectionStatus) {
+                    case ProjectsStatus::COMMERCIAL_REJECTION:
+                        $commentTitle = 'Rejet commercial';
+                        break;
+                    case ProjectsStatus::ANALYSIS_REJECTION:
+                        $commentTitle = 'Rejet analyst';
+                        break;
+                    case ProjectsStatus::COMITY_REJECTION:
+                        $commentTitle = 'Rejet Comité';
+                        break;
+                    default:
+                        $commentTitle = 'Rejet';
+                        break;
+                }
+
+                $projectCommentEntity = new ProjectsComments();
+                $projectCommentEntity->setIdProject($project);
+                $projectCommentEntity->setIdUser($this->userEntity);
+                $projectCommentEntity->setContent('<p><u>' . $commentTitle . '</u><p>' . $_POST['comment'] . '</p>');
+                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
+
+                $entityManager->persist($projectCommentEntity);
+                try {
+                    $entityManager->flush($projectCommentEntity);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error('Could not save the rejection comment. Error: ' . $exception->getMessage(), [
+                        'id_project' => $project->getIdProject(),
+                        'comment'    => $_POST['comment'],
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine()
+                    ]);
+                    $error = 'Le mémo n\'a pas été inséré.';
+                }
+            }
+            $company = $project->getIdCompany();
+            $client  = null !== $company ? $company->getIdClientOwner() : null;
+
+            if ($sendBorrowerEmail && $client && false === empty($client->getEmail())) {
+                $keywords = [
+                    'firstName' => $client->getPrenom()
+                ];
+
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
+
+                try {
+                    $message->setTo($client->getEmail());
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->warning('Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(), [
+                        'id_mail_template' => $message->getTemplateId(),
+                        'id_client'        => $client->getIdClient(),
+                        'class'            => __CLASS__,
+                        'function'         => __FUNCTION__,
+                        'file'             => $exception->getFile(),
+                        'line'             => $exception->getLine()
+                    ]);
+                    $error = null === $error ? 'Le mail de rejet n\'a pas été envoyé.' : $error . 'Le mail de rejet n\'a pas été envoyé.';
+                }
+            }
+
+            return ['success' => null === $error, 'error' => null === $error ? $error : 'Le projet a été rejeté. ' . $error];
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('Could not update the project status . Error: ' . $exception->getMessage(), [
+                'id_project'        => $project->getIdProject(),
+                'rejection_reasons' => $_POST['rejection_reason'],
+                'class'             => __CLASS__,
+                'function'          => __FUNCTION__,
+                'file'              => $exception->getFile(),
+                'line'              => $exception->getLine()
+            ]);
+
+            return ['success' => false, 'error' => 'Le projet n\'a pas été rejeté.'];
+        }
     }
 }

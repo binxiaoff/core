@@ -94,7 +94,7 @@ class surveillance_risqueController extends bootstrap
                 }
 
                 if (empty($event['previous_value']) && false === is_numeric($event['value']) && EulerCompanyRating::GRADE_UNKNOWN !== $event['value']) {
-                    $event['value'] = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($event['value']);
+                    $event['value'] = $this->get('unilend.service.project_status_manager')->getStatusReasonText(null, $event['value'], 'rejection')[0];
                 }
 
                 $formattedEvents[$event['siren']]['count']++;

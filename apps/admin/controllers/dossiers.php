@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, EcheanciersEmprunteur, Loans, MailTemplates, Partner, ProjectNotification, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     TermsOfSaleManager, WireTransferOutManager
@@ -180,14 +180,19 @@ class dossiersController extends bootstrap
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
             $this->projects_status->get($this->projects->status, 'status');
-            $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
+            $this->lastProjectStatusHistory      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+                ->findOneBy(['idProject' => $this->projects->id_project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+            $unknownSirenRejectionReason         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                ->findOneBy(['label' => ProjectRejectionReason::UNKNOWN_SIREN]);
+            $projectStatusHistoryRejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectStatusHistoryReason')
+                ->findOneBy(['idProjectStatusHistory' => $this->lastProjectStatusHistory, 'idRejectionReason' => $unknownSirenRejectionReason]);
 
             if (
                 $this->projects->status <= ProjectsStatus::COMMERCIAL_REVIEW
                 && empty($this->projects->id_commercial)
                 && empty($this->companies->phone)
                 && 1 === preg_match('/^[0-9]{9}$/', $this->companies->siren)
-                && ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN !== $this->projects_status_history->content
+                && null === $projectStatusHistoryRejectionReason
             ) {
                 /** @var \Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentity $establishmentIdentity */
                 $establishmentIdentity = $this->get('unilend.service.ws_client.altares_manager')->getEstablishmentIdentity($this->companies->siren);
@@ -198,10 +203,9 @@ class dossiersController extends bootstrap
                 }
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
-
-            $this->rejectionReasonMessage = $projectStatusManager->getRejectionReasonTranslation($this->projects_status_history->content);
-            $this->hasAdvisor             = false;
+            $projectStatusManager   = $this->get('unilend.service.project_status_manager');
+            $this->statusReasonText = $projectStatusManager->getStatusReasonText($this->projectEntity);
+            $this->hasAdvisor       = false;
 
             $this->canBeDeclined = $projectCloseOutNettingManager->canBeDeclined($this->projectEntity);
 
@@ -362,35 +366,6 @@ class dossiersController extends bootstrap
                 $companyBalanceSheetManager->removeBalanceSheet($this->companies_bilans, $this->projects);
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
-            } elseif (isset($_POST['rejection_reason'])) {
-                /** @var \projects_status_history $oProjectStatusHistory */
-                $oProjectStatusHistory = $this->loadData('projects_status_history');
-
-                if ($oProjectStatusHistory->loadLastProjectHistory($this->projects->id_project)) {
-                    /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
-                    $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-
-                    $bCreate = (false === $oProjectsStatusHistoryDetails->get($oProjectStatusHistory->id_project_status_history, 'id_project_status_history'));
-
-                    switch ($this->projects->status) {
-                        case ProjectsStatus::COMMERCIAL_REJECTION:
-                            $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
-                            break;
-                        case ProjectsStatus::ANALYSIS_REJECTION:
-                            $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
-                            break;
-                        case ProjectsStatus::COMITY_REJECTION:
-                            $oProjectsStatusHistoryDetails->comity_rejection_reason = $_POST['rejection_reason'];
-                            break;
-                    }
-
-                    if ($bCreate) {
-                        $oProjectsStatusHistoryDetails->id_project_status_history = $oProjectStatusHistory->id_project_status_history;
-                        $oProjectsStatusHistoryDetails->create();
-                    } else {
-                        $oProjectsStatusHistoryDetails->update();
-                    }
-                }
             } elseif (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
                 if ($this->projects->status < ProjectsStatus::PRET_REFUSE) {
                     /** @var LoggerInterface $logger */
@@ -689,26 +664,6 @@ class dossiersController extends bootstrap
             $needs        = $oProjectNeed->getTree();
             $this->aNeeds = $needs;
 
-            if (in_array($this->projects->status, [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])) {
-                /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
-                $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
-                /** @var \project_rejection_reason $oRejectionReason */
-                $oRejectionReason = $this->loadData('project_rejection_reason');
-
-                $this->sRejectionReason = '';
-
-                if (
-                    $oProjectsStatusHistoryDetails->get($this->projects_status_history->id_project_status_history, 'id_project_status_history')
-                    && (
-                        $oProjectsStatusHistoryDetails->commercial_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->commercial_rejection_reason)
-                        || $oProjectsStatusHistoryDetails->comity_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->comity_rejection_reason)
-                        || $oProjectsStatusHistoryDetails->analyst_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->analyst_rejection_reason)
-                    )
-                ) {
-                    $this->sRejectionReason = $oRejectionReason->label;
-                }
-            }
-
             $this->xerfi                 = $this->loadData('xerfi');
             $this->sectors               = $this->loadData('company_sector')->select();
             $this->sources               = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
@@ -850,9 +805,11 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager $projectRatingManager */
             $projectRatingManager = $this->get('unilend.service.project_rating_manager');
             /** @var \NumberFormatter $numberFormatter */
-            $numberFormatter               = $this->get('number_formatter');
-            $this->projectRating           = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
-            $this->projectCommiteeAvgGrade = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageGrade($this->projectEntity));
+            $numberFormatter                = $this->get('number_formatter');
+            $this->projectRating            = $numberFormatter->format($projectRatingManager->getRating($this->projectEntity)) . ' étoiles';
+            $this->projectCommiteeAvgGrade  = $numberFormatter->format($projectRatingManager->calculateCommitteeAverageGrade($this->projectEntity));
+            $this->projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
@@ -1168,7 +1125,8 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $this->rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findBy([], ['label' => 'ASC']);
+        $this->rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+            ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
         $this->step             = $this->params[0];
         $this->projectId        = $this->params[1];
     }
@@ -2179,45 +2137,86 @@ class dossiersController extends bootstrap
 
     public function _abandon()
     {
-        $this->hideDecoration();
-
-        $this->projects = $this->loadData('projects');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             false === isset($this->params[0])
-            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
-            || false === $this->projects->get($this->params[0])
+            || null === $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0])
         ) {
-            echo 'Projet inconnu';
-            $this->autoFireView = false;
-            return;
+            $_SESSION['freeow']['title']   = 'Erreur abandon projet';
+            $_SESSION['freeow']['message'] = 'Votre demande est incorrecte.';
+            header('Location: ' . $this->lurl);
+            die;
         }
 
-        if (false === empty($_POST['reason']) && filter_var($_POST['reason'], FILTER_VALIDATE_INT)) {
+        if (false === empty($_POST['reason'])) {
+
+            /** @var ProjectAbandonReason[] $abandonReasons */
+            $abandonReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->findBy(['idAbandon' => $_POST['reason']]);
+
+            if (empty($abandonReasons) || count($abandonReasons) !== count($_POST['reason'])) {
+                $this->get('logger')->error('Could not abandon project: ' . $this->params[0] . '. At least one abandon reasons is unknown.', [
+                    'id_project'      => $this->params[0],
+                    'abandon_reasons' => $_POST['reason'],
+                    'class'           => __CLASS__,
+                    'function'        => __FUNCTION__
+                ]);
+
+                $_SESSION['freeow']['title']   = 'Erreur abandon projet';
+                $_SESSION['freeow']['message'] = 'Le motif est vide et/ou inconnu.';
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
+                die;
+            }
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
+            $projectStatusManager = $this->get('unilend.service.project_status_manager');
+
+            $result = $projectStatusManager->abandonProject($project, $abandonReasons, $this->userEntity);
+
+            if (false === $result) {
+                $_SESSION['freeow']['title']   = 'Erreur abandon projet';
+                $_SESSION['freeow']['message'] = 'Veuillez contacter l\'équipe technique.';
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
+                die;
+            }
+
             if (false === empty($_POST['comment'])) {
-                /** @var \Doctrine\ORM\EntityManager $entityManager */
-                $entityManager        = $this->get('doctrine.orm.entity_manager');
                 $projectCommentEntity = new ProjectsComments();
-                $projectCommentEntity->setIdProject($entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project));
+                $projectCommentEntity->setIdProject($project);
                 $projectCommentEntity->setIdUser($this->userEntity);
                 $projectCommentEntity->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment']);
                 $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
 
                 $entityManager->persist($projectCommentEntity);
-                $entityManager->flush($projectCommentEntity);
+                try {
+                    $entityManager->flush($projectCommentEntity);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error('Could not insert project abandon comment. Error: ' . $exception->getMessage(), [
+                        'id_project' => $project->getIdProject(),
+                        'comment'    => $_POST['comment'],
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine()
+                    ]);
+
+                    $_SESSION['freeow']['title']   = 'Erreur abandon projet';
+                    $_SESSION['freeow']['message'] = 'Le projet est abandonné, mais le commentaire n\'a pas été inséré.';
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
+                    die;
+                }
             }
-
-            /** @var \project_abandon_reason $abandonReason */
-            $abandonReason = $this->loadData('project_abandon_reason');
-            $abandonReason->get($_POST['reason']);
-
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::ABANDONED, $this->projects, 0, $abandonReason->label);
-
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+            $_SESSION['freeow']['title']   = 'Abandon du projet';
+            $_SESSION['freeow']['message'] = 'Le projet a été abandonné avec succès';
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
             die;
         }
+
+        $_SESSION['freeow']['title']   = 'Abandon du projet';
+        $_SESSION['freeow']['message'] = 'Aucune modification n\'a été faite.';
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
+        die;
     }
 
     public function _publish()
@@ -2353,53 +2352,59 @@ class dossiersController extends bootstrap
 
     public function _reject_suspensive_conditions()
     {
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        $project->get($this->params[0], 'id_project');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var Projects $project */
+        $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        $company->get($project->id_company, 'id_company');
-
-        /** @var \clients $client */
-        $client = $this->loadData('clients');
-        $client->get($company->id_client_owner, 'id_client');
+        if (null === $project || null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+        $client = $project->getIdCompany()->getIdClientOwner();
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::COMITY_REJECTION, $project);
+        try {
+            /** @var ProjectRejectionReason[] $rejectionReason */
+            $rejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                ->findBy(['label' => ProjectRejectionReason::SUSPENSIVE_CONDITIONS]);
+            $result          = $projectStatusManager->rejectProject($project, ProjectsStatus::COMITY_REJECTION, $rejectionReason, $this->userEntity);
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('Could not save the project status: ' . ProjectsStatus::COMITY_REJECTION . '. Error: ' . $exception->getMessage(), [
+                'id_project'       => $project->getIdProject(),
+                'rejection_reason' => ProjectRejectionReason::SUSPENSIVE_CONDITIONS,
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
+            die;
+        }
 
-        /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $this->loadData('projects_status_history');
-        $projectStatusHistory->loadLastProjectHistory($project->id_project);
-
-        /** @var \projects_status_history_details $historyDetails */
-        $historyDetails                            = $this->loadData('projects_status_history_details');
-        $historyDetails->id_project_status_history = $projectStatusHistory->id_project_status_history;
-        $historyDetails->comity_rejection_reason   = \project_rejection_reason::SUSPENSIVE_CONDITIONS;
-        $historyDetails->create();
-
-        if (false === empty($client->email)) {
+        if ($result && false === empty($client->getEmail())) {
             $keywords = [
-                'firstName' => $client->prenom
+                'firstName' => $client->getPrenom()
             ];
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $keywords);
-
             try {
-                $message->setTo($client->email);
+                $message->setTo($client->getEmail());
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
             } catch (\Exception $exception) {
-                $this->get('logger')->warning(
-                    'Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->get('logger')->warning('Could not send email: emprunteur-dossier-rejete - Exception: ' . $exception->getMessage(), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $client->getIdClient(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__
+                ]);
             }
         }
 
-        header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->getIdProject());
         die;
     }
 
