@@ -20,7 +20,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $('#company-name').html(company)
         })
 
-        $('.listeProjets').tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}, 6: {sorter: false}}})
+        $('.listeProjets').tablesorter({
+            headers: {
+                4: {sorter: false},
+                5: {sorter: false},
+                6: {sorter: false},
+                7: {sorter: false}
+            }
+        })
+
         $('.listeMandats').tablesorter({headers: {3: {sorter: false}}})
 
         $('#operation-date-form').on('submit', function (e) {

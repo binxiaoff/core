@@ -94,17 +94,17 @@ class dossiersController extends bootstrap
             $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
             $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
             $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial,
-                $iNbStartPagination, $this->nb_lignes);
-        } elseif (isset($this->params[0]) && 1 === preg_match('/[0-9,]+/', $this->params[0])) {
+            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
+        } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
         $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
-        $this->hasRepaymentAccess = $backOfficeUserManager->hasAccessToZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
+        $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
 
         if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);

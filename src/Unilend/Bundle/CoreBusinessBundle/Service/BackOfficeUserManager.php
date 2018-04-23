@@ -144,16 +144,17 @@ class BackOfficeUserManager
     }
 
     /**
-     * @param Users $user
+     * @param Users        $user
      * @param Zones|string $zone
      *
      * @return bool
      */
-    public function hasAccessToZone(Users $user, $zone): bool
+    public function isGrantedZone(Users $user, $zone): bool
     {
         if (is_string($zone)) {
             $zone = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Zones')->findOneBy(['slug' => $zone]);
         }
+
         if ($zone) {
             if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UsersZones')->findOneBy(['idUser' => $user, 'idZone' => $zone])) {
                 return true;
