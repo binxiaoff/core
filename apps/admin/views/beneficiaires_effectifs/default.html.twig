@@ -127,14 +127,14 @@
                         {% if companyOwner.naissance is defined %}
                         $modal.find('[name=birth_date]').val('{{ companyOwner.naissance|date("d/m/Y") }}')
                         {% endif %}
-                        {% if companyOwner.lieuNaissance is defined %}
-                        $modal.find('[name=birth_place]').val('{{ companyOwner.lieuNaissance }}')
+                        {% if companyOwner.villeNaissance is defined %}
+                        $modal.find('[name=birth_place]').val('{{ companyOwner.villeNaissance }}')
                         {% endif %}
-                        {% if companyOwner.paysNaissance is defined %}
-                        $modal.find('[name=birth_country]').val('{{ companyOwner.paysNaissance }}')
+                        {% if companyOwner.idPaysNaissance is defined %}
+                        $modal.find('[name=birth_country]').val('{{ companyOwner.idPaysNaissance }}')
                         {% endif %}
-                        {% if companyOwnerAddress.idPaysFiscal is defined %}
-                        $modal.find('[name=country]').val('{{ companyOwnerAddress.idPaysFiscal }}')
+                        {% if fiscalCountryId is defined %}
+                        $modal.find('[name=country]').val('{{ fiscalCountryId }}')
                         {% endif %}
                         {% if companyOwnerPassport is defined and companyOwnerPassport is not empty %}
                             setExistingFile($modal, '{{ companyOwnerPassport }}')

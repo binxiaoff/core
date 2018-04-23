@@ -435,9 +435,11 @@ class BeneficialOwnerManager
      */
     private function modifyOwnerInValidatedDeclaration($owner, $type, $percentage)
     {
-        $owner->getIdDeclaration()->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED);
+        $currentDeclaration = $owner->getIdDeclaration();
+        $currentDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_ARCHIVED);
+        $this->entityManager->flush($currentDeclaration);
 
-        $newDeclaration = clone $owner->getIdDeclaration();
+        $newDeclaration = clone $currentDeclaration;
         $newDeclaration->setStatus(CompanyBeneficialOwnerDeclaration::STATUS_PENDING);
 
         $this->entityManager->persist($newDeclaration);
@@ -450,7 +452,7 @@ class BeneficialOwnerManager
 
         $this->entityManager->flush([$owner, $newOwner, $newDeclaration]);
 
-        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $owner->getIdDeclaration()]);
+        $projectDeclarations = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findBy(['idDeclaration' => $currentDeclaration]);
 
         if (false === empty($projectDeclarations)) {
             foreach ($projectDeclarations as $universign) {
@@ -548,7 +550,7 @@ class BeneficialOwnerManager
     private function getOwnerDataFromDeclaration(CompanyBeneficialOwnerDeclaration $declaration)
     {
         $owners = [];
-        foreach ($declaration->getBeneficialOwner() as $owner) {
+        foreach ($declaration->getBeneficialOwners() as $owner) {
             $clientAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $owner->getIdClient()]);
             $owners[]        = [
                 'owner'   => $owner,

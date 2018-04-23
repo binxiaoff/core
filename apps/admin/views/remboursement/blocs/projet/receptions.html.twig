@@ -1,0 +1,49 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="block">
+            <div class="block-header">
+                <h3 class="block-title">Réceptions à traiter</h3>
+            </div>
+            <div class="block-content block-content-full">
+                {% if pendingWireTransferIn|length > 0 %}
+                    <table class="table table-bordered table-hover table-header-bg">
+                        <thead>
+                        <tr>
+                            <th style="width: 33%">
+                                Date
+                            </th>
+                            <th style="width: 33%">
+                                Montant
+                            </th>
+                            <th style="width: 34%">
+                                Planifier un remboursement
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for wireTransferIn in pendingWireTransferIn %}
+                            <tr>
+                                <td>
+                                    {{ wireTransferIn.added|localizeddate('short', 'none') }}
+                                </td>
+                                <td class="text-right">
+                                    {{ (wireTransferIn.montant / 100)|localizedcurrency('EUR') }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="/remboursement/planifier/{{ wireTransferIn.idReception }}" class="btn btn-xs btn-default">
+                                        Planifier le remboursement<span class="fa fa-chevron-right push-5-l"></span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert">
+                        <p>Aucune réception en attente.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

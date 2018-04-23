@@ -329,10 +329,6 @@ class preteursController extends bootstrap
         $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
-        $addressManager = $this->get('unilend.service.address_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\TaxManager $taxManager */
-        $taxManager = $this->get('unilend.service.tax_manager');
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
@@ -586,6 +582,8 @@ class preteursController extends bootstrap
                         /** @var ClientAuditer $clientAuditer */
                         $clientAuditer = $this->get(ClientAuditer::class);
                         $clientAuditer->logChanges($this->client, $this->userEntity);
+
+                        $entityManager->flush([$this->companyEntity, $this->client]);
 
                         $this->saveUserHistory($this->client->getIdClient());
 

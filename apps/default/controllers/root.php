@@ -157,11 +157,11 @@ class rootController extends bootstrap
 
                 $aReplacements = [
                     '[Civilite]'            => $this->clients->civilite,
-                    '[Prenom]'              => utf8_encode($this->clients->prenom),
-                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[Prenom]'              => $this->clients->prenom,
+                    '[Nom]'                 => $this->clients->nom,
                     '[date]'                => date('d/m/Y', strtotime($this->clients->naissance)),
-                    '[ville_naissance]'     => utf8_encode($this->clients->ville_naissance),
-                    '[adresse_fiscale]'     => utf8_encode($clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr()),
+                    '[ville_naissance]'     => $this->clients->ville_naissance,
+                    '[adresse_fiscale]'     => $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr(),
                     '[date_validation_cgv]' => $dateAccept
                 ];
 
@@ -179,12 +179,12 @@ class rootController extends bootstrap
 
                 $aReplacements = [
                     '[Civilite]'            => $this->clients->civilite,
-                    '[Prenom]'              => utf8_encode($this->clients->prenom),
-                    '[Nom]'                 => utf8_encode($this->clients->nom),
-                    '[Fonction]'            => utf8_encode($this->clients->fonction),
-                    '[Raison_sociale]'      => utf8_encode($this->companies->name),
+                    '[Prenom]'              => $this->clients->prenom,
+                    '[Nom]'                 => $this->clients->nom,
+                    '[Fonction]'            => $this->clients->fonction,
+                    '[Raison_sociale]'      => $this->companies->name,
                     '[SIREN]'               => $this->companies->siren,
-                    '[adresse_fiscale]'     => utf8_encode($companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr()),
+                    '[adresse_fiscale]'     => $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
                     '[date_validation_cgv]' => $dateAccept
                 ];
 

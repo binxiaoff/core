@@ -133,7 +133,7 @@ class ProjectManager
      *
      * @return int[]
      */
-    public function getMonthlyPaymentBoundaries($amount, $duration, $repaymentCommissionRate = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
+    public function getMonthlyPaymentBoundaries($amount, $duration, $repaymentCommissionRate = Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
     {
         $financialCalculation = new \PHPExcel_Calculation_Financial();
 
@@ -261,7 +261,7 @@ class ProjectManager
             }
         }
 
-        return $fundsToRelease;
+        return max($fundsToRelease, 0);
     }
 
     /**

@@ -59,18 +59,18 @@ class CompanyBeneficialOwnerDeclaration
     private $idCompany;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner[]
+     * @var BeneficialOwner[]|ArrayCollection
      *
      * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner", mappedBy="idDeclaration")
      */
-    private $beneficialOwner;
+    private $beneficialOwners;
 
     /**
      * Companies constructor.
      */
     public function __construct()
     {
-        $this->beneficialOwner = new ArrayCollection();
+        $this->beneficialOwners = new ArrayCollection();
     }
 
     /**
@@ -198,10 +198,10 @@ class CompanyBeneficialOwnerDeclaration
     }
 
     /**
-     * @return BeneficialOwner[]
+     * @return BeneficialOwner[]|ArrayCollection
      */
-    public function getBeneficialOwner()
+    public function getBeneficialOwners()
     {
-        return $this->beneficialOwner;
+        return $this->beneficialOwners;
     }
 }

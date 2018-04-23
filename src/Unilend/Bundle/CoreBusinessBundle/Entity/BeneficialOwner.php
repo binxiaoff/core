@@ -46,7 +46,7 @@ class BeneficialOwner
     /**
      * @var \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration
      *
-     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration")
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration", inversedBy="beneficialOwners")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_declaration", referencedColumnName="id")
      * })

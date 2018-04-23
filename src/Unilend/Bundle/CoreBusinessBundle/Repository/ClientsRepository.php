@@ -13,12 +13,11 @@ use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, PaysV2, WalletType
+    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, WalletType
 };
 
 class ClientsRepository extends EntityRepository
 {
-
     /**
      * @param integer|Clients $idClient
      *
@@ -42,12 +41,11 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param string   $email
-     * @param int|null $status
+     * @param string $email
      *
      * @return bool
      */
-    public function existEmail($email, $status = null)
+    public function existEmail($email)
     {
         if (false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -59,13 +57,7 @@ class ClientsRepository extends EntityRepository
             ->where('c.email = :email')
             ->setParameter('email', $email);
 
-        if (null !== $status) {
-            $queryBuilder
-                ->andWhere('c.status = :status')
-                ->setParameter('status', $status, \PDO::PARAM_INT);
-        }
-
-        $query  = $queryBuilder->getQuery();
+        $query = $queryBuilder->getQuery();
 
         try {
             $result = $query->getSingleScalarResult();
@@ -198,85 +190,6 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param int $limit
-     *
-     * @return array
-     * @throws DBALException
-     */
-    public function getLendersToMatchCity(int $limit): array
-    {
-        $query = '
-            SELECT * FROM (
-              SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
-              FROM clients_adresses ca
-              INNER JOIN clients c ON ca.id_client = c.id_client
-              INNER JOIN wallet w ON c.id_client = w.id_client
-              INNER JOIN wallet_type wt ON w.id_type = wt.id
-              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
-              WHERE csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
-                AND wt.label = "' . WalletType::LENDER . '"
-                AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                AND c.type IN (' . Clients::TYPE_PERSON . ', ' . Clients::TYPE_PERSON_FOREIGNER . ')
-                AND (
-                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
-                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
-                )
-              LIMIT :limit
-            ) perso
-
-            UNION
-
-            SELECT * FROM (
-              SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
-              FROM clients_adresses ca
-              INNER JOIN clients c ON ca.id_client = c.id_client
-              INNER JOIN wallet w ON c.id_client = w.id_client
-              INNER JOIN wallet_type wt ON w.id_type = wt.id
-              INNER JOIN companies co ON co.id_client_owner = ca.id_client
-              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
-              WHERE csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')
-                AND wt.label = "' . WalletType::LENDER . '"
-                AND (ca.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR ca.id_pays_fiscal = 0)
-                AND (
-                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
-                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
-                ) 
-              LIMIT :limit
-            ) company';
-
-        $result =  $this->getEntityManager()->getConnection()
-            ->executeQuery($query, ['limit' => floor($limit / 2)], ['limit' => PDO::PARAM_INT])
-            ->fetchAll(PDO::FETCH_ASSOC);
-
-        return $result;
-    }
-
-    /**
-     * @param int $limit
-     *
-     * @return array
-     */
-    public function getLendersToMatchBirthCity(int $limit): array
-    {
-        $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder
-            ->select('c.idClient, c.prenom, c.nom, c.villeNaissance')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'c.idClient = w.idClient')
-            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id')
-            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
-            ->where('wt.label = :lender')
-            ->andWhere('csh.idStatus IN (:statusOnline)')
-            ->andWhere('c.idPaysNaissance = :France')
-            ->andWhere('c.inseeBirth IS NULL')
-            ->setParameter('lender', WalletType::LENDER)
-            ->setParameter('statusOnline', ClientsStatus::GRANTED_LOGIN, Connection::PARAM_INT_ARRAY)
-            ->setParameter('France', PaysV2::COUNTRY_FRANCE)
-            ->setMaxResults($limit);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * If true only lenders activated at least once (active lenders)
      * If false all online lender (Community)
      *
@@ -399,11 +312,11 @@ class ClientsRepository extends EntityRepository
               END AS 'StatutValidation',
               status_inscription_preteur AS 'StatusInscription',
               COUNT(DISTINCT l.id_project) AS 'NbPretsValides',
-              REPLACE(ca.adresse1, ',', '') AS 'Adresse1',
-              REPLACE(ca.adresse2, ',', '') AS 'Adresse2',
-              REPLACE(ca.adresse3, ',', '') AS 'Adresse3',
-              REPLACE(ca.cp, ',', '') AS 'CP',
-              REPLACE(ca.ville, ',', '') AS 'Ville',
+              REPLACE(ca.address, ',', '') AS 'Adresse1',
+              '' AS 'Adresse2',
+              '' AS 'Adresse3',
+              REPLACE(ca.zip, ',', '') AS 'CP',
+              REPLACE(ca.city, ',', '') AS 'Ville',
               acountry.fr AS 'Pays',
               SUM(l.amount) / 100 AS 'TotalPretEur',
               CASE p.id_prospect 
@@ -415,9 +328,9 @@ class ClientsRepository extends EntityRepository
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id
-            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
+            LEFT JOIN client_address ca ON c.id_address = ca.id
             LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
-            LEFT JOIN pays_v2 acountry ON ca.id_pays = acountry.id_pays
+            LEFT JOIN pays_v2 acountry ON ca.id_country = acountry.id_pays
             LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
             LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
             LEFT JOIN clients_status cs ON csh.id_status = cs.id
@@ -648,8 +561,7 @@ class ClientsRepository extends EntityRepository
             ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'c.idClient = co.idClientOwner AND c.type IN (:companyType)')
             ->setParameter('lenderWalletType', WalletType::LENDER)
             ->setParameter('companyType', [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER], Connection::PARAM_INT_ARRAY)
-            ->orderBy('c.added', 'DESC')
-            ->addOrderBy('c.status', 'DESC');
+            ->orderBy('c.added', 'DESC');
 
         if (filter_var($search, FILTER_VALIDATE_INT)) {
             $queryBuilder

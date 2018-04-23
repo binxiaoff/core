@@ -327,7 +327,7 @@ class ProjectStatusNotificationSender
         $aLenderLoans = $loans->getProjectLoansByLender($project->getIdProject());
 
         if (is_array($aLenderLoans)) {
-            $nextRepayment = $lenderRepaymentRepository->findNextPendingScheduleAfter(new \DateTime('tomorrow'), $project);
+            $nextRepayment = $lenderRepaymentRepository->findNextPendingScheduleAfter(new \DateTime(), $project);
             if (null === $nextRepayment) {
                 throw new \Exception('There is no pending repayment on the project ' . $project->getIdProject());
             }

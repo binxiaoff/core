@@ -26,9 +26,6 @@ class projects extends projects_crud
     const SORT_DIRECTION_ASC  = 'ASC';
     const SORT_DIRECTION_DESC = 'DESC';
 
-    const DEFAULT_COMMISSION_RATE_FUNDS     = 4;
-    const DEFAULT_COMMISSION_RATE_REPAYMENT = 1;
-
     public function __construct($bdd, $params = '')
     {
         parent::__construct($bdd, $params);
@@ -1078,10 +1075,12 @@ class projects extends projects_crud
 
     /**
      * @param DateTime $declarationDate
+     * @param array    $contractType
      *
      * @return array
+     * @throws Exception
      */
-    public function getDataForBDFDeclaration(\DateTime $declarationDate)
+    public function getDataForBDFDeclaration(\DateTime $declarationDate, array $contractType): array
     {
         $bind = [
             'statusRepayment'                  => ProjectsStatus::REMBOURSEMENT,
@@ -1115,7 +1114,8 @@ class projects extends projects_crud
             'opSubTypeRepaymentRegularization' => [
                 OperationSubType::CAPITAL_REPAYMENT_DEBT_COLLECTION_REGULARIZATION,
                 OperationSubType::GROSS_INTEREST_REPAYMENT_DEBT_COLLECTION_REGULARIZATION
-            ]
+            ],
+            'contractType'                     => $contractType
         ];
         $type = [
             'statusRepayment'                  => \PDO::PARAM_INT,
@@ -1129,6 +1129,7 @@ class projects extends projects_crud
             'clientTypeLegalEntity'            => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
             'opSubTypeTypeRepayment'           => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
             'opSubTypeRepaymentRegularization' => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
+            'contractType'                     => \Doctrine\DBAL\Connection::PARAM_STR_ARRAY,
         ];
 
         $sql = "
@@ -1148,6 +1149,7 @@ class projects extends projects_crud
             WHEN p.id_project_need IN (13) THEN 'ST'
             ELSE 'AU'
           END AS loan_type,
+          ROUND(SUM(l.amount) / 100, 0) AS partial_loan_amount,
           p.amount AS loan_amount,
           (SELECT MIN(psh.added) FROM projects_status_history psh INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status AND ps.status = :statusRepayment WHERE psh.id_project = p.id_project) AS loan_date,
           CASE
@@ -1160,7 +1162,8 @@ class projects extends projects_crud
               END
           END AS late_payment_date,
           p.period AS loan_duration,
-          ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS average_loan_rate,
+          p.interest_rate AS average_loan_rate,
+          ROUND(SUM(l.amount * l.rate) / SUM(l.amount), 2) AS partial_average_loan_rate, -- If we remove this line, the query does not finish !
           'M' AS repayment_frequency,
           (SELECT csh.changed_on FROM company_status_history csh WHERE csh.id = (
             SELECT MIN(csh_min.id) FROM company_status_history csh_min
@@ -1172,31 +1175,48 @@ class projects extends projects_crud
           END AS close_out_netting_date,
           (
             SELECT IFNULL(SUM(o.amount),0)
-            FROM operation o
+            FROM operation o FORCE INDEX (idx_operation_id_sub_type)
             WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN (:opSubTypeTypeRepayment))
             AND id_project = p.id_project
           ) - (
             SELECT IFNULL(SUM(o.amount),0)
-            FROM operation o
+            FROM operation o FORCE INDEX (idx_operation_id_sub_type)
             WHERE id_sub_type in (SELECT id FROM operation_sub_type WHERE label IN (:opSubTypeRepaymentRegularization))
                   AND id_project = p.id_project
           ) AS debt_collection_repayment,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
-            INNER JOIN clients c ON c.id_client = w.id_client  WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson)) AS contributor_person_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
-            INNER JOIN clients c ON c.id_client = w.id_client  WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson)) AS contributor_person_percentage,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
-            INNER JOIN clients c ON c.id_client = w.id_client  WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l INNER JOIN wallet w ON w.id = l.id_lender
-            INNER JOIN clients c ON c.id_client = w.id_client  WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112)) AS contributor_legal_entity_percentage,
-          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112)) AS contributor_credit_institution_number,
-          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / p.amount, 2) FROM loans l WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112)) AS contributor_credit_institution_percentage
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN clients c ON c.id_client = w.id_client
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN clients c ON c.id_client = w.id_client
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypePerson) AND contract.label IN (:contractType)) AS contributor_person_amount,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN clients c ON c.id_client = w.id_client
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
+            INNER JOIN wallet w ON w.id = l.id_lender
+            INNER JOIN clients c ON c.id_client = w.id_client
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND c.type IN (:clientTypeLegalEntity) AND c.id_client NOT IN (15112) AND contract.label IN (:contractType)) AS contributor_legal_entity_amount,
+          (SELECT IFNULL(COUNT(DISTINCT l.id_lender), 0) FROM loans l
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_number,
+          (SELECT ROUND(SUM(IFNULL(l.amount, 0)) / 100, 2) FROM loans l
+            INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+          WHERE l.id_project = p.id_project AND l.id_lender = (SELECT w.id FROM wallet w WHERE w.id_client = 15112) AND contract.label IN (:contractType)) AS contributor_credit_institution_amount
         FROM projects p
-            INNER JOIN companies com ON  com.id_company = p.id_company
-            INNER JOIN loans l ON l.id_project = p.id_project AND l.status = :loanAccepted
-            INNER JOIN company_status cs ON cs.id = com.id_status
-        WHERE p.status IN (:projectStatusList)
-        GROUP BY p.id_project
+          INNER JOIN companies com ON  com.id_company = p.id_company
+          INNER JOIN loans l ON l.id_project = p.id_project AND l.status = :loanAccepted
+          INNER JOIN company_status cs ON cs.id = com.id_status
+          INNER JOIN underlying_contract contract ON l.id_type_contract = contract.id_contract
+        WHERE p.status IN (:projectStatusList) AND contract.label IN (:contractType)
+        GROUP BY l.id_project
         HAVING DATE(loan_date) <= :declarationLastDay
         ORDER BY loan_date ASC";
 
@@ -1315,6 +1335,8 @@ class projects extends projects_crud
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->leftJoin('p', 'project_need', 'need', 'p.id_project_need = need.id_project_need')
             ->where('p.status IN (:riskStatus)')
+            ->andWhere('co.siren != \'\'')
+            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('waitingAnalystStatus', ProjectsStatus::PENDING_ANALYSIS)
             ->setParameter('riskStatus', ProjectsStatus::RISK_TEAM, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
@@ -1437,6 +1459,8 @@ class projects extends projects_crud
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->where('p.status IN (:commercialStatus)')
+            ->andWhere('co.siren != \'\'')
+            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'DESC')

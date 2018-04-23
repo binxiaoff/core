@@ -12,7 +12,7 @@
         <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br/>
         <?php else :  ?>
-            <?= $this->company->getName() ?><br/>
+            <?= $this->lenderCompany->getName() ?><br/>
         <?php endif; ?>
         <?= $this->lenderAddress->getAddress() ?><br/>
         <?= $this->lenderAddress->getZip() ?> <?= $this->lenderAddress->getCity() ?><br/>
@@ -74,8 +74,8 @@
         <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
             <?= $this->clients->prenom ?> <?= $this->clients->nom ?>
         <?php else : ?>
-            <?php if ($this->company->getStatusClient() != \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER) : ?>
-                <?= $this->company->getPrenomDirigeant() ?> <?= $this->company->getNomDirigeant() ?><br> Fonction : <?= $this->company->getFonctionDirigeant() ?>
+            <?php if ($this->lenderCompany->getStatusClient() != \Unilend\Bundle\CoreBusinessBundle\Entity\Companies::CLIENT_STATUS_MANAGER) : ?>
+                <?= $this->lenderCompany->getPrenomDirigeant() ?> <?= $this->lenderCompany->getNomDirigeant() ?><br> Fonction : <?= $this->lenderCompany->getFonctionDirigeant() ?>
             <?php else : ?>
                 <?= $this->clients->prenom ?> <?= $this->clients->nom ?><br> Fonction : <?= $this->clients->fonction ?>
             <?php endif; ?>

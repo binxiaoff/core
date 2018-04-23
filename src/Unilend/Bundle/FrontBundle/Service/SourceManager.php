@@ -30,7 +30,8 @@ class SourceManager
         ];
     }
 
-    public function handle()
+
+    public function handle(): void
     {
         $request = $this->requestStack->getCurrentRequest();
         $session = $request->getSession();
@@ -69,7 +70,11 @@ class SourceManager
         }
     }
 
-    public function setSource($key, $value)
+    /**
+     * @param string $key
+     * @param string $value
+     */
+    public function setSource(string $key, string $value): void
     {
         if (in_array($key, array_keys($this->sources))) {
             $request = $this->requestStack->getCurrentRequest();
@@ -78,13 +83,21 @@ class SourceManager
         }
     }
 
-    public function getSource($key)
+    /**
+     * @param string $key
+     *
+     * @return string|null
+     */
+    public function getSource(string $key)
     {
         if (in_array($key, array_keys($this->sources))) {
-            $request = $this->requestStack->getCurrentRequest();
-            $session = $request->getSession();
-
-            return $session->get($key);
+            if ($request = $this->requestStack->getCurrentRequest()) {
+                if ($session = $request->getSession()) {
+                    return $session->get($key);
+                }
+            }
         }
+
+        return null;
     }
 }

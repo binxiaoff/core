@@ -50,7 +50,7 @@ class AddressManager
 
         try {
 
-            if ($company->getIdClientOwner()->isLender()) {
+            if (null !== $company->getIdClientOwner() && $company->getIdClientOwner()->isLender()) {
                 $this->saveLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
             } else {
                 $companyAddress = $this->saveNonLenderCompanyAddress($company, $address, $zip, $city, $country, $addressType);
@@ -130,7 +130,7 @@ class AddressManager
 
                 $this->validateCompanyAddress($newAddress);
                 $this->useCompanyAddress($newAddress);
-                $this->archivePreviousCompanyAddress($company, $type);
+                $this->archivePreviousCompanyAddress($company, $type->getLabel());
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {
@@ -206,7 +206,7 @@ class AddressManager
             if ($address instanceof CompanyAddress) {
                 $this->validateCompanyAddress($address);
                 $this->useCompanyAddress($address);
-                $this->archivePreviousCompanyAddress($address->getIdCompany(), $address->getIdType());
+                $this->archivePreviousCompanyAddress($address->getIdCompany(), $address->getIdType()->getLabel());
             }
 
             $this->entityManager->commit();
@@ -531,16 +531,13 @@ class AddressManager
     }
 
     /**
-     * @param Clients    $client
-     * @param Attachment $attachment
+     * @param ClientAddress $address
+     * @param Attachment    $attachment
      *
-     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function linkAttachmentToAddress(Clients $client, Attachment $attachment)
+    public function linkAttachmentToAddress(ClientAddress $address, Attachment $attachment)
     {
-        $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-
         $clientAddressAttachement = new ClientAddressAttachment();
         $clientAddressAttachement
             ->setIdClientAddress($address)

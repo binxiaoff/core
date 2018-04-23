@@ -1,0 +1,125 @@
+<div class="row">
+    <div class="col-lg-12">
+        <div class="block">
+            <div class="block-header">
+                <h3 class="block-title">Remboursements planifiés</h3>
+            </div>
+            <div class="block-content block-content-full">
+                {% if plannedRepaymentTasks|length > 0 %}
+                    <table class="table table-bordered table-hover table-header-bg">
+                        <thead>
+                        <tr>
+                            <th style="width: 8%">
+                                Capital
+                            </th>
+                            <th style="width: 8%">
+                                Intérêts
+                            </th>
+                            <th style="width: 8%">
+                                Commission Unilend
+                            </th>
+                            <th style="width: 5%">
+                                Numéro de l'échéance
+                            </th>
+                            <th style="width: 5%">
+                                Date de l'échéance
+                            </th>
+                            <th style="width: 10%">
+                                Type
+                            </th>
+                            <th style="width: 5%">
+                                Date planification
+                            </th>
+                            <th style="width: 15%">
+                                Planifiée par
+                            </th>
+                            <th style="width: 15%">
+                                Validée par
+                            </th>
+                            <th style="width: 10%">
+                                Créée le
+                            </th>
+                            <th style="width: 6%">
+                                Statut
+                            </th>
+                            {% if false == displayOnly %}
+                                <th style="width: 10%">
+                                </th>
+                            {% endif %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for repaymentTask in plannedRepaymentTasks %}
+                            <tr>
+                                <td class="text-right">
+                                    {{ repaymentTask.capital|localizedcurrency('EUR') }}
+                                </td>
+                                <td class="text-right">
+                                    {{ repaymentTask.interest|localizedcurrency('EUR') }}
+                                </td>
+                                <td class="text-right">
+                                    {{ repaymentTask.commissionUnilend|localizedcurrency('EUR') }}
+                                </td>
+                                <td>
+                                    {{ repaymentTask.sequence }}
+                                </td>
+                                <td>
+                                    {% if paymentSchedules[repaymentTask.sequence] is defined %}
+                                        {{ paymentSchedules[repaymentTask.sequence].dateEcheanceEmprunteur|localizeddate('short', 'none') }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_REGULAR') == repaymentTask.type %}
+                                        Normal
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_LATE') == repaymentTask.type %}
+                                        Régularisation
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_EARLY') == repaymentTask.type %}
+                                        Anticipé
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::TYPE_CLOSE_OUT_NETTING') == repaymentTask.type %}
+                                        Déchéance du terme
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ repaymentTask.repayAt|localizeddate('short', 'none') }}
+                                </td>
+                                <td>
+                                    {{ repaymentTask.idUserCreation.firstname }} {{ repaymentTask.idUserCreation.name }}
+                                </td>
+                                <td>
+                                    {{ repaymentTask.idUserValidation.firstname }} {{ repaymentTask.idUserValidation.name }}
+                                </td>
+                                <td>
+                                    {{ repaymentTask.added|localizeddate('short', 'none') }}
+                                </td>
+                                <td>
+                                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_PENDING') == repaymentTask.status %}
+                                        En attente de validation
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_READY') == repaymentTask.status %}
+                                        Validé
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_IN_PROGRESS') == repaymentTask.status %}
+                                        En cours
+                                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectRepaymentTask::STATUS_ERROR') == repaymentTask.status %}
+                                        Erreur (contactez IT)
+                                    {% endif %}
+                                </td>
+                                {% if false == displayOnly %}
+                                    <td class="text-center">
+                                        <a href="/remboursement/confirmation/{{ repaymentTask.idWireTransferIn.idReception }}" class="btn btn-xs btn-default" data-toggle="tooltip"
+                                           data-original-title="Voir le détail du remboursement">
+                                            Détail du remboursement<span class="fa fa-chevron-right push-5-l"></span>
+                                        </a>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="alert">
+                        <p>Aucune tâche de remboursement à venir.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

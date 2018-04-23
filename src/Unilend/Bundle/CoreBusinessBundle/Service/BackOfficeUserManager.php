@@ -66,7 +66,7 @@ class BackOfficeUserManager
     public function isUserGroupManagement(Users $user)
     {
         if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_DIRECTION, UsersTypes::TYPE_ADMIN])) {
-           return true;
+            return true;
         }
 
         return false;
@@ -85,7 +85,6 @@ class BackOfficeUserManager
 
         return false;
     }
-
 
     /**
      * @param Users $user
@@ -141,5 +140,25 @@ class BackOfficeUserManager
         }
 
         return false;
+    }
+
+    /**
+     * @return array|Users[]
+     */
+    public function getSalesPersons(): array
+    {
+        $userRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+        $salesPersons   = $userRepository->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_COMMERCIAL]);
+        $salesPersons[] = $userRepository->find(Users::USER_ID_ARNAUD_SCHWARTZ);
+
+        return $salesPersons;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAnalysts(): array
+    {
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->findBy(['status' => Users::STATUS_ONLINE, 'idUserType' => UsersTypes::TYPE_RISK]);
     }
 }

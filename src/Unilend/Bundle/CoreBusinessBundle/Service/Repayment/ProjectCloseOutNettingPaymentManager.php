@@ -83,6 +83,11 @@ class ProjectCloseOutNettingPaymentManager
             throw new \Exception('Another repayment task of the same project (id : ' . $project->getIdProject() . ') is in progress. The task creation of this project is temporarily disabled.');
         }
 
+        $borrowerWallet = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
+        if (-1 === bccomp($borrowerWallet->getAvailableBalance(), $amount, 2)) {
+            throw new \Exception('The borrower balance (' . $borrowerWallet->getAvailableBalance() . ') is lower than the amount (' . $amount . ') to treat.');
+        }
+
         $closeOutNettingPayment = $closeOutNettingPaymentRepository->findOneBy(['idProject' => $project]);
         $unpaidCapital          = round(bcsub($closeOutNettingPayment->getCapital(), $closeOutNettingPayment->getPaidCapital(), 4), 2);
         $unpaidInterest         = round(bcsub($closeOutNettingPayment->getInterest(), $closeOutNettingPayment->getPaidInterest(), 4), 2);
@@ -96,7 +101,6 @@ class ProjectCloseOutNettingPaymentManager
                 throw new \Exception('The wallet for the debt collector (id client : ' . $debtCollectionMission->getIdClientDebtCollector()->getIdClient() . ')is not defined.');
             }
         }
-        $borrowerWallet = $walletRepository->getWalletByType($project->getIdCompany()->getIdClientOwner(), WalletType::BORROWER);
 
         $vatTax = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT);
         if (null === $vatTax) {
@@ -223,9 +227,7 @@ class ProjectCloseOutNettingPaymentManager
 
                 $this->entityManager->flush($closeOutNettingPayment);
 
-                if (in_array($projectRepaymentTaskToCancel->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
-                    $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
-                }
+                $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
 
                 $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
 

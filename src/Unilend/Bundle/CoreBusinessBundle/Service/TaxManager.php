@@ -57,7 +57,7 @@ class TaxManager
      *
      * @throws \Exception
      */
-    public function addTaxToApply(Clients $client, Users $user): void
+    public function applyFiscalCountry(Clients $client, Users $user): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');

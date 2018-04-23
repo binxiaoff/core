@@ -59,6 +59,10 @@ class LenderProfileController extends Controller
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
             $mainAddressForm     = $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+            $mainAddressForm
+                ->add('noUsPerson', CheckboxType::class, ['required' => false])
+                ->add('housedByThirdPerson', CheckboxType::class, ['required' => false]);
+
             $postalAddressForm   = $formManager->getClientAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
             $hasPostalAddress    = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
@@ -96,7 +100,7 @@ class LenderProfileController extends Controller
             $mainAddressForm->handleRequest($request);
             if ($mainAddressForm->isSubmitted() && $mainAddressForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $this->handlePersonAddress($client, $lastModifiedMainAddress, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS);
+                    $isValid = $this->handlePersonAddress($client, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 } else {
                     $isValid = $this->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
                 }
@@ -105,7 +109,7 @@ class LenderProfileController extends Controller
             $postalAddressForm->handleRequest($request);
             if ($postalAddressForm->isSubmitted() && $postalAddressForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $this->handlePersonAddress($client, $postalAddress, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS);
+                    $isValid = $this->handlePersonAddress($client, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 } else {
                     $isValid = $this->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
                 }
@@ -325,17 +329,17 @@ class LenderProfileController extends Controller
 
     /**
      * @param Clients            $client
-     * @param ClientAddress|null $address
      * @param FormInterface      $form
      * @param FileBag            $fileBag
      * @param string             $type
+     * @param ClientAddress|null $address
      *
      * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function handlePersonAddress(Clients $client, ?ClientAddress $address, FormInterface $form, FileBag $fileBag, string $type): bool
+    private function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address = null): bool
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');
@@ -368,15 +372,17 @@ class LenderProfileController extends Controller
 
                 if (
                     AddressType::TYPE_MAIN_ADDRESS === $type
-                    && (
-                        $address->getAddress() !== $form->get('address')->getData()
-                        || $address->getZip() !== $form->get('zip')->getData()
-                        || $address->getCity() !== $form->get('city')->getData()
-                        || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+                    && (null === $address
+                        || (
+                            $address->getAddress() !== $form->get('address')->getData()
+                            || $address->getZip() !== $form->get('zip')->getData()
+                            || $address->getCity() !== $form->get('city')->getData()
+                            || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+                        )
                     )
                     && empty($files[AttachmentType::JUSTIFICATIF_DOMICILE])
                 ) {
-                    $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-missing-housing-certificate')));
+                    $form->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-change-message')));
                 }
 
                 foreach ($files as $attachmentTypeId => $file) {
@@ -438,7 +444,8 @@ class LenderProfileController extends Controller
 
             if (AddressType::TYPE_MAIN_ADDRESS === $type) {
                 if (null !== $housingCertificate) {
-                    $addressManager->linkAttachmentToAddress($client, $housingCertificate);
+                    $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                    $addressManager->linkAttachmentToAddress($address, $housingCertificate);
                 } else {
                     $this->get('logger')->error('Lender main address has no attachment.', [
                         'class'     => __CLASS__,
@@ -555,13 +562,15 @@ class LenderProfileController extends Controller
             ->add('bankAccount', BankAccountType::class)
             ->getForm();
 
-        $form->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
-        $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        if (null !== $bankAccount) {
+            $form->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
+            $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        }
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $isValid = $this->handleBankDetailsForm($bankAccount, $form, $request->files);
+            $isValid = $this->handleBankDetailsForm($form, $request->files, $bankAccount);
             if ($isValid) {
                 return $this->redirectToRoute('lender_profile_fiscal_information');
             }
@@ -582,7 +591,7 @@ class LenderProfileController extends Controller
                 'fiscal_info' => [
                     'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
-                    'rib'         => $bankAccount->getAttachment(),
+                    'rib'         => null !== $bankAccount ? $bankAccount->getAttachment() : '',
                     'fundsOrigin' => $this->getFundsOrigin($client->getType())
                 ]
             ],
@@ -1060,14 +1069,14 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param BankAccount   $unattachedBankAccount
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
+     * @param FormInterface    $form
+     * @param FileBag          $fileBag
+     * @param BankAccount|null $unattachedBankAccount
      *
      * @return bool
      * @throws \Exception
      */
-    private function handleBankDetailsForm(BankAccount $unattachedBankAccount, FormInterface $form, FileBag $fileBag): bool
+    private function handleBankDetailsForm(FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
     {
         $translator          = $this->get('translator');
         $iban                = $form->get('bankAccount')->get('iban')->getData();
@@ -1084,11 +1093,14 @@ class LenderProfileController extends Controller
         $clientAuditer = $this->get(ClientAuditer::class);
         $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
 
-        if ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic) {
+        if (
+            null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
+            || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
+        ) {
             $file = $fileBag->get('iban-certificate');
 
             if (false === $file instanceof UploadedFile) {
-               $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
+                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
             } else {
                try {
                    $bankAccountDocument = $this->upload($client, AttachmentType::RIB, $file);

@@ -170,6 +170,7 @@
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="unilend.service.company_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
+            <argument type="service" id="unilend.service.project_manager"/>
         </service>
 
         <service id="unilend.service.external_data_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager">
@@ -542,6 +543,10 @@
         <service id="unilend.service.address_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AddressManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.location_manager"/>
+        </service>
+
+        <service id="unilend.service.bdf_loans_declaration_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager">
+            <argument>%path.protected%</argument>
         </service>
 
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer" autowire="true"/>

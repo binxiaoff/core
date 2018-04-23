@@ -907,8 +907,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <input type="hidden" id="current_commercial" value="<?= $this->projects->id_commercial ?>">
                                     <select name="commercial" id="commercial" class="select">
                                         <option value="0"></option>
-                                        <?php foreach ($this->aSalesPersons as $salesperson) : ?>
-                                            <option value="<?= $salesperson['id_user'] ?>"<?= ($this->projects->id_commercial == $salesperson['id_user'] ? ' selected' : '') ?>><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
+                                        <?php
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $salesperson */
+                                        foreach ($this->salesPersons as $salesperson) :
+                                            ?>
+                                            <option value="<?= $salesperson->getIdUser() ?>"<?= ($this->projects->id_commercial == $salesperson->getIdUser() ? ' selected' : '') ?>><?= $salesperson->getFirstname() ?> <?= $salesperson->getName() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </td>
@@ -921,8 +924,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
                                     <input type="hidden" id="current_analyst" value="<?= $this->projects->id_analyste ?>">
                                     <select name="analyste" id="analyste" class="select">
                                         <option value="0"></option>
-                                        <?php foreach ($this->aAnalysts as $analyst) : ?>
-                                            <option value="<?= $analyst['id_user'] ?>"<?= ($this->projects->id_analyste == $analyst['id_user'] ? ' selected' : '') ?>><?= $analyst['firstname'] ?> <?= $analyst['name'] ?></option>
+                                        <?php
+                                        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Users $analyst */
+                                        foreach ($this->analysts as $analyst) :
+                                            ?>
+                                            <option value="<?= $analyst->getIdUser() ?>"<?= ($this->projects->id_analyste == $analyst->getIdUser() ? ' selected' : '') ?>><?= $analyst->getFirstname() ?> <?= $analyst->getName() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </td>

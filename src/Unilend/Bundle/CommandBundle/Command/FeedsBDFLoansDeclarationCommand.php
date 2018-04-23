@@ -2,30 +2,28 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Doctrine\ORM\NonUniqueResultException;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    CompanyStatus, Echeanciers, UnderlyingContract
+};
+use Unilend\Bundle\CoreBusinessBundle\Repository\TransmissionSequenceRepository;
+use Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager;
 use Unilend\core\Loader;
 
 class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
 {
-    const DECLARATION_FILE_PATH = 'bdf/emissions/declarations_mensuelles/';
-    const UNILEND_IFP_ID        = 'IF010';
-    const RECORD_PAD_LENGTH     = 151;
-    const SEQUENCE_PAD_LENGTH   = 6;
-    const PADDING_CHAR          = ' ';
-    const PADDING_NUMBER        = '0';
+    const PAD_LENGTH_RECORD   = 151;
+    const PAD_LENGTH_SEQUENCE = 6;
+    const PADDING_CHAR        = ' ';
+    const PADDING_NUMBER      = '0';
 
-    /** @var  int $recordLineNumber */
+    /** @var int $recordLineNumber */
     private $recordLineNumber = 1;
-    /** @var  \DateTime $declarationDate */
+    /** @var \DateTime $declarationDate */
     private $declarationDate;
     /** @var string $sequentialNumber */
     private $sequentialNumber;
@@ -60,14 +58,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var \projects $project */
-        $project = $entityManager->getRepository('projects');
-        /** @var \transmission_sequence $transmissionSequence */
-        $transmissionSequence = $entityManager->getRepository('transmission_sequence');
+        $project = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('projects');
 
         $year  = $input->getArgument('year');
         $month = $input->getArgument('month');
@@ -85,50 +78,159 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $this->declarationDate = new \DateTime('last month');
         }
 
-        /** @var array */
-        $data = $project->getDataForBDFDeclaration($this->declarationDate);
-
-        if (true === empty($data)) {
-            $logger->error('no data found', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        try {
+            $output->writeln('Getting data..');
+            $ifpData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_IFP]);
+            $cipData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_MINIBON]);
+        } catch (\Exception $exception) {
+            $logger->error(
+                sprintf('Could not get data to generate BDF loan declarations. Error: %s', $exception->getMessage()),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
 
             return;
         }
-        $fileName         = self::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
-        $absoluteFilePath = $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $fileName;
 
-        if ($transmissionSequence->get($fileName, 'element_name') && file_exists($absoluteFilePath)) {
-            $currentName = pathinfo($absoluteFilePath, PATHINFO_FILENAME);
-            rename($absoluteFilePath,
-                $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . 'archives/' . $currentName . '_' . $transmissionSequence->sequence . '.txt');
+        if (empty($ifpData)) {
+            $logger->info('No data found for IFP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
-        /** @var resource $file */
-        if ($file = fopen($absoluteFilePath, 'a')) {
+        if (empty($cipData)) {
+            $logger->info('No data found for CIP contracts', ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+
+        if (empty($cipData + $ifpData)) {
+            return;
+        }
+
+        $output->writeln('Generating files..');
+
+        $ifpFileName = BdfLoansDeclarationManager::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
+        try {
+            $this->writeFile($ifpData, $ifpFileName, BdfLoansDeclarationManager::TYPE_IFP_BDC);
+        } catch (\Exception $exception) {
+            $logger->error(
+                sprintf('Could not generate IFP declaration file. Error: %s', $exception->getMessage()),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
+
+        $output->writeln('IFP file processed');
+
+        $this->recordLineNumber = 1;
+        $cipFileName            = BdfLoansDeclarationManager::UNILEND_CIP_ID . '_' . $this->declarationDate->format('Ym') . '.txt';
+        try {
+            $this->writeFile($cipData, $cipFileName, BdfLoansDeclarationManager::TYPE_MINIBON);
+        } catch (\Exception $exception) {
+            $logger->error(
+                sprintf('Could not generate CIP declaration file. Error: %s', $exception->getMessage()),
+                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+            );
+        }
+
+        $output->writeln('CIP file processed');
+
+        if ('y' === strtolower($debug)) {
             try {
-                fwrite($file, $this->getStartSenderRecord($transmissionSequence, $fileName));
-                fwrite($file, $this->getStartDeclarerRecord());
+                $output->writeln('Generating CSV Files..');
+                $output->writeln('Generating CSV File for IFP contracts...');
 
-                foreach ($data as $row) {
-                    $loanRecord = $this->getLoanRecord($row);
-                    if (null !== $loanRecord) {
-                        fwrite($file, $loanRecord);
-                    }
-                }
-                fwrite($file, $this->getEndDeclarerRecord());
-                fwrite($file, $this->getEndSenderRecord());
-                fclose($file);
+                $this->createCSVFile($ifpData, BdfLoansDeclarationManager::UNILEND_IFP_ID);
+
+                $output->writeln(['Done', 'Generating CSV File for CIP contracts...']);
+
+                $this->createCSVFile($cipData, BdfLoansDeclarationManager::UNILEND_CIP_ID);
+                $allContractsData = $project->getDataForBDFDeclaration($this->declarationDate, [UnderlyingContract::CONTRACT_IFP, UnderlyingContract::CONTRACT_BDC, UnderlyingContract::CONTRACT_MINIBON]);
+
+                $output->writeln(['Done', 'Generating CSV File for both IFP and CIP contracts...']);
+
+                $this->createCSVFile($allContractsData, 'tout_contrat');
+
+                $output->writeln('Done');
             } catch (\Exception $exception) {
-                $logger->error('An exception occurred when writing the loan lines with message: ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__]);
-                $transmissionSequence->resetToPreviousSequence($fileName);
-                fclose($file);
-                unlink($absoluteFilePath);
+                $logger->warning(sprintf('Could not generate CSV files for debug. Error: %s', $exception->getMessage()),
+                    ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array  $data
+     * @param string $fileName
+     * @param string $type
+     *
+     * @throws \Exception
+     */
+    private function writeFile(array $data, string $fileName, string $type): void
+    {
+        $bdfLoansDeclarationManager = $this->getContainer()->get('unilend.service.bdf_loans_declaration_manager');
+        $fileManager                = $this->getContainer()->get('filesystem');
+
+        switch ($type) {
+            case BdfLoansDeclarationManager::TYPE_IFP_BDC:
+                $declarerId      = BdfLoansDeclarationManager::UNILEND_IFP_ID;
+                $filePath        = $bdfLoansDeclarationManager->getIfpPath();
+                $fileArchivePath = $bdfLoansDeclarationManager->getIfpArchivePath();
+                break;
+            case BdfLoansDeclarationManager::TYPE_MINIBON:
+                $declarerId      = BdfLoansDeclarationManager::UNILEND_CIP_ID;
+                $filePath        = $bdfLoansDeclarationManager->getCipPath();
+                $fileArchivePath = $bdfLoansDeclarationManager->getCipArchivePath();
+                break;
+            default:
+                throw new \Exception(sprintf('Unknown declarer type, expected types are: ("%s", "%s")', BdfLoansDeclarationManager::TYPE_IFP_BDC, BdfLoansDeclarationManager::TYPE_MINIBON));
+        }
+
+        if (false === $fileManager->exists($filePath)) {
+            $fileManager->mkdir($filePath);
+        }
+
+        $absoluteFilePath = implode(DIRECTORY_SEPARATOR, [$filePath, $fileName]);
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
+        /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
+        $transmissionSequenceRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+        $sequence                       = $transmissionSequenceRepository->findOneBy(['elementName' => $fileName]);
+
+        if (null !== $sequence && $fileManager->exists($absoluteFilePath)) {
+            $currentName = pathinfo($absoluteFilePath, PATHINFO_FILENAME);
+
+            if (false === $fileManager->exists($fileArchivePath)) {
+                $fileManager->mkdir($fileArchivePath);
             }
 
-            if ('y' == strtolower($debug)) {
-                $this->createCSVFile($data);
+            try {
+                $fileManager->rename($absoluteFilePath, implode(DIRECTORY_SEPARATOR, [$fileArchivePath, $currentName . '_' . $sequence->getSequence() . '.txt']), true);
+            } catch (\Exception $exception) {
+                $fileManager->remove($absoluteFilePath);
+                $this->getContainer()->get('monolog.logger.console')->error(
+                    sprintf('Could not archive the old file "%s", it will be removed. Error: %s', $absoluteFilePath, $exception->getMessage()),
+                    ['method' => __METHOD__, 'file' => $exception->getMessage(), 'line' => $exception->getLine()]
+                );
             }
-        } else {
-            $logger->error('Could not create the file ' . self::DECLARATION_FILE_PATH . $fileName, ['class' => __CLASS__, 'function' => __FUNCTION__]);
+        }
+
+        try {
+            $fileManager->appendToFile($absoluteFilePath, $this->getStartSenderRecord($fileName, $declarerId));
+            $fileManager->appendToFile($absoluteFilePath, $this->getStartDeclarerRecord($declarerId));
+
+            foreach ($data as $row) {
+                $loanRecord = $this->getLoanRecord($row, $declarerId);
+
+                if (null !== $loanRecord) {
+                    $fileManager->appendToFile($absoluteFilePath, $loanRecord);
+                }
+
+            }
+            $fileManager->appendToFile($absoluteFilePath, $this->getEndDeclarerRecord($declarerId));
+            $fileManager->appendToFile($absoluteFilePath, $this->getEndSenderRecord($declarerId));
+        } catch (\Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->error(
+                sprintf('An exception occurred when writing the "%s" loan lines into "%s". - Error: %s', $type, $absoluteFilePath, $exception->getMessage()),
+                ['class' => __CLASS__, 'function' => __FUNCTION__]
+            );
+            $transmissionSequenceRepository->rollbackSequence($fileName);
+            $fileManager->remove($absoluteFilePath);
         }
     }
 
@@ -137,87 +239,103 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      */
     private function setSequentialNumber()
     {
-        $this->sequentialNumber = str_pad($this->recordLineNumber, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $this->sequentialNumber = str_pad($this->recordLineNumber, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
         $this->recordLineNumber++;
     }
 
     /**
      * @param string $code
+     * @param string $declarerId
      *
      * @return string
      */
-    private function getStartingRecord($code)
+    private function getStartingRecord(string $code, string $declarerId): string
     {
         $this->setSequentialNumber();
 
-        return $this->sequentialNumber . $code . $this->declarationDate->format('Ym') . self::UNILEND_IFP_ID;
+        return $this->sequentialNumber . $code . $this->declarationDate->format('Ym') . $declarerId;
     }
 
     /**
-     * @param \transmission_sequence $transmissionSequence
-     * @param string                 $fileName
+     * @param string $fileName
+     * @param string $declarerId
+     *
+     * @return string
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function getStartSenderRecord(string $fileName, string $declarerId): string
+    {
+        /** @var TransmissionSequenceRepository $transmissionSequenceRepository */
+        $transmissionSequenceRepository = $this->getContainer()->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:TransmissionSequence');
+        $sequence                       = $transmissionSequenceRepository->getNextSequence($fileName);
+
+        return str_pad($this->getStartingRecord('01', $declarerId) . str_pad($sequence->getSequence(), 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+    }
+
+    /**
+     * @param string $declarerId
      *
      * @return string
      */
-    private function getStartSenderRecord(\transmission_sequence $transmissionSequence, $fileName)
+    private function getStartDeclarerRecord(string $declarerId): string
     {
-        $sequence = $transmissionSequence->getNextSequence($fileName);
-
-        return str_pad($this->getStartingRecord('01') . str_pad($sequence, 2, self::PADDING_NUMBER, STR_PAD_LEFT), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('02', $declarerId), self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
-     * @return string
-     */
-    private function getStartDeclarerRecord()
-    {
-        return str_pad($this->getStartingRecord('02'), self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
-    }
-
-    /**
-     * @param array $projectData
+     * @param array  $projectData
+     * @param string $declarerId
      *
      * @return string|null
+     * @throws \Exception
      */
-    private function getLoanRecord(array $projectData)
+    private function getLoanRecord(array $projectData, string $declarerId): ?string
     {
-        $projectData = $this->getProjectInformation($projectData);
+        $projectData = $this->getProjectInformation($projectData, $declarerId);
 
         if (null !== $projectData) {
-            return $this->multiBytePad($this->getStartingRecord('11') . $projectData, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+            return $this->multiBytePad($this->getStartingRecord('11', $declarerId) . $projectData, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
         }
 
         return null;
     }
 
     /**
+     * @param string $declarerId
+     *
      * @return string
      */
-    public function getEndDeclarerRecord()
+    public function getEndDeclarerRecord(string $declarerId): string
     {
-        $recordCounter = str_pad($this->recordLineNumber - 1, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $recordCounter = str_pad($this->recordLineNumber - 1, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
 
-        return str_pad($this->getStartingRecord('92') . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
+        return str_pad($this->getStartingRecord('92', $declarerId) . $recordCounter, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT) . PHP_EOL;
     }
 
     /**
+     * @param string $declarerId
+     *
      * @return string
      */
-    public function getEndSenderRecord()
+    public function getEndSenderRecord(string $declarerId): string
     {
-        $recordCounter = str_pad($this->recordLineNumber, self::SEQUENCE_PAD_LENGTH, self::PADDING_NUMBER, STR_PAD_LEFT);
+        $recordCounter = str_pad($this->recordLineNumber, self::PAD_LENGTH_SEQUENCE, self::PADDING_NUMBER, STR_PAD_LEFT);
 
-        return str_pad($this->getStartingRecord('93') . $recordCounter, self::RECORD_PAD_LENGTH, self::PADDING_CHAR, STR_PAD_RIGHT);
+        return str_pad($this->getStartingRecord('93', $declarerId) . $recordCounter, self::PAD_LENGTH_RECORD, self::PADDING_CHAR, STR_PAD_RIGHT);
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
      * @return string|null
+     * @throws \Exception
      */
-    private function getProjectInformation(array $data)
+    private function getProjectInformation(array $data, string $declarerId): ?string
     {
-        $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $amount            = $this->getUnpaidAmountAndComingCapital($data, $declarerId);
         $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
 
         if ($roundedDueCapital == 0) {
@@ -227,7 +345,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo = $this->checkSiren($data['siren']);
         $projectLineInfo .= $this->checkName($data['name']);
         $projectLineInfo .= $this->checkLoanType($data['loan_type']);
-        $projectLineInfo .= $this->checkAmounts($data['loan_amount']);
+        $projectLineInfo .= $this->checkAmounts($data['partial_loan_amount']);
         $projectLineInfo .= \DateTime::createFromFormat('Y-m-d H:i:s', $data['loan_date'])->format('Ymd');
         $projectLineInfo .= $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo .= $this->checkLoanAvgRate($data['average_loan_rate']);
@@ -236,21 +354,23 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo .= $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo .= $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_person_amount'], $data['partial_loan_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_legal_entity_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_legal_entity_amount'], $data['partial_loan_amount']);
         $projectLineInfo .= $this->checkLoanContributorNumber($data['contributor_credit_institution_number'], 'credit_institution');
-        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_credit_institution_percentage']);
+        $projectLineInfo .= $this->checkLoanContributorPercentage($data['contributor_credit_institution_amount'], $data['partial_loan_amount']);
 
         return $projectLineInfo;
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
      * @return array
+     * @throws \Exception
      */
-    private function getUnpaidAmountAndComingCapital(array $data)
+    private function getUnpaidAmountAndComingCapital(array $data, string $declarerId): array
     {
         /** @var \echeanciers $repayment */
         $repayment = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('echeanciers');
@@ -273,6 +393,19 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
             $return       = ['unpaid_amount' => $unpaidAmount, 'owed_capital' => bcadd($unpaidAmount, $owedCapital, 2)];
         }
 
+        /**
+         * Calculate the prorata of owed amount based on total loan amount and the partial total amount of aggregated underlying contract types
+         */
+        $return['owed_capital'] = bcmul($return['owed_capital'], bcdiv($data['partial_loan_amount'], $data['loan_amount'], 6), 2);
+
+        /**
+         * The unpaid amount will only be declared in the IFP file to avoid to have smaller prorated amounts, which can
+         * induce declaring 0 unpaid amounts after rounding to the thousand
+         */
+        if (BdfLoansDeclarationManager::UNILEND_CIP_ID === $declarerId) {
+            $return['unpaid_amount'] = 0;
+        }
+
         return $return;
     }
 
@@ -282,7 +415,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @return string
      * @throws \Exception
      */
-    private function checkSiren($siren)
+    private function checkSiren(string $siren): string
     {
         $siren = trim($siren);
 
@@ -298,7 +431,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      *
      * @return string
      */
-    private function checkName($name)
+    private function checkName(string $name): string
     {
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
@@ -312,7 +445,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @return string mixed
      * @throws \Exception
      */
-    private function checkLoanType($loanType)
+    private function checkLoanType(string $loanType): string
     {
         if (false === in_array($loanType, ['MA', 'IM', 'ST', 'CO', 'CL', 'EX', 'AU'])) {
             throw new \Exception('Unknown loan type: ' . $loanType);
@@ -322,12 +455,12 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param float $amount
+     * @param float|null $amount
      *
      * @return string
      * @throws \Exception
      */
-    private function checkAmounts($amount)
+    private function checkAmounts(?float $amount): string
     {
         $amount = round($amount / 1000, 0);
         if (strlen($amount) > 5) {
@@ -343,7 +476,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @return string
      * @throws \Exception
      */
-    private function checkLoanPeriod($loanPeriod)
+    private function checkLoanPeriod(int $loanPeriod): string
     {
         if (strlen($loanPeriod) > 3) {
             throw new \Exception('Project duration too long: ' . $loanPeriod);
@@ -358,7 +491,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @return string
      * @throws \Exception
      */
-    private function checkLoanAvgRate($loanAvgRate)
+    private function checkLoanAvgRate(float $loanAvgRate): string
     {
         /** @var \ficelle $ficelle */
         $ficelle     = Loader::loadLib('ficelle');
@@ -379,8 +512,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      * @param string|null $unpaidAmount
      *
      * @return string
+     * @throws \Exception
      */
-    private function checkUnpaidDate(int $projectId, $closeOutNettingDate, $judgementDate, $latePaymentDate, $unpaidAmount): string
+    private function checkUnpaidDate(int $projectId, ?string $closeOutNettingDate, ?string $judgementDate, ?string $latePaymentDate, ?string $unpaidAmount): string
     {
         if (0 == $this->checkAmounts($unpaidAmount)) {
             return '00000000';
@@ -400,10 +534,9 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
                 if (null !== $repayment) {
                     return $repayment->getDateEcheance()->format('Ymd');
                 }
-            } catch (NonUniqueResultException $exception) {
-                $this->getContainer()->get('monolog.logger.console')
-                    ->error(
-                        'Could not get the first overdue schedule for project ' . $projectId . '. Please check the output file. Exception: ' . $exception->getMessage(),
+            } catch (\Exception $exception) {
+                $this->getContainer()->get('monolog.logger.console')->error(
+                        sprintf('Could not get the first overdue schedule for project %s. Please check the output file. Exception: %s', $projectId, $exception->getMessage()),
                         ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
                     );
             }
@@ -412,13 +545,13 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param int    $number
-     * @param string $type
+     * @param int|null $number
+     * @param string   $type
      *
      * @return string
      * @throws \Exception
      */
-    private function checkLoanContributorNumber($number, $type)
+    private function checkLoanContributorNumber(?int $number, string $type): string
     {
         switch ($type) {
             case 'person':
@@ -439,16 +572,24 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param float $percentage
+     * @param float|null $contributionAmount
+     * @param float|null $partialLoanAmount
      *
      * @return string
      * @throws \Exception
      */
-    private function checkLoanContributorPercentage($percentage)
+    private function checkLoanContributorPercentage(?float $contributionAmount, ?float $partialLoanAmount): string
     {
-        if ($percentage > 100) {
-            throw new \Exception('wrong contributor percentage : ' . $percentage);
+        if ($partialLoanAmount === 0) {
+            throw new \Exception('Wrong loan amount error. Loan amount cannot be 0');
         }
+
+        $percentage = bcmul(bcdiv($contributionAmount, $partialLoanAmount, 4), 100, 4);
+
+        if ($percentage > 100) {
+            throw new \Exception('Wrong contributor percentage error. Percentage cannot exceed 100%, but calculated value is : ' . $percentage);
+        }
+
         return str_pad(round($percentage, 0), 3, self::PADDING_NUMBER, STR_PAD_LEFT);
     }
 
@@ -461,45 +602,49 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
      *
      * @return string
      */
-    private function multiBytePad($input, $padLength, $padString = ' ', $padType = STR_PAD_RIGHT, $encoding = 'UTF-8')
+    private function multiBytePad(string $input, int $padLength, string $padString = ' ', int $padType = STR_PAD_RIGHT, string $encoding = 'UTF-8'): string
     {
         $mbDiff = strlen($input) - mb_strlen($input, $encoding);
         return str_pad($input, $padLength + $mbDiff, $padString, $padType);
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
+     *
+     * @throws \Exception
      */
-    private function createCSVFile(array $data)
+    private function createCSVFile(array $data, string $declarerId): void
     {
+        $fileManager     = $this->getContainer()->get('filesystem');
+        $debugPath       = $this->getContainer()->get('unilend.service.bdf_loans_declaration_manager')->getBaseDir() . '/debug/';
         $header          = [
             'siren', 'name', 'loan type', 'loan amount', 'loan date', 'loan duration', 'average loan rate', 'repayment frequency', 'CRD including interests', 'Unpaid amount',
             'unpaid date', 'contributor person number', 'contributor person percentage', 'contributor legal entity number', 'contributor legal entity percentage', 'contributor Bank number', 'contributor Bank percentage',
         ];
-        $csvFileName     = self::UNILEND_IFP_ID . '_' . $this->declarationDate->format('Ym') . '.csv';
-        $csvAbsolutePath = $this->getContainer()->getParameter('path.sftp') . self::DECLARATION_FILE_PATH . $csvFileName;
+        $csvFileName     = $declarerId . '_' . $this->declarationDate->format('Ym') . '.csv';
+        $csvAbsolutePath = $debugPath . $csvFileName;
 
-        if (file_exists($csvAbsolutePath)) {
-            unlink($csvAbsolutePath);
+        if ($fileManager->exists($csvAbsolutePath)) {
+            $fileManager->remove($csvAbsolutePath);
         }
 
-        if ($csvFile = fopen($csvAbsolutePath, 'a')) {
-            fwrite($csvFile, implode(';', $header) . PHP_EOL);
-
-            foreach ($data as $row) {
-                fwrite($csvFile, $this->getProjectInformationCsv($row));
-            }
+        $fileManager->appendToFile($csvAbsolutePath, implode(';', $header) . PHP_EOL);
+        foreach ($data as $row) {
+            $fileManager->appendToFile($csvAbsolutePath, $this->getProjectInformationCsv($row, $declarerId));
         }
     }
 
     /**
-     * @param array $data
+     * @param array  $data
+     * @param string $declarerId
      *
-     * @return string
+     * @return string|null
+     * @throws \Exception
      */
-    private function getProjectInformationCsv(array $data)
+    private function getProjectInformationCsv(array $data, string $declarerId): ?string
     {
-        $amount            = $this->getUnpaidAmountAndComingCapital($data);
+        $amount            = $this->getUnpaidAmountAndComingCapital($data, $declarerId);
         $roundedDueCapital = $this->checkAmounts($amount['owed_capital']);
 
         if ($roundedDueCapital == 0) {
@@ -509,7 +654,7 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $this->checkSiren($data['siren']);
         $projectLineInfo[] = $this->checkName($data['name']);
         $projectLineInfo[] = $this->checkLoanType($data['loan_type']);
-        $projectLineInfo[] = $this->checkAmounts($data['loan_amount']);
+        $projectLineInfo[] = $this->checkAmounts($data['partial_loan_amount']);
         $projectLineInfo[] = \DateTime::createFromFormat('Y-m-d H:i:s', $data['loan_date'])->format('Y-m-d');
         $projectLineInfo[] = $this->checkLoanPeriod($data['loan_duration']);
         $projectLineInfo[] = $this->checkLoanAvgRate($data['average_loan_rate']);
@@ -518,11 +663,11 @@ class FeedsBDFLoansDeclarationCommand extends ContainerAwareCommand
         $projectLineInfo[] = $this->checkAmounts($amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkUnpaidDate($data['id_project'], $data['close_out_netting_date'], $data['judgement_date'], $data['late_payment_date'], $amount['unpaid_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_person_number'], 'person');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_person_amount'], $data['partial_loan_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_legal_entity_number'], 'legal_entity');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_legal_entity_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_legal_entity_amount'], $data['partial_loan_amount']);
         $projectLineInfo[] = $this->checkLoanContributorNumber($data['contributor_credit_institution_number'], 'credit_institution');
-        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_credit_institution_percentage']);
+        $projectLineInfo[] = $this->checkLoanContributorPercentage($data['contributor_credit_institution_amount'], $data['partial_loan_amount']);
 
         return implode(';', $projectLineInfo) . PHP_EOL;
     }
