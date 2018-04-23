@@ -572,15 +572,17 @@ class LenderProfileController extends Controller
             ->add('bankAccount', BankAccountType::class)
             ->getForm();
 
-        $form->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
-        $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        if (null !== $bankAccount) {
+            $form->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
+            $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        }
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, ClientsHistoryActions::LENDER_PROFILE_BANK_INFORMATION);
             if ($form->isValid()) {
-                $isValid = $this->handleBankDetailsForm($bankAccount, $unattachedClientEntity, $form, $request->files);
+                $isValid = $this->handleBankDetailsForm($unattachedClientEntity, $form, $request->files, $bankAccount);
                 if ($isValid) {
                     return $this->redirectToRoute('lender_profile_fiscal_information');
                 }
@@ -602,7 +604,7 @@ class LenderProfileController extends Controller
                 'fiscal_info' => [
                     'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
-                    'rib'         => $bankAccount->getAttachment(),
+                    'rib'         => null !== $bankAccount ? $bankAccount->getAttachment() : '',
                     'fundsOrigin' => $this->getFundsOrigin($client->getType())
                 ]
             ],
@@ -1086,15 +1088,15 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param BankAccount   $unattachedBankAccount
-     * @param Clients       $unattachedClient
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
+     * @param Clients          $unattachedClient
+     * @param FormInterface    $form
+     * @param FileBag          $fileBag
+     * @param BankAccount|null $unattachedBankAccount
      *
      * @return bool
      * @throws \Exception
      */
-    private function handleBankDetailsForm(BankAccount $unattachedBankAccount, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
+    private function handleBankDetailsForm(Clients $unattachedClient, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount = null): bool
     {
         $translator               = $this->get('translator');
         $bankAccountModifications = [];
@@ -1107,24 +1109,35 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        if ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic) {
+        if (null === $unattachedBankAccount && false === empty($iban)) {
+            $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
+        }
+
+        if (null === $unattachedBankAccount && false === empty($bic)) {
+            $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
+        }
+
+        if (null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)) {
             if ($unattachedBankAccount->getIban() !== $iban) {
                 $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-iban');
             }
             if ($unattachedBankAccount->getBic() !== $bic) {
                 $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-bic');
             }
+        }
+
+        if (false === empty($bankAccountModifications)) {
             $file = $fileBag->get('iban-certificate');
             if (false === $file instanceof UploadedFile) {
-               $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
+                $form->get('bankAccount')->addError(new FormError($translator->trans('lender-profile_rib-file-mandatory')));
             } else {
-               try {
-                   $bankAccountDocument        = $this->upload($client, AttachmentType::RIB, $file);
-                   $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-documents');
-               } catch (\Exception $exception) {
-                   $form->addError(new FormError($translator->trans('lender-profile_fiscal-tab-rib-file-error')));
-               }
-           }
+                try {
+                    $bankAccountDocument        = $this->upload($client, AttachmentType::RIB, $file);
+                    $bankAccountModifications[] = $translator->trans('lender-profile_fiscal-tab-bank-info-section-documents');
+                } catch (\Exception $exception) {
+                    $form->addError(new FormError($translator->trans('lender-profile_fiscal-tab-rib-file-error')));
+                }
+            }
         }
 
         if ($form->isValid() && $bankAccountDocument) {

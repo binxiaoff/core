@@ -201,17 +201,39 @@ class MainController extends Controller
     {
         $formData = $request->request->get('esim');
         $session  = $request->getSession();
-        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')
-            ->find(Users::USER_ID_FRONT);
+        $user     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
         try {
-            /** @var ProjectRequestManager $projectRequestManager */
-            $projectRequestManager = $this->get('unilend.service.project_request_manager');
-            $project               = $projectRequestManager->saveSimulatorRequest($formData, $user);
+            if (empty($formData['email'])) {
+                throw new \InvalidArgumentException('Invalid email', ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL);
+            }
 
-            $session->remove('esim');
+            if (empty($formData['siren']) || false === $siren = $projectRequestManager->validateSiren($formData['siren'])) {
+                throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN);
+            }
 
-            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->hash]);
+            if (empty($formData['amount'])) {
+                throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT);
+            }
+
+            if (empty($formData['duration'])) {
+                throw new \InvalidArgumentException('Invalid duration', ProjectRequestManager::EXCEPTION_CODE_INVALID_DURATION);
+            }
+
+            if (empty($formData['reason'])) {
+                throw new \InvalidArgumentException('Invalid reason', ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON);
+            }
+            // We accept in the same field both siren and siret
+            $siret = $projectRequestManager->validateSiret($formData['siren']);
+            $siret = $siret === false ? null : $siret;
+
+            $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
+
+            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
+
+            return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
             $this->get('logger')->warning('Could not save project : ' . $exception->getMessage() . '. Form data = ' . json_encode($formData), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
@@ -423,11 +445,13 @@ class MainController extends Controller
             ],
             'form' => [
                 'values' => [
-                    'amount'  => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
-                    'siren'   => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'   => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
-                    'partner' => $content['partenaire'],
-                    'reasons' => $borrowingReasons,
+                    'amount'           => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
+                    'siren'            => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
+                    'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'),
+                        FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'partner'          => $content['partenaire'],
+                    'reasons'          => $borrowingReasons,
+                    'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
                 ],
             ],
         ];

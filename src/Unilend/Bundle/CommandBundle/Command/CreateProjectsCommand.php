@@ -2,20 +2,16 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersHistory;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Users, UsersHistory
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
 {
-    const DEFAULT_PROJECT_AMOUNT = 10000;
-
     protected function configure()
     {
         $this->setName('projects:create')
@@ -25,7 +21,6 @@ class CreateProjectsCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $companyManager          = $this->getContainer()->get('unilend.service.company_manager');
         $projectRequestManager   = $this->getContainer()->get('unilend.service.project_request_manager');
         $partnerManager          = $this->getContainer()->get('unilend.service.partner_manager');
         $projectStatusRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus');
@@ -62,8 +57,8 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
                         continue;
                     }
-                    $company = $companyManager->createBorrowerBlankCompany($siren, $user->getIdUser());
-                    $amount  = self::DEFAULT_PROJECT_AMOUNT;
+
+                    $amount  = ProjectRequestManager::DEFAULT_PROJECT_AMOUNT;
                     if (isset($inputRow[1]) && filter_var(FILTER_VALIDATE_INT, $inputRow[1])) {
                         $amount = filter_var(FILTER_VALIDATE_INT, $inputRow[1]);
                     }
@@ -72,17 +67,18 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 
-                    $project           = $this->createProject($company, $user, $amount, $partner);
-                    $createdProjects[] = $project->id_project;
+                    $project = $projectRequestManager->newProject($user, $partner, $amount, $siren);
+                    $company = $project->getIdCompany();
+                    $createdProjects[] = $project->getIdProject();
 
                     $columnIndex = 'A';
                     $activeSheet->setCellValue($columnIndex . $rowIndex, $siren);
                     $columnIndex++;
                     $projectRequestManager->checkProjectRisk($project, $user->getIdUser());
-                    $activeSheet->setCellValue($columnIndex . $rowIndex, $project->id_project);
+                    $activeSheet->setCellValue($columnIndex . $rowIndex, $project->getIdProject());
                     $columnIndex++;
                     $projectRequestManager->checkProjectRisk($project, $user->getIdUser());
-                    $activeSheet->setCellValue($columnIndex . $rowIndex, $projectStatusRepository->findOneBy(['status' => $project->status])->getLabel());
+                    $activeSheet->setCellValue($columnIndex . $rowIndex, $projectStatusRepository->findOneBy(['status' => $project->getStatus()])->getLabel());
                     $columnIndex++;
                     $activeSheet->setCellValue($columnIndex . $rowIndex, $company->getIdClientOwner()->getIdClient());
                     $columnIndex++;
@@ -133,35 +129,5 @@ class CreateProjectsCommand extends ContainerAwareCommand
                 }
             }
         }
-    }
-
-    /**
-     * @param Companies $company
-     * @param Users     $user
-     * @param int       $amount
-     * @param Partner   $partner
-     *
-     * @return \projects
-     */
-    private function createProject(Companies $company, Users $user, $amount, $partner)
-    {
-        /** @var \projects $project */
-        $project                                       = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('projects');
-        $project->id_company                           = $company->getIdCompany();
-        $project->amount                               = $amount;
-        $project->id_partner                           = $partner->getId();
-        $project->create_bo                            = 1;
-        $project->ca_declara_client                    = 0;
-        $project->resultat_exploitation_declara_client = 0;
-        $project->fonds_propres_declara_client         = 0;
-        $project->status                               = ProjectsStatus::INCOMPLETE_REQUEST;
-        $project->commission_rate_funds                = \projects::DEFAULT_COMMISSION_RATE_FUNDS;
-        $project->commission_rate_repayment            = \projects::DEFAULT_COMMISSION_RATE_REPAYMENT;
-        $project->create();
-
-        $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus($user->getIdUser(), ProjectsStatus::INCOMPLETE_REQUEST, $project);
-
-        return $project;
     }
 }
