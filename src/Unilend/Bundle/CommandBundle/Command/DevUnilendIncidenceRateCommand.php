@@ -31,7 +31,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
     {
         $this->saveRatioIFP();
         $this->saveRatioCIP();
-        $this->createQuarterEntries();
+        $this->createQuarterEntry(new \DateTime('Last day of March 2018'));
     }
 
     /**
@@ -41,7 +41,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
      */
     private function saveRatioIFP()
     {
-        $start         = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_IFP);
+        $start         = new \DateTime('First day of January 2018');
         $end           = new \DateTime('Last day of last month');
         $monthInterval = \DateInterval::createFromDateString('1 month');
         $period        = new \DatePeriod($start, $monthInterval, $end);
@@ -68,9 +68,6 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $incidenceRateStats->setValue(json_encode($data));
 
                 $entityManager->flush($incidenceRateStats);
-
-                $this->saveIntermediateDataInUnilendStatistics($result, $lastDayOfMonth);
-
             }
         }
     }
@@ -82,7 +79,7 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
      */
     private function saveRatioCIP()
     {
-        $start         = new \DateTime(StatisticsManager::START_INCIDENCE_RATE_CIP);
+        $start         = new \DateTime('First day of January 2018');
         $end           = new \DateTime('Last day of this month');
         $monthInterval = \DateInterval::createFromDateString('1 month');
         $period        = new \DatePeriod($start, $monthInterval, $end);
@@ -109,106 +106,33 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
                 $incidenceRateStats->setValue(json_encode($data));
 
                 $entityManager->flush($incidenceRateStats);
-
-                $this->saveIntermediateDataInUnilendStatistics($result, $lastDayOfMonth);
             }
         }
     }
 
     /**
-     * @param array     $projects
-     * @param \DateTime $added
+     * @param \DateTime $quarter
      *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    private function saveIntermediateDataInUnilendStatistics(array $projects, \DateTime $added)
-    {
-        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
-
-        $unilendStats = new UnilendStats();
-        $unilendStats
-            ->setValue(json_encode($projects))
-            ->setTypeStat('incidence_rate_ratio_raw_data')
-            ->setAdded($added)
-            ->setUpdated(new \DateTime('NOW'));
-
-        $entityManager->persist($unilendStats);
-        $entityManager->flush($unilendStats);
-    }
-
-    /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Psr\Cache\InvalidArgumentException
      */
-    private function createQuarterEntries(): void
+    private function createQuarterEntry(\DateTime $quarter): void
     {
         $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
         $unilendStatRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        $years                 = [2015, 2016, 2017];
+        $quarterStats          = $unilendStatRepository->findStatisticAtDate($quarter, UnilendStats::TYPE_INCIDENCE_RATE);
 
-        foreach ($years as $year) {
-            $firstQuarter  = new \DateTime('Last day of March ' . $year);
-            $secondQuarter = new \DateTime('Last day of June ' . $year);
-            $thirdQuarter  = new \DateTime('Last day of September ' . $year);
-            $fourthQuarter = new \DateTime('Last day of December ' . $year);
+        if (null !== $quarterStats) {
+            $incidenceRateStat = clone $quarterStats;
+            $incidenceRateStat
+                ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
+                ->setUpdated(new \DateTime('NOW'));
 
-            $firstQuarterStats  = $unilendStatRepository->findStatisticAtDate($firstQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
-            $secondQuarterStats = $unilendStatRepository->findStatisticAtDate($secondQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
-            $thirdQuarterStats  = $unilendStatRepository->findStatisticAtDate($thirdQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
-            $fourthQuarterStats = $unilendStatRepository->findStatisticAtDate($fourthQuarter, UnilendStats::TYPE_INCIDENCE_RATE);
+            $entityManager->persist($incidenceRateStat);
+            $entityManager->flush($incidenceRateStat);
 
-            if (null !== $firstQuarterStats) {
-                $incidenceRateStatT1 = clone $firstQuarterStats;
-                $incidenceRateStatT1
-                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-                    ->setUpdated(new \DateTime('NOW'));
-
-                $entityManager->persist($incidenceRateStatT1);
-                $entityManager->flush($incidenceRateStatT1);
-
-                $entityManager->refresh($incidenceRateStatT1);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT1);
-            }
-
-            if (null !== $secondQuarterStats) {
-                $incidenceRateStatT2 = clone $secondQuarterStats;
-                $incidenceRateStatT2
-                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-                    ->setUpdated(new \DateTime('NOW'));
-
-                $entityManager->persist($incidenceRateStatT2);
-                $entityManager->flush($incidenceRateStatT2);
-
-                $entityManager->refresh($incidenceRateStatT2);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT2);
-            }
-
-            if (null !== $thirdQuarterStats) {
-                $incidenceRateStatT3 = clone $thirdQuarterStats;
-                $incidenceRateStatT3
-                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-                    ->setUpdated(new \DateTime('NOW'));
-
-                $entityManager->persist($incidenceRateStatT3);
-                $entityManager->flush($incidenceRateStatT3);
-
-                $entityManager->refresh($incidenceRateStatT3);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT3);
-            }
-
-            if (null !== $fourthQuarterStats) {
-                $incidenceRateStatT4 = clone $fourthQuarterStats;
-                $incidenceRateStatT4
-                    ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-                    ->setUpdated(new \DateTime('NOW'));
-
-                $entityManager->persist($incidenceRateStatT4);
-                $entityManager->flush($incidenceRateStatT4);
-
-                $entityManager->refresh($incidenceRateStatT4);
-                $this->saveQuarterIncidenceRate($incidenceRateStatT4);
-            }
+            $entityManager->refresh($incidenceRateStat);
+            $this->saveQuarterIncidenceRate($incidenceRateStat);
         }
     }
 
