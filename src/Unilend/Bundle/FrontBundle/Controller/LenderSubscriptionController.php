@@ -698,6 +698,7 @@ class LenderSubscriptionController extends Controller
             if ($file instanceof UploadedFile) {
                 try {
                     $attachement = $this->upload($client,  $attachmentTypeId, $file);
+
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE) {
                         $addressManager->linkAttachmentToAddress($client, $attachement);
                     }

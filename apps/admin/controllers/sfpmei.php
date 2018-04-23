@@ -333,7 +333,7 @@ class sfpmeiController extends bootstrap
                 }
 
                 try {
-                    if (null === $mainAddress ) {
+                    if (null === $mainAddress) {
                         if ($this->wallet->getIdClient()->isNaturalPerson()) {
                             $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
                                 ->findLastModifiedNotArchivedAddressByType($this->wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);

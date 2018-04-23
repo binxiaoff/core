@@ -15,11 +15,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 <?php endif; ?>
 
 <?php if (ClientsStatus::STATUS_VALIDATED !== $clientStatus && in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
-    <div class="row">
-        <div class="form-group col-md-6">
-            <input type="button" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+    <form method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
+        <div class="row">
+            <div class="form-group col-md-6">
+                <?php if (null !== $this->currentBankAccount && null === $this->currentBankAccount->getDateValidated()) : ?>
+                    <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account" id="id_bank_account">
+                <?php endif; ?>
+                <?php if (null !== $this->lastModifiedAddress && $this->lastModifiedAddress !== $this->client->getIdAddress()) : ?>
+                    <input type="hidden" value="<?= $this->lastModifiedAddress->getId() ?>" name="id_last_modified_main_address" id="id_last_modified_main_address">
+                <?php endif; ?>
+                <input type="hidden" name="valider_preteur">
+                <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur">
+            </div>
         </div>
-    </div>
+    </form>
 <?php endif; ?>
 
 <?php if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>

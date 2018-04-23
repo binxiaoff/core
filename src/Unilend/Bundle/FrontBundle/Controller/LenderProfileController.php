@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Users, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Users, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ClientAuditer, LocationManager
@@ -324,18 +324,18 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param Clients       $client
-     * @param ClientAddress $address
-     * @param FormInterface $form
-     * @param FileBag       $fileBag
-     * @param string        $type
+     * @param Clients            $client
+     * @param ClientAddress|null $address
+     * @param FormInterface      $form
+     * @param FileBag            $fileBag
+     * @param string             $type
      *
      * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function handlePersonAddress(Clients $client, ClientAddress $address, FormInterface $form, FileBag $fileBag, string $type): bool
+    private function handlePersonAddress(Clients $client, ?ClientAddress $address, FormInterface $form, FileBag $fileBag, string $type): bool
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');
@@ -383,6 +383,7 @@ class LenderProfileController extends Controller
                     if ($file instanceof UploadedFile) {
                         try {
                             $attachement = $this->upload($client, $attachmentTypeId, $file);
+
                             if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachmentTypeId) {
                                 $housingCertificate = $attachement;
                             }

@@ -60,6 +60,21 @@ class ClientAuditer
         $trackedFields = array_intersect(self::LOGGED_FIELDS, array_keys($changeSet));
 
         foreach ($trackedFields as $fieldName) {
+            if ('naissance' === $fieldName) {
+                if ($changeSet[$fieldName][0] instanceof \DateTime) {
+                    $changeSet[$fieldName][0] = $changeSet[$fieldName][0]->format('d/m/Y');
+                }
+                if ($changeSet[$fieldName][1] instanceof \DateTime) {
+                    $changeSet[$fieldName][1] = $changeSet[$fieldName][1]->format('d/m/Y');
+                }
+            }
+
+            // Do not log change when value does not change but type is different
+            // Example: idNationalite changing from "int 1" to "string '1'" because setIdNationalite was not called with the right parameter type
+            if ($changeSet[$fieldName][0] == $changeSet[$fieldName][1]) {
+                continue;
+            }
+
             $clientDataHistory = new ClientDataHistory();
             $clientDataHistory
                 ->setIdClient($client)

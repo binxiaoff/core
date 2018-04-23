@@ -76,11 +76,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $('.message_completude').slideToggle();
         });
 
-        $(document).on('click', '#valider_preteur', function() {
-            $("#statut_valider_preteur").val('1');
-            $("#form_etape1").submit();
-        });
-
         $("#previsualisation").click(function() {
             var content = $("#content_email_completude").val();
             var input = '';
@@ -158,16 +153,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             <?php unset($_SESSION['error_email_exist']); ?>
         <?php endif; ?>
         <hr>
-        <form id="form_etape1" method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
-            <input type="hidden" value="<?= (null !== $this->currentBankAccount) ? $this->currentBankAccount->getId() : '' ?>" name="id_bank_account">
-            <input type="hidden" id="statut_valider_preteur" name="statut_valider_preteur" value="0">
-            <input type="hidden" name="send_edit_preteur" id="send_edit_preteur">
+        <form method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
             <?php if ($this->client->isNaturalPerson()) : ?>
                 <?php $this->fireView('partials/edit_natural_person') ?>
             <?php else : ?>
                 <?php $this->fireView('partials/edit_legal_entity') ?>
             <?php endif; ?>
             <div class="text-right">
+                <input type="hidden" name="send_edit_preteur" id="send_edit_preteur">
                 <button type="submit" class="btn-primary">Sauvegarder</button>
             </div>
         </form>

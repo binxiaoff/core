@@ -470,10 +470,10 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
-                    $birthCountry       = $this->request->request->getInt('id_pays_naissance');
-                    $type               = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-                    $email              = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
-                    $birthday           = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
+                    $birthCountry = $this->request->request->getInt('id_pays_naissance');
+                    $type         = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+                    $email        = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
+                    $birthday     = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
 
                     if (false === $this->checkEmail($email, $this->client)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
@@ -488,7 +488,7 @@ class preteursController extends bootstrap
                     }
 
                     if (false !== $birthday && 1 === preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $birthday)) {
-                        $birthday = \DateTime::createFromFormat('d/m/Y', $birthday);
+                        $birthday = \DateTime::createFromFormat('d/m/Y', $birthday)->setTime(0, 0, 0);
                     }
 
                     $entityManager->beginTransaction();
