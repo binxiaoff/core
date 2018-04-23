@@ -475,7 +475,8 @@ class remboursementController extends bootstrap
                     'paidScheduledAmount'        => $paidScheduledAmount,
                     'plannedRepaymentTasks'      => $plannedRepaymentTasks,
                     'lenderCount'                => $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project),
-                    'paymentSchedules'           => $paymentSchedules
+                    'paymentSchedules'           => $paymentSchedules,
+                    'repaymentProjectStatus'     => ProjectsStatus::FUNDE.','.ProjectsStatus::REMBOURSEMENT.','.ProjectsStatus::REMBOURSE.','.ProjectsStatus::REMBOURSEMENT_ANTICIPE
                 ];
 
                 $this->render(null, $templateData);

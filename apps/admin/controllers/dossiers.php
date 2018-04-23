@@ -94,13 +94,17 @@ class dossiersController extends bootstrap
             $commercial         = empty($_POST['commercial']) ? '' : $_POST['commercial'];
             $iNbStartPagination = isset($_POST['nbLignePagination']) ? (int) $_POST['nbLignePagination'] : 0;
             $this->nb_lignes    = isset($this->nb_lignes) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial,
-                $iNbStartPagination, $this->nb_lignes);
-        } elseif (isset($this->params[0])) {
+            $this->lProjects    = $this->projects->searchDossiers($startDate, $endDate, $projectNeed, $duration, $status, $analyst, $siren, $projectId, $companyName, null, $commercial, $iNbStartPagination, $this->nb_lignes);
+        } elseif (isset($this->params[0]) && 1 === preg_match('/^[1-9]([0-9,]*[0-9]+)*$/', $this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
 
         $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
+
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $backOfficeUserManager */
+        $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
+        $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
+        $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
 
         if (1 === $this->iCountProjects && (false === empty($projectId) || false === empty($companyName))) {
             header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->lProjects[0]['id_project']);
@@ -1443,35 +1447,6 @@ class dossiersController extends bootstrap
         $this->bids      = $this->loadData('bids');
 
         $this->lProjects = $this->projects->selectProjectsByStatus([ProjectsStatus::EN_FUNDING]);
-    }
-
-    public function _remboursements()
-    {
-        $this->setView('remboursements');
-        $this->pageTitle = 'Remboursements';
-        $this->listing([ProjectsStatus::FUNDE, ProjectsStatus::REMBOURSEMENT]);
-    }
-
-    public function _no_remb()
-    {
-        $this->setView('remboursements');
-        $this->pageTitle = 'Incidents de remboursement';
-        $this->listing([ProjectsStatus::PROBLEME, ProjectsStatus::LOSS]);
-    }
-
-    private function listing(array $aStatus)
-    {
-        $this->projects               = $this->loadData('projects');
-        $this->companies              = $this->loadData('companies');
-        $this->clients                = $this->loadData('clients');
-        $this->echeanciers            = $this->loadData('echeanciers');
-        $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-        if (isset($_POST['form_search_remb'])) {
-            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus, $_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
-        } else {
-            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus);
-        }
     }
 
     public function _detail_remb_preteur()
