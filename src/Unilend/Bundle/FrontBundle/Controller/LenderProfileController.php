@@ -339,7 +339,7 @@ class LenderProfileController extends Controller
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address = null): bool
+    private function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address): bool
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');
@@ -372,7 +372,8 @@ class LenderProfileController extends Controller
 
                 if (
                     AddressType::TYPE_MAIN_ADDRESS === $type
-                    && (null === $address
+                    && (
+                        null === $address
                         || (
                             $address->getAddress() !== $form->get('address')->getData()
                             || $address->getZip() !== $form->get('zip')->getData()
@@ -591,7 +592,7 @@ class LenderProfileController extends Controller
                 'fiscal_info' => [
                     'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
-                    'rib'         => null !== $bankAccount ? $bankAccount->getAttachment() : '',
+                    'rib'         => $bankAccount ? $bankAccount->getAttachment() : '',
                     'fundsOrigin' => $this->getFundsOrigin($client->getType())
                 ]
             ],
