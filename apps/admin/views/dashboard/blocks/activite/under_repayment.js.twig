@@ -49,7 +49,7 @@ Highcharts.chart('under-repayment', {
         {% for partnerStat in statRepaymentHighcharts %}
         {% if not loop.first %},{% endif %}
         {
-            name: '{{ partnerStat.label }}',
+            name: '{{ partnerStat.label|addslashes }}',
             data: [{% for month in twelveMonths %} {% if not loop.first %},{% endif %} {% if partnerStat['data'][month] is defined %} {{ partnerStat['data'][month] }} {% else %} 0 {% endif %} {% endfor %}]
             {% if partnerStat.color is not empty %},color: '{{ partnerStat.color }}'{% endif %}
         }
