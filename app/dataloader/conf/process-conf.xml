@@ -7,7 +7,7 @@
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/lenders.log"/>
-                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.endpoint" value="https://eu14.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a43a8661c64536e47b62fe3c6e1e1471ae9eee2d59c8c0fe382cb3f279a4b252130"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
@@ -34,7 +34,7 @@
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/companies.log"/>
-                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.endpoint" value="https://eu14.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a43a8661c64536e47b62fe3c6e1e1471ae9eee2d59c8c0fe382cb3f279a4b252130"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
@@ -61,7 +61,7 @@
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/Borrowers.log"/>
-                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.endpoint" value="https://eu14.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a43a8661c64536e47b62fe3c6e1e1471ae9eee2d59c8c0fe382cb3f279a4b252130"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
@@ -88,7 +88,7 @@
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
                 <entry key="sfdc.debugMessagesFile" value="/data/log/unilend/dataloader/Projects.log"/>
-                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.endpoint" value="https://eu14.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a43a8661c64536e47b62fe3c6e1e1471ae9eee2d59c8c0fe382cb3f279a4b252130"/>
                 <entry key="process.encryptionKeyFile" value="/data/sites/unilend/app/dataloader/conf/key.txt"/>
