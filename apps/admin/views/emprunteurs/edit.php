@@ -110,12 +110,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 </div>
                 <div class="row">
                     <div class="form-group col-md-6">
-                        <label for="email">Email</label>
-                        <input type="text" name="email" id="email" value="<?= $this->clientEntity->getEmail() ?>" class="form-control">
+                        <label for="mobile">Téléphone mobile</label>
+                        <input type="text" name="mobile" id="mobile" value="<?= trim(chunk_split($this->clientEntity->getMobile(), 2, ' ')) ?>" class="form-control">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="telephone">Téléphone</label>
-                        <input type="text" name="telephone" id="telephone" value="<?= $this->clientEntity->getTelephone() ?>" class="form-control">
+                        <label for="telephone">Téléphone fixe</label>
+                        <input type="text" name="telephone" id="telephone" value="<?= trim(chunk_split($this->clientEntity->getTelephone(), 2, ' ')) ?>" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input type="text" name="email" id="email" value="<?= $this->clientEntity->getEmail() ?>" class="form-control">
                     </div>
                 </div>
                 <?php if (ClientsStatus::STATUS_VALIDATED === $this->clientEntity->getIdClientStatusHistory()->getIdStatus()->getId()) : ?>
