@@ -59,7 +59,7 @@
                 <table class="search_fields">
                     <tr>
                         <td width=25%>
-                            <label for="datepik_1">Date debut</label><br/>
+                            <label for="datepik_1">Date début</label><br/>
                             <input type="text" name="dateStart" id="datepik_1" class="input_dp"
                                    value="<?= (false === empty($_POST['dateStart']) ? $_POST['dateStart'] : '' ) ?>"/>
                         </td>
@@ -74,11 +74,11 @@
                             <label for="allLines">Choisir toutes les lignes</label><br/>
                             <input type="radio" name="queryOptions" value="groupBySiren" id="groupBySiren"
                                    <?= (isset($_POST['queryOptions']) && 'groupBySiren' == $_POST['queryOptions']) ? 'checked="checked"' : '' ?>/>
-                            <label for="groupBySiren">Siren dédoublonnée</label>
+                            <label for="groupBySiren">SIREN dédoublonné</label>
                         </td>
                         <td width=20%>
                             <br>
-                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Recuperation du CSV</button>
+                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Télécharger (CSV)</button>
                         </td>
                     </tr>
                 </table>

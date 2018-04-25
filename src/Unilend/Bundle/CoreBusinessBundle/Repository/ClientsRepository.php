@@ -861,16 +861,15 @@ class ClientsRepository extends EntityRepository
      */
     public function getBorrowersContactDetailsAndSource(\DateTime $start, \DateTime $end, bool $groupBySiren): array
     {
-        $start->setTime(0, 0, 0);
-        $end->setTime(23, 59, 59);
-
         $groupBy    = $groupBySiren ? 'GROUP BY com.siren ' : '';
         $countSiren = $groupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
-        $subSelect  = $groupBySiren ? '(SELECT GROUP_CONCAT(c2.source)
-                                          FROM clients c2
-                                            INNER JOIN companies com2 on (c2.id_client = com2.id_client_owner)
-                                          WHERE com2.siren = com.siren
-                                          AND DATE(c2.added) BETWEEN :start AND :end) AS ChronologicalSources,' : '';
+        $subSelect  = $groupBySiren ? '(
+                            SELECT GROUP_CONCAT(c2.source)
+                            FROM clients c2
+                            INNER JOIN companies com2 ON c2.id_client = com2.id_client_owner
+                            WHERE com2.siren = com.siren
+                                AND DATE(c2.added) BETWEEN :start AND :end
+                        ) AS ChronologicalSources,' : '';
 
         $query =
             'SELECT
@@ -898,8 +897,7 @@ class ClientsRepository extends EntityRepository
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query, ['start' => $start->format('Y-m-D H:i:s'), 'end' => $end->format('Y-m-d H:i:s')])
+            ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
             ->fetchAll(\PDO::FETCH_ASSOC);
-
     }
 }
