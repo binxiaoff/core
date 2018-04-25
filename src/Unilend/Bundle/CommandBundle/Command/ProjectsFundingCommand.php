@@ -23,9 +23,9 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         ini_set('memory_limit', '1G');
 
         /** @var EntityManager $entityManagerSimulator */
-        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-        $logger = $this->getContainer()->get('monolog.logger.console');
+        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
+        $mailerManager           = $this->getContainer()->get('unilend.service.email_manager');
+        $logger                  = $this->getContainer()->get('monolog.logger.console');
         $projectManager          = $this->getContainer()->get('unilend.service.project_manager');
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
 
@@ -51,7 +51,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         if (
                             false === $isRateMinReached
                             && $endDate > $currentDate
-                            && ($project->date_funded === '0000-00-00 00:00:00' || empty($project->date_funded)) // To answer that this email was not already sent
+                            && ($project->date_funded === '0000-00-00 00:00:00' || empty($project->date_funded)) // To ensure that this email was not already sent
                         ) {
                             $mailerManager->sendFundedToBorrower($project);
                         }
