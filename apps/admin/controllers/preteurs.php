@@ -508,7 +508,7 @@ class preteursController extends bootstrap
 
                         /** @var ClientAuditer $clientAuditer */
                         $clientAuditer = $this->get(ClientAuditer::class);
-                        $clientAuditer->logChanges($this->client, $this->userEntity);
+                        $clientAuditer->logChanges($this->client, $this->userEntity, true);
 
                         $entityManager->flush($this->client);
 
@@ -581,7 +581,7 @@ class preteursController extends bootstrap
 
                         /** @var ClientAuditer $clientAuditer */
                         $clientAuditer = $this->get(ClientAuditer::class);
-                        $clientAuditer->logChanges($this->client, $this->userEntity);
+                        $clientAuditer->logChanges($this->client, $this->userEntity, true);
 
                         $entityManager->flush([$this->companyEntity, $this->client]);
 
