@@ -68,14 +68,6 @@ class bootstrap extends Controller
                     'uri'   => 'mails/emailhistory'
                 ],
                 [
-                    'title' => 'Campagnes',
-                    'uri'   => 'campagnes'
-                ],
-                [
-                    'title' => 'Types de campagnes',
-                    'uri'   => 'campagnes/types'
-                ],
-                [
                     'title' => 'Grille de taux',
                     'uri'   => 'project_rate_settings',
                     'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
