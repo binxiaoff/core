@@ -1,3 +1,5 @@
+<?php use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager; ?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="fr-FR" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
@@ -52,27 +54,30 @@
         <th>Date de dernière échéance</th>
         <th>Mensualité</th>
     </tr>
-    <?php foreach ($this->lSumLoans as $aProjectLoans) : ?>
-        <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT) : ?>
-            <tr>
-            <td><?= $aProjectLoans['statusLabel'] ?></td>
-            <td class="description"><?= $aProjectLoans['title'] ?></td>
+    <?php foreach ($this->lenderLoans as $aProjectLoans) : ?>
+        <tr>
+            <td><?= $aProjectLoans['loanStatusLabel'] ?></td>
+            <td class="description"><?= $aProjectLoans['name'] ?></td>
             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
-            <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-            <?php if (\Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED === $aProjectLoans['loanStatus']) : ?>
-                <td colspan="2">Remboursé intégralement
-                    <br> le <?= $this->dates->formatDate($aProjectLoans['final_repayment_date'], 'd/m/Y') ?>
-                </td>
-            <?php elseif (in_array($aProjectLoans['loanStatus'], [\Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING, \Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC, \Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC])) : ?>
-            <td colspan="2">Procédure en cours</td>
-        <?php else : ?>
-            <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-            <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
-        <?php endif; ?>
-        <td><?= $this->ficelle->formatNumber($aProjectLoans['monthly_repayment_amount']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+            <td><?= $aProjectLoans['start_date']->format('d/m/Y') ?></td>
+            <?php if (LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED === $aProjectLoans['loanStatus']) : ?>
+                <?php if ($aProjectLoans['isCloseOutNetting']) : ?>
+                    <?php $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date'; ?>
+                <?php else : ?>
+                    <?php $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date'; ?>
+                <?php endif; ?>
+                <td colspan="3"><?= $this->get('translator')->trans($translationId, ['%date%' => $aProjectLoans['final_repayment_date']->format('d/m/Y')]) ?></td>
+            <?php elseif (in_array($aProjectLoans['loanStatus'], [LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING, LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC, LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC])) : ?>
+                <td colspan="3"><?= $this->translator->transChoice('lender-operations_loans-table-project-procedure-in-progress', $aProjectLoans['count']['declaration']) ?></td>
+            <?php elseif (LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS === $aProjectLoans['loanStatus']) : ?>
+                <td colspan="3"><?= $this->translator->transChoice('lender-operations_detailed-loan-status-label-lost', $aProjectLoans['count']['declaration']) ?></td>
+            <?php else : ?>
+                <td><?= $aProjectLoans['next_payment_date']->format('d/m/Y') ?></td>
+                <td><?= $aProjectLoans['end_date']->format('d/m/Y') ?></td>
+                <td><?= $this->ficelle->formatNumber($aProjectLoans['monthly_repayment_amount']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+            <?php endif; ?>
         </tr>
-        <?php endif; ?>
     <?php endforeach; ?>
 </table>
 

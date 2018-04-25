@@ -11,36 +11,13 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, ProjectsStatus, UnderlyingContract, Wallet, WalletType
+    AddressType, ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, UnderlyingContract, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
 
 class LenderOperationsController extends Controller
 {
-    const LAST_OPERATION_DATE = '2013-01-01';
-
-    const LOAN_STATUS_FILTER = [
-        'repayment'      => [ProjectsStatus::REMBOURSEMENT],
-        'repaid'         => [ProjectsStatus::REMBOURSE, ProjectsStatus::REMBOURSEMENT_ANTICIPE],
-        'late-repayment' => [ProjectsStatus::PROBLEME],
-        'incidents'      => [ProjectsStatus::PROBLEME],
-        'loss'           => [ProjectsStatus::LOSS]
-    ];
-
-    const LOAN_STATUS_AGGREGATE = [
-        'repayment'      => [LenderOperationsManager::LOAN_STATUS_DISPLAY_IN_PROGRESS],
-        'repaid'         => [LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED],
-        'late-repayment' => [LenderOperationsManager::LOAN_STATUS_DISPLAY_LATE],
-        'incidents'      => [
-            LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING,
-            LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC,
-            LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC
-        ],
-        'loss'           => [LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS]
-    ];
-
     /**
      * @Route("/operations", name="lender_operations")
      * @Security("has_role('ROLE_LENDER')")
@@ -74,7 +51,7 @@ class LenderOperationsController extends Controller
                 'hash'                   => $this->getUser()->getHash(),
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
-                'loansStatusFilter'      => self::LOAN_STATUS_FILTER,
+                'loansStatusFilter'      => LenderOperationsManager::LOAN_STATUS_FILTER,
                 'firstLoanYear'          => $entityManagerSimulator->getRepository('loans')->getFirstLoanYear($wallet->getId()),
                 'lenderLoans'            => $loans['lenderLoans'],
                 'seriesData'             => $loans['seriesData'],
@@ -236,11 +213,10 @@ class LenderOperationsController extends Controller
             $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
             $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $aProjectLoans['loanStatusLabel']);
             $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
-            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['start_date'])));
+            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $aProjectLoans['start_date']->format('d/m/Y'));
 
             switch ($aProjectLoans['loanStatus']) {
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED:
-                    $finished = \DateTime::createFromFormat('Y-m-d H:i:s', $aProjectLoans['final_repayment_date'])->format('d/m/Y');
                     if ($aProjectLoans['isCloseOutNetting']) {
                         $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
                     } else {
@@ -248,7 +224,7 @@ class LenderOperationsController extends Controller
 
                     }
                     $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $finished]));
+                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $aProjectLoans['final_repayment_date']->format('d/m/Y')]));
                     break;
                 case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
                 case LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
@@ -273,8 +249,8 @@ class LenderOperationsController extends Controller
                     );
                     break;
                 default:
-                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['next_payment_date'])));
-                    $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), date('d/m/Y', strtotime($aProjectLoans['end_date'])));
+                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $aProjectLoans['next_payment_date']->format('d/m/Y'));
+                    $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $aProjectLoans['end_date']->format('d/m/Y'));
                     $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
                     $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
                     $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
@@ -345,143 +321,17 @@ class LenderOperationsController extends Controller
      */
     private function commonLoans(Request $request, Wallet $wallet): array
     {
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $filters      = $request->request->get('filter', []);
+        $year         = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
+        $statusFilter = isset($filters['status']) ? $filters['status'] : null;
+
         /** @var \loans $loan */
-        $loan                    = $entityManagerSimulator->getRepository('loans');
-        $notificationsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Notifications');
+        $loan        = $this->get('unilend.service.entity_manager')->getRepository('loans');
+        $lenderLoans = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year);
+
         $lenderOperationManager  = $this->get('unilend.service.lender_operations_manager');
-        $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        /** @var UserLender $user */
-        $user               = $this->getUser();
-        $projectsInDept     = $projectRepository->getProjectsInDebt();
-        $filters            = $request->request->get('filter', []);
-        $year               = isset($filters['date']) && false !== filter_var($filters['date'], FILTER_VALIDATE_INT) ? $filters['date'] : null;
-        $statusFilter       = isset($filters['status']) ? $filters['status'] : null;
-        $loanStatus         = array_fill_keys(array_keys(self::LOAN_STATUS_FILTER), 0);
-        $lenderLoans        = $loan->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC', $year);
-        $lenderProjectLoans = [];
-
-        foreach ($lenderLoans as $projectLoans) {
-            if ($projectLoans['project_status'] >= ProjectsStatus::REMBOURSEMENT) {
-                $loanData       = [];
-                $project        = $projectRepository->find($projectLoans['id_project']);
-                $loanStatusInfo = $lenderOperationManager->getLenderLoanStatusToDisplay($project);
-
-                if (false === empty($statusFilter) && false === in_array($loanStatusInfo['status'], self::LOAN_STATUS_AGGREGATE[$statusFilter])) {
-                    continue;
-                }
-
-                $startDateTime     = new \DateTime(date('Y-m-d'));
-                $endDateTime       = new \DateTime($projectLoans['fin']);
-                $remainingDuration = $startDateTime->diff($endDateTime);
-
-                $loanData['id']                       = $projectLoans['id_project'];
-                $loanData['url']                      = $this->generateUrl('project_detail', ['projectSlug' => $projectLoans['slug']]);
-                $loanData['name']                     = $projectLoans['title'];
-                $loanData['rate']                     = round($projectLoans['rate'], 1);
-                $loanData['risk']                     = $projectLoans['risk'];
-                $loanData['amount']                   = round($projectLoans['amount']);
-                $loanData['start_date']               = $projectLoans['debut'];
-                $loanData['end_date']                 = $projectLoans['fin'];
-                $loanData['next_payment_date']        = $projectLoans['next_echeance'];
-                $loanData['monthly_repayment_amount'] = $projectLoans['monthly_repayment_amount'];
-                $loanData['duration']                 = $remainingDuration->y * 12 + $remainingDuration->m + ($remainingDuration->d > 0 ? 1 : 0);
-                $loanData['final_repayment_date']     = $projectLoans['final_repayment_date'];
-                $loanData['remaining_capital_amount'] = $projectLoans['remaining_capital'];
-                $loanData['project_status']           = $projectLoans['project_status'];
-                $loanData['loanStatus']               = $loanStatusInfo['status'];
-                $loanData['loanStatusLabel']          = $loanStatusInfo['statusLabel'];
-                $loanData['isCloseOutNetting']        = $project->getCloseOutNettingDate() instanceof \DateTime;
-
-                switch ($loanData['loanStatus']) {
-                    case LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING:
-                    case LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC:
-                    case LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
-                        ++$loanStatus['incidents'];
-                        break;
-                    case LenderOperationsManager::LOAN_STATUS_DISPLAY_LATE:
-                        ++$loanStatus['late-repayment'];
-                        break;
-                    case LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED:
-                        ++$loanStatus['repaid'];
-                        break;
-                    case LenderOperationsManager::LOAN_STATUS_DISPLAY_IN_PROGRESS:
-                        ++$loanStatus['repayment'];
-                        break;
-                    case LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS:
-                        ++$loanStatus['loss'];
-                }
-                try {
-                    $loanData['activity'] = [
-                        'unread_count' => $notificationsRepository->countUnreadNotificationsForClient($wallet->getId(), $projectLoans['id_project'], [Notifications::TYPE_LOAN_ACCEPTED])
-                    ];
-                } catch (\Exception $exception) {
-                    unset($exception);
-                    $loanData['activity'] = [
-                        'unread_count' => 0
-                    ];
-                }
-
-                $projectLoansDetails = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')
-                    ->findBy([
-                        'idLender'  => $wallet->getId(),
-                        'idProject' => $project
-                    ]);
-                $loans               = [];
-                $loanData['count']   = [
-                    'bond'        => 0,
-                    'contract'    => 0,
-                    'declaration' => 0
-                ];
-
-                foreach ($projectLoansDetails as $partialLoan) {
-                    (1 == $partialLoan->getIdTypeContract()->getIdContract()) ? $loanData['count']['bond']++ : $loanData['count']['contract']++;
-
-                    $loans[] = [
-                        'rate'      => round($partialLoan->getRate(), 1),
-                        'amount'    => bcdiv($partialLoan->getAmount(), 100, 0),
-                        'documents' => $this->getDocumentDetail(
-                            $projectLoans['project_status'],
-                            $user->getHash(),
-                            $partialLoan->getIdLoan(),
-                            $partialLoan->getIdTypeContract(),
-                            $projectsInDept,
-                            $projectLoans['id_project'],
-                            $loanData['count']['declaration']
-                        )
-                    ];
-                }
-
-                $loanData['loans']    = $loans;
-                $lenderProjectLoans[] = $loanData;
-                unset($loans, $loanData);
-            }
-        }
-
-        $seriesData  = [];
-        $chartColors = [
-            'late-repayment' => '#FFCA2C',
-            'incidents'      => '#F2980C',
-            'repaid'         => '#4FA8B0',
-            'repayment'      => '#1B88DB',
-            'loss'           => '#F76965'
-        ];
-
-        foreach ($loanStatus as $status => $count) {
-            if ($count) {
-                $seriesData[] = [
-                    'name'         => $this->get('translator')->transChoice('lender-operations_loans-chart-legend-loan-status-' . $status, $count, ['%count%' => $count]),
-                    'y'            => $count,
-                    'showInLegend' => true,
-                    'color'        => $chartColors[$status],
-                    'status'       => $status
-                ];
-            }
-        }
-
-        return ['lenderLoans' => $lenderProjectLoans, 'seriesData' => $seriesData];
+        return $lenderOperationManager->formatLenderLoansData($wallet, $lenderLoans, $statusFilter);
     }
 
     /**

@@ -376,6 +376,8 @@
         <service id="unilend.service.lender_operations_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="translator.default"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="assets.packages"/>
         </service>
 
         <service id="unilend.service.ifu_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\IfuManager">

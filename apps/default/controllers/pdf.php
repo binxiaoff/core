@@ -1204,7 +1204,8 @@ class pdfController extends bootstrap
     private function GenerateLoansHtml(int $clientId): void
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $this->translator = $this->get('translator');
 
         $this->echeanciers = $this->loadData('echeanciers');
         $this->loans       = $this->loadData('loans');
@@ -1215,27 +1216,11 @@ class pdfController extends bootstrap
         $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
         $client              = $wallet->getIdClient();
         $this->lenderAddress = null;
-        $projectRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $lenderLoans         = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
 
-        $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
-        $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
-
-        $this->aLoansStatuses = [
-            'no-problem'            => 0,
-            'late-repayment'        => 0,
-            'recovery'              => 0,
-            'collective-proceeding' => 0,
-            'default'               => 0,
-            'refund-finished'       => 0,
-        ];
         /** @var LenderOperationsManager $lenderOperationManager */
         $lenderOperationManager = $this->get('unilend.service.lender_operations_manager');
-
-        foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
-            $loanStatus                                   = $lenderOperationManager->getLenderLoanStatusToDisplay($projectRepository->find($aProjectLoans['id_project']));
-            $this->lSumLoans[$iLoandIndex]['statusLabel'] = $loanStatus['statusLabel'];
-            $this->lSumLoans[$iLoandIndex]['loanStatus']  = $loanStatus;
-        }
+        $this->lenderLoans      = $lenderOperationManager->formatLenderLoansData($wallet, $lenderLoans)['lenderLoans'];
 
         try {
             if ($client->isNaturalPerson()) {
