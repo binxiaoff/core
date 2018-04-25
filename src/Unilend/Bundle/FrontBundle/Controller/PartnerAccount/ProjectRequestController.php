@@ -565,9 +565,9 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestSubmitAction(Request $request)
     {
-        $hash = $request->request->getAlnum('hash');
+        $hash = $request->request->get('hash');
 
-        if (1 !== preg_match('/^[0-9a-f]{32,36}$/', $hash)) {
+        if (1 !== preg_match('/^[0-9a-f-]{32,36}$/', $hash)) {
             return $this->redirect($request->headers->get('referer'));
         }
 
@@ -600,9 +600,9 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestAbandon(Request $request)
     {
-        $hash = $request->request->getAlnum('hash');
+        $hash = $request->request->get('hash');
 
-        if (1 !== preg_match('/^[0-9a-f]{32,36}$/', $hash)) {
+        if (1 !== preg_match('/^[0-9a-f-]{32,36}$/', $hash)) {
             return $this->redirect($request->headers->get('referer'));
         }
 

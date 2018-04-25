@@ -227,9 +227,7 @@ class ProjectCloseOutNettingPaymentManager
 
                 $this->entityManager->flush($closeOutNettingPayment);
 
-                if (in_array($projectRepaymentTaskToCancel->getStatus(), [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY])) {
-                    $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
-                }
+                $this->projectRepaymentTaskManager->cancelRepaymentTask($projectRepaymentTaskToCancel, $user);
 
                 $this->projectChargeManager->cancelProjectCharge($wireTransferIn);
 

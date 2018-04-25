@@ -1,9 +1,11 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsAdresses, ClientsStatus, CompanyRating, OperationType, PaysV2, Product, ProjectProductAssessment, Projects, TaxType, Wallet, WalletType, Zones
+    Bids, ClientsStatus, CompanyRating, OperationType, Product, ProjectProductAssessment, Projects, WalletType, Zones
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    BdfLoansDeclarationManager, IfuManager
+};
 
 class statsController extends bootstrap
 {
@@ -97,281 +99,6 @@ class statsController extends bootstrap
 
             echo $csv;
         }
-    }
-
-    public function _requete_beneficiaires_csv()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        /** @var \clients_adresses $clientAddress */
-        $clientAddress = $this->loadData('clients_adresses');
-        /** @var \companies $company */
-        $company = $this->loadData('companies');
-        /** @var \pays_v2 $countries */
-        $countries = $this->loadData('pays_v2');
-        /** @var \villes $cities */
-        $cities = $this->loadData('villes');
-        /** @var \insee_pays $inseeCountries */
-        $inseeCountries = $this->loadData('insee_pays');
-        /** @var \tax_type $taxTypes */
-        $taxTypes = $this->loadData('tax_type');
-
-        if (in_array(date('m'), ['01', '02', '03'])) {
-            $year = (date('Y') - 1);
-        } else {
-            $year = date('Y');
-        }
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
-        $ifuManager           = $this->get('unilend.service.ifu_manager');
-        $walletsWithMovements = $ifuManager->getWallets($year);
-
-        $data     = [];
-        $filename = 'requete_beneficiaires' . date('Ymd');
-        /*
-         * Headers contain still Bank information, however as it is not mandatory information we leave the fields empty
-         * when this file is modified the next time, check if the fields can not be simply deleted as well as other non mandatory fields
-         */
-        $headers = [
-            'id_client',
-            'Cbene',
-            'Nom',
-            'Qualité',
-            'NomJFille',
-            'Prénom',
-            'DateNaissance',
-            'DépNaissance',
-            'ComNaissance',
-            'LieuNaissance',
-            'NomMari',
-            'Siret',
-            'AdISO',
-            'Adresse',
-            'Voie',
-            'CodeCommune',
-            'Commune',
-            'CodePostal',
-            'Ville / nom pays',
-            'IdFiscal',
-            'PaysISO',
-            'Entité',
-            'ToRS',
-            'Plib',
-            'Tél',
-            'Banque',
-            'IBAN',
-            'BIC',
-            'EMAIL',
-            'Obs',
-            ''
-        ];
-
-        /** @var Wallet $wallet */
-        foreach ($walletsWithMovements as $wallet) {
-            $clientEntity = $wallet->getIdClient();
-            $clientAddress->get($clientEntity->getIdClient(), 'id_client');
-            $fiscalAndLocationData = [];
-
-            if ($clientEntity->isNaturalPerson()) {
-                $fiscalAndLocationData = [
-                    'address'    => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->adresse_fiscal) ? trim($clientAddress->adresse1) : trim($clientAddress->adresse_fiscal),
-                    'zip'        => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->cp_fiscal) ? trim($clientAddress->cp) : trim($clientAddress->cp_fiscal),
-                    'city'       => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->ville_fiscal) ? trim($clientAddress->ville) : trim($clientAddress->ville_fiscal),
-                    'id_country' => ClientsAdresses::SAME_ADDRESS_FOR_POSTAL_AND_FISCAL == $clientAddress->meme_adresse_fiscal && empty($clientAddress->id_pays_fiscal) ? $clientAddress->id_pays : $clientAddress->id_pays_fiscal
-                ];
-
-                if (0 == $fiscalAndLocationData['id_country']) {
-                    $fiscalAndLocationData['id_country'] = PaysV2::COUNTRY_FRANCE;
-                }
-
-                $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
-                $fiscalAndLocationData['isoFiscal'] = $countries->iso;
-                $countries->unsetData();
-
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE) {
-                    $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
-                    $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
-
-                    $countries->get($fiscalAndLocationData['id_country'], 'id_pays');
-                    $fiscalAndLocationData['city'] = $countries->fr;
-                    $inseeCountries->getByCountryIso(trim($countries->iso));
-                    $fiscalAndLocationData['zip'] = $inseeCountries->COG;
-                    $countries->unsetData();
-                    $inseeCountries->unsetData();
-
-                    $taxTypes->get(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
-                    $fiscalAndLocationData['deductedAtSource'] = $this->ficelle->formatNumber($taxTypes->rate) . '%';
-                } else {
-                    $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
-                    $fiscalAndLocationData['location']    = ''; //commune fiscal
-                }
-
-                $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
-                $countries->get($fiscalAndLocationData['birth_country'], 'id_pays');
-                $fiscalAndLocationData['isoBirth'] = $countries->iso;
-                $countries->unsetData();
-
-                if (PaysV2::COUNTRY_FRANCE >= $fiscalAndLocationData['birth_country']) {
-                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
-                    $fiscalAndLocationData['inseeBirth'] = '00000';
-                } else {
-                    $countries->get($clientEntity->getIdPaysNaissance(), 'id_pays');
-                    $fiscalAndLocationData['birthPlace'] = $countries->fr;
-                    $countries->unsetData();
-
-                    if (empty($clientEntity->getInseeBirth())) {
-                        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
-                        $locationManager = $this->get('unilend.service.location_manager');
-                        $cityList        = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
-                        if (1 < count($cityList)) {
-                            $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
-                        } else {
-                            $cities->get($clientEntity->getVilleNaissance(), 'ville');
-                            $fiscalAndLocationData['inseeBirth'] = empty($cities->insee) ? '00000' : $cities->insee;
-                        }
-                        $cities->unsetData();
-                    }
-                }
-
-                $fiscalAndLocationData['deductedAtSource'] = '';
-
-                unset($fiscalAndLocationData['birth_country']);
-                $this->addPersonLineToBeneficiaryQueryData($data, $wallet, $fiscalAndLocationData);
-            }
-
-            if ($company->get($clientEntity->getIdClient(), 'id_client_owner') && in_array($clientEntity->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $company->id_pays = (0 == $company->id_pays) ? PaysV2::COUNTRY_FRANCE : $company->id_pays;
-                $countries->get($company->id_pays, 'id_pays');
-                $fiscalAndLocationData['isoFiscal']   = $countries->iso;
-                $fiscalAndLocationData['inseeFiscal'] = $cities->getInseeCode($company->zip, $company->city);
-                $this->addLegalEntityLineToBeneficiaryQueryData($data, $company, $wallet, $fiscalAndLocationData);
-            }
-        }
-
-        $this->exportCSV($data, $filename, $headers);
-    }
-
-    private function addPersonLineToBeneficiaryQueryData(&$data, Wallet $wallet, $fiscalAndLocationData)
-    {
-        $client = $wallet->getIdClient();
-
-        $data[] = [
-            $client->getIdClient(),
-            $wallet->getWireTransferPattern(),
-            $client->getNom(),
-            $client->getCivilite(),
-            $client->getNom(),
-            $client->getPrenom(),
-            $client->getNaissance()->format('d/m/Y'),
-            empty($client->getInseeBirth()) ? substr($fiscalAndLocationData['inseeBirth'], 0, 2) : substr($client->getInseeBirth(), 0, 2),
-            empty($client->getInseeBirth()) ? $fiscalAndLocationData['inseeBirth'] : $client->getInseeBirth(),
-            $fiscalAndLocationData['birthPlace'],
-            '',
-            '',
-            $fiscalAndLocationData['isoFiscal'],
-            '',
-            str_replace(';', ',', $fiscalAndLocationData['address']),
-            $fiscalAndLocationData['inseeFiscal'],
-            $fiscalAndLocationData['location'],//commune fiscal
-            $fiscalAndLocationData['zip'],
-            $fiscalAndLocationData['city'],
-            '',
-            $fiscalAndLocationData['isoBirth'],
-            'X',
-            $fiscalAndLocationData['deductedAtSource'],
-            'N',
-            $client->getTelephone(),
-            '',
-            '',
-            '',
-            $client->getEmail(),
-            ''
-        ];
-    }
-
-    private function addLegalEntityLineToBeneficiaryQueryData(&$data, \companies $company, Wallet $wallet, $fiscalAndLocationData)
-    {
-        $client = $wallet->getIdClient();
-
-        $data[] = [
-            $client->getIdClient(),
-            $wallet->getWireTransferPattern(),
-            $company->name,
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            $company->siret,
-            $fiscalAndLocationData['isoFiscal'],
-            '',
-            str_replace(';', ',', $company->adresse1),
-            $fiscalAndLocationData['inseeFiscal'],
-            '',
-            $company->zip,
-            $company->city,
-            '',
-            $fiscalAndLocationData['isoFiscal'],
-            'X',
-            '',
-            'N',
-            $company->phone,
-            '',
-            '',
-            '',
-            $client->getEmail(),
-            ''
-        ];
-    }
-
-    /**
-     * Also an IFU query, should contain the same clients as the beneficiary and revenue queries
-     */
-    public function _requete_infosben()
-    {
-        $year = date('Y');
-        if (isset($this->params[0]) && is_numeric($this->params[0])) {
-            $year = (int) $this->params[0];
-        }
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
-        $ifuManager                 = $this->get('unilend.service.ifu_manager');
-        $this->walletsWithMovements = $ifuManager->getWallets($year);
-    }
-
-    public function _requete_infosben_csv()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        $year = date('Y');
-        if (isset($this->params[0]) && is_numeric($this->params[0])) {
-            $year = (int) $this->params[0];
-        }
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IfuManager $ifuManager */
-        $ifuManager           = $this->get('unilend.service.ifu_manager');
-        $walletsWithMovements = $ifuManager->getWallets($year);
-
-        $header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
-
-        $csv = "";
-        $csv .= $header . " \n";
-
-        /** @var Wallet $wallet */
-        foreach ($walletsWithMovements as $wallet) {
-            $csv .= "1;" . $wallet->getWireTransferPattern() . ";14378;;" . $wallet->getIdClient()->getIdClient() . ";4;6;P;";
-            $csv .= " \n";
-        }
-
-        $titre = 'requete_infosben' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-        print(utf8_decode($csv));
     }
 
     private function downloadIfufile($fileName)
@@ -643,32 +370,77 @@ class statsController extends bootstrap
     public function _declarations_bdf()
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $declarationList       = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findAll();
-        $declarationPath       = $this->getParameter('path.sftp') . 'bdf/emissions/declarations_mensuelles/';
-        $this->declarationList = [];
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var BdfLoansDeclarationManager $bdfLoansDeclarationManager */
+        $bdfLoansDeclarationManager = $this->get('unilend.service.bdf_loans_declaration_manager');
+        $declarations               = $entityManager->getRepository('UnilendCoreBusinessBundle:TransmissionSequence')->findBy([], ['added' => 'DESC']);
+        $declarationList            = [];
+        $documentTypes              = [
+            BdfLoansDeclarationManager::TYPE_IFP_BDC,
+            BdfLoansDeclarationManager::TYPE_MINIBON
+        ];
 
-        if (isset($this->params[0], $this->params[1]) && 'file' === $this->params[0] && is_string($this->params[1])) {
-            $this->download($declarationPath . $this->params[1]);
-        }
-        foreach ($declarationList as $declaration) {
-            $absoluteFileName = $declarationPath . $declaration->getElementName();
+        if (isset($this->params[0], $this->params[1]) && in_array($this->params[0], $documentTypes)) {
+            $fileNamePattern = '/^(' . BdfLoansDeclarationManager::UNILEND_IFP_ID . '|' . BdfLoansDeclarationManager::UNILEND_CIP_ID . ')_[0-9]{6}\.txt$/';
 
-            if (file_exists($absoluteFileName)) {
-                if ('01' === $declaration->getAdded()->format('m')) {
-                    $year = $declaration->getAdded()->format('Y') - 1;
-                } else {
-                    $year = $declaration->getAdded()->format('Y');
-                }
-                $declarationDate                = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
-                $this->declarationList[$year][] = [
-                    'declarationDate' => strftime('%B %Y', $declarationDate->getTimestamp()),
-                    'creationDate'    => $declaration->getAdded()->format('d/m/Y H:i'),
-                    'link'            => '/stats/declarations_bdf/file/' . $declaration->getElementName(),
-                    'fileName'        => $declaration->getElementName()
-                ];
+            if (preg_match($fileNamePattern, $this->params[1])) {
+                $this->download(implode(DIRECTORY_SEPARATOR, [$bdfLoansDeclarationManager->getBaseDir(), $this->params[0], $this->params[1]]));
+            } else {
+                header('Location: /stats/declarations_bdf');
+                die();
             }
         }
+
+        foreach ($declarations as $declaration) {
+            if (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_IFP_ID)) {
+                $type            = BdfLoansDeclarationManager::TYPE_IFP_BDC;
+                $declarationPath = $bdfLoansDeclarationManager->getIfpPath();
+            } elseif (strstr($declaration->getElementName(), BdfLoansDeclarationManager::UNILEND_CIP_ID)) {
+                $type            = BdfLoansDeclarationManager::TYPE_MINIBON;
+                $declarationPath = $bdfLoansDeclarationManager->getCipPath();
+            } else {
+                $this->get('logger')->warning(
+                    'Could not find the (BDF) loan declaration type. Unexpected file name format: ' . $declaration->getElementName(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                continue;
+            }
+
+            $declarationDate = \DateTime::createFromFormat('Ym', substr($declaration->getElementName(), 6, 6));
+
+            if (false === $declarationDate instanceof \DateTime) {
+                $this->get('logger')->warning(
+                    'Could not calculate the (BDF) loan declaration date. Unexpected file name format: ' . $declaration->getElementName(),
+                    ['class' => __CLASS__, 'function' => __FUNCTION__]
+                );
+                continue;
+            }
+
+            $absoluteFileName = implode(DIRECTORY_SEPARATOR, [$declarationPath, $declaration->getElementName()]);
+
+            if (file_exists($absoluteFileName)) {
+                $year  = $declarationDate->format('Y');
+                $month = $declarationDate->format('M');
+
+                if (false === isset($declarationList[$year][$month])) {
+                    $declarationList[$year][$month] = [];
+                }
+                $declarationList[$year][$month]['declarationDate'] = $declarationDate;
+
+                switch ($type) {
+                    case BdfLoansDeclarationManager::TYPE_IFP_BDC:
+                        $declarationList[$year][$month]['ifpFileName'] = $declaration->getElementName();
+                        break;
+                    case BdfLoansDeclarationManager::TYPE_MINIBON:
+                        $declarationList[$year][$month]['cipFileName'] = $declaration->getElementName();
+                        break;
+                    default:
+                        continue;
+                }
+            }
+        }
+
+        $this->render(null, ['declarations' => $declarationList]);
     }
 
     /**

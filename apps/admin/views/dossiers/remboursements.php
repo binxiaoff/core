@@ -112,7 +112,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
                         <?php endif; ?>
                         <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
                         <td class="center">
-                            <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">
+                            <a href="<?= $this->lurl ?>/remboursement/projet/<?= $aProject['id_project'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
                             </a>
                         </td>

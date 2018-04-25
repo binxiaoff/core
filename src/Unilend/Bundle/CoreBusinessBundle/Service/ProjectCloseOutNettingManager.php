@@ -46,7 +46,7 @@ class ProjectCloseOutNettingManager
 
         $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
             'idProject' => $project,
-            'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
+            'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
         if ($projectRepaymentTask) {
             throw new \Exception('There are pending repayment tasks to treat for the project (id: ' . $project->getIdProject() . '). You cannot decline the repayment schedules.');
@@ -75,7 +75,7 @@ class ProjectCloseOutNettingManager
     {
         $projectRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy([
             'idProject' => $project,
-            'status'    => [ProjectRepaymentTask::STATUS_PENDING, ProjectRepaymentTask::STATUS_READY, ProjectRepaymentTask::STATUS_IN_PROGRESS, ProjectRepaymentTask::STATUS_ERROR]
+            'status'    => ProjectRepaymentTask::STATUS_PLANNED
         ]);
 
         return null === $project->getCloseOutNettingDate() && $project->getStatus() >= ProjectsStatus::PROBLEME && null === $projectRepaymentTask;

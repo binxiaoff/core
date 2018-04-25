@@ -15,21 +15,6 @@
             $('#changeDate').attr('href', "<?= $this->lurl ?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
 
-        // Lender Vigilance / Atypical Operations
-        $('#btn-show-lender-vigilance-history').click(function () {
-            $('#lender-vigilance-history').toggle();
-            $(this).text(function (i, text) {
-                return text === 'Voir l\'historique de vigilance' ? 'Cacher l\'historique' : 'Voir l\'historique de vigilance'
-            })
-        })
-
-        $('#btn-show-lender-atypical-operation').click(function () {
-            $('#lender-atypical-operation').toggle();
-            $(this).text(function (i, text) {
-                return text === 'Voir les détections' ? 'Cacher les détections' : 'Voir les détections'
-            })
-        })
-
         // Reject Bid
         $('.deleteBidBtn').click(function () {
             var id_bid = $(this).data('bid')
@@ -126,39 +111,39 @@
         <table class="form" style="margin: auto;">
             <tr>
                 <th>ID Client :</th>
-                <td><?= $this->clients->id_client ?></td>
+                <td><?= $this->client->getIdClient() ?></td>
                 <th>Date de création :</th>
-                <td><?= $this->dates->formatDate($this->clients->added, 'd/m/Y') ?></td>
+                <td><?= $this->client->getAdded()->format('d/m/Y') ?></td>
             </tr>
             <tr>
                 <th>Prénom :</th>
-                <td><?= $this->clients->prenom ?></td>
+                <td><?= $this->client->getPrenom() ?></td>
                 <th>Source :</th>
-                <td><?= $this->clients->source ?></td>
+                <td><?= $this->client->getSource() ?></td>
             </tr>
             <tr>
                 <th>Nom :</th>
-                <td><?= $this->clients->nom ?></td>
+                <td><?= $this->client->getNom() ?></td>
                 <th>Source secondaire :</th>
-                <td><?= $this->clients->source2 ?></td>
+                <td><?= $this->client->getSource2() ?></td>
             </tr>
             <tr>
                 <th>Email :</th>
-                <td><?= $this->clients->email ?></td>
+                <td><?= $this->client->getEmail() ?></td>
                 <th></th>
                 <td width="365"></td>
             </tr>
             <tr>
-                <th>Adresse fiscale :</th>
-                <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
-                    <td colspan="5"><?= $this->clients_adresses->adresse_fiscal ?> <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?></td>
-                <?php else : ?>
-                    <td colspan="5"><?= $this->companies->adresse1 ?> <?= $this->companies->zip ?> <?= $this->companies->city ?></td>
+                <th>Adresse fiscale validée</th>
+                <td><?= null !== $this->validatedAddress ? $this->validatedAddress->getAddress() . '<br>' . $this->validatedAddress->getZip() . ' ' . $this->validatedAddress->getCity() : '' ?></td>
+                <?php if (null !== $this->lastModifiedAddress && $this->validatedAddress !== $this->lastModifiedAddress) : ?>
+                    <th>Addresse fiscale <br>en attente de validation</th>
+                    <td><?= $this->lastModifiedAddress->getAddress() . '<br>' . $this->lastModifiedAddress->getZip() . ' ' . $this->lastModifiedAddress->getCity() ?></td>
                 <?php endif; ?>
             </tr>
             <tr>
                 <th>Téléphone / Mobile :</th>
-                <td><?= $this->clients->telephone ?> / <?= $this->clients->mobile?></td>
+                <td><?= $this->client->getTelephone() ?> / <?= $this->client->getMobile() ?></td>
             </tr>
         </table>
         <br/><br/>
@@ -297,14 +282,6 @@
                     <td><?= $greenpointFinalStatus ?></td>
                 </tr>
             <?php endforeach; ?>
-            <tr>
-                <th>Mandat</th>
-                <td>
-                    <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
-                        <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
-                    <?php endif; ?>
-                </td>
-            </tr>
         </table>
         <br/><br/>
         <?php if (false === empty($this->transfers)) : ?>
@@ -325,40 +302,7 @@
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
-        <h3>Statut de surveillance</h3>
-        <div class="attention vigilance-status-<?= $this->vigilanceStatus['status'] ?>" style="margin-left: 0px;color: black;">
-            <?= $this->vigilanceStatus['message'] ?>
-        </div>
-        <?php if (false === empty($this->clientAtypicalOperations)) : ?>
-            <button class="btn" id="btn-show-lender-atypical-operation">Voir les détections</button>
-        <?php endif; ?>
-        <?php if (false === empty($this->vigilanceStatusHistory)) : ?>
-            <button class="btn" id="btn-show-lender-vigilance-history">Voir l'historique de vigilance</button>
-        <?php endif; ?>
-        <a class="thickbox btn-primary" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->clients->id_client ?>">
-            Ajouter
-        </a>
-        <div id="lender-atypical-operation" style="display: none;">
-            <br>
-            <h2>Liste des opérations atypiques détéctés</h2>
-            <?php if (false === empty($this->clientAtypicalOperations)) : ?>
-                <?php
-                $this->atypicalOperations = $this->clientAtypicalOperations;
-                $this->showActions        = false;
-                $this->showUpdated        = true;
-                $this->fireView('../client_atypical_operation/detections_table');
-                ?>
-            <?php endif; ?>
-        </div>
-        <br>
-        <div id="lender-vigilance-history" style="display: none;">
-            <br>
-            <h2>Historique de vigilance du client</h2>
-            <?php if (false === empty($this->clientAtypicalOperations)) : ?>
-                <?php $this->fireView('../client_atypical_operation/vigilance_status_history'); ?>
-            <?php endif; ?>
-        </div>
-        <br/><br/>
+
         <h2>Mouvements</h2>
         <div class="gauche" style="border: 0; padding-top: 5px;">
             <form method="post" name="date_select" action="<?= $this->lurl ?>/preteurs/operations_export/<?= $this->clients->id_client ?>">

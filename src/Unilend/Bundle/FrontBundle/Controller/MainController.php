@@ -5,33 +5,28 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, RedirectResponse, Request, Response
+};
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OffresBienvenues;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Tree;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Clients, OffresBienvenues, Tree, Users, WalletType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\ContentManager;
-use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
-use Unilend\Bundle\FrontBundle\Service\SourceManager;
-use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
+use Unilend\Bundle\FrontBundle\Service\{
+    ContentManager, ProjectDisplayManager, SourceManager, TestimonialManager
+};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -458,6 +453,7 @@ class MainController extends Controller
     /**
      * @param \tree  $tree
      * @param string $lenderType
+     *
      * @return Response
      */
     private function renderTermsOfUse(\tree $tree, $lenderType = '')
@@ -490,7 +486,7 @@ class MainController extends Controller
         $client = $entityManagerSimulator->getRepository('clients');
 
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $client->get($user->getClientId(), 'id_client')) {
-            $dateAccept    = '';
+            $dateAccept   = '';
             $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->id_client . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
 
             if (false === empty($userAccepted)) {
@@ -508,7 +504,7 @@ class MainController extends Controller
             $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
-                $this->getTOSReplacementsForPerson($client, $dateAccept, $loansCount, $content, $template);
+                $this->getTOSReplacementsForPerson($wallet->getIdClient(), $dateAccept, $loansCount, $content, $template);
             } else {
                 $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
             }
@@ -553,75 +549,88 @@ class MainController extends Controller
         return $this->render('cms_templates/template_cgv.html.twig', ['cms' => $cms]);
     }
 
-    private function getTOSReplacementsForPerson(\clients $client, $dateAccept, $loansCount, $content, &$template)
+    /**
+     * @param Clients $client
+     * @param string  $dateAccept
+     * @param int     $loansCount
+     * @param string  $content
+     * @param array   $template
+     **/
+    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $clientAddress = $client->getIdAddress();
 
-        /** @var \clients_adresses $clientAddresses */
-        $clientAddresses = $entityManagerSimulator->getRepository('clients_adresses');
-        $clientAddresses->get($client->id_client, 'id_client');
-
-        if ($clientAddresses->id_pays_fiscal == 0) {
-            $clientAddresses->id_pays_fiscal = 1;
+        if (null === $clientAddress) {
+            try {
+                $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('An exception occurred while getting main client address for ' . $client->getIdClient() . '. Terms of Use could not be generated. Message: ' . $exception->getMessage(), [
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_client' => $client->getIdClient()
+                ]);
+                exit;
+            }
         }
 
-        /** @var \pays_v2 $country */
-        $country = $entityManagerSimulator->getRepository('pays_v2');
-        $country->get($clientAddresses->id_pays_fiscal, 'id_pays');
-
-        $aReplacements = [
-            '[Civilite]'            => $client->civilite,
-            '[Prenom]'              => $client->prenom,
-            '[Nom]'                 => $client->nom,
-            '[date]'                => date('d/m/Y', strtotime($client->naissance)),
-            '[ville_naissance]'     => $client->ville_naissance,
-            '[adresse_fiscale]'     => $clientAddresses->adresse_fiscal . ', ' . $clientAddresses->ville_fiscal . ', ' . $clientAddresses->cp_fiscal . ', ' . $country->fr,
+        $keyWords = [
+            '[Civilite]'            => $client->getCivilite(),
+            '[Prenom]'              => $client->getPrenom(),
+            '[Nom]'                 => $client->getNom(),
+            '[date]'                => $client->getNaissance()->format('d/m/Y'),
+            '[ville_naissance]'     => $client->getVilleNaissance(),
+            '[adresse_fiscale]'     => null === $clientAddress ? '' : $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr(),
             '[date_validation_cgv]' => $dateAccept
         ];
 
         $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
-        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
     }
 
-    private function getTOSReplacementsForLegalEntity(\clients $client, $dateAccept, $loansCount, $content, &$template)
+    /**
+     * @param Clients $client
+     * @param string  $dateAccept
+     * @param int     $loansCount
+     * @param string  $content
+     * @param array   $template
+     */
+    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $entityManager  = $this->get('doctrine.orm.entity_manager');
+        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        $companyAddress = $company->getIdAddress();
 
-        /** @var \clients_adresses $clientAddresses */
-        $clientAddresses = $entityManagerSimulator->getRepository('clients_adresses');
-        $clientAddresses->get($client->id_client, 'id_client');
-
-        if ($clientAddresses->id_pays_fiscal == 0) {
-            $clientAddresses->id_pays_fiscal = 1;
+        if (null === $companyAddress) {
+            try {
+                $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('An exception occurred while getting main company address for ' . $company->getIdCompany() . '. Terms of Use could not be generated. Message: ' . $exception->getMessage(), [
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine(),
+                    'class'      => __CLASS__,
+                    'method'     => __FUNCTION__,
+                    'id_company' => $company->getIdCompany()
+                ]);
+                exit;
+            }
         }
 
-        /** @var \companies $companies */
-        $company = $entityManagerSimulator->getRepository('companies');
-        $company->get($client->id_client, 'id_client_owner');
-
-        if ($company->id_pays == 0) {
-            $company->id_pays = 1;
-        }
-
-        /** @var \pays_v2 $country */
-        $country = $entityManagerSimulator->getRepository('pays_v2');
-        $country->get($company->id_pays, 'id_pays');
-
-        $aReplacements = [
-            '[Civilite]'            => $client->civilite,
-            '[Prenom]'              => $client->prenom,
-            '[Nom]'                 => $client->nom,
-            '[Fonction]'            => $client->fonction,
-            '[Raison_sociale]'      => $company->name,
-            '[SIREN]'               => $company->siren,
-            '[adresse_fiscale]'     => $company->adresse1 . ', ' . $company->zip . ', ' . $company->city . ', ' . $country->fr,
+        $keyWords = [
+            '[Civilite]'            => $client->getCivilite(),
+            '[Prenom]'              => $client->getPrenom(),
+            '[Nom]'                 => $client->getNom(),
+            '[Fonction]'            => $client->getFonction(),
+            '[Raison_sociale]'      => $company->getName(),
+            '[SIREN]'               => $company->getSiren(),
+            '[adresse_fiscale]'     => null === $companyAddress ? '' : $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
             '[date_validation_cgv]' => $dateAccept
         ];
 
         $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
-        $template['recovery_mandate'] = str_replace(array_keys($aReplacements), array_values($aReplacements), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
     }
 
     /**

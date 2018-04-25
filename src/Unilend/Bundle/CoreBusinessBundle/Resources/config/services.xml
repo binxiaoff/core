@@ -441,6 +441,9 @@
             <argument type="service" id="unilend.service.client_status_manager"/>
             <argument type="service" id="unilend.service.welcome_offer_manager"/>
             <argument type="service" id="unilend.service.sponsorship_manager"/>
+            <argument type="service" id="unilend.service.bank_account_manager"/>
+            <argument type="service" id="unilend.service.address_manager"/>
+            <argument type="service" id="unilend.service.tax_manager"/>
             <argument type="service" id="number_formatter"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="mailer"/>
@@ -539,6 +542,10 @@
         <service id="unilend.service.address_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\AddressManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.location_manager"/>
+        </service>
+
+        <service id="unilend.service.bdf_loans_declaration_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager">
+            <argument>%path.protected%</argument>
         </service>
     </services>
 </container>

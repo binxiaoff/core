@@ -50,11 +50,6 @@
             <argument type="service" id="unilend.service.location_manager" />
         </service>
 
-        <service id="unilend.form.postal_address_type" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PostalAddressType">
-            <tag name="form.type" />
-            <argument type="service" id="translator" />
-        </service>
-
         <service id="unilend.form.funds_origin" class="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType">
             <tag name="form.type" />
             <argument type="service" id="doctrine.orm.entity_manager" />

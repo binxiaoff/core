@@ -3,7 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
+    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
@@ -291,37 +291,14 @@ class pdfController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $this->pays = $this->loadData('pays');
-        $this->clients_adresses->get($this->pdfClient->id_client, 'id_client');
-        $this->pays->get($this->pdfClient->id_langue, 'id_langue');
-
-        if ($this->companies->get($this->pdfClient->id_client, 'id_client_owner')) {
-            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
-            $this->entreprise     = true;
-            $this->companyAddress = $company->getIdAddress();
-            if (null === $this->companyAddress->getDateValidated()) {
-                $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in mandate.', [
-                    'file'             => __FILE__,
-                    'line'             => __LINE__,
-                    'idCompanyAddress' => $this->companyAddress->getId()
-                ]);
-            }
-        } else {
-            $this->entreprise = false;
-        }
-
         $this->iban  = $mandates->iban;
         $this->bic   = $mandates->bic;
 
-        // pour savoir si Preteur ou emprunteur
-        if (isset($this->params[1]) && $this->projects->get($this->params[1], 'id_project')) {
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1]);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
-            $borrowerManager = $this->get('unilend.service.borrower_manager');
-            $this->motif = $borrowerManager->getProjectBankTransferLabel($project);
-        } else {
-            $this->motif = $this->pdfClient->getLenderPattern($this->pdfClient->id_client);
-            $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
+        if (isset($this->params[1]) && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[1])) {
+            $borrowerManager      = $this->get('unilend.service.borrower_manager');
+            $this->motif          = $borrowerManager->getProjectBankTransferLabel($project);
+            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            $this->companyAddress = $company->getIdAddress();
         }
 
         $this->settings->get('Créancier adresse', 'type');
@@ -386,8 +363,9 @@ class pdfController extends bootstrap
 
     /**
      * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    private function commonProxy()
+    private function commonProxy(): array
     {
         $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
 
@@ -477,7 +455,10 @@ class pdfController extends bootstrap
         }
     }
 
-    private function GenerateProxyHtml()
+    /**
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function GenerateProxyHtml(): void
     {
         $this->lng['pdf-pouvoir'] = $this->ln->selectFront('pdf-pouvoir', $this->language, $this->App);
 
@@ -500,16 +481,8 @@ class pdfController extends bootstrap
             }
         }
         /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager        = $this->get('doctrine.orm.entity_manager');
-        $this->companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company)->getIdAddress();
-        if (null === $this->companyAddress->getDateValidated()) {
-            $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in proxy.', [
-                'file'             => __FILE__,
-                'line'             => __LINE__,
-                'idCompanyAddress' => $this->companyAddress->getId()
-            ]);
-        }
-
+        $entityManager                = $this->get('doctrine.orm.entity_manager');
+        $this->companyAddress         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company)->getIdAddress();
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->echeanciers            = $this->loadData('echeanciers');
@@ -550,11 +523,86 @@ class pdfController extends bootstrap
         $this->l_AP             = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
         $this->totalActif       = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
         $this->totalPassif      = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
-        $this->lLenders         = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        $this->lLenders         = $this->getFormattedLenderListForProxy($this->projects->id_project);
         $this->dateRemb         = date('d/m/Y');
         $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
         $this->setDisplay($template);
+    }
+
+    /**
+     * @param int $projectId
+     *
+     * @return array
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function getFormattedLenderListForProxy(int $projectId): array
+    {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $loans         = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->findBy(['idProject' => $projectId], ['rate' => 'ASC']);
+        $lenderList    = [];
+
+        /** @var Loans $loan */
+        foreach ($loans as $loan) {
+            $wallet        = $loan->getIdLender();
+            $client        = $wallet->getIdClient();
+            $lenderAddress = null;
+
+            if ($client->isNaturalPerson()) {
+                $validatedAddress = $client->getIdAddress();
+            } else {
+                $lenderCompany    = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                    ->findOneBy(['idClientOwner' => $client->getIdClient()]);
+                $validatedAddress = $lenderCompany->getIdAddress();
+            }
+
+            if (null !== $validatedAddress) {
+                $lenderAddress = $validatedAddress;
+            } else {
+                $this->logWarningAboutNotValidatedLenderAddress($client, __LINE__);
+
+                try {
+                    if ($client->isNaturalPerson()) {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                    } else {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            ->findLastModifiedNotArchivedAddressByType($lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                    }
+                    $lenderAddress = $lastModifiedAddress;
+                } catch (\Exception $exception) {
+                    $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $client->getIdClient(),
+                        'id_company' => isset($lenderCompany) ? $lenderCompany->getIdCompany() : 'lender is natural person',
+                    ]);
+                }
+
+                if (null === $lenderAddress)
+                    $this->oLogger->error('Lender has no main address. His address in proxy will be empty.', [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $client->getIdClient(),
+                        'id_company' => isset($lenderCompany) ? $lenderCompany->getIdCompany() : 'lender is natural person',
+                    ]);
+            }
+
+            $lenderList[] = [
+                'name'      => $client->isNaturalPerson() ? $client->getNom() : $lenderCompany->getName(),
+                'firstName' => $client->isNaturalPerson() ? $client->getPrenom() : $lenderCompany->getSiren(),
+                'address'   => null !== $lenderAddress ? $lenderAddress->getAddress() : '',
+                'zip'       => null !== $lenderAddress ? $lenderAddress->getZip() : '',
+                'city'      => null !== $lenderAddress ? $lenderAddress->getCity() : '',
+                'amount'    => $this->ficelle->formatNumber($loan->getAmount() / 100, 0),
+                'rate'      => $this->ficelle->formatNumber($loan->getRate(), 1)
+            ];
+        }
+
+        return $lenderList;
     }
 
     public function _cgv_emprunteurs()
@@ -721,46 +769,80 @@ class pdfController extends bootstrap
 
     /**
      * @param \clients $oClients
-     * @param $oLoans
+     * @param \loans   $oLoans
      * @param projects $oProjects
      */
-    private function GenerateContractHtml(\clients $oClients, \loans $oLoans, \projects $oProjects)
+    private function GenerateContractHtml(\clients $oClients, \loans $oLoans, \projects $oProjects): void
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $this->emprunteur              = $this->loadData('clients');
         $this->companiesEmprunteur     = $this->loadData('companies');
-        $this->companiesPreteur        = $this->loadData('companies');
         $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->companies_bilans        = $this->loadData('companies_bilans');
         $this->echeanciers             = $this->loadData('echeanciers');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->oProjectsPouvoir        = $this->loadData('projects_pouvoir');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->oLoans                  = $oLoans;
         $this->clients                 = $oClients;
         $this->projects                = $oProjects;
-        $this->borrowerCompanyAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($oProjects->id_company)->getIdAddress();
-
-        if (null === $this->borrowerCompanyAddress->getDateValidated()) {
-            $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
-                'file'             => __FILE__,
-                'line'             => __LINE__,
-                'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
-            ]);
-        }
+        $this->borrowerCompanyAddress  = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+            ->find($oProjects->id_company)
+            ->getIdAddress();
 
         /** @var underlying_contract $contract */
-        $contract                      = $this->loadData('underlying_contract');
+        $contract = $this->loadData('underlying_contract');
 
-        $this->clients_adresses->get($oClients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
         $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
+        $this->lenderAddress = null;
 
-        // Si preteur morale
-        if ($oClients->type == Clients::TYPE_LEGAL_ENTITY) {
-            $this->companiesPreteur->get($oClients->id_client, 'id_client_owner');
+        if (in_array($oClients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+            $this->lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                ->findOneBy(['idClientOwner' => $oClients->id_client]);
+            $client              = $this->lenderCompany->getIdClientOwner();
+            $validatedAddress    = $this->lenderCompany->getIdAddress();
+        } else {
+            $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($oClients->id_client);
+            $validatedAddress = $client->getIdAddress();
+        }
+
+        if (null !== $validatedAddress) {
+            $this->lenderAddress = $validatedAddress;
+        } else {
+            $this->logWarningAboutNotValidatedLenderAddress($client, __LINE__);
+
+            try {
+                if ($client->isNaturalPerson()) {
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                } else {
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                }
+
+                $this->lenderAddress = $lastModifiedAddress;
+            } catch (\Exception $exception) {
+                $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'id_client'  => $client->getIdClient(),
+                    'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+                ]);
+            }
+        }
+
+        if (null === $this->lenderAddress){
+            $this->oLogger->error('Lender has no main address. Contract could not be generated.', [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'id_client'  => $client->getIdClient(),
+                'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+            ]);
+            exit;
         }
 
         $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
@@ -769,8 +851,8 @@ class pdfController extends bootstrap
         $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
         $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $oProjects->id_dernier_bilan);
-        $this->totalActif       = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
-        $this->totalPassif      = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
+        $this->totalActif  = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
+        $this->totalPassif = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
         $this->lRemb       = $this->echeanciers->select('id_loan = ' . $oLoans->id_loan, 'ordre ASC');
 
         $this->capital = 0;
@@ -833,15 +915,16 @@ class pdfController extends bootstrap
         $this->emprunteur      = $this->loadData('clients');
         $this->preteur         = $this->loadData('clients');
         $this->preteurCompanie = $this->loadData('companies');
-        $this->preteur_adresse = $this->loadData('clients_adresses');
         $this->echeanciers     = $this->loadData('echeanciers');
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "0" AND id_loan')) {
+        if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "' . Loans::STATUS_ACCEPTED . '" AND id_loan')) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+            $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($this->oLoans->id_lender);
+            $lenderAddress = null;
+            $client        = $wallet->getIdClient();
 
             $this->settings->get('Declaration contrat pret - adresse', 'type');
             $this->adresse = $this->settings->value;
@@ -853,40 +936,59 @@ class pdfController extends bootstrap
             $this->companiesEmp->get($this->projects->id_company, 'id_company');
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
             $this->preteur->get($wallet->getIdClient()->getIdClient(), 'id_client');
-            $this->preteur_adresse->get($this->preteur->id_client, 'id_client');
             $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
-            if (null === $this->borrowerCompanyAddress->getDateValidated()) {
-                $this->get('logger')->warning('Last modified company address for company ' . $this->projects->id_company . ' is not validated. Only validated addresses should be used in contracts.', [
-                    'file'             => __FILE__,
-                    'line'             => __LINE__,
-                    'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
-                ]);
-            }
 
             $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
-            $this->lenderCountry = '';
 
-            if (false === $wallet->getIdClient()->isNaturalPerson()) {
-                $this->preteurCompanie->get($this->preteur->id_client, 'id_client_owner');
-
-                $this->nomPreteur     = $this->preteurCompanie->name;
-                $this->adressePreteur = $this->preteurCompanie->adresse1;
-                $this->cpPreteur      = $this->preteurCompanie->zip;
-                $this->villePreteur   = $this->preteurCompanie->city;
+            if ($client->isNaturalPerson()) {
+                $validatedAddress    = $client->getIdAddress();
             } else {
-                if ($this->preteur_adresse->id_pays > \Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2::COUNTRY_FRANCE) {
-                    /** @var \pays_v2 $country */
-                    $country = $this->loadData('pays_v2');
-                    $country->get($this->preteur_adresse->id_pays, 'id_pays');
+                $lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                    ->findOneBy(['idClientOwner' => $client]);
+                $validatedAddress    = $lenderCompany->getIdAddress();
+            }
 
-                    $this->lenderCountry = $country->fr;
+            if (null !== $validatedAddress) {
+                $lenderAddress = $validatedAddress;
+            } else {
+                $this->logWarningAboutNotValidatedLenderAddress($client, __LINE__);
+
+                try {
+                    if ($client->isNaturalPerson()) {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                    } else {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            ->findLastModifiedNotArchivedAddressByType($lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                    }
+
+                    $lenderAddress = $lastModifiedAddress;
+                } catch (\Exception $exception) {
+                    $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $client->getIdClient(),
+                        'id_company' => isset($lenderCompany) ? $lenderCompany->getIdCompany() : 'lender is natural person',
+                    ]);
                 }
 
-                $this->nomPreteur     = $this->preteur->prenom . ' ' . $this->preteur->nom;
-                $this->adressePreteur = $this->preteur_adresse->adresse1;
-                $this->cpPreteur      = $this->preteur_adresse->cp;
-                $this->villePreteur   = $this->preteur_adresse->ville;
+                if (null === $lenderAddress)
+                    $this->oLogger->error('Lender has no main address. Declaration contrat de prêt could not be generated.', [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $client->getIdClient(),
+                        'id_company' => isset($lenderCompany) ? $lenderCompany->getIdCompany() : 'lender is natural person',
+                    ]);
+                exit;
             }
+
+            $this->nomPreteur     = $client->isNaturalPerson() ? $client->getPrenom() . ' ' . $client->getNom() : $lenderCompany->getName();
+            $this->adressePreteur = $lenderAddress->getAddress();
+            $this->cpPreteur      = $lenderAddress->getZip();
+            $this->villePreteur   = $lenderAddress->getCity();
+            $this->lenderCountry  = $lenderAddress->getIdCountry()->getFr();
 
             $this->setDisplay('declarationContratPret_html');
         }
@@ -934,7 +1036,14 @@ class pdfController extends bootstrap
         $this->ReadPdf($filePath, $namePdfClient);
     }
 
-    private function GenerateClaimsHtml(\clients $client, Loans $loan)
+    /**
+     * @param \clients $client
+     * @param Loans    $loan
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    private function GenerateClaimsHtml(\clients $client, Loans $loan): void
     {
         /** @var \loans oLoans */
         $this->loan = $loan;
@@ -961,39 +1070,62 @@ class pdfController extends bootstrap
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
         $wallet = $loan->getIdLender();
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Companies borrowerCompany */
-        $this->borrowerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager                = $this->get('doctrine.orm.entity_manager');
-        $this->borrowerCompanyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company)->getIdAddress();
-        if (null === $this->borrowerCompanyAddress->getDateValidated()) {
-            $this->get('logger')->warning('Last modified company address for company ' . $this->companies->id_company . ' is not validated. Only validated addresses should be used in Déclaration de créances.', [
-                'file'             => __FILE__,
-                'line'             => __LINE__,
-                'idCompanyAddress' => $this->borrowerCompanyAddress->getId()
-            ]);
-        }
-        $status = [
+        $this->borrowerCompany        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_company);
+        $this->borrowerCompanyAddress = $this->borrowerCompany->getIdAddress();
+        $status                       = [
             CompanyStatus::STATUS_PRECAUTIONARY_PROCESS,
             CompanyStatus::STATUS_RECEIVERSHIP,
             CompanyStatus::STATUS_COMPULSORY_LIQUIDATION
         ];
+        $this->lenderAddress          = null;
 
-        if (in_array($this->borrowerCompany->getIdStatus()->getLabel(), $status)
-        ) {
-            if (in_array($this->clients->type, [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-                $this->clients_adresses->get($this->clients->id_client, 'id_client');
-                $countryId = $this->clients_adresses->id_pays_fiscal;
+        if (in_array($this->borrowerCompany->getIdStatus()->getLabel(), $status)) {
+            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
+                $this->lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                    ->findOneBy(['idClientOwner' => $client->id_client]);
+                $clientEntity        = $this->lenderCompany->getIdClientOwner();
+                $validatedAddress    = $this->lenderCompany->getIdAddress();
             } else {
-                $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $countryId = $this->companies->id_pays;
+                $clientEntity     = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
+                $validatedAddress = $clientEntity->getIdAddress();
             }
 
-            if ($countryId == 0) {
-                $countryId = 1;
-            }
+            if (null !== $validatedAddress) {
+                $this->lenderAddress = $validatedAddress;
+            } else {
+                $this->logWarningAboutNotValidatedLenderAddress($clientEntity, __LINE__);
 
-            $this->pays->get($countryId, 'id_pays');
-            $this->pays_fiscal = $this->pays->fr;
+                try {
+                    if ($clientEntity->isNaturalPerson()) {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                            ->findLastModifiedNotArchivedAddressByType($clientEntity, AddressType::TYPE_MAIN_ADDRESS);
+                    } else {
+                        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                            ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+                    }
+
+                    $this->lenderAddress = $lastModifiedAddress;
+                } catch (\Exception $exception) {
+                    $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
+                        'file'       => $exception->getFile(),
+                        'line'       => $exception->getLine(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $clientEntity->getIdClient(),
+                        'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+
+                    ]);
+                }
+
+                if (null === $this->lenderAddress)
+                    $this->oLogger->error('Lender has no main address. Claims could not be generated.', [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_client'  => $clientEntity->getIdClient(),
+                        'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+                    ]);
+                exit;
+            }
 
             $companyStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory');
             $companyStatusHistory           = $companyStatusHistoryRepository->findFirstHistoryByCompanyAndStatus($this->borrowerCompany->getIdCompany(), $status);
@@ -1066,21 +1198,24 @@ class pdfController extends bootstrap
         $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
     }
 
-    private function GenerateLoansHtml($clientId)
+    /**
+     * @param int $clientId
+     */
+    private function GenerateLoansHtml(int $clientId): void
     {
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         $this->echeanciers = $this->loadData('echeanciers');
         $this->loans       = $this->loadData('loans');
         $this->clients     = $this->loadData('clients');
-        $this->companies   = $this->loadData('companies');
         $this->clients->get($clientId);
-        if (in_array($this->clients->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
-        }
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
+
         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
+        $client              = $wallet->getIdClient();
+        $this->lenderAddress = null;
+        $projectRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
@@ -1097,11 +1232,56 @@ class pdfController extends bootstrap
         $lenderOperationManager = $this->get('unilend.service.lender_operations_manager');
 
         foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
-            $loanStatus = $lenderOperationManager->getLenderLoanStatusToDisplay($projectRepository->find($aProjectLoans['id_project']));
+            $loanStatus                                   = $lenderOperationManager->getLenderLoanStatusToDisplay($projectRepository->find($aProjectLoans['id_project']));
             $this->lSumLoans[$iLoandIndex]['statusLabel'] = $loanStatus['statusLabel'];
             $this->lSumLoans[$iLoandIndex]['loanStatus']  = $loanStatus;
         }
 
+        try {
+            if ($client->isNaturalPerson()) {
+                $this->lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            } else {
+                $this->lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
+                    ->findOneBy(['idClientOwner' => $client]);
+                $this->lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
+            }
+        } catch (\Exception $exception) {
+            $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'id_client'  => $client->getIdClient(),
+                'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+            ]);
+        }
+
+        if (null === $this->lenderAddress) {
+            $this->oLogger->error('Lender has no main address. Loans document could not be generated.', [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'id_client'  => $client->getIdClient(),
+                'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
+            ]);
+            exit;
+        }
+
         $this->setDisplay('loans');
+    }
+
+    /**
+     * @param Clients $client
+     * @param int     $line
+     */
+    private function logWarningAboutNotValidatedLenderAddress(Clients $client, int $line): void
+    {
+        $this->get('logger')
+            ->warning('Client ' . $client->getIdClient() . ' has no validated main address. Only validated addresses should be used in official documents.', [
+            'file'      => __FILE__,
+            'line'      => $line,
+            'id_client' => $client->getIdClient()
+        ]);
     }
 }

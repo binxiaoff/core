@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * ClientAddress
  *
  * @ORM\Table(name="client_address", indexes={@ORM\Index(name="idx_client_address_id_client", columns={"id_client"}), @ORM\Index(name="idx_client_address_pays_v2_id_country", columns={"id_country"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientAddressRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class ClientAddress
@@ -42,16 +42,6 @@ class ClientAddress
      * @ORM\Column(name="city", type="string", length=191, nullable=false)
      */
     private $city;
-
-    /**
-     * @var Attachment
-     *
-     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Attachment")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_attachment", referencedColumnName="id")
-     * })
-     */
-    private $idAttachment;
 
     /**
      * @var \DateTime
@@ -198,30 +188,6 @@ class ClientAddress
     public function getCity(): string
     {
         return $this->city;
-    }
-
-    /**
-     * Set idAttachment
-     *
-     * @param Attachment|null $idAttachment
-     *
-     * @return ClientAddress
-     */
-    public function setIdAttachment(?Attachment $idAttachment): ClientAddress
-    {
-        $this->idAttachment = $idAttachment;
-
-        return $this;
-    }
-
-    /**
-     * Get idAttachment
-     *
-     * @return Attachment|null
-     */
-    public function getIdAttachment(): ?Attachment
-    {
-        return $this->idAttachment;
     }
 
     /**

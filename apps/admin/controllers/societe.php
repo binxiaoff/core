@@ -243,7 +243,7 @@ class societeController extends bootstrap
             /** @var ProjectsStatusHistory $status */
             foreach ($projectStatusHistory as $key => $status) {
                 $nextKey       = $key + 1;
-                $projectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->find($status->getIdProjectStatus());
+                $projectStatus = $status->getIdProjectStatus();
                 $color         = $this->getColorForProjectStatus($projectStatus->getStatus());
 
                 if (isset($projectStatusHistory[$nextKey])) {

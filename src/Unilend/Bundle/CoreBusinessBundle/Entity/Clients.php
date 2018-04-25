@@ -324,7 +324,7 @@ class Clients
      * @var ClientAddress
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
-     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
+     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
      */
     private $idAddress;
 
@@ -332,7 +332,7 @@ class Clients
      * @var ClientAddress
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddress")
-     * @ORM\JoinColumn(name="id_address", referencedColumnName="id")
+     * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
      */
     private $idPostalAddress;
 

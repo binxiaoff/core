@@ -2,7 +2,7 @@
 
 {% block pageHeader %}
     <div class="pull-left">
-        <a href="/remboursement/validation" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Remboursements à valider</a>
+        <a href="/remboursement/projet/{{ reception.idProject.idProject }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Détails remboursements</a>
     </div>
     <div class="pull-right">
         <small>SIREN : {{ reception.idProject.idCompany.siren }}</small>
@@ -53,7 +53,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <h3 class="h5 push">Opérations prévues</h3>
+                            <h3 class="block-title push">Opérations prévues</h3>
                             <table class="table table-bordered table-hover table-header-bg">
                                 <thead>
                                 <tr>
@@ -276,7 +276,7 @@
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h3 class="h5 push">Amortissement du prêt suite réception</h3>
+                            <h3 class="block-title push">Amortissement du prêt suite réception</h3>
                             <table class="table table-bordered table-hover table-header-bg">
                                 <thead>
                                 <tr>
@@ -305,6 +305,21 @@
                                             </td>
                                         </tr>
                                     {% endfor %}
+                                {% elseif remainingCapital is not empty %}
+                                    <tr>
+                                        <td>
+                                            Remboursement anticipé
+                                        </td>
+                                        <td class="text-right">
+                                            {{ totalRepayment|localizedcurrency('EUR') }} / {{ remainingCapital|localizedcurrency('EUR') }}
+                                        </td>
+                                        <td class="text-right">
+                                            non applicable
+                                        </td>
+                                        <td class="text-right">
+                                            non applicable
+                                        </td>
+                                    </tr>
                                 {% endif %}
                                 {% if closeOutNettingPayment is not null %}
                                     <tr>
@@ -335,5 +350,6 @@
                 </form>
             </div>
         </div>
+        {% include 'remboursement/blocs/projet/planned_repayment_task.html.twig' with {'displayOnly': true} %}
     </div>
 {% endblock %}

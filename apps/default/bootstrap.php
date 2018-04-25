@@ -32,7 +32,6 @@ class bootstrap extends Controller
         $this->blocs                   = $this->loadData('blocs');
         $this->ln                      = $this->loadData('translations');
         $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->villes                  = $this->loadData('villes');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->accept_cookies          = $this->loadData('accept_cookies');

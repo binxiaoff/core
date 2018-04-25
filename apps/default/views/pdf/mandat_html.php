@@ -63,7 +63,7 @@
                             <td class="col-3">
                                 <!-- Row -->
                                 <div class="row">
-                                    <div class="text-box"><?= ($this->entreprise == false ? $this->clients->nom . ' ' . $this->clients->prenom : $this->companies->name . ' / SIREN ' . $this->companies->siren) ?></div>
+                                    <div class="text-box"><?= ($this->companies->name . ' / SIREN ' . $this->companies->siren) ?></div>
                                     <span class="small-text">Nom / Prénoms du débiteur</span>
                                 </div>
                                 <!-- End Row -->
@@ -82,7 +82,7 @@
                             <td class="col-3">
                                 <!-- Row -->
                                 <div class="row">
-                                    <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->adresse1 : $this->companyAddress->getAddress()) ?></div>
+                                    <div class="text-box"><?= $this->companyAddress->getAddress() ?></div>
                                     <span class="small-text">Numéro et nom de la rue</span>
                                 </div>
                                 <!-- End Row -->
@@ -90,12 +90,12 @@
                                 <div class="row">
                                     <div class="box box-w-1">
                                         <span class="star">*</span>
-                                        <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->cp : $this->companyAddress->getZip()) ?></div>
+                                        <div class="text-box"><?= $this->companyAddress->getZip() ?></div>
                                         <span class="small-text">Code postal</span>
                                     </div>
                                     <div class="box box-w-2">
                                         <span class="star">*</span>
-                                        <div class="text-box"><?= (false === $this->entreprise ? $this->clients_adresses->ville : $this->companyAddress->getCity()) ?></div>
+                                        <div class="text-box"><?= $this->companyAddress->getCity() ?></div>
                                         <span class="small-text">Ville</span>
                                     </div>
                                     <div class="cl">&nbsp;</div>
@@ -104,7 +104,7 @@
                                 <!-- End Row -->
                                 <!-- Row -->
                                 <div class="row">
-                                    <div class="text-box"><?= $this->pays->fr ?></div>
+                                    <div class="text-box"><?= $this->companyAddress->getIdCountry()->getFr() ?></div>
                                     <span class="small-text">Pays</span>
                                     <span class="star">*</span>
                                     <span class="number">4</span>
