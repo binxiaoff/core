@@ -146,7 +146,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                 <input type="text" name="fonction_e" id="fonction_e" value="<?= $this->client->getFonction() ?? '' ?>" class="form-control">
             </div>
         </div>
-        <div class="row statut_dirigeant_e societe" <?= (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient() ? '' : 'style="display:none;"') ?>>
+        <div class="row statut_dirigeant_e3">
             <div class="form-group col-md-6">
                 <label for="status_conseil_externe_entreprise">Autre : </label>
                 <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="form-control">
@@ -156,7 +156,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group col-md-6 ">
+            <div class="form-group col-md-6">
                 <label for="preciser_conseil_externe_entreprise">Autre (préciser) :</label>
                 <input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" value="<?= $this->companyEntity->getPreciserConseilExterneEntreprise() ?>" class="form-control"/>
             </div>

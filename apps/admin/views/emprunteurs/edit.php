@@ -20,7 +20,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $('#company-name').html(company)
         })
 
-        $('.listeProjets').tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}, 6: {sorter: false}}})
+        $('.listeProjets').tablesorter({
+            headers: {
+                4: {sorter: false},
+                5: {sorter: false},
+                6: {sorter: false},
+                7: {sorter: false}
+            }
+        })
+
         $('.listeMandats').tablesorter({headers: {3: {sorter: false}}})
 
         $('#operation-date-form').on('submit', function (e) {
@@ -102,12 +110,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 </div>
                 <div class="row">
                     <div class="form-group col-md-6">
-                        <label for="email">Email</label>
-                        <input type="text" name="email" id="email" value="<?= $this->clientEntity->getEmail() ?>" class="form-control">
+                        <label for="mobile">Téléphone mobile</label>
+                        <input type="text" name="mobile" id="mobile" value="<?= trim(chunk_split($this->clientEntity->getMobile(), 2, ' ')) ?>" class="form-control">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="telephone">Téléphone</label>
-                        <input type="text" name="telephone" id="telephone" value="<?= $this->clientEntity->getTelephone() ?>" class="form-control">
+                        <label for="telephone">Téléphone fixe</label>
+                        <input type="text" name="telephone" id="telephone" value="<?= trim(chunk_split($this->clientEntity->getTelephone(), 2, ' ')) ?>" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label for="email">Email</label>
+                        <input type="text" name="email" id="email" value="<?= $this->clientEntity->getEmail() ?>" class="form-control">
                     </div>
                 </div>
                 <?php if (ClientsStatus::STATUS_VALIDATED === $this->clientEntity->getIdClientStatusHistory()->getIdStatus()->getId()) : ?>
@@ -229,6 +243,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <th>Montant</th>
                         <th>PDF</th>
                         <th>Factures</th>
+                        <?php if ($this->hasRepaymentAccess) : ?>
+                            <th>Remboursement</th>
+                        <?php endif; ?>
                         <th>&nbsp;</th>
                     </tr>
                     </thead>
@@ -258,6 +275,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                     <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Factures">
                                 </a>
                             </td>
+                            <?php if ($this->hasRepaymentAccess) : ?>
+                                <td align="center">
+                                    <a href="<?= $this->lurl ?>/remboursement/projet/<?= $project['id_project'] ?>">
+                                        <img src="<?= $this->surl ?>/images/admin/duplique.png" alt="Remboursement">
+                                    </a>
+                                </td>
+                            <?php endif; ?>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/dossiers/edit/<?= $project['id_project'] ?>">
                                     <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails">

@@ -125,14 +125,16 @@ class ExternalDataManager
 
                     $this->entityManager->flush($company);
 
-                    $this->addressManager->saveCompanyAddress(
-                        $identity->getAddress(),
-                        $identity->getPostCode(),
-                        $identity->getCity(),
-                        PaysV2::COUNTRY_FRANCE,
-                        $company,
-                        AddressType::TYPE_MAIN_ADDRESS
-                    );
+                    if (null !== $identity->getAddress() && null !== $identity->getPostCode() && null !== $identity->getCity()) {
+                        $this->addressManager->saveCompanyAddress(
+                            $identity->getAddress(),
+                            $identity->getPostCode(),
+                            $identity->getCity(),
+                            PaysV2::COUNTRY_FRANCE,
+                            $company,
+                            AddressType::TYPE_MAIN_ADDRESS
+                        );
+                    }
                 }
             }
 

@@ -850,4 +850,54 @@ class ClientsRepository extends EntityRepository
             return null;
         }
     }
+
+    /**
+     * @param \DateTime $start
+     * @param \DateTime $end
+     * @param bool      $groupBySiren
+     *
+     * @return array
+     * @throws DBALException
+     */
+    public function getBorrowersContactDetailsAndSource(\DateTime $start, \DateTime $end, bool $groupBySiren): array
+    {
+        $groupBy    = $groupBySiren ? 'GROUP BY com.siren ' : '';
+        $countSiren = $groupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
+        $subSelect  = $groupBySiren ? '(
+                            SELECT GROUP_CONCAT(c2.source)
+                            FROM clients c2
+                            INNER JOIN companies com2 ON c2.id_client = com2.id_client_owner
+                            WHERE com2.siren = com.siren
+                                AND DATE(c2.added) BETWEEN :start AND :end
+                        ) AS ChronologicalSources,' : '';
+
+        $query =
+            'SELECT
+                p.id_project,
+                com.id_client_owner,
+                ' . $countSiren . '
+                com.siren,
+                c.nom,
+                c.prenom,
+                c.email,
+                c.mobile,
+                c.telephone,
+                c.source,
+                c.source2,
+                ' . $subSelect . '
+                c.added,
+                ps.label
+            FROM projects p
+            INNER JOIN companies com ON p.id_company = com.id_company
+            INNER JOIN clients c ON com.id_client_owner = c.id_client
+            INNER JOIN projects_status ps ON p.status = ps.status
+            WHERE DATE(p.added) BETWEEN :start and :end
+            ' . $groupBy . '
+            ORDER BY com.siren DESC, c.added DESC';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
+            ->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }

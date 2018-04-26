@@ -263,6 +263,12 @@ class statsController extends bootstrap
         foreach ($aData as $iRowIndex => $aRow) {
             $iColIndex = 0;
             foreach ($aRow as $sCellValue) {
+                /** Excel is expecting a formula when a cell starts with one of those characters.
+                 * And thus does not represent the value properly in the file  */
+                if (preg_match('/^[=+-]/', $sCellValue)) {
+                    $sCellValue = ' ' . $sCellValue;
+                }
+
                 $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
             }
         }
@@ -330,39 +336,28 @@ class statsController extends bootstrap
 
     public function _requete_source_emprunteurs()
     {
-        /** @var \clients $oClient */
-        $oClient          = $this->loadData('clients');
-        $this->aBorrowers = array();
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $this->message    = '';
 
-        if (isset($_POST['dateStart'], $_POST['dateEnd']) && false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
-            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
-            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+        if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
+            $start        = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+            $end          = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+            $groupBySiren = 'groupBySiren' === $_POST['queryOptions'];
 
-            if (isset($_POST['queryOptions']) && 'allLines' == $_POST['queryOptions']) {
-                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, false);
-            }
-            if (isset($_POST['queryOptions']) && in_array($_POST['queryOptions'], array(
-                    'groupBySirenWithDetails',
-                    'groupBySiren'
-                ))
-            ) {
-                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, true);
+            try {
+                $borrowers = $clientRepository->getBorrowersContactDetailsAndSource($start, $end, $groupBySiren);
+                $header    = array_keys(array_shift($borrowers));
 
-                if ('groupBySirenWithDetails' == $_POST['queryOptions']) {
-                    foreach ($this->aBorrowers as $iKey => $aBorrower) {
-                        if ($aBorrower['countSiren'] > 1) {
-                            $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
-                            $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
-                            $this->aBorrowers[$iKey]['lastLabel']        = $this->aBorrowers[$iKey]['label'];
-                            $aHeaderExtended                             = array_keys(($this->aBorrowers[$iKey]));
-                        }
-                    }
-                }
-            }
-
-            if (isset($_POST['extraction_csv'])) {
-                $aHeader = isset($aHeaderExtended) ? $aHeaderExtended : array_keys(array_shift($this->aBorrowers));
-                $this->exportCSV($this->aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
+                $this->exportCSV($borrowers, 'requete_source_emprunteurs' . date('Ymd'), $header);
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('An exception occurred while exporting BorrowersContactDetailsAndSource. Message: ' . $exception->getMessage(), [
+                    'line'     => $exception->getLine(),
+                    'file'     => $exception->getFile(),
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__
+                ]);
+                $this->message = 'Une erreur est survenue';
             }
         }
     }

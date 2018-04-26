@@ -415,7 +415,7 @@ class preteursController extends bootstrap
             $this->setClientVigilanceStatusData();
 
             if (isset($_POST['send_completude'])) {
-                $this->sendCompletenessRequest();
+                $this->sendCompletenessRequest($this->client);
                 $clientStatusManager->addClientStatus(
                     $this->client,
                     $this->userEntity->getIdUser(),
@@ -1221,29 +1221,33 @@ class preteursController extends bootstrap
         }
     }
 
-    private function sendCompletenessRequest()
+    /**
+     * @param Clients $client
+     */
+    private function sendCompletenessRequest(Clients $client): void
     {
-        $timeCreate = empty($this->statusHistory[0]) ? \DateTime::createFromFormat('Y-m-d H:i:s', $this->clients->added) : $this->statusHistory[0]->getAdded();
+        $wallet     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $timeCreate = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
         $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
         $keywords   = [
-            'firstName'        => $this->clients->prenom,
+            'firstName'        => $client->getPrenom(),
             'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
-            'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
+            'content'          => $_SESSION['content_email_completude'][$client->getIdClient()],
             'uploadLink'       => $this->furl . '/profile/documents',
-            'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client)
+            'lenderPattern'    => $wallet->getWireTransferPattern()
         ];
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $keywords);
 
         try {
-            $message->setTo($this->clients->email);
+            $message->setTo($client->getEmail());
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
             $this->get('logger')->warning(
                 'Could not send email: completude - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $this->clients->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
+                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
             );
         }
     }
