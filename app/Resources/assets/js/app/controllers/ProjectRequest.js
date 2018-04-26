@@ -1,12 +1,17 @@
-/*
+/**
  * Project Request controller
  */
 
 var $ = require('jquery')
-var __ = require('__')
 var $doc = $(document)
 
-$doc.on('ready', function () {
+/**
+ * Handle any changes on the Project Create form
+ */
+var $formProjectCreate = $('#form-project-create');
+
+// Continue only if form is in DOM
+if ($formProjectCreate.length) {
   // Show/hide manager details panel and confirm TOS checkbox if user is/is not manager
   function checkIsManager() {
     if ($('#form-project-create input[name="manager"]:checked').val() === 'no') {
@@ -18,41 +23,68 @@ $doc.on('ready', function () {
     }
   }
 
-  function handleBorrowingReason(reasonSelect, sirenInput, sirenLabel, sirenRequiredMarker, franchiserCreationReasonId, shareBuyBackReasonId, defaultLabelValue, defaultLabelText, defaultRequiredValue) {
-    switch (parseInt(reasonSelect.val())) {
-      case franchiserCreationReasonId:
-        sirenInput.attr('data-formvalidation-required', false)
-        sirenLabel.html(defaultLabelValue)
-        $('span[data-siren-required-marker]').hide()
+  $doc.on('change', '#form-project-create input[name="manager"]', function () {
+    checkIsManager()
+  })
+
+  checkIsManager()
+}
+
+/**
+ * Handle any UI changes for borrower's reason
+ */
+var $borrowerReasonInput = $('select[data-borrower-reason-input]')
+
+// Continue only if select is in DOM
+if ($borrowerReasonInput.length) {
+  // Default labels in case can't get from DB
+  var TRANS_SIREN_LABEL_DEFAULT = 'SIREN'
+  var TRANS_SIREN_LABEL_MOTIVE_9 = 'SIREN de la cible'
+
+  // Related elements
+  var $borrowerSirenInput = $('input[data-borrower-siren-input]')
+  var $borrowerSirenLabel = $('label[data-borrower-siren-label]')
+  var $borrowerCompanyName = $('[data-borrower-company-name]')
+
+  /** Change the `data-borrower-*` inputs depending on the reason */
+  function handleBorrowingReason(reasonValue) {
+    if (!reasonValue) {
+      reasonValue = $borrowerReasonInput.first().val()
+    }
+
+    console.log('handleBorrowingReason', reasonValue)
+
+    switch (~~reasonValue) {
+      // Création de franchise
+      case 8:
+        $borrowerCompanyName.show()
+        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.default || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerSirenLabel.find('.field-required').hide()
+        $borrowerSirenInput
+          .removeAttr('data-formvalidation-required')
         break
-      case shareBuyBackReasonId:
-        sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
-        sirenLabel.html(__.__('Target siren', 'targetSirenLabel')+'&nbsp').append(sirenRequiredMarker)
+
+      // Rachat de parts sociale
+      case 9:
+        $borrowerCompanyName.hide()
+        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.motive_9 || TRANS_SIREN_LABEL_MOTIVE_9)
+        $borrowerSirenLabel.find('.field-required').show()
+        $borrowerSirenInput
+          .attr('data-formvalidation-required', true)
         break
+
+      // Everything else
       default:
-        sirenInput.attr('data-formvalidation-required', defaultRequiredValue)
-        sirenLabel.html(defaultLabelValue)
+        $borrowerCompanyName.hide()
+        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.default || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerSirenLabel.find('.field-required').show()
+        $borrowerSirenInput
+          .attr('data-formvalidation-required', true)
         break
     }
   }
 
-  var reasonSelect = $('select[data-reason-select]'),
-    sirenInput = $('input[data-siren-input]'),
-    sirenLabel = $('label[data-siren-label]'),
-    sirenRequiredMarker = $('span[data-siren-required-marker]'),
-    defaultRequiredValue = sirenInput.attr('data-formvalidation-required'),
-    defaultLabelValue = sirenLabel.html(),
-    defaultLabelText = sirenLabel.text(),
-    franchiserCreationReasonId = 8,
-    shareBuyBackReasonId = 9
-
-  $(document).on('change', reasonSelect, function () {
-    handleBorrowingReason(reasonSelect, sirenInput, sirenLabel, sirenRequiredMarker, franchiserCreationReasonId, shareBuyBackReasonId, defaultLabelValue, defaultLabelText, defaultRequiredValue)
+  $doc.on('change', 'select[data-borrower-reason-input]', function () {
+    handleBorrowingReason($(this).val())
   })
-
-  checkIsManager()
-
-  $doc.on('change', '#form-project-create input[name="manager"]', function () {
-    checkIsManager()
-  })
-})
+}

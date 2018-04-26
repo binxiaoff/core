@@ -46,7 +46,7 @@
                             </div>
                         </div>
 
-                        <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
+                        <div class="col-lg-6 col-md-6">
                             <div id="form-borrower-lp-notifications">
                                 {% if app.session.flashBag.has('borrowerLandingPageErrors') %}
                                     <div class="message-error">
@@ -57,84 +57,158 @@
                                 {% endif %}
                             </div>
 
-                            <form action="{{ url('project_request_landing_page_start') }}" method="post" class="form-borrower-lp"
-                                  data-formvalidation data-formvalidation-notificationselem="#form-borrower-lp-notifications">
+                            <form action="{{ url('project_request_landing_page_start') }}"
+                                  method="post"
+                                  class="form-borrower-lp"
+                                  data-formvalidation
+                                  data-formvalidation-notificationselem="#form-borrower-lp-notifications">
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-amount" class="field-label">{% trans %} borrower-landing-page_amount-placeholder {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <label for="borrower-lp-input-amount" class="field-label">
+                                            {% trans %} borrower-landing-page_amount-placeholder {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
                                         <div class="input-group set-right">
                                             <div class="btn-group">
                                                 <span class="icon fa-euro"></span>
                                             </div>
-                                            <input id="borrower-lp-input-amount" type="text" step="any" name="amount" value="{{ form.values.amount }}"
+                                            <input id="borrower-lp-input-amount"
+                                                   type="text"
+                                                   step="any"
+                                                   name="amount"
+                                                   value="{{ form.values.amount }}"
                                                    class="input-field"
                                                    data-formvalidation-input
                                                    data-formvalidation-minvalue="{{ setting('Somme à emprunter min') }}"
                                                    data-formvalidation-maxvalue="{{ setting('Somme à emprunter max') }}"
                                                    data-formvalidation-required="true"
                                                    data-formvalidation-type="integer">
-                                            <ul class="ui-formvalidation-messages"></ul>
                                         </div>
-                                    </div>
-                                </div><!-- /.form-field -->
-
-                                <div class="form-field row row-multi-col-computer">
-                                    <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-reason" class="field-label">{% trans %} borrower-landing-page_reason-placeholder {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                                    </div>
-                                    <div class="col-lg-8 col-md-8">
-                                        <select id="borrower-lp-input-reason" name="reason" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-reason-select>
-                                            <option value="">{% trans %} borrower-landing-page_reason-title {% endtrans %}</option>
-                                            {% for reason in form.values.reasons %}
-                                                <option value="{{ reason.idMotive }}">{{ ('borrowing-motive_motive-' ~ reason.idMotive)|trans }}</option>
-                                            {% endfor %}
-                                        </select>
                                         <ul class="ui-formvalidation-messages"></ul>
                                     </div>
                                 </div><!-- /.form-field -->
 
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-siren" class="field-label" data-siren-label>
-                                            {% trans %} borrower-landing-page_siren-placeholder {% endtrans %}&nbsp;
-                                            <span class="field-required" data-siren-required-marker>*</span>
-                                            <span class="sr-only">{% trans %} borrower-landing-page_siren-placeholder {% endtrans %}</span>
+                                        <label for="borrower-lp-input-reason" class="field-label">
+                                            {% trans %} borrower-landing-page_reason-placeholder {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
                                         </label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
-                                        <input type="text" id="borrower-lp-input-siren" name="siren" value="{{ form.values.siren }}" class="input-field"
+                                        <select id="borrower-lp-input-reason"
+                                                name="reason"
+                                                class="input-field"
+                                                data-formvalidation-input
+                                                data-formvalidation-required="true"
+                                                data-borrower-reason-input>
+                                            <option value="">
+                                                {% trans %} borrower-landing-page_reason-title {% endtrans %}&hellip;
+                                            </option>
+                                            {% for reason in form.values.reasons %}
+                                                <option value="{{ reason.idMotive }}">
+                                                    {{ ('borrowing-motive_motive-' ~ reason.idMotive)|trans }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div>
+                                </div><!-- /.form-field -->
+
+                                {# COMPANY NAME: Remove if not required #}
+                                <div class="form-field row row-multi-col-computer" data-borrower-company-name style="display: none;">
+                                    <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-company-name" class="field-label">
+                                            {% trans %} borrower-landing-page_company-name-label {% endtrans %}
+                                        </label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <input type="text"
+                                               id="borrower-lp-input-company-name"
+                                               name="company_name"
+                                               value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
+                                               class="input-field">
+                                        <ul class="ui-formvalidation-messages"></ul>
+                                    </div>
+                                </div>
+                                {# /COMPANY NAME: Remove if not required #}
+
+                                <div class="form-field row row-multi-col-computer">
+                                    <div class="col-lg-2 col-md-3">
+                                        <label for="borrower-lp-input-siren"
+                                               class="field-label"
+                                               data-borrower-siren-label>
+                                            <span class="text">
+                                                {% trans %} borrower-landing-page_siren-placeholder {% endtrans %}
+                                            </span>
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
+                                    </div>
+                                    <div class="col-lg-8 col-md-8">
+                                        <input type="text"
+                                               id="borrower-lp-input-siren"
+                                               name="siren"
+                                               value="{{ form.values.siren }}"
+                                               class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
                                                data-formvalidation-type="siren"
-                                               data-siren-input>
+                                               data-borrower-siren-input>
                                         <ul class="ui-formvalidation-messages"></ul>
                                     </div>
                                 </div><!-- /.form-field -->
 
                                 <div class="form-field row row-multi-col-computer">
                                     <div class="col-lg-2 col-md-3">
-                                        <label for="borrower-lp-input-duration" class="field-label">{% trans %} borrower-landing-page_duration-label {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                        <label for="borrower-lp-input-duration" class="field-label">
+                                            {% trans %} borrower-landing-page_duration-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}</span>
+                                            </span>
+                                        </label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
                                         <select id="borrower-lp-input-duration" name="duration" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
-                                            <option value="">{% trans %} borrower-landing-page_duration-select {% endtrans %}</option>
+                                            <option value="">
+                                                {% trans %} borrower-landing-page_duration-select {% endtrans %}&hellip;
+                                            </option>
                                             {% for period in form.values.availablePeriods %}
-                                                <option value="{{ period }}">{% transchoice period with { '%count%' : period } %} common_month {% endtranschoice %}</option>
+                                                <option value="{{ period }}">
+                                                    {% transchoice period with { '%count%' : period } %} common_month {% endtranschoice %}
+                                                </option>
                                             {% endfor %}
                                         </select>
+                                        <ul class="ui-formvalidation-messages"></ul>
                                     </div>
                                 </div><!-- /.form-field -->
 
                                 {% if not cms.partner_funnel %}
                                     <div class="form-field row row-multi-col-computer">
                                         <div class="col-lg-2 col-md-3">
-                                            <label for="borrower-lp-input-email" class="field-label">{% trans %} common_email {% endtrans %}&nbsp;<span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                            <label for="borrower-lp-input-email" class="field-label">
+                                                {% trans %} common_email {% endtrans %}
+                                                <span class="field-required">*<span class="sr-only">
+                                                        {% trans %} common_mandatory-field {% endtrans %}
+                                                    </span></span>
+                                            </label>
                                         </div>
                                         <div class="col-lg-8 col-md-8">
-                                            <input type="email" id="borrower-lp-input-email" name="email" value="{{ form.values.email }}" class="input-field"
-                                                   data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                            <input type="email"
+                                                   id="borrower-lp-input-email"
+                                                   name="email"
+                                                   value="{{ form.values.email }}"
+                                                   class="input-field"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-required="true"
+                                                   data-formvalidation-type="email">
                                             <ul class="ui-formvalidation-messages"></ul>
                                         </div>
                                     </div><!-- /.form-field -->
@@ -143,7 +217,9 @@
                                 <footer class="form-borrower-lp-footer row row-multi-col-computer">
                                     <div class="col-submit push-lg-2 col-lg-8 push-md-3 col-md-8">
                                         <input type="hidden" name="partner" value="{{ form.values.partner }}">
-                                        <button type="submit" class="btn-primary btn-alternate btn-size-full" data-spinnerbutton>{% trans %} borrower-landing-page_form-submit-button {% endtrans %}</button>
+                                        <button type="submit" class="btn-primary btn-alternate btn-size-full" data-spinnerbutton>
+                                            {% trans %} borrower-landing-page_form-submit-button {% endtrans %}
+                                        </button>
                                     </div>
                                 </footer><!-- /.form-borrower-lp-footer -->
 
@@ -250,8 +326,22 @@
     <![endif]-->
 {% endblock %}
 
-{% block pageScripts %}
-    <script>
-
+{% block pageHeadScripts %}
+    <script type="text/javascript">
+        {% set jsBorrowingMotives = [] %}
+        {% for motive in form.values.reasons %}
+        {%  set jsMotive = {
+            value: motive.idMotive,
+            label: ('borrowing-motive_motive-' ~ motive.idMotive)|trans
+        } %}
+        {% set jsBorrowingMotives = jsBorrowingMotives|merge([ jsMotive ]) %}
+        {% endfor %}
+        var borrowerEsim = {
+          borrowingMotives: JSON.parse('{{ jsBorrowingMotives|json_encode|escape('js')|raw }}'),
+          sirenPlaceholder: {
+            default: '{{ ('borrower-landing-page_siren-placeholder')|trans }}',
+            motive_9: '{{ ('utility_target-siren-label')|trans }}'
+          }
+        }
     </script>
 {% endblock %}
