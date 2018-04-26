@@ -58,7 +58,7 @@ class AddressManager
                 if (null !== $companyAddress) {
                     $this->validateCompanyAddress($companyAddress);
                     $this->useCompanyAddress($companyAddress);
-                    $this->archivePreviousCompanyAddress($company, $type);
+                    $this->archivePreviousCompanyAddress($company, $addressType);
                 }
             }
 
@@ -130,7 +130,7 @@ class AddressManager
 
                 $this->validateCompanyAddress($newAddress);
                 $this->useCompanyAddress($newAddress);
-                $this->archivePreviousCompanyAddress($company, $type->getLabel());
+                $this->archivePreviousCompanyAddress($company, $type);
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {
@@ -206,7 +206,7 @@ class AddressManager
             if ($address instanceof CompanyAddress) {
                 $this->validateCompanyAddress($address);
                 $this->useCompanyAddress($address);
-                $this->archivePreviousCompanyAddress($address->getIdCompany(), $address->getIdType()->getLabel());
+                $this->archivePreviousCompanyAddress($address->getIdCompany(), $address->getIdType());
             }
 
             $this->entityManager->commit();
@@ -239,12 +239,12 @@ class AddressManager
     }
 
     /**
-     * @param Companies $company
-     * @param string    $type
+     * @param Companies   $company
+     * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function archivePreviousCompanyAddress(Companies $company, string $type): void
+    private function archivePreviousCompanyAddress(Companies $company, AddressType $type): void
     {
         $previousAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findBy(['idCompany' => $company, 'idType' => $type, 'dateArchived' => null]);
         foreach ($previousAddress as $addressToArchive) {
@@ -327,7 +327,7 @@ class AddressManager
                 $company->setIdPostalAddress(null);
                 $this->entityManager->flush($company);
 
-                $this->archivePreviousCompanyAddress($company, $type->getLabel());
+                $this->archivePreviousCompanyAddress($company, $type);
 
                 $this->entityManager->commit();
             } catch (\Exception $exception) {
@@ -457,7 +457,7 @@ class AddressManager
     }
 
     /**
-     * @param Clients   $client
+     * @param Clients     $client
      * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
