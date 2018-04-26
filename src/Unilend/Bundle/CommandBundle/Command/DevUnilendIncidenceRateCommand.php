@@ -29,9 +29,12 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $missingDate = new \DateTime('Last day of March 2018');
+
+        $this->generateMissingDataInWrongStat($missingDate);
         $this->saveRatioIFP();
         $this->saveRatioCIP();
-        $this->createQuarterEntry(new \DateTime('Last day of March 2018'));
+        $this->createQuarterEntry($missingDate);
     }
 
     /**
@@ -273,5 +276,36 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
         }
 
         return $projects;
+    }
+
+    /**
+     * @param \DateTime $missingDate
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function generateMissingDataInWrongStat(\DateTime $missingDate): void
+    {
+        $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $unilendStatRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
+
+        $datePostACPRMep = new \DateTime('2018-03-07');
+        $today           = new \DateTime('NOW');
+
+        $lastCorrectStat = $unilendStatRepository->findStatisticAtDate($datePostACPRMep, UnilendStats::TYPE_INCIDENCE_RATE);
+        $todayStat       = $unilendStatRepository->findStatisticAtDate($today, UnilendStats::TYPE_INCIDENCE_RATE);
+        $wrongStat       = $unilendStatRepository->findStatisticAtDate($missingDate, UnilendStats::TYPE_INCIDENCE_RATE);
+
+        $lastCorrectData = json_decode($lastCorrectStat->getValue(), true);
+        $todayData       = json_decode($todayStat->getValue(), true);
+
+        $averageData['amountIFP']   = round(bcdiv(bcadd($lastCorrectData['amountIFP'], $todayData['amountIFP'], 4), 2, 4), 2);
+        $averageData['projectsIFP'] = round(bcdiv(bcadd($lastCorrectData['projectsIFP'], $todayData['projectsIFP'], 4), 2, 4), 2);
+        $averageData['amountCIP']   = round(bcdiv(bcadd($lastCorrectData['amountCIP'], $todayData['amountCIP'], 4), 2, 4), 2);
+        $averageData['projectsCIP'] = round(bcdiv(bcadd($lastCorrectData['projectsCIP'], $todayData['projectsCIP'], 4), 2, 4), 2);
+
+        $wrongStat->setValue(json_encode($averageData));
+
+        $entityManager->flush($wrongStat);
     }
 }
