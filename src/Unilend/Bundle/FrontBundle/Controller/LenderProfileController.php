@@ -117,11 +117,8 @@ class LenderProfileController extends Controller
 
             $phoneForm->handleRequest($request);
             if ($phoneForm->isSubmitted() && $phoneForm->isValid()) {
-                $clientAuditer = $this->get(ClientAuditer::class);
-                $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
-                $entityManager->flush($client);
-
                 $this->addFlash('phoneSuccess', $this->get('translator')->trans('lender-profile_information-tab-phone-form-success-message'));
+                $this->logClientChanges($client);
 
                 $isValid = true;
             }
@@ -180,11 +177,6 @@ class LenderProfileController extends Controller
      */
     private function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag): bool
     {
-        // To be performed before documents upload that calls EntityManager#flush()
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $clientAuditer = $this->get(ClientAuditer::class);
-        $clientChanges = $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
-
         $translator      = $this->get('translator');
         $isRectoUploaded = false;
         $files           = [
@@ -217,9 +209,9 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid()) {
-            $entityManager->flush($client);
-
             $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
+
+            $clientChanges = $this->logClientChanges($client);
 
             if ($isRectoUploaded || false === empty($clientChanges)) {
                 $this->updateClientStatusAndNotifyClient($client);
@@ -282,11 +274,6 @@ class LenderProfileController extends Controller
             }
         }
 
-        // To be performed before documents upload that calls EntityManager#flush()
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $clientAuditer = $this->get(ClientAuditer::class);
-        $clientChanges = $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
-
         $files = [
             AttachmentType::CNI_PASSPORTE_DIRIGEANT => $fileBag->get('id_recto'),
             AttachmentType::CNI_PASSPORTE_VERSO     => $fileBag->get('id_verso'),
@@ -309,13 +296,12 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid()) {
-            $entityManager->flush([$client, $company]);
-
             $this->addFlash('identitySuccess', $translator->trans('lender-profile_information-tab-identity-section-files-update-success-message'));
 
             // Only for company related data
             $formManager         = $this->get('unilend.frontbundle.service.form_manager');
             $modifiedDataCompany = $formManager->getModifiedContent($unattachedCompany, $company) ?? null;
+            $clientChanges       = $this->logClientChanges($client);
 
             if ($isFileUploaded || false === empty($clientChanges) || false === empty($modifiedDataCompany)) {
                 $this->updateClientStatusAndNotifyClient($client, $modifiedDataCompany);
@@ -1089,11 +1075,6 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
         }
 
-        // To be performed before documents upload that calls EntityManager#flush()
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $clientAuditer = $this->get(ClientAuditer::class);
-        $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
-
         if (
             null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
             || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
@@ -1112,12 +1093,12 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid() && $bankAccountDocument) {
+            $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
+            $this->logClientChanges($client);
             $this->updateClientStatusAndNotifyClient($client);
 
             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
             $bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
-
-            $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
 
             return true;
         }
@@ -1193,11 +1174,8 @@ class LenderProfileController extends Controller
         }
 
         if ($form->isValid()) {
-            $clientAuditer = $this->get(ClientAuditer::class);
-            $clientAuditer->logChanges($client, $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT));
-            $entityManager->flush($client);
-
             $this->addFlash('securityIdentificationSuccess', $translator->trans('lender-profile_security-identification-form-success-message'));
+            $this->logClientChanges($client);
 
             return true;
         }
@@ -1481,5 +1459,26 @@ class LenderProfileController extends Controller
         $list .= '</ul>';
 
         return $list;
+    }
+
+    /**
+     * Changes should only be logged when client is actually updated meaning form should be valid
+     * Thus this method should only be called once form is fully validated, including attachments
+     *
+     * @param Clients $client
+     *
+     * @return array
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function logClientChanges(Clients $client): array
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $frontUser     = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+        $clientAuditer = $this->get(ClientAuditer::class);
+        $clientChanges = $clientAuditer->logChanges($client, $frontUser);
+
+        $entityManager->flush($client);
+
+        return $clientChanges;
     }
 }

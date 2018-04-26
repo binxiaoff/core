@@ -1,7 +1,9 @@
 <h2>Informations MRZ</h2>
 <div class="row">
     <?php if (empty($this->lenderIdentityMRZData)) : ?>
-        <p>Aucune donnée MRZ disponible pour ce prêteur</p>
+        <div class="col-md-12">
+            <p>Aucune donnée MRZ disponible pour ce prêteur</p>
+        </div>
     <?php else: ?>
         <div class="col-md-6">
             <h3>Prêteur</h3>

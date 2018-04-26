@@ -3,12 +3,9 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\librairies\CacheKeys;
 
@@ -26,13 +23,10 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         ini_set('memory_limit', '1G');
 
         /** @var EntityManager $entityManagerSimulator */
-        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var MailerManager $mailerManager */
-        $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-        /** @var LoggerInterface $logger */
-        $logger = $this->getContainer()->get('monolog.logger.console');
-        /** @var ProjectManager $projectManager */
-        $projectManager = $this->getContainer()->get('unilend.service.project_manager');
+        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
+        $mailerManager           = $this->getContainer()->get('unilend.service.email_manager');
+        $logger                  = $this->getContainer()->get('monolog.logger.console');
+        $projectManager          = $this->getContainer()->get('unilend.service.project_manager');
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
 
         /** @var \projects $project */
@@ -48,15 +42,24 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                 $output->writeln('Project : ' . $project->title);
 
                 try {
-                    $currentDate = new \DateTime();
-                    $endDate     = $projectManager->getProjectEndDate($project);
-                    $isFunded    = $projectManager->isFunded($project);
+                    $currentDate      = new \DateTime();
+                    $endDate          = $projectManager->getProjectEndDate($project);
+                    $isFunded         = $projectManager->isFunded($project);
+                    $isRateMinReached = $projectManager->isRateMinReached($project);
 
                     if ($isFunded) {
+                        if (
+                            false === $isRateMinReached
+                            && $endDate > $currentDate
+                            && ($project->date_funded === '0000-00-00 00:00:00' || empty($project->date_funded)) // To ensure that this email was not already sent
+                        ) {
+                            $mailerManager->sendFundedToBorrower($project);
+                        }
+
                         $projectLifecycleManager->markAsFunded($project);
                     }
 
-                    if ($endDate > $currentDate && false === $projectManager->isRateMinReached($project)) {
+                    if ($endDate > $currentDate && false === $isRateMinReached) {
                         $projectLifecycleManager->checkBids($project, true);
                         $projectLifecycleManager->autoBid($project);
                     } else {

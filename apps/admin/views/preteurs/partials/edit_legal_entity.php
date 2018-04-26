@@ -42,6 +42,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 </div>
 <hr>
 <div class="row">
+    <?php if (null == $this->client->getIdAddress() && null == $this->lastModifiedAddress) : ?>
+        <div class="col-md-6">
+            <h3>Adresse fiscale</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-danger" role="alert">Le client n'a pas d'adresse fiscale</div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
     <?php if (null !== $this->companyEntity->getIdAddress()) : ?>
         <div class="col-md-6">
             <h3>Adresse fiscale validée</h3>
@@ -155,7 +165,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
     </div>
 </div>
-<div class="row statut_dirigeant_e3 societe"<?= (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient() ? '' : ' style="display:none;"') ?>>
+<div class="row statut_dirigeant_e3>
     <div class="form-group col-md-3">
         <label for="status_conseil_externe_entreprise">Autre</label>
         <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="form-control">

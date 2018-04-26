@@ -101,7 +101,7 @@ class LenderValidationManager
      * @return bool
      * @throws \Exception
      */
-    public function validateClient(Clients $client, Users $user, array &$duplicates = [], ?int $idBankAccount, ?int $idAddress): bool
+    public function validateClient(Clients $client, Users $user, array &$duplicates = [], ?int $idBankAccount = null, ?int $idAddress = null): bool
     {
         if (false === $this->checkLenderUniqueness($client, $user, $duplicates)) {
             return false;
