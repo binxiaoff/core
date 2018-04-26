@@ -1,11 +1,11 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\librairies\greenPoint\{
-    greenPoint, greenPointStatus
-};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AttachmentType, GreenpointAttachment, GreenpointAttachmentDetail
+};
+use Unilend\librairies\greenPoint\{
+    greenPoint, greenPointStatus
 };
 
 class wsController extends Controller
@@ -101,6 +101,9 @@ class wsController extends Controller
     {
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AddressManager $addressManager */
+        $addressManager = $this->get('unilend.service.address_manager');
+
         $this->oLogger->info('Start GreenPoint Asynchronous return', ['class' => __CLASS__, 'function' => __FUNCTION__]);
         $this->oLogger->info('Input parameters : ' . var_export($this->aData, true), ['class' => __CLASS__, 'function' => __FUNCTION__]);
 
@@ -149,6 +152,16 @@ class wsController extends Controller
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
                     $bankAccountManager = $this->get('unilend.service.bank_account_manager');
                     $bankAccountManager->validateBankAccount($bankAccountToValidate);
+                }
+            }
+
+            if (AttachmentType::JUSTIFICATIF_DOMICILE === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddressAttachment $addressAttachment */
+                $addressAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddressAttachment')->findOneBy(['idAttachment' => $attachment]);
+                if (null === $addressAttachment || null === $addressAttachment->getIdClientAddress()) {
+                    $this->oLogger->error('Lender housing certificate has no associated address - Client: ' . $attachment->getClient()->getIdClient(), ['methode' => __METHOD__]);
+                } else {
+                    $addressManager->validateLenderAddress($addressAttachment->getIdClientAddress());
                 }
             }
 
