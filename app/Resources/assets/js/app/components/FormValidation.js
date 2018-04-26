@@ -479,6 +479,11 @@ FormValidation.prototype.validateInput = function (elem, options) {
    * Apply the validation rules
    */
   for (var i in inputValidation.options.rules) {
+    // Skip prototype values
+    if (!inputValidation.options.rules.hasOwnProperty(i)) {
+      continue
+    }
+
     // @debug
     // console.log('inputValidation rules: ' + i, inputValidation.options.rules[i])
     if (inputValidation.options.rules[i] && self.rules.hasOwnProperty(i) && typeof self.rules[i] === 'function') {

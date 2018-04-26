@@ -126,6 +126,7 @@
     "Dictionary": "./app/Resources/assets/js/app/lib/Dictionary.js",
     "__": "./app/Resources/assets/js/app/lib/__.js",
     "ElementBounds": "./app/Resources/assets/js/app/lib/ElementBounds.js",
+    "Sanity": "./app/Resources/assets/js/app/lib/Sanity.js",
     "WatchScroll": "./app/Resources/assets/js/app/lib/WatchScroll.js",
     "Tween": "./app/Resources/assets/js/app/lib/Tween.js",
     "ElementAttrsObject": "./app/Resources/assets/js/app/lib/ElementAttrsObject.js",
