@@ -2,7 +2,18 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
+    AddressType,
+    Bids,
+    Clients,
+    ClientsStatus,
+    PaysV2,
+    ProjectRejectionReason,
+    Projects,
+    ProjectsComments,
+    ProjectsNotes,
+    ProjectsStatus,
+    WalletType,
+    Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
@@ -576,10 +587,12 @@ class ajaxController extends bootstrap
         /** @var \clients $client */
         $client = $this->loadData('clients');
 
+        $requestParams = $_POST;
+
         if (
-            false === isset($_POST['status'], $_POST['id_project'])
-            || ProjectsStatus::COMMERCIAL_REJECTION == $_POST['status'] && false === isset($_POST['comment'], $_POST['public'])
-            || false === $project->get($_POST['id_project'], 'id_project')
+            false === isset($requestParams['status'], $requestParams['id_project'])
+            || ProjectsStatus::COMMERCIAL_REJECTION == $requestParams['status'] && false === isset($requestParams['comment'], $requestParams['public'])
+            || false === $project->get($requestParams['id_project'], 'id_project')
             || false === $company->get($project->id_company, 'id_company')
             || false === $client->get($company->id_client_owner, 'id_client')
             || $project->period <= 0
@@ -591,16 +604,16 @@ class ajaxController extends bootstrap
 
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        if ($_POST['status'] == ProjectsStatus::COMMERCIAL_REJECTION) {
+        if ($requestParams['status'] == ProjectsStatus::COMMERCIAL_REJECTION && isset($requestParams['rejection_reason']) && is_array($requestParams['rejection_reason'])) {
             /** @var EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var ProjectRejectionReason[] $rejectionReasons */
             $rejectionReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
-                ->findBy(['idRejection' => $_POST['rejection_reason']]);
-            if (empty($rejectionReasons) || count($rejectionReasons) !== count($_POST['rejection_reason'])) {
+                ->findBy(['idRejection' => $requestParams['rejection_reason']]);
+            if (empty($rejectionReasons) || count($rejectionReasons) !== count($requestParams['rejection_reason'])) {
                 $this->get('logger')->error('Could not update the project status to : ' . ProjectsStatus::COMMERCIAL_REJECTION . '. At least one of the submitted rejection reasons is unknown.', [
                     'id_project'        => $project->id_project,
-                    'rejection_reasons' => $_POST['rejection_reason'],
+                    'rejection_reasons' => $requestParams['rejection_reason'],
                     'class'             => __CLASS__,
                     'function'          => __FUNCTION__
                 ]);
@@ -608,7 +621,10 @@ class ajaxController extends bootstrap
                 echo 'nok';
                 return;
             }
-            $result = $this->rejectProject($project, ProjectsStatus::COMMERCIAL_REJECTION, $rejectionReasons, '1' === $_POST['send_email'], true);
+            $isCommentPublic = empty($requestParams['public']) ? false : true;
+            $sendEmail       = '1' === $requestParams['send_email'];
+            $comment         = $requestParams['comment'];
+            $result          = $this->rejectProject($project, ProjectsStatus::COMMERCIAL_REJECTION, $rejectionReasons, $sendEmail, $comment, $isCommentPublic);
 
             if ($result['success']) {
                 echo 'ok';
@@ -617,7 +633,7 @@ class ajaxController extends bootstrap
             }
             return;
         } else {
-            $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $project);
+            $projectStatusManager->addProjectStatus($this->userEntity, $requestParams['status'], $project);
 
             echo 'ok';
             return;
@@ -709,7 +725,8 @@ class ajaxController extends bootstrap
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
-                $result = $this->rejectProject($project, ProjectsStatus::ANALYSIS_REJECTION, $rejectionReasons, '1' === $_POST['send_email']);
+                $sendEmail = '1' === $_POST['send_email'];
+                $result    = $this->rejectProject($project, ProjectsStatus::ANALYSIS_REJECTION, $rejectionReasons, $sendEmail);
 
                 echo json_encode($result);
                 return;
@@ -834,7 +851,8 @@ class ajaxController extends bootstrap
                 ->findBy(['idRejection' => $_POST['rejection_reason']]);
 
             if (false === empty($rejectionReasons) && count($rejectionReasons) === count($_POST['rejection_reason'])) {
-                $result = $this->rejectProject($project, ProjectsStatus::COMITY_REJECTION, $rejectionReasons, '1' === $_POST['send_email']);
+                $sendEmail = '1' === $_POST['send_email'];
+                $result    = $this->rejectProject($project, ProjectsStatus::COMITY_REJECTION, $rejectionReasons, $sendEmail);
 
                 echo json_encode($result);
                 return;
@@ -1071,14 +1089,15 @@ class ajaxController extends bootstrap
 
     /**
      * @param Projects|\projects $project
-     * @param int      $rejectionStatus
-     * @param array    $rejectionReasons
-     * @param bool     $sendBorrowerEmail
-     * @param bool     $addProjectComment
+     * @param int                $rejectionStatus
+     * @param array              $rejectionReasons
+     * @param bool               $sendBorrowerEmail
+     * @param string|null        $comment
+     * @param bool               $isCommentPublic
      *
      * @return array
      */
-    private function rejectProject($project, int $rejectionStatus, array $rejectionReasons, bool $sendBorrowerEmail = false, bool $addProjectComment = false): array
+    private function rejectProject($project, int $rejectionStatus, array $rejectionReasons, bool $sendBorrowerEmail = false, ?string $comment = null, bool $isCommentPublic = false): array
     {
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
@@ -1092,13 +1111,13 @@ class ajaxController extends bootstrap
         }
 
         try {
-            $success = $projectStatusManager->rejectProject($project, $_POST['status'], $rejectionReasons, $this->userEntity);
+            $success = $projectStatusManager->rejectProject($project, $rejectionStatus, $rejectionReasons, $this->userEntity);
 
             if (false === $success) {
                 return ['success' => false, 'error' => 'Le projet n\'a pas été rejeté.'];
             }
 
-            if ($addProjectComment) {
+            if (false === empty($comment)) {
                 switch ($rejectionStatus) {
                     case ProjectsStatus::COMMERCIAL_REJECTION:
                         $commentTitle = 'Rejet commercial';
@@ -1115,18 +1134,21 @@ class ajaxController extends bootstrap
                 }
 
                 $projectCommentEntity = new ProjectsComments();
-                $projectCommentEntity->setIdProject($project);
-                $projectCommentEntity->setIdUser($this->userEntity);
-                $projectCommentEntity->setContent('<p><u>' . $commentTitle . '</u><p>' . $_POST['comment'] . '</p>');
-                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
+
+                $projectCommentEntity
+                    ->setIdProject($project)
+                    ->setIdUser($this->userEntity)
+                    ->setContent('<p><u>' . $commentTitle . '</u><p>' . $comment . '</p>')
+                    ->setPublic($isCommentPublic);
 
                 $entityManager->persist($projectCommentEntity);
+
                 try {
                     $entityManager->flush($projectCommentEntity);
                 } catch (\Exception $exception) {
                     $this->get('logger')->error('Could not save the rejection comment. Error: ' . $exception->getMessage(), [
                         'id_project' => $project->getIdProject(),
-                        'comment'    => $_POST['comment'],
+                        'comment'    => $comment,
                         'class'      => __CLASS__,
                         'function'   => __FUNCTION__,
                         'file'       => $exception->getFile(),
@@ -1167,7 +1189,6 @@ class ajaxController extends bootstrap
         } catch (\Exception $exception) {
             $this->get('logger')->error('Could not update the project status . Error: ' . $exception->getMessage(), [
                 'id_project'        => $project->getIdProject(),
-                'rejection_reasons' => $_POST['rejection_reason'],
                 'class'             => __CLASS__,
                 'function'          => __FUNCTION__,
                 'file'              => $exception->getFile(),

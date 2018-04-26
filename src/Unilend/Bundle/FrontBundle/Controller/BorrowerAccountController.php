@@ -14,7 +14,16 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
+    Clients,
+    ClientsStatus,
+    EcheanciersEmprunteur,
+    Factures,
+    OperationSubType,
+    OperationType,
+    ProjectsStatus,
+    Users,
+    Virements,
+    WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectStatusManager
@@ -708,7 +717,7 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsPreFunding()
     {
-        $statusPreFunding   = array(
+        $statusPreFunding   = [
             ProjectsStatus::COMPLETE_REQUEST,
             ProjectsStatus::COMMERCIAL_REVIEW,
             ProjectsStatus::COMMERCIAL_REJECTION,
@@ -718,7 +727,7 @@ class BorrowerAccountController extends Controller
             ProjectsStatus::COMITY_REJECTION,
             ProjectsStatus::PREP_FUNDING,
             ProjectsStatus::A_FUNDER
-        );
+        ];
         $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
 
         foreach ($projectsPreFunding as $key => $project) {

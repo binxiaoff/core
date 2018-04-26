@@ -71,6 +71,40 @@ class ProjectRejectionReason
     const INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT      = 'infolegale_current_manager_depositor_role_missing_incident';
     const NO_BORROWER_CONTRIBUTION                                        = 'no_borrower_contribution';
 
+    const FINANCIAL_REASONS = [
+        self::LOW_TURNOVER,
+        self::NEGATIVE_CAPITAL_STOCK,
+        self::NEGATIVE_EQUITY_CAPITAL,
+        self::NEGATIVE_RAW_OPERATING_INCOMES
+    ];
+
+    const SCORING_REASONS = [
+        self::TOO_MUCH_PAYMENT_INCIDENT,
+        self::NON_ALLOWED_PAYMENT_INCIDENT,
+        self::UNILEND_XERFI_ELIMINATION_SCORE,
+        self::UNILEND_XERFI_VS_ALTARES_SCORE,
+        self::LOW_ALTARES_SCORE,
+        self::LOW_INFOLEGALE_SCORE,
+        self::EULER_TRAFFIC_LIGHT,
+        self::EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE,
+        self::EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI,
+        self::EULER_GRADE_VS_ALTARES_SCORE,
+        self::EULER_GRADE_VS_UNILEND_XERFI,
+        self::HAS_INFOGREFFE_PRIVILEGES,
+        self::ELLISPHERE_DEFAULT,
+        self::ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES,
+        self::ELLISPHERE_TREASURY_TAX_PRIVILEGES,
+        self::INFOLEGALE_COMPANY_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_INCIDENT,
+        self::INFOLEGALE_PREVIOUS_MANAGER_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12_MONTHS_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT,
+        self::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT
+    ];
+
     /**
      * @var string
      *
@@ -162,19 +196,19 @@ class ProjectRejectionReason
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
      *
      * @return ProjectRejectionReason
      */
-    public function setDescription(string $description): ProjectRejectionReason
+    public function setDescription(?string $description): ProjectRejectionReason
     {
         $this->description = $description;
 

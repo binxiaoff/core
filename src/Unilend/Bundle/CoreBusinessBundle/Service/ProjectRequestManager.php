@@ -6,7 +6,16 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users
+    BorrowingMotive,
+    Companies,
+    CompanyRating,
+    Partner,
+    ProjectRejectionReason,
+    Projects,
+    ProjectsStatus,
+    ProjectStatusHistoryReason,
+    TaxType,
+    Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -360,7 +369,7 @@ class ProjectRequestManager
      * @param \projects|Projects $project
      * @param int                $userId
      *
-     * @return null|array
+     * @return array|null
      */
     public function addRejectionProjectStatus(string $motive, $project, int $userId): ?array
     {
@@ -554,7 +563,7 @@ class ProjectRequestManager
      *
      * @return string
      */
-    public function getPartnerMainRejectionReasonMessage($project)
+    public function getPartnerMainRejectionReasonMessage($project): string
     {
         if ($project instanceof \projects) {
             $project = $this->entityManager->getRepository('Projects')->find($project->id_project);
@@ -562,7 +571,7 @@ class ProjectRequestManager
         $translation              = 'partner-project-request_not-eligible-reason-no-product';
         $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
-        $borrowerServiceEmail = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+        $borrowerServiceEmail     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
             ->findOneBy(['type' => 'Adresse emprunteur']);
 
         if (null === $lastProjectStatusHistory) {
@@ -575,44 +584,10 @@ class ProjectRequestManager
             return $this->translator->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
         }
 
-        $financialReasons = [
-            ProjectRejectionReason::LOW_TURNOVER,
-            ProjectRejectionReason::NEGATIVE_CAPITAL_STOCK,
-            ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL,
-            ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES
-        ];
+        /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+        $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
 
-        $scoringReasons = [
-            ProjectRejectionReason::TOO_MUCH_PAYMENT_INCIDENT,
-            ProjectRejectionReason::NON_ALLOWED_PAYMENT_INCIDENT,
-            ProjectRejectionReason::UNILEND_XERFI_ELIMINATION_SCORE,
-            ProjectRejectionReason::UNILEND_XERFI_VS_ALTARES_SCORE,
-            ProjectRejectionReason::LOW_ALTARES_SCORE,
-            ProjectRejectionReason::LOW_INFOLEGALE_SCORE,
-            ProjectRejectionReason::EULER_TRAFFIC_LIGHT,
-            ProjectRejectionReason::EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE,
-            ProjectRejectionReason::EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI,
-            ProjectRejectionReason::EULER_GRADE_VS_ALTARES_SCORE,
-            ProjectRejectionReason::EULER_GRADE_VS_UNILEND_XERFI,
-            ProjectRejectionReason::HAS_INFOGREFFE_PRIVILEGES,
-            ProjectRejectionReason::ELLISPHERE_DEFAULT,
-            ProjectRejectionReason::ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES,
-            ProjectRejectionReason::ELLISPHERE_TREASURY_TAX_PRIVILEGES,
-            ProjectRejectionReason::INFOLEGALE_COMPANY_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_PREVIOUS_MANAGER_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12_MONTHS_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT,
-            ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT
-        ];
-
-        /** @var ProjectStatusHistoryReason[] $rejectReasons */
-        $rejectReasons = $lastProjectStatusHistory->getRejectionReasons();
-
-        foreach ($rejectReasons as $rejectionReason) {
+        foreach ($rejectionReasons as $rejectionReason) {
             $reasonLabel = $rejectionReason->getIdRejectionReason()->getLabel();
             if (in_array($reasonLabel, [ProjectRejectionReason::ENTITY_INACTIVE, ProjectRejectionReason::UNKNOWN_SIREN])) {
                 $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
@@ -626,10 +601,10 @@ class ProjectRequestManager
             } elseif (ProjectRejectionReason::IN_PROCEEDING === $reasonLabel) {
                 $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
                 break;
-            } elseif (in_array($reasonLabel, $scoringReasons)) {
+            } elseif (in_array($reasonLabel, ProjectRejectionReason::SCORING_REASONS)) {
                 $translation = 'partner-project-request_not-eligible-reason-scoring';
                 break;
-            } elseif (in_array($reasonLabel, $financialReasons)) {
+            } elseif (in_array($reasonLabel, ProjectRejectionReason::FINANCIAL_REASONS)) {
                 $translation = 'partner-project-request_not-eligible-reason-financial-data';
                 break;
             }

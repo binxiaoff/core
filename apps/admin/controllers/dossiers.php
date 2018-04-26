@@ -2,7 +2,27 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    AddressType,
+    Companies,
+    CompanyAddress,
+    Echeanciers,
+    Loans,
+    MailTemplates,
+    Partner,
+    ProjectAbandonReason,
+    ProjectNotification,
+    ProjectRejectionReason,
+    ProjectRepaymentTask,
+    Projects,
+    ProjectsComments,
+    ProjectsPouvoir,
+    ProjectsStatus,
+    Receptions,
+    Users,
+    UsersTypes,
+    Virements,
+    WalletType,
+    Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     TermsOfSaleManager, WireTransferOutManager
@@ -180,12 +200,21 @@ class dossiersController extends bootstrap
             $this->project_cgv->get($this->projects->id_project, 'id_project');
 
             $this->projects_status->get($this->projects->status, 'status');
-            $this->lastProjectStatusHistory      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-                ->findOneBy(['idProject' => $this->projects->id_project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
-            $unknownSirenRejectionReason         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
-                ->findOneBy(['label' => ProjectRejectionReason::UNKNOWN_SIREN]);
-            $projectStatusHistoryRejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectStatusHistoryReason')
-                ->findOneBy(['idProjectStatusHistory' => $this->lastProjectStatusHistory, 'idRejectionReason' => $unknownSirenRejectionReason]);
+
+            try {
+                $projectStatusHistoryRejectionReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectStatusHistoryReason')
+                    ->findLastRejectionReasonByProjectAndLabel($this->projects->id_project, ProjectRejectionReason::UNKNOWN_SIREN);
+            } catch (\Exception $exception) {
+                $projectStatusHistoryRejectionReason = null;
+
+                $this->get('logger')->error('Could not find project status history reason. Error: ' . $exception->getMessage(), [
+                    'id_project' => $this->projects->id_project,
+                    'function'   => __FUNCTION__,
+                    'class'      => __CLASS__,
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine()
+                ]);
+            }
 
             if (
                 $this->projects->status <= ProjectsStatus::COMMERCIAL_REVIEW
@@ -2151,7 +2180,6 @@ class dossiersController extends bootstrap
         }
 
         if (false === empty($_POST['reason'])) {
-
             /** @var ProjectAbandonReason[] $abandonReasons */
             $abandonReasons = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                 ->findBy(['idAbandon' => $_POST['reason']]);
@@ -2171,8 +2199,7 @@ class dossiersController extends bootstrap
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-
-            $result = $projectStatusManager->abandonProject($project, $abandonReasons, $this->userEntity);
+            $result               = $projectStatusManager->abandonProject($project, $abandonReasons, $this->userEntity);
 
             if (false === $result) {
                 $_SESSION['freeow']['title']   = 'Erreur abandon projet';
@@ -2183,10 +2210,12 @@ class dossiersController extends bootstrap
 
             if (false === empty($_POST['comment'])) {
                 $projectCommentEntity = new ProjectsComments();
-                $projectCommentEntity->setIdProject($project);
-                $projectCommentEntity->setIdUser($this->userEntity);
-                $projectCommentEntity->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment']);
-                $projectCommentEntity->setPublic(empty($_POST['public']) ? false : true);
+
+                $projectCommentEntity
+                    ->setIdProject($project)
+                    ->setIdUser($this->userEntity)
+                    ->setContent('<p><u>Abandon projet</u></p>' . $_POST['comment'])
+                    ->setPublic(empty($_POST['public']) ? false : true);
 
                 $entityManager->persist($projectCommentEntity);
                 try {

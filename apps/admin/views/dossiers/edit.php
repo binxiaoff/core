@@ -977,7 +977,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             </td>
                         </tr>
                         <!-- Rejection/abandon reason -->
-                        <?php if (count($this->statusReasonText) > 1 || '' !== $this->statusReasonText[0]) : ?>
+                        <?php if (count($this->statusReasonText) > 1 || false === empty($this->statusReasonText[0])) : ?>
                             <tr>
                                 <th><label for="status">Motif(s)</label></th>
                                 <td>

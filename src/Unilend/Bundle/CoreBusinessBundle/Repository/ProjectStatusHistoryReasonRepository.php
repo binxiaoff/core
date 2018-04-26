@@ -4,8 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectStatusHistoryReason;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Projects, ProjectStatusHistoryReason
+};
 
 class ProjectStatusHistoryReasonRepository extends EntityRepository
 {
@@ -16,16 +17,16 @@ class ProjectStatusHistoryReasonRepository extends EntityRepository
      * @return ProjectStatusHistoryReason|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findRejectionReasonByProjectAndLabel($project, string $rejectionReasonLabel)
+    public function findLastRejectionReasonByProjectAndLabel($project, string $rejectionReasonLabel): ?ProjectStatusHistoryReason
     {
         $queryBuilder = $this->createQueryBuilder('pshr');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectRejectionReason', 'prr', Join::WITH, 'prr.idRejection = pshr.idRejectionReason')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatus = pshr.idProjectStatusHistory')
-            ->where('pshr.idProjectStatusHistory = :idProject')
-            ->andWhere('prr.label = :rejectionReasonLabel')
-            ->setParameter(':idProject', $project)
-            ->setParameter(':rejectionReasonLabel', $rejectionReasonLabel)
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRejectionReason', 'reason', Join::WITH, 'reason.idRejection = pshr.idRejectionReason')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
+            ->where('psh.idProject = :idProject')
+            ->setParameter('idProject', $project)
+            ->andWhere('reason.label = :rejectionReasonLabel')
+            ->setParameter('rejectionReasonLabel', $rejectionReasonLabel)
             ->orderBy('psh.added', 'DESC')
             ->setMaxResults(1);
 
@@ -39,18 +40,18 @@ class ProjectStatusHistoryReasonRepository extends EntityRepository
      * @return ProjectStatusHistoryReason|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findAbandonReasonByProjectAndLabel($project, string $abandonReasonLabel)
+    public function findLastAbandonReasonByProjectAndLabel($project, string $abandonReasonLabel): ?ProjectStatusHistoryReason
     {
         $queryBuilder = $this->createQueryBuilder('pshr');
         $queryBuilder
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatus = pshr.idProjectStatusHistory')
-            ->innerJoin('UnilendCoreBusinessBundle:ProjectAbandonReason', 'par', Join::WITH, 'par.idAbandon = pshr.idAbandonReason')
-            ->where('pshr.idProjectStatusHistory = :idProject')
-            ->andWhere('par.label = :abandonReasonLabel')
-            ->setParameter(':idProject', $project)
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectAbandonReason', 'reason', Join::WITH, 'reason.idAbandon = pshr.idAbandonReason')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectsStatusHistory', 'psh', Join::WITH, 'psh.idProjectStatusHistory = pshr.idProjectStatusHistory')
+            ->where('psh.idProject = :idProject')
+            ->setParameter('idProject', $project)
+            ->andWhere('reason.label = :abandonReasonLabel')
+            ->setParameter('abandonReasonLabel', $abandonReasonLabel)
             ->orderBy('psh.added', 'DESC')
-            ->setMaxResults(1)
-            ->setParameter(':abandonReasonLabel', $abandonReasonLabel);
+            ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }

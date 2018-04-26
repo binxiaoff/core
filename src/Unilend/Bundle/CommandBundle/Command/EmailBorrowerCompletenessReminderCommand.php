@@ -64,8 +64,6 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->getContainer()->get('unilend.service.project_status_manager');
 
-
-
         $entityManager        = $this->getContainer()->get('doctrine.orm.entity_manager');
         $projectsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $projectAbandonReason = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
@@ -94,7 +92,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                             }
                             $company = $project->getIdCompany();
 
-                            if ($project->getIdPrescripteur() > 0 && $prescripteur->get($project->getIdPrescripteur(), 'id_prescripteur')) {
+                            if (false === empty($project->getIdPrescripteur()) && $prescripteur->get($project->getIdPrescripteur(), 'id_prescripteur')) {
                                 $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($prescripteur->id_client);
                             } elseif (null !== $company->getIdClientOwner()) {
                                 $client = $company->getIdClientOwner();
@@ -155,7 +153,9 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                             'id_mail_template' => $message->getTemplateId(),
                                             'id_client'        => $client->getIdClient(),
                                             'class'            => __CLASS__,
-                                            'function'         => __FUNCTION__
+                                            'function'         => __FUNCTION__,
+                                            'file'             => $exception->getFile(),
+                                            'line'             => $exception->getLine()
                                         ]
                                     );
                                 }

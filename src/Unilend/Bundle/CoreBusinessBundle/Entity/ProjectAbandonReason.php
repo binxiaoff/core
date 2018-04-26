@@ -123,19 +123,19 @@ class ProjectAbandonReason
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
-     * @param string $description
+     * @param string|null $description
      *
      * @return ProjectAbandonReason
      */
-    public function setDescription(string $description): ProjectAbandonReason
+    public function setDescription(?string $description): ProjectAbandonReason
     {
         $this->description = $description;
 
