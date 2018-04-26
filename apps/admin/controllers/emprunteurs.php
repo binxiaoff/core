@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, WalletType, Zones
+    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, Zones
 };
 
 class emprunteursController extends bootstrap
@@ -125,6 +125,7 @@ class emprunteursController extends bootstrap
                 $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
                 $this->clients->telephone = str_replace([' ', '.', ','], '', $_POST['telephone']);
+                $this->clients->mobile    = str_replace([' ', '.', ','], '', $_POST['mobile']);
                 $this->clients->update();
 
                 $billingEmail = trim($_POST['email_facture']);
@@ -180,6 +181,10 @@ class emprunteursController extends bootstrap
             $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
             $this->possibleCompanyStatus = $this->companyManager->getPossibleStatus($this->companyEntity);
             $this->companyStatusInBonis  = $companyStatusRepository->findOneBy(['label' => CompanyStatus::STATUS_IN_BONIS]);
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $backOfficeUserManager */
+            $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
+            $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion');
             exit;

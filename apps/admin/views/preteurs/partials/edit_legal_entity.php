@@ -165,7 +165,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
     </div>
 </div>
-<div class="row statut_dirigeant_e3 societe"<?= (Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companyEntity->getStatusClient() ? '' : ' style="display:none;"') ?>>
+<div class="row statut_dirigeant_e3>
     <div class="form-group col-md-3">
         <label for="status_conseil_externe_entreprise">Autre</label>
         <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="form-control">

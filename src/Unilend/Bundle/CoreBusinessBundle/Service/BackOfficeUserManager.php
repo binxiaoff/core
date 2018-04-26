@@ -3,8 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UsersTypes;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Users, UsersTypes, Zones
+};
 
 class BackOfficeUserManager
 {
@@ -137,6 +138,27 @@ class BackOfficeUserManager
     {
         if (in_array($user->getIdUserType()->getIdUserType(), [UsersTypes::TYPE_COMMERCIAL, UsersTypes::TYPE_ADMIN]) || $user->getIdUser() == Users::USER_ID_ARNAUD_SCHWARTZ) {
             return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Users        $user
+     * @param Zones|string $zone
+     *
+     * @return bool
+     */
+    public function isGrantedZone(Users $user, $zone): bool
+    {
+        if (is_string($zone)) {
+            $zone = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Zones')->findOneBy(['slug' => $zone]);
+        }
+
+        if ($zone) {
+            if ($this->entityManager->getRepository('UnilendCoreBusinessBundle:UsersZones')->findOneBy(['idUser' => $user, 'idZone' => $zone])) {
+                return true;
+            }
         }
 
         return false;
