@@ -52,8 +52,6 @@ if ($borrowerReasonInput.length) {
       reasonValue = $borrowerReasonInput.first().val()
     }
 
-    console.log('handleBorrowingReason', reasonValue)
-
     switch (~~reasonValue) {
       // Création de franchise
       case 8:
