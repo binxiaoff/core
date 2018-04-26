@@ -52,6 +52,7 @@ class ClientAuditer
      */
     public function logChanges(Clients $client, Users $user): array
     {
+        $flushEntities = [];
         $classMetaData = $this->entityManager->getClassMetadata(Clients::class);
         $unitOfWork    = $this->entityManager->getUnitOfWork();
         $unitOfWork->computeChangeSet($classMetaData, $client);
@@ -69,8 +70,10 @@ class ClientAuditer
                 }
             }
 
-            // Do not log change when value does not change but type is different
-            // Example: idNationalite changing from "int 1" to "string '1'" because setIdNationalite was not called with the right parameter type
+            /**
+             * Do not log change when value does not change but type is different
+             * Example: idNationalite changing from "int 1" to "string '1'" because setIdNationalite was not called with the right parameter type
+             */
             if ($changeSet[$fieldName][0] == $changeSet[$fieldName][1]) {
                 continue;
             }
@@ -84,10 +87,12 @@ class ClientAuditer
                 ->setIdUser($user);
 
             $this->entityManager->persist($clientDataHistory);
+
+            $flushEntities[] = $clientDataHistory;
         }
 
         try {
-            $this->entityManager->flush();
+            $this->entityManager->flush($flushEntities);
         } catch (OptimisticLockException $exception) {
             $this->logger->error('Unable to log client changes: ' . $exception->getMessage(), [
                 'id_client' => $client->getIdClient(),

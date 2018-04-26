@@ -42,6 +42,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
 </div>
 <hr>
 <div class="row">
+    <?php if (null == $this->client->getIdAddress() && null == $this->lastModifiedAddress) : ?>
+        <div class="col-md-6">
+            <h3>Adresse fiscale</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-danger" role="alert">Le client n'a pas d'adresse fiscale</div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
     <?php if (null !== $this->companyEntity->getIdAddress()) : ?>
         <div class="col-md-6">
             <h3>Adresse fiscale validée</h3>

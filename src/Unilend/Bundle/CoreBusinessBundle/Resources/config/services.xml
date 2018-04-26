@@ -550,5 +550,7 @@
         </service>
 
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer" autowire="true"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager" autowire="true"/>
     </services>
 </container>
