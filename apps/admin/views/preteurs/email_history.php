@@ -28,10 +28,10 @@
         <div><?= $this->clientStatusMessage ?></div>
         <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
         <div class="btnDroite">
-            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn_link">Enchères</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn_link">Consulter Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn_link">Modifier Prêteur</a>
-            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->clients->id_client ?>" class="btn_link">Portefeuille & Performances</a>
+            <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn-primary">Enchères</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->clients->id_client ?>" class="btn-primary">Consulter Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->clients->id_client ?>" class="btn-primary">Modifier Prêteur</a>
+            <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->clients->id_client ?>" class="btn-primary">Portefeuille & Performances</a>
         </div>
         <p>ID Client : <?= $this->clients->id_client ?></p>
         <h2>Préférences Notifications</h2>
@@ -75,7 +75,7 @@
             </div>
         </div>
         <br><br>
-        <H2>Historique des Emails</H2>
+        <h2>Historique des Emails</h2>
         <div class="date_picker_email_history">
             <form method="post" name="history_dates" id="history_dates" enctype="multipart/form-data" action="" target="_parent">
                 <fieldset>
@@ -91,29 +91,33 @@
                 </fieldset>
             </form>
         </div>
-        <table class="tablesorter">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>From</th>
-                    <th>Sujet</th>
-                    <th>Visualiser</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
+        <?php if (empty($this->aEmailsSentToClient)) : ?>
+            Aucun email dans l'historique
+        <?php else : ?>
+            <table class="tablesorter">
+                <thead>
                     <tr>
-                        <td><?= $aEmail['sentAt']->format('d/m/Y H:i') ?></td>
-                        <td><?= $aEmail['senderName'] ?></td>
-                        <td><?= $aEmail['subject'] ?></td>
-                        <td style="text-align: center">
-                            <a href="<?= $this->lurl ?>/mails/email_history_preview/<?= $aEmail['idQueue'] ?>" class="thickbox">
-                                <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px">
-                            </a>
-                        </td>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>Sujet</th>
+                        <th>Visualiser</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
+                        <tr>
+                            <td><?= $aEmail['sentAt']->format('d/m/Y H:i') ?></td>
+                            <td><?= $aEmail['senderName'] ?></td>
+                            <td><?= $aEmail['subject'] ?></td>
+                            <td style="text-align: center">
+                                <a href="<?= $this->lurl ?>/mails/email_history_preview/<?= $aEmail['idQueue'] ?>" class="thickbox">
+                                    <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px">
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
     <?php endif; ?>
 </div>

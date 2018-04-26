@@ -13,7 +13,6 @@ use Unilend\librairies\greenPoint\{
     greenPoint, greenPointStatus
 };
 
-
 class GreenPointValidationCommand extends ContainerAwareCommand
 {
     protected function configure()
@@ -201,7 +200,6 @@ EOF
                 $data['code_postal'] = $address->getZip();
                 $data['ville']       = $address->getCity();
                 $data['pays']        = strtoupper($address->getIdCountry()->getFr());
-
                 break;
             default:
                 break;

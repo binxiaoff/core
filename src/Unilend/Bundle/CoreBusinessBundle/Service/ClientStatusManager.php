@@ -63,10 +63,10 @@ class ClientStatusManager
     }
 
     /**
-     * @param Clients $client
-     * @param string  $content
+     * @param Clients     $client
+     * @param string|null $content
      */
-    public function changeClientStatusTriggeredByClientAction(Clients $client, string $content): void
+    public function changeClientStatusTriggeredByClientAction(Clients $client, ?string $content = null): void
     {
         switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
             case ClientsStatus::STATUS_COMPLETENESS:
