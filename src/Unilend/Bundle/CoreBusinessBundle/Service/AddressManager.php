@@ -37,7 +37,7 @@ class AddressManager
     public function saveCompanyAddress(string $address, string $zip, string $city, int $idCountry, Companies $company, string $type): void
     {
         $addressType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AddressType')->findOneBy(['label' => $type]);
-        if (null === $type) {
+        if (null === $addressType) {
             throw new \InvalidArgumentException('The address ' . $type . ' does not exist');
         }
 
