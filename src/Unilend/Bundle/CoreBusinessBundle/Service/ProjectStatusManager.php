@@ -209,6 +209,8 @@ class ProjectStatusManager
      * @param \projects|Projects $project
      * @param int                $reminderNumber
      * @param string             $content
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function addProjectStatus($user, int $projectStatus, $project, int $reminderNumber = 0, string $content = '')
     {
@@ -264,6 +266,8 @@ class ProjectStatusManager
      * @param \projects_status $projectStatus
      * @param Projects         $project
      * @param Users            $user
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function projectStatusUpdateTrigger(\projects_status $projectStatus, Projects $project, Users $user)
     {
@@ -372,58 +376,98 @@ class ProjectStatusManager
             $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
                 ->find($project->id_project);
         }
-        $this->addProjectStatus($user, $projectStatus, $project, $reminder);
+
+        $this->entityManager->beginTransaction();
+
+        try {
+            $this->addProjectStatus($user, $projectStatus, $project, $reminder);
+        } catch (\Exception $exception) {
+
+            $this->entityManager->rollback();
+
+            $this->logFailedProjectStatusChange($project, $reasons, 'An exception ocurred when calling self::addProjectStatus().', $exception);
+
+            return false;
+        }
 
         $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
             ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
         if (null !== $lastProjectStatusHistory && $lastProjectStatusHistory->getIdProjectStatus()->getStatus() === $projectStatus) {
-            $historyReasons = [];
-
-            foreach ($reasons as $reason) {
-                $projectStatusHistoryReason = new ProjectStatusHistoryReason();
-                $projectStatusHistoryReason
-                    ->setIdProjectStatusHistory($lastProjectStatusHistory);
-                if ($reason instanceof ProjectAbandonReason) {
-                    $projectStatusHistoryReason
-                        ->setIdAbandonReason($reason);
-                } elseif ($reason instanceof ProjectRejectionReason) {
-                    $projectStatusHistoryReason
-                        ->setIdRejectionReason($reason);
-                }
-                $this->entityManager->persist($projectStatusHistoryReason);
-                $historyReasons[] = $projectStatusHistoryReason;
-            }
             try {
-                $this->entityManager->flush($historyReasons);
+                $this->saveProjectStatusHistoryReasons($lastProjectStatusHistory, $reasons);
+
+                $this->entityManager->commit();
 
                 return true;
             } catch (\Exception $exception) {
-                $action = ProjectsStatus::ABANDONED === $projectStatus ? 'abandon' : 'rejection';
-                $this->logger->error('Could not save the project ' . $action . ' reasons. Exception message: ' . $exception->getMessage(), [
-                    'id_project' => $project->getIdProject(),
-                    'class'      => __CLASS__,
-                    'function'   => __FUNCTION__,
-                    'file'       => $exception->getFile(),
-                    'line'       => $exception->getLine()
-                ]);
+                $action  = ProjectsStatus::ABANDONED === $projectStatus ? 'abandon' : 'rejection';
+                $message = 'We could not save the project ' . $action . ' reasons.';
+                $this->logFailedProjectStatusChange($project, $reasons, $message, $exception);
             }
         } else {
-            $action    = ProjectsStatus::ABANDONED === $projectStatus ? 'abandon' : 'rejection';
-            $reasonsId = [];
-            foreach ($reasons as $reason) {
-                $reasonsId[] = $reason instanceof ProjectRejectionReason ? $reason->getIdRejection() : $reason->getIdAbandon();
-            }
-
-            $failureMessage = null === $lastProjectStatusHistory ? 'Last project status was not found' : 'Project status was not successfully updated to ' . $projectStatus;
-            $this->logger->error('Could not insert the project ' . $action . ' reasons on project: ' . $project->getIdProject() . '. Error: ' . $failureMessage, [
-                'id_project'         => $project->getIdProject(),
-                $action . '_reasons' => $reasonsId,
-                'class'              => __CLASS__,
-                'function'           => __FUNCTION__
-            ]);
+            $message = null === $lastProjectStatusHistory ? 'The last project status was not found' : 'The project status was not correctly updated to ' . $projectStatus;
+            $this->logFailedProjectStatusChange($project, $reasons, $message);
         }
+        $this->entityManager->rollback();
 
         return false;
+    }
+
+    /**
+     * @param $lastProjectStatusHistory
+     * @param $reasons
+     *
+     * @throws \Exception
+     */
+    private function saveProjectStatusHistoryReasons($lastProjectStatusHistory, $reasons): void
+    {
+        if (empty($reasons)) {
+            throw new \Exception('Cannot reject or abandon project without specifying reasons.');
+        }
+        $historyReasons = [];
+
+        foreach ($reasons as $reason) {
+            $projectStatusHistoryReason = new ProjectStatusHistoryReason();
+            $projectStatusHistoryReason
+                ->setIdProjectStatusHistory($lastProjectStatusHistory);
+
+            if ($reason instanceof ProjectAbandonReason) {
+                $projectStatusHistoryReason
+                    ->setIdAbandonReason($reason);
+            } elseif ($reason instanceof ProjectRejectionReason) {
+                $projectStatusHistoryReason
+                    ->setIdRejectionReason($reason);
+            }
+            $this->entityManager->persist($projectStatusHistoryReason);
+            $historyReasons[] = $projectStatusHistoryReason;
+        }
+        $this->entityManager->flush($historyReasons);
+    }
+
+    /**
+     * @param Projects        $project
+     * @param array           $reasons
+     * @param string          $errorMessage
+     * @param \Exception|null $exception
+     */
+    private function logFailedProjectStatusChange(Projects $project, array $reasons, string $errorMessage, ?\Exception $exception = null): void
+    {
+        $reasonsId = [];
+        foreach ($reasons as $reason) {
+            $reasonsId[] = $reason instanceof ProjectRejectionReason ? $reason->getIdRejection() : $reason->getIdAbandon();
+        }
+        $action        = $reasons[0] instanceof ProjectRejectionReason ? 'rejection' : 'abandon';
+        $exceptionInfo = [];
+        if (null !== $exception) {
+            $exceptionInfo = ['message' => $exception->getMessage(), 'file' => $exception->getFile(), 'line' => $exception->getLine()];
+        }
+        $this->logger->error('The project status was not updated, because ' . $errorMessage, [
+            'id_project'         => $project->getIdProject(),
+            $action . '_reasons' => $reasonsId,
+            'class'              => __CLASS__,
+            'function'           => __FUNCTION__,
+            'exception'          => $exceptionInfo
+        ]);
     }
 }

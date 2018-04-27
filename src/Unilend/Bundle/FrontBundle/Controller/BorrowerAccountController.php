@@ -14,16 +14,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients,
-    ClientsStatus,
-    EcheanciersEmprunteur,
-    Factures,
-    OperationSubType,
-    OperationType,
-    ProjectsStatus,
-    Users,
-    Virements,
-    WalletType
+    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BorrowerOperationsManager, ProjectStatusManager

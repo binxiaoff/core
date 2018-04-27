@@ -7,7 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectStatusHistoryReason
  *
- * @ORM\Table(name="project_status_history_reason", indexes={@ORM\Index(name="idx_id_project_status_history", columns={"id_project_status_history"}), @ORM\Index(name="idx_id_rejection_reason", columns={"id_rejection_reason"}), @ORM\Index(name="idx_id_abandon_reason", columns={"id_abandon_reason"})})
+ * @ORM\Table(name="project_status_history_reason", indexes={
+ *     @ORM\Index(name="idx_project_status_history_id_project_status_history", columns={"id_project_status_history"}),
+ *     @ORM\Index(name="idx_project_rejection_reason_id_rejection_reason", columns={"id_rejection_reason"}),
+ *     @ORM\Index(name="idx_project_abandon_reason_id_abandon_reason", columns={"id_abandon_reason"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectStatusHistoryReasonRepository")
  * @ORM\HasLifecycleCallbacks()
  */

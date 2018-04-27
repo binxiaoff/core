@@ -6,16 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive,
-    Companies,
-    CompanyRating,
-    Partner,
-    ProjectRejectionReason,
-    Projects,
-    ProjectsStatus,
-    ProjectStatusHistoryReason,
-    TaxType,
-    Users
+    BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -535,11 +526,10 @@ class ProjectRequestManager
             return $message;
         }
 
-        /** @var ProjectStatusHistoryReason[] $rejectReasons */
-        $rejectReasons = $lastProjectStatusHistory->getRejectionReasons();
+        /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+        $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
 
-        // priority defined in TST-51
-        foreach ($rejectReasons as $reason) {
+        foreach ($rejectionReasons as $reason) {
             if (ProjectRejectionReason::IN_PROCEEDING === $reason->getIdRejectionReason()->getLabel()) {
                 $message = $this->translator->trans('project-request_end-page-collective-proceeding-message');
                 break;

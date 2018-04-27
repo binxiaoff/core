@@ -2,18 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType,
-    Bids,
-    Clients,
-    ClientsStatus,
-    PaysV2,
-    ProjectRejectionReason,
-    Projects,
-    ProjectsComments,
-    ProjectsNotes,
-    ProjectsStatus,
-    WalletType,
-    Zones
+    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
