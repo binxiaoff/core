@@ -1,29 +1,28 @@
 {% extends 'layout.html.twig' %}
 
 {% block pluginsCSS %}
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2-bootstrap.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
-<link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap3-editable/css/bootstrap-editable.css">
-
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2-bootstrap.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap3-editable/css/bootstrap-editable.css">
 {% endblock %}
 
 {% block pluginsJS %}
-<script src="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
-<script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap3-editable/js/bootstrap-editable.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/masked-inputs/jquery.maskedinput.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/summernote/summernote.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-treeview/bootstrap-treeview.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap3-editable/js/bootstrap-editable.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
 <script>
-    $(function(){
+    $(function () {
         // Page helpers are initialised in app.js and can be called quickly using their name
         App.initHelpers(['validation', 'select2', 'datepicker', 'masked-inputs', 'summernote', 'table-tools', 'easy-pie-chart', 'editable', 'datatables', ]);
 
