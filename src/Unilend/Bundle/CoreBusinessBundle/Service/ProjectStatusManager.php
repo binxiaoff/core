@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, Users
+    ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -415,12 +415,12 @@ class ProjectStatusManager
     }
 
     /**
-     * @param $lastProjectStatusHistory
-     * @param $reasons
+     * @param ProjectsStatusHistory $lastProjectStatusHistory
+     * @param array                 $reasons
      *
      * @throws \Exception
      */
-    private function saveProjectStatusHistoryReasons($lastProjectStatusHistory, $reasons): void
+    private function saveProjectStatusHistoryReasons(ProjectsStatusHistory $lastProjectStatusHistory, array $reasons): void
     {
         if (empty($reasons)) {
             throw new \Exception('Cannot reject or abandon project without specifying reasons.');
