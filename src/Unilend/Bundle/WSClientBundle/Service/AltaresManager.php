@@ -36,6 +36,7 @@ class AltaresManager
     const EXCEPTION_CODE_TECHNICAL_ERROR                 = [-1, 0, 1, 2, 3, 4, 5, 7, 8];
     const EXCEPTION_CODE_ALTARES_DOWN                    = -999;
     const EXCEPTION_CODE_ALTARES_SIREN_ALREADY_MONITORED = 503;
+    const EXCEPTION_CODE_ALTARES_SIREN_NOT_MONITORED     = 504;
 
     /** RiskDataMonitoring Notification Status for WS call*/
     const NOTIFICATION_STATUS_NOT_READ = 2;
@@ -433,7 +434,10 @@ class AltaresManager
         ]);
 
         if (null !== $response) {
-            if ($response->return->correct) {
+            if (
+                $response->return->correct
+                || null !== $response->return->exception && self::EXCEPTION_CODE_ALTARES_SIREN_NOT_MONITORED == $response->return->exception->code
+            ) {
                 return true;
             }
 
