@@ -7,14 +7,11 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BankAccount, Clients, ClientsStatus, Users, WalletType
+    BankAccount, ClientAddress, Clients, ClientsStatus, CompanyAddress, Users, WalletType
 };
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
-    TemplateMessage, TemplateMessageProvider
-};
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 /**
- * Class LenderValidationManager
  * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 class LenderValidationManager
@@ -41,7 +38,9 @@ class LenderValidationManager
     private $mailer;
     /** @var LoggerInterface */
     private $logger;
+    /** @var string */
     private $staticUrl;
+    /** @var string */
     private $frontUrl;
 
     /**
@@ -73,8 +72,8 @@ class LenderValidationManager
         \Swift_Mailer $mailer,
         LoggerInterface $logger,
         Packages $assetsPackages,
-        $schema,
-        $frontHost
+        string $schema,
+        string $frontHost
     )
     {
         $this->entityManager       = $entityManager;
@@ -136,13 +135,15 @@ class LenderValidationManager
         $this->entityManager->beginTransaction();
 
         try {
-            if (null !== $idBankAccount) {
+            if (isset($bankAccount) && $bankAccount instanceof BankAccount) {
                 $this->bankAccountManager->validateBankAccount($bankAccount);
             }
 
-            if (null !== $idAddress) {
+            if (isset($address) && ($address instanceof ClientAddress || $address instanceof CompanyAddress)) {
                 $this->addressManager->validateLenderAddress($address);
             }
+
+            $this->validateClientDataHistory($client);
 
             if ($client->isNaturalPerson()) {
                 $this->taxManager->applyFiscalCountry($client, $user);
@@ -161,7 +162,6 @@ class LenderValidationManager
             $this->sendClientValidationEmail($client, $template);
 
             return true;
-
         } catch (\Exception $exception) {
             $this->entityManager->rollback();
             throw $exception;
@@ -202,16 +202,18 @@ class LenderValidationManager
             'lenderPattern' => $wallet->getWireTransferPattern()
         ];
 
-        /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($mailType, $keywords);
+
         try {
             $message->setTo($client->getEmail());
             $this->mailer->send($message);
-        } catch (\Exception $exception){
-            $this->logger->warning(
-                'Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+        } catch (\Exception $exception) {
+            $this->logger->warning('Could not send email: ' . $mailType . ' - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
         }
     }
 
@@ -232,10 +234,13 @@ class LenderValidationManager
             $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
             $existingClient   = $clientRepository->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
         } catch (DBALException $exception) {
-            $this->logger->error(
-                'Unable to find lender duplicates. Exception: ' . $exception->getMessage(),
-                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->error('Unable to find lender duplicates. Exception: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
 
             return false;
         }
@@ -254,5 +259,23 @@ class LenderValidationManager
         }
 
         return true;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function validateClientDataHistory(Clients $client): void
+    {
+        $clientDataHistory = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ClientDataHistory')
+            ->findLastModifiedDataToValidate($client);
+
+        foreach ($clientDataHistory as $history) {
+            $history->setDateValidated(new \DateTime());
+        }
+
+        $this->entityManager->flush();
     }
 }

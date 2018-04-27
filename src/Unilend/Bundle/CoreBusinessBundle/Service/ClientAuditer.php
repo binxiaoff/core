@@ -47,10 +47,11 @@ class ClientAuditer
     /**
      * @param Clients $client
      * @param Users   $user
+     * @param bool    $validateData
      *
      * @return array
      */
-    public function logChanges(Clients $client, Users $user): array
+    public function logChanges(Clients $client, Users $user, ?bool $validateData = null): array
     {
         $flushEntities = [];
         $classMetaData = $this->entityManager->getClassMetadata(Clients::class);
@@ -85,6 +86,10 @@ class ClientAuditer
                 ->setOldValue($changeSet[$fieldName][0])
                 ->setNewValue($changeSet[$fieldName][1])
                 ->setIdUser($user);
+
+            if ($validateData) {
+                $clientDataHistory->setDateValidated(new \DateTime());
+            }
 
             $this->entityManager->persist($clientDataHistory);
 
