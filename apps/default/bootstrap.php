@@ -184,7 +184,12 @@ class bootstrap extends Controller
     }
 
     /**
-     * Handle legacy redirection of old "partenaires"
+     * Handle legacy redirection of old "partenaires" (marketing campaigns)
+     * Such URL are redirected to the same URL without the last two parameters
+     * During the redirection, data was saved to DB in order to count clicks but it's not used anymore
+     *
+     * URL pattern is https://www.unilend.fr/..../p/a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+     * where "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6 "represents campaigns' hash
      */
     private function handleLegacyPartenaireRedirection()
     {
