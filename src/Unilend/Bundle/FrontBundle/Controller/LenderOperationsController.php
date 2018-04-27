@@ -11,7 +11,17 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, UnderlyingContract, Wallet, WalletType
+    AddressType,
+    Clients,
+    ClientsStatus,
+    CompanyStatus,
+    Notifications,
+    OperationSubType,
+    OperationType,
+    Projects,
+    UnderlyingContract,
+    Wallet,
+    WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\core\Loader;
@@ -776,8 +786,10 @@ class LenderOperationsController extends Controller
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $client                  = $wallet->getIdClient();
+        /** @var Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+            ->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $client = $wallet->getIdClient();
 
         if (false === $client->isNaturalPerson()) {
             $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
@@ -785,22 +797,17 @@ class LenderOperationsController extends Controller
 
         $filters          = $session->get('lenderOperationsFilters');
         $operations       = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
-        $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
-
         try {
-            if ($client->isNaturalPerson()) {
-                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
-                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            } else {
-                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                    ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-            }
+            $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
         } catch (\Exception $exception) {
-            $this->get('logger')->warning('Client has no main address', [
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__,
-                'id_client'  => $client->getIdClient(),
-                'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person'
+            $lenderOperations = [];
+
+            $this->get('logger')->error('Could not get lender operations to generate PDF. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
             ]);
         }
 
@@ -808,7 +815,7 @@ class LenderOperationsController extends Controller
         $pdfContent       = $this->renderView('pdf/lender_operations.html.twig', [
             'lenderOperations'  => $lenderOperations,
             'client'            => $client,
-            'lenderAddress'     => $lenderAddress,
+            'lenderAddress'     => $this->getLenderAddressForPdf($client),
             'company'           => empty($company) ? null : $company,
             'available_balance' => $wallet->getAvailableBalance()
         ]);
@@ -823,5 +830,93 @@ class LenderOperationsController extends Controller
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
             ]
         );
+    }
+
+    /**
+     * @Route("/prets/pdf", name="lender_loans_pdf")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @return Response
+     */
+    public function downloadLoansPdfAction(): Response
+    {
+        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+            return $this->redirectToRoute('home');
+        }
+
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $lenderOperationManager = $this->get('unilend.service.lender_operations_manager');
+        /** @var Wallet $wallet */
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+            ->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        /** @var \loans $loans */
+        $loans = $this->get('unilend.service.entity_manager')->getRepository('loans');
+        try {
+            $lenderLoans = $loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
+            $lenderLoans = $lenderOperationManager->formatLenderLoansData($wallet, $lenderLoans)['lenderLoans'];
+        } catch (\Exception $exception) {
+            $lenderLoans = [];
+
+            $this->get('logger')->error('Could not get lender loans. Error: ' . $exception->getMessage(), [
+                'id_client' => $wallet->getIdClient()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        $pdfContent = $this->renderView('pdf/lender_loans.html.twig', [
+            'lenderLoans'   => $lenderLoans,
+            'client'        => $wallet->getIdClient(),
+            'lenderAddress' => $this->getLenderAddressForPdf($wallet->getIdClient()),
+            'company'       => empty($company) ? null : $company,
+        ]);
+
+        $snappy   = $this->get('knp_snappy.pdf');
+        $fileName = 'vos_prets_' . date('Y-m-d') . '.pdf';
+
+        return new Response(
+            $snappy->getOutputFromHtml($pdfContent),
+            200,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
+            ]
+        );
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return mixed
+     */
+    private function getLenderAddressForPdf(Clients $client)
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        if (false === $client->isNaturalPerson()) {
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        }
+
+        try {
+            if ($client->isNaturalPerson()) {
+                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            } else {
+                $lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                    ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            }
+        } catch (\Exception $exception) {
+            $lenderAddress = null;
+
+            $this->get('logger')->warning('Client has no main address. Error: ' . $exception->getMessage(), [
+                'id_client'  => $client->getIdClient(),
+                'id_company' => isset($company) ? $company->getIdCompany() : 'Lender is natural person',
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+            ]);
+        }
+
+        return $lenderAddress;
     }
 }
