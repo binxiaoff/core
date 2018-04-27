@@ -325,7 +325,7 @@ Sanity.prototype.toString = function () {
 /**
  * @module Sanity
  */
-// module.exports = Sanity
+module.exports = Sanity
 
 /*
  * @debug Tests
