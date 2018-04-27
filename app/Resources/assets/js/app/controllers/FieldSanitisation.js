@@ -6,27 +6,38 @@
  */
 
 var $ = require('jquery')
-var sanity = require('Sanity')
+var Sanity = require('Sanity')
+var Utility = require('Utility')
 var $doc = $(document)
 
 $doc
-  // Sanitise Title (e.g. Raison Sociale)
-  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="title"]', function (event, FormValidation, inputValidation) {
-    $(this).val(sanity($(this).val()).sanitiseSimpleText())
+  // Sanitise integers
+  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="integer"]', function (event, FormValidation, inputValidation) {
+    $(this).val(Utility.convertStringToFloat($(this).val()))
   })
 
-  // Sanitise Siret
-  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="siret"]', function (event, FormValidation, inputValidation) {
-    $(this).val(sanity($(this).val()).sanitiseSiret())
+  // Sanitise Title (e.g. Raison Sociale)
+  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="title"]', function (event, FormValidation, inputValidation) {
+    $(this).val(Sanity($(this).val()).sanitiseTitle())
   })
 
   // Sanitise Siren
   .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="siren"]', function (event, FormValidation, inputValidation) {
-    $(this).val(sanity($(this).val()).sanitiseSiren())
+    $(this).val(Sanity($(this).val()).sanitiseSiren())
+  })
+
+  // Sanitise Siret
+  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="siret"]', function (event, FormValidation, inputValidation) {
+    $(this).val(Sanity($(this).val()).sanitiseSiret())
+  })
+
+  // Sanitise Iban
+  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="iban"]', function (event, FormValidation, inputValidation) {
+    // Strip spaces from Iban
+    $(this).val(Sanity($(this).val()).normaliseWhitespace(''))
   })
 
   // Sanitise Phone/Mobile
   .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="tel"], input[data-formvalidation-type="phone"], input[data-formvalidation-type="telephone"], input[data-formvalidation-type="mobile"]', function (event, FormValidation, inputValidation) {
-    $(this).val(sanity($(this).val()).sanitisePhone())
+    $(this).val(Sanity($(this).val()).sanitisePhone())
   })
-

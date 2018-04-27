@@ -9,7 +9,8 @@
                 'id' : 'form-lender-' ~ idClientType ~ '-email',
                 'attr' :  {
                     'class' : 'input-field',
-                    'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'data-formvalidation-input data-formvalidation-required' : 'true',
+                    'data-formvalidation-type': 'email'
                 }
             }) }}
         </div>
@@ -34,7 +35,7 @@
     </div>
 
     <div class="row row-multi-col-computer">
-        <div class="form-field margin-10-b col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd">
                 {% trans %} common_password {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -49,7 +50,7 @@
             }) }}
         </div>
 
-        <div class="form-field margin-10-b col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.password.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-lender-{{ idClientType }}-pwd-conf">
                 {% trans %} common_password-confirmation {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -59,14 +60,17 @@
                     'id' : 'form-lender-'~ idClientType ~'-pwd-conf',
                     'attr' : {
                         'class' : 'input-field',
-                        'data-passwordcheck data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
                         'data-formvalidation-samevalueas' : '#form-lender-' ~ idClientType ~ '-pwd'
                     }
                 }) }}
             </div>
         </div>
         {{ form_errors(identityForm.client.password) }}
-        <div class="field-help margin-20-b">{% trans %} common_password-hint {% endtrans %}</div>
+    </div>
+
+    <div class="row form-field">
+        <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
     </div>
 
     <div class="row">

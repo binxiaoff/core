@@ -2,20 +2,31 @@
  * Regain your text sanity by transforming, sanitising and normalising various inputs
  */
 
+var unorm = require('unorm')
+
+// Polyfill normalize
+if (!String.prototype.hasOwnProperty('normalize')) {
+  String.prototype.normalize = unorm
+}
+
 // Declare once, reuse ∞
-var RE_TEXT_SIMPLE = /[^a-z0-9'& ]+/gi
+var RE_TEXT_TITLE = /[^a-z0-9'& \-]+/gi
 var RE_HTML_SCRIPT = /<script[^>]*>(?:.*?)<\/script>/gi
 var RE_HTML_JS_EVAL = /javascript:[^;]*/gi
+var RE_PHONE_LAX = /[^0-9 +]/g
+var RE_PHONE_CONVERT_TO_SPACE = /[ .-]+/g
 var RE_PHONE_STRICT = /[^0-9]+/g
-var RE_PHONE_LAX = /[^0-9 +.\-]+/g
 var RE_PHONE_INTL = /^\(?\+/
+var RE_PHONE_TEXT = /[()]|[^0-9 +.\-]+.*$/g
+var RE_PHONE_REDUNDANT_ZERO = /^((?:0{2}|\+)\d+)\s*\(0\)(\s*)/
+var REPLACE_PHONE_REDUNDANT_ZERO = "$1$2"
 var RE_SIREN = /[^0-9]+/g
 
-var RE_NORMALISE_APOSTROPHE = /[\u2016-\u2019]|&(?:lsquo|rsquo|sbquo|#(?:821[6-9]|x201[89ab]));/gi
+var RE_NORMALISE_APOSTROPHE = /['\u2016-\u2019]|&(?:lsquo|rsquo|sbquo|#(?:821[6-9]|x201[89ab]));/gi
 var REPLACE_NORMALISE_APOSTROPHE = "'"
-var RE_NORMALISE_SPACE = /\t|&(?:nbsp|#(?:160|xa0));/gi
+var RE_NORMALISE_SPACE = /[ \t\u0020\u2007\u202F\u2060\uFEFF]|&(?:nbsp|#(?:160|xa0));/gi
 var REPLACE_NORMALISE_SPACE = ' '
-var RE_NORMALISE_NEWLINE = /\r|<br\/?>/gi
+var RE_NORMALISE_NEWLINE = /[\n\r\u000A-\u000D]|&(?:#(?:1[0-3]|x[a-d]))|<br\s*\/?>/gi
 var REPLACE_NORMALISE_NEWLINE = "\n"
 
 var RE_TRANSFORM_CAPITALISE = /\b([a-z])([a-z]*)\b/gi
@@ -35,30 +46,67 @@ function transformCapitalise (input) {
 }
 
 /**
- * Normalise whitespace
+ * Normalise diacritic characters to latin equivalents.
  *
  * @param {string} input
  * @returns {string}
  */
-function normaliseWhitespace (input) {
+function normaliseDiacritic (input) {
   return (input + '')
-    .replace(RE_NORMALISE_SPACE, REPLACE_NORMALISE_SPACE)
-    .replace(RE_NORMALISE_NEWLINE, REPLACE_NORMALISE_NEWLINE)
+    .normalize('NFKD')
 }
 
 /**
- * Normalise all similar forms of a single apostrophe.
+ * Normalise spaces: convert tabs and non-breaking spaces to normal spaces
  *
  * @param {string} input
+ * @param {string} [replacement=" "]
  * @returns {string}
  */
-function normaliseApostrophe (input) {
+function normaliseSpace (input, replacement) {
   return (input + '')
-    .replace(RE_NORMALISE_APOSTROPHE, REPLACE_NORMALISE_APOSTROPHE)
+    .replace(RE_NORMALISE_SPACE, replacement || REPLACE_NORMALISE_SPACE)
+    .trim()
 }
 
 /**
- * Sanitise text to be simplified, as in no special characters, only alpha and numbers.
+ * Normalise new lines: convert carriage returns to normal spaces
+ *
+ * @param {string} input
+ * @param {string} [replacement="\n"]
+ * @returns {string}
+ */
+function normaliseNewline (input, replacement) {
+  return (input + '')
+    .replace(RE_NORMALISE_NEWLINE, replacement || REPLACE_NORMALISE_NEWLINE)
+    .trim()
+}
+
+/**
+ * Normalise whitespace: shorthand to normalise spaces and new lines
+ *
+ * @param {string} input
+ * @param {string} [replacement]
+ * @returns {string}
+ */
+function normaliseWhitespace (input, replacement) {
+  return normaliseSpace(normaliseNewline(input, replacement), replacement)
+}
+
+/**
+ * Normalise all similar forms of a single apostrophe with a replacement.
+ *
+ * @param {string} input
+ * @param {string} [replacement="'"]
+ * @returns {string}
+ */
+function normaliseApostrophe (input, replacement) {
+  return (input + '')
+    .replace(RE_NORMALISE_APOSTROPHE, replacement || REPLACE_NORMALISE_APOSTROPHE)
+}
+
+/**
+ * Sanitise text to be simplified, as in very few special characters, only alpha and numbers.
  *
  * You can also specify to set to lower, title (capitalised) or upper case.
  *
@@ -66,8 +114,8 @@ function normaliseApostrophe (input) {
  * @param {bool|string} [setCase=upper]
  * @returns {string}
  */
-function sanitiseSimpleText (input, setCase) {
-  var output = (input + '').trim()
+function sanitiseTitle (input, setCase) {
+  var output = normaliseDiacritic(normaliseApostrophe(normaliseSpace(normaliseNewline(input, ''))))
 
   switch (setCase) {
     case 'lower':
@@ -91,8 +139,8 @@ function sanitiseSimpleText (input, setCase) {
   }
 
   return output
-  // Strip all characters that aren't alpha, number, ampersand and apostrophes
-    .replace(RE_TEXT_SIMPLE, '')
+    // Strip all unaccepted characters
+    .replace(RE_TEXT_TITLE, '')
 }
 
 /**
@@ -138,25 +186,40 @@ function sanitiseSiret (input) {
 
 /**
  * Sanitise phone number values.
+ * 
+ * If the phone number has a `(0)` after the country code, it will remove it.
+ * 
+ * Normal (lax) mode retains phone-friendly characters like the plus and space.
  *
- * Strict mode strips other phone-friendly characters `+().- `
+ * Strict mode strips all characters than aren't numbers.
  *
- * If strict mode is enabled and the phone number starts with `+`, it will convert to `00`
+ * If strict mode is enabled and the phone number starts with `+`, it will convert to `00`.
  *
  * @param {number|string} input
  * @param {bool} [strict=false]
  * @returns {string}
  */
 function sanitisePhone (input, strict) {
-  var output = (input + '').trim()
+  var output = (input + '')
 
   // Convert starting `+` to `00`
   if (strict) {
     output = output.replace(RE_PHONE_INTL, '00')
+
+  // Convert space-like characters to single space (primarily period and hyphen)
+  } else {
+    output = normaliseWhitespace(output.replace(RE_PHONE_CONVERT_TO_SPACE, ' '))
   }
 
+  // Sometimes mobile numbers look like : +33 (0) 6...
+  // Since we don't need the starting zero after a country code, let's remove it
+  output = output.replace(RE_PHONE_REDUNDANT_ZERO, REPLACE_PHONE_REDUNDANT_ZERO)
+
+  // Strip text
+  output = output.replace(RE_PHONE_TEXT, '')
+
   return output
-    .replace(strict ? RE_PHONE_STRICT : RE_PHONE_LAX, '')
+    .replace(strict ? RE_PHONE_STRICT : RE_PHONE_LAX, '').trim()
 }
 
 /** Collect all the transform methods into object */
@@ -166,7 +229,7 @@ var transform = {
 
 /** Collect all the sanitise methods into object */
 var sanitise = {
-  simpleText: sanitiseSimpleText,
+  title: sanitiseTitle,
   html: sanitiseHtml,
   siren: sanitiseSiren,
   siret: sanitiseSiret,
@@ -175,12 +238,15 @@ var sanitise = {
 
 /** Collect all the normalise methods into object */
 var normalise = {
+  diacritic: normaliseDiacritic,
   apostrophe: normaliseApostrophe,
+  space: normaliseSpace,
+  newline: normaliseNewline,
   whitespace: normaliseWhitespace
 }
 
 /** Funky utility */
-function hotSpicyCurry(context, fn) {
+function curryFn(context, fn) {
   return function () {
     var props = Array.prototype.slice.call(arguments)
     props.unshift(context.output)
@@ -212,21 +278,21 @@ function Sanity(input) {
 
   // Transform
   for (i = 0; i < keysTransform.length; i++) {
-    curryMethod = hotSpicyCurry(self, transform[keysTransform[i]], self.output)
+    curryMethod = curryFn(self, transform[keysTransform[i]], self.output)
     selfTransform[keysTransform[i]] = curryMethod
     self['transform' + transformCapitalise(keysTransform[i])] = curryMethod
   }
 
   // Sanitise
   for (i = 0; i < keysSanitise.length; i++) {
-    curryMethod = hotSpicyCurry(self, sanitise[keysSanitise[i]])
+    curryMethod = curryFn(self, sanitise[keysSanitise[i]])
     selfSanitise[keysSanitise[i]] = curryMethod
     self['sanitise' + transformCapitalise(keysSanitise[i])] = curryMethod
   }
 
   // Normalise
   for (i = 0; i < keysNormalise.length; i++) {
-    curryMethod = hotSpicyCurry(self, normalise[keysNormalise[i]])
+    curryMethod = curryFn(self, normalise[keysNormalise[i]])
     selfNormalise[keysNormalise[i]] = curryMethod
     self['normalise' + transformCapitalise(keysNormalise[i])] = curryMethod
   }
@@ -259,4 +325,30 @@ Sanity.prototype.toString = function () {
 /**
  * @module Sanity
  */
-module.exports = Sanity
+// module.exports = Sanity
+
+/*
+ * @debug Tests
+ * 
+ * If you change any of the above, make sure to uncomment below to run these tests
+ */
+// console.log('### TESTING SANITY ###')
+
+// var testPhone = Sanity('+123 456 789 ext. 1456').sanitise.phone()
+// var testPhone2 = Sanity('+123 (0) 456-789 ext. 1456').sanitise.phone()
+// var testPhone3 = Sanity('+123 (0) 456.789 ext. 1456').sanitise.phone()
+// var testPhoneBrackets = Sanity('(+123) 456 789 ext. 1456').sanitise.phone()
+// var testPhoneRedundantZero = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone()
+// var testPhoneStrict = Sanity('+123 456 789 ext. 1456').sanitise.phone(true)
+// var testPhoneRedundantZeroStrict = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone(true)
+
+// console.log('Phone:', testPhone, testPhone === '+123 456 789')
+// console.log('Phone:', testPhone2, testPhone2 === '+123 456 789')
+// console.log('Phone:', testPhone3, testPhone3 === '+123 456 789')
+// console.log('Phone:', testPhoneBrackets, testPhoneBrackets === '+123 456 789')
+// console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
+// console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
+// console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
+
+// var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title()
+// console.log('Title:', testTitle)
