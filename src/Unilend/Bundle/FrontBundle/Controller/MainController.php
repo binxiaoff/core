@@ -528,9 +528,11 @@ class MainController extends Controller
             $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
             if ($wallet->getIdClient()->isNaturalPerson()) {
-                $this->getTOSReplacementsForPerson($wallet->getIdClient(), $dateAccept, $loansCount, $content, $template);
+                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
+                $this->getTOSReplacementsForPerson($wallet->getIdClient(), $dateAccept, $mandateContent, $template);
             } else {
-                $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
+                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
+                $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $mandateContent, $template);
             }
         } elseif ($lenderType !== '') {
             $template['recovery_mandate'] = str_replace(
@@ -576,11 +578,10 @@ class MainController extends Controller
     /**
      * @param Clients $client
      * @param string  $dateAccept
-     * @param int     $loansCount
      * @param string  $content
      * @param array   $template
      **/
-    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
+    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, string $content, array &$template): void
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $clientAddress = $client->getIdAddress();
@@ -610,18 +611,16 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
     }
 
     /**
      * @param Clients $client
      * @param string  $dateAccept
-     * @param int     $loansCount
      * @param string  $content
      * @param array   $template
      */
-    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
+    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, string $content, array &$template): void
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
@@ -653,8 +652,7 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
     }
 
     /**
