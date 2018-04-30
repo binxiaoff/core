@@ -60,26 +60,25 @@
     </style>
 {% endblock %}
 
-
 {% block content %}
     <div class="row">
         <div class="col-md-6 col-lg-6">
             <p>
-                <b>Unilend</b><br>
+                <strong>Unilend</strong><br>
                 6 Rue du général Clergerie<br>
                 75116 Paris
             </p>
         </div>
         <div class="col-md-6 col-lg-6">
             <p class="text-align-right">
-                <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}lender-loans_pdf-location-date{% endtrans %}</b><br>
+                <strong>{% trans with {'%date%' : 'now'|date('d/m/Y')} %} lender-loans_pdf-location-date {% endtrans %}</strong><br>
                 {% if company is empty %}
-                    <b>{{ client.prenom }} {{ client.nom }}</b><br>
+                    <strong>{{ client.prenom }} {{ client.nom }}</strong>
                 {% else %}
-                    <b>{{ company.name }}</b><br>
-                    <b>{% trans %} lender-loans_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b>
-                    <br>
+                    <strong>{{ company.name }}</strong><br>
+                    <strong>{% trans with {'%civility%' : client.civilite, '%firstName%' : client.prenom, '%name%' : client.nom} %} lender-loans_pdf-company-representative {% endtrans %}</strong>
                 {% endif %}
+                <br>
                 {% if lenderAddress is defined %}
                     {{ lenderAddress.address|default('') }}<br>
                     {{ lenderAddress.zip|default('') }} {{ lenderAddress.city|default('') }}
@@ -91,8 +90,8 @@
     <div class="row">
         <div class="col-md-8 col-lg-8">
             <p>
-                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with { '%idClient%' : client.idClient } %}lender-loans_pdf-subject-line{% endtrans %}</b><br>
-                {% trans %}lender-loans_pdf-owner-line{% endtrans %}{{ client.nom }} {{ client.prenom }}
+                <b style="font-size: 1rem; line-height: 1.5rem;">{% trans with {'%idClient%' : client.idClient} %} lender-loans_pdf-subject-line {% endtrans %}</b><br>
+                {% trans with {'%firstName%' : client.prenom, '%name%' : client.nom} %} lender-loans_pdf-owner-line {% endtrans %}
             </p>
         </div>
     </div>
@@ -102,30 +101,24 @@
     <div class="row">
         {% set
             inProceeding = [
-                constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
-                constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'),
-                constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')
-            ]
-        %}
+            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
+            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'),
+            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')
+        ] %}
         <table class="table">
             <tbody>
             <tr>
-                <td class="th item-project">{% trans %}lender-loans_pdf-table-header-project-column{% endtrans %}</td>
-                <td class="th item-operation">{% trans %}lender-loans_pdf-table-header-status-column{% endtrans %}</td>
-                <td class="th item-amount">{% trans %}lender-loans_pdf-table-header-loan-amount-column{% endtrans %}</td>
-                <td class="th item-amount">{% trans %}lender-loans_pdf-table-header-interest-rate-column{% endtrans %}</td>
-                <td class="th item-date">{% trans %}lender-loans_pdf-table-header-first-repayment-date-column{% endtrans %}</td>
-                <td class="th item-date">{% trans %}lender-loans_pdf-table-header-next-repayment-date-column{% endtrans %}</td>
-                <td class="th item-date">{% trans %}lender-loans_pdf-table-header-last-repayment-date-column{% endtrans %}</td>
-                <td class="th item-amount">{% trans %}lender-loans_pdf-table-header-repayment-amount-column{% endtrans %}</td>
+                <td class="th item-project">{% trans %} lender-loans_pdf-table-header-project-column {% endtrans %}</td>
+                <td class="th item-operation">{% trans %} lender-loans_pdf-table-header-status-column {% endtrans %}</td>
+                <td class="th item-amount">{% trans %} lender-loans_pdf-table-header-loan-amount-column {% endtrans %}</td>
+                <td class="th item-amount">{% trans %} lender-loans_pdf-table-header-interest-rate-column {% endtrans %}</td>
+                <td class="th item-date">{% trans %} lender-loans_pdf-table-header-first-repayment-date-column {% endtrans %}</td>
+                <td class="th item-date">{% trans %} lender-loans_pdf-table-header-next-repayment-date-column {% endtrans %}</td>
+                <td class="th item-date">{% trans %} lender-loans_pdf-table-header-last-repayment-date-column {% endtrans %}</td>
+                <td class="th item-amount">{% trans %} lender-loans_pdf-table-header-repayment-amount-column {% endtrans %}</td>
             </tr>
             {% for loan in lenderLoans %}
-                {% if (loop.index is odd) %}
-                    {% set backgroundClass = 'bg-bg3' %}
-                {% else %}
-                    {% set backgroundClass = '' %}
-                {% endif %}
-                <tr class="{{ backgroundClass }}">
+                <tr {% if loop.index is odd %}class="bg-bg3"{% endif %}>
                     <td class="item-project">
                         {{ loan.name }}
                     </td>
@@ -139,30 +132,30 @@
                         {{ loan.rate|localizednumberwithprecision(1) }}&nbsp;%
                     </td>
                     <td class="item-date">
-                        {{ loan.start_date|date('d/m/Y') }}
+                        {{ loan.startDate|date('d/m/Y') }}
                     </td>
-                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
+                    {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
                         {% if loan.isCloseOutNetting %}
                             <td colspan="3" class="item-date">
-                                {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
+                                {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
                             </td>
                         {% else %}
                             <td colspan="3" class="item-date">
-                                {% trans with {'%date%': loan.final_repayment_date|date('d/m/Y')} %} lender-loans_pdf-project-status-label-repayment-finished-on-date {% endtrans %}
+                                {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-repayment-finished-on-date {% endtrans %}
                             </td>
                         {% endif %}
                     {% elseif loan.loanStatus in inProceeding %}
                         <td colspan="3" class="item-date">
-                            {% transchoice loan.count.declaration %}lender-loans_pdf-project-procedure-in-progress{% endtranschoice %}
+                            {% transchoice loan.numberOfLoansInDebt %} lender-loans_pdf-project-procedure-in-progress {% endtranschoice %}
                         </td>
-                    {% elseif constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\LenderOperationsManager::LOAN_STATUS_DISPLAY_LOSS') == loan.loanStatus %}
+                    {% elseif constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
-                            {% trans %}lender-loans_pdf-project-status-label-lost{% endtrans %}
+                            {% trans %} lender-loans_pdf-project-status-label-lost {% endtrans %}
                         </td>
                     {% else %}
-                        <td class="item-date">{{ loan.next_payment_date|date('d/m/Y') }}</td>
-                        <td class="item-date">{{ loan.end_date|date('d/m/Y') }}</td>
-                        <td class="item-amount">{{ loan.monthly_repayment_amount|localizedcurrency('EUR') }}</td>
+                        <td class="item-date">{{ loan.nextRepaymentDate|date('d/m/Y') }}</td>
+                        <td class="item-date">{{ loan.endDate|date('d/m/Y') }}</td>
+                        <td class="item-amount">{{ loan.monthlyRepaymentAmount|localizedcurrency('EUR') }}</td>
                     {% endif %}
                 </tr>
             {% endfor %}
