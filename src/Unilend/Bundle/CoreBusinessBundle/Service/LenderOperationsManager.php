@@ -3,24 +3,14 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Box\Spout\Common\Type;
-use Box\Spout\Writer\AbstractWriter;
-use Box\Spout\Writer\Style\Border;
-use Box\Spout\Writer\Style\BorderBuilder;
-use Box\Spout\Writer\Style\Color;
-use Box\Spout\Writer\Style\StyleBuilder;
-use Box\Spout\Writer\WriterFactory;
-use Box\Spout\Writer\XLSX\Writer;
+use Box\Spout\Writer\{
+    AbstractWriter, Style\Border, Style\BorderBuilder, Style\Color, Style\StyleBuilder, WriterFactory, XLSX\Writer
+};
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Operation, OperationSubType, OperationType, Wallet, WalletType
+};
 
 class LenderOperationsManager
 {
@@ -111,10 +101,10 @@ class LenderOperationsManager
     private $translator;
 
     /**
-     * @param EntityManager $entityManager
-     * @param Translator    $translator
+     * @param EntityManager       $entityManager
+     * @param TranslatorInterface $translator
      */
-    public function __construct(EntityManager $entityManager, Translator $translator)
+    public function __construct(EntityManager $entityManager, TranslatorInterface $translator)
     {
         $this->entityManager = $entityManager;
         $this->translator    = $translator;
@@ -478,60 +468,5 @@ class LenderOperationsManager
         }
 
         return $writer;
-    }
-
-    /**
-     * @param Projects    $project
-     *
-     * @return array
-     */
-    public function getLenderLoanStatusToDisplay(Projects $project)
-    {
-        switch ($project->getStatus()) {
-            case ProjectsStatus::PROBLEME:
-                switch ($project->getIdCompany()->getIdStatus()->getLabel()) {
-                    case CompanyStatus::STATUS_PRECAUTIONARY_PROCESS:
-                    case CompanyStatus::STATUS_RECEIVERSHIP:
-                    case CompanyStatus::STATUS_COMPULSORY_LIQUIDATION:
-                        $statusToDisplay = self::LOAN_STATUS_DISPLAY_PROCEEDING;
-                        $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-'  .str_replace('_', '-', $project->getIdCompany()->getIdStatus()->getLabel()));
-                        break;
-                    case CompanyStatus::STATUS_IN_BONIS:
-                    default:
-                        if (0 === $project->getDebtCollectionMissions()->count()) {
-                            $statusToDisplay = self::LOAN_STATUS_DISPLAY_LATE;
-                        } elseif(0 < $project->getLitigationDebtCollectionMissions()->count()) {
-                            $statusToDisplay = self::LOANS_STATUS_DISPLAY_LITIGATION_DC;
-                        } else {
-                            $statusToDisplay = self::LOANS_STATUS_DISPLAY_AMICABLE_DC;
-                        }
-                        $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-' . $statusToDisplay);
-                        break;
-                }
-                break;
-            case ProjectsStatus::LOSS:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_LOSS;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-lost');
-                break;
-            case ProjectsStatus::REMBOURSE:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
-                if (null === $project->getCloseOutNettingDate()) {
-                    $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-repaid');
-                } else {
-                    $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-collected');
-                }
-                break;
-            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_COMPLETED;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-early-r');
-                break;
-            case ProjectsStatus::REMBOURSEMENT:
-            default:
-                $statusToDisplay = self::LOAN_STATUS_DISPLAY_IN_PROGRESS;
-                $loanStatusLabel = $this->translator->trans('lender-operations_detailed-loan-status-label-' . $statusToDisplay);
-                break;
-        }
-
-        return ['status' => $statusToDisplay, 'statusLabel' => $loanStatusLabel];
     }
 }
