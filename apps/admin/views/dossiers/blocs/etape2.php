@@ -384,7 +384,7 @@
                 <?php endif; ?>
             </tr>
             <tr>
-                <th><label for="phone_new_etape2">Téléphone</label></th>
+                <th><label for="phone_new_etape2">Téléphone fixe </label></th>
                 <td>
                     <input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>">
                     <a class="btn-small btn_link phone-call">Appeler</a>
@@ -397,6 +397,13 @@
                 <?php else : ?>
                     <td colspan="2"></td>
                 <?php endif; ?>
+            </tr>
+            <tr>
+                <th><label for="mobile_new_etape2">Téléphone mobile</label></th>
+                <td colspan="3">
+                    <input type="text" name="mobile_new_etape2" id="mobile_new_etape2" class="input_moy" value="<?= $this->clients->mobile ?>">
+                    <a class="btn-small btn_link phone-call">Appeler</a>
+                </td>
             </tr>
             <tr>
                 <th><label for="email_etape2">Email</label></th>
