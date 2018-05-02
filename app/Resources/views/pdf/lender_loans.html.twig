@@ -101,9 +101,9 @@
     <div class="row">
         {% set
             inProceeding = [
-            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
-            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'),
-            constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')
+                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
+                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'),
+                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')
         ] %}
         <table class="table">
             <tbody>
@@ -118,7 +118,7 @@
                 <td class="th item-amount">{% trans %} lender-loans_pdf-table-header-repayment-amount-column {% endtrans %}</td>
             </tr>
             {% for loan in lenderLoans %}
-                <tr {% if loop.index is odd %}class="bg-bg3"{% endif %}>
+                <tr{% if loop.index is odd %} class="bg-bg3"{% endif %}>
                     <td class="item-project">
                         {{ loan.name }}
                     </td>
@@ -135,15 +135,13 @@
                         {{ loan.startDate|date('d/m/Y') }}
                     </td>
                     {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
-                        {% if loan.isCloseOutNetting %}
-                            <td colspan="3" class="item-date">
+                        <td colspan="3" class="item-date">
+                            {% if loan.isCloseOutNetting %}
                                 {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
-                            </td>
-                        {% else %}
-                            <td colspan="3" class="item-date">
+                            {% else %}
                                 {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-repayment-finished-on-date {% endtrans %}
-                            </td>
-                        {% endif %}
+                            {% endif %}
+                        </td>
                     {% elseif loan.loanStatus in inProceeding %}
                         <td colspan="3" class="item-date">
                             {% transchoice loan.numberOfLoansInDebt %} lender-loans_pdf-project-procedure-in-progress {% endtranschoice %}

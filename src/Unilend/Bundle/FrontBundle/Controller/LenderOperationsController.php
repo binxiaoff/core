@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, ClientsStatus, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType
+    AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
@@ -191,91 +191,129 @@ class LenderOperationsController extends Controller
             ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
         );
 
-        $oDocument    = new \PHPExcel();
-        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+        $phpExcel = new \PHPExcel();
 
-        $oActiveSheet->setCellValue('A1', 'Projet');
-        $oActiveSheet->setCellValue('B1', 'Numéro de projet');
-        $oActiveSheet->setCellValue('C1', 'Montant');
-        $oActiveSheet->setCellValue('D1', 'Statut');
-        $oActiveSheet->setCellValue('E1', 'Taux d\'intérêts');
-        $oActiveSheet->setCellValue('F1', 'Premier remboursement');
-        $oActiveSheet->setCellValue('G1', 'Prochain remboursement prévu');
-        $oActiveSheet->setCellValue('H1', 'Date dernier remboursement');
-        $oActiveSheet->setCellValue('I1', 'Capital perçu');
-        $oActiveSheet->setCellValue('J1', 'Intérêts perçus');
-        $oActiveSheet->setCellValue('K1', 'Capital restant dû');
-        $oActiveSheet->setCellValue('L1', 'Note');
+        try {
+            $activeSheet = $phpExcel->setActiveSheetIndex(0);
+        } catch (\PHPExcel_Exception $exception) {
+            $this->get('logger')->error('Could not set PHPExcel active sheet. Error: ' . $exception->getMessage(), [
+                'id_client' => $wallet->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+
+            return $this->redirectToRoute('lender_operations');
+        }
+
+        $activeSheet->setCellValue('A1', 'Projet');
+        $activeSheet->setCellValue('B1', 'Numéro de projet');
+        $activeSheet->setCellValue('C1', 'Montant');
+        $activeSheet->setCellValue('D1', 'Statut');
+        $activeSheet->setCellValue('E1', 'Taux d\'intérêts');
+        $activeSheet->setCellValue('F1', 'Premier remboursement');
+        $activeSheet->setCellValue('G1', 'Prochain remboursement prévu');
+        $activeSheet->setCellValue('H1', 'Date dernier remboursement');
+        $activeSheet->setCellValue('I1', 'Capital perçu');
+        $activeSheet->setCellValue('J1', 'Intérêts perçus');
+        $activeSheet->setCellValue('K1', 'Capital restant dû');
+        $activeSheet->setCellValue('L1', 'Note');
 
         $lenderLoans               = $entityManagerSimulator->getRepository('loans')->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC');
         $lenderLoansDisplayManager = $this->get('unilend.frontbundle.service.lender_loans_display_manager');
 
-        foreach ($lenderLoansDisplayManager->formatLenderLoansForExport($lenderLoans) as $iRowIndex => $aProjectLoans) {
-            $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['name']);
-            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id']);
-            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
-            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $aProjectLoans['loanStatusLabel']);
-            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
-            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $aProjectLoans['startDate']->format('d/m/Y'));
+        try {
+            foreach ($lenderLoansDisplayManager->formatLenderLoansForExport($lenderLoans) as $rowIndex => $projectLoans) {
+                $activeSheet->setCellValue('A' . ($rowIndex + 2), $projectLoans['name']);
+                $activeSheet->setCellValue('B' . ($rowIndex + 2), $projectLoans['id']);
+                $activeSheet->setCellValue('C' . ($rowIndex + 2), $projectLoans['amount']);
+                $activeSheet->setCellValue('D' . ($rowIndex + 2), $projectLoans['loanStatusLabel']);
+                $activeSheet->setCellValue('E' . ($rowIndex + 2), round($projectLoans['rate'], 1));
+                $activeSheet->setCellValue('F' . ($rowIndex + 2), $projectLoans['startDate']->format('d/m/Y'));
 
-            switch ($aProjectLoans['loanStatus']) {
-                case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED:
-                    if ($aProjectLoans['isCloseOutNetting']) {
-                        $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
-                    } else {
-                        $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date';
+                switch ($projectLoans['loanStatus']) {
+                    case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED:
+                        if ($projectLoans['isCloseOutNetting']) {
+                            $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
+                        } else {
+                            $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date';
 
-                    }
-                    $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $aProjectLoans['finalRepaymentDate']->format('d/m/Y')]));
-                    break;
-                case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING:
-                case LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
-                case LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC:
-                    $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue(
-                        'G' . ($iRowIndex + 2),
-                        $this->get('translator')->transChoice(
-                            'lender-operations_loans-table-project-procedure-in-progress',
-                            $aProjectLoans['numberOfLoansInDebt']
-                        )
-                    );
-                    break;
-                case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS:
-                    $oActiveSheet->mergeCells('G' . ($iRowIndex + 2) . ':K' . ($iRowIndex + 2));
-                    $oActiveSheet->setCellValue(
-                        'G' . ($iRowIndex + 2),
-                        $this->get('translator')->transChoice(
-                            'lender-operations_detailed-loan-status-label-lost',
-                            $aProjectLoans['numberOfLoansInDebt']
-                        )
-                    );
-                    break;
-                default:
-                    $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $aProjectLoans['nextRepaymentDate']->format('d/m/Y'));
-                    $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $aProjectLoans['endDate']->format('d/m/Y'));
-                    $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
-                    $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
-                    $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $aProjectLoans['id']]));
-                    break;
+                        }
+                        $activeSheet->mergeCells('G' . ($rowIndex + 2) . ':K' . ($rowIndex + 2));
+                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $projectLoans['finalRepaymentDate']->format('d/m/Y')]));
+                        break;
+                    case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING:
+                    case LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
+                    case LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC:
+                        $activeSheet->mergeCells('G' . ($rowIndex + 2) . ':K' . ($rowIndex + 2));
+                        $activeSheet->setCellValue(
+                            'G' . ($rowIndex + 2),
+                            $this->get('translator')->transChoice(
+                                'lender-operations_loans-table-project-procedure-in-progress',
+                                $projectLoans['numberOfLoansInDebt']
+                            )
+                        );
+                        break;
+                    case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LOSS:
+                        $activeSheet->mergeCells('G' . ($rowIndex + 2) . ':K' . ($rowIndex + 2));
+                        $activeSheet->setCellValue(
+                            'G' . ($rowIndex + 2),
+                            $this->get('translator')->transChoice(
+                                'lender-operations_detailed-loan-status-label-lost',
+                                $projectLoans['numberOfLoansInDebt']
+                            )
+                        );
+                        break;
+                    default:
+                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $projectLoans['nextRepaymentDate']->format('d/m/Y'));
+                        $activeSheet->setCellValue('H' . ($rowIndex + 2), $projectLoans['endDate']->format('d/m/Y'));
+                        $activeSheet->setCellValue('I' . ($rowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
+                        $activeSheet->setCellValue('J' . ($rowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
+                        $activeSheet->setCellValue('K' . ($rowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
+                        break;
+                }
+                $risk = isset($projectLoans['risk']) ? $projectLoans['risk'] : '';
+                $note = $this->getProjectNote($risk);
+                $activeSheet->setCellValue('L' . ($rowIndex + 2), $note);
             }
-            $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
-            $sNote = $this->getProjectNote($sRisk);
-            $oActiveSheet->setCellValue('L' . ($iRowIndex + 2), $sNote);
+        } catch (\PHPExcel_Exception $exception) {
+            $this->get('logger')->error('Could not write PHPExcel file content. Error: ' . $exception->getMessage(), [
+                'id_client' => $wallet->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+
+            return $this->redirectToRoute('lender_operations');
         }
 
         /** @var \PHPExcel_Writer_Excel5 $oWriter */
-        $oWriter = \PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
-        ob_start();
-        $oWriter->save('php://output');
-        $content = ob_get_clean();
+        try {
+            $oWriter = \PHPExcel_IOFactory::createWriter($phpExcel, 'Excel5');
 
-        return new Response($content, Response::HTTP_OK, [
-            'Content-type'        => 'application/force-download; charset=utf-8',
-            'Expires'             => 0,
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'content-disposition' => "attachment;filename=" . 'prets_' . date('Y-m-d_H:i:s') . ".xls"
-        ]);
+            ob_start();
+            $oWriter->save('php://output');
+            $content = ob_get_clean();
+
+            return new Response($content, Response::HTTP_OK, [
+                'Content-type'        => 'application/force-download; charset=utf-8',
+                'Expires'             => 0,
+                'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+                'content-disposition' => "attachment;filename=" . 'prets_' . date('Y-m-d_H:i:s') . ".xls"
+            ]);
+        } catch (\PHPExcel_Reader_Exception $exception) {
+            $this->get('logger')->error('Could not save Excel file content. Error: ' . $exception->getMessage(), [
+                'id_client' => $wallet->getIdClient(),
+                'class' => __CLASS__,
+                'function' => __FUNCTION__,
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine()
+            ]);
+
+            return $this->redirectToRoute('lender_operations');
+        }
     }
 
     /**
@@ -776,7 +814,7 @@ class LenderOperationsController extends Controller
         $pdfContent       = $this->renderView('pdf/lender_operations.html.twig', [
             'lenderOperations'  => $lenderOperations,
             'client'            => $client,
-            'lenderAddress'     => $this->getLenderAddressForPdf($client),
+            'lenderAddress'     => $this->getLenderAddress($client),
             'company'           => empty($company) ? null : $company,
             'available_balance' => $wallet->getAvailableBalance()
         ]);
@@ -830,7 +868,7 @@ class LenderOperationsController extends Controller
         $pdfContent = $this->renderView('pdf/lender_loans.html.twig', [
             'lenderLoans'   => $lenderLoans,
             'client'        => $wallet->getIdClient(),
-            'lenderAddress' => $this->getLenderAddressForPdf($wallet->getIdClient()),
+            'lenderAddress' => $this->getLenderAddress($wallet->getIdClient()),
             'company'       => empty($company) ? null : $company,
         ]);
 
@@ -850,9 +888,9 @@ class LenderOperationsController extends Controller
     /**
      * @param Clients $client
      *
-     * @return mixed
+     * @return ClientAddress|CompanyAddress|null
      */
-    private function getLenderAddressForPdf(Clients $client)
+    private function getLenderAddress(Clients $client)
     {
         try {
             $entityManager = $this->get('doctrine.orm.entity_manager');

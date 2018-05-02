@@ -51,6 +51,12 @@ class LenderLoansDisplayManager
     /** @var Packages */
     private $assetPackage;
 
+    /**
+     * @param TranslatorInterface $translator
+     * @param EntityManager       $entityManager
+     * @param RouterInterface     $router
+     * @param Packages            $assetPackage
+     */
     public function __construct(TranslatorInterface $translator, EntityManager $entityManager, RouterInterface $router, Packages $assetPackage)
     {
         $this->translator    = $translator;
@@ -85,7 +91,7 @@ class LenderLoansDisplayManager
                     continue;
                 }
 
-                $startDateTime     = new \DateTime(date('Y-m-d'));
+                $startDateTime     = new \DateTime();
                 $endDateTime       = new \DateTime($projectLoans['fin']);
                 $remainingDuration = $startDateTime->diff($endDateTime);
 
