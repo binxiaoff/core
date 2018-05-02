@@ -298,7 +298,6 @@ class ajaxController extends bootstrap
                 $client->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
                 $client->fonction  = $_POST['fonction_etape2'];
                 $client->telephone = $_POST['phone_new_etape2'];
-                $client->mobile    = $_POST['mobile_new_etape2'];
                 $client->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
 
                 if (empty($errors)) {
