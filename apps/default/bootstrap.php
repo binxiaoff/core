@@ -51,9 +51,9 @@ class bootstrap extends Controller
         $this->loadCss('default/fonts');
         $this->loadCss('default/jquery.c2selectbox');
         $this->loadCss('default/jquery-ui-1.10.3.custom');
-        $this->loadCss('default/custom-theme/jquery-ui-1.10.3.custom');//datepicker
-        $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
-        $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
+        $this->loadCss('default/custom-theme/jquery-ui-1.10.3.custom');
+        $this->loadCss('default/style', date('Ymd'));
+        $this->loadCss('default/style-edit', date('Ymd'));
 
         $this->loadJs('default/jquery/jquery-1.10.2.min');
         $this->loadJs('default/bootstrap-tooltip');
@@ -61,9 +61,9 @@ class bootstrap extends Controller
         $this->loadJs('default/livevalidation_standalone.compressed');
         $this->loadJs('default/jquery.colorbox-min');
         $this->loadJs('default/jqueryui-1.10.3.min');
-        $this->loadJs('default/functions', 0, date('Ymd'));
-        $this->loadJs('default/main', 0, date('YmdH'));
-        $this->loadJs('default/ajax', 0, date('Ymd'));
+        $this->loadJs('default/functions', date('Ymd'));
+        $this->loadJs('default/main', date('YmdH'));
+        $this->loadJs('default/ajax', date('Ymd'));
 
         $this->meta_title       = '';
         $this->meta_description = '';
