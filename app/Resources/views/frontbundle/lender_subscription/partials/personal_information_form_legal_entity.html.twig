@@ -51,7 +51,8 @@
                     'id' : 'form-lender-legal-entity-name',
                     'attr' :  {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-type': 'title'
                     }
                 }) }}
                 {{ form_errors(companyIdentityForm.company.name) }}
@@ -115,7 +116,8 @@
                     'id' : 'form-lender-legal-entity-phone',
                     'attr' : {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-type': 'tel'
                     }
                 }) }}
                 {{ form_errors(companyIdentityForm.company.phone) }}
@@ -271,7 +273,8 @@
                     'id' : 'form-lender-legal-entity-email',
                     'attr' :  {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-type': 'email'
                     }
                 }) }}
             </div><!-- /.form-field -->
@@ -296,9 +299,6 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-12 col-md-12">
-                <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
-            </div>
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.password.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
                 <label for="form-lender-legal-entity-pwd">
                     {% trans %} common_password {% endtrans %}
@@ -324,13 +324,17 @@
                         'id' : 'form-lender-legal-entity-pwd-conf',
                         'attr' : {
                             'class' : 'input-field',
-                            'data-passwordcheck data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
                             'data-formvalidation-samevalueas' : '#form-lender-legal-entity-pwd'
                         }
                     }) }}
                 </div>
             </div><!-- /.form-field -->
             {{ form_errors(companyIdentityForm.client.password) }}
+        </div>
+
+        <div class="row form-field">
+            <div class="field-help">{% trans %} common_password-hint {% endtrans %}</div>
         </div>
 
         <div class="row">
@@ -453,7 +457,8 @@
                     'id' : 'form-lender-legal-entity-director-phone',
                     'attr' : {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-type': 'tel'
                     }
                 }) }}
                 {{ form_errors(companyIdentityForm.company.phoneDirigeant) }}
@@ -468,7 +473,8 @@
                     'id' : 'form-lender-legal-entity-director-email',
                     'attr' : {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true',
+                        'data-formvalidation-type': 'email'
                     }
                 }) }}
                 {{ form_errors(companyIdentityForm.company.emailDirigeant) }}
@@ -580,7 +586,7 @@
                         'attr' : {
                             'class' : 'input-field',
                             'data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-formvalidation-type' : 'telephone'
+                            'data-formvalidation-type' : 'mobile'
                         }
                     }) }}
                     {{ form_errors(companyIdentityForm.client.mobile) }}
