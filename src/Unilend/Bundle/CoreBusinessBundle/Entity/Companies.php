@@ -51,20 +51,6 @@ class Companies
     private $idStatus;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire", type="integer", nullable=true)
-     */
-    private $idPartenaire;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id_partenaire_subcode", type="integer", nullable=true)
-     */
-    private $idPartenaireSubcode;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="email_facture", type="string", length=191, nullable=true)
@@ -366,54 +352,6 @@ class Companies
     public function getIdClientOwner()
     {
         return $this->idClientOwner;
-    }
-
-    /**
-     * Set idPartenaire
-     *
-     * @param integer $idPartenaire
-     *
-     * @return Companies
-     */
-    public function setIdPartenaire($idPartenaire)
-    {
-        $this->idPartenaire = $idPartenaire;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaire
-     *
-     * @return integer
-     */
-    public function getIdPartenaire()
-    {
-        return $this->idPartenaire;
-    }
-
-    /**
-     * Set idPartenaireSubcode
-     *
-     * @param integer $idPartenaireSubcode
-     *
-     * @return Companies
-     */
-    public function setIdPartenaireSubcode($idPartenaireSubcode)
-    {
-        $this->idPartenaireSubcode = $idPartenaireSubcode;
-
-        return $this;
-    }
-
-    /**
-     * Get idPartenaireSubcode
-     *
-     * @return integer
-     */
-    public function getIdPartenaireSubcode()
-    {
-        return $this->idPartenaireSubcode;
     }
 
     /**

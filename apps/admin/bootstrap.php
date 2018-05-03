@@ -68,14 +68,6 @@ class bootstrap extends Controller
                     'uri'   => 'mails/emailhistory'
                 ],
                 [
-                    'title' => 'Campagnes',
-                    'uri'   => 'campagnes'
-                ],
-                [
-                    'title' => 'Types de campagnes',
-                    'uri'   => 'campagnes/types'
-                ],
-                [
                     'title' => 'Grille de taux',
                     'uri'   => 'project_rate_settings',
                     'zone'  => Zones::ZONE_LABEL_ADMINISTRATION
@@ -431,6 +423,8 @@ class bootstrap extends Controller
     protected $surl;
     /** @var string */
     protected $url;
+    /** @var string */
+    protected $staticsKey;
 
     public function initialize()
     {
@@ -439,6 +433,8 @@ class bootstrap extends Controller
         if ($this->current_function != 'login') {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];
         }
+
+        $this->staticsKey = filemtime(__FILE__);
 
         $this->dates   = $this->loadLib('dates');
         $this->ficelle = $this->loadLib('ficelle');
@@ -542,8 +538,8 @@ class bootstrap extends Controller
         $this->loadJs('admin/treeview/tree');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.min');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.pager');
-        $this->loadJs('admin/ajax');
-        $this->loadJs('admin/main');
+        $this->loadJs('admin/ajax', $this->staticsKey);
+        $this->loadJs('admin/main', $this->staticsKey);
 
         $this->loadCss('admin/bootstrap');
         $this->loadCss('../scripts/admin/freeow/freeow');
@@ -551,7 +547,7 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
         $this->loadCss('../scripts/admin/tablesorter/style');
         $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
-        $this->loadCss('admin/main');
+        $this->loadCss('admin/main', $this->staticsKey);
 
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
@@ -589,6 +585,7 @@ class bootstrap extends Controller
     public function render($template = null, array $context = [], $return = false)
     {
         $context['app'] = [
+            'staticsKey' => $this->staticsKey,
             'navigation' => self::MENU,
             'activeMenu' => isset($this->menu_admin) ? $this->menu_admin : '',
             'session'    => $_SESSION,
