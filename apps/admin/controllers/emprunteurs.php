@@ -125,7 +125,6 @@ class emprunteursController extends bootstrap
                 $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
                 $this->clients->telephone = str_replace([' ', '.', ','], '', $_POST['telephone']);
-                $this->clients->mobile    = str_replace([' ', '.', ','], '', $_POST['mobile']);
                 $this->clients->update();
 
                 $billingEmail = trim($_POST['email_facture']);
