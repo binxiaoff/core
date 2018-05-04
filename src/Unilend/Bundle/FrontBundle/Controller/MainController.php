@@ -712,29 +712,6 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/accept-cookies", name="accept_cookies")
-     * @Method("POST")
-     *
-     * @param Request $request
-     * @return Response
-     */
-    public function acceptCookiesAction(Request $request)
-    {
-        if ($request->isXmlHttpRequest()) {
-            /** @var \accept_cookies $acceptCookies */
-            $acceptCookies = $this->get('unilend.service.entity_manager')->getRepository('accept_cookies');
-
-            $acceptCookies->ip        = $request->getClientIp();
-            $acceptCookies->id_client = $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') ? $this->getUser()->getClientId() : 0;
-            $acceptCookies->create();
-
-            return new JsonResponse(true);
-        }
-
-        return new Response('not an ajax request');
-    }
-
-    /**
      * @Route("/qui-sommes-nous", name="about_us")
      *
      * @return Response
