@@ -300,8 +300,9 @@ class LenderProfileController extends Controller
 
             // Only for company related data
             $formManager         = $this->get('unilend.frontbundle.service.form_manager');
-            $modifiedDataCompany = $formManager->getModifiedContent($unattachedCompany, $company) ?? null;
             $clientChanges       = $this->logClientChanges($client);
+            $modifiedDataCompany = $formManager->getModifiedContent($unattachedCompany, $company) ?? null;
+            $this->get('doctrine.orm.entity_manager')->flush($company);
 
             if ($isFileUploaded || false === empty($clientChanges) || false === empty($modifiedDataCompany)) {
                 $this->updateClientStatusAndNotifyClient($client, $modifiedDataCompany);
