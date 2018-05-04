@@ -575,7 +575,7 @@ class preteursController extends bootstrap
                             ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
                             ->setFonction($_POST['fonction_e'])
                             ->setEmail($email)
-                            ->setTelephone(str_replace(' ', '', $_POST['phone_e']))
+                            ->setMobile(str_replace(' ', '', $_POST['phone_e']))
                             ->setIdLangue('fr')
                             ->setType(Clients::TYPE_LEGAL_ENTITY);
 

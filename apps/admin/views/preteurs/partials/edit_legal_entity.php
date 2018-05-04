@@ -147,7 +147,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         </div>
         <div class="form-group col-md-3">
             <label for="phone_e">Téléphone</label>
-            <input type="text" name="phone_e" id="phone_e" value="<?= $this->client->getTelephone() ? trim(chunk_split($this->client->getTelephone(), 2, ' ')) : '' ?>" class="form-control">
+            <input type="text" name="phone_e" id="phone_e" value="<?= $this->client->getMobile() ? trim(chunk_split($this->client->getMobile(), 2, ' ')) : '' ?>" class="form-control">
         </div>
     </div>
 </div>
@@ -165,7 +165,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
         <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
     </div>
 </div>
-<div class="row statut_dirigeant_e3>
+<div class="row statut_dirigeant_e3">
     <div class="form-group col-md-3">
         <label for="status_conseil_externe_entreprise">Autre</label>
         <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="form-control">
