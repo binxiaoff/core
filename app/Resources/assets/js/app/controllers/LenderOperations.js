@@ -111,13 +111,11 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
       }
       // Partner project details
       else if ($item.is('.table-projects-item')) {
-
         // Check columns to show depending on user level
-        var colspanAuthor = 1
-        var colspanText   = 5
-        if (!$('body').is('.ui-user-type-partner-admin')) {
-          colspanAuthor = 2
-          colspanText   = 4
+        var colspanText = 4
+
+        if ($('body').is('.ui-user-type-partner-admin')) {
+          colspanText = 5
         }
 
         // Inherit parent row color
@@ -129,7 +127,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         // Generate HTML for memos
         $.each(details, function (i, item) {
           detailsItemsHtml += Templating.replace('<tr class="details-memo ' + oddEvenClass + '">\
-            <td class="details-memo-author" colspan="' + colspanAuthor + '">{{ author }}</td>\
+            <td class="details-memo-author" colspan="2">{{ author }}</td>\
             <td class="details-memo-date">{{ date }}</td>\
             <td class="details-memo-text" colspan="' + colspanText + '">{{ text }}</td>\
           </tr>', {
@@ -140,7 +138,7 @@ $doc.on(Utility.clickEvent, 'tr[data-details]', function (event) {
         })
 
         // Adjust colspan
-        var colspanDetails = $item.find('>td').length + 1
+        var colspanDetails = colspanText + 3
         $details = $('<tr class="table-projects-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="' + colspanDetails + '"><table>' + detailsItemsHtml + '</table></td></tr>')
       }
 
