@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, OffresBienvenues, Tree, Users, WalletType
+    AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
@@ -231,7 +231,7 @@ class MainController extends Controller
 
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
@@ -447,8 +447,7 @@ class MainController extends Controller
                 'values' => [
                     'amount'           => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
                     'siren'            => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'),
-                        FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
                     'partner'          => $content['partenaire'],
                     'reasons'          => $borrowingReasons,
                     'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),

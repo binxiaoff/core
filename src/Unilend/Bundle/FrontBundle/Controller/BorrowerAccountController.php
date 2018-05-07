@@ -128,7 +128,7 @@ class BorrowerAccountController extends Controller
                 $frontUser = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
                 try {
-                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), $amount, $formData['duration'], null, $formData['message']);
+                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::COMPLETE_REQUEST, $amount, $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
                     $this->get('logger')->error('Project Creation failed. Exception : ' . $exception->getMessage(), [
