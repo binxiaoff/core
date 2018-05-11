@@ -147,7 +147,10 @@ class wsController extends Controller
             if (AttachmentType::RIB === $attachment->getType()->getId() && GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                 $bankAccountToValidate = $attachment->getBankAccount();
                 if (null === $bankAccountToValidate) {
-                    $this->oLogger->error('Lender has no associated bank account - Client: ' . $attachment->getClient()->getIdClient(), ['method' => __METHOD__]);
+                    $this->oLogger->error('Lender has no associated bank account - Client: ' . $attachment->getClient()->getIdClient(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__
+                    ]);
                 } else {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BankAccountManager $bankAccountManager */
                     $bankAccountManager = $this->get('unilend.service.bank_account_manager');
@@ -159,7 +162,10 @@ class wsController extends Controller
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ClientAddressAttachment $addressAttachment */
                 $addressAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddressAttachment')->findOneBy(['idAttachment' => $attachment]);
                 if (null === $addressAttachment || null === $addressAttachment->getIdClientAddress()) {
-                    $this->oLogger->error('Lender housing certificate has no associated address - Client: ' . $attachment->getClient()->getIdClient(), ['methode' => __METHOD__]);
+                    $this->oLogger->error('Lender housing certificate has no associated address - Client: ' . $attachment->getClient()->getIdClient(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__
+                    ]);
                 } else {
                     $addressManager->validateLenderAddress($addressAttachment->getIdClientAddress());
                 }
