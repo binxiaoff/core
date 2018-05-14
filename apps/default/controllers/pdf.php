@@ -3,9 +3,8 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface, WalletType
+    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 
 class pdfController extends bootstrap
 {
@@ -1154,121 +1153,6 @@ class pdfController extends bootstrap
         } else {
             header('Location: ' . $this->lurl);
         }
-    }
-
-    public function _loans()
-    {
-        if (false === isset($this->params[0])) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        /** @var \clients $oClients */
-        $oClients = $this->loadData('clients');
-
-        // hack the symfony guard token
-        $session = $this->get('session');
-
-        /** @var \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken $token */
-        $token =  unserialize($session->get('_security_default'));
-        if (!$token instanceof \Symfony\Component\Security\Guard\Token\PostAuthenticationGuardToken) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
-        $user = $token->getUser();
-        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if (false === $oClients->get($this->params[0], 'hash') || $user->getClientId() != $oClients->id_client) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        $sPath          = '/tmp/' . uniqid() . '/';
-        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s');
-
-        $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
-        $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-
-        $this->GenerateLoansHtml($oClients->id_client);
-        $this->WritePdf($sPath . $sNamePdfClient, 'operations');
-        $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
-    }
-
-    /**
-     * @param int $clientId
-     */
-    private function GenerateLoansHtml(int $clientId): void
-    {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->loans       = $this->loadData('loans');
-        $this->clients     = $this->loadData('clients');
-        $this->clients->get($clientId);
-
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $wallet */
-        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($clientId, WalletType::LENDER);
-        $client              = $wallet->getIdClient();
-        $this->lenderAddress = null;
-        $projectRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-
-        $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
-        $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');
-
-        $this->aLoansStatuses = [
-            'no-problem'            => 0,
-            'late-repayment'        => 0,
-            'recovery'              => 0,
-            'collective-proceeding' => 0,
-            'default'               => 0,
-            'refund-finished'       => 0,
-        ];
-        /** @var LenderOperationsManager $lenderOperationManager */
-        $lenderOperationManager = $this->get('unilend.service.lender_operations_manager');
-
-        foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
-            $loanStatus                                   = $lenderOperationManager->getLenderLoanStatusToDisplay($projectRepository->find($aProjectLoans['id_project']));
-            $this->lSumLoans[$iLoandIndex]['statusLabel'] = $loanStatus['statusLabel'];
-            $this->lSumLoans[$iLoandIndex]['loanStatus']  = $loanStatus;
-        }
-
-        try {
-            if ($client->isNaturalPerson()) {
-                $this->lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
-                    ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            } else {
-                $this->lenderCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')
-                    ->findOneBy(['idClientOwner' => $client]);
-                $this->lenderAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
-                    ->findLastModifiedNotArchivedAddressByType($this->lenderCompany, AddressType::TYPE_MAIN_ADDRESS);
-            }
-        } catch (\Exception $exception) {
-            $this->oLogger->error('An exception occurred while getting last modified client address. Message: ' . $exception->getMessage(), [
-                'file'       => $exception->getFile(),
-                'line'       => $exception->getLine(),
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__,
-                'id_client'  => $client->getIdClient(),
-                'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
-            ]);
-        }
-
-        if (null === $this->lenderAddress) {
-            $this->oLogger->error('Lender has no main address. Loans document could not be generated.', [
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__,
-                'id_client'  => $client->getIdClient(),
-                'id_company' => isset($this->lenderCompany) ? $this->lenderCompany->getIdCompany() : 'lender is natural person',
-            ]);
-            exit;
-        }
-
-        $this->setDisplay('loans');
     }
 
     /**

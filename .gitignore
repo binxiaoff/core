@@ -20,6 +20,9 @@
 # PHPStorm
 .idea/
 
+# VS Code
+.vscode
+
 # Composer
 /vendor/
 

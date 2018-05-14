@@ -24,9 +24,9 @@ abstract class Controller implements ContainerAwareInterface
     /** @var string */
     public $view;
     /** @var array */
-    public $included_css;
+    private $included_css = [];
     /** @var array */
-    public $included_js;
+    private $included_js = [];
     /** @var ContainerInterface */
     protected $container;
     /** @var string */
@@ -54,9 +54,6 @@ abstract class Controller implements ContainerAwareInterface
     protected function initialize()
     {
         $this->bdd = $this->get('database_connection');
-
-        $this->included_js  = [];
-        $this->included_css = [];
 
         $this->language           = $this->Command->Language;
         $this->current_controller = $this->Command->getControllerName();
@@ -235,6 +232,8 @@ abstract class Controller implements ContainerAwareInterface
         $this->twigEnvironment->addExtension(new Twig_Extension_Debug());
         $this->twigEnvironment->addExtension(new Twig_Extensions_Extension_Intl());
         $this->twigEnvironment->addExtension(new Symfony\Bridge\Twig\Extension\TranslationExtension($this->get('translator')));
+        $this->twigEnvironment->addFilter(new Twig_SimpleFilter('addslashes', 'addslashes'));
+
     }
 
     protected function loadData($object, $params = [])
@@ -273,35 +272,39 @@ abstract class Controller implements ContainerAwareInterface
         return $this->container->getParameter($name);
     }
 
-    //Charge un fichier js dans le tableau des js
-    public function loadJs($js, $ieonly = 0, $version = '')
+    /**
+     * @param string      $js
+     * @param string|null $cacheKey
+     */
+    public function loadJs(string $js, ?string $cacheKey = null): void
     {
-        if (! array_key_exists($js, $this->included_js)) {
-            $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->surl . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
+        if (false === array_key_exists($js, $this->included_js)) {
+            $this->included_js[$js] = '<script src="' . $this->surl . '/scripts/' . $js . '.js' . ($cacheKey ? '?' . $cacheKey : '') . '"></script>';
         }
     }
 
-    //appelle les js passees en param
-    public function callJs()
+    public function callJs(): void
     {
         foreach ($this->included_js as $js) {
-            echo $js . "\r\n";
+            echo $js . "\n";
         }
     }
 
-    //Charge un fichier css dans le tableau des css
-    public function loadCss($css, $ieonly = 0, $media = 'all', $type = 'css', $version = '')
+    /**
+     * @param string      $css
+     * @param string|null $cacheKey
+     */
+    public function loadCss(string $css, ?string $cacheKey = null): void
     {
-        if (! array_key_exists($css, $this->included_css)) {
-            $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->surl . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
+        if (false === array_key_exists($css, $this->included_css)) {
+            $this->included_css[$css] = '<link media="all" href="' . $this->surl . '/styles/' . $css . '.css' . ($cacheKey ? '?' . $cacheKey : '') . '" type="text/css" rel="stylesheet">';
         }
     }
 
-    //appelle les css passees en param
-    public function callCss()
+    public function callCss(): void
     {
         foreach ($this->included_css as $css) {
-            echo $css . "\r\n";
+            echo $css . "\n";
         }
     }
 

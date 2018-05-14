@@ -428,8 +428,8 @@ class dashboardController extends bootstrap
             $releasedProjectToCompareAmount += $project['amount'];
         }
 
-        $deltaCountInPercentage  = round(bcmul(bcdiv(($releasedProjectCount - $releasedProjectToCompareCount), $releasedProjectToCompareCount, 5), 100, 2), 1);
-        $deltaAmountInPercentage = round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2), 1);
+        $deltaCountInPercentage  = $releasedProjectToCompareCount ? round(bcmul(bcdiv(bcsub($releasedProjectCount, $releasedProjectToCompareCount, 4), $releasedProjectToCompareCount, 5), 100, 2), 1) : 0;
+        $deltaAmountInPercentage = $releasedProjectToCompareAmount ? round(bcmul(bcdiv(bcsub($releasedProjectAmount, $releasedProjectToCompareAmount, 4), $releasedProjectToCompareAmount, 5), 100, 2), 1) : 0;
 
         return [
             'number'                  => $releasedProjectCount,

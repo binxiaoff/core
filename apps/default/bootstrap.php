@@ -34,7 +34,6 @@ class bootstrap extends Controller
         $this->clients                 = $this->loadData('clients');
         $this->villes                  = $this->loadData('villes');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->accept_cookies          = $this->loadData('accept_cookies');
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
@@ -51,9 +50,9 @@ class bootstrap extends Controller
         $this->loadCss('default/fonts');
         $this->loadCss('default/jquery.c2selectbox');
         $this->loadCss('default/jquery-ui-1.10.3.custom');
-        $this->loadCss('default/custom-theme/jquery-ui-1.10.3.custom');//datepicker
-        $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
-        $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
+        $this->loadCss('default/custom-theme/jquery-ui-1.10.3.custom');
+        $this->loadCss('default/style', date('Ymd'));
+        $this->loadCss('default/style-edit', date('Ymd'));
 
         $this->loadJs('default/jquery/jquery-1.10.2.min');
         $this->loadJs('default/bootstrap-tooltip');
@@ -61,9 +60,9 @@ class bootstrap extends Controller
         $this->loadJs('default/livevalidation_standalone.compressed');
         $this->loadJs('default/jquery.colorbox-min');
         $this->loadJs('default/jqueryui-1.10.3.min');
-        $this->loadJs('default/functions', 0, date('Ymd'));
-        $this->loadJs('default/main', 0, date('YmdH'));
-        $this->loadJs('default/ajax', 0, date('Ymd'));
+        $this->loadJs('default/functions', date('Ymd'));
+        $this->loadJs('default/main', date('YmdH'));
+        $this->loadJs('default/ajax', date('Ymd'));
 
         $this->meta_title       = '';
         $this->meta_description = '';
@@ -88,8 +87,7 @@ class bootstrap extends Controller
 
         $this->setSessionSource();
 
-        $urlParams = explode('/', $_SERVER['REQUEST_URI']);
-        $this->handlePartenaire($urlParams);
+        $this->handleLegacyPartenaireRedirection();
 
         $oCachePool  = $this->get('memcache.default');
         $oCachedItem = $oCachePool->getItem('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
@@ -152,7 +150,6 @@ class bootstrap extends Controller
             'J' => 'etoile10'
         );
 
-        //Recuperation des element de traductions
         $oCachedItem = $oCachePool->getItem('Trad_Header_Footer_home');
 
         if (false === $oCachedItem->isHit()) {
@@ -183,101 +180,40 @@ class bootstrap extends Controller
         $this->setSessionMail();
 
         false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
-
-        if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
-            if (
-                $this->Command->Name == 'root' && $this->Command->Function == 'capital'
-                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
-                || $this->Command->Name == 'projects' && $this->Command->Function == 'detail'
-                || $this->Command->Name == 'ajax'
-            ) {
-            } else {
-                header('location: http://prets-entreprises-unilend.capital.fr/capital/');
-                die;
-            }
-        } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr') {
-            if (
-                $this->Command->Name == 'root' && $this->Command->Function == 'challenges'
-                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
-                || $this->Command->Name == 'projects' && $this->Command->Function == 'detail'
-                || $this->Command->Name == 'ajax'
-            ) {
-            } else {
-                header('location: http://partenaire.unilend.challenges.fr/challenges/');
-                die;
-            }
-        }
     }
 
-    public function handlePartenaire($params)
+    /**
+     * Handle legacy redirection of old "partenaires" (marketing campaigns)
+     * Such URL are redirected to the same URL without the last two parameters
+     * During the redirection, data was saved to DB in order to count clicks but it's not used anymore
+     *
+     * URL pattern is https://www.unilend.fr/..../p/a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6
+     * where "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6 "represents campaigns' hash
+     */
+    private function handleLegacyPartenaireRedirection()
     {
-        $partenaires       = $this->loadData('partenaires');
-        $partenaires_clics = $this->loadData('partenaires_clics');
+        $urlPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-        // On check les params pour voir si on a un partenaire
-        if (count($params) > 0) {
+        if (is_string($urlPath)) {
+            $parameters = explode('/', $urlPath);
 
-            // Variable pour savoir s'il a trouvé un p
-            $getta = false;
+            foreach ($parameters as $index => $parameter) {
+                if (
+                    $parameter === 'p'
+                    && isset($parameters[$index + 1])
+                    && 1 === preg_match('/^[0-9a-f]{32}$/', $parameters[$index + 1])
+                ) {
+                    array_splice($parameters, -2);
 
-            $i = 0;
-            foreach ($params as $p) {
+                    $redirectUrl = $this->lurl . implode('/', $parameters);
+                    $urlQuery    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
 
-                // Si on detecte un p en params
-                if ($p == 'p') {
-
-                    // Youpi il a trouvé
-                    $getta = true;
-
-                    $indexPart = $i + 1;
-
-                    // On regarde si on trouve un partenaire
-                    if ($partenaires->get($params[ $indexPart ], 'hash')) {
-                        // on controle qu'on a pas un double clique
-                        if (!isset($_SESSION['partenaire_click'][ $partenaires->id_partenaire ]) || $_SESSION['partenaire_click'][ $partenaires->id_partenaire ] != $partenaires->id_partenaire) {
-                            $_SESSION['partenaire_click'][ $partenaires->id_partenaire ] = $partenaires->id_partenaire;
-
-                            // On ajoute un clic
-                            if ($partenaires_clics->get(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')))) {
-                                $partenaires_clics->nb_clics = $partenaires_clics->nb_clics + 1;
-                                $partenaires_clics->update(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')));
-                            } else {
-                                $partenaires_clics->id_partenaire = $partenaires->id_partenaire;
-                                $partenaires_clics->date          = date('Y-m-d');
-                                $partenaires_clics->ip_adress     = $_SERVER['REMOTE_ADDR'];
-                                $partenaires_clics->nb_clics      = 1;
-                                $partenaires_clics->create(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')));
-                            }
-                        }
-                        $_SESSION['partenaire']['id_partenaire'] = $partenaires->id_partenaire;
-
-                        // On enregistre le partenaire en cookie
-                        setcookie('izicom_partenaire', $partenaires->hash, time() + 3153600, '/');
-
-                        // On regarde si le dernier param commence par ?
-                        if (substr($params[ count($params) - 1 ], 0, 1) == '?') {
-                            $gogole = $params[ count($params) - 1 ];
-                        }
-
-                        // On rebidouille l'url
-                        $params = array_slice($params, 0, count($params) - 3);
-                        $reeurl = implode('/', $params);
-
-                        // On renvoi
-                        header('Location:' . $this->url . $reeurl . ($gogole != '' ? '/' . $gogole : ''));
-                        die;
+                    if (false === empty($urlQuery)) {
+                        $redirectUrl .= '?' . $urlQuery;
                     }
-                }
 
-                $i++;
-            }
-
-            // Si il a rien trouvé on regarde si on a un cookie et pas de session
-            if (!isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && !$getta) {
-                // On regarde si on trouve toujours un partenaire
-                if ($partenaires->get($_COOKIE['izicom_partenaire'], 'hash')) {
-                    // On met le partenaire en session
-                    $_SESSION['partenaire']['id_partenaire'] = $partenaires->id_partenaire;
+                    header('Location: ' . $redirectUrl);
+                    die;
                 }
             }
         }

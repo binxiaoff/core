@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/oneui.css">
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/unilend.min.css">
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/autocomplete.css">
-    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/edits.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/css/edits.css?{{ app.staticsKey }}">
 </head>
 <body>
 
@@ -39,7 +39,7 @@
 <!-- Page Specific Plugins -->
 {% block pluginsJS %} {% endblock %}
 
-<script src="{{ app.adminUrl }}/oneui/js/app.js"></script>
+<script src="{{ app.adminUrl }}/oneui/js/app.js?{{ app.staticsKey }}"></script>
 
 <!-- Page Specific JS Scripts -->
 {% block pageScripts %} {% endblock %}
