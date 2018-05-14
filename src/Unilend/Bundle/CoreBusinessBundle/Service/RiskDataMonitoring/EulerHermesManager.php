@@ -52,7 +52,7 @@ class EulerHermesManager
      *
      * @throws \Exception
      */
-    public function activateMonitoring(string $siren) : void
+    public function activateMonitoring(string $siren): void
     {
         try {
             $this->eulerHermesManager->setReadFromCache(false);
@@ -73,32 +73,44 @@ class EulerHermesManager
     /**
      * @param string $siren
      */
-    public function saveEulerHermesGradeMonitoringEvent(string $siren) : void
+    public function saveEulerHermesGradeMonitoringEvent(string $siren): void
     {
-        $monitoring         = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME);
+        $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME);
+        if (null === $monitoring) {
+            throw new \InvalidArgumentException('Siren ' . $siren . ' is not monitored for Euler Hermes');
+        }
+
         $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
-        $monitoringType     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findOneBy(['provider' => self::PROVIDER_NAME]);
+        if (empty($monitoredCompanies)) {
+            throw new \InvalidArgumentException('Siren ' . $siren . ' has no companies.');
+        }
+
+        $monitoringType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findOneBy(['provider' => self::PROVIDER_NAME]);
 
         $this->eulerHermesManager->setReadFromCache(false);
         try {
             $eulerGrade = $this->eulerHermesManager->getGrade($siren, 'fr', false);
 
-            if (null !== $eulerGrade) {
-                /** @var Companies $company */
-                foreach ($monitoredCompanies as $company) {
-                    $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
-                    $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
+                if (null !== $eulerGrade) {
+                    /** @var Companies $company */
+                    foreach ($monitoredCompanies as $company) {
+                        $companyRatingHistory = $this->saveEulerCompanyRating($company, $eulerGrade);
+                        $monitoringCallLog    = $this->dataWriter->createMonitoringEvent($monitoring, $companyRatingHistory);
 
-                    $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
-                    $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+                        $this->dataWriter->saveAssessment($monitoringType, $monitoringCallLog, $eulerGrade->getGrade());
+                        $this->dataWriter->saveMonitoringEventInProjectMemos($monitoringCallLog, self::PROVIDER_NAME);
+                    }
+                    $this->entityManager->flush();
                 }
-                $this->entityManager->flush();
-            }
         } catch (\Exception $exception) {
             $this->logger->error(
-                'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(),
-                ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'siren', $monitoring->getSiren()]
-            );
+                'Could not get Euler grade: EulerHermesManager::getGrade(' . $monitoring->getSiren() . '). Message: ' . $exception->getMessage(), [
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $monitoring->getSiren()
+            ]);
         }
 
         $this->eulerHermesManager->setReadFromCache(true);
@@ -111,7 +123,7 @@ class EulerHermesManager
      * @return CompanyRatingHistory
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function saveEulerCompanyRating(Companies $company, EulerCompanyRating $eulerGrade) : CompanyRatingHistory
+    private function saveEulerCompanyRating(Companies $company, EulerCompanyRating $eulerGrade): CompanyRatingHistory
     {
         $companyRatingHistory = $this->dataWriter->createCompanyRatingHistory($company);
 
@@ -133,7 +145,7 @@ class EulerHermesManager
      * @return bool
      * @throws \Exception
      */
-    public function eligibleForEulerLongTermMonitoring(Companies $company) : bool
+    public function eligibleForEulerLongTermMonitoring(Companies $company): bool
     {
         if (null === $company->getIdStatus() || in_array($company->getIdStatus()->getLabel(), MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS)) {
             return false;
@@ -154,7 +166,7 @@ class EulerHermesManager
      * @return bool
      * @throws \Exception
      */
-    public function activateLongTermMonitoring(string $siren) : bool
+    public function activateLongTermMonitoring(string $siren): bool
     {
         if ($this->eulerHermesManager->startLongTermMonitoring($siren, 'fr')) {
             $this->dataWriter->startMonitoringPeriod($siren, EulerHermesManager::PROVIDER_NAME);
@@ -171,9 +183,8 @@ class EulerHermesManager
      * @return bool
      * @throws \Exception
      */
-    public function stopMonitoring(string $siren) : bool
+    public function stopMonitoring(string $siren): bool
     {
         return $this->eulerHermesManager->stopMonitoring($siren, 'fr');
     }
-
 }
