@@ -282,6 +282,7 @@ class ProjectRepaymentTaskManager
      */
     public function disableAutomaticRepayment(Projects $project, Users $user): void
     {
+        /** @var ProjectRepaymentTask[] $readyRepaymentTask */
         $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
             'idProject' => $project,
             'status' => ProjectRepaymentTask::STATUS_READY

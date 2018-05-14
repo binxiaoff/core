@@ -41,43 +41,6 @@ class ProjectsStatus
     const PROBLEME                   = 100;
     const LOSS                       = 160;
 
-    const NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND                     = 'product_not_found';
-    const NON_ELIGIBLE_REASON_PRODUCT_BLEND                         = 'product_blend';
-    const NON_ELIGIBLE_REASON_INACTIVE                              = 'entity_inactive';
-    const NON_ELIGIBLE_REASON_COMPANY_LOCATION                      = 'company_location';
-    const NON_ELIGIBLE_REASON_UNKNOWN_SIREN                         = 'unknown_siren';
-    const NON_ELIGIBLE_REASON_PROCEEDING                            = 'in_proceeding';
-    const NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES        = 'negative_raw_operating_incomes';
-    const NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK                = 'negative_capital_stock';
-    const NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL               = 'negative_equity_capital';
-    const NON_ELIGIBLE_REASON_LOW_TURNOVER                          = 'low_turnover';
-    const NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT             = 'too_much_payment_incident';
-    const NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT          = 'non_allowed_payment_incident';
-    const NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE       = 'unilend_xerfi_elimination_score';
-    const NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE        = 'unilend_xerfi_vs_altares_score';
-    const NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE                     = 'low_altares_score';
-    const NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE                  = 'low_infolegale_score';
-    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT                   = 'euler_traffic_light';
-    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE  = 'euler_traffic_light_vs_altares_score';
-    const NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI  = 'euler_traffic_light_vs_unilend_xerfi';
-    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI          = 'euler_grade_vs_unilend_xerfi';
-    const NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE          = 'euler_grade_vs_altares_score';
-    const NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES                 = 'has_infogreffe_privileges';
-    const NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS                   = 'ellisphere_default';
-    const NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES = 'ellisphere_social_security_privileges';
-    const NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES    = 'ellisphere_treasury_tax_privileges';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT           = 'infolegale_company_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT   = 'infolegale_current_manager_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT  = 'infolegale_previous_manager_incident';
-    const NON_ELIGIBLE_REASON_NO_LEGAL_STATUS                       = 'no_legal_status';
-
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT            = 'infolegale_current_manager_other_companies_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT = 'infolegale_current_manager_depositor_no_role_12months_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT               = 'non_eligible_reason_infolegale_current_manager_depositor_cp_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT      = 'non_eligible_reason_infolegale_current_manager_depositor_role_target_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT = 'non_eligible_reason_infolegale_current_manager_depositor_role_complainant_incident';
-    const NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT     = 'non_eligible_reason_infolegale_current_manager_depositor_role_missing_incident';
-
     const UNEXPECTED_RESPONSE = 'unexpected_response_from_';
 
     const AFTER_REPAYMENT = [
@@ -111,7 +74,7 @@ class ProjectsStatus
      * List of project status when project is considered as part of the risk team pipe
      * @var array
      */
-    CONST RISK_TEAM = [
+    const RISK_TEAM = [
         self::PENDING_ANALYSIS,
         self::ANALYSIS_REVIEW,
         self::COMITY_REVIEW,

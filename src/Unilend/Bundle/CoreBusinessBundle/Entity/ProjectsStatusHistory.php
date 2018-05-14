@@ -2,12 +2,19 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\Common\Collections\{
+    ArrayCollection, Criteria
+};
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * ProjectsStatusHistory
  *
- * @ORM\Table(name="projects_status_history", indexes={@ORM\Index(name="id_project_status", columns={"id_project_status"}), @ORM\Index(name="id_user", columns={"id_user"}), @ORM\Index(name="numero_relance", columns={"numero_relance"}), @ORM\Index(name="idx_psh_idproject", columns={"id_project"})})
+ * @ORM\Table(name="projects_status_history", indexes={@ORM\Index(name="id_project_status",
+ *                                            columns={"id_project_status"}), @ORM\Index(name="id_user",
+ *                                            columns={"id_user"}), @ORM\Index(name="numero_relance",
+ *                                            columns={"numero_relance"}), @ORM\Index(name="idx_psh_idproject",
+ *                                            columns={"id_project"})})
  * @ORM\Entity
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsStatusHistoryRepository")
  */
@@ -74,7 +81,25 @@ class ProjectsStatusHistory
      */
     private $idProjectStatusHistory;
 
+    /**
+     * @var ProjectStatusHistoryReason[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectStatusHistoryReason", mappedBy="idProjectStatusHistory")
+     */
+    private $abandonReasons;
 
+    /**
+     * @var ProjectStatusHistoryReason[]
+     *
+     * @ORM\OneToMany(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\ProjectStatusHistoryReason", mappedBy="idProjectStatusHistory")
+     */
+    private $rejectionReasons;
+
+    public function __construct()
+    {
+        $this->abandonReasons   = new ArrayCollection();
+        $this->rejectionReasons = new ArrayCollection();
+    }
 
     /**
      * Set idProject
@@ -119,7 +144,7 @@ class ProjectsStatusHistory
      *
      * @return ProjectsStatus
      */
-    public function getIdProjectStatus()
+    public function getIdProjectStatus(): ProjectsStatus
     {
         return $this->idProjectStatus;
     }
@@ -252,5 +277,27 @@ class ProjectsStatusHistory
     public function getIdProjectStatusHistory()
     {
         return $this->idProjectStatusHistory;
+    }
+
+    /**
+     * @return ArrayCollection|ProjectStatusHistoryReason[]
+     */
+    public function getAbandonReasons(): ArrayCollection
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('idAbandonReason', null));
+
+        return $this->abandonReasons->matching($criteria);
+    }
+
+    /**
+     * @return ArrayCollection|ProjectStatusHistoryReason[]
+     */
+    public function getRejectionReasons(): ArrayCollection
+    {
+        $criteria = Criteria::create();
+        $criteria->where(Criteria::expr()->neq('idRejectionReason', null));
+
+        return $this->rejectionReasons->matching($criteria);
     }
 }

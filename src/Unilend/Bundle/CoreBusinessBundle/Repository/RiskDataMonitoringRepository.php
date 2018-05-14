@@ -2,8 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\EntityRepository;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\ORM\EntityRepository;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
 use Unilend\librairies\CacheKeys;
 
@@ -72,6 +72,7 @@ class RiskDataMonitoringRepository extends EntityRepository
             SELECT
               rdm.siren,
               co.name,
+              co.id_client_owner,
               p.id_project,
               p.title,
               p.status,
