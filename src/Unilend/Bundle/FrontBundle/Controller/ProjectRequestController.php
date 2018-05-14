@@ -103,7 +103,7 @@ class ProjectRequestController extends Controller
             $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
             $siret = $siret === false ? null : $siret;
 
-            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());

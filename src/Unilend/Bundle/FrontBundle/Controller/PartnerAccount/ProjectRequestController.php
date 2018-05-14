@@ -77,14 +77,16 @@ class ProjectRequestController extends Controller
             $siret = $projectRequestManager->validateSiret($formData['siren']);
             $siret = $siret === false ? null : $siret;
 
+            /** @var Users $frontUser */
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
             /** @var UserPartner $partnerUser */
             $partnerUser = $this->getUser();
 
-            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret, null, $duration, $reason);
-
+            /** @var Clients $submitter */
             $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
-            $project->setIdClientSubmitter($submitter)
+            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, null, $duration, $reason);
+            $project
+                ->setIdClientSubmitter($submitter)
                 ->setIdCompanySubmitter($partnerUser->getCompany());
 
             $entityManager->flush($project);
@@ -96,7 +98,6 @@ class ProjectRequestController extends Controller
             }
 
             return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
-
         } catch (InvalidArgumentException $exception) {
             $errorMessageTranslationLabel = 'partner-project-request_required-fields-error';
             if (ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT === $exception->getCode()) {

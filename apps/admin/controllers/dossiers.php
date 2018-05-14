@@ -1377,13 +1377,13 @@ class dossiersController extends bootstrap
                 }
 
                 $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity]);
-                $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner);
+                $project = $projectRequestManager->createProjectByCompany($this->userEntity, $company, $defaultPartner, ProjectsStatus::INCOMPLETE_REQUEST);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
                 exit;
             } elseif (isset($this->params[0]) && 'nouveau' === $this->params[0]) {
-                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner);
+                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::INCOMPLETE_REQUEST);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $project->getIdProject());
@@ -1393,7 +1393,7 @@ class dossiersController extends bootstrap
                 && 'siren' === $this->params[0]
                 && 1 === preg_match('/^[0-9]{9}$/', $this->params[1])
             ) {
-                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, null, $this->params[1]);
+                $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::INCOMPLETE_REQUEST, null, $this->params[1]);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */

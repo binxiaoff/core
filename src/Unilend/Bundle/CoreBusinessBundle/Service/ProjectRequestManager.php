@@ -121,6 +121,7 @@ class ProjectRequestManager
     /**
      * @param Users       $user
      * @param Partner     $partner
+     * @param int         $status
      * @param string|null $amount
      * @param string|null $siren
      * @param string|null $siret
@@ -134,6 +135,7 @@ class ProjectRequestManager
     public function newProject(
         Users $user,
         Partner $partner,
+        int $status,
         ?string $amount = null,
         ?string $siren = null,
         ?string $siret = null,
@@ -142,15 +144,13 @@ class ProjectRequestManager
         ?int $reason = null
     )
     {
-        $anyWhiteSpaces = '/\s/';
-
         if (null !== $email && false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
 
         if (null !== $siren) {
             if (false === empty($siren)) {
-                $siren = preg_replace($anyWhiteSpaces, '', $siren);
+                $siren = preg_replace('/\s/', '', $siren);
             }
 
             if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
@@ -159,7 +159,7 @@ class ProjectRequestManager
         }
 
         if (false === empty($siret)) {
-            $siret = preg_replace($anyWhiteSpaces, '', $siret);
+            $siret = preg_replace('/\s/', '', $siret);
         }
 
         if (1 !== preg_match('/^([0-9]{14})$/', $siren)) {
@@ -167,7 +167,7 @@ class ProjectRequestManager
         }
 
         if (null !== $amount) {
-            $amount        = preg_replace([$anyWhiteSpaces, '/€/'], '', $amount);
+            $amount        = preg_replace(['/\s/', '/€/'], '', $amount);
             $minimumAmount = $this->projectManager->getMinProjectAmount();
             $maximumAmount = $this->projectManager->getMaxProjectAmount();
 
@@ -191,6 +191,7 @@ class ProjectRequestManager
         }
 
         $this->entityManager->beginTransaction();
+
         try {
             $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret);
             $client  = $company->getIdClientOwner();
@@ -202,7 +203,7 @@ class ProjectRequestManager
 
             $this->entityManager->flush($client);
 
-            $project = $this->createProjectByCompany($user, $company, $partner, $amount, $durationInMonth, $reason);
+            $project = $this->createProjectByCompany($user, $company, $partner, $status, $amount, $durationInMonth, $reason);
 
             $this->entityManager->commit();
 
@@ -223,6 +224,7 @@ class ProjectRequestManager
      * @param Users                $user
      * @param Companies            $company
      * @param Partner              $partner
+     * @param int                  $status
      * @param int|null             $amount
      * @param int|null             $duration
      * @param BorrowingMotive|null $reason
@@ -231,7 +233,16 @@ class ProjectRequestManager
      * @return Projects
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createProjectByCompany(Users $user, Companies $company, Partner $partner, ?int $amount = null, ?int $duration = null, ?BorrowingMotive $reason = null, ?string $comments = null): Projects
+    public function createProjectByCompany(
+        Users $user,
+        Companies $company,
+        Partner $partner,
+        int $status,
+        ?int $amount = null,
+        ?int $duration = null,
+        ?BorrowingMotive $reason = null,
+        ?string $comments = null
+    ): Projects
     {
         $createdInBO = $user->getIdUser() === Users::USER_ID_FRONT ? false : true;
         $reasonId    = null === $reason ? null : $reason->getIdMotive();
@@ -243,7 +254,7 @@ class ProjectRequestManager
             ->setPeriod($duration)
             ->setIdBorrowingMotive($reasonId)
             ->setComments($comments)
-            ->setStatus(ProjectsStatus::INCOMPLETE_REQUEST)
+            ->setStatus($status)
             ->setIdPartner($partner)
             ->setCommissionRateFunds(Projects::DEFAULT_COMMISSION_RATE_FUNDS)
             ->setCommissionRateRepayment(Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
@@ -254,7 +265,7 @@ class ProjectRequestManager
 
         $this->entityManager->flush($project);
 
-        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $this->projectStatusManager->addProjectStatus($user, $status, $project);
 
         return $project;
     }
