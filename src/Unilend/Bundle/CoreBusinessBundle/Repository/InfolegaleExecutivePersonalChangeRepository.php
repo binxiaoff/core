@@ -17,28 +17,41 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
      * @param string $siren
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getActiveExecutives(string $siren) : array
     {
-        $qb = $this->createQueryBuilder('iepc');
-        $qb->distinct()
-            ->where('iepc.siren = :siren')
-            ->andWhere('iepc.ended IS NULL')
-            ->setParameter('siren', $siren);
+        $query = '
+            SELECT DISTINCT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
+                FROM infolegale_executive_personal_change
+                WHERE siren = :siren
+                AND ended IS NULL
+                AND title NOT LIKE :company
+            UNION
+                SELECT DISTINCT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
+                FROM infolegale_executive_personal_change
+                WHERE siren IN (
+                  SELECT DISTINCT id_executive
+                  FROM infolegale_executive_personal_change
+                  WHERE siren = :siren
+                  AND ended IS NULL
+                  AND siren_if_company IS NOT NULL
+                )
+                AND ended IS NULL';
 
-        return $qb->getQuery()->getArrayResult();
+        return $this->getEntityManager()->getConnection()->executeQuery($query, ['siren' => $siren, 'company' => 'Ste'], [])->fetchAll();
     }
-
 
     /**
      * @param string    $siren
      * @param \DateTime $date
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getPreviousExecutivesLeftAfter(string $siren, \DateTime $date) : array
     {
-        $currentExecutives = $this->getActiveExecutives($siren);
+        $currentExecutives = array_column($this->getActiveExecutives($siren), 'idExecutive');
 
         $qb = $this->createQueryBuilder('iepc');
         $qb->select('iepc.idExecutive')
@@ -58,10 +71,11 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
      * @param \DateTime $since
      *
      * @return array
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function getAllMandatesExceptGivenSirenOnActiveExecutives(string $siren, \DateTime $since) : array
     {
-        $currentExecutives = $this->getActiveExecutives($siren);
+        $currentExecutives = array_column($this->getActiveExecutives($siren), 'idExecutive');
 
         $queryBuilder = $this->createQueryBuilder('iepc');
         $queryBuilder->select('iepc.siren')->distinct()

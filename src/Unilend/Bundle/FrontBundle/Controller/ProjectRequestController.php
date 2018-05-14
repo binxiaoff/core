@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, InfolegaleExecutivePersonalChange, Prescripteurs, Product, Projects, ProjectsStatus, Users
+    AttachmentType, Clients, Companies, Prescripteurs, Product, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -21,7 +21,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{
 use Unilend\Bundle\FrontBundle\Service\{
     DataLayerCollector, SourceManager
 };
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Executive;
 use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
@@ -246,7 +245,7 @@ class ProjectRequestController extends Controller
 
         $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
         // If one (last name) of these fields is empty, we can consider that all the field is empty
-        $firstExecutiveFound          = $template['activeExecutives'][0] ?? null;
+        $firstExecutiveFound = $template['activeExecutives'][0] ?? null;
         if (empty($lastName) && null !== $firstExecutiveFound) {
             $title     = $firstExecutiveFound['title'];
             $lastName  = $firstExecutiveFound['lastName'];
@@ -257,7 +256,7 @@ class ProjectRequestController extends Controller
         $template['form'] = [
             'errors' => $session['errors'] ?? [],
             'values' => [
-                'contact' => [
+                'contact'      => [
                     'title'     => $title,
                     'lastName'  => $lastName,
                     'firstName' => $firstName,
@@ -273,7 +272,7 @@ class ProjectRequestController extends Controller
                     'mobile'    => $advisorClient ? $advisorClient->getTelephone() : '',
                     'function'  => $advisorClient ? $advisorClient->getFonction() : ''
                 ],
-                'project' => [
+                'project'      => [
                     'duration'    => $values['project']['duration'] ?? $project->getPeriod(),
                     'description' => $values['project']['description'] ?? $project->getComments()
                 ]
@@ -378,17 +377,17 @@ class ProjectRequestController extends Controller
                 $tosAcceptation->create();
             }
         } else {
-            $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
+            $sourceManager    = $this->get('unilend.frontbundle.service.source_manager');
             $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
             $advisorClient = new Clients();
-            $newAdvisor        = true;
+            $newAdvisor    = true;
 
             if (false === empty($project->getIdPrescripteur())) {
                 $advisor = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
                 if ($advisor && false === empty($project->getIdPrescripteur($advisor->getIdClient()))) {
                     $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
-                    $newAdvisor = false;
+                    $newAdvisor    = false;
                 }
             }
 
@@ -403,7 +402,7 @@ class ProjectRequestController extends Controller
                 ->setPrenom($firstName)
                 ->setFonction($function)
                 ->setTelephone($mobile)
-                ->setSlug($firstName . ' '. $lastName)
+                ->setSlug($firstName . ' ' . $lastName)
                 ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
                 ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
                 ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
@@ -1462,7 +1461,7 @@ class ProjectRequestController extends Controller
         try {
             $entityManager->flush([$company, $client]);
         } catch (\Exception $exception) {
-            $this->get('logger')->error('Cannot update the company. Error '. $exception->getMessage(), [
+            $this->get('logger')->error('Cannot update the company. Error ' . $exception->getMessage(), [
                 'id_company' => $company->getIdCompany(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,

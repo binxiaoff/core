@@ -50,6 +50,12 @@ class InfolegaleExecutivePersonalChange
 
     /**
      * @var string
+     * @ORM\Column(name="siren_if_company", type="string", length=10, nullable=true)
+     */
+    private $sirenIfCompany;
+
+    /**
+     * @var string
      *
      * @ORM\Column(name="code_position", type="string", length=5, nullable=false)
      */
@@ -193,6 +199,28 @@ class InfolegaleExecutivePersonalChange
     public function getSiren()
     {
         return $this->siren;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSirenIfCompany(): string
+    {
+        return $this->sirenIfCompany;
+    }
+
+    /**
+     * @param string|null $sirenIfCompany
+     *
+     * @return InfolegaleExecutivePersonalChange
+     */
+    public function setSirenIfCompany(?string $sirenIfCompany): InfolegaleExecutivePersonalChange
+    {
+        if (false === empty((int) $sirenIfCompany)) {
+            $this->sirenIfCompany = $sirenIfCompany;
+        }
+
+        return $this;
     }
 
     /**

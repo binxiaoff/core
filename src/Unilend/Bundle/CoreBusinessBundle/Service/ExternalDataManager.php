@@ -410,6 +410,7 @@ class ExternalDataManager
                             ->setFirstName($executive->getFirstName())
                             ->setLastName($executive->getName())
                             ->setSiren($mandate->getSiren())
+                            ->setSirenIfCompany($executive->getSiren())
                             ->setPosition($mandate->getPosition()->getLabel())
                             ->setCodePosition($mandate->getPosition()->getCode());
                         $this->entityManager->persist($change);
