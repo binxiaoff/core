@@ -362,7 +362,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param $date
+     * @param string $date
      *
      * @return bool|string
      */
