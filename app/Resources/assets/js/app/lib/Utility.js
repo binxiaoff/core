@@ -294,47 +294,48 @@ var Utility = {
   convertExponentToFloat: function (input) {
     var convertInput = (input + '').split(/e/i)
     if (convertInput.length === 1) return convertInput[0]
-  
+
     var output = ''
     var sign = input < 0 ? '-' : ''
     var str = convertInput[0].replace('.', '')
     var mag = parseInt(convertInput[1]) + 1
-  
+
     if (mag < 0) {
       output = sign + '0.'
-  
+
       while (mag++) {
         output += '0'
       }
-      
+
       output = output + str.replace(/^\-/,'')
     } else {
       mag -= str.length
       while (mag--) {
         output += '0'
       }
-  
+
       output = str + output
     }
-    
+
     return parseFloat(output)
   },
-  
+
   convertStringToFloat: function (input) {
     if (typeof input === 'number') return input
-    
+
     var checkInput = input + ''
-    
+    checkInput = checkInput.replace(',', '.')
+
     // If exponent represented, convert to a number/float
     if (/e[-+]\d+$/i.test(input)) {
       checkInput = Utility.convertExponentToFloat(input) + ''
     }
-    
+
     var output = parseFloat(checkInput.replace(/[^\d\-\.]+/g, ''))
-  
+
     // Infinity === NaN because it's not usable
     if (input === Infinity) output = NaN
-  
+
     return output
   },
 
@@ -1399,9 +1400,9 @@ var Utility = {
       }
     }
 
-    // Iterate through elements with data-equal-width  
+    // Iterate through elements with data-equal-width
     $('[data-equal-width]').each(function() {
-      // Add to group if attribute is present 
+      // Add to group if attribute is present
       var applyToGroup = $(this).data('equal-width-group')
       if (applyToGroup && typeof applyToGroup === 'string') {
         addGroup($(this).data('equal-width-group'))
@@ -1412,7 +1413,7 @@ var Utility = {
       }
     })
 
-    // Iterate through the groups 
+    // Iterate through the groups
     for (i = 0; i < groups.length; i++) {
       var $elem = $('[data-equal-width-group="' + groups[i] + '"]')
       // Fitler active breakpoints and resize

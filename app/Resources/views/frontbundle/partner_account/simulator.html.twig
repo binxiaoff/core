@@ -1,0 +1,277 @@
+{% extends 'partner_account/_layout.html.twig' %}
+
+{% set page = {
+    id: 'partner-account-cost-simulator',
+    classNames: 'partner-account'
+} %}
+
+{% block dashboardContent %}
+    <section class="dashboard-tabs tabs">
+        <div class="dashboard-tabs-content tab-content">
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} partner-cost-simulator_simulator-section-title {% endtrans %}</h3>
+                    </header>
+                    <div class="panel-content">
+                        <form id="cost-simulator-form" action="#" method="post" autocomplete="off" onsubmit="return false;" data-formvalidation>
+                            <div class="row">
+                                <div class="col-lg-5 col-md-5">
+                                    <div class="form-field row">
+                                        <label for="simulator-rate" class="col-lg-7 col-md-7">
+                                            {% trans %} partner-cost-simulator_input-rate-label {% endtrans %}
+                                        </label>
+                                        <div class="input-group set-right">
+                                            <div class="btn-group">%</div>
+                                            <input id="simulator-rate" type="text" value="" class="input-field text-align-right col-lg-5 col-md-5" autocomplete="off" autofocus
+                                                   placeholder="{% trans %} partner-cost-simulator_input-rate-placeholder {% endtrans %}"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-minvalue="0"
+                                                   data-formvalidation-maxvalue="10"
+                                                   data-formvalidation-type="number">
+                                        </div>
+                                    </div>
+                                    <div class="form-field row">
+                                        <label for="simulator-duration" class="col-lg-7 col-md-7">
+                                            {% trans %} partner-cost-simulator_input-duration-label {% endtrans %}
+                                        </label>
+                                        <select id="simulator-duration" class="input-field text-align-right col-lg-5 col-md-5" data-formvalidation-input>
+                                            <option value="">{% trans %} partner-cost-simulator_input-duration-placeholder {% endtrans %}</option>
+                                            {% for duration in fundingDurations %}
+                                                <option value="{{ duration }}">{% transchoice duration with {'%numberMonth%' : duration} %} partner-cost-simulator_input-duration-value {% endtranschoice %}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-field row">
+                                        <label for="simulator-amount" class="col-lg-7 col-md-7">
+                                            {% trans %} partner-cost-simulator_input-amount-label {% endtrans %}
+                                        </label>
+                                        <div class="input-group set-right">
+                                            <div class="btn-group">€</div>
+                                            <input id="simulator-amount" type="text" value="" class="input-field text-align-right col-lg-5 col-md-5" autocomplete="off"
+                                                   placeholder="{% trans %} partner-cost-simulator_input-amount-placeholder {% endtrans %}"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-minvalue="{{ minAmount }}"
+                                                   data-formvalidation-maxvalue="{{ maxAmount }}"
+                                                   data-formvalidation-type="integer">
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="form-field row">
+                                        <label for="simulator-funds-commission" class="col-lg-7 col-md-7">
+                                            <small>Commission de déblocage</small>
+                                        </label>
+                                        <div class="input-group set-right">
+                                            <div class="btn-group">%</div>
+                                            <input id="simulator-funds-commission" type="text" value="{{ minFundsCommission|localizednumber }}" class="input-field text-align-right col-lg-5 col-md-5" autocomplete="off"
+                                                   placeholder="{% trans %} partner-cost-simulator_input-amount-placeholder {% endtrans %}"
+                                                   data-formvalidation-input
+                                                   data-formvalidation-minvalue="{{ minFundsCommission }}"
+                                                   data-formvalidation-maxvalue="100"
+                                                   data-formvalidation-type="number">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-8 col-md-8"><small>Commission mensuelle</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small>{{ repaymentCommission|localizednumber }}&nbsp;%</small></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-8 col-md-8"><small>TVA</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small>{{ vatRate|localizednumber }}&nbsp;%</small></div>
+                                    </div>
+                                    <hr class="simulation">
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8">Montant effectivement versé</div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><strong><span id="released-funds"></span>&nbsp;€</strong></div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-1 col-md-1">&nbsp;</div>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8">Mensualité</div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><strong><span id="monthly-payment"></span>&nbsp;€</strong></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>Commission mensuelle</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="monthly-commission"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>Total HT</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="monthly-payment-total"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8">Mensualité avec commission TTC</div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><strong><span id="monthly-payment-total-taxes-included"></span>&nbsp;€</strong></div>
+                                    </div>
+                                    <hr class="simulation">
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>Coût total des intérêts</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="interests-cost"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>Commission Unilend HT retenue sur décaissement</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="unilend-funds-commission"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>TVA à récupérer sur la commission Unilend</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="recovered-vat-amount"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8"><small>Cout total des commissions et intérêts HT</small></div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><small><span id="interests-commissions-cost"></span>&nbsp;€</small></div>
+                                    </div>
+                                    <div class="row simulation">
+                                        <div class="col-lg-8 col-md-8">Coût total du financement (HT)</div>
+                                        <div class="col-lg-4 col-md-4 text-align-right"><strong><span id="total-funding-cost"></span>&nbsp;€</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </article><!-- /.panel -->
+
+            <article class="dashboard-tab-pane">
+                <div class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans with {'%date%' : lastUpdate|date('d/m/Y')} %} partner-cost-simulator_interest-rates-section-title {% endtrans %}</h3>
+                    </header>
+                    <div class="panel-content">
+                        <table class="table table-finance table-rates">
+                            <thead>
+                            <tr>
+                                <th>&nbsp;</th>
+                                <th colspan="2">
+                                    <span class="rating rating-3"><span class="sr-only">{% trans %} common_sr-only-rating-3-of-5 {% endtrans %}</span></span>
+                                </th>
+                                <th colspan="2">
+                                    <span class="rating rating-3-5"><span class="sr-only">{% trans %} common_sr-only-rating-3.5-of-5 {% endtrans %}</span></span>
+                                </th>
+                                <th colspan="2">
+                                    <span class="rating rating-4"><span class="sr-only">{% trans %} common_sr-only-rating-4-of-5 {% endtrans %}</span></span>
+                                </th>
+                                <th colspan="2">
+                                    <span class="rating rating-4-5"><span class="sr-only">{% trans %} common_sr-only-rating-4.5-of-5 {% endtrans %}</span></span>
+                                </th>
+                                <th colspan="2">
+                                    <span class="rating rating-5"><span class="sr-only">{% trans %} common_sr-only-rating-5-of-5 {% endtrans %}</span></span>
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>&nbsp;</th>
+                                <th>{% trans %} partner-cost-simulator_minimum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_maximum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_minimum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_maximum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_minimum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_maximum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_minimum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_maximum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_minimum-rate-column {% endtrans %}</th>
+                                <th>{% trans %} partner-cost-simulator_maximum-rate-column {% endtrans %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for ratingRates in ratesByPeriod %}
+                                <tr class="table-item">
+                                    <th>{{ "partner-cost-simulator_settings-project-period-#{ (ratingRates|first).id_period }"|trans }}</th>
+                                    {% for ratingRate in ratingRates %}
+                                        <td>{{ ratingRate.rate_min|localizednumberwithprecision(1) }}&nbsp;%</td>
+                                        <td>{{ ratingRate.rate_max|localizednumberwithprecision(1) }}&nbsp;%</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </article><!-- /.panel -->
+        </div><!-- /.dashboard-tabs-content -->
+    </section><!-- /.dashboard-tabs -->
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            $('body').on('change keyup', '#cost-simulator-form input, #cost-simulator-form select', function () {
+                var rate = convertStringToFloat($('#simulator-rate').val()),
+                    duration = convertStringToFloat($('#simulator-duration').val()),
+                    amount = convertStringToFloat($('#simulator-amount').val()),
+                    fundsCommission = convertStringToFloat($('#simulator-funds-commission').val()),
+                    releasedFundsLabel = $('#released-funds'),
+                    monthlyPaymentLabel = $('#monthly-payment'),
+                    monthlyCommissionLabel = $('#monthly-commission'),
+                    monthlyPaymentTotalLabel = $('#monthly-payment-total'),
+                    monthlyPaymentTotalTaxesIncludedLabel = $('#monthly-payment-total-taxes-included'),
+                    interestsCostLabel = $('#interests-cost'),
+                    unilendFundsCommissionLabel = $('#unilend-funds-commission'),
+                    recoveredVatAmountLabel = $('#recovered-vat-amount'),
+                    interestsCommissionsCostLabel = $('#interests-commissions-cost'),
+                    totalFundingCostLabel = $('#total-funding-cost'),
+                    releasedFunds, monthlyPayment, monthlyCommission, monthlyPaymentTotal, monthlyPaymentTotalTaxesIncluded, interestsCost, unilendFundsCommission, recoveredVatAmount, interestsCommissionsCost, totalFundingCost
+
+                $('.simulation').hide()
+
+                {# Formating missing - Don't know how to call Dictionary #}
+                if (rate && duration && amount && fundsCommission) {
+                    rate = rate / 100
+
+                    releasedFunds = amount * (1 - (fundsCommission / 100 * {{ 1 + vatRate / 100 }}))
+                    releasedFundsLabel.html(Math.round(releasedFunds * 100) / 100)
+
+                    monthlyPayment = pmt(rate / 12, duration, - amount)
+                    monthlyPaymentLabel.html(Math.round(monthlyPayment * 100) / 100)
+
+                    monthlyCommission = pmt({{ repaymentCommission / 100 }} / 12, duration, - amount) - pmt(0, duration, - amount)
+                    monthlyCommissionLabel.html(Math.round(monthlyCommission * 100) / 100)
+
+                    monthlyPaymentTotal = monthlyPayment + monthlyCommission
+                    monthlyPaymentTotalLabel.html(Math.round(monthlyPaymentTotal * 100) / 100)
+
+                    monthlyPaymentTotalTaxesIncluded = monthlyPayment + monthlyCommission * {{ 1 + vatRate / 100 }}
+                    monthlyPaymentTotalTaxesIncludedLabel.html(Math.round(monthlyPaymentTotalTaxesIncluded * 100) / 100)
+
+                    interestsCost = monthlyPayment * duration - amount
+                    interestsCostLabel.html(Math.round(interestsCost * 100) / 100)
+
+                    unilendFundsCommission = amount * fundsCommission / 100
+                    unilendFundsCommissionLabel.html(Math.round(unilendFundsCommission * 100) / 100)
+
+                    recoveredVatAmount = unilendFundsCommission * {{ vatRate / 100 }}
+                    recoveredVatAmountLabel.html(Math.round(recoveredVatAmount * 100) / 100)
+
+                    interestsCommissionsCost = unilendFundsCommission + monthlyCommission * duration + interestsCost
+                    interestsCommissionsCostLabel.html(Math.round(interestsCommissionsCost * 100) / 100)
+
+                    totalFundingCost = monthlyPaymentTotal * duration
+                    totalFundingCostLabel.html(Math.round(totalFundingCost * 100) / 100)
+
+                    $('.simulation').show()
+                }
+            })
+
+            {# Use Utility.js - I don't know how to #}
+            function convertStringToFloat (input) {
+                var output = parseFloat(input.replace(',', '.').replace(/[^\d\-\.]+/g, ''))
+
+                // Infinity === NaN because it's not usable
+                if (input === Infinity) output = NaN
+
+                return output
+            }
+
+            {# https://gist.github.com/maarten00/23400873d51bf2ec4eeb #}
+            function pmt (rate, duration, amount) {
+                if (rate !== 0.0) {
+                    var q = Math.pow(1 + rate, duration)
+                    return - rate * q * amount / (q - 1)
+                } else if (duration !== 0.0) {
+                    // No interest rate, but number of payments exists
+                    return - amount / duration
+                }
+
+                return 0
+            }
+        })
+    </script>
+{% endblock %}
