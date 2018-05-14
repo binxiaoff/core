@@ -12,11 +12,9 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, PartnerProjectAttachment, Projects, ProjectsStatus, Users
+    Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ProjectRequestManager, ProjectStatusManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
@@ -160,75 +158,16 @@ class ProjectRequestController extends Controller
         ];
 
         if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
-            /** @var \projects_status_history $projectStatusHistory */
-            $projectStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
-            $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
-
-            /** @var ProjectStatusManager $projectStatusManager */
-            $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $reason               = $projectStatusManager->getMainRejectionReason($projectStatusHistory->content);
-            $borrowerServiceEmail = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur']);
-
-            switch ($reason) {
-                case ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE:
-                    $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_STATUS:
-                    $translation = 'partner-project-request_not-eligible-reason-no-legal-personality';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION:
-                    $translation = 'partner-project-request_not-eligible-reason-company-location';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING:
-                    $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_VS_ALTARES_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_UNILEND_XERFI:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOGREFFE_PRIVILEGES:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_COMPANY_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT:
-                    $translation = 'partner-project-request_not-eligible-reason-scoring';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES:
-                    $translation = 'partner-project-request_not-eligible-reason-financial-data';
-                    break;
-                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND:
-                case ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND:
-                default:
-                    $translation = 'partner-project-request_not-eligible-reason-no-product';
-                    break;
-            }
-
-            $template['rejectionReason'] = $this->get('translator')->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
+            $projectRequestManager       = $this->get('unilend.service.project_request_manager');
+            $template['rejectionReason'] = $projectRequestManager->getPartnerMainRejectionReasonMessage($project);
         } else {
             $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
+            $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
 
             $template = $template + [
                     'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
-                    'abandonReasons'         => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+                    'abandonReasons'         => $projectAbandonReasonList,
                     'prospect'               => false === $this->getUser()->getPartner()->getProspect(),
                     'payment'                => [
                         'monthly'   => [
@@ -270,14 +209,17 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('partner_project_request_end', ['hash' => $project->getHash()]);
         }
 
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $projectManager = $this->get('unilend.service.project_manager');
-        $client         = $project->getIdCompany()->getIdClientOwner();
-        $template       = [
+        $entityManager            = $this->get('doctrine.orm.entity_manager');
+        $projectManager           = $this->get('unilend.service.project_manager');
+        $client                   = $project->getIdCompany()->getIdClientOwner();
+        $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
+
+        $template                 = [
             'project'                  => $project,
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
-            'abandonReasons'           => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC']),
+            'abandonReasons'           => $projectAbandonReasonList,
             'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()],
                 ['rank' => 'ASC']),
             'activeExecutives'         => $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren())
@@ -572,15 +514,11 @@ class ProjectRequestController extends Controller
 
         if (
             $project->getStatus() !== ProjectsStatus::ABANDONED
-            && $request->request->getInt('reason')
-            && ($abandonReason = $abandonReasonRepository->find($request->request->getInt('reason')))
+            && $request->request->get('reason')
+            && ($abandonReason = $abandonReasonRepository->findBy(['idAbandon' => $request->request->get('reason')]))
         ) {
-            /** @var \projects $projectData */
-            $projectData = $this->get('unilend.service.entity_manager')->getRepository('projects');
-            $projectData->get($project->getIdProject());
-
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $projectData, 0, $abandonReason->getLabel());
+            $projectStatusManager->abandonProject($project, $abandonReason, Users::USER_ID_FRONT);
         }
 
         return $this->redirectToRoute('partner_project_request_end', ['hash' => $hash]);

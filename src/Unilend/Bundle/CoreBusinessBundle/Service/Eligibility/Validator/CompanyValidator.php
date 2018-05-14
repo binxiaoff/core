@@ -11,7 +11,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\Validator;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, Projects, ProjectsNotes, ProjectsStatus, Xerfi
+    Companies, ProjectEligibilityAssessment, ProjectEligibilityRule, ProjectEligibilityRuleSet, ProjectRejectionReason, Projects, ProjectsNotes, ProjectsStatus, Xerfi
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager;
 use Unilend\Bundle\WSClientBundle\Entity\{
@@ -204,7 +204,7 @@ class CompanyValidator
                 Companies::INVALID_SIREN_EMPTY === $siren
                 || null === $this->externalDataManager->getCompanyIdentity($siren)
             ) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN];
+                return [ProjectRejectionReason::UNKNOWN_SIREN];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -223,7 +223,7 @@ class CompanyValidator
         try {
             $companyData = $this->externalDataManager->getCompanyIdentity($siren);
             if (in_array($companyData->getCompanyStatus(), [7, 9])) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE];
+                return [ProjectRejectionReason::ENTITY_INACTIVE];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -242,7 +242,7 @@ class CompanyValidator
         try {
             $companyData = $this->externalDataManager->getCompanyIdentity($siren);
             if ($companyData->getCollectiveProcedure()) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING];
+                return [ProjectRejectionReason::IN_PROCEEDING];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -259,7 +259,7 @@ class CompanyValidator
                 substr($companyData->getPostCode(), 0, 2) === '20' // Corse
                 || in_array(substr($companyData->getPostCode(), 0, 3), ['973', '976']) // Guyane et Mayotte
             ) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_COMPANY_LOCATION];
+                return [ProjectRejectionReason::COMPANY_LOCATION];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -287,7 +287,7 @@ class CompanyValidator
         $incidents = $incidentList->getIncidentList();
 
         if (count($incidents) > 2) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_TOO_MUCH_PAYMENT_INCIDENT];
+            return [ProjectRejectionReason::TOO_MUCH_PAYMENT_INCIDENT];
         }
 
         foreach ($incidents as $incident) {
@@ -295,7 +295,7 @@ class CompanyValidator
             $period = (int) $diff->format('%y') * 12 + (int) $diff->format('%m');
 
             if (true === in_array($incident->getType(), $nonAllowedIncident) && 12 >= $period) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_NON_ALLOWED_PAYMENT_INCIDENT];
+                return [ProjectRejectionReason::NON_ALLOWED_PAYMENT_INCIDENT];
             }
         }
 
@@ -315,7 +315,7 @@ class CompanyValidator
         }
 
         if ($altaresScore->getScore20() < 4) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_LOW_ALTARES_SCORE];
+            return [ProjectRejectionReason::LOW_ALTARES_SCORE];
         }
 
         return [];
@@ -351,7 +351,7 @@ class CompanyValidator
         }
 
         if ($capitalStockPost->getAmountY() < 0) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK];
+            return [ProjectRejectionReason::NEGATIVE_CAPITAL_STOCK];
         }
 
         return [];
@@ -387,7 +387,7 @@ class CompanyValidator
         }
 
         if ($grossOperatingSurplus->getAmountY() < 0) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES];
+            return [ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES];
         }
 
         return [];
@@ -410,7 +410,7 @@ class CompanyValidator
             $xerfi = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Xerfi')->find($nafCode);
 
             if ($xerfi instanceof Xerfi && Xerfi::UNILEND_ELIMINATION_SCORE === $xerfi->getUnilendRating()) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_UNILEND_XERFI_ELIMINATION_SCORE];
+                return [ProjectRejectionReason::UNILEND_XERFI_ELIMINATION_SCORE];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -437,7 +437,7 @@ class CompanyValidator
         }
 
         if (EulerHermesCompanyRating::COLOR_BLACK === $trafficLight->getColor()) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT];
+            return [ProjectRejectionReason::EULER_TRAFFIC_LIGHT];
         }
 
         $altaresScore = $this->externalDataManager->getAltaresScore($siren);
@@ -449,7 +449,7 @@ class CompanyValidator
             EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
             && $altaresScore->getScore20() < 12
         ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
+            return [ProjectRejectionReason::EULER_TRAFFIC_LIGHT_VS_ALTARES_SCORE];
         }
 
         try {
@@ -460,7 +460,7 @@ class CompanyValidator
                 EulerHermesCompanyRating::COLOR_RED === $trafficLight->getColor()
                 && $xerfi->getScore() > 75
             ) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
+                return [ProjectRejectionReason::EULER_TRAFFIC_LIGHT_VS_UNILEND_XERFI];
             }
         } catch (\Exception $exception) {
             return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -484,15 +484,15 @@ class CompanyValidator
         }
 
         if (null !== $ellisphereReport->getDefaults()->getDefaultsNoted()) {
-            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_DEFAULTS;
+            $eligibility[] = ProjectRejectionReason::ELLISPHERE_DEFAULT;
         }
 
         if ($ellisphereReport->getDefaults()->getSocialSecurityPrivilegesCount()->getCount()) {
-            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES;
+            $eligibility[] = ProjectRejectionReason::ELLISPHERE_SOCIAL_SECURITY_PRIVILEGES;
         }
 
         if ($ellisphereReport->getDefaults()->getTreasuryTaxPrivilegesCount()->getCount()) {
-            $eligibility[] = ProjectsStatus::NON_ELIGIBLE_REASON_ELLISPHERE_TREASURY_TAX_PRIVILEGES;
+            $eligibility[] = ProjectRejectionReason::ELLISPHERE_TREASURY_TAX_PRIVILEGES;
         }
 
         return $eligibility;
@@ -511,7 +511,7 @@ class CompanyValidator
         }
 
         if ($infolegaleScore->getScore() < 5) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_LOW_INFOLEGALE_SCORE];
+            return [ProjectRejectionReason::LOW_INFOLEGALE_SCORE];
         }
 
         return [];
@@ -530,7 +530,7 @@ class CompanyValidator
             $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 1, ContentiousParticipant::TYPE_TARGET);
 
             if ($hasPejorativeEvent) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT];
+                return [ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_TARGET_INCIDENT];
             }
         } catch (\UnexpectedValueException $exception) {
             return [$exception->getMessage()];
@@ -558,7 +558,7 @@ class CompanyValidator
         try {
             $hasPejorativeEvent = $this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_WITH_ROLE, 1, ContentiousParticipant::TYPE_COMPLAINANT);
             if ($hasPejorativeEvent) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT];
+                return [ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_COMPLAINANT_INCIDENT];
             }
         } catch (\UnexpectedValueException $exception) {
             return [$exception->getMessage()];
@@ -585,7 +585,7 @@ class CompanyValidator
     {
         try {
             if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_NO_ROLE_12MONTHS, 1)) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12MONTHS_INCIDENT];
+                return [ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_NO_ROLE_12_MONTHS_INCIDENT];
             }
         } catch (\BadMethodCallException $exception) {
             $this->logger->critical(
@@ -610,7 +610,7 @@ class CompanyValidator
     {
         try {
             if ($this->hasEventCodeInList($siren, AnnouncementEvent::PEJORATIVE_EVENT_CODE_DEPOSITOR_COLLECTIVE_PROCEEDING, 3)) {
-                return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT];
+                return [ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_CP_INCIDENT];
             }
         } catch (\BadMethodCallException $exception) {
             $this->logger->critical(
@@ -640,7 +640,7 @@ class CompanyValidator
         try {
             foreach ($otherCompaniesOfActiveExecutives as $siren) {
                 if ($this->hasEventCodeInList($siren['siren'], AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, 3)) {
-                    return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT];
+                    return [ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_OTHER_COMPANIES_INCIDENT];
                 }
             }
         } catch (\BadMethodCallException $exception) {
@@ -676,7 +676,7 @@ class CompanyValidator
                 $hasPejorativeEvent = $this->hasEventCodeInList($mandate->getSiren(), AnnouncementEvent::PEJORATIVE_EVENT_CODE_OTHER_MANAGER_COMPANIES, null, null, $mandatePeriod);
 
                 if ($hasPejorativeEvent) {
-                    return [ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
+                    return [ProjectRejectionReason::INFOLEGALE_PREVIOUS_MANAGER_INCIDENT];
                 }
             }
         } catch (\BadMethodCallException $exception) {
@@ -706,7 +706,7 @@ class CompanyValidator
         try {
             if (null !== $companyIdentity = $this->externalDataManager->getCompanyIdentity($siren)) {
                 if (in_array($companyIdentity->getLegalFormCode(), CompanyIdentityDetail::COMPANIES_WITHOUT_LEGAL_STATUS_CODES)) {
-                    return [ProjectsStatus::NON_ELIGIBLE_REASON_NO_LEGAL_STATUS];
+                    return [ProjectRejectionReason::NO_LEGAL_STATUS];
                 }
             } else {
                 return [ProjectsStatus::UNEXPECTED_RESPONSE . 'altares_identity'];
@@ -785,7 +785,7 @@ class CompanyValidator
                                     'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched DEPOSITOR_WITH_ROLE but no role ("contentious participants") was found.',
                                     ['method' => __METHOD__, 'siren' => $siren, 'line' => __LINE__]
                                 );
-                                throw new \UnexpectedValueException(ProjectsStatus::NON_ELIGIBLE_REASON_INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT);
+                                throw new \UnexpectedValueException(ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT);
                             }
                         }
                         /** for previous Executives */
@@ -866,7 +866,7 @@ class CompanyValidator
             $eulerHermesGrade->getGrade() >= 5 && $altaresScore->getScore20() == 4
             || $eulerHermesGrade->getGrade() >= 7 && $altaresScore->getScore20() == 5
         ) {
-            return [ProjectsStatus::NON_ELIGIBLE_REASON_EULER_GRADE_VS_ALTARES_SCORE];
+            return [ProjectRejectionReason::EULER_GRADE_VS_ALTARES_SCORE];
         }
 
         return [];

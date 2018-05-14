@@ -48,27 +48,6 @@ class ProjectsStatusHistoryDetails
     private $siteContent;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="analyst_rejection_reason", type="integer", nullable=false)
-     */
-    private $analystRejectionReason;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="comity_rejection_reason", type="integer", nullable=false)
-     */
-    private $comityRejectionReason;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="commercial_rejection_reason", type="integer", nullable=false)
-     */
-    private $commercialRejectionReason;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -211,78 +190,6 @@ class ProjectsStatusHistoryDetails
     public function getSiteContent()
     {
         return $this->siteContent;
-    }
-
-    /**
-     * Set analystRejectionReason
-     *
-     * @param integer $analystRejectionReason
-     *
-     * @return ProjectsStatusHistoryDetails
-     */
-    public function setAnalystRejectionReason($analystRejectionReason)
-    {
-        $this->analystRejectionReason = $analystRejectionReason;
-
-        return $this;
-    }
-
-    /**
-     * Get analystRejectionReason
-     *
-     * @return integer
-     */
-    public function getAnalystRejectionReason()
-    {
-        return $this->analystRejectionReason;
-    }
-
-    /**
-     * Set comityRejectionReason
-     *
-     * @param integer $comityRejectionReason
-     *
-     * @return ProjectsStatusHistoryDetails
-     */
-    public function setComityRejectionReason($comityRejectionReason)
-    {
-        $this->comityRejectionReason = $comityRejectionReason;
-
-        return $this;
-    }
-
-    /**
-     * Get comityRejectionReason
-     *
-     * @return integer
-     */
-    public function getComityRejectionReason()
-    {
-        return $this->comityRejectionReason;
-    }
-
-    /**
-     * Set commercialRejectionReason
-     *
-     * @param integer $commercialRejectionReason
-     *
-     * @return ProjectsStatusHistoryDetails
-     */
-    public function setCommercialRejectionReason($commercialRejectionReason)
-    {
-        $this->commercialRejectionReason = $commercialRejectionReason;
-
-        return $this;
-    }
-
-    /**
-     * Get commercialRejectionReason
-     *
-     * @return integer
-     */
-    public function getCommercialRejectionReason()
-    {
-        return $this->commercialRejectionReason;
     }
 
     /**

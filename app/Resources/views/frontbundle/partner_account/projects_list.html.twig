@@ -288,7 +288,7 @@
                                                     {% trans %} partner-project-list_abandoned-table-motif {% endtrans %}
                                                 </span>
                                             </th>
-                                            <th class="table-projects-item-status table-sortable-column" data-sortable-by="status">
+                                            <th class="table-projects-item-status">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-status'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_abandoned-table-status {% endtrans %}
                                                 </span>
@@ -310,8 +310,7 @@
                                                     {% endif %}
                                                 data-sortable-motif="{{ project.motive|e('html_attr') }}"
                                                 data-sortable-amount="{{ project.amount }}"
-                                                data-sortable-duration="{{ project.duration }}"
-                                                data-sortable-status="{{ project.abandonReason|e('html_attr') }}">
+                                                data-sortable-duration="{{ project.duration }}">
                                                 <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
                                                 {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
                                                     <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
@@ -319,7 +318,18 @@
                                                 <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
                                                 <td class="table-projects-item-duration">{% trans with {'%duration%': project.duration} %} partner-project-list_abandoned-table-duration-value {% endtrans %}</td>
                                                 <td class="table-projects-item-motif">{{ project.motive }}</td>
-                                                <td class="table-projects-item-status">{{ project.abandonReason }}</td>
+                                                <td class="table-projects-item-status">
+                                                    {% if project.projectAbandonReasons|length > 0 %}
+                                                        {% for abandonReasonHistory in project.projectAbandonReasons %}
+                                                            {{ abandonReasonHistory.idAbandonReason.reason|capitalize }}
+                                                            {% if loop.index < project.projectAbandonReasons|length %}
+                                                                <br>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        &nbsp;
+                                                    {% endif %}
+                                                </td>
                                                 <td class="table-actions">
                                                     {% if project.memos|length > 0 %}
                                                         <a role="button" class="btn-default" title="{{ 'partner-project-list_abandoned-table-action-see-memos'|trans|e('html_attr') }}" data-toggle="tooltip" data-action="memos"><span class="icon fa-info-u16"></span></a>
@@ -422,11 +432,12 @@
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
+                {# @todo find a way to add a select2-like solution to be able to choose more than one reason at time #}
                 <div class="form-field">
                     <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                         <option value="">{% trans %} partner-project-list_simulator-abandon-motif-select {% endtrans %}</option>
-                        {% for reason in abandonReasons %}
-                            <option value="{{ reason.idAbandon }}">{{ reason.label }}</option>
+                        {% for abandonReason in abandonReasons %}
+                            <option value="{{ abandonReason.idAbandon }}">{{ abandonReason.reason|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </div>
