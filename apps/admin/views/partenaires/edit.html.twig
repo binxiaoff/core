@@ -381,7 +381,13 @@
                         <tr data-id="{{ agency.idCompany }}">
                             <td>{{ agency.name }}</td>
                             <td>{{ agency.siren }}</td>
-                            <td>{{ agency.phone }}</td>
+                            {% if agency.phone|length > 0 %}
+                                <td>
+                                    <a href="tel:0{{ agency.phone }}">{{ agency.phone }}&nbsp;<i class="si si-call-out fa-1x"></i></a>
+                                </td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
                             <td>{{ agency.idAddress.address }}</td>
                             <td>{{ agency.idAddress.zip }}</td>
                             <td>{{ agency.idAddress.city }}</td>
@@ -420,7 +426,13 @@
                             <td>{{ user.idClient.prenom }}</td>
                             <td>{{ user.idClient.email }}</td>
                             <td>{{ user.idCompany.name }}</td>
-                            <td>{{ user.idClient.telephone }}</td>
+                            {% if user.idClient.telephone|length > 0 %}
+                                <td>
+                                    <a href="tel:0{{ user.idClient.telephone }}">{{ user.idClient.telephone }}&nbsp;<i class="si si-call-out fa-1x"></i></a>
+                                </td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
                             <td>{% if user.role == 'ROLE_PARTNER_ADMIN' %}Administrateur{% else %}Agent{% endif %}</td>
                             <td>{% if user.idClient.lastlogin is not empty %}{{ user.idClient.lastlogin|date('d/m/Y') }}{% endif %}</td>
                         </tr>

@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Users, UsersHistory
+    ProjectsStatus, Users, UsersHistory
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
@@ -67,7 +67,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     }
                     $partner = empty($partner) ? $partnerManager->getDefaultPartner() : $partner;
 
-                    $project = $projectRequestManager->newProject($user, $partner, $amount, $siren);
+                    $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren);
                     $company = $project->getIdCompany();
                     $createdProjects[] = $project->getIdProject();
 

@@ -2,15 +2,15 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{
     JsonResponse, Request, Response
 };
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, Projects, ProjectsComments, ProjectsStatus
+    Companies, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
@@ -55,7 +55,8 @@ class ProjectsListController extends Controller
             'completeProjects'   => $this->formatProject($completeProjects, true),
             'abandoned'          => $this->formatProject($abandoned, true, true),
             'rejected'           => $this->formatProject($rejected, true),
-            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
+            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
         ]);
     }
 
@@ -204,7 +205,7 @@ class ProjectsListController extends Controller
                     'idProject'       => $project->getIdProject(),
                     'idProjectStatus' => $abandonProjectStatus
                 ]);
-                $display[$project->getIdProject()]['abandonReason'] = $history ? $history->getContent() : '';
+                $display[$project->getIdProject()]['projectAbandonReasons'] = $history ? $history->getAbandonReasons() : [];
             }
         }
 

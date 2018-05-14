@@ -358,7 +358,7 @@ function check_status_dossier(status, id_project) {
         $.post(add_url + '/ajax/check_status_dossier', {
             status: status,
             id_project: id_project,
-            rejection_reason: $('#rejection_reason option:selected').val(),
+            rejection_reason: $('#rejection_reason').val(),
             comment: comment,
             public: $('[name=rejection_privacy]:checked').val(),
             send_email: $('[name=send_email]:checked').val()
@@ -397,7 +397,7 @@ function valid_rejete_etape6(status, id_project) {
             dirigeance                      = parseFloat($('#dirigeance').val().replace(',', '.')),
             indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
             avis                            = ckedAvis.getData(),
-            rejection_reason                = $('#rejection_reason option:selected').val(),
+            rejection_reason                = $('#rejection_reason').val(),
             send_email                      = $('[name=send_email]:checked').val(),
             form_ok                         = true;
 
@@ -415,7 +415,7 @@ function valid_rejete_etape6(status, id_project) {
             form_ok = false;
             alert('Vous devez renseigner un avis (50 caractères minimum)');
         }
-        else if (status == 2 && rejection_reason == '') {
+        else if (status == 2 && rejection_reason === null) {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
         } else if (
@@ -505,7 +505,7 @@ function valid_rejete_etape7(status, id_project) {
             dirigeance                    = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
             indicateur_risque_dynamique   = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
             avis_comite                   = ckedAvis_comite.getData(),
-            rejection_reason              = $('#rejection_reason option:selected').val(),
+            rejection_reason              = $('#rejection_reason').val(),
             send_email                    = $('[name=send_email]:checked').val(),
             suspensive_conditions_comment = $('#suspensive-conditions-memo-textarea').length ? $('#suspensive-conditions-memo-textarea').val() : '',
             form_ok = true;
@@ -524,7 +524,7 @@ function valid_rejete_etape7(status, id_project) {
             form_ok = false;
             alert('Vous devez renseigner un avis (50 caractères minimum)');
         }
-        else if (status == 2 && rejection_reason == '') {
+        else if (status == 2 && rejection_reason === null) {
             form_ok = false;
             alert('Vous devez renseigner le motif de rejet');
         }

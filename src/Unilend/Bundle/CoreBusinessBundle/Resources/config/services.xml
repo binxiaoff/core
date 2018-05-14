@@ -171,6 +171,7 @@
             <argument type="service" id="unilend.service.company_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
             <argument type="service" id="unilend.service.project_manager"/>
+            <argument type="service" id="translator"/>
         </service>
 
         <service id="unilend.service.external_data_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ExternalDataManager">
@@ -502,6 +503,7 @@
         <service id="unilend.service.project_close_out_netting_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager">
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.project_status_manager"/>
+            <argument type="service" id="translator"/>
         </service>
 
         <service id="unilend.service.project_rating_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRatingManager">

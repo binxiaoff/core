@@ -3,26 +3,20 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletBalanceHistory;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    OperationSubType, OperationType, TaxType, UnderlyingContract, Wallet, WalletBalanceHistory
+};
 
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
     /**
      * @see Command
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('feeds:fiscal_state')
@@ -34,20 +28,16 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $numberFormatter = $this->getContainer()->get('number_formatter');
-        $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
-        /** @var \ficelle $ficelle */
-        $ficelle = Loader::loadLib('ficelle');
-
+        $entityManager       = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
         /** @var TaxType[] $frenchTaxes */
         $frenchTaxes = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findBy(['country' => 'fr']);
         $taxRate     = [];
         foreach ($frenchTaxes as $tax) {
-            $taxRate[$tax->getIdTaxType()] = $numberFormatter->format($tax->getRate());
+            $taxRate[$tax->getIdTaxType()] = $tax->getRate();
         }
 
         $month = $input->getArgument('month');
@@ -59,7 +49,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             return;
         }
 
-        /*****TAX*****/
+        /***** TAX *****/
         $statutoryContributionsByContract            = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, true);
         $regularisedStatutoryContributionsByContract = $operationRepository->getTaxForFiscalState(OperationType::TAX_FR_PRELEVEMENTS_OBLIGATOIRES, null, $firstDayOfLastMonth, $lastDayOfLastMonth, true, true);
         $statutoryContributionsByContract            = array_combine(array_column($statutoryContributionsByContract, 'contract_label'), array_values($statutoryContributionsByContract));
@@ -175,146 +165,77 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             }
         }
 
-        $totalFrPhysicalPersonInterest = round(bcadd(bcadd(bcadd($statutoryContributionsInterestsBDC, $statutoryContributionsInterestsIFP, 4), $statutoryContributionsInterestsMiniBon, 4),
-            $exemptedInterests, 4), 2);
+        $totalFrPhysicalPersonInterest = round(bcadd(bcadd(bcadd($statutoryContributionsInterestsBDC, $statutoryContributionsInterestsIFP, 4), $statutoryContributionsInterestsMiniBon, 4), $exemptedInterests, 4), 2);
 
-        $table = '
-                <style>
-                    table th,table td{width:80px;height:20px;border:1px solid black;}
-                    table td.dates{text-align:center;}
-                    .right{text-align:right;}
-                    .center{text-align:center;}
-                    .boder-top{border-top:1px solid black;}
-                    .boder-bottom{border-bottom:1px solid black;}
-                    .boder-left{border-left:1px solid black;}
-                    .boder-right{border-right:1px solid black;}
-                </style>
-        
-                <table border="1" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 650px;">
-                    <tr>
-                        <th colspan="4">UNILEND</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#C9DAF2;">P&eacute;riode :</th>
-                        <th style="background-color:#C9DAF2;">' . $firstDayOfLastMonth->format('d/m/Y') . '</th>
-                        <th style="background-color:#C9DAF2;">au</th>
-                        <th style="background-color:#C9DAF2;">' . $lastDayOfLastMonth->format('d/m/Y') . '</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#ECAEAE;" colspan="4">Pr&eacute;l&egrave;vements obligatoires</th>
-                    </tr>
-                    <tr>
-                        <th>&nbsp;</th>
-                        <th style="background-color:#F4F3DA;">Base (Int&eacute;r&ecirc;ts bruts)</th>
-                        <th style="background-color:#F4F3DA;">Montant pr&eacute;l&egrave;vements</th>
-                        <th style="background-color:#F4F3DA;">Taux</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (bons de caisse)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 1-->
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsBDC) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxBDC) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (pr&ecirc;t IFP)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : 2-->
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsIFP) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxIFP) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Soumis au pr&eacute;l&egrave;vements (minibons)</th> <!-- Somme des interets bruts pour : Personne physique, résident français, non exonéré, type loan : minibons-->
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsInterestsMiniBon) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTaxMiniBon) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Dispens&eacute;</th> <!-- Somme des interets bruts pour : Personne physique, résident français, exonéré, type loan : 1-->
-                        <td class="right">' . $ficelle->formatNumber($exemptedInterests) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($exemptedIncomeTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber(0) . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Total</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($statutoryContributionsTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#ECAEAE;" colspan="4">Retenue &agrave; la source (bons de caisse et minibons)</th>
-                    </tr>
-                    <tr>
-                        <th>&nbsp;</th>
-                        <th style="background-color:#F4F3DA;">Base (Int&eacute;r&ecirc;ts bruts)</th>
-                        <th style="background-color:#F4F3DA;">Montant retenues &agrave; la source</th>
-                        <th style="background-color:#F4F3DA;">Taux</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source (personne morale)</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterestsLegalEntity) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceTaxLegalEntity) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Soumis &agrave; la retenue &agrave; la source (personne physique)</th> <!-- Somme des interets bruts pour : Personne morale résident français ou personne physique non résdent français, type loan : 2-->
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceInterestsPerson) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($deductionAtSourceTaxPerson) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#ECAEAE;" colspan="4">Pr&eacute;l&egrave;vements sociaux</th>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">CSG</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($csgTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CSG] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vement social</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($socialDeductionTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOCIAL_DEDUCTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($additionalContributionTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">Pr&eacute;l&egrave;vements de solidarit&eacute;</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($solidarityDeductionTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_SOLIDARITY_DEDUCTIONS] . '%</td>
-                    </tr>
-                    <tr>
-                        <th style="background-color:#E6F4DA;">CRDS</th>
-                        <td class="right">' . $ficelle->formatNumber($totalFrPhysicalPersonInterest) . '</td>
-                        <td class="right">' . $ficelle->formatNumber($crdsTax) . '</td>
-                        <td style="background-color:#DDDAF4;" class="right">' . $taxRate[TaxType::TYPE_CRDS] . '%</td>
-                    </tr>
-                </table>';
+        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xlsx';
 
-        $filePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xls';
-        file_put_contents($filePath, $table);
+        try {
+            /** @var \PHPExcel $document */
+            $document = new \PHPExcel();
+            $document->getDefaultStyle()->getFont()->setName('Calibri');
+            $document->getDefaultStyle()->getFont()->setSize(12);
 
-        /** @var Settings $recipientSetting */
-        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneByType('Adresse notification etat fiscal');
+            $activeSheet = $document->setActiveSheetIndex(0);
+            $activeSheet->getColumnDimension('A')->setWidth(45);
+            $activeSheet->getColumnDimension('B')->setWidth(25);
+            $activeSheet->getColumnDimension('C')->setWidth(25);
+            $activeSheet->getColumnDimension('D')->setWidth(25);
+
+            $activeSheet->setCellValue('A1', 'Période');
+            $activeSheet->setCellValue('B1', $firstDayOfLastMonth->format('d/m/Y'));
+            $activeSheet->setCellValue('C1', 'au');
+            $activeSheet->setCellValue('D1', $firstDayOfLastMonth->format('d/m/Y'));
+
+            $this->addTitleRow($activeSheet, 2, 'Prélèvements obligatoires');
+            $this->addSubTitleRow($activeSheet, 3, 'Base (intérêts bruts)', 'Montant prélèvements', 'Taux (%)');
+            $this->addValueRow($activeSheet, 4, 'Soumis aux prélèvements (bons de caisse)', $statutoryContributionsInterestsBDC, $statutoryContributionsTaxBDC, $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]);
+            $this->addValueRow($activeSheet, 5, 'Soumis aux prélèvements (prêt IFP)', $statutoryContributionsInterestsIFP, $statutoryContributionsTaxIFP, $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]);
+            $this->addValueRow($activeSheet, 6, 'Soumis aux prélèvements (minibons)', $statutoryContributionsInterestsMiniBon, $statutoryContributionsTaxMiniBon, $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]);
+            $this->addValueRow($activeSheet, 7, 'Dispensé', $exemptedInterests, $exemptedIncomeTax, 0);
+            $this->addValueRow($activeSheet, 8, 'Total', $totalFrPhysicalPersonInterest, $statutoryContributionsTax, $taxRate[TaxType::TYPE_STATUTORY_CONTRIBUTIONS]);
+            $this->addTitleRow($activeSheet, 9, 'Retenue à la source (bons de caisse et minibons)');
+            $this->addSubTitleRow($activeSheet, 10, 'Base (intérêts bruts)', 'Montant retenues à la source', 'Taux (%)');
+            $this->addValueRow($activeSheet, 11, 'Soumis à la retenue à la source (personne morale)', $deductionAtSourceInterestsLegalEntity, $deductionAtSourceTaxLegalEntity, $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]);
+            $this->addValueRow($activeSheet, 12, 'Soumis à la retenue à la source (personne physique)', $deductionAtSourceInterestsPerson, $deductionAtSourceTaxPerson, $taxRate[TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON]);
+            $this->addTitleRow($activeSheet, 13, 'Prélèvements sociaux');
+            $this->addValueRow($activeSheet, 14, 'CSG', $totalFrPhysicalPersonInterest, $csgTax, $taxRate[TaxType::TYPE_CSG]);
+            $this->addValueRow($activeSheet, 15, 'Prélèvement social', $totalFrPhysicalPersonInterest, $socialDeductionTax, $taxRate[TaxType::TYPE_SOCIAL_DEDUCTIONS]);
+            $this->addValueRow($activeSheet, 16, 'Contribution additionnelle', $totalFrPhysicalPersonInterest, $additionalContributionTax, $taxRate[TaxType::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]);
+            $this->addValueRow($activeSheet, 17, 'Prélèvements de solidarité', $totalFrPhysicalPersonInterest, $solidarityDeductionTax, $taxRate[TaxType::TYPE_SOLIDARITY_DEDUCTIONS]);
+            $this->addValueRow($activeSheet, 18, 'CRDS', $totalFrPhysicalPersonInterest, $crdsTax, $taxRate[TaxType::TYPE_CRDS]);
+
+            /** @var \PHPExcel_Writer_CSV $writer */
+            $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
+            $writer->save(str_replace(__FILE__, $filePath, __FILE__));
+        } catch (\PHPExcel_Exception $exception) {
+            $this->getContainer()->get('monolog.logger.console')->critical('Monthly fiscal state could not be generated: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
+
+            return;
+        }
+
+        $recipientSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification etat fiscal']);
         $url              = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $varMail          = ['$surl' => $url, '$url' => $url];
+        $keywords         = ['$surl' => $url, '$url' => $url];
 
-        /** @var TemplateMessage $message */
-        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
+        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $keywords, false);
+
         try {
             $message->setTo(explode(';', trim($recipientSetting->getValue())));
             $message->attach(\Swift_Attachment::fromPath($filePath));
             $mailer = $this->getContainer()->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
-            $this->getContainer()->get('monolog.logger.console')->warning(
-                'Could not send email : notification-etat-fiscal - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipientSetting->getValue())), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->getContainer()->get('monolog.logger.console')->warning('Could not send email "notification-etat-fiscal": ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'email address'    => explode(';', trim($recipientSetting->getValue())),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
         }
 
         $withdraw = $input->getOption('withdraw');
@@ -324,9 +245,62 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     }
 
     /**
+     * @param \PHPExcel_Worksheet $worksheet
+     * @param int                 $row
+     * @param string              $title
+     *
+     * @throws \PHPExcel_Exception
+     */
+    private function addTitleRow(\PHPExcel_Worksheet $worksheet, int $row, string $title): void
+    {
+        $worksheet->mergeCells('A' . $row . ':D' . $row);
+        $worksheet->setCellValue('A' . $row, $title);
+        $worksheet->getStyle('A' . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB('ECAEAE');
+        $worksheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    }
+
+    /**
+     * @param \PHPExcel_Worksheet $worksheet
+     * @param int                 $row
+     * @param string              $firstTitle
+     * @param string              $secondTitle
+     * @param string              $thirdTitle
+     *
+     * @throws \PHPExcel_Exception
+     */
+    private function addSubTitleRow(\PHPExcel_Worksheet $worksheet, int $row, string $firstTitle, string $secondTitle, string $thirdTitle): void
+    {
+        $worksheet->setCellValue('B' . $row, $firstTitle);
+        $worksheet->setCellValue('C' . $row, $secondTitle);
+        $worksheet->setCellValue('D' . $row, $thirdTitle);
+        $worksheet->getStyle('A' . $row . ':D' . $row)->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB('F4F3DA');
+        $worksheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+    }
+
+    /**
+     * @param \PHPExcel_Worksheet $worksheet
+     * @param int                 $row
+     * @param string              $title
+     * @param float               $firstValue
+     * @param float               $secondValue
+     * @param float               $thirdValue
+     *
+     * @throws \PHPExcel_Exception
+     */
+    private function addValueRow(\PHPExcel_Worksheet $worksheet, int $row, string $title, float $firstValue, float $secondValue, float $thirdValue): void
+    {
+        $worksheet->setCellValue('A' . $row, $title);
+        $worksheet->setCellValueExplicit('B' . $row, $firstValue, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $worksheet->setCellValueExplicit('C' . $row, $secondValue, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $worksheet->setCellValueExplicit('D' . $row, $thirdValue, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $worksheet->getStyle('B' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PHPExcel_Style_Alignment::HORIZONTAL_RIGHT);
+        $worksheet->getStyle('B' . $row . ':D' . $row)->getNumberFormat()->setFormatCode(\PHPExcel_Style_NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+    }
+
+    /**
      * @param \DateTime $lastDayOfLastMonth
      */
-    private function doTaxWalletsWithdrawals(\DateTime $lastDayOfLastMonth)
+    private function doTaxWalletsWithdrawals(\DateTime $lastDayOfLastMonth): void
     {
         $operationsManager = $this->getContainer()->get('unilend.service.operation_manager');
         $entityManager     = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -354,11 +328,11 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
      *
      * @return float|int
      */
-    private function getTaxFromGroupedRawData($rawDataByContract, $regularisedRawDataByContract, $contractType)
+    private function getTaxFromGroupedRawData(array $rawDataByContract, array $regularisedRawDataByContract, string $contractType)
     {
         $statutoryContributions = 0;
         if (isset($rawDataByContract[$contractType])) {
-            $statutoryContributions = $rawDataByContract[$contractType]['tax'];
+            $statutoryContributions = round($rawDataByContract[$contractType]['tax'], 2);
         }
 
         if (isset($regularisedRawDataByContract[$contractType])) {
@@ -368,11 +342,17 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         return $statutoryContributions;
     }
 
-    private function getTaxFromRawData($rawDataByContract, $regularisedRawDataByContract)
+    /**
+     * @param array $rawDataByContract
+     * @param array $regularisedRawDataByContract
+     *
+     * @return float
+     */
+    private function getTaxFromRawData(array $rawDataByContract, array $regularisedRawDataByContract): float
     {
         $tax = 0;
         if (isset($rawDataByContract[0]['tax'])) {
-            $tax = $rawDataByContract[0]['tax'];
+            $tax = round($rawDataByContract[0]['tax'], 2);
         }
         if (isset($regularisedRawDataByContract[0]['tax'])) {
             $tax = round(bcsub($tax, $regularisedRawDataByContract[0]['tax'], 4), 2);
@@ -382,7 +362,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
     }
 
     /**
-     * @param $date
+     * @param string $date
      *
      * @return bool|string
      */

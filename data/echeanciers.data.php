@@ -3,8 +3,8 @@
 use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers as EcheanciersEntity;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class echeanciers extends echeanciers_crud
 {
@@ -641,7 +641,7 @@ class echeanciers extends echeanciers_crud
     public function getProblematicOwedCapitalByProjects(string $contractType, ?int $delay = null): array
     {
         $delayQuery = '';
-        $params = [
+        $params     = [
             'problem'      => ProjectsStatus::PROBLEME,
             'repayment'    => ProjectsStatus::REMBOURSEMENT,
             'contractType' => $contractType,
@@ -651,7 +651,7 @@ class echeanciers extends echeanciers_crud
         ];
 
         if (null !== $delay) {
-            $delayQuery      = 'AND TIMESTAMPDIFF(MONTH, NOW(), e.date_echeance) >= :delay ';
+            $delayQuery      = 'AND TIMESTAMPDIFF(MONTH, e.date_echeance, NOW()) >= :delay ';
             $params['delay'] = $delay;
         }
 
@@ -675,11 +675,11 @@ class echeanciers extends echeanciers_crud
                   AND e.status != :repaid
                   AND l.status = :accepted
                   AND p.status >= :problem
-                  AND TIMESTAMPDIFF(MONTH, NOW(),(SELECT added FROM projects_status_history
+                  AND TIMESTAMPDIFF(MONTH, (SELECT added FROM projects_status_history
                         INNER JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
                         WHERE  projects_status.status = :repayment
                           AND e.id_project = projects_status_history.id_project
-                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1)) = :period 
+                        ORDER BY projects_status_history.added ASC, id_project_status_history ASC LIMIT 1),  NOW()) <= :period 
                   ' . $delayQuery . '
                 GROUP BY p.id_project
               )
