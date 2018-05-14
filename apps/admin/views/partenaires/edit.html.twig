@@ -197,12 +197,6 @@
                     }
                 }
             })
-
-            $(document).on('click', '[data-phone-number]', function(e) {
-                e.preventDefault()
-                var number = $(this).data('phone-number')
-                window.location = 'tel:' + '0' + number.replace(/[ .\-]/g, '')
-            })
         })
     </script>
 {% endblock %}
@@ -388,8 +382,8 @@
                             <td>{{ agency.name }}</td>
                             <td>{{ agency.siren }}</td>
                             {% if agency.phone|length > 0 %}
-                                <td data-toggle="tooltip" data-placement="top" data-original-title="Appeler">
-                                    <span data-phone-number="{{ agency.phone }}">{{ agency.phone }}&nbsp;<i class="si si-call-out fa-1x"></i></span>
+                                <td>
+                                    <a href="tel:0{{ agency.phone }}">{{ agency.phone }}&nbsp;<i class="si si-call-out fa-1x"></i></a>
                                 </td>
                             {% else %}
                                 <td>&nbsp;</td>
@@ -433,8 +427,8 @@
                             <td>{{ user.idClient.email }}</td>
                             <td>{{ user.idCompany.name }}</td>
                             {% if user.idClient.telephone|length > 0 %}
-                                <td data-toggle="tooltip" data-placement="top" data-original-title="Appeler">
-                                    <span data-phone-number="{{ user.idClient.telephone }}">{{ user.idClient.telephone }}&nbsp;<i class="si si-call-out fa-1x"></i></span>
+                                <td>
+                                    <a href="tel:0{{ user.idClient.telephone }}">{{ user.idClient.telephone }}&nbsp;<i class="si si-call-out fa-1x"></i></a>
                                 </td>
                             {% else %}
                                 <td>&nbsp;</td>
