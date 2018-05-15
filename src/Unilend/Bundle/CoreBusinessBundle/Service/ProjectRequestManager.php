@@ -166,7 +166,7 @@ class ProjectRequestManager
             throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
         }
 
-        if (null !== $siren) {
+        if (null !== $siret) {
             $siret = $this->validateSiret($siret);
             if (false === $siret) {
                 $siret = null;
