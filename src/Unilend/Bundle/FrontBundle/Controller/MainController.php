@@ -236,9 +236,15 @@ class MainController extends Controller
                 $siret = null;
             }
 
+            if (empty($formData['company_name'])) {
+                $companyName = null;
+            } else {
+                $companyName = $formData['company_name'];
+            }
+
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $companyName, $formData['email'], $formData['duration'], $formData['reason']);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {

@@ -115,20 +115,9 @@
 
 {% block pageHeadScripts %}
     <script type="text/javascript">
-        {% set jsBorrowingMotives = [] %}
-        {% for motive in borrowingMotives %}
-        {%  set jsMotive = {
-            value: motive.idMotive,
-            label: ('borrowing-motive_motive-' ~ motive.idMotive)|trans
-        } %}
-        {% set jsBorrowingMotives = jsBorrowingMotives|merge([ jsMotive ]) %}
-        {% endfor %}
-        var borrowerEsim = {
-          borrowingMotives: JSON.parse('{{ jsBorrowingMotives|json_encode|escape('js')|raw }}'),
-          sirenPlaceholder: {
-            default: '{{ ('partner-project-request_simulator-siren-field-label')|trans }}',
-            motive_9: '{{ ('utility_target-siren-label')|trans }}'
-          }
-        }
+      var borrowerEsim = {
+        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
+        idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+      }
     </script>
 {% endblock %}

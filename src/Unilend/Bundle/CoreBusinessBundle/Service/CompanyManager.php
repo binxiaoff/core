@@ -128,11 +128,12 @@ class CompanyManager
      * @param null|string $email
      * @param null|string $siren
      * @param null|string $siret
+     * @param null|string $companyName
      *
      * @return Companies
      * @throws \Exception
      */
-    public function createBorrowerCompany(Users $user, ?string $email = null, ?string $siren = null, ?string $siret = null): Companies
+    public function createBorrowerCompany(Users $user, ?string $email = null, ?string $siren = null, ?string $siret = null, ?string $companyName = null): Companies
     {
         $client  = new Clients();
         $company = new Companies();
@@ -156,6 +157,7 @@ class CompanyManager
             $company
                 ->setSiren($siren)
                 ->setSiret($siret)
+                ->setName($companyName)
                 ->setStatusAdresseCorrespondance(1)
                 ->setEmailDirigeant($email)
                 ->setEmailFacture($email)

@@ -89,7 +89,7 @@ class ProjectRequestController extends Controller
             /** @var UserPartner $partnerUser */
             $partnerUser = $this->getUser();
 
-            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret, null, $duration, $reason);
+            $project = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), $amount, $siren, $siret, null, null, $duration, $reason);
 
             $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
             $project->setIdClientSubmitter($submitter)
@@ -97,7 +97,7 @@ class ProjectRequestController extends Controller
 
             $entityManager->flush($project);
 
-            if ($siret) {
+            if ($siren) {
                 $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
                 if (null === $riskCheck) {

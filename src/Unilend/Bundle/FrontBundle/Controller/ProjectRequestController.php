@@ -76,12 +76,13 @@ class ProjectRequestController extends Controller
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        $amount    = $request->request->get('amount');
-        $siren     = $request->request->get('siren');
-        $email     = $request->request->get('email');
-        $reason    = $request->request->getInt('reason');
-        $duration  = $request->request->getInt('duration');
-        $partnerId = $request->request->getInt('partner');
+        $amount      = $request->request->get('amount');
+        $siren       = $request->request->get('siren');
+        $email       = $request->request->get('email');
+        $reason      = $request->request->getInt('reason');
+        $duration    = $request->request->getInt('duration');
+        $partnerId   = $request->request->getInt('partner');
+        $companyName = $request->request->get('company_name');
 
         if (empty($partnerId) || null === $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
@@ -106,9 +107,9 @@ class ProjectRequestController extends Controller
                 $siren = null;
                 $siret = null;
             }
-            $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
-            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());

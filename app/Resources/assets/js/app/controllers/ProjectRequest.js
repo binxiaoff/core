@@ -4,6 +4,7 @@
 
 var $ = require('jquery')
 var $doc = $(document)
+var __ = require('__')
 
 /**
  * Handle any changes on the Project Create form
@@ -45,6 +46,7 @@ if ($borrowerReasonInput.length) {
   var $borrowerSirenInput = $('input[data-borrower-siren-input]')
   var $borrowerSirenLabel = $('label[data-borrower-siren-label]')
   var $borrowerCompanyName = $('[data-borrower-company-name]')
+  var $borrowerCompanyNameInput = $borrowerCompanyName.find('input')
 
   /** Change the `data-borrower-*` inputs depending on the reason */
   function handleBorrowingReason(reasonValue) {
@@ -54,18 +56,19 @@ if ($borrowerReasonInput.length) {
 
     switch (~~reasonValue) {
       // Création de franchise
-      case 8:
+      case borrowerEsim.idMotiveFranchiserCreation:
         $borrowerCompanyName.show()
-        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.default || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel') || TRANS_SIREN_LABEL_DEFAULT)
         $borrowerSirenLabel.find('.field-required').hide()
         $borrowerSirenInput
           .removeAttr('data-formvalidation-required')
         break
 
       // Rachat de parts sociale
-      case 9:
+      case borrowerEsim.idMotiveShareBuyBack:
         $borrowerCompanyName.hide()
-        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.motive_9 || TRANS_SIREN_LABEL_MOTIVE_9)
+        $borrowerCompanyNameInput.val('')
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_9, 'targetSirenLabel') || TRANS_SIREN_LABEL_MOTIVE_9)
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
@@ -74,7 +77,8 @@ if ($borrowerReasonInput.length) {
       // Everything else
       default:
         $borrowerCompanyName.hide()
-        $borrowerSirenLabel.find('.text').text(borrowerEsim.sirenPlaceholder.default || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerCompanyNameInput.val('')
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel') || TRANS_SIREN_LABEL_DEFAULT)
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
@@ -85,4 +89,6 @@ if ($borrowerReasonInput.length) {
   $doc.on('change', 'select[data-borrower-reason-input]', function () {
     handleBorrowingReason($(this).val())
   })
+
+  handleBorrowingReason($('select[data-borrower-reason-input]').val())
 }
