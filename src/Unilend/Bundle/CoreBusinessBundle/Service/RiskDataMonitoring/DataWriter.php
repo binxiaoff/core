@@ -62,12 +62,12 @@ class DataWriter
     /**
      * @param RiskDataMonitoringType    $monitoringType
      * @param RiskDataMonitoringCallLog $monitoringCallLog
-     * @param string                    $value
+     * @param string|int|bool           $value
      *
      * @return RiskDataMonitoringAssessment
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveAssessment(RiskDataMonitoringType $monitoringType, RiskDataMonitoringCallLog $monitoringCallLog, string $value): RiskDataMonitoringAssessment
+    public function saveAssessment(RiskDataMonitoringType $monitoringType, RiskDataMonitoringCallLog $monitoringCallLog, $value): RiskDataMonitoringAssessment
     {
         $currentRiskPolicy = null;
         if ($monitoringType->getIdProjectEligibilityRule()) {

@@ -77,12 +77,12 @@ class EulerHermesManager
     {
         $monitoring = $this->monitoringManager->getMonitoringForSiren($siren, self::PROVIDER_NAME);
         if (null === $monitoring) {
-            throw new \InvalidArgumentException('Siren ' . $siren . ' is not monitored for Euler Hermes');
+            throw new \InvalidArgumentException('SIREN ' . $siren . ' is not monitored for Euler Hermes');
         }
 
         $monitoredCompanies = $this->monitoringManager->getMonitoredCompanies($siren, self::PROVIDER_NAME);
         if (empty($monitoredCompanies)) {
-            throw new \InvalidArgumentException('Siren ' . $siren . ' has no companies.');
+            throw new \InvalidArgumentException('SIREN ' . $siren . ' has no company.');
         }
 
         $monitoringType  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringType')->findOneBy(['provider' => self::PROVIDER_NAME]);
