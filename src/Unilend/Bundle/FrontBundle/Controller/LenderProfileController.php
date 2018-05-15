@@ -239,14 +239,18 @@ class LenderProfileController extends Controller
         $translator     = $this->get('translator');
 
         if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
-            if (empty($company->getStatusConseilExterneEntreprise())) {
-                $form->get('company')->get('statusConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
-            }
             if (
-                Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER == $company->getStatusConseilExterneEntreprise()
-                && empty($company->getPreciserConseilExterneEntreprise())
+                Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT === $company->getStatusClient()
+                && empty($company->getStatusConseilExterneEntreprise())
             ) {
-                $form->get('company')->get('preciserConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                $form->get('company')->get('statusConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+
+                if (
+                    Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER === $company->getStatusConseilExterneEntreprise()
+                    && empty($company->getPreciserConseilExterneEntreprise())
+                ) {
+                    $form->get('company')->get('preciserConseilExterneEntreprise')->addError(new FormError($translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                }
             }
 
             if (empty($company->getCiviliteDirigeant())) {
