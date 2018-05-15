@@ -127,5 +127,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="cache"/>
         </service>
+
+        <service id="unilend.frontbundle.service.lender_loans_display_manager" class="Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager" autowire="true"/>
     </services>
 </container>

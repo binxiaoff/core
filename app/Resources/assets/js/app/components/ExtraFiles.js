@@ -108,7 +108,7 @@ ExtraFiles.prototype.checkForFiles = function () {
   self.track.totalFiles = self.$list.find('.file-upload-extra').length
 
   // If no extra files added, add one to prompt user
-  if (!self.track.totalFiles)
+  if (!self.track.totalFiles) {
     self.addFile()
     self.$toggle.prop('checked', true)
   }

@@ -1,7 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ProjectsStatus, Zones
+};
 use Unilend\Bundle\CoreBusinessBundle\Repository\RiskDataMonitoringRepository;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 
@@ -94,7 +95,7 @@ class surveillance_risqueController extends bootstrap
                 }
 
                 if (empty($event['previous_value']) && false === is_numeric($event['value']) && EulerCompanyRating::GRADE_UNKNOWN !== $event['value']) {
-                    $event['value'] = $this->get('unilend.service.project_status_manager')->getRejectionReasonTranslation($event['value']);
+                    $event['value'] = $this->get('unilend.service.project_status_manager')->getStatusReasonText(null, $event['value'], 'rejection')[0];
                 }
 
                 $formattedEvents[$event['siren']]['count']++;

@@ -65,7 +65,7 @@ class Ekomi
 
         $projectStatus        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::FUNDE]);
         $projectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')->findOneBy([
-            'idProjectStatus' => $projectStatus->getIdProjectStatus(),
+            'idProjectStatus' => $projectStatus,
             'idProject'       => $project->getIdProject()
         ]);
 

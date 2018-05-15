@@ -11,7 +11,17 @@ use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
+    Clients,
+    Companies,
+    CompanyStatus,
+    Echeanciers,
+    EcheanciersEmprunteur,
+    Factures,
+    OperationType,
+    Partner,
+    Projects,
+    ProjectsStatus,
+    UnilendStats
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager;
@@ -310,6 +320,36 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('siren', $siren);
 
         return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @param string         $siren
+     * @param array          $projectStatus
+     * @param \DateTime|null $createdBefore
+     *
+     * @return Projects[]
+     */
+    public function findBySirenAndStatus(string $siren, array $projectStatus = [], ?\DateTime $createdBefore = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+            ->where('c.siren = :siren')
+            ->setParameter('siren', $siren);
+
+        if (false === empty($projectStatus)) {
+            $queryBuilder
+                ->andWhere('p.status IN (:projectStatus)')
+                ->setParameter('projectStatus', $projectStatus);
+        }
+
+        if (null !== $createdBefore) {
+            $queryBuilder
+                ->andWhere('p.added <= :createdBefore')
+                ->setParameter('createdBefore', $createdBefore);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**

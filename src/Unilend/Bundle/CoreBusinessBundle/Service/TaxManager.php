@@ -3,11 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, PaysV2, TaxType, UnderlyingContract, Users, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
@@ -54,41 +52,47 @@ class TaxManager
     }
 
     /**
-     * @param Clients           $client
-     * @param \clients_adresses $clientAddress
+     * @param Clients $client
+     * @param Users   $user
      *
-     * @param $userId
      * @throws \Exception
      */
-    public function addTaxToApply(Clients $client, \clients_adresses $clientAddress, $userId)
+    public function applyFiscalCountry(Clients $client, Users $user): void
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
+        if (null === $client->getIdAddress()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' has no validated main address');
+        }
+
+        $wallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $foreigner = 0;
-        if ($client->getIdNationalite() <= \nationalites_v2::NATIONALITY_FRENCH && $clientAddress->id_pays_fiscal > PaysV2::COUNTRY_FRANCE) {
+
+        if ($client->getIdNationalite() === \nationalites_v2::NATIONALITY_FRENCH && $client->getIdAddress()->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
             $foreigner = 1;
-        } elseif ($client->getIdNationalite() > \nationalites_v2::NATIONALITY_FRENCH && $clientAddress->id_pays_fiscal > PaysV2::COUNTRY_FRANCE) {
+        } elseif ($client->getIdNationalite() !== \nationalites_v2::NATIONALITY_FRENCH && $client->getIdAddress()->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
             $foreigner = 2;
         }
+
         /** @var \lenders_imposition_history $lenderImpositionHistory */
         $lenderImpositionHistory                    = $this->entityManagerSimulator->getRepository('lenders_imposition_history');
         $lenderImpositionHistory->id_lender         = $wallet->getId();
         $lenderImpositionHistory->resident_etranger = $foreigner;
-        $lenderImpositionHistory->id_pays           = $clientAddress->id_pays_fiscal;
-        $lenderImpositionHistory->id_user           = $userId;
+        $lenderImpositionHistory->id_pays           = $client->getIdAddress()->getIdCountry()->getIdPays();
+        $lenderImpositionHistory->id_user           = $user->getIdUser();
         $lenderImpositionHistory->create();
     }
 
     /**
      * @param Clients            $client
-     * @param float              $interestsGross
-     * @param UnderlyingContract $underlyingContract
+     * @param                    $interestsGross
      * @param \DateTime          $taxDate
+     * @param UnderlyingContract $underlyingContract
      *
      * @return array
+     * @throws \Exception
      */
     public function getLenderRepaymentInterestTax(Clients $client, $interestsGross, \DateTime $taxDate, UnderlyingContract $underlyingContract)
     {

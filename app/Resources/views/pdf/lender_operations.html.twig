@@ -75,16 +75,13 @@
                 <b>{% trans with {'%date%' : 'now'|date('d/m/Y')} %}lender-operations_pdf-location-date{% endtrans %}</b><br/>
                 {% if company is empty %}
                     <b>{{ client.prenom }} {{ client.nom }}</b><br/>
-                    {{ clientAddress.adresse1 }}<br>
-                    {{ clientAddress.cp }} {{ clientAddress.ville }}
                 {% else %}
                     <b>{{ company.name }}</b><br/>
                     <b>{% trans %} lender-operations_pdf-company-representative {% endtrans %}{{ client.civilite }} {{ client.prenom }} {{ client.nom }}</b><br/>
-                    {{ company.adresse1 }} <br/>
-                    {{ company.zip }} {{ company.city }}
                 {% endif %}
+                {{ lenderAddress.address|default('') }}<br>
+                {{ lenderAddress.zip|default('') }} {{ lenderAddress.city|default('') }}
             </p>
-
         </div>
     </div>
 

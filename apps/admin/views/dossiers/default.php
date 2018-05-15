@@ -1,105 +1,127 @@
-<?php $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity); ?>
+<?php
+
+use  Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Projects, ProjectsStatus
+};
+?>
 <script>
-    var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
+  var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
 
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip();
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
 
-        $('body').on('click', '[data-project]', function (event) {
-            var projectId = $(this).data('project')
-            if (projectId && ! $(event.target).is('a') && ! $(event.target).is('img')) {
-                $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
-            }
-        })
+    $('body').on('click', '[data-project]', function (event) {
+      var projectId = $(this).data('project')
+      if (projectId && !$(event.target).is('a') && !$(event.target).is('img')) {
+        $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + projectId)
+      }
+    })
 
-        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+    $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-        $("#datepik_1").datepicker({
-            showOn: 'both',
-            buttonImageOnly: true,
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
-        });
-
-        $("#datepik_2").datepicker({
-            showOn: 'both',
-            buttonImageOnly: true,
-            changeMonth: true,
-            changeYear: true,
-            yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
-        });
-
-        $("#reset").click(function () {
-            $("#id").val('');
-            $("#siren").val('');
-            $("#datepik_1").val('');
-            $("#datepik_2").val('');
-            $("#raison-sociale").val('');
-            $('#montant option[value="0"]').prop('selected', true);
-            $('#duree option[value=""]').prop('selected', true);
-            $('#status option[value=""]').prop('selected', true);
-            $('#analyste option[value="0"]').prop('selected', true);
-            $('#commercial option[value="0"]').prop('selected', true);
-        });
-
-        $('#raison-sociale').autocomplete({
-          source: '<?= $this->url ?>/dossiers/autocompleteCompanyName/',
-          minLength: 3,
-          delay: 100
-        });
-
-        $(".tablesorter").tablesorter({headers: {5: {sorter: 'digit'}, 9: {sorter: false}, 10: {sorter: false}, 11: {sorter: false}}});
-
-        $('#display-pager').html($('#page-active').val() + '/' + nbPages);
-
-        $('#send-dossier').click(function () {
-            $('#nb-ligne-pagination').val(0);
-            $('#page-active').val(1);
-        });
+    $('#datepik_1').datepicker({
+      showOn: 'both',
+      buttonImageOnly: true,
+      changeMonth: true,
+      changeYear: true,
+      yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
     });
 
-    function paginationDossiers(directionPagination) {
-        var nbLignePagination = Math.round($('#nb-ligne-pagination').val());
-        var pageActive = Math.round($('#page-active').val());
-        var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
+    $('#datepik_2').datepicker({
+      showOn: 'both',
+      buttonImageOnly: true,
+      changeMonth: true,
+      changeYear: true,
+      yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
+    });
 
-        switch (directionPagination) {
-            case 'first':
-                $('#nb-ligne-pagination').val(0);
-                $('#page-active').val(1);
-                break;
-            case 'prev':
-                if (nbLignePagination > <?= $this->nb_lignes ?>) {
-                    nbLignePagination = nbLignePagination -<?= $this->nb_lignes ?>;
-                    $('#page-active').val(pageActive - 1);
-                }
-                $('#nb-ligne-pagination').val(nbLignePagination);
-                break;
-            case 'next':
-                nbLignePagination = nbLignePagination +<?= $this->nb_lignes ?>;
-                if (nbLignePagination <= totalLignePagination) {
-                    $('#nb-ligne-pagination').val(nbLignePagination);
-                    $('#page-active').val(pageActive + 1);
-                }
-                break;
-            case 'last':
-                nbLignePagination = totalLignePagination;
-                $('#nb-ligne-pagination').val(nbLignePagination);
-                $('#page-active').val(nbPages);
-                break;
+    $('#reset').click(function () {
+      $("#id").val('');
+      $("#siren").val('');
+      $("#datepik_1").val('');
+      $("#datepik_2").val('');
+      $("#raison-sociale").val('');
+      $('#montant option[value="0"]').prop('selected', true);
+      $('#duree option[value=""]').prop('selected', true);
+      $('#status option[value=""]').prop('selected', true);
+      $('#analyste option[value="0"]').prop('selected', true);
+      $('#commercial option[value="0"]').prop('selected', true);
+    });
+
+    $('#raison-sociale').autocomplete({
+      source: '<?= $this->lurl ?>/dossiers/autocompleteCompanyName/',
+      minLength: 3,
+      delay: 100
+    });
+
+    $('.tablesorter').tablesorter({
+      headers: {
+        5: {sorter: 'digit'},
+        <?php if ($this->isRiskUser && $this->hasRepaymentAccess) : ?>
+          12: {sorter: false},
+          13: {sorter: false}
+        <?php elseif ($this->hasRepaymentAccess) : ?>
+          11: {sorter: false},
+          12: {sorter: false}
+        <?php elseif ($this->isRiskUser) : ?>
+          11: {sorter: false}
+        <?php else : ?>
+          10: {sorter: false}
+        <?php endif; ?>
+      }
+    });
+
+    $('#display-pager').html($('#page-active').val() + '/' + nbPages);
+
+    $('#send-dossier').click(function () {
+      $('#nb-ligne-pagination').val(0);
+      $('#page-active').val(1);
+    });
+  });
+
+  function paginationDossiers(directionPagination) {
+    var nbLignePagination = Math.round($('#nb-ligne-pagination').val());
+    var pageActive = Math.round($('#page-active').val());
+    var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
+
+    switch (directionPagination) {
+      case 'first':
+        $('#nb-ligne-pagination').val(0);
+        $('#page-active').val(1);
+        break;
+      case 'prev':
+        if (nbLignePagination > <?= $this->nb_lignes ?>) {
+          nbLignePagination = nbLignePagination -<?= $this->nb_lignes ?>;
+          $('#page-active').val(pageActive - 1);
         }
-
-        $('#search-dossier').submit();
+        $('#nb-ligne-pagination').val(nbLignePagination);
+        break;
+      case 'next':
+        nbLignePagination = nbLignePagination +<?= $this->nb_lignes ?>;
+        if (nbLignePagination <= totalLignePagination) {
+          $('#nb-ligne-pagination').val(nbLignePagination);
+          $('#page-active').val(pageActive + 1);
+        }
+        break;
+      case 'last':
+        nbLignePagination = totalLignePagination;
+        $('#nb-ligne-pagination').val(nbLignePagination);
+        $('#page-active').val(nbPages);
+        break;
     }
+
+    $('#search-dossier').submit();
+  }
 </script>
 <style>
     #search-dossier {
         margin-bottom: 30px;
     }
+
     #search-dossier fieldset.primary {
         margin-top: 10px;
     }
+
     #search-dossier fieldset.secondary {
         margin-bottom: 10px;
         color: #b1adb2;
@@ -156,7 +178,7 @@
                     <select name="status" id="status" class="form-control">
                         <option value=""></option>
                         <?php foreach ($this->lProjects_status as $s) : ?>
-                            <option <?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '' ?> value="<?= $s['status'] ?>">
+                            <option<?= isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? ' selected' : '' ?> value="<?= $s['status'] ?>">
                                 <?= $s['label'] ?>
                             </option>
                         <?php endforeach; ?>
@@ -183,7 +205,9 @@
                     <select name="duree" id="duree" class="form-control input-sm">
                         <option value=""></option>
                         <?php foreach ($this->fundingTimeValues as $sFundingtime) : ?>
-                            <option <?= isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '' ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
+                            <option<?= isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? ' selected' : '' ?> value="<?= $sFundingtime ?>">
+                                <?= $sFundingtime ?> mois
+                            </option>
                         <?php endforeach; ?>
                         <option <?= isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '' ?> value="1000000">je ne sais pas</option>
                     </select>
@@ -195,7 +219,9 @@
                     <select name="commercial" id="commercial" class="form-control input-sm">
                         <option value="0"></option>
                         <?php foreach ($this->aSalesPersons as $aSalesPerson) : ?>
-                            <option <?= isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '' ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                            <option<?= isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? ' selected' : '' ?> value="<?= $aSalesPerson['id_user'] ?>">
+                                <?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -206,7 +232,9 @@
                     <select name="analyste" id="analyste" class="form-control input-sm">
                         <option value="0"></option>
                         <?php foreach ($this->aAnalysts as $aAnalyst) : ?>
-                            <option <?= isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '' ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
+                            <option<?= isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? ' selected' : '' ?> value="<?= $aAnalyst['id_user'] ?>">
+                                <?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -223,63 +251,84 @@
         <div class="row">
             <div class="col-md-12">
                 <?php if ($this->iCountProjects == 0) : ?>
-                    <h1>Aucun dossier trouvé</h1>
+                    <h1>Aucun projet trouvé</h1>
                 <?php elseif ($this->iCountProjects == 1) : ?>
-                    <h1>1 dossier trouvé</h1>
+                    <h1>1 projet trouvé</h1>
                 <?php elseif ($this->iCountProjects > 0) : ?>
-                    <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> dossiers trouvés</h1>
+                    <h1><?= $this->ficelle->formatNumber($this->iCountProjects, 0) ?> projets trouvés</h1>
                 <?php endif; ?>
             </div>
         </div>
         <?php if (count($this->lProjects) > 0) : ?>
             <table class="tablesorter table table-hover table-striped">
                 <thead>
-                    <tr>
-                        <th style="width:4%">ID</th>
-                        <th style="width:6%">SIREN</th>
-                        <th style="width:22%">Raison sociale</th>
-                        <th style="width:9%">Demande</th>
-                        <th style="width:8%">Montant</th>
-                        <th style="width:8%">Durée</th>
-                        <th style="width:12%">Statut</th>
-                        <th style="width:12%">Commercial</th>
-                        <th style="width:9%">Analyste</th>
-                        <?php if ($isRiskUser) : ?>
-                            <th style="width:4%">Pré-score</th>
-                        <?php endif; ?>
-                        <th style="width:4%">Comment.</th>
-                        <th style="width:2%"></th>
-                    </tr>
+                <tr>
+                    <th style="width:4%">ID</th>
+                    <th style="width:6%">SIREN</th>
+                    <th style="width:11%">Raison sociale</th>
+                    <th style="width:9%">Demande</th>
+                    <th style="width:8%">Montant</th>
+                    <th style="width:8%">Durée</th>
+                    <th style="width:12%">Statut</th>
+                    <th style="width:12%">Commercial</th>
+                    <th style="width:9%">Analyste</th>
+                    <?php if ($this->isRiskUser) : ?>
+                        <th style="width:4%">Pré-score</th>
+                    <?php endif; ?>
+                    <th style="width:4%">Comment.</th>
+                    <?php if ($this->hasRepaymentAccess) : ?>
+                        <th style="width:9%">Remb. auto</th>
+                        <th style="width:2%">Remb.</th>
+                    <?php endif; ?>
+                    <th style="width:2%">Détails</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <?php $i = 1; ?>
-                    <?php foreach ($this->lProjects as $p) : ?>
-                        <?php
-                            $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
-                            $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
-                        ?>
-                        <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $p['id_project'] ?>">
-                            <td><?= $p['id_project'] ?></td>
-                            <td><?= $p['siren'] ?></td>
-                            <td><?= $p['name'] ?></td>
-                            <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
-                            <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                            <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
-                            <td><?= $p['label'] ?></td>
-                            <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
-                            <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                            <?php if ($isRiskUser) : ?>
-                                <td><?= -1 == $p['pre_scoring'] ? '' : $p['pre_scoring'] ?></td>
+                <?php $i = 1; ?>
+                <?php foreach ($this->lProjects as $p) : ?>
+                    <?php
+                    $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
+                    $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
+                    ?>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $p['id_project'] ?>">
+                        <td><?= $p['id_project'] ?></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['siren'] ?></a></td>
+                        <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['name'] ?></a></td>
+                        <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                        <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
+                        <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= $p['label'] ?></td>
+                        <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
+                        <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                        <?php if ($this->isRiskUser) : ?>
+                            <td><?= -1 == $p['pre_scoring'] ? '' : $p['pre_scoring'] ?></td>
+                        <?php endif; ?>
+                        <?php if (false === empty($p['comments'])) : ?>
+                            <td data-toggle="tooltip" class="tooltip" title="<?= htmlspecialchars($p['comments']) ?>">oui</td>
+                        <?php else : ?>
+                            <td>non</td>
+                        <?php endif; ?>
+                        <?php if ($this->hasRepaymentAccess) : ?>
+                            <?php if ($p['status'] >= ProjectsStatus::REMBOURSEMENT) : ?>
+                                <td><?= Projects::AUTO_REPAYMENT_ON == $p['remb_auto'] ? 'oui' : 'non' ?></td>
+                                <td align="center">
+                                    <a href="<?= $this->lurl ?>/remboursement/projet/<?= $p['id_project'] ?>">
+                                        <img src="<?= $this->surl ?>/images/admin/duplique.png" alt="Remboursement du projet <?= htmlspecialchars($p['title']) ?>">
+                                    </a>
+                                </td>
+                            <?php else : ?>
+                                <td></td>
+                                <td></td>
                             <?php endif; ?>
-                            <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] && $p['comments'] != '' ? $p['comments'] : '' ?>"><?= $p['comments'] && $p['comments'] != '' ? 'oui' : 'non' ?></td>
-                            <td align="center">
-                                <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
-                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>">
-                                </a>
-                            </td>
-                        </tr>
-                        <?php $i++; ?>
-                    <?php endforeach; ?>
+                        <?php endif; ?>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= htmlspecialchars($p['title']) ?>">
+                            </a>
+                        </td>
+                    </tr>
+                    <?php $i++; ?>
+                <?php endforeach; ?>
                 </tbody>
             </table>
             <?php if ($this->nb_lignes != '') : ?>
@@ -299,7 +348,7 @@
                 </table>
             <?php endif; ?>
         <?php else : ?>
-            <p>Il n'y a aucun dossier pour cette recherche.</p>
+            <p>Il n'y a aucun projet pour cette recherche.</p>
         <?php endif; ?>
     <?php endif; ?>
 </div>

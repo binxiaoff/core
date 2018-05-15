@@ -358,94 +358,6 @@ class clients extends clients_crud
     }
 
     /**
-     * PLEASE NOTE :
-     * If $bGroupBySiren = true, the result does not necessary provide the most recent
-     * value for any fields other than siren and count of siren.
-     * The only reliable information with this option is Siren and Count(Siren).
-     *
-     * @param DateTime $oStartDate
-     * @param DateTime $oEndDate
-     * @param bool $bGroupBySiren
-     *
-     * @return array
-     */
-    public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
-    {
-        $sGroupBy    = $bGroupBySiren ? 'GROUP BY com.siren ' : '';
-        $sCountSiren = $bGroupBySiren ? 'COUNT(com.siren) AS countSiren, ' : '';
-
-        $sQuery = '
-            SELECT
-                p.id_project,'
-                . $sCountSiren . '
-                com.siren,
-                c.nom,
-                c.prenom,
-                c.email,
-                c.mobile,
-                c.telephone,
-                c.source,
-                c.source2,
-                c.added,
-                ps.label
-            FROM projects p
-            INNER JOIN companies com ON p.id_company = com.id_company
-            INNER JOIN clients c ON com.id_client_owner = c.id_client
-            INNER JOIN projects_status ps ON p.status = ps.status
-            WHERE DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '" '
-            . $sGroupBy . '
-            ORDER BY com.siren DESC, c.added DESC';
-
-        $rQuery = $this->bdd->query($sQuery);
-        $aResult = array();
-        while ($record = $this->bdd->fetch_assoc($rQuery)) {
-            $aResult[] = $record;
-        }
-
-        return $aResult;
-    }
-
-    public function getFirstSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
-    {
-        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
-            $oStartDate = new \DateTime('2013-01-01');
-            $oEndDate = new \DateTime('NOW');
-        }
-
-        $sQuery = '
-            SELECT c.source
-            FROM clients c
-            INNER JOIN companies com on c.id_client = com.id_client_owner
-            WHERE com.siren = ' . $sSiren . '
-              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-            ORDER BY c.added ASC 
-            LIMIT 1';
-
-        $rQuery = $this->bdd->query($sQuery);
-        return ($this->bdd->result($rQuery, 0));
-    }
-
-    public function getLastSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
-    {
-        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
-            $oStartDate = new \DateTime('2013-01-01');
-            $oEndDate = new \DateTime('NOW');
-        }
-
-        $sQuery = '
-            SELECT c.source
-            FROM clients c
-            INNER JOIN companies com on c.id_client = com.id_client_owner
-            WHERE com.siren = ' . $sSiren . '
-              AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
-            ORDER BY c.added DESC 
-            LIMIT 1';
-
-        $rQuery = $this->bdd->query($sQuery);
-        return ($this->bdd->result($rQuery, 0));
-    }
-
-    /**
      * @return Statement
      * @throws Exception
      */
@@ -549,19 +461,20 @@ class clients extends clients_crud
               END AS insee_region_code,
               COUNT(*) AS count
             FROM (
-              SELECT clients.id_client,
+              SELECT c.id_client,
                 CASE 
-                  WHEN clients.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN clients_adresses.cp_fiscal
-                  ELSE companies.zip 
+                  WHEN c.type IN (' . implode(',', [ClientEntity::TYPE_PERSON, ClientEntity::TYPE_PERSON_FOREIGNER]) . ') THEN cliad.zip
+                  ELSE coad.zip 
                 END AS cp
-              FROM clients
-              LEFT JOIN clients_adresses USING (id_client)
-              LEFT JOIN companies ON clients.id_client = companies.id_client_owner
-              INNER JOIN wallet w ON clients.id_client = w.id_client
+              FROM clients c
+              LEFT JOIN client_address cliad ON c.id_address = cliad.id
+              LEFT JOIN companies co ON c.id_client = co.id_client_owner
+              LEFT JOIN company_address coad ON co.id_address = coad.id
+              INNER JOIN wallet w ON c.id_client = w.id_client
               INNER JOIN wallet_type wt ON w.id_type = wt.id
-              INNER JOIN clients_status_history csh ON clients.id_client_status_history = csh.id
+              INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
               WHERE csh.id_status IN ('. implode(',', ClientsStatus::GRANTED_LOGIN) . ')
-                AND (clients_adresses.id_pays_fiscal = ' . PaysV2::COUNTRY_FRANCE . ' OR companies.id_pays = ' . PaysV2::COUNTRY_FRANCE . ')
+                AND (cliad.id_country = ' . PaysV2::COUNTRY_FRANCE . ' OR coad.id_country = ' . PaysV2::COUNTRY_FRANCE . ')
             ) AS client_base
             GROUP BY insee_region_code
             HAVING insee_region_code != "0"';
@@ -616,7 +529,7 @@ class clients extends clients_crud
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
             INNER JOIN (SELECT a.id_client, a.id, ga.validation_status from greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
-            INNER JOIN clients_adresses ca ON ca.id_client = c.id_client AND ca.id_pays_fiscal = 1
+            INNER JOIN client_address_attachment cadatt ON cadatt.id_attachment = ga_address.id
             INNER JOIN wallet w ON c.id_client = w.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
             LEFT JOIN (

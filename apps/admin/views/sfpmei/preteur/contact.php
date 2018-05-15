@@ -78,10 +78,15 @@
             <tr>
                 <th>Adresse de correspondance</th>
                 <td>
-                    <?= $this->postalAddress['address'] ?><br>
-                    <?= $this->postalAddress['postCode'] ?> <?= $this->postalAddress['city'] ?><br>
-                    <?= $this->postalAddress['country'] ?>
+                    <?php if (false == empty($this->postalAddress['address'])) : ?>
+                        <?= $this->postalAddress['address'] ?><br>
+                        <?= $this->postalAddress['postCode'] ?> <?= $this->postalAddress['city'] ?><br>
+                        <?= $this->postalAddress['country'] ?>
+                    <?php else : ?>
+                        L'adresse de correspondance est identique à l'adresse fiscale
+                    <?php endif; ?>
                 </td>
+
             </tr>
             </tbody>
         </table>

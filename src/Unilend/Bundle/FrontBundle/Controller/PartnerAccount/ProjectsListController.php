@@ -2,17 +2,16 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
+    Method, Route, Security
+};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsComments;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Symfony\Component\HttpFoundation\{
+    JsonResponse, Request, Response
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Companies, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus
+};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
@@ -56,7 +55,8 @@ class ProjectsListController extends Controller
             'completeProjects'   => $this->formatProject($completeProjects, true),
             'abandoned'          => $this->formatProject($abandoned, true, true),
             'rejected'           => $this->formatProject($rejected, true),
-            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findBy([], ['label' => 'ASC'])
+            'abandonReasons'     => $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+                ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC'])
         ]);
     }
 
@@ -207,7 +207,7 @@ class ProjectsListController extends Controller
                     'idProject' => $project->getIdProject(),
                     'idProjectStatus' => $abandonProjectStatus
                 ]);
-                $display[$project->getIdProject()]['abandonReason'] = $history ? $history->getContent() : '';
+                $display[$project->getIdProject()]['projectAbandonReasons'] = $history ? $history->getAbandonReasons() : [];
             }
         }
 

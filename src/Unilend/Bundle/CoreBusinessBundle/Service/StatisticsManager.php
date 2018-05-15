@@ -191,29 +191,54 @@ class StatisticsManager
     /**
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function saveQuarterIncidenceRate(): void
     {
         $unilendStatRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:UnilendStats');
-        $today                 = new \DateTime('NOW');
-        $lastDayLastMonth      = new \DateTime('Last day of last month');
-        $lastDayOfTwoMonthAgo  = new \DateTime('Last day of 2 months ago');
+        $thirdMonth            = new \DateTime('Last day of last month');
+        $secondMonth           = new \DateTime('Last day of 2 months ago');
+        $firstMonth            = new \DateTime('Last day of 3 months ago');
 
-        $todayStat                = $unilendStatRepository->findStatisticAtDate($today, UnilendStats::TYPE_INCIDENCE_RATE);
-        $lastDayLastMonthStat     = $unilendStatRepository->findStatisticAtDate($lastDayLastMonth, UnilendStats::TYPE_INCIDENCE_RATE);
-        $lastDayOfTwoMonthAgoStat = $unilendStatRepository->findStatisticAtDate($lastDayOfTwoMonthAgo, UnilendStats::TYPE_INCIDENCE_RATE);
+        $thirdMonthStat  = $unilendStatRepository->findStatisticAtDate($thirdMonth, UnilendStats::TYPE_INCIDENCE_RATE);
+        $secondMonthStat = $unilendStatRepository->findStatisticAtDate($secondMonth, UnilendStats::TYPE_INCIDENCE_RATE);
+        $firstMonthStat  = $unilendStatRepository->findStatisticAtDate($firstMonth, UnilendStats::TYPE_INCIDENCE_RATE);
 
-        $todayData                = json_decode($todayStat->getValue(), true);
-        $lastDayLastMonthData     = json_decode($lastDayLastMonthStat->getValue(), true);
-        $lastDayOfTwoMonthAgoData = json_decode($lastDayOfTwoMonthAgoStat->getValue(), true);
+        $thirdMonthData  = json_decode($thirdMonthStat->getValue(), true);
+        $secondMonthData = json_decode($secondMonthStat->getValue(), true);
+        $firstMonthData  = json_decode($firstMonthStat->getValue(), true);
 
-        $todayData['quarterRatioIFP'] = round(bcdiv(bcadd(bcadd($todayData['ratioIFP'], $lastDayLastMonthData['ratioIFP'], 4), $lastDayOfTwoMonthAgoData['ratioIFP'], 4), 3, 4), 2);
-        $todayData['quarterRatioCIP'] = round(bcdiv(bcadd(bcadd($todayData['ratioCIP'], $lastDayLastMonthData['ratioCIP'], 4), $lastDayOfTwoMonthAgoData['ratioCIP'], 4), 3, 4), 2);
+        if (null === $thirdMonthData || false === isset($thirdMonthData['ratioIFP'])) {
+            throw new \Exception('There is no ratio IFP for ' . $thirdMonth->format('Y-m-d'));
+        }
+
+        if (null === $secondMonthData || false === isset($secondMonthData['ratioIFP'])) {
+            throw new \Exception('There is no ratio IFP for ' . $secondMonth->format('Y-m-d'));
+        }
+
+        if (null === $firstMonthData || false === isset($firstMonthData['ratioIFP'])) {
+            throw new \Exception('There is no ratio IFP for ' . $firstMonth->format('Y-m-d'));
+        }
+
+        if (null === $thirdMonthData || false === isset($thirdMonthData['ratioCIP'])) {
+            throw new \Exception('There is no ratio CIP for ' . $thirdMonth->format('Y-m-d'));
+        }
+
+        if (null === $secondMonthData || false === isset($secondMonthData['ratioCIP'])) {
+            throw new \Exception('There is no ratio CIP for ' . $secondMonth->format('Y-m-d'));
+        }
+
+        if (null === $firstMonthData || false === isset($firstMonthData['ratioCIP'])) {
+            throw new \Exception('There is no ratio CIP for ' . $firstMonth->format('Y-m-d'));
+        }
+
+        $thirdMonthData['quarterRatioIFP'] = round(bcdiv(bcadd(bcadd($thirdMonthData['ratioIFP'], $secondMonthData['ratioIFP'], 4), $firstMonthData['ratioIFP'], 4), 3, 4), 2);
+        $thirdMonthData['quarterRatioCIP'] = round(bcdiv(bcadd(bcadd($thirdMonthData['ratioCIP'], $secondMonthData['ratioCIP'], 4), $firstMonthData['ratioCIP'], 4), 3, 4), 2);
 
         $quarterStat = new UnilendStats();
         $quarterStat
             ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-            ->setValue(json_encode($todayData));
+            ->setValue(json_encode($thirdMonthData));
 
         $this->entityManager->persist($quarterStat);
         $this->entityManager->flush($quarterStat);
@@ -286,7 +311,7 @@ class StatisticsManager
             'numberOfActiveLenders'           => $clientRepository->countLenders(true),
             'numberOfFinancedProjects'        => $projects->countSelectProjectsByStatus(ProjectsStatus::AFTER_REPAYMENT),
             'numberOfProjectRequests'         => self::HISTORIC_NUMBER_OF_SIREN + $projects->getNumberOfUniqueProjectRequests(self::VALUE_DATE_HISTORIC_NUMBER_OF_SIREN),
-            'averageFundingTime'              => $projects->getAverageFundingTime(new \DateTime('NOW - 4 MONTHS')),
+            'averageFundingTime'              => $projects->getAverageFundingTime($startDate),
             'averageInterestRateForLenders'   => $projects->getGlobalAverageRateOfFundedProjects(PHP_INT_MAX),
             'averageNumberOfLenders'          => $projects->getAverageNumberOfLendersForProject(),
             'averageProjectAmount'            => $projects->getAverageAmount(),

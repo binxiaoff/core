@@ -3,13 +3,14 @@
 
 {% form_theme identityForm '/frontbundle/forms/fields.html.twig' %}
 
-{% do identityForm.fiscalAddress.housedByThirdPerson.setRendered %}
+{% do identityForm.housedByThirdPerson.setRendered %}
 
 {{ form_start(identityForm, {
     'attr' : {
         'class' : 'form-preter-create form-preter-create-info-person secure-form',
         'data-formvalidation data-formvalidation-notificationselem' : '#form-preter-person-1-notifications',
-        'data-cacheform' : true
+        'data-cacheform' : true,
+        'novalidate' : 'novalidate'
     }
 }) }}
     <fieldset class="panel">
@@ -122,11 +123,11 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if identityForm.fiscalAddress.adresseFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field {% if identityForm.mainAddress.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                {{ form_widget(identityForm.fiscalAddress.adresseFiscal, {
+                {{ form_widget(identityForm.mainAddress.address, {
                     'id' : 'form-lender-person-fiscal-address-street',
                     'attr' :  {
                         'class' : 'input-field',
@@ -134,17 +135,17 @@
                         'placeholder' : 'lender-subscription_address-form-fiscal-address-placeholder'|trans
                     }
                 }) }}
-                {{ form_errors(identityForm.fiscalAddress.adresseFiscal) }}
+                {{ form_errors(identityForm.mainAddress.address) }}
             </div><!-- /.form-field -->
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.cpFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-zip">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    {{ form_widget(identityForm.fiscalAddress.cpFiscal, {
+                    {{ form_widget(identityForm.mainAddress.zip, {
                         'id' : 'form-lender-person-fiscal-address-zip',
                         'attr' : {
                             'class' : 'input-field',
@@ -157,18 +158,18 @@
                             'data-has-spinner' : '#person-zip-autocomplete-spinner'
                         }})
                     }}
-                    {{ form_errors(identityForm.fiscalAddress.cpFiscal) }}
+                    {{ form_errors(identityForm.mainAddress.zip) }}
                     <div class="btn-group">
                         <span id="person-zip-autocomplete-spinner" class="ui-is-spinner"></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.villeFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-city">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
-                    {{ form_widget(identityForm.fiscalAddress.villeFiscal, {
+                    {{ form_widget(identityForm.mainAddress.city, {
                         'id' : 'form-lender-person-fiscal-address-city',
                         'attr' : {
                             'class' : 'input-field',
@@ -182,7 +183,7 @@
                             'data-has-spinner' : '#person-city-autocomplete-spinner'
                         }})
                     }}
-                    {{ form_errors(identityForm.fiscalAddress.villeFiscal) }}
+                    {{ form_errors(identityForm.mainAddress.city) }}
                     <div class="btn-group">
                         <span id="person-city-autocomplete-spinner" class="ui-is-spinner"></span>
                     </div>
@@ -191,12 +192,12 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.fiscalAddress.idPaysFiscal.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-country">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
-                {{ form_widget(identityForm.fiscalAddress.idPaysFiscal, {
+                {{ form_widget(identityForm.mainAddress.idCountry, {
                     'id' : 'form-lender-person-fiscal-address-country',
                     'attr' : {
                         'class' : 'input-field',
@@ -204,7 +205,7 @@
                         'data-formvalidation-required' : true
                     }})
                 }}
-                {{ form_errors(identityForm.fiscalAddress.idPaysFiscal) }}
+                {{ form_errors(identityForm.mainAddress.idCountry) }}
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
@@ -218,7 +219,7 @@
                         'attr' : {
                             'class' : 'input-field',
                             'data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-formvalidation-type' : 'telephone'
+                            'data-formvalidation-type' : 'tel'
                         }
                     }) }}
                 </div>
@@ -228,7 +229,7 @@
         <div class="row">
             <div class="form-field form-field-single-checkbox ">
                 <label>
-                    {{ form_widget(identityForm.postalAddress.memeAdresseFiscal, {
+                    {{ form_widget(identityForm.samePostalAddress, {
                         'attr' :  {
                             'class' : 'toggle-correspondence-address'
                         }
@@ -239,7 +240,107 @@
         </div>
     </fieldset>
 
-    {% include 'lender_subscription/partials/personal_information_postal_address.html.twig' %}
+    <fieldset id="form-lender-person-fieldset-postal-address"
+              class="form-lender-fieldset-postal-address panel collapse{% if identityForm.samePostalAddress.vars.value %} in{% endif %}"
+            {% if identityForm.samePostalAddress.vars.value %} aria-expanded="true" {% else %} aria-expanded="false" style="height : 0;" {% endif %}>
+
+        <h3 class="h3">{% trans %} lender-subscription_address-form-postal-address-title {% endtrans %}</h3>
+        <div id="form-preter-person-address-autocomplete-error" class="ui-formvalidation-notifications autocomplete-error" style="display: none;">
+            <div class="message-error">{% trans %}lender-subscription_fiscal-address-autocomplete-error{% endtrans %}</div>
+        </div>
+
+        <div class="row">
+            <div class="form-field {% if identityForm.postalAddress.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-lender-person-postal-address-street">
+                    {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                {{ form_widget(identityForm.postalAddress.address, {
+                    'id' : 'form-lender-person-postal-address-street',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.postalAddress.address) }}
+            </div>
+        </div>
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-lender-person-postal-address-zip">
+                    {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                <div class="input-group set-right">
+                    {{ form_widget(identityForm.postalAddress.zip, {
+                        'id' : 'form-lender-person-postal-address-zip',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'autocomplete' : 'off',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_zip'),
+                            'data-autocomplete-address-countryelem' : '#form-lender-person-postal-address-country',
+                            'data-autocomplete-address-cityelem' : '#form-lender-person-postal-address-city',
+                            'data-autocomplete-address-zipelem' : '#form-lender-person-postal-address-zip',
+                            'data-has-spinner' : '#person-postal-zip-autocomplete-spinner'
+                        }})
+                    }}
+                    {{ form_errors(identityForm.postalAddress.zip) }}
+                    <div class="btn-group">
+                        <span id="person-postal-zip-autocomplete-spinner" class="ui-is-spinner"></span>
+                    </div>
+                </div><!-- /.input-group -->
+            </div><!-- /.form-field -->
+
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-lender-person-postal-address-city">
+                    {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                <div class="input-group set-right">
+                    {{ form_widget(identityForm.postalAddress.city, {
+                        'id' : 'form-lender-person-postal-address-city',
+                        'attr' : {
+                            'class' : 'input-field',
+                            'autocomplete' : 'off',
+                            'data-autocomplete-ajaxprop' : 'city',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_subscription_ajax_city'),
+                            'data-autocomplete-address-countryelem' : '#form-lender-person-postal-address-country',
+                            'data-autocomplete-address-cityelem' : '#form-lender-person-postal-address-city',
+                            'data-autocomplete-address-zipelem' : '#form-lender-person-postal-address-zip',
+                            'data-has-spinner' : '#person-postal-city-autocomplete-spinner'
+                        }})
+                    }}
+                    {{ form_errors(identityForm.postalAddress.city) }}
+                    <div class="btn-group">
+                        <span id="person-postal-city-autocomplete-spinner" class="ui-is-spinner"></span>
+                    </div>
+                </div><!-- /.input-group -->
+            </div><!-- /.form-field -->
+        </div>
+
+        <div class="row row-multi-col-computer">
+            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <label for="form-lender-person-postal-address-country">
+                    {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                {{ form_widget(identityForm.postalAddress.idCountry, {
+                    'id' : 'form-lender-person-postal-address-country',
+                    'attr' : {
+                        'class' : 'input-field',
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    }
+                }) }}
+                {{ form_errors(identityForm.postalAddress.idCountry) }}
+            </div><!-- /.form-field -->
+        </div>
+    </fieldset>
+
+
+
 
     <fieldset class="panel">
         <h3 class="h3">{% trans %} lender-subscription_civil-state-section-title {% endtrans %}</h3>
@@ -364,9 +465,9 @@
         </div>
 
         <div class="row">
-            <div class="form-field form-field-single-checkbox{% if identityForm.fiscalAddress.noUsPerson.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox{% if identityForm.noUsPerson.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label>
-                    {{ form_widget(identityForm.fiscalAddress.noUsPerson) }}
+                    {{ form_widget(identityForm.noUsPerson) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
             </div>

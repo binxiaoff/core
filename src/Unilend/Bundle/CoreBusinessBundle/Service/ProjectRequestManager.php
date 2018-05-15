@@ -4,8 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Companies, CompanyRating, Partner, Projects, ProjectsStatus, TaxType, Users
+    BorrowingMotive, Companies, CompanyRating, Partner, ProjectRejectionReason, Projects, ProjectsStatus, ProjectStatusHistoryReason, TaxType, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Eligibility\EligibilityManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -43,6 +44,8 @@ class ProjectRequestManager
     private $projectStatusManager;
     /** @var ProjectManager */
     private $projectManager;
+    /** @var TranslatorInterface */
+    private $translator;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -56,6 +59,7 @@ class ProjectRequestManager
      * @param CompanyManager         $companyManager
      * @param ProjectStatusManager   $projectStatusManager
      * @param ProjectManager         $projectManager
+     * @param TranslatorInterface    $translator
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -68,7 +72,8 @@ class ProjectRequestManager
         PartnerProductManager $partnerProductManager,
         CompanyManager $companyManager,
         ProjectStatusManager $projectStatusManager,
-        ProjectManager $projectManager
+        ProjectManager $projectManager,
+        TranslatorInterface $translator
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -82,6 +87,7 @@ class ProjectRequestManager
         $this->companyManager         = $companyManager;
         $this->projectStatusManager   = $projectStatusManager;
         $this->projectManager         = $projectManager;
+        $this->translator             = $translator;
     }
 
     /**
@@ -121,6 +127,7 @@ class ProjectRequestManager
     /**
      * @param Users       $user
      * @param Partner     $partner
+     * @param int         $status
      * @param string|null $amount
      * @param string|null $siren
      * @param string|null $siret
@@ -135,6 +142,7 @@ class ProjectRequestManager
     public function newProject(
         Users $user,
         Partner $partner,
+        int $status,
         ?string $amount = null,
         ?string $siren = null,
         ?string $siret = null,
@@ -144,8 +152,6 @@ class ProjectRequestManager
         ?int $reason = null
     )
     {
-        $anyWhiteSpaces = '/\s/';
-
         if (null !== $email && false === filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new \InvalidArgumentException('Invalid email', self::EXCEPTION_CODE_INVALID_EMAIL);
         }
@@ -168,7 +174,7 @@ class ProjectRequestManager
         }
 
         if (null !== $amount) {
-            $amount        = preg_replace([$anyWhiteSpaces, '/€/'], '', $amount);
+            $amount        = preg_replace(['/\s/', '/€/'], '', $amount);
             $minimumAmount = $this->projectManager->getMinProjectAmount();
             $maximumAmount = $this->projectManager->getMaxProjectAmount();
 
@@ -192,6 +198,7 @@ class ProjectRequestManager
         }
 
         $this->entityManager->beginTransaction();
+
         try {
             $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret, $companyName);
             $client  = $company->getIdClientOwner();
@@ -203,7 +210,7 @@ class ProjectRequestManager
 
             $this->entityManager->flush($client);
 
-            $project = $this->createProjectByCompany($user, $company, $partner, $amount, $durationInMonth, $reason);
+            $project = $this->createProjectByCompany($user, $company, $partner, $status, $amount, $durationInMonth, $reason);
 
             $this->entityManager->commit();
 
@@ -224,6 +231,7 @@ class ProjectRequestManager
      * @param Users                $user
      * @param Companies            $company
      * @param Partner              $partner
+     * @param int                  $status
      * @param int|null             $amount
      * @param int|null             $duration
      * @param BorrowingMotive|null $reason
@@ -236,6 +244,7 @@ class ProjectRequestManager
         Users $user,
         Companies $company,
         Partner $partner,
+        int $status,
         ?int $amount = null,
         ?int $duration = null,
         ?BorrowingMotive $reason = null,
@@ -252,7 +261,7 @@ class ProjectRequestManager
             ->setPeriod($duration)
             ->setIdBorrowingMotive($reasonId)
             ->setComments($comments)
-            ->setStatus(ProjectsStatus::INCOMPLETE_REQUEST)
+            ->setStatus($status)
             ->setIdPartner($partner)
             ->setCommissionRateFunds(Projects::DEFAULT_COMMISSION_RATE_FUNDS)
             ->setCommissionRateRepayment(Projects::DEFAULT_COMMISSION_RATE_REPAYMENT)
@@ -263,7 +272,7 @@ class ProjectRequestManager
 
         $this->entityManager->flush($project);
 
-        $this->projectStatusManager->addProjectStatus($user, ProjectsStatus::INCOMPLETE_REQUEST, $project);
+        $this->projectStatusManager->addProjectStatus($user, $status, $project);
 
         return $project;
     }
@@ -363,15 +372,41 @@ class ProjectRequestManager
      * @param \projects|Projects $project
      * @param int                $userId
      *
-     * @return array
+     * @return array|null
      */
-    public function addRejectionProjectStatus(string $motive, $project, int $userId): array
+    public function addRejectionProjectStatus(string $motive, $project, int $userId): ?array
     {
         $status = substr($motive, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE)) === ProjectsStatus::UNEXPECTED_RESPONSE
             ? ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION
             : ProjectsStatus::NOT_ELIGIBLE;
 
-        $this->projectStatusManager->addProjectStatus($userId, $status, $project, 0, $motive);
+        switch ($status) {
+            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
+                $this->projectStatusManager->addProjectStatus($userId, $status, $project, 0, $motive);
+                break;
+            default:
+                $rejectionReasons = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                    ->findBy(['label' => $motive]);
+                try {
+                    $result = $this->projectStatusManager->rejectProject($project, ProjectsStatus::NOT_ELIGIBLE, $rejectionReasons, $userId);
+
+                    if (false === $result) {
+                        return null;
+                    }
+                } catch (\Exception $exception) {
+                    $this->logger->error('Could not reject project: ' . $project->getIdProject() . '. Error: ' . $exception->getMessage(), [
+                        'id_project'       => $project->getIdProject(),
+                        'rejection_reason' => $motive,
+                        'class'            => __CLASS__,
+                        'function'         => __FUNCTION__,
+                        'file'             => $exception->getFile(),
+                        'line'             => $exception->getLine()
+                    ]);
+
+                    return null;
+                }
+                break;
+        }
 
         return ['motive' => $motive, 'status' => $status];
     }
@@ -408,21 +443,38 @@ class ProjectRequestManager
                 }
 
                 if (empty($products) && $addProjectStatus) {
-                    $this->projectStatusManager->addProjectStatus($userId, ProjectsStatus::NOT_ELIGIBLE, $project, 0, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+                    $rejectionReason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                        ->findBy(['label' => ProjectRejectionReason::PRODUCT_NOT_FOUND]);
+                    try {
+                        $this->projectStatusManager->rejectProject($project, ProjectsStatus::NOT_ELIGIBLE, $rejectionReason, $userId);
+                    } catch (\Exception $exception) {
+                        $this->logger->error('Could not reject the project: ' . $project->getIdProject() . '. Error: ' . $exception->getMessage(), [
+                            'id_project'       => $project->getIdProject(),
+                            'rejection_reason' => ProjectRejectionReason::PRODUCT_NOT_FOUND,
+                            'class'            => __CLASS__,
+                            'function'         => __FUNCTION__,
+                            'file'             => $exception->getFile(),
+                            'line'             => $exception->getLine()
+                        ]);
+                    }
                 }
 
                 return count($products);
             } else {
-                $this->logger->warning(
-                    'Cannot find eligible partner product for project ' . $project->getIdProject() . ' id_partner is empty',
-                    ['method' => __METHOD__]
-                );
+                $this->logger->warning('Cannot find eligible partner product for project ' . $project->getIdProject() . ' id_partner is empty', [
+                    'id_project' => $project->getIdProject(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                ]);
             }
         } catch (\Exception $exception) {
-            $this->logger->error(
-                'An exception occurs when trying to assign the product to the project ' . $project->getIdProject() . '. Errors : ' . $exception->getMessage(),
-                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->error('An exception occurs when trying to assign the product to the project ' . $project->getIdProject() . '. Errors : ' . $exception->getMessage(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
+            ]);
         }
 
         return 0;
@@ -458,5 +510,108 @@ class ProjectRequestManager
         }
 
         return $siret;
+    }
+
+
+    /**
+     * @param Projects|\projects $project
+     *
+     * @return ProjectRejectionReason|null
+     */
+    public function getMainRejectionReasonMessage($project): string
+    {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('Projects')->find($project->id_project);
+        }
+
+        $message                  = $this->translator->trans('project-request_end-page-external-rating-rejection-default-message');
+        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+
+        if (null === $lastProjectStatusHistory) {
+            $this->logger->warning('Attempting to get main rejection reason for a project without any status history: ' . $project->getIdProject(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+
+            return $message;
+        }
+
+        /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+        $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
+
+        foreach ($rejectionReasons as $reason) {
+            if (ProjectRejectionReason::IN_PROCEEDING === $reason->getIdRejectionReason()->getLabel()) {
+                $message = $this->translator->trans('project-request_end-page-collective-proceeding-message');
+                break;
+            } elseif (in_array($reason->getIdRejectionReason()->getLabel(), [ProjectRejectionReason::ENTITY_INACTIVE, ProjectRejectionReason::UNKNOWN_SIREN])) {
+                $message = $this->translator->trans('project-request_end-page-no-siren-message');
+                break;
+            } elseif (in_array($reason->getIdRejectionReason()->getLabel(), [ProjectRejectionReason::NEGATIVE_CAPITAL_STOCK, ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES, ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL, ProjectRejectionReason::LOW_TURNOVER])) {
+                $message = $this->translator->trans('project-request_end-page-negative-operating-result-message');
+                break;
+            } elseif (ProjectRejectionReason::PRODUCT_NOT_FOUND === $reason->getIdRejectionReason()->getLabel()) {
+                $message = $this->translator->trans('project-request_end-page-product-not-found-message');
+                break;
+            }
+        }
+
+        return $message;
+    }
+
+    /**
+     * @param Projects|\projects $project
+     *
+     * @return string
+     */
+    public function getPartnerMainRejectionReasonMessage($project): string
+    {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('Projects')->find($project->id_project);
+        }
+        $translation              = 'partner-project-request_not-eligible-reason-no-product';
+        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+        $borrowerServiceEmail     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => 'Adresse emprunteur']);
+
+        if (null === $lastProjectStatusHistory) {
+            $this->logger->warning('Attempting to get main rejection reason for a partner project without any status history: ' . $project->getIdProject(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+
+            return $this->translator->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
+        }
+
+        /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+        $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
+
+        foreach ($rejectionReasons as $rejectionReason) {
+            $reasonLabel = $rejectionReason->getIdRejectionReason()->getLabel();
+            if (in_array($reasonLabel, [ProjectRejectionReason::ENTITY_INACTIVE, ProjectRejectionReason::UNKNOWN_SIREN])) {
+                $translation = 'partner-project-request_not-eligible-reason-unknown-or-inactive-siren';
+                break;
+            } elseif (ProjectRejectionReason::NO_LEGAL_STATUS === $reasonLabel) {
+                $translation = 'partner-project-request_not-eligible-reason-no-legal-personality';
+                break;
+            } elseif (ProjectRejectionReason::COMPANY_LOCATION === $reasonLabel) {
+                $translation = 'partner-project-request_not-eligible-reason-company-location';
+                break;
+            } elseif (ProjectRejectionReason::IN_PROCEEDING === $reasonLabel) {
+                $translation = 'partner-project-request_not-eligible-reason-collective-proceeding';
+                break;
+            } elseif (in_array($reasonLabel, ProjectRejectionReason::SCORING_REASONS)) {
+                $translation = 'partner-project-request_not-eligible-reason-scoring';
+                break;
+            } elseif (in_array($reasonLabel, ProjectRejectionReason::FINANCIAL_REASONS)) {
+                $translation = 'partner-project-request_not-eligible-reason-financial-data';
+                break;
+            }
+        }
+
+        return $this->translator->trans($translation, ['%borrowerServiceEmail%' => $borrowerServiceEmail->getValue()]);
     }
 }

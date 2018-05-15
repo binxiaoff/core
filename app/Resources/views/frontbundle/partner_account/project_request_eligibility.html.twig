@@ -100,10 +100,11 @@
                 <div class="modal-body text-align-center">
                     <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
                     <div class="form-field">
+                        {# @todo find a way to add select2 like solution to be able to choose more than one reason at time #}
                         <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                             <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
-                            {% for reason in abandonReasons %}
-                                <option value="{{ reason.idAbandon }}">{{ reason.label }}</option>
+                            {% for abandonReason in abandonReasons %}
+                                <option value="{{ abandonReason.idAbandon }}">{{ abandonReason.reason|capitalize }}</option>
                             {% endfor %}
                         </select>
                     </div>

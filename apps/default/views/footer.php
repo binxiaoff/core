@@ -119,22 +119,6 @@
     </div>
     <!-- /.footer-partners -->
 </div><!-- /.footer -->
-<div class="cookies">
-    <div class="content_cookies">
-        <div><?= $this->lng['footer']['cookies-content'] ?>
-            <a target="_blank" href="<?= $this->lurl ?>/<?= $this->tree->getSlug(381, $this->language) ?>"><?= $this->lng['footer']['cookies-link'] ?></a>
-        </div>
-    </div>
-    <div class="accept_cookies">
-        <button onclick="acceptCookies();"><?= $this->lng['footer']['cookies-cta'] ?></button>
-    </div>
-</div>
-
-<script type="text/javascript">
-    if (document.cookie.indexOf("acceptCookie") >= 0) {
-        $('.cookies').hide();
-    }
-</script>
 <!--[if lte IE 9]>
 <script type="text/javascript" src="<?= $this->surl ?>/scripts/default/placeholders.jquery.min.js"></script>
 <![endif]-->

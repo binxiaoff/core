@@ -1,3 +1,9 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+
+?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
@@ -48,22 +54,22 @@
             <h5><?= $this->bloc_pdf_contrat['designation-p'] ?></h5>
             <div class="list">
                 <ul>
-                    <?php if ($this->clients->type == 1): // particulier ?>
+                    <?php if (in_array($this->clients->type, [Clients::TYPE_PERSON_FOREIGNER, Clients::TYPE_PERSON])): ?>
                         <li>Nom<div class="col-small"><?= $this->clients->nom ?></div></li>
                         <li>Prénom<div class="col-small"><?= $this->clients->prenom ?></div></li>
                         <li>Date de naissance<div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div></li>
-                        <li>Adresse<div class="col-small"><?= $this->clients_adresses->adresse1 ?></div></li>
-                        <li>Code postal<div class="col-small"><?= $this->clients_adresses->cp ?></div></li>
-                        <li>Ville<div class="col-small"><?= $this->clients_adresses->ville ?></div></li>
-                    <?php else: // morale ?>
-                        <li>Raison sociale<div class="col-small"><?= $this->companiesPreteur->name ?></div></li>
-                        <li>Forme juridique<div class="col-small"><?= $this->companiesPreteur->forme ?></div></li>
-                        <li>Capital social<div class="col-small"><?= $this->ficelle->formatNumber($this->companiesPreteur->capital, 0) ?>&nbsp;&euro;</div></li>
-                        <li>Adresse du siège social<div class="col-small"><?= $this->companiesPreteur->adresse1 ?></div></li>
-                        <li>Code postal<div class="col-small"><?= $this->companiesPreteur->zip ?></div></li>
-                        <li>Ville<div class="col-small"><?= $this->companiesPreteur->city ?></div></li>
-                        <li>Tribunal de commerce<div class="col-small"><?= $this->companiesPreteur->tribunal_com ?></div></li>
-                        <li>R.C.S.<div class="col-small"><?= $this->companiesPreteur->siren ?></div></li>
+                        <li>Adresse<div class="col-small"><?= $this->lenderAddress->getAddress() ?></div></li>
+                        <li>Code postal<div class="col-small"><?= $this->lenderAddress->getZip() ?></div></li>
+                        <li>Ville<div class="col-small"><?= $this->lenderAddress->getCity() ?></div></li>
+                    <?php else: ?>
+                        <li>Raison sociale<div class="col-small"><?= $this->lenderCompany->getName() ?></div></li>
+                        <li>Forme juridique<div class="col-small"><?= $this->lenderCompany->getForme() ?></div></li>
+                        <li>Capital social<div class="col-small"><?= $this->ficelle->formatNumber($this->lenderCompany->getCapital(), 0) ?>&nbsp;&euro;</div></li>
+                        <li>Adresse du siège social<div class="col-small"><?= $this->lenderAddress->getAddress() ?></div></li>
+                        <li>Code postal<div class="col-small"><?= $this->lenderAddress->getZip() ?></div></li>
+                        <li>Ville<div class="col-small"><?= $this->lenderAddress->getCity() ?></div></li>
+                        <li>Tribunal de commerce<div class="col-small"><?= $this->lenderCompany->getTribunalCom() ?></div></li>
+                        <li>R.C.S.<div class="col-small"><?= $this->lenderCompany->getSiren() ?></div></li>
                     <? endif; ?>
                 </ul>
             </div>

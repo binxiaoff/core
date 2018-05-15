@@ -30,7 +30,7 @@
                                 <dt>{{ 'common_position'|trans }}</dt>
                                 <dd id="profile-info-statut-output">{{ client.fonction|default('') }}</dd>
                                 <dt>{{ 'common_phone'|trans }}</dt>
-                                <dd id="profile-info-phone-output">{{ client.mobile|default('') }}</dd>
+                                <dd id="profile-info-phone-output">{{ client.telephone|default('') }}</dd>
                                 <dt>{{ 'common_email'|trans }}</dt>
                                 <dd id="profile-info-email-output">{{ client.email|default('') }}</dd>
                             </dl>
@@ -75,9 +75,9 @@
                         <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
                             <dl class="list-2col">
                                 <dt>{{ 'borrower-profile_bic'|trans|upper }}</dt>
-                                <dd>{{ bankAccount.bic }}</dd>
+                                <dd>{{ bankAccount.bic|default('') }}</dd>
                                 <dt>{{ 'borrower-profile_iban'|trans|upper }}</dt>
-                                <dd>{{ bankAccount.iban|split('', 4)|join(' ') }}</dd>
+                                <dd>{{ bankAccount.iban|default('')|split('', 4)|join(' ') }}</dd>
                             </dl>
                             <p>{{ 'borrower-profile_bank-information-modification-message'|trans|raw }}</p>
                         </section>

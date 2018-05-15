@@ -291,15 +291,50 @@ var Utility = {
     return output
   },
 
-  // Convert string to float
+  convertExponentToFloat: function (input) {
+    var convertInput = (input + '').split(/e/i)
+    if (convertInput.length === 1) return convertInput[0]
+  
+    var output = ''
+    var sign = input < 0 ? '-' : ''
+    var str = convertInput[0].replace('.', '')
+    var mag = parseInt(convertInput[1]) + 1
+  
+    if (mag < 0) {
+      output = sign + '0.'
+  
+      while (mag++) {
+        output += '0'
+      }
+      
+      output = output + str.replace(/^\-/,'')
+    } else {
+      mag -= str.length
+      while (mag--) {
+        output += '0'
+      }
+  
+      output = str + output
+    }
+    
+    return parseFloat(output)
+  },
+  
   convertStringToFloat: function (input) {
     if (typeof input === 'number') return input
-
-    var output = parseFloat((input + '').replace(/[^\d\-\.]+/g, ''))
-
-    // Infinity / NaN
-    if (input === Infinity || isNaN(output)) output = 0
-
+    
+    var checkInput = input + ''
+    
+    // If exponent represented, convert to a number/float
+    if (/e[-+]\d+$/i.test(input)) {
+      checkInput = Utility.convertExponentToFloat(input) + ''
+    }
+    
+    var output = parseFloat(checkInput.replace(/[^\d\-\.]+/g, ''))
+  
+    // Infinity === NaN because it's not usable
+    if (input === Infinity) output = NaN
+  
     return output
   },
 
@@ -1431,6 +1466,18 @@ var Utility = {
     // Trigger UI:update event to signal to any other elements that need to update on this event
     // @trigger doc `UI:update`
     $doc.trigger('UI:update')
+  },
+
+  checkTestStatus: function (testValue, expectedValue) {
+    var output = "Received:\n\t`" + testValue + "`\nExpected:\n\t`" + expectedValue + "`\n--> Test "
+
+    if (testValue === expectedValue) {
+      if (window && window.console && window.console.log) console.log(output + 'passed!')
+      return true
+    } else {
+      if (window && window.console && window.console.warn) console.warn(output + 'failed...')
+      return false
+    }
   }
 }
 
@@ -1457,12 +1504,32 @@ $.fn.uiScrollTo = function (options) {
  */
 $doc.on('ready', function () {
 
-    // Hook into orientationchange/resize event to update the window
-    $win.on('orientationchange resize', Utility.debounceUpdateWindow)
+  // Hook into orientationchange/resize event to update the window
+  $win.on('orientationchange resize', Utility.debounceUpdateWindow)
 
-    // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
-    $doc.on('UI:updateWindow', Utility.debounceUpdateWindow)
+  // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
+  $doc.on('UI:updateWindow', Utility.debounceUpdateWindow)
 
-  })
+})
 
 module.exports = Utility
+
+/*
+ * @debug Tests
+ *
+ * If you change the above, ensure to uncomment and run the below tests to check it all works.
+ */
+// console.log('### TESTING UTILITY ###')
+
+// var test = Utility.checkTestStatus
+
+// // Convert string to float
+// test(Utility.convertStringToFloat('5 000 000 000 €'), 5000000000)
+// test(Utility.convertStringToFloat('$1234.56'), 1234.56)
+// test(Utility.convertStringToFloat('1 234,56'), 1234.56) // no support yet for locale number formatting
+// test(Utility.convertStringToFloat('1.234,56'), 1234.56) // no support yet for locale number formatting
+// test(Utility.convertStringToFloat('-2.156'), -2.156)
+// test(Utility.convertStringToFloat('9,007,199,254,740,991'), 9007199254740991)
+// test(Utility.convertStringToFloat('3.88e+4'), 38800)
+// test(Utility.convertStringToFloat('3.88E-4'), 0.000388)
+// test(isNaN(Utility.convertStringToFloat('nothing')), true)

@@ -149,51 +149,24 @@
             <h5>Désignation du prêteur</h5>
             <div class="list">
                 <ul>
-                    <?php if (in_array($this->clients->type, [\Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON, \Unilend\Bundle\CoreBusinessBundle\Entity\Clients::TYPE_PERSON_FOREIGNER])) : ?>
-                        <li>Nom
-                            <div class="col-small"><?= $this->clients->nom ?></div>
-                        </li>
-                        <li>Prénom
-                            <div class="col-small"><?= $this->clients->prenom ?></div>
-                        </li>
-                        <li>Date de naissance
-                            <div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div>
-                        </li>
-                        <li>Adresse
-                            <div class="col-small"><?= $this->clients_adresses->adresse1 ?></div>
-                        </li>
-                        <li>Code postal
-                            <div class="col-small"><?= $this->clients_adresses->cp ?></div>
-                        </li>
-                        <li>Ville
-                            <div class="col-small"><?= $this->clients_adresses->ville ?></div>
-                        </li>
-                    <?php else : ?>
-                        <li>Raison sociale
-                            <div class="col-small"><?= $this->companiesPreteur->name ?></div>
-                        </li>
-                        <li>Forme juridique
-                            <div class="col-small"><?= $this->companiesPreteur->forme ?></div>
-                        </li>
-                        <li>Capital social
-                            <div class="col-small"><?= $this->ficelle->formatNumber($this->companiesPreteur->capital, 0) ?>&nbsp;&euro;</div>
-                        </li>
-                        <li>Adresse du siège social
-                            <div class="col-small"><?= $this->companiesPreteur->adresse1 ?></div>
-                        </li>
-                        <li>Code postal
-                            <div class="col-small"><?= $this->companiesPreteur->zip ?></div>
-                        </li>
-                        <li>Ville
-                            <div class="col-small"><?= $this->companiesPreteur->city ?></div>
-                        </li>
-                        <li>Tribunal de commerce
-                            <div class="col-small"><?= $this->companiesPreteur->tribunal_com ?></div>
-                        </li>
-                        <li>R.C.S.
-                            <div class="col-small"><?= $this->companiesPreteur->siren ?></div>
-                        </li>
-                    <?php endif; ?>
+                    <li>Nom
+                        <div class="col-small"><?= $this->clients->nom ?></div>
+                    </li>
+                    <li>Prénom
+                        <div class="col-small"><?= $this->clients->prenom ?></div>
+                    </li>
+                    <li>Date de naissance
+                        <div class="col-small"><?= date('d/m/Y', strtotime($this->clients->naissance)) ?></div>
+                    </li>
+                    <li>Adresse
+                        <div class="col-small"><?= $this->lenderAddress->getAddress() ?></div>
+                    </li>
+                    <li>Code postal
+                        <div class="col-small"><?= $this->lenderAddress->getZip() ?></div>
+                    </li>
+                    <li>Ville
+                        <div class="col-small"><?= $this->lenderAddress->getCity() ?></div>
+                    </li>
                 </ul>
                 <p>En présence de :</p>
                 <?= $this->bloc_pdf_contrat['description-unilend'] ?>

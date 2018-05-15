@@ -35,7 +35,7 @@
                     var $projectsContainer = $tab.find('.projects-list')
 
                     $blockContainer.addClass('block-opt-refresh')
-                    $blockContent.addClass('hidden')
+                    $blockContent.addClass('pull-t').addClass('hidden')
                     $projectsContainer.html('')
 
                     $.ajax({
@@ -183,7 +183,7 @@
                                 {% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is defined %}Traitement commercial{% endif %}
                             </h3>
                         </div>
-                        <div class="block-content tab-content pull-t">
+                        <div class="block-content tab-content">
                             {% if projectsCountSortedByStatus[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] is not defined %}
                                 <div role="tabpanel" class="tab-pane active">
                                     <div class="push-15">Cliquez sur un statut pour voir la liste des projets correspondant</div>
