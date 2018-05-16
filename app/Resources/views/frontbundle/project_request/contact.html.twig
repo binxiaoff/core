@@ -174,7 +174,7 @@
                                                                 </option>
                                                             {% endfor %}
                                                             <option value="" {% if project.idPrescripteur is not empty %} selected{% endif %}
-                                                                    ata-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
+                                                                    data-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
                                                                     data-executive-last-name="{{ form.values.otherContact.lastName|escape('html_attr') }}"
                                                                     data-executive-first-name="{{ form.values.otherContact.firstName|escape('html_attr') }}"
                                                                     data-executive-function="{{ form.values.otherContact.function|escape('html_attr') }}">
@@ -195,14 +195,13 @@
                                                     <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                                         <li>
                                                             <label>
-                                                                <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %} readonly/>
+                                                                <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}/>
                                                                 {% trans %} common_title-female {% endtrans %}
                                                             </label>
                                                         </li>
                                                         <li>
                                                             <label>
-                                                                <input type="radio" name="title"
-                                                                       value="M."{% if 'M.' == form.values.contact.title or 'M' == form.values.contact.title %} checked{% endif %} readonly/>
+                                                                <input type="radio" name="title" value="M."{% if 'M.' == form.values.contact.title or 'M' == form.values.contact.title %} checked{% endif %}/>
                                                                 {% trans %} common_title-male {% endtrans %}
                                                             </label>
                                                         </li>

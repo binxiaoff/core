@@ -215,6 +215,20 @@ class ProjectRequestController extends Controller
         $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
             ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
 
+        try {
+            $activeExecutives = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
+        } catch (\Exception $exception) {
+            $activeExecutives = [];
+
+            $this->get('logger')->error('An error occurred while getting active executives: ' . $exception->getMessage(), [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine(),
+                'id_project' => $project->getIdProject()
+            ]);
+        }
+
         $template                 = [
             'project'                  => $project,
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
@@ -222,7 +236,7 @@ class ProjectRequestController extends Controller
             'abandonReasons'           => $projectAbandonReasonList,
             'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()],
                 ['rank' => 'ASC']),
-            'activeExecutives'         => $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren())
+            'activeExecutives'         => $activeExecutives
         ];
 
         $session = $request->getSession()->get('partnerProjectRequest');

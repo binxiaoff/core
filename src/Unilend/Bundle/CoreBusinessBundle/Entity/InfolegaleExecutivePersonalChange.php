@@ -23,7 +23,7 @@ class InfolegaleExecutivePersonalChange
     /**
      * @var ?string
      *
-     * @ORM\Column(name="title", type="string", length=50, nullable=true)
+     * @ORM\Column(name="title", type="string", length=10, nullable=true)
      */
     private $title;
 
@@ -44,13 +44,13 @@ class InfolegaleExecutivePersonalChange
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=10, nullable=false)
+     * @ORM\Column(name="siren", type="string", length=9, nullable=false)
      */
     private $siren;
 
     /**
      * @var string
-     * @ORM\Column(name="siren_if_company", type="string", length=10, nullable=true)
+     * @ORM\Column(name="siren_if_company", type="string", length=9, nullable=true)
      */
     private $sirenIfCompany;
 
@@ -202,9 +202,9 @@ class InfolegaleExecutivePersonalChange
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getSirenIfCompany(): string
+    public function getSirenIfCompany(): ?string
     {
         return $this->sirenIfCompany;
     }

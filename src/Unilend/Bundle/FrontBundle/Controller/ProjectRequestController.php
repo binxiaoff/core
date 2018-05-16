@@ -243,7 +243,19 @@ class ProjectRequestController extends Controller
         $mobile    = $values['contact']['mobile'] ?? $contact->getTelephone();
         $function  = $values['contact']['function'] ?? $contact->getFonction();
 
-        $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
+        try {
+            $template['activeExecutives'] = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
+        } catch (\Exception $exception) {
+            $template['activeExecutives'] = [];
+
+            $this->get('logger')->error('An error occurred while getting active executives: ' . $exception->getMessage(), [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine(),
+                'id_project' => $project->getIdProject()
+            ]);
+        }
         // If one (last name) of these fields is empty, we can consider that all the field is empty
         $firstExecutiveFound = $template['activeExecutives'][0] ?? null;
         if (empty($lastName) && null !== $firstExecutiveFound) {
@@ -385,7 +397,7 @@ class ProjectRequestController extends Controller
 
             if (false === empty($project->getIdPrescripteur())) {
                 $advisor = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
-                if ($advisor && false === empty($project->getIdPrescripteur($advisor->getIdClient()))) {
+                if ($advisor && false === empty($advisor->getIdClient())) {
                     $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
                     $newAdvisor    = false;
                 }
@@ -409,36 +421,44 @@ class ProjectRequestController extends Controller
                 ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
 
             if ($newAdvisor) {
-                $entityManager->persist($advisorClient);
-                $entityManager->flush($advisorClient);
+                $entityManager->getConnection()->beginTransaction();
+                try {
+                    $entityManager->persist($advisorClient);
+                    $entityManager->flush($advisorClient);
 
-                /** @var \clients_adresses $advisorAddress */
-                $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
-                $advisorAddress->id_client = $advisorClient->getIdClient();
-                $advisorAddress->civilite  = $title;
-                $advisorAddress->prenom    = $firstName;
-                $advisorAddress->nom       = $lastName;
-                $advisorAddress->mobile    = $mobile;
-                $advisorAddress->create();
+                    /** @var \clients_adresses $advisorAddress */
+                    $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
+                    $advisorAddress->id_client = $advisorClient->getIdClient();
+                    $advisorAddress->civilite  = $title;
+                    $advisorAddress->prenom    = $firstName;
+                    $advisorAddress->nom       = $lastName;
+                    $advisorAddress->mobile    = $mobile;
+                    $advisorAddress->create();
 
-                $advisorCompany = new Companies();
+                    $advisorCompany = new Companies();
 
-                $entityManager->persist($advisorCompany);
-                $entityManager->flush($advisorCompany);
+                    $entityManager->persist($advisorCompany);
+                    $entityManager->flush($advisorCompany);
 
-                $advisor = new Prescripteurs();
-                $advisor
-                    ->setIdClient($advisorClient->getIdClient())
-                    ->setIdEntite($advisorCompany->getIdCompany())
-                    ->setIdEnseigne(0)
-                    ->setTypeDepotDossier(0);
-                $advisor->id_client = $advisorClient->getIdClient();
-                $advisor->id_entite = $advisorCompany->getIdCompany();
+                    $advisor = new Prescripteurs();
+                    $advisor
+                        ->setIdClient($advisorClient->getIdClient())
+                        ->setIdEntite($advisorCompany->getIdCompany())
+                        ->setIdEnseigne(0)
+                        ->setTypeDepotDossier(0);
 
-                $entityManager->persist($advisor);
-                $entityManager->flush($advisor);
+                    $entityManager->persist($advisor);
+                    $entityManager->flush($advisor);
 
-                $project->setIdPrescripteur($advisor->getIdPrescripteur());
+                    $project->setIdPrescripteur($advisor->getIdPrescripteur());
+
+                    $entityManager->getConnection()->commit();
+                } catch (\Exception $exception) {
+                    $entityManager->getConnection()->rollBack();
+
+                    throw $exception;
+                }
+
             } else {
                 $entityManager->flush($advisorClient);
             }

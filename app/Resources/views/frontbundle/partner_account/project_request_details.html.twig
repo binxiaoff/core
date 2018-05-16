@@ -68,7 +68,7 @@
                                                         </option>
                                                     {% endfor %}
                                                     <option value="" {% if project.idPrescripteur is not empty %} selected{% endif %}
-                                                            ata-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
+                                                            data-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
                                                             data-executive-last-name="{{ form.values.otherContact.lastName|escape('html_attr') }}"
                                                             data-executive-first-name="{{ form.values.otherContact.firstName|escape('html_attr') }}"
                                                             data-executive-function="{{ form.values.otherContact.function|escape('html_attr') }}">
