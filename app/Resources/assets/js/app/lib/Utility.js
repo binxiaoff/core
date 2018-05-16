@@ -1479,6 +1479,20 @@ var Utility = {
       if (window && window.console && window.console.warn) console.warn(output + 'failed...')
       return false
     }
+  },
+
+  // Excel PMT function
+  // https://gist.github.com/maarten00/23400873d51bf2ec4eeb
+  pmt: function (rate, duration, amount) {
+    if (rate !== 0.0) {
+        var q = Math.pow(1 + rate, duration)
+        return - rate * q * amount / (q - 1)
+    } else if (duration !== 0.0) {
+        // No interest rate, but number of payments exists
+        return - amount / duration
+    }
+
+    return 0
   }
 }
 
