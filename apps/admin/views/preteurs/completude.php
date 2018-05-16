@@ -12,7 +12,7 @@
                 </tr>
                 <tr>
                     <th>
-                        <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn"/>
+                        <input type="button" value="Prévisualiser" title="Prévisualiser" name="previsualisation" id="previsualisation" class="btn-primary">
                     </th>
                 </tr>
             </table>

@@ -550,5 +550,9 @@
         <service id="unilend.service.bdf_loans_declaration_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BdfLoansDeclarationManager">
             <argument>%path.protected%</argument>
         </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer" autowire="true"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager" autowire="true"/>
     </services>
 </container>

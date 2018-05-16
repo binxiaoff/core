@@ -8,7 +8,6 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsStatus, Companies, CompanyStatus, CompanyStatusHistory, Prelevements, ProjectsStatus, Users, WalletType
 };
-use Unilend\Bundle\FrontBundle\Service\SourceManager;
 
 class CompanyManager
 {
