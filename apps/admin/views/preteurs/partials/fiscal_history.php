@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-md-6">
             <?php if (false === empty($this->taxationCountryHistory)) : ?>
-                <table class="tablesorter histo_status_client">
+                <table class="tablesorter">
                     <?php if (array_key_exists('error', $this->taxationCountryHistory)) : ?>
                         <tr>
                             <td><?= $this->taxationCountryHistory['error'] ?></td>
@@ -58,7 +58,7 @@
             <div class="row">
                 <div class="form-group col-md-12">
                     <?php if (false === empty($this->taxExemptionUserHistoryAction)) : ?>
-                        <table class="tablesorter histo_status_client">
+                        <table class="tablesorter">
                             <?php foreach ($this->taxExemptionUserHistoryAction as $actions) : ?>
                                 <?php foreach ($actions['modifications'] as $action) : ?>
                                     <tr>

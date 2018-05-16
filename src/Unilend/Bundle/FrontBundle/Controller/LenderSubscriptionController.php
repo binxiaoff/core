@@ -89,8 +89,10 @@ class LenderSubscriptionController extends Controller
         if ($request->isMethod(Request::METHOD_POST)) {
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 $isValid = $this->handlePersonForm($client, $identityForm, $request);
+
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+
                     if (false === empty($sponsorCode)) {
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
@@ -105,8 +107,10 @@ class LenderSubscriptionController extends Controller
 
             if ($companyIdentityForm->isSubmitted() && $companyIdentityForm->isValid()) {
                 $isValid = $this->handleLegalEntityForm($client, $company, $companyIdentityForm, $request);
+
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+
                     if (false === empty($sponsorCode)) {
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
@@ -578,8 +582,10 @@ class LenderSubscriptionController extends Controller
 
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
+
             if ($form->isValid()) {
                 $isValid = $this->handleDocumentsForm($form, $request->files, $countryId);
+
                 if ($isValid) {
                     return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
                 }
@@ -693,6 +699,7 @@ class LenderSubscriptionController extends Controller
             if ($file instanceof UploadedFile) {
                 try {
                     $attachement = $this->upload($client,  $attachmentTypeId, $file);
+
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE) {
                         $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                         $addressManager->linkAttachmentToAddress($address, $attachement);
@@ -1115,6 +1122,8 @@ class LenderSubscriptionController extends Controller
      * @param Clients $client
      * @param Request $request
      * @param int     $step
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function saveClientHistoryAction(Clients $client, Request $request, int $step): void
     {
@@ -1122,7 +1131,7 @@ class LenderSubscriptionController extends Controller
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files->all();
 
-        if (1 == $step) {
+        if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION === $step) {
             $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
             $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
             $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);

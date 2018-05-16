@@ -1,17 +1,19 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    LenderOperationsManager
+    ClientAuditer, ClientDataHistoryManager, LenderOperationsManager
 };
 
 class preteursController extends bootstrap
 {
     /** @var Wallet */
     protected $wallet;
+    /** @var Clients */
+    protected $client;
 
     public function initialize()
     {
@@ -310,7 +312,6 @@ class preteursController extends bootstrap
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->settings                = $this->loadData('settings');
-        $clientData                 = $this->loadData('clients');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
         $this->lNatio = $this->nationalites->select();
@@ -338,9 +339,8 @@ class preteursController extends bootstrap
         $this->exemptionYears  = [];
 
         if (
-            $this->params[0]
+            isset($this->params[0])
             && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
-            && $clientData->get($this->params[0], 'id_client')
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
@@ -389,8 +389,9 @@ class preteursController extends bootstrap
 
             $this->taxationCountryHistory = $this->getTaxationHistory($wallet->getId());
             $this->clientStatusMessage    = $this->getMessageAboutClientStatus();
+            $this->dataHistory            = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->client);
             $this->statusHistory          = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-                ['idClient' => $this->client],
+                ['idClient' => $this->client, 'idStatus' => [ClientsStatus::STATUS_CREATION, ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED, ClientsStatus::STATUS_DISABLED, ClientsStatus::STATUS_CLOSED_LENDER_REQUEST, ClientsStatus::STATUS_CLOSED_BY_UNILEND, ClientsStatus::STATUS_CLOSED_DEFINITELY]], // All but "Complétude (Relance)" which is only a "technical" status
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
@@ -416,6 +417,7 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest($this->client);
+
                 $clientStatusManager->addClientStatus(
                     $this->client,
                     $this->userEntity->getIdUser(),
@@ -464,12 +466,12 @@ class preteursController extends bootstrap
 
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
-                    $birthCountry       = $this->request->request->getInt('id_pays_naissance');
-                    $type               = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-                    $email              = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
-                    $birthday           = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
+                    $birthCountry = $this->request->request->getInt('id_pays_naissance');
+                    $type         = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+                    $email        = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
+                    $birthday     = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
 
-                    if (false === $this->checkEmail($email, $clientData)) {
+                    if (false === $this->checkEmail($email, $this->client)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
                     }
@@ -482,10 +484,11 @@ class preteursController extends bootstrap
                     }
 
                     if (false !== $birthday && 1 === preg_match("#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#", $birthday)) {
-                        $birthday = \DateTime::createFromFormat('d/m/Y', $birthday);
+                        $birthday = \DateTime::createFromFormat('d/m/Y', $birthday)->setTime(0, 0, 0);
                     }
 
                     $entityManager->beginTransaction();
+
                     try {
                         $this->client
                             ->setCivilite($_POST['civilite'])
@@ -503,6 +506,10 @@ class preteursController extends bootstrap
                             ->setIdLangue('fr')
                             ->setType($type);
 
+                        /** @var ClientAuditer $clientAuditer */
+                        $clientAuditer = $this->get(ClientAuditer::class);
+                        $clientAuditer->logChanges($this->client, $this->userEntity, true);
+
                         $entityManager->flush($this->client);
 
                         $this->saveUserHistory($this->client->getIdClient());
@@ -517,14 +524,10 @@ class preteursController extends bootstrap
                             'function'  => __FUNCTION__,
                             'id_client' => $this->client->getIdClient()
                         ]);
-
-
                     }
-                    header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                    die;
                 } else {
                     $email = trim($_POST['email_e']);
-                    if (false === $this->checkEmail($email, $clientData)) {
+                    if (false === $this->checkEmail($email, $this->client)) {
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                         die;
                     }
@@ -542,16 +545,6 @@ class preteursController extends bootstrap
                             ->setTribunalCom($_POST['tribunal_com'])
                             ->setStatusClient($_POST['enterprise']);
 
-                        $this->client
-                            ->setCivilite($_POST['civilite_e'])
-                            ->setNom($this->ficelle->majNom($_POST['nom_e']))
-                            ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
-                            ->setFonction($_POST['fonction_e'])
-                            ->setEmail($email)
-                            ->setTelephone(str_replace(' ', '', $_POST['phone_e']))
-                            ->setIdLangue('fr')
-                            ->setType(Clients::TYPE_LEGAL_ENTITY);
-
                         if (in_array($_POST['enterprise'], [Companies::CLIENT_STATUS_DELEGATION_OF_POWER, Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT])) {
                             $this->companyEntity
                                 ->setCiviliteDirigeant($_POST['civilite2_e'])
@@ -560,7 +553,6 @@ class preteursController extends bootstrap
                                 ->setFonctionDirigeant($_POST['fonction2_e'])
                                 ->setEmailDirigeant($_POST['email2_e'])
                                 ->setPhoneDirigeant(str_replace(' ', '', $_POST['phone2_e']));
-
 
                             if ($_POST['enterprise'] == Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                                 $this->companyEntity
@@ -577,6 +569,20 @@ class preteursController extends bootstrap
                                 ->setPhoneDirigeant(null);
                         }
 
+                        $this->client
+                            ->setCivilite($_POST['civilite_e'])
+                            ->setNom($this->ficelle->majNom($_POST['nom_e']))
+                            ->setPrenom($this->ficelle->majNom($_POST['prenom_e']))
+                            ->setFonction($_POST['fonction_e'])
+                            ->setEmail($email)
+                            ->setMobile(str_replace(' ', '', $_POST['phone_e']))
+                            ->setIdLangue('fr')
+                            ->setType(Clients::TYPE_LEGAL_ENTITY);
+
+                        /** @var ClientAuditer $clientAuditer */
+                        $clientAuditer = $this->get(ClientAuditer::class);
+                        $clientAuditer->logChanges($this->client, $this->userEntity, true);
+
                         $entityManager->flush([$this->companyEntity, $this->client]);
 
                         $this->saveUserHistory($this->client->getIdClient());
@@ -592,9 +598,10 @@ class preteursController extends bootstrap
                             'id_client' => $this->client->getIdClient()
                         ]);
                     }
-                    header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                    die;
                 }
+
+                header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
+                die;
             }
 
             if (isset($_POST['send_tax_exemption'])) {
@@ -998,6 +1005,7 @@ class preteursController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $this->wallet  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->clients->id_client, WalletType::LENDER);
+            $this->client  = $this->wallet->getIdClient();
 
             if (isset($_POST['send_dates'])) {
                 $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
@@ -1145,6 +1153,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet          = $wallet;
+            $this->client          = $wallet->getIdClient();
             $this->lSumLoans       = $this->loans->getSumLoansByProject($wallet->getId());
             $this->aProjectsInDebt = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->getProjectsInDebt();
 
@@ -1245,10 +1254,12 @@ class preteursController extends bootstrap
             $mailer = $this->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
-            $this->get('logger')->warning(
-                'Could not send email: completude - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->get('logger')->warning('Could not send email "completude" - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__
+            ]);
         }
     }
 
@@ -1257,13 +1268,12 @@ class preteursController extends bootstrap
      */
     private function getMessageAboutClientStatus(): string
     {
-        $clientStatusHistory = $this->wallet->getIdClient()->getIdClientStatusHistory();
-        $client              = $this->wallet->getIdClient();
+        $clientStatusHistory = $this->client->getIdClientStatusHistory();
 
         if (null === $clientStatusHistory || empty($clientStatusHistory->getId())) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
-            $logger->warning('Lender client has no status ' . $this->client->getIdClient(), ['client' => $client->getIdClient()]);
+            $logger->warning('Lender client has no status ' . $this->client->getIdClient(), ['id_client' => $this->client->getIdClient()]);
 
             return '';
         }
@@ -1273,15 +1283,15 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '<div class="attention">Inscription non terminée </div>';
                 break;
             case ClientsStatus::STATUS_TO_BE_CHECKED:
-                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention">Compte non validé - créé le ' . $this->client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_COMPLETENESS:
             case ClientsStatus::STATUS_COMPLETENESS_REMINDER:
             case ClientsStatus::STATUS_COMPLETENESS_REPLY:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . $client->getAdded()->format('d/m/Y') . ' </div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F9B137">Compte en complétude - créé le ' . $this->client->getAdded()->format('d/m/Y') . ' </div>';
                 break;
             case ClientsStatus::STATUS_MODIFICATION:
-                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . $client->getAdded()->format('d/m/Y') . '</div>';
+                $clientStatusMessage = '<div class="attention" style="background-color:#F2F258">Compte en modification - créé le ' . $this->client->getAdded()->format('d/m/Y') . '</div>';
                 break;
             case ClientsStatus::STATUS_VALIDATED:
                 $clientStatusMessage = '';
@@ -1305,7 +1315,7 @@ class preteursController extends bootstrap
                 $clientStatusMessage = '';
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');
-                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['client' => $client->getIdClient()]);
+                $logger->warning('Unknown client status "' . $clientStatusHistory->getIdStatus()->getId() . '"', ['id_client' => $this->client->getIdClient()]);
                 break;
         }
 
@@ -1333,25 +1343,25 @@ class preteursController extends bootstrap
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
-                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
-                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
-                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:
@@ -1513,6 +1523,7 @@ class preteursController extends bootstrap
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
             $this->wallet              = $wallet;
+            $this->client              = $wallet->getIdClient();
             $this->clientStatusMessage = $this->getMessageAboutClientStatus();
 
             if (isset($_POST['send_dates'])) {
@@ -1594,14 +1605,14 @@ class preteursController extends bootstrap
     }
 
     /**
-     * @param string   $email
-     * @param \clients $client
+     * @param string  $email
+     * @param Clients $client
      *
      * @return bool
      */
-    private function checkEmail(string $email, \clients $client): bool
+    private function checkEmail(string $email, Clients $client): bool
     {
-        if ($email === $client->email) {
+        if ($email === $client->getEmail()) {
             return true;
         }
 

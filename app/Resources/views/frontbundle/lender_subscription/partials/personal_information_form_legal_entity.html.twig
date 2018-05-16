@@ -247,6 +247,7 @@
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.fonction.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
                 <label for="form-lender-legal-entity-client-function">
                     {% trans %} common_position {% endtrans %}
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(companyIdentityForm.client.fonction, {
                     'id' : 'form-lender-legal-entity-client-function',

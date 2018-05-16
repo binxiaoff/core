@@ -47,29 +47,42 @@ class AttachmentManager
     {
         $destinationRelative = $this->getUploadDestination($client);
         $destinationAbsolute = $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $destinationRelative;
+
         if (false === is_dir($destinationAbsolute)) {
             $this->filesystem->mkdir($destinationAbsolute);
         }
 
-        $fileName     = ($name === null ? md5(uniqid()) : $name);
+        $fileName     = $name === null ? md5(uniqid()) : $name;
         $fileFullName = $this->sanitizer($fileName) . '.' . $file->getClientOriginalExtension();
+
         if (file_exists($destinationAbsolute . DIRECTORY_SEPARATOR . $fileFullName)) {
             $fileFullName = $this->sanitizer($fileName . '_' . md5(uniqid())) . '.' . $file->getClientOriginalExtension();
         }
 
         $file->move($destinationAbsolute, $fileFullName);
-        $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy(['idClient' => $client, 'idType' => $attachmentType, 'archived' => null]);
+
+        $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+            ->findBy([
+                'idClient' => $client,
+                'idType'   => $attachmentType,
+                'archived' => null
+            ]);
+
         foreach ($attachmentsToArchive as $toArchive) {
             $toArchive->setArchived(new \DateTime());
         }
 
         $attachment = new Attachment();
-        $attachment->setPath($destinationRelative . DIRECTORY_SEPARATOR . $fileFullName)
-                   ->setClient($client)
-                   ->setType($attachmentType)
-                   ->setOriginalName($file->getClientOriginalName());
+        $attachment
+            ->setPath($destinationRelative . DIRECTORY_SEPARATOR . $fileFullName)
+            ->setClient($client)
+            ->setType($attachmentType)
+            ->setOriginalName($file->getClientOriginalName());
+
         $this->entityManager->persist($attachment);
-        $this->entityManager->flush();
+
+        // Only flush impacted entities otherwise it may flush data that should not (see LenderProfileController)
+        $this->entityManager->flush(array_merge($attachmentsToArchive, [$attachment]));
 
         return $attachment;
     }

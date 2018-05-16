@@ -16,6 +16,7 @@
                 <li><a href="<?= $this->lurl ?>/sfpmei/preteur/<?= $this->clients->id_client ?>/mouvements">Mouvements</a></li>
                 <li><a href="<?= $this->lurl ?>/sfpmei/preteur/<?= $this->clients->id_client ?>/portefeuille">Portefeuille</a></li>
                 <li><a href="#historique">Historique</a></li>
+                <li><a href="#donnees-personnelles">Historique données personnelles</a></li>
             </ul>
             <div id="contact" class="container-fluid">
                 <?php $this->fireView('preteur/contact'); ?>
@@ -25,6 +26,9 @@
             </div>
             <div id="historique" class="container-fluid">
                 <?php $this->fireView('preteur/historique'); ?>
+            </div>
+            <div id="donnees-personnelles" class="container-fluid">
+                <?php $this->fireView('../preteurs/partials/data_history'); ?>
             </div>
         </div>
     </div>
