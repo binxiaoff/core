@@ -9,11 +9,10 @@
     <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
     <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-notify/bootstrap-notify.min.js"></script>
-
 {% endblock %}
 
 {% block pageScripts %}
-    <script src="{{ adminUrl }}/oneui/js/pages/sponsorship.js"></script>
+    <script src="{{ adminUrl }}/oneui/js/pages/sponsorship.js?{{ app.staticsKey }}"></script>
 {% endblock %}
 
 {% block modals %}

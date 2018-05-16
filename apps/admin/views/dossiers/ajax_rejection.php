@@ -1,13 +1,17 @@
+<link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/select2/select2.min.css">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/select2/select2.min.js"></script>
+
 <div id="popup" class="rejection-popup">
     <h1>Rejeter le projet</h1>
     <form id="rejection-reason-form" method="post" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->projectId ?>">
         <div class="form-group row">
-            <label for="rejection_reason" class="col-md-3 col-form-label">Motif</label>
+            <label for="rejection_reason" class="col-md-3 col-form-label">Motif(s) de rejet</label>
             <div class="col-md-9">
-                <select name="rejection_reason" id="rejection_reason" class="select form-control">
+                <select name="rejection_reason[]" id="rejection_reason" class="js-select2 form-control required" data-placeholder="Sélectionner un ou plusieurs motifs.." multiple>
                     <option value=""></option>
                     <?php foreach ($this->rejectionReasons as $rejectionReason) : ?>
-                        <option value="<?= $rejectionReason->getIdRejection() ?>"><?= $rejectionReason->getLabel() ?></option>
+                        <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRejectionReason $rejectionReason */ ?>
+                        <option value="<?= $rejectionReason->getIdRejection() ?>"><?= $rejectionReason->getReason() ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -64,34 +68,40 @@
 </div>
 
 <script>
-    <?php if (1 == $this->step) : ?>
     $(document).on('cbox_complete', function () {
-        if (CKEDITOR.instances.hasOwnProperty('rejection-comment')) {
-            var editor = CKEDITOR.instances['rejection-comment']
-            editor.destroy(true)
-        }
+        $('#rejection_reason').select2({
+            // This will cause the dropdown to be attached to the modal, rather than the <body>
+            // See https://select2.org/troubleshooting/common-problems
+            dropdownParent: $('#popup')
+        });
+        <?php if (1 == $this->step) : ?>
+            if (CKEDITOR.instances.hasOwnProperty('rejection-comment')) {
+                var editor = CKEDITOR.instances['rejection-comment']
+                editor.destroy(true)
+            }
 
-        CKEDITOR.replace('rejection-comment', {
-            width: '500px',
-            toolbar: 'Basic',
-            removePlugins: 'elementspath',
-            resize_enabled: false,
-            startupFocus: true
-        })
+            CKEDITOR.replace('rejection-comment', {
+                width: '100%',
+                toolbar: 'Basic',
+                removePlugins: 'elementspath',
+                resize_enabled: false,
+                startupFocus: true
+            })
 
-        CKEDITOR.on('instanceReady', function () {
-            $.colorbox.resize()
-        })
+            CKEDITOR.on('instanceReady', function () {
+                $.colorbox.resize()
+            })
+        <?php endif; ?>
     })
-    <?php endif; ?>
+
 
     $('#rejection-reason-form').on('submit', function (e) {
         e.preventDefault()
 
         var reason = $('#rejection_reason').val()
 
-        if ('' === reason) {
-            alert('Veuillez renseigner le motif de rejet')
+        if (null === reason) {
+            alert('Veuillez renseigner au moins un motif de rejet.')
             return
         }
 
@@ -110,7 +120,7 @@
                 return
             }
 
-            check_status_dossier(<?= \projects_status::COMMERCIAL_REJECTION ?>, <?= $this->projectId ?>)
+            check_status_dossier(<?= \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::COMMERCIAL_REJECTION ?>, <?= $this->projectId ?>)
         <?php elseif (0 < $this->step) : ?>
             valid_rejete_etape<?= $this->step ?>(2, <?= $this->projectId ?>)
         <?php endif; ?>

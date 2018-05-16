@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, Product, Projects, ProjectsStatus, Users
+    AttachmentType, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -103,7 +103,7 @@ class ProjectRequestController extends Controller
             $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
             $siret = $siret === false ? null : $siret;
 
-            $project = $projectRequestManager->newProject($user, $partner, $amount, $siren, $siret, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
@@ -182,7 +182,7 @@ class ProjectRequestController extends Controller
         $numberOfProductsFound = $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, false);
 
         if (0 === $numberOfProductsFound) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::PRODUCT_NOT_FOUND);
         }
 
         return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
@@ -714,19 +714,19 @@ class ProjectRequestController extends Controller
         }
 
         if (isset($values['dl']) && $values['dl'] < 0) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_EQUITY_CAPITAL);
         }
 
         if (isset($values['fl']) && $values['fl'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
         }
 
         if (isset($values['gg']) && $values['gg'] < 0) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::NEGATIVE_RAW_OPERATING_INCOMES);
         }
 
         if (isset($values['ag_2035']) && $values['ag_2035'] < \projects::MINIMUM_REVENUE) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::LOW_TURNOVER);
         }
 
         $product = null;
@@ -734,7 +734,7 @@ class ProjectRequestController extends Controller
             $product = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
         }
         if ($product && Product::PRODUCT_BLEND === $product->getLabel()) {
-            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_BLEND);
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::NOT_ELIGIBLE, ProjectRejectionReason::PRODUCT_BLEND);
         }
 
         if ('true' === $request->request->get('extra_files')) {
@@ -1196,32 +1196,8 @@ class ProjectRequestController extends Controller
                 $title    = $translator->trans('project-request_end-page-rejection-title');
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
-                /** @var \projects_status_history $projectStatusHistory */
-                $projectStatusHistory = $this->get('unilend.service.entity_manager')->getRepository('projects_status_history');
-                $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
-
-                $rejectReasons = explode(',', $projectStatusHistory->content);
-
-                // Display only one reason (priority defined in TST-51)
-                if (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PROCEEDING, $rejectReasons)) {
-                    $message = $translator->trans('project-request_end-page-collective-proceeding-message');
-                } elseif (
-                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_INACTIVE, $rejectReasons)
-                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN, $rejectReasons)
-                ) {
-                    $message = $translator->trans('project-request_end-page-no-siren-message');
-                } elseif (
-                    in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_CAPITAL_STOCK, $rejectReasons)
-                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_RAW_OPERATING_INCOMES, $rejectReasons)
-                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_NEGATIVE_EQUITY_CAPITAL, $rejectReasons)
-                    || in_array(ProjectsStatus::NON_ELIGIBLE_REASON_LOW_TURNOVER, $rejectReasons)
-                ) {
-                    $message = $translator->trans('project-request_end-page-negative-operating-result-message');
-                } elseif (in_array(ProjectsStatus::NON_ELIGIBLE_REASON_PRODUCT_NOT_FOUND, $rejectReasons)) {
-                    $message = $translator->trans('project-request_end-page-product-not-found-message');
-                } else {
-                    $message = $translator->trans('project-request_end-page-external-rating-rejection-default-message');
-                }
+                $projectRequestManager = $this->get('unilend.service.project_request_manager');
+                $message = $projectRequestManager->getMainRejectionReasonMessage($project);
                 break;
         }
 
@@ -1257,7 +1233,10 @@ class ProjectRequestController extends Controller
 
         /** @var ProjectStatusManager $projectStatusManager */
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
-        $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, ProjectsStatus::ABANDONED, $project, 0, 'Désinscription relance email');
+        $abandonReason        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
+            ->findBy(['label' => ProjectAbandonReason::UNSUBSCRIBE_FROM_EMAIL_REMINDER]);
+
+        $projectStatusManager->abandonProject($project, $abandonReason, Users::USER_ID_FRONT);
 
         return $this->render('project_request/emails.html.twig');
     }
@@ -1417,7 +1396,26 @@ class ProjectRequestController extends Controller
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
 
         if ($project->getStatus() !== $projectStatus) {
-            $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $project, 0, $message);
+            switch ($projectStatus) {
+                case ProjectsStatus::NOT_ELIGIBLE:
+                    $rejectionReason = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')
+                        ->findBy(['label' => $message]);
+                    try {
+                        $projectStatusManager->rejectProject($project, $projectStatus, $rejectionReason, Users::USER_ID_FRONT);
+                    } catch (\Exception $exception) {
+                        $this->get('logger')->error('Could not update project status into ' . $projectStatus . '. Error: ' . $exception->getMessage(), [
+                            'id_project' => $project->getIdProject(),
+                            'class'      => __CLASS__,
+                            'function'   => __FUNCTION__,
+                            'file'       => $exception->getFile(),
+                            'line'       => $exception->getLine()
+                        ]);
+                    }
+                    break;
+                default:
+                    $projectStatusManager->addProjectStatus(Users::USER_ID_FRONT, $projectStatus, $project, 0, $message);
+                    break;
+            }
         }
 
         return $this->redirectToRoute($route, ['hash' => $project->getHash()]);

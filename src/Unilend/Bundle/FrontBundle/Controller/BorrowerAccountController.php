@@ -128,7 +128,7 @@ class BorrowerAccountController extends Controller
                 $frontUser = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
                 try {
-                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), $amount, $formData['duration'], null, $formData['message']);
+                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::COMPLETE_REQUEST, $amount, $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
                     $this->get('logger')->error('Project Creation failed. Exception : ' . $exception->getMessage(), [
@@ -708,36 +708,36 @@ class BorrowerAccountController extends Controller
      */
     private function getProjectsPreFunding()
     {
-        $statusPreFunding   = array(
-            \projects_status::COMPLETE_REQUEST,
-            \projects_status::COMMERCIAL_REVIEW,
-            \projects_status::COMMERCIAL_REJECTION,
-            \projects_status::ANALYSIS_REVIEW,
-            \projects_status::COMITY_REVIEW,
-            \projects_status::ANALYSIS_REJECTION,
-            \projects_status::COMITY_REJECTION,
-            \projects_status::PREP_FUNDING,
-            \projects_status::A_FUNDER
-        );
+        $statusPreFunding   = [
+            ProjectsStatus::COMPLETE_REQUEST,
+            ProjectsStatus::COMMERCIAL_REVIEW,
+            ProjectsStatus::COMMERCIAL_REJECTION,
+            ProjectsStatus::ANALYSIS_REVIEW,
+            ProjectsStatus::COMITY_REVIEW,
+            ProjectsStatus::ANALYSIS_REJECTION,
+            ProjectsStatus::COMITY_REJECTION,
+            ProjectsStatus::PREP_FUNDING,
+            ProjectsStatus::A_FUNDER
+        ];
         $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
 
         foreach ($projectsPreFunding as $key => $project) {
             switch ($project['status']) {
-                case \projects_status::COMPLETE_REQUEST:
-                case \projects_status::COMMERCIAL_REVIEW:
+                case ProjectsStatus::COMPLETE_REQUEST:
+                case ProjectsStatus::COMMERCIAL_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-documents';
                     break;
-                case \projects_status::ANALYSIS_REVIEW:
-                case \projects_status::COMITY_REVIEW:
+                case ProjectsStatus::ANALYSIS_REVIEW:
+                case ProjectsStatus::COMITY_REVIEW:
                     $projectsPreFunding[$key]['project_status_label'] = 'analyzing';
                     break;
-                case \projects_status::COMMERCIAL_REJECTION:
-                case \projects_status::ANALYSIS_REJECTION:
-                case \projects_status::COMITY_REJECTION:
+                case ProjectsStatus::COMMERCIAL_REJECTION:
+                case ProjectsStatus::ANALYSIS_REJECTION:
+                case ProjectsStatus::COMITY_REJECTION:
                     $projectsPreFunding[$key]['project_status_label'] = 'refused';
                     break;
-                case \projects_status::PREP_FUNDING:
-                case \projects_status::A_FUNDER:
+                case ProjectsStatus::PREP_FUNDING:
+                case ProjectsStatus::A_FUNDER:
                     $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-being-on-line';
                     break;
             }

@@ -17,7 +17,7 @@ class DataWriter
     private $translator;
     /** @var ProjectStatusManager */
     private $projectStatusManager;
-    /** @var MonitoringManger  */
+    /** @var MonitoringManger */
     private $monitoringManager;
 
     /**
@@ -33,8 +33,8 @@ class DataWriter
         MonitoringManger $monitoringManager
     )
     {
-        $this->entityManager           = $entityManager;
-        $this->translator              = $translator;
+        $this->entityManager        = $entityManager;
+        $this->translator           = $translator;
         $this->projectStatusManager = $projectStatusManager;
         $this->monitoringManager    = $monitoringManager;
     }
@@ -93,6 +93,7 @@ class DataWriter
      * @param string                    $provider
      *
      * @return string
+     * @throws \Exception
      */
     private function projectRiskEvaluationToHtml(RiskDataMonitoringCallLog $callLog, string $provider): string
     {
@@ -108,7 +109,7 @@ class DataWriter
             $assessment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringAssessment')
                 ->findOneBy(['idRiskDataMonitoringType' => $type, 'idRiskDataMonitoringCallLog' => $callLog]);
             $rule        = $type->getIdProjectEligibilityRule()->getDescription();
-            $result      = '1' === $assessment->getValue() ? 'ok' : 'echouée, ' . $this->projectStatusManager->getRejectionReasonTranslation($assessment->getValue());
+            $result      = '1' === $assessment->getValue() ? 'ok' : 'echouée, ' . $this->projectStatusManager->getStatusReasonText(null, $assessment->getValue(), 'rejection')[0];
             $memoContent .= '<li>' . $rule . ' :<strong> ' . $result . '</strong></li>';
         }
 

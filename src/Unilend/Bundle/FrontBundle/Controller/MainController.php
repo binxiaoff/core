@@ -17,7 +17,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, OffresBienvenues, Tree, Users, WalletType
+    AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
@@ -231,7 +231,7 @@ class MainController extends Controller
 
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {
@@ -447,8 +447,7 @@ class MainController extends Controller
                 'values' => [
                     'amount'           => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
                     'siren'            => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
-                    'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'),
-                        FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
+                    'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
                     'partner'          => $content['partenaire'],
                     'reasons'          => $borrowingReasons,
                     'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
@@ -493,10 +492,10 @@ class MainController extends Controller
         /** @var \elements $elements */
         $elements = $entityManagerSimulator->getRepository('elements');
 
-        $content  = [];
+        $content = [];
         foreach ($treeElements->select('id_tree = "' . $tree->id_tree . '" AND id_langue = "fr"') as $elt) {
             $elements->get($elt['id_element']);
-            $content[$elements->slug] = $elt['value'];
+            $content[$elements->slug]                = $elt['value'];
             $template['complement'][$elements->slug] = $elt['complement'];
         }
 
@@ -505,13 +504,12 @@ class MainController extends Controller
         ];
 
         /** @var UserLender $user */
-        $user = $this->getUser();
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
+        $user             = $this->getUser();
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && $client->get($user->getClientId(), 'id_client')) {
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && null !== $client = $clientRepository->find($user->getClientId())) {
             $dateAccept   = '';
-            $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->id_client . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
+            $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->getIdClient() . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
 
             if (false === empty($userAccepted)) {
                 $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($userAccepted[0]['added']));
@@ -521,16 +519,18 @@ class MainController extends Controller
             $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
             $sNewTermsOfServiceDate = $settings->value;
 
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
 
             /** @var \loans $oLoans */
             $loans      = $entityManagerSimulator->getRepository('loans');
             $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
 
-            if ($wallet->getIdClient()->isNaturalPerson()) {
-                $this->getTOSReplacementsForPerson($wallet->getIdClient(), $dateAccept, $loansCount, $content, $template);
+            if ($client->isNaturalPerson()) {
+                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
+                $this->getTOSReplacementsForPerson($client, $dateAccept, $mandateContent, $template);
             } else {
-                $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $loansCount, $content, $template);
+                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
+                $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $mandateContent, $template);
             }
         } elseif ($lenderType !== '') {
             $template['recovery_mandate'] = str_replace(
@@ -576,11 +576,10 @@ class MainController extends Controller
     /**
      * @param Clients $client
      * @param string  $dateAccept
-     * @param int     $loansCount
      * @param string  $content
      * @param array   $template
      **/
-    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
+    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, string $content, array &$template): void
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $clientAddress = $client->getIdAddress();
@@ -610,18 +609,16 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
     }
 
     /**
      * @param Clients $client
      * @param string  $dateAccept
-     * @param int     $loansCount
      * @param string  $content
      * @param array   $template
      */
-    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, int $loansCount, string $content, array &$template): void
+    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, string $content, array &$template): void
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
@@ -653,8 +650,7 @@ class MainController extends Controller
             '[date_validation_cgv]' => $dateAccept
         ];
 
-        $template['recovery_mandate'] = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $template['recovery_mandate']);
+        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
     }
 
     /**
@@ -712,29 +708,6 @@ class MainController extends Controller
         }
 
         return $this->render('partials/reviews.html.twig', ['reviews' => $reviews]);
-    }
-
-    /**
-     * @Route("/accept-cookies", name="accept_cookies")
-     * @Method("POST")
-     *
-     * @param Request $request
-     * @return Response
-     */
-    public function acceptCookiesAction(Request $request)
-    {
-        if ($request->isXmlHttpRequest()) {
-            /** @var \accept_cookies $acceptCookies */
-            $acceptCookies = $this->get('unilend.service.entity_manager')->getRepository('accept_cookies');
-
-            $acceptCookies->ip        = $request->getClientIp();
-            $acceptCookies->id_client = $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') ? $this->getUser()->getClientId() : 0;
-            $acceptCookies->create();
-
-            return new JsonResponse(true);
-        }
-
-        return new Response('not an ajax request');
     }
 
     /**
