@@ -705,7 +705,15 @@ class LenderSubscriptionController extends Controller
                         $addressManager->linkAttachmentToAddress($address, $attachement);
                     }
                 } catch (\Exception $exception) {
-                    $form->addError(new FormError($uploadErrorMessage . $attachmentTypeId . ' error : ' . $exception->getMessage()));
+                    $form->addError(new FormError($uploadErrorMessage));
+                    $this->get('logger')->error('Lender attachment could not be uploaded. Message : ' . $exception->getMessage(), [
+                        'file'               => $exception->getFile(),
+                        'line'               => $exception->getLine(),
+                        'class'              => __CLASS__,
+                        'function'           => __FUNCTION__,
+                        'id_type_attachment' => $attachmentTypeId,
+                        'id_client'          => $client->getIdClient()
+                    ]);
                 }
             } else {
                 switch ($attachmentTypeId) {
@@ -758,6 +766,14 @@ class LenderSubscriptionController extends Controller
                     $this->upload($client,  $attachmentTypeId, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
+                    $this->get('logger')->error('Lender attachment could not be uploaded. Message : ' . $exception->getMessage(), [
+                        'file'               => $exception->getFile(),
+                        'line'               => $exception->getLine(),
+                        'class'              => __CLASS__,
+                        'function'           => __FUNCTION__,
+                        'id_type_attachment' => $attachmentTypeId,
+                        'id_client'          => $client->getIdClient()
+                    ]);
                 }
             } else {
                 switch ($attachmentTypeId) {
