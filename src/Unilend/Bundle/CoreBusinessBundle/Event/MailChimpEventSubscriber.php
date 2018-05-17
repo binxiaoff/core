@@ -94,30 +94,4 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
             $this->entityManager->flush();
         }
     }
-
-    /**
-     * @param WebhookEvent $event
-     *
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function upemail(WebhookEvent $event): void
-    {
-        if (
-            is_array($event->getData())
-            && isset($event->getData()['new_email'], $event->getData()['old_email'])
-            && false !== filter_var($event->getData()['new_email'], FILTER_VALIDATE_EMAIL)
-            && false !== filter_var($event->getData()['old_email'], FILTER_VALIDATE_EMAIL)
-        ) {
-            $frontUser        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $clients          = $clientRepository->findBy(['email' => $event->getData()['old_email']]);
-
-            foreach ($clients as $client) {
-                $client->setEmail($event->getData()['new_email']);
-                $this->clientAuditer->logChanges($client, $frontUser);
-            }
-
-            $this->entityManager->flush();
-        }
-    }
 }
