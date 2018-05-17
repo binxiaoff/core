@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Event;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, Users
@@ -18,15 +19,19 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
     private $entityManager;
     /** @var ClientAuditer */
     private $clientAuditer;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
-     * @param EntityManager $entityManager
-     * @param ClientAuditer $clientAuditer
+     * @param EntityManager   $entityManager
+     * @param ClientAuditer   $clientAuditer
+     * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, ClientAuditer $clientAuditer)
+    public function __construct(EntityManager $entityManager, ClientAuditer $clientAuditer, LoggerInterface $logger)
     {
         $this->entityManager = $entityManager;
         $this->clientAuditer = $clientAuditer;
+        $this->logger        = $logger;
     }
 
     /**
@@ -92,6 +97,11 @@ class MailChimpEventSubscriber implements EventSubscriberInterface, ProviderInte
             }
 
             $this->entityManager->flush();
+        } else {
+            $this->logger->warning('Malformed MailChimp response. Unable to get email address. Response: ' . print_r($event->getData(), true), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__
+            ]);
         }
     }
 }
