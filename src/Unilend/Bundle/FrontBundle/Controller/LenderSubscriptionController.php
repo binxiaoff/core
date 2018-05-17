@@ -625,8 +625,8 @@ class LenderSubscriptionController extends Controller
         $bic                 = $form->get('bankAccount')->get('bic')->getData();
         $bankAccountDocument = null;
 
-        if ('FR' !== strtoupper(substr($iban, 0, 2))) {
-            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
         $fundsOrigin = $this->getFundsOrigin($client->getType());

@@ -1077,8 +1077,8 @@ class LenderProfileController extends Controller
         $client              = $form->get('client')->getData();
         $bankAccountDocument = null;
 
-        if ('FR' !== strtoupper(substr($iban, 0, 2))) {
-            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
         if (
