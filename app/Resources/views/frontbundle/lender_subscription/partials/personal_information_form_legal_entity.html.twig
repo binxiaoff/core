@@ -194,7 +194,7 @@
         <div class="row">
             <div class="form-field form-field-multi{% if companyIdentityForm.client.civilite.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
                 <div class="field-label">
-                    <label>
+                    <label class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-title-data-use-tooltip {% endtrans %}">
                         {% trans %} common_title {% endtrans %}
                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
@@ -213,7 +213,7 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.nom.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-client-name">
+                <label for="form-lender-legal-entity-client-name" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-last-name-data-use-tooltip {% endtrans %}">
                     {% trans %} common_name {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -228,7 +228,7 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.prenom.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-client-first-name">
+                <label for="form-lender-legal-entity-client-first-name" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-first-name-data-use-tooltip {% endtrans %}">
                     {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -266,7 +266,7 @@
     <fieldset class="panel">
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.email.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-email">
+                <label for="form-lender-legal-entity-email" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-email-data-use-tooltip {% endtrans %}">
                     {% trans %} common_email {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -380,7 +380,7 @@
         <div class="row">
             <div class="form-field form-field-multi{% if companyIdentityForm.company.civiliteDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
                 <div class="field-label">
-                    <label>
+                    <label class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-title-data-use-tooltip {% endtrans %}">
                         {% trans %} common_title {% endtrans %}
                         <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
@@ -399,7 +399,7 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.company.nomDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-director-name">
+                <label for="form-lender-legal-entity-director-name" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-last-name-data-use-tooltip {% endtrans %}">
                     {% trans %} common_name {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -414,7 +414,7 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.company.prenomDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-director-first-name">
+                <label for="form-lender-legal-entity-director-first-name" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-first-name-data-use-tooltip {% endtrans %}">
                     {% trans %} common_firstname {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -450,7 +450,7 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.company.phoneDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-director-phone">
+                <label for="form-lender-legal-entity-director-phone" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-mobile-data-use-tooltip {% endtrans %}">
                     {% trans %} common_phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -465,8 +465,8 @@
                 {{ form_errors(companyIdentityForm.company.phoneDirigeant) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6">
-                <label for="form-lender-legal-entity-client-first-name{% if companyIdentityForm.company.emailDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.company.emailDirigeant.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
+                <label for="form-lender-legal-entity-director-email" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-email-data-use-tooltip {% endtrans %}">
                     {% trans %} common_email {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -491,7 +491,7 @@
 
         <div class="row">
             <div class="form-field{% if companyIdentityForm.mainAddress.address.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-fiscal-address-street">
+                <label for="form-lender-legal-entity-fiscal-address-street" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-address-data-use-tooltip {% endtrans %}">
                     {% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -509,7 +509,7 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.mainAddress.zip.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-fiscal-address-zip">
+                <label for="form-lender-legal-entity-fiscal-address-zip" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-zip-data-use-tooltip {% endtrans %}">
                     {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -534,7 +534,7 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.mainAddress.city.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-fiscal-address-city">
+                <label for="form-lender-legal-entity-fiscal-address-city" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-city-data-use-tooltip {% endtrans %}">
                     {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -562,7 +562,7 @@
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.mainAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-fiscal-address-country">
+                <label for="form-lender-legal-entity-fiscal-address-country" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-country-data-use-tooltip {% endtrans %}">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -577,7 +577,7 @@
             </div><!-- /.form-field -->
 
             <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.client.mobile.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-                <label for="form-lender-legal-entity-client-mobile">
+                <label for="form-lender-legal-entity-client-mobile" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-mobile-data-use-tooltip {% endtrans %}">
                     {% trans %} common_mobile-phone {% endtrans %}
                     <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
@@ -619,7 +619,7 @@
 
         <div class="row">
         <div class="form-field{% if companyIdentityForm.postalAddress.address.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-legal-entity-postal-address-street">
+            <label for="form-lender-legal-entity-postal-address-street" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-postal-address-data-use-tooltip {% endtrans %}">
                 {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
@@ -636,7 +636,7 @@
 
         <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.zip.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-legal-entity-postal-address-zip">
+            <label for="form-lender-legal-entity-postal-address-zip" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-postal-address-data-use-tooltip {% endtrans %}">
                 {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
@@ -662,7 +662,7 @@
         </div><!-- /.form-field -->
 
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.city.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-legal-entity-postal-address-city">
+            <label for="form-lender-legal-entity-postal-address-city" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-postal-address-data-use-tooltip {% endtrans %}">
                 {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
@@ -690,7 +690,7 @@
 
         <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
-            <label for="form-lender-legal-entity-postal-address-country">
+            <label for="form-lender-legal-entity-postal-address-country" class="ui-has-tooltip" data-original-title="{% trans %} lender-subscription_label-postal-address-data-use-tooltip {% endtrans %}">
                 {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
