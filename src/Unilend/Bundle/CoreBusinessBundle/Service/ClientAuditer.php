@@ -26,7 +26,8 @@ class ClientAuditer
         'inseeBirth',
         'idPaysNaissance',
         'fundsOrigin',
-        'fundsOriginDetail'
+        'fundsOriginDetail',
+        'optin1'
     ];
 
     /** @var EntityManager */
