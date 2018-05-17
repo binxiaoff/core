@@ -187,7 +187,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 } catch (\Exception $exception) {
                     $logger->warning(
                         'Could not send email : resultat-test-eligibilite-liste - Exception: ' . $exception->getMessage(), [
-                        'siren_liste'   => $sirenList,
+                        'siren_list'    => $sirenList,
                         'email_address' => $user->getEmail(),
                         'user_email'    => $user->getEmail(),
                         'class'         => __CLASS__,
