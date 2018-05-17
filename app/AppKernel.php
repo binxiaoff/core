@@ -34,6 +34,7 @@ class AppKernel extends Kernel
             new EightPoints\Bundle\GuzzleBundle\EightPointsGuzzleBundle(),
             new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
             new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
+            new Welp\MailchimpBundle\WelpMailchimpBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

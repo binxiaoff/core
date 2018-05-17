@@ -30,6 +30,9 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
+    const NEWSLETTER_OPT_IN_ENROLLED     = 1;
+    const NEWSLETTER_OPT_IN_NOT_ENROLLED = 2;
+
     /** Legacy welcome offer before separating them and adding types */
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
