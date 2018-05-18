@@ -22,7 +22,7 @@
                                 <label class="custom-input-switch" id="label-newsletter">
                                     <input type="checkbox" value="true" name="newsletter" id="input-newsletter"{% if newsletterConsent == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::NEWSLETTER_OPT_IN_ENROLLED') %} checked{% endif %}>
                                     <span class="label">
-                                        <span class="sr-only">Switch off/on</span>
+                                        <span class="sr-only">{% trans %} notification-settings_switch-button-screen-reader {% endtrans %}</span>
                                     </span>
                                 </label>
                                 <label for="input-newsletter">{% trans %} notification-settings_newsletter {% endtrans %}</label>
@@ -42,7 +42,7 @@
                                         <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
                                             <input type="checkbox" value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}"{% if isActived %} checked{% endif %}>
                                             <span class="label">
-                                                <span class="sr-only">Switch off/on</span>
+                                                <span class="sr-only">{% trans %} notification-settings_switch-button-screen-reader {% endtrans %}</span>
                                             </span>
                                         </label>
                                         <label for="input-alert-{{ type }}-{{ key }}">{{ "notification-settings_alart-#{ key }"|trans }}</label>
