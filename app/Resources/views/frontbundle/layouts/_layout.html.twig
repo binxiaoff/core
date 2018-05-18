@@ -59,8 +59,8 @@
             {% endblock %}
         </div>
 
-        {# Debug tools #}
-        {% if app.environment == 'dev' %}
+        {# Debug tools - Remove "and false" in order to display it #}
+        {% if app.environment == 'dev' and false %}
             {% block debug %}
                 {% include 'partials/debug.html.twig' %}
             {% endblock %}

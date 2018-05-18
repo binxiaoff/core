@@ -1,8 +1,8 @@
 {% extends 'lender_account/_layout_lender.html.twig' %}
 
 {% set page = {
-id: 'user-preter-profile',
-classNames: 'user-preter-profile'
+    id: 'user-preter-profile',
+    classNames: 'user-preter-profile'
 } %}
 
 {% block dashboardContent %}
@@ -11,8 +11,25 @@ classNames: 'user-preter-profile'
 
         <div class="dashboard-tabs-content tab-content">
             <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
-
                 <form id="form-alerts" class="panel form-alerts" method="post" action="{{ path('lender_profile_notification') }}">
+                    <header class="panel-header">
+                        <h3>{% trans %} notification-settings_newsletter-title {% endtrans %}</h3>
+                    </header>
+                    <div class="panel-content">
+                        <p>{% trans %} notification-settings_newsletter-details {% endtrans %}</p>
+                        <ul class="list-block">
+                            <li>
+                                <label class="custom-input-switch" id="label-newsletter">
+                                    <input type="checkbox" value="true" name="newsletter" id="input-newsletter"{% if newsletterConsent == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::NEWSLETTER_OPT_IN_ENROLLED') %} checked{% endif %}>
+                                    <span class="label">
+                                        <span class="sr-only">Switch off/on</span>
+                                    </span>
+                                </label>
+                                <label for="input-newsletter">{% trans %} notification-settings_newsletter {% endtrans %}</label>
+                            </li>
+                        </ul>
+                    </div>
+
                     {% for type, settings in notification_settings %}
                         <header class="panel-header">
                             <h3>{{ "notification-settings_#{ type }-email-alert-title"|trans }}</h3>
@@ -23,7 +40,7 @@ classNames: 'user-preter-profile'
                                 {% for key, isActived in settings %}
                                     <li>
                                         <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
-                                            <input type="checkbox" {% if isActived %}checked="checked"{% endif %} value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}">
+                                            <input type="checkbox" value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}"{% if isActived %} checked{% endif %}>
                                             <span class="label">
                                                 <span class="sr-only">Switch off/on</span>
                                             </span>
