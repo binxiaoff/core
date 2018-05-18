@@ -906,7 +906,7 @@ class LenderProfileController extends Controller
 
         $translator     = $this->get('translator');
         $isFileUploaded = false;
-        $uploadError    = [];
+        $error          = '';
         $files          = $request->request->get('files', []);
         $client         = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
 
@@ -920,21 +920,26 @@ class LenderProfileController extends Controller
                         $form               = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
                         $iban               = $form['bankAccount']['iban'];
                         $bic                = $form['bankAccount']['bic'];
-                        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                        $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
+
+                        if (in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+                            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                            $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
+                        } else {
+                            $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
+                        }
                     }
                 } catch (\Exception $exception) {
-                    $uploadError[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
+                    $error = $translator->trans('lender-profile_completeness-form-error-message');
                 }
             }
         }
 
-        if (empty($uploadError) && $isFileUploaded) {
+        if (empty($error) && $isFileUploaded) {
             $this->updateClientStatusAndNotifyClient($client);
 
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
-        } elseif (false === empty($uploadError)) {
-            $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
+        } elseif (false === empty($error)) {
+            $this->addFlash('completenessError', $error);
         }
 
         return $this->redirectToRoute('lender_completeness');
