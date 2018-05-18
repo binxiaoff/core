@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Entity;
 
+use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -112,11 +113,11 @@ class Loans
     /**
      * Set idTransfer
      *
-     * @param LoanTransfer $idTransfer
+     * @param LoanTransfer|null $idTransfer
      *
      * @return Loans
      */
-    public function setIdTransfer(LoanTransfer $idTransfer) : Loans
+    public function setIdTransfer(?LoanTransfer $idTransfer) : Loans
     {
         $this->idTransfer = $idTransfer;
 
@@ -126,10 +127,19 @@ class Loans
     /**
      * Get idTransfer
      *
-     * @return LoanTransfer
+     * @return LoanTransfer|null
      */
-    public function getIdTransfer() : LoanTransfer
+    public function getIdTransfer() : ?LoanTransfer
     {
+        /** @todo to be removed when it is fully under doctrine */
+        if (null !==  $this->idTransfer) {
+            try {
+                $this->idTransfer->getIdTransfer();
+            } catch (EntityNotFoundException $exception) {
+                $this->idTransfer = null;
+            }
+        }
+
         return $this->idTransfer;
     }
 
