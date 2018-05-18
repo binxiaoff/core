@@ -47,7 +47,6 @@
                 $loanTransfer = $this->loan->getIdTransfer();
 
                 if ($loanTransfer) {
-                    $paymentDate  = new \DateTime($repayment['date_echeance_reel']);
                     if ($repayment->getDateEcheanceReel() !== '0000-00-00 00:00:00' && $repayment->getDateEcheanceReel() <= $loanTransfer->getAdded()) {
                         /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Clients $formerOwner */
                         $client = $this->loanManager->getFormerOwner($this->loan);
