@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\OptimisticLockException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
 };
@@ -23,6 +24,7 @@ use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderProfileController extends Controller
 {
@@ -680,12 +682,19 @@ class LenderProfileController extends Controller
      */
     public function notificationsAction(): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        /** @var UserLender $user */
+        $user = $this->getUser();
+
+        if (false === in_array($user->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client           = $clientRepository->find($user->getClientId());
+
         $templateData = [
-            'isCIPActive' => $this->isCIPActive()
+            'isCIPActive'       => $this->isCIPActive(),
+            'newsletterConsent' => $client->getOptin1()
         ];
 
         $this->addNotificationSettingsTemplate($templateData);
@@ -756,9 +765,89 @@ class LenderProfileController extends Controller
         }
 
         $sendingPeriod = $request->request->filter('period', FILTER_SANITIZE_STRING);
-        $typeId        = $request->request->getInt('type_id');
         $active        = $request->request->getBoolean('active');
-        $type          = null;
+
+        switch ($sendingPeriod) {
+            case 'newsletter':
+                return $this->updateNewsletterConsent($active, $request->getClientIp());
+            case 'immediate':
+            case 'daily':
+            case 'weekly':
+            case 'monthly':
+                return $this->updateNotificationSettings($sendingPeriod, $active, $request->request->getInt('type_id'));
+            default:
+                return $this->json('ko');
+        }
+    }
+
+    /**
+     * @param bool        $active
+     * @param null|string $ipAddress
+     *
+     * @return JsonResponse
+     */
+    private function updateNewsletterConsent(bool $active, ?string $ipAddress): JsonResponse
+    {
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client           = $clientRepository->find($this->getUser()->getClientId());
+        $mailChimp        = $this->get('welp_mailchimp.mailchimp_master');
+        $listId           = $this->getParameter('mailchimp.list_id');
+
+        $mailChimp->put('lists/' . $listId . '/members/' . md5(strtolower($client->getEmail())), [
+            'email_address'    => $client->getEmail(),
+            'email_type'       => 'html',
+            'status'           => $active ? 'subscribed' : 'unsubscribed',
+            'merge_fields'     => [
+                'FNAME' => $client->getPrenom(),
+                'LNAME' => $client->getNom(),
+            ],
+            'ip_signup'        => $ipAddress,
+            'timestamp_signup' => date('Y-m-d H:i:s'),
+            'ip_opt'           => $ipAddress,
+            'timestamp_opt'    => date('Y-m-d H:i:s'),
+        ]);
+
+        if (false !== $mailChimp->getLastError()) {
+            $this->get('logger')->error('Could not update lender newsletter subscription. MailChimp API error: ' . $mailChimp->getLastError(), [
+                'id_client' => $this->getUser()->getClientId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
+
+            return $this->json('ko');
+        }
+
+        $optIn = $active ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
+        $client->setOptin1($optIn);
+
+        try {
+            $entityManager->flush($client);
+        } catch (OptimisticLockException $exception) {
+            $this->get('logger')->error('Could not update lender newsletter subscription. Error: ' . $exception->getMessage(), [
+                'id_client' => $this->getUser()->getClientId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+
+            return $this->json('ko');
+        }
+
+        return $this->json('ok');
+    }
+
+    /**
+     * @param string   $sendingPeriod
+     * @param bool     $active
+     * @param int|null $typeId
+     *
+     * @return JsonResponse
+     */
+    private function updateNotificationSettings(string $sendingPeriod, bool $active, ?int $typeId): JsonResponse
+    {
+        $type = null;
 
         /* Put it temporary here, because we don't need it after the project refectory notification  */
         $immediateTypes = [
@@ -791,48 +880,59 @@ class LenderProfileController extends Controller
             ClientsGestionTypeNotif::TYPE_REPAYMENT
         ];
 
-        $error = false;
-
         switch ($sendingPeriod) {
             case 'immediate':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE;
                 if (false === in_array($typeId, $immediateTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'daily':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY;
                 if (false === in_array($typeId, $dailyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'weekly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY;
                 if (false === in_array($typeId, $weeklyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'monthly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY;
                 if (false === in_array($typeId, $monthlyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             default:
-                $error = true;
+                return $this->json('ko');
         }
 
-        if (false === $error) {
-            /** @var \clients_gestion_notifications $notificationSettings */
-            $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
-            $notificationSettings->get(['id_client' => $this->getUser()->getClientId(), 'id_notif' => $typeId]);
-            $notificationSettings->$type = $active ? 1 : 0;
-            $notificationSettings->update(['id_client' => $this->getUser()->getClientId(), 'id_notif' => $typeId]);
+        try {
+            $entityManager                  = $this->get('doctrine.orm.entity_manager');
+            $notificationSettingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
+            $notificationSettings           = $notificationSettingsRepository->findOneBy([
+                'idClient' => $this->getUser()->getClientId(),
+                'idNotif'  => $typeId
+            ]);
 
-            return $this->json('ok');
+            $notificationSettings->{'set' . ucfirst($type)}($active);
+
+            $entityManager->flush($notificationSettings);
+        } catch (OptimisticLockException $exception) {
+            $this->get('logger')->error('Could not update lender notifications. Error: ' . $exception->getMessage(), [
+                'id_client' => $this->getUser()->getClientId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+
+            return $this->json('ko');
         }
 
-        return $this->json('ko');
+        return $this->json('ok');
     }
 
     /**

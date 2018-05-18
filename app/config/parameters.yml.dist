@@ -113,3 +113,7 @@ parameters:
     slack.token:                    xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
     slack.command_token:            u2AOiDVHg1WQQgL1MjZ83IQe
     slack.monitoring_channel:       '#it-monitoring'
+
+    mailchimp.api_key:              8a4c593b992cc7e57cb343dd13c9c89b-us7
+    mailchimp.webhook_secret:       16deb224527196c9eaae
+    mailchimp.list_id:              b4ed751d74
