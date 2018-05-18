@@ -694,7 +694,8 @@ class LenderProfileController extends Controller
 
         $templateData = [
             'isCIPActive'       => $this->isCIPActive(),
-            'newsletterConsent' => $client->getOptin1()
+            'newsletterConsent' => $client->getOptin1(),
+            'siteUrl'           => Request::getSchemeAndHttpHost()
         ];
 
         $this->addNotificationSettingsTemplate($templateData);
