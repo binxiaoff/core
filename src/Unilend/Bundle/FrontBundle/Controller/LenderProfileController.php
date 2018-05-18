@@ -685,7 +685,8 @@ class LenderProfileController extends Controller
         }
 
         $templateData = [
-            'isCIPActive' => $this->isCIPActive()
+            'isCIPActive' => $this->isCIPActive(),
+            'siteUrl'     => $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default')
         ];
 
         $this->addNotificationSettingsTemplate($templateData);

@@ -1,8 +1,8 @@
 {% extends 'lender_account/_layout_lender.html.twig' %}
 
 {% set page = {
-id: 'user-preter-profile',
-classNames: 'user-preter-profile'
+    id: 'user-preter-profile',
+    classNames: 'user-preter-profile'
 } %}
 
 {% block dashboardContent %}
@@ -25,8 +25,8 @@ classNames: 'user-preter-profile'
                                         <label class="custom-input-switch" id="label-alert-{{ type }}-{{ key }}">
                                             <input type="checkbox" {% if isActived %}checked="checked"{% endif %} value="true" name="{{ type }}-{{ key }}" id="input-alert-{{ type }}-{{ key }}">
                                             <span class="label">
-                                                <span class="sr-only">Switch off/on</span>
-                                            </span>
+                                            <span class="sr-only">Switch off/on</span>
+                                        </span>
                                         </label>
                                         <label for="input-alert-{{ type }}-{{ key }}">{{ "notification-settings_alart-#{ key }"|trans }}</label>
                                     </li>
@@ -35,6 +35,15 @@ classNames: 'user-preter-profile'
                         </div>
                     {% endfor %}
                 </form><!-- /#form-alerts.panel -->
+
+                <article id="cookies-info" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} notification-settings_modify-cookies-consent-title {% endtrans %}</h3>
+                    </header>
+                    <div class="panel-content">
+                        <p>{% trans with {'%siteUrl%' : siteUrl} %} notification-settings_modify-cookies-consent-link {% endtrans %}</p>
+                    </div>
+                </article><!-- /#cookies-info.panel -->
             </div><!-- /#profile-info.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
