@@ -678,9 +678,11 @@ class LenderProfileController extends Controller
      * @Route("/profile/alertes", name="lender_profile_notifications")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
+     *
      * @return Response
      */
-    public function notificationsAction(): Response
+    public function notificationsAction(Request $request): Response
     {
         /** @var UserLender $user */
         $user = $this->getUser();
@@ -695,7 +697,7 @@ class LenderProfileController extends Controller
         $templateData = [
             'isCIPActive'       => $this->isCIPActive(),
             'newsletterConsent' => $client->getOptin1(),
-            'siteUrl'           => Request::getSchemeAndHttpHost()
+            'siteUrl'           => $request->getSchemeAndHttpHost()
         ];
 
         $this->addNotificationSettingsTemplate($templateData);
