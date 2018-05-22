@@ -140,6 +140,9 @@
 <div class="form-group">
     <input type="checkbox" name="meme-adresse" id="meme-adresse"<?= ($this->samePostalAddress ? ' checked' : '') ?> disabled>
     <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale </label>
+    <br>
+    <input type="checkbox" name="no-us-person" id="no-us-person"<?= (true === $this->client->getUsPerson() ? '' : ' checked') ?> disabled>
+    <label for="no-us-person">Je déclare ne pas être une « U.S. person » au sens de l'administration fiscale américaine</label>
 </div>
 <div class="postal-address"<?= ($this->samePostalAddress ? ' style="display:none;"' : '') ?>>
     <h3>Adresse postale</h3>

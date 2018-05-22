@@ -125,7 +125,16 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                     }
                                     break;
                                 default:
-                                    if (is_string($dataHistory[$historyValue])) {
+                                    if ($dataHistory['name'] === 'usPerson') {
+                                        switch ($dataHistory[$historyValue]) {
+                                            case true:
+                                                echo 'US Person';
+                                                break;
+                                            default:
+                                                echo 'Non US Person';
+                                                break;
+                                        }
+                                    } elseif (is_string($dataHistory[$historyValue])) {
                                         echo $dataHistory[$historyValue];
                                     }
                                     break;

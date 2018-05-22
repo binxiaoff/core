@@ -338,7 +338,6 @@ class LenderProfileController extends Controller
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');
         $addressManager     = $this->get('unilend.service.address_manager');
-        $modifications      = [];
         $housingCertificate = null;
 
         $zip       = $form->get('zip')->getData();
@@ -350,10 +349,8 @@ class LenderProfileController extends Controller
                     $form->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
                 }
 
-                // @todo US person declaration must be historized in a proper way (Karla on the way)
-                if ($form->get('noUsPerson')->getData()) {
-                    $modifications[] = 'noUsPerson';
-                }
+                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+                $this->logClientChanges($client);
 
                 $files[AttachmentType::JUSTIFICATIF_DOMICILE] = $fileBag->get('housing-certificate');
                 if ($countryId !== PaysV2::COUNTRY_FRANCE) {
@@ -450,7 +447,7 @@ class LenderProfileController extends Controller
                 }
             }
 
-            $this->updateClientStatusAndNotifyClient($client, $modifications);
+            $this->updateClientStatusAndNotifyClient($client);
 
             $this->addFlash($success, $translation);
 
@@ -1099,8 +1096,12 @@ class LenderProfileController extends Controller
         // Data in $modifiedData should only be data not historized in tables `bank_account`, `attachment`, `*_address` or `client_data_history`
         $historyContent      = $this->formatArrayToUnorderedList($modifiedData);
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
 
+        if ($client->getUsPerson()) {
+            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED);
+        } else {
+            $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
+        }
         $this->sendAccountModificationEmail($client);
     }
 
