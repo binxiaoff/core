@@ -687,7 +687,6 @@
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
     </div>
-
         <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6{% if companyIdentityForm.postalAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error {% endif %}">
             <label for="form-lender-legal-entity-postal-address-country" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-postal-address-data-use-tooltip'|trans|escape('html_attr') }}">
@@ -719,6 +718,17 @@
                         </span>
                 </label>
             </div><!-- /.form-field -->
+        </div>
+
+        <div class="row">{% trans %} lender-subscription_newsletter-consent-description {% endtrans %}</div>
+
+        <div class="row">
+            <div class="form-field form-field-single-checkbox">
+                <label>
+                    {{ form_widget(companyIdentityForm.client.optin1) }}
+                    <span class="label">{% trans %} lender-subscription_newsletter-consent-label {% endtrans %}</span>
+                </label>
+            </div>
         </div>
     </fieldset>
 
