@@ -52,6 +52,15 @@
                         </div>
                     {% endfor %}
                 </form><!-- /#form-alerts.panel -->
+
+                <article id="cookies-info" class="panel">
+                    <header class="panel-header">
+                        <h3>{% trans %} notification-settings_modify-cookies-consent-title {% endtrans %}</h3>
+                    </header>
+                    <div class="panel-content">
+                        <p>{% trans with {'%siteUrl%' : siteUrl} %} notification-settings_modify-cookies-consent-link {% endtrans %}</p>
+                    </div>
+                </article><!-- /#cookies-info.panel -->
             </div><!-- /#profile-info.dashboard-tab-pane -->
         </div><!-- /.dashboard-tabs-content -->
     </div><!-- /.dashboard-tabs -->
