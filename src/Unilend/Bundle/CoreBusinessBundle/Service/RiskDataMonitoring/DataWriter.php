@@ -62,7 +62,7 @@ class DataWriter
     /**
      * @param RiskDataMonitoringType    $monitoringType
      * @param RiskDataMonitoringCallLog $monitoringCallLog
-     * @param                           $value
+     * @param string|int|bool           $value
      *
      * @return RiskDataMonitoringAssessment
      * @throws \Doctrine\ORM\OptimisticLockException
@@ -125,9 +125,12 @@ class DataWriter
      * @param string                    $provider
      *
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function saveMonitoringEventInProjectMemos(RiskDataMonitoringCallLog $callLog, string $provider): void
     {
+        $projectCommentsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments');
+
         $newData        = $this->companyRatingToHtml($callLog->getIdCompanyRatingHistory());
         $riskEvaluation = $this->projectRiskEvaluationToHtml($callLog, $provider);
 
@@ -137,14 +140,18 @@ class DataWriter
 
         $companyProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['idCompany' => $callLog->getIdCompanyRatingHistory()->getIdCompany()]);
         foreach ($companyProjects as $project) {
-            $projectCommentEntity = new ProjectsComments();
-            $projectCommentEntity
-                ->setIdProject($project)
-                ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_WEBSERVICE))
-                ->setContent($memoContent)
-                ->setPublic(false);
+            $commentWithSameContent = $projectCommentsRepository->findOneBy(['idProject' => $project, 'content' => $memoContent], ['added' => 'DESC']);
 
-            $this->entityManager->persist($projectCommentEntity);
+            if (null === $commentWithSameContent) {
+                $projectCommentEntity = new ProjectsComments();
+                $projectCommentEntity
+                    ->setIdProject($project)
+                    ->setIdUser($this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_WEBSERVICE))
+                    ->setContent($memoContent)
+                    ->setPublic(false);
+
+                $this->entityManager->persist($projectCommentEntity);
+            }
         }
 
         $this->entityManager->flush();

@@ -5,7 +5,9 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, BankAccount, Bids, ClientsStatus, LenderStatistic, Loans, OperationType, ProjectsStatus, Receptions, VigilanceRule, Wallet, WalletType, Zones
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    ClientDataHistoryManager, LenderOperationsManager
+};
 
 class sfpmeiController extends bootstrap
 {
@@ -268,8 +270,9 @@ class sfpmeiController extends bootstrap
                 $writer->save('php://output');
                 break;
             default:
+                $this->dataHistory   = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->wallet->getIdClient());
                 $this->statusHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findBy(
-                    ['idClient' => $this->clients->id_client],
+                    ['idClient' => $this->wallet->getIdClient()],
                     ['added' => 'DESC', 'id' => 'DESC']
                 );
 
@@ -332,7 +335,7 @@ class sfpmeiController extends bootstrap
                 }
 
                 try {
-                    if (null === $mainAddress ) {
+                    if (null === $mainAddress) {
                         if ($this->wallet->getIdClient()->isNaturalPerson()) {
                             $mainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
                                 ->findLastModifiedNotArchivedAddressByType($this->wallet->getIdClient(), AddressType::TYPE_MAIN_ADDRESS);
@@ -757,25 +760,25 @@ class sfpmeiController extends bootstrap
             case VigilanceRule::VIGILANCE_STATUS_LOW:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_LOW,
-                    'message' => 'Vigilance standard. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance standard. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_MEDIUM:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_MEDIUM,
-                    'message' => 'Vigilance intermédiaire. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance intermédiaire. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_HIGH:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_HIGH,
-                    'message' => 'Vigilance Renforcée. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Renforcée. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             case VigilanceRule::VIGILANCE_STATUS_REFUSE:
                 $this->vigilanceStatus = [
                     'status'  => VigilanceRule::VIGILANCE_STATUS_REFUSE,
-                    'message' => 'Vigilance Refus. Dernière MAJ le :' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
+                    'message' => 'Vigilance Refus. Dernière MAJ le ' . $this->vigilanceStatusHistory[0]->getAdded()->format('d/m/Y H\hi')
                 ];
                 break;
             default:

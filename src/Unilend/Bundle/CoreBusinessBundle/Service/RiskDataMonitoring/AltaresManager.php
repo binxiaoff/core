@@ -222,8 +222,8 @@ class AltaresManager
             $this->altaresWsManager->setNotificationAsRead($notification->getId());
         } catch (\Exception $exception) {
             $this->logger->warning('Altares notification status could not be set to "read". NotificationId: ' . $notification->getId() . ', Exception: ' . $exception->getMessage(), [
-                'file'           => __CLASS__,
-                'line'           => __LINE__,
+                'class'          => __CLASS__,
+                'function'       => __FUNCTION__,
                 'idNotification' => $notification->getId(),
                 'siren'          => $notification->getSiren()
             ]);
@@ -256,5 +256,18 @@ class AltaresManager
         $notificationInformation = $this->altaresWsManager->getMonitoringEvents($start, $end, 1);
 
         return $notificationInformation->getCountNotReadNotificationsGlobal();
+    }
+
+    /**
+     * @param string $siren
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function sirenExist(string $siren): bool
+    {
+        $identity = $this->altaresWsManager->getCompanyIdentity($siren);
+
+        return null !== $identity;
     }
 }

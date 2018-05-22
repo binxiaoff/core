@@ -349,3 +349,33 @@
   }
 }
 
+// Cost simulator
+#partner-account-cost-simulator {
+  .table-rates {
+    td,
+    th {
+      font-size: 11px;
+      text-align: center;
+    }
+
+    thead {
+      th {
+        padding: 10px;
+      }
+    }
+
+    tbody {
+      th {
+        padding: 10px 15px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 10px;
+      }
+    }
+  }
+
+  .simulation {
+    display: none;
+  }
+}

@@ -14,9 +14,9 @@ use Unilend\librairies\CacheKeys;
 class RouteProvider implements RouteProviderInterface
 {
     /** List of routes available through CMS */
-    const ROUTE_LENDER_FAQ                   = 'faq-preteur';
-    const ROUTE_BORROWER_FAQ                 = 'faq-emprunteur';
-    const ROUTE_OUR_ETHICS                   = 'charte-de-deontologie';
+    const ROUTE_LENDER_FAQ   = 'faq-preteur';
+    const ROUTE_BORROWER_FAQ = 'faq-emprunteur';
+    const ROUTE_OUR_ETHICS   = 'charte-de-deontologie';
 
     /** @var EntityManager */
     private $entityManager;

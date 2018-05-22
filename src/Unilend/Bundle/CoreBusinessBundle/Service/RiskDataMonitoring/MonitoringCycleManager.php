@@ -68,18 +68,25 @@ class MonitoringCycleManager
 
     /**
      * @param string $siren
+     *
+     * @throws \Exception
      */
-    public function activateMonitoringForSiren(string $siren) : void
+    public function activateMonitoringForSiren(string $siren): void
     {
-        try {
-            $this->eulerHermesManager->activateMonitoring($siren);
-            $this->altaresManager->activateMonitoring($siren);
-        } catch (\Exception $exception) {
-            $this->logger->error('Risk data monitoring could not be activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'siren' => $siren
-            ]);
+        if ($this->altaresManager->sirenExist($siren)) {
+            try {
+                $this->eulerHermesManager->activateMonitoring($siren);
+                $this->altaresManager->activateMonitoring($siren);
+
+            } catch (\Exception $exception) {
+                $this->logger->error('Risk data monitoring could not be activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine(),
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'siren'    => $siren
+                ]);
+            }
         }
     }
 
@@ -89,7 +96,7 @@ class MonitoringCycleManager
      *
      * @throws \Exception
      */
-    public function saveEndOfMonitoringPeriodNotification(string $siren, string $provider) : void
+    public function saveEndOfMonitoringPeriodNotification(string $siren, string $provider): void
     {
         $currentMonitoring = $this->monitoringManager->getMonitoringForSiren($siren, $provider);
         if (null !== $currentMonitoring) {
@@ -111,7 +118,7 @@ class MonitoringCycleManager
     /**
      * @param string $siren
      */
-    public function stopMonitoringForSiren(string $siren) : void
+    public function stopMonitoringForSiren(string $siren): void
     {
         $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
         $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -149,7 +156,7 @@ class MonitoringCycleManager
     /**
      * @param string $siren
      */
-    public function reactivateMonitoringForSiren(string $siren) : void
+    public function reactivateMonitoringForSiren(string $siren): void
     {
         $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren]);
         foreach ($companies as $company) {

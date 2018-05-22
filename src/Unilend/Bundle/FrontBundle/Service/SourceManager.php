@@ -1,4 +1,5 @@
 <?php
+
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -29,7 +30,6 @@ class SourceManager
             self::ENTRY_SLUG => 'slug_origine'
         ];
     }
-
 
     public function handle(): void
     {

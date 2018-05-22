@@ -27,11 +27,18 @@ class RiskDataMonitoringStartCommand extends ContainerAwareCommand
             $this->activateMonitoringForNewSiren();
             $this->activateMonitoringForProjectsBeingReactivated();
         } catch (\Exception $exception) {
-            $this->getContainer()->get('logger')->error('Could not activate/reactivate monitoring. Message: ' . $exception->getMessage(),
-                ['exceptionFile' => $exception->getFile(), 'exceptionLine' => $exception->getLine(), 'file' => __FILE__]);
+            $this->getContainer()->get('logger')->error('Could not activate/reactivate monitoring. Message: ' . $exception->getMessage(), [
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__
+            ]);
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function activateMonitoringForNewSiren(): void
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
