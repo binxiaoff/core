@@ -19,7 +19,7 @@ class MailChimpGdprCatchUpCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('dev:mailchimp:gdpr_catch_up')
+            ->setName('unilend:dev:mailchimp:gdpr_catch_up')
             ->setDescription('Catchup MailChimp GDPR consent back to Unilend platform');
     }
 
