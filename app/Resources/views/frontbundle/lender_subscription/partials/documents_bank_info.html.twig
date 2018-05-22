@@ -60,7 +60,7 @@
         <div class="form-field {% if form.client.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <div class="field-label">
                 <label for="lender-subscription-funds-origin" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-funds-origin-data-use-tooltip'|trans|escape('html_attr') }}">
-                    {{ 'lender-subscription_documents-bank-info-section-funds-origin-label'|trans|escape('html_attr') }}
+                    {% trans %} lender-subscription_documents-bank-info-section-funds-origin-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
