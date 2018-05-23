@@ -3,14 +3,17 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Cache\CacheException;
+use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator
 };
+use Unilend\librairies\CacheKeys;
 
 /**
  * Class BidManager
@@ -41,6 +44,8 @@ class BidManager
     private $walletManager;
     /** @var SponsorshipManager */
     private $sponsorshipManager;
+    /** @var CacheItemPoolInterface */
+    private $cachePool;
 
     /**
      * @param EntityManagerSimulator $entityManagerSimulator
@@ -51,6 +56,9 @@ class BidManager
      * @param CIPManager             $cipManager
      * @param EntityManager          $entityManager
      * @param WalletManager          $walletManager
+     * @param SponsorshipManager $sponsorshipManager
+     * @param CacheItemPoolInterface $cachePool
+     *
      */
     public function __construct(
         EntityManagerSimulator $entityManagerSimulator,
@@ -61,7 +69,8 @@ class BidManager
         CIPManager $cipManager,
         EntityManager $entityManager,
         WalletManager $walletManager,
-        SponsorshipManager $sponsorshipManager
+        SponsorshipManager $sponsorshipManager,
+        CacheItemPoolInterface $cachePool
     )
     {
         $this->entityManagerSimulator = $entityManagerSimulator;
@@ -73,6 +82,7 @@ class BidManager
         $this->entityManager          = $entityManager;
         $this->walletManager          = $walletManager;
         $this->sponsorshipManager     = $sponsorshipManager;
+        $this->cachePool              = $cachePool;
     }
 
     /**
@@ -411,14 +421,33 @@ class BidManager
      */
     public function getProjectRateRange(\projects $project): array
     {
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
-
-        if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
-            return ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
+        try {
+            $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECT_RATE_RANGE . '_' . $project->id_project);
+            $cacheHit   = $cachedItem->isHit();
+        } catch (CacheException $exception) {
+            $cachedItem = null;
+            $cacheHit   = false;
         }
 
-        return $projectRateSettings->getGlobalMinMaxRate();
+        if (false === $cacheHit) {
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+
+            if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
+                $projectRateRange = ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
+            } else {
+                $projectRateRange = $projectRateSettings->getGlobalMinMaxRate();
+            }
+
+            if (false === empty($cachedItem)) {
+                $cachedItem->set($projectRateRange)->expiresAfter(CacheKeys::SHORT_TIME);
+                $this->cachePool->save($cachedItem);
+            }
+        } else {
+            $projectRateRange = $cachedItem->get();
+        }
+
+        return $projectRateRange;
     }
 
     /**

@@ -4,11 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, UnderlyingContract, UnderlyingContractAttributeType, Wallet, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
@@ -636,7 +634,7 @@ class CIPManager
 
         $productContracts = $this->productManager->getAvailableContracts($product);
 
-        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
+        if (false === in_array(UnderlyingContract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
         }
 
@@ -685,8 +683,8 @@ class CIPManager
     {
         /** @var \underlying_contract $contract */
         $contract = $this->entityManagerSimulator->getRepository('underlying_contract');
-        if (false === $contract->get(\underlying_contract::CONTRACT_IFP, 'label')) {
-            throw new \InvalidArgumentException('The contract ' . \underlying_contract::CONTRACT_IFP . 'does not exist.');
+        if (false === $contract->get(UnderlyingContract::CONTRACT_IFP, 'label')) {
+            throw new \InvalidArgumentException('The contract ' . UnderlyingContract::CONTRACT_IFP . 'does not exist.');
         }
 
         $contractAttrVars = $this->contractManager->getAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);

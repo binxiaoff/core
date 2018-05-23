@@ -4,11 +4,10 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AcceptedBids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AcceptedBids, Clients, Loans, UnderlyingContract, UnderlyingContractAttributeType
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 
 /**
  * Class LoanManager
@@ -18,15 +17,15 @@ class LoanManager
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var EntityManager */
     private $entityManager;
+    /** @var ContractAttributeManager */
+    private $contractAttributeManager;
 
-    public function __construct(EntityManagerSimulator $entityManagerSimulator, EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, ContractAttributeManager $contractAttributeManager)
     {
-        $this->entityManagerSimulator = $entityManagerSimulator;
-        $this->entityManager          = $entityManager;
+        $this->entityManager            = $entityManager;
+        $this->contractAttributeManager = $contractAttributeManager;
 
     }
 
@@ -52,6 +51,21 @@ class LoanManager
         foreach ($acceptedBids as $acceptedBid) {
             $interests  = round(bcadd($interests, bcmul($acceptedBid->getIdBid()->getRate(), $acceptedBid->getAmount(), 4), 4), 2);
             $loanAmount += $acceptedBid->getAmount();
+        }
+
+        if (UnderlyingContract::CONTRACT_IFP === $contract->getLabel()) {
+            $contractAttrVars = $this->contractAttributeManager->getContractAttributesByType($contract, UnderlyingContractAttributeType::TOTAL_LOAN_AMOUNT_LIMITATION_IN_EURO);
+            if (empty($contractAttrVars) || false === isset($contractAttrVars[0]) || false === is_numeric($contractAttrVars[0])) {
+                throw new \UnexpectedValueException('The IFP contract max amount is not set');
+            } else {
+                $IfpLoanAmountMax = $contractAttrVars[0];
+            }
+
+            if (bccomp(round(bcdiv($loanAmount, 100, 4), 2), $IfpLoanAmountMax, 2) > 0) {
+                throw new \InvalidArgumentException('Sum of bids for client ' . $acceptedBids[0]->getIdBid()->getIdLenderAccount()->getIdClient()->getIdClient() . ' exceeds maximum IFP amount.');
+            }
+
+            //todo: check also if this is the only one loan to build for IFP (We can only have one IFP loan per project)
         }
 
         $rate = round(bcdiv($interests, $loanAmount, 4), 1);

@@ -168,23 +168,6 @@ class bids extends bids_crud
         return $aLenders;
     }
 
-    public function getAutoBids($iProjectId, $iStatus, $iLimit = 100, $iOffset = 0)
-    {
-        $sQuery = 'SELECT * FROM `bids` b
-                   INNER JOIN autobid ab ON ab.id_autobid = b.id_autobid
-                   WHERE b.id_project = ' . $iProjectId . '
-                   AND b.status = ' . $iStatus . '
-                   LIMIT ' . $iLimit . ' OFFSET ' . $iOffset;
-
-        $rQuery = $this->bdd->query($sQuery);
-        $aBids  = array();
-        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-            $aBids[] = $aRow;
-        }
-
-        return $aBids;
-    }
-
     public function getAcceptationPossibilityRounded()
     {
         $sQuery = '

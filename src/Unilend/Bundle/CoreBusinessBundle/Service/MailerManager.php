@@ -8,7 +8,7 @@ use Symfony\Component\{
     Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType
+    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
@@ -391,7 +391,7 @@ class MailerManager
                 $multiBidsExplanation   = '';
 
                 if ($wallet->getIdClient()->isNaturalPerson()) {
-                    $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+                    $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
                     $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
@@ -857,7 +857,7 @@ class MailerManager
                 $multiBidsExplanation = '';
 
                 if (in_array($loan->getIdLender()->getIdClient()->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-                    $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+                    $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
                     $loanIFP               = $loans->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $loan->getIdLender()->getId() . ' AND id_type_contract = ' . $contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 

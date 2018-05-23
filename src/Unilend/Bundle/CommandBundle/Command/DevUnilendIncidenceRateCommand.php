@@ -6,10 +6,9 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Echeanciers, Loans, ProjectsStatus, UnderlyingContract, UnilendStats
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
@@ -57,8 +56,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             /** @var UnilendStats $incidenceRateStats */
             $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
             if (null !== $incidenceRateStats) {
-                $lateProjectsIFP = $this->getProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
-                $allProjectsIFP  = $this->getProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_IFP, $lastDayOfMonth);
+                $lateProjectsIFP = $this->getProjectInProblemWithContractOnDate(UnderlyingContract::CONTRACT_IFP, $lastDayOfMonth);
+                $allProjectsIFP  = $this->getProjectInRepaymentWithContractOnDate(UnderlyingContract::CONTRACT_IFP, $lastDayOfMonth);
 
                 $result['lateProjectsIFP'] = implode(',', $lateProjectsIFP);
                 $result['allProjectsIFP']  = implode(',', $allProjectsIFP);
@@ -95,8 +94,8 @@ class DevUnilendIncidenceRateCommand extends ContainerAwareCommand
             /** @var UnilendStats $incidenceRateStats */
             $incidenceRateStats = $unilendStatisticsRepository->findStatisticAtDate($lastDayOfMonth, UnilendStats::TYPE_INCIDENCE_RATE);
             if (null !== $incidenceRateStats) {
-                $lateProjectsCIP = $this->getProjectInProblemWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
-                $allProjectsCIP  = $this->getProjectInRepaymentWithContractOnDate(\underlying_contract::CONTRACT_MINIBON, $lastDayOfMonth);
+                $lateProjectsCIP = $this->getProjectInProblemWithContractOnDate(UnderlyingContract::CONTRACT_MINIBON, $lastDayOfMonth);
+                $allProjectsCIP  = $this->getProjectInRepaymentWithContractOnDate(UnderlyingContract::CONTRACT_MINIBON, $lastDayOfMonth);
 
                 $result['lateProjectsCIP'] = implode(',', $lateProjectsCIP);
                 $result['allProjectsCIP']  = implode(',', $allProjectsCIP);
