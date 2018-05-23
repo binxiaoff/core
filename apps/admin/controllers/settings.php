@@ -15,58 +15,54 @@ class settingsController extends bootstrap
 
     public function _default()
     {
-        if (isset($_POST['form_add_settings'])) {
-            $this->settings->type   = $_POST['type'];
-            $this->settings->value  = $_POST['value'];
-            $this->settings->create();
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager      = $this->get('doctrine.orm.entity_manager');
+        $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
-            $_SESSION['freeow']['title']   = 'Ajout d\'un paramètre';
-            $_SESSION['freeow']['message'] = 'Le paramètre a bien été ajouté';
+        if (
+            isset($_POST['form_edit_settings'], $this->params[0], $_POST['value'])
+            && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
+        ) {
+            $setting = $settingsRepository->find($this->params[0]);
+            $setting->setValue($_POST['value']);
 
-            header('Location:' . $this->lurl . '/settings');
+            try {
+                $entityManager->flush($setting);
+
+                $_SESSION['freeow']['title']   = 'Modification d\'un paramètre';
+                $_SESSION['freeow']['message'] = 'Le paramètre a bien été modifié';
+            } catch (\Doctrine\ORM\OptimisticLockException $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error('Unable to update setting "' . $setting->getType() . '" - Message: ' . $exception->getMessage(), [
+                    'class'    => __CLASS__,
+                    'function' => __FUNCTION__,
+                    'file'     => $exception->getFile(),
+                    'line'     => $exception->getLine()
+                ]);
+
+                $_SESSION['freeow']['title']   = 'Modification d\'un paramètre';
+                $_SESSION['freeow']['message'] = 'Impossible de mettre à jour le paramètre';
+            }
+
+            header('Location: ' . $this->lurl . '/settings');
             die;
         }
 
-        if (isset($_POST['form_edit_settings'])) {
-            $this->settings->get($this->params[0], 'id_setting');
-            $this->settings->type   = $_POST['type'];
-            $this->settings->value  = $_POST['value'];
-            $this->settings->update();
-
-            $_SESSION['freeow']['title']   = 'Modification d\'un paramètre';
-            $_SESSION['freeow']['message'] = 'Le paramètre a bien été modifié !';
-
-            header('Location:' . $this->lurl . '/settings');
-            die;
-        }
-
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            $this->settings->get($this->params[1], 'id_setting');
-            $this->settings->delete($this->params[1], 'id_setting');
-
-            $_SESSION['freeow']['title']   = 'Suppression d\'un paramètre';
-            $_SESSION['freeow']['message'] = 'Le paramètre a bien été supprimé';
-
-            header('Location:' . $this->lurl . '/settings');
-            die;
-        }
-
-        $this->lSettings = $this->settings->select('', 'type ASC');
+        $this->settings = $settingsRepository->findBy([], ['type' => 'ASC']);
     }
 
     public function _edit()
     {
         $this->hideDecoration();
 
-        $_SESSION['request_url'] = $this->url;
+        $_SESSION['request_url'] = $this->lurl . '/settings';
 
-        $this->settings->get($this->params[0], 'id_setting');
-    }
-
-    public function _add()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
+        if (isset($this->params[0]) && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager      = $this->get('doctrine.orm.entity_manager');
+            $settingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
+            $this->setting      = $settingsRepository->find($this->params[0]);
+        }
     }
 }
