@@ -474,6 +474,17 @@
                 </label>
             </div>
         </div>
+
+        <div class="row">{% trans %} lender-subscription_newsletter-consent-description {% endtrans %}</div>
+
+        <div class="row">
+            <div class="form-field form-field-single-checkbox">
+                <label>
+                    {{ form_widget(identityForm.client.optin1) }}
+                    <span class="label">{% trans %} lender-subscription_newsletter-consent-label {% endtrans %}</span>
+                </label>
+            </div>
+        </div>
     </fieldset>
 
     {% if app.session.get(constant('Unilend\\Bundle\\FrontBundle\\Controller\\LenderSubscriptionController::SESSION_NAME_CAPTCHA')) %}

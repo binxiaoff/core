@@ -18,7 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Users, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientAuditer, LocationManager
+    ClientAuditer, LocationManager, NewsletterManager
 };
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
@@ -791,54 +791,19 @@ class LenderProfileController extends Controller
      */
     private function updateNewsletterConsent(bool $active, ?string $ipAddress): JsonResponse
     {
-        $entityManager    = $this->get('doctrine.orm.entity_manager');
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $client           = $clientRepository->find($this->getUser()->getClientId());
-        $mailChimp        = $this->get('welp_mailchimp.mailchimp_master');
-        $listId           = $this->getParameter('mailchimp.list_id');
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client            = $clientRepository->find($this->getUser()->getClientId());
+        $newsletterManager = $this->get(NewsletterManager::class);
 
-        $mailChimp->put('lists/' . $listId . '/members/' . md5(strtolower($client->getEmail())), [
-            'email_address'    => $client->getEmail(),
-            'email_type'       => 'html',
-            'status'           => $active ? 'subscribed' : 'unsubscribed',
-            'merge_fields'     => [
-                'FNAME' => $client->getPrenom(),
-                'LNAME' => $client->getNom(),
-            ],
-            'ip_signup'        => $ipAddress,
-            'timestamp_signup' => date('Y-m-d H:i:s'),
-            'ip_opt'           => $ipAddress,
-            'timestamp_opt'    => date('Y-m-d H:i:s'),
-        ]);
-
-        if (false !== $mailChimp->getLastError()) {
-            $this->get('logger')->error('Could not update lender newsletter subscription. MailChimp API error: ' . $mailChimp->getLastError(), [
-                'id_client' => $this->getUser()->getClientId(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__
-            ]);
-
-            return $this->json('ko');
+        if ($active) {
+            $response = $newsletterManager->subscribeNewsletter($client, $ipAddress);
+        } else {
+            $response = $newsletterManager->unsubscribeNewsletter($client, $ipAddress);
         }
 
-        $optIn = $active ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
-        $client->setOptin1($optIn);
-
-        try {
-            $entityManager->flush($client);
-        } catch (OptimisticLockException $exception) {
-            $this->get('logger')->error('Could not update lender newsletter subscription. Error: ' . $exception->getMessage(), [
-                'id_client' => $this->getUser()->getClientId(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
-            ]);
-
-            return $this->json('ko');
-        }
-
-        return $this->json('ok');
+        $response = $response ? 'ok' : 'ko';
+        return $this->json($response);
     }
 
     /**
