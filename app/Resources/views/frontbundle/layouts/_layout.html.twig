@@ -99,7 +99,7 @@
                 and app.user.getClientStatus() == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_VALIDATED')
                 and app.request.get('_route') != 'lenders_terms_of_sales'
             %}
-                <div id="modal-tos" data-modal data-modal-openonload="true"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
+                <div id="modal-tos" data-modal data-modal-openonload="true" data-modal-maxheight="550"><form id="form-tos" method="post" action="{{ path('lender_tos_popup') }}"></form></div>
             {% endif %}
         </div>
 

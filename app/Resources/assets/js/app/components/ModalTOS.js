@@ -23,7 +23,6 @@ $doc
   })
   // Because this modal is auto-instantiated, I'm just going to bind to element's events to set onconfirm actions
   .on('Modal:initialised', '#modal-tos', function (event, elemModal) {
-
     // Fired when user confirms they have accepted the new Terms of Service...
     elemModal.settings.onconfirm = function () {
       var deferredResult = $.Deferred()
@@ -38,7 +37,8 @@ $doc
         method: $('#form-tos').attr('method'),
         global: false,
         data: {
-          terms: $('#modal-tos input[name="terms"]').is(':checked')
+          terms: $('#modal-tos input[name="terms"]').is(':checked'),
+          newsletterOptIn: $('#modal-tos input[name="newsletterOptIn"]').is(':checked')
         },
 
         // Event: received server response
