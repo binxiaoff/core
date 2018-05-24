@@ -554,5 +554,9 @@
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer" autowire="true"/>
 
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager" autowire="true"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\NewsletterManager" autowire="true">
+            <argument key="$listId">%mailchimp.list_id%</argument>
+        </service>
     </services>
 </container>

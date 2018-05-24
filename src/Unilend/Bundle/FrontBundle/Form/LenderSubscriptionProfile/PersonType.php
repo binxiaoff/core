@@ -2,26 +2,25 @@
 
 namespace Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile;
 
-
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\{
+    BirthdayType, CheckboxType, EmailType, HiddenType, PasswordType, RepeatedType, TextType
+};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\FrontBundle\Form\Components\CountriesType;
-use Unilend\Bundle\FrontBundle\Form\Components\GenderType;
-use Unilend\Bundle\FrontBundle\Form\Components\NationalitiesType;
+use Unilend\Bundle\FrontBundle\Form\Components\{
+    CountriesType, GenderType, NationalitiesType
+};
 
 class PersonType extends AbstractType
 {
-    /** @var  TranslatorInterface */
+    /** @var TranslatorInterface */
     private $translator;
 
+    /**
+     * @param TranslatorInterface $translator
+     */
     public function __construct(TranslatorInterface $translator)
     {
         $this->translator = $translator;
@@ -29,9 +28,9 @@ class PersonType extends AbstractType
 
     /**
      * @param FormBuilderInterface $builder
-     * @param array $options
+     * @param array                $options
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $startBdayRange = new \DateTime('NOW-18 years');
 
@@ -56,13 +55,14 @@ class PersonType extends AbstractType
                 'required'        => true
             ])
             ->add('mobile')
+            ->add('optin1', CheckboxType::class)
         ;
     }
 
     /**
      * @param OptionsResolver $resolver
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class'        => 'Unilend\Bundle\CoreBusinessBundle\Entity\Clients',
