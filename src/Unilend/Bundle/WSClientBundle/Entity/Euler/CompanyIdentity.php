@@ -24,6 +24,12 @@ class CompanyIdentity
     private $code;
 
     /**
+     * @JMS\SerializedName("ExternalIds")
+     * @JMS\Type("array")
+     */
+    private $externalServices;
+
+    /**
      * @return string
      */
     public function getSingleInvoiceId()
@@ -42,5 +48,13 @@ class CompanyIdentity
     public function getCode()
     {
         return $this->code;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExternalServices()
+    {
+        return $this->externalServices;
     }
 }
