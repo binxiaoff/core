@@ -3,21 +3,50 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients
+    AddressType, Attachment, Clients, Companies, Wallet, WalletType
 };
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ClientDataHistoryManager
 {
+    const MAIN_ADDRESS_FORM_LABEL   = 'main_address';
+    const POSTAL_ADDRESS_FORM_LABEL = 'postal_address';
+    const BANK_ACCOUNT_FORM_LABEL   = 'bank_account';
+
     /** @var EntityManager */
     private $entityManager;
+    /** @var TranslatorInterface */
+    private $translator;
+    /** @var LoggerInterface */
+    private $logger;
+    /** @var TemplateMessageProvider */
+    private $messageProvider;
+    /** @var \Swift_Mailer */
+    private $mailer;
 
     /**
-     * @param EntityManager $entityManager
+     * @param EntityManager           $entityManager
+     * @param TranslatorInterface     $translator
+     * @param LoggerInterface         $logger
+     * @param TemplateMessageProvider $messageProvider
+     * @param \Swift_Mailer           $mailer
      */
-    public function __construct(EntityManager $entityManager)
+    public function __construct(
+        EntityManager $entityManager,
+        TranslatorInterface $translator,
+        LoggerInterface $logger,
+        TemplateMessageProvider $messageProvider,
+        \Swift_Mailer $mailer
+    )
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager   = $entityManager;
+        $this->translator      = $translator;
+        $this->logger          = $logger;
+        $this->messageProvider = $messageProvider;
+        $this->mailer          = $mailer;
     }
 
     /**
@@ -214,5 +243,124 @@ class ClientDataHistoryManager
                 ];
             }
         }
+    }
+
+    /**
+     * @param Clients      $client
+     * @param array        $modifiedData
+     * @param Attachment[] $modifiedAttachments
+     */
+    public function sendAccountModificationEmail(Clients $client, array $modifiedData = [], array $modifiedAttachments = []): void
+    {
+        if (empty($modifiedData) && empty($modifiedAttachments)) {
+            $this->logger->warning('There are no modified data or attachments, the notification email will not be sent to the client: ' . $client->getIdClient(), [
+                'id_client' => $client,
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
+
+            return;
+        }
+
+        $attachmentLabels = [];
+
+        foreach ($modifiedAttachments as $attachment) {
+            $attachmentLabels[] = $attachment->getType()->getLabel();
+        }
+
+        try {
+            /** @var Wallet $lenderWallet */
+            $lenderWallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getWalletByType($client, WalletType::LENDER);
+            $wireTransferPattern = null !== $lenderWallet ? $lenderWallet->getWireTransferPattern() : '';
+        } catch (\Exception $exception) {
+            $wireTransferPattern = '';
+            $this->logger->error('Could not get client lender wallet - Exception: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        $modifiedData     = $this->formatArrayToUnorderedList(array_intersect_key($this->getFormFieldsTranslationsForEmail(), $modifiedData));
+        $attachmentLabels = $this->formatArrayToUnorderedList($attachmentLabels);
+
+        $keywords = [
+            'firstName'               => $client->getPrenom(),
+            'lenderPattern'           => $wireTransferPattern,
+            'modifiedDataTitle'       => null === $modifiedData ? null : $this->translator->trans('lender-modification-email_modified-data-title'),
+            'modifiedData'            => $modifiedData,
+            'modifiedAttachmentTitle' => null === $attachmentLabels ? null : $this->translator->trans('lender-modification-email_modified-attachment-title'),
+            'modifiedAttachment'      => $attachmentLabels
+        ];
+
+        if ($client->isNaturalPerson()) {
+            $templateName = 'synthese-modification-donnees-personne-physique';
+        } else {
+            $templateName = 'synthese-modification-donnees-personne-morale';
+            /** @var Companies $company */
+            $company  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $keywords += [
+                'companyName' => $company->getName()
+            ];
+        }
+
+        $message = $this->messageProvider->newMessage($templateName, $keywords);
+
+        try {
+            $message->setTo($client->getEmail());
+            $this->mailer->send($message);
+        } catch (\Exception $exception) {
+            $this->logger->error('Could not send email: ' . $templateName . ' - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $client->getIdClient(),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getFormFieldsTranslationsForEmail()
+    {
+        $formFields = [
+            self::MAIN_ADDRESS_FORM_LABEL,
+            self::POSTAL_ADDRESS_FORM_LABEL,
+            self::BANK_ACCOUNT_FORM_LABEL
+        ];
+
+        foreach (array_merge($formFields, ClientAuditer::LOGGED_FIELDS) as $field) {
+            $translations[$field] = $this->translator->trans('lender-modification-email_field-' . $field);
+        }
+
+        return $translations ?? [];
+    }
+
+    /**
+     * @param array|null $modifications
+     *
+     * @return string|null
+     */
+    private function formatArrayToUnorderedList(?array $modifications): ?string
+    {
+        if (empty($modifications)) {
+            return null;
+        }
+
+        $list = '<ul>';
+
+        foreach ($modifications as $modification) {
+            $list .= '<li>' . $modification . '</li>';
+        }
+
+        $list .= '</ul>';
+
+        return $list;
     }
 }
