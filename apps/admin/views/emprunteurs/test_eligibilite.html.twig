@@ -5,6 +5,19 @@
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 {% endblock %}
 
+{% block pageScripts %}
+    <script>
+        $(function () {
+            var messageDiv = $('.alert');
+            if (messageDiv) {
+                setTimeout(function () {
+                    messageDiv.remove();
+                }, 5000);
+            }
+        })
+    </script>
+{% endblock %}
+
 {% block pageHeader %}
     <h1 class="page-heading push">
         Testeur d'éligibilité
