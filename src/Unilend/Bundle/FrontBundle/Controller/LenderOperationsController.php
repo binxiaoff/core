@@ -225,12 +225,13 @@ class LenderOperationsController extends Controller
 
         try {
             foreach ($lenderLoansDisplayManager->formatLenderLoansForExport($lenderLoans) as $rowIndex => $projectLoans) {
+                $startDate = $projectLoans['startDate'] instanceof \DateTime ? $projectLoans['startDate']->format('d/m/Y') : '';
                 $activeSheet->setCellValue('A' . ($rowIndex + 2), $projectLoans['name']);
                 $activeSheet->setCellValue('B' . ($rowIndex + 2), $projectLoans['id']);
                 $activeSheet->setCellValue('C' . ($rowIndex + 2), $projectLoans['amount']);
                 $activeSheet->setCellValue('D' . ($rowIndex + 2), $projectLoans['loanStatusLabel']);
                 $activeSheet->setCellValue('E' . ($rowIndex + 2), round($projectLoans['rate'], 1));
-                $activeSheet->setCellValue('F' . ($rowIndex + 2), $projectLoans['startDate']->format('d/m/Y'));
+                $activeSheet->setCellValue('F' . ($rowIndex + 2), $startDate);
 
                 switch ($projectLoans['loanStatus']) {
                     case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED:
@@ -238,10 +239,11 @@ class LenderOperationsController extends Controller
                             $translationId = 'lender-operations_loans-table-project-status-label-collected-on-date';
                         } else {
                             $translationId = 'lender-operations_loans-table-project-status-label-repayment-finished-on-date';
-
                         }
+
+                        $finalRepaymentDate = $projectLoans['finalRepaymentDate'] instanceof \DateTime ? $projectLoans['finalRepaymentDate']->format('d/m/Y') : '';
                         $activeSheet->mergeCells('G' . ($rowIndex + 2) . ':K' . ($rowIndex + 2));
-                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $projectLoans['finalRepaymentDate']->format('d/m/Y')]));
+                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $this->get('translator')->trans($translationId, ['%date%' => $finalRepaymentDate]));
                         break;
                     case LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING:
                     case LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC:
@@ -266,8 +268,10 @@ class LenderOperationsController extends Controller
                         );
                         break;
                     default:
-                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $projectLoans['nextRepaymentDate']->format('d/m/Y'));
-                        $activeSheet->setCellValue('H' . ($rowIndex + 2), $projectLoans['endDate']->format('d/m/Y'));
+                        $nextRepaymentDate = $projectLoans['nextRepaymentDate'] instanceof \DateTime ? $projectLoans['nextRepaymentDate']->format('d/m/Y') : '';
+                        $endDate           = $projectLoans['endDate'] instanceof \DateTime ? $projectLoans['endDate']->format('d/m/Y') : '';
+                        $activeSheet->setCellValue('G' . ($rowIndex + 2), $nextRepaymentDate);
+                        $activeSheet->setCellValue('H' . ($rowIndex + 2), $endDate);
                         $activeSheet->setCellValue('I' . ($rowIndex + 2), $repaymentSchedule->getRepaidCapital(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
                         $activeSheet->setCellValue('J' . ($rowIndex + 2), $repaymentSchedule->getRepaidInterests(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
                         $activeSheet->setCellValue('K' . ($rowIndex + 2), $repaymentSchedule->getOwedCapital(['id_lender' => $wallet->getId(), 'id_project' => $projectLoans['id']]));
