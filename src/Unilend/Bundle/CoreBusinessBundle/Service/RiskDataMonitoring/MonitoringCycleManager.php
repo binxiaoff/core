@@ -74,7 +74,7 @@ class MonitoringCycleManager
         $sirenToBeActivated  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getNotYetMonitoredSirenWithProjects();
 
         foreach ($sirenToBeActivated as $siren) {
-            if ($this->altaresManager->sirenExist($siren)) {
+            if ($this->altaresManager->sirenExist($siren['siren'])) {
                 $this->activateAllMonitoringForSiren($siren['siren']);
             }
         }
