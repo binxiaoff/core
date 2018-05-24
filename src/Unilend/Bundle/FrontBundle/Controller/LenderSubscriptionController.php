@@ -158,8 +158,11 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
-        $countryId = $form->get('mainAddress')->get('idCountry')->getData();
-        $zip       = $form->get('mainAddress')->get('zip')->getData();
+        $countryId  = $form->get('mainAddress')->get('idCountry')->getData();
+        $zip        = $form->get('mainAddress')->get('zip')->getData();
+        $noUsPerson = $form->get('noUsPerson')->getData();
+
+        $noUsPerson ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
         if (PaysV2::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));

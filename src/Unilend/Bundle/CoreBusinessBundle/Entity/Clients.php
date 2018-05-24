@@ -130,6 +130,13 @@ class Clients
     private $idNationalite;
 
     /**
+     * @var boolean
+     *
+     * @ORM\Column(name="us_person", type="boolean", nullable=true)
+     */
+    private $usPerson;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="telephone", type="string", length=191, nullable=true)
@@ -663,6 +670,26 @@ class Clients
     public function getIdNationalite()
     {
         return $this->idNationalite;
+    }
+
+    /**
+     * @return null|bool
+     */
+    public function getUsPerson(): ?bool
+    {
+        return $this->usPerson;
+    }
+
+    /**
+     * @param bool $usPerson
+     *
+     * @return Clients
+     */
+    public function setUsPerson(bool $usPerson): Clients
+    {
+        $this->usPerson = $usPerson;
+
+        return $this;
     }
 
     /**
