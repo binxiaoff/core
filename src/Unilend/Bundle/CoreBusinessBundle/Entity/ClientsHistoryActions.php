@@ -9,17 +9,14 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="clients_history_actions", indexes={@ORM\Index(name="idx_clients_history_actions_id_client_nom_form", columns={"id_client", "nom_form"}), @ORM\Index(name="IDX_C386E5B9E173B1B8", columns={"id_client"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsHistoryActionsRepository")
- * @ORM\HasLifecycleCallbacks()
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsHistoryActions
 {
     const LENDER_PROVISION_BY_CREDIT_CARD                       = 'alim cb';
     const LENDER_WITHDRAWAL                                     = 'retrait argent';
-    const LENDER_PROFILE_PERSONAL_INFORMATION                   = 'info perso profile';
-    const LENDER_PROFILE_BANK_INFORMATION                       = 'info bank file profile';
     const CHANGE_PASSWORD                                       = 'change mdp';
     const LENDER_BID                                            = 'bid';
-    const LENDER_UPLOAD_FILES                                   = 'upload doc profile';
     const LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION       = 'inscription etape 1 particulier';
     const LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS             = 'inscription etape 2 particulier';
     const LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION = 'inscription etape 1 entreprise';

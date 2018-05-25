@@ -69,9 +69,9 @@
 
 <script>
     $(document).on('cbox_complete', function () {
+        // This will cause the dropdown to be attached to the modal, rather than the body
+        // See https://select2.org/troubleshooting/common-problems
         $('#rejection_reason').select2({
-            // This will cause the dropdown to be attached to the modal, rather than the <body>
-            // See https://select2.org/troubleshooting/common-problems
             dropdownParent: $('#popup')
         });
         <?php if (1 == $this->step) : ?>

@@ -30,6 +30,9 @@ class Clients
     const TITLE_MISTER    = 'M.';
     const TITLE_UNDEFINED = '';
 
+    const NEWSLETTER_OPT_IN_ENROLLED     = 1;
+    const NEWSLETTER_OPT_IN_NOT_ENROLLED = 2;
+
     /** Legacy welcome offer before separating them and adding types */
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
@@ -125,6 +128,13 @@ class Clients
      * @ORM\Column(name="id_nationalite", type="integer", nullable=true)
      */
     private $idNationalite;
+
+    /**
+     * @var boolean
+     *
+     * @ORM\Column(name="us_person", type="boolean", nullable=true)
+     */
+    private $usPerson;
 
     /**
      * @var string
@@ -660,6 +670,26 @@ class Clients
     public function getIdNationalite()
     {
         return $this->idNationalite;
+    }
+
+    /**
+     * @return null|bool
+     */
+    public function getUsPerson(): ?bool
+    {
+        return $this->usPerson;
+    }
+
+    /**
+     * @param bool $usPerson
+     *
+     * @return Clients
+     */
+    public function setUsPerson(bool $usPerson): Clients
+    {
+        $this->usPerson = $usPerson;
+
+        return $this;
     }
 
     /**

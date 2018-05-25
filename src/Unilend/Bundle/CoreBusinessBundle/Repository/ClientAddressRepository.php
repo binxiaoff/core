@@ -11,7 +11,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 class ClientAddressRepository extends EntityRepository
 {
     /**
-     * @param Clients|int      $idClient
+     * @param Clients|int        $idClient
      * @param AddressType|string $type
      *
      * @return ClientAddress|null

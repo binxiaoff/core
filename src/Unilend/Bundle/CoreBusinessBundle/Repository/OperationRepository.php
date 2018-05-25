@@ -1417,4 +1417,45 @@ class OperationRepository extends EntityRepository
             ->executeQuery($query, ['siren' => $siren, 'loan' => OperationType::LENDER_LOAN])
             ->fetchColumn();
     }
+
+    /**
+     * @param Wallet   $wallet
+     * @param Projects $project
+     *
+     * @return bool|string
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getNetRepaidAmountByWalletAndProject(Wallet $wallet, Projects $project)
+    {
+        $positiveOperations = array_merge(OperationType::TAX_TYPES_FR_REGULARIZATION, [OperationType::CAPITAL_REPAYMENT, OperationType::GROSS_INTEREST_REPAYMENT]);
+        $negativeOperations = array_merge(OperationType::TAX_TYPES_FR, [OperationType::CAPITAL_REPAYMENT_REGULARIZATION, OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION]);
+
+        $query = '
+            SELECT
+              SUM(IF(ot.label IN (:positiveOperations), o.amount, -o.amount))
+            FROM wallet_balance_history wbh
+              INNER JOIN operation o ON wbh.id_operation = o.id
+              INNER JOIN operation_type ot ON o.id_type = ot.id
+            WHERE wbh.id_wallet = :idWallet
+              AND o.id_project = :idProject
+              AND ot.label IN (:allOperations)';
+
+        $bind = [
+            'positiveOperations' => $positiveOperations,
+            'allOperations'      => array_merge($positiveOperations, $negativeOperations),
+            'idWallet'           => $wallet->getId(),
+            'idProject'          => $project->getIdProject()
+        ];
+        $types = [
+            'positiveOperations' => Connection::PARAM_STR_ARRAY,
+            'allOperations'      => Connection::PARAM_STR_ARRAY,
+            'idWallet'           => \PDO::PARAM_INT,
+            'idProject'          => \PDO::PARAM_INT
+        ];
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, $bind, $types)
+            ->fetchColumn();
+    }
 }

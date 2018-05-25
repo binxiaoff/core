@@ -3,7 +3,9 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\{
+    EntityManager, OptimisticLockException
+};
 use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Route, Security
@@ -20,7 +22,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
+    NewsletterManager, ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -911,36 +913,33 @@ class MainController extends Controller
 
     /**
      * @Route("/cgv-popup", name="lender_tos_popup", condition="request.isXmlHttpRequest()")
-     * @param Request $request
      * @Security("has_role('ROLE_LENDER')")
-     * @return Mixed
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
     public function lastTermsOfServiceAction(Request $request)
     {
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var UserLender $user */
-        $user = $this->getUser();
-        /** @var \clients $client */
-        $client = $entityManagerSimulator->getRepository('clients');
-        $tosDetails = '';
+        $user            = $this->getUser();
+        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+        $tosDetails      = '';
+        $newsletterOptIn = true;
 
-        if ($client->get($user->getClientId())) {
+        if (null !== $client) {
+            $newsletterOptIn = empty($client->getOptin1());
+
             if ($request->isMethod(Request::METHOD_GET)) {
-                /** @var \blocs $block */
-                $block = $entityManagerSimulator->getRepository('blocs');
-                $block->get('cgv', 'slug');
-
                 $elementSlug = 'tos-new';
                 /** @var \acceptations_legal_docs $acceptationsTos */
                 $acceptationsTos = $entityManagerSimulator->getRepository('acceptations_legal_docs');
-                /** @var \settings $settings */
-                $settings = $entityManagerSimulator->getRepository('settings');
 
-                if ($acceptationsTos->exist($client->id_client, 'id_client')) {
-                    $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
-                    $wallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::LENDER);
-                    $newTermsOfServiceDate = $settings->value;
+                if ($acceptationsTos->exist($client->getIdClient(), 'id_client')) {
+                    $wallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
+                    $newTermsOfServiceDate = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Date nouvelles CGV avec 2 mandats'])->getValue();
                     /** @var \loans $loans */
                     $loans = $entityManagerSimulator->getRepository('loans');
 
@@ -961,21 +960,42 @@ class MainController extends Controller
                     if ($blockElement->get($elements->id_element, 'id_element')) {
                         $tosDetails = $blockElement->value;
                     } else {
-                        $this->get('logger')->error('The block element id : ' . $elements->id_element . ' doesn\'t exist');
+                        $this->get('logger')->error('The block element ID: ' . $elements->id_element . ' doesn\'t exist');
                     }
                 } else {
-                    $this->get('logger')->error('The element slug : ' . $elementSlug . ' doesn\'t exist');
+                    $this->get('logger')->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
                 }
             } elseif ($request->isMethod(Request::METHOD_POST)) {
                 if ('true' === $request->request->get('terms')) {
-                    $clientEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
-                    $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($clientEntity);
+                    try {
+                        $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
+                    } catch (OptimisticLockException $exception) {
+                        $this->get('logger')->error('TOS could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
+                            'id_client' => $client->getIdClient(),
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'file'      => $exception->getFile(),
+                            'line'      => $exception->getLine()
+                        ]);
+                    }
                 }
+
+                if ($newsletterOptIn) {
+                    if ('true' === $request->request->get('newsletterOptIn')) {
+                        $this->get(NewsletterManager::class)->subscribeNewsletter($client, $request->getClientIp());
+                    } else {
+                        $this->get(NewsletterManager::class)->unsubscribeNewsletter($client, $request->getClientIp());
+                    }
+                }
+
                 return $this->json([]);
             }
         }
 
-        return $this->render('partials/lender_tos_popup.html.twig', ['tosDetails' => $tosDetails]);
+        return $this->render('partials/lender_tos_popup.html.twig', [
+            'tosDetails'      => $tosDetails,
+            'newsletterOptIn' => $newsletterOptIn
+        ]);
     }
 
     /**

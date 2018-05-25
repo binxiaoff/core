@@ -11,7 +11,7 @@ $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdS
             <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email">Votre email a été envoyé
         </div>
         <div class="form-group col-md-6">
-            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste de contôle</a>
+            <a href="<?= $this->lurl ?>/preteurs/activation" class="btn-primary btnBackListe">Revenir à la liste de contôle</a>
         </div>
     </div>
     <?php unset($_SESSION['email_completude_confirm']); ?>

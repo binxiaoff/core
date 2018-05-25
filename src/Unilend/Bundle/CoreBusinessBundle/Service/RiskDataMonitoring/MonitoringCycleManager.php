@@ -67,20 +67,27 @@ class MonitoringCycleManager
     }
 
     /**
-     * @param string $siren
+     * @throws \Exception
      */
-    public function activateMonitoringForSiren(string $siren) : void
+    public function activateMonitoringForNewSiren(): void
     {
-        try {
-            $this->eulerHermesManager->activateMonitoring($siren);
-            $this->altaresManager->activateMonitoring($siren);
-        } catch (\Exception $exception) {
-            $this->logger->error('Risk data monitoring could not be activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine(),
-                'siren' => $siren
-            ]);
+        $sirenToBeActivated  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getNotYetMonitoredSirenWithProjects();
+
+        foreach ($sirenToBeActivated as $siren) {
+            if ($this->altaresManager->sirenExist($siren['siren'])) {
+                $this->activateAllMonitoringForSiren($siren['siren']);
+            }
         }
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Exception
+     */
+    public function reactivateMonitoring(): void
+    {
+        $this->reactivateMonitoringForNotAtAllMonitoredSiren();
+        $this->reactivateMonitoringForPartiallyMonitoredSiren();
     }
 
     /**
@@ -89,7 +96,7 @@ class MonitoringCycleManager
      *
      * @throws \Exception
      */
-    public function saveEndOfMonitoringPeriodNotification(string $siren, string $provider) : void
+    public function saveEndOfMonitoringPeriodNotification(string $siren, string $provider): void
     {
         $currentMonitoring = $this->monitoringManager->getMonitoringForSiren($siren, $provider);
         if (null !== $currentMonitoring) {
@@ -111,7 +118,7 @@ class MonitoringCycleManager
     /**
      * @param string $siren
      */
-    public function stopMonitoringForSiren(string $siren) : void
+    public function stopMonitoringForSiren(string $siren): void
     {
         $riskDataMonitoringRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring');
         $projectRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
@@ -139,34 +146,87 @@ class MonitoringCycleManager
             }
         } catch (\Exception $exception) {
             $this->logger->warning('Could not stop monitoring for siren: ' . $siren . ' Error: ' . $exception->getMessage(), [
-                    'exceptionFile' => $exception->getFile(),
-                    'exceptionLine' => $exception->getLine(),
-                    'function'      => __FUNCTION__
-                ]);
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $siren
+            ]);
+        }
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    private function reactivateMonitoringForNotAtAllMonitoredSiren(): void
+    {
+        $notMonitoredSiren = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getSirenWithActiveProjectsAndNoMonitoring();
+
+        foreach ($notMonitoredSiren as $siren) {
+            $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren]);
+
+            foreach ($companies as $company) {
+                try {
+                    if ($this->eulerHermesManager->eligibleForEulerLongTermMonitoring($company)) {
+                        $this->altaresManager->activateMonitoring($siren);
+                        $this->eulerHermesManager->activateLongTermMonitoring($siren);
+                        break;
+                    }
+                } catch (\Exception $exception) {
+                    $this->logger->error('Risk data monitoring could not be re-activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine(),
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'siren'    => $siren
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\DBALException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
+    private function reactivateMonitoringForPartiallyMonitoredSiren()
+    {
+        $companiesRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+
+        foreach ($companiesRepository->getSirenWithActiveProjectsAndNoMonitoringByProvider(AltaresManager::PROVIDER_NAME) as $siren) {
+            $this->altaresManager->activateMonitoring($siren['siren']);
+        }
+
+        foreach ($companiesRepository->getSirenWithActiveProjectsAndNoMonitoringByProvider(EulerHermesManager::PROVIDER_NAME) as $siren) {
+            $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren['siren']]);
+
+            foreach ($companies as $company) {
+                if ($this->eulerHermesManager->eligibleForEulerLongTermMonitoring($company)) {
+                    $this->eulerHermesManager->activateLongTermMonitoring($siren['siren']);
+                    break;
+                }
+            }
         }
     }
 
     /**
      * @param string $siren
      */
-    public function reactivateMonitoringForSiren(string $siren) : void
+    private function activateAllMonitoringForSiren(string $siren)
     {
-        $companies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['siren' => $siren]);
-        foreach ($companies as $company) {
-            try {
-                if ($this->eulerHermesManager->eligibleForEulerLongTermMonitoring($company)) {
-                    $this->altaresManager->activateMonitoring($siren);
-                    $this->eulerHermesManager->activateLongTermMonitoring($siren);
-                    break;
-                }
-            } catch (\Exception $exception) {
-                $this->logger->error('Risk data monitoring could not be re-activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
-                    'exceptionFile' => $exception->getFile(),
-                    'exceptionLine' => $exception->getLine(),
-                    'function'      => __FUNCTION__,
-                    'siren'         => $siren
-                ]);
-            }
+        try {
+            $this->eulerHermesManager->activateMonitoring($siren);
+            $this->altaresManager->activateMonitoring($siren);
+
+        } catch (\Exception $exception) {
+            $this->logger->error('Risk data monitoring could not be activated for siren ' . $siren . '. Exception: ' . $exception->getMessage(), [
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $siren
+            ]);
         }
     }
 }

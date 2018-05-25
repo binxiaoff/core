@@ -14,7 +14,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsHistoryActions, ClientsStatus, WalletType
+    ClientsHistoryActions, ClientsStatus, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
 use Unilend\Bundle\FrontBundle\Security\{

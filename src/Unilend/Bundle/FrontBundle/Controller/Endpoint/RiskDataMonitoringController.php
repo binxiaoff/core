@@ -47,10 +47,11 @@ class RiskDataMonitoringController extends Controller
             $riskDataMonitoringEulerHermesManager->saveEulerHermesGradeMonitoringEvent($data['siren']);
         } catch (\Exception $exception) {
             $this->container->get('logger')->warning('Euler Hermes monitoring event for siren ' . $data['siren'] . ' event could not be saved. Exception: ' . $exception->getMessage(), [
-                'exceptionFile' => $exception->getFile(),
-                'exceptionLine' => $exception->getLine(),
-                'function'      => __FUNCTION__,
-                'siren'         => $data['siren']
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $data['siren']
             ]);
         }
 
@@ -84,10 +85,11 @@ class RiskDataMonitoringController extends Controller
             $riskDataMonitoringCycleManager->saveEndOfMonitoringPeriodNotification($data['siren'], EulerHermesManager::PROVIDER_NAME);
         } catch (\Exception $exception) {
             $this->container->get('logger')->warning('Euler Hermes monitoring end for siren ' . $data['siren'] . ' event could not be saved. Exception: ' . $exception->getMessage(), [
-                'exceptionFile' => $exception->getFile(),
-                'exceptionLine' => $exception->getLine(),
-                'function'      => __FUNCTION__,
-                'siren'         => $data['siren']
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $data['siren']
             ]);
         }
 

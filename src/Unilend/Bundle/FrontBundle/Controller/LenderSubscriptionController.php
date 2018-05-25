@@ -18,7 +18,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, OffresBienvenues, PaysV2, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    GoogleRecaptchaManager, SponsorshipManager
+    GoogleRecaptchaManager, NewsletterManager, SponsorshipManager
 };
 use Unilend\Bundle\FrontBundle\Security\{
     BCryptPasswordEncoder, User\UserPartner
@@ -89,8 +89,10 @@ class LenderSubscriptionController extends Controller
         if ($request->isMethod(Request::METHOD_POST)) {
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 $isValid = $this->handlePersonForm($client, $identityForm, $request);
+
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+
                     if (false === empty($sponsorCode)) {
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
@@ -105,8 +107,10 @@ class LenderSubscriptionController extends Controller
 
             if ($companyIdentityForm->isSubmitted() && $companyIdentityForm->isValid()) {
                 $isValid = $this->handleLegalEntityForm($client, $company, $companyIdentityForm, $request);
+
                 if ($isValid) {
                     $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION);
+
                     if (false === empty($sponsorCode)) {
                         $this->get('unilend.service.sponsorship_manager')->createSponsorship($client, $sponsorCode);
                         $this->get('session')->remove('sponsorCode');
@@ -154,8 +158,11 @@ class LenderSubscriptionController extends Controller
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
-        $countryId = $form->get('mainAddress')->get('idCountry')->getData();
-        $zip       = $form->get('mainAddress')->get('zip')->getData();
+        $countryId  = $form->get('mainAddress')->get('idCountry')->getData();
+        $zip        = $form->get('mainAddress')->get('zip')->getData();
+        $noUsPerson = $form->get('noUsPerson')->getData();
+
+        $noUsPerson ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
         if (PaysV2::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
@@ -209,9 +216,10 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType   = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-            $password     = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
-            $slug         = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+            $clientType        = ($client->getIdPaysNaissance() == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+            $password          = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $slug              = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
+            $newsletterConsent = $client->getOptin1() ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
 
             $client
                 ->setPassword($password)
@@ -220,7 +228,8 @@ class LenderSubscriptionController extends Controller
                 ->setSlug($slug)
                 ->setStatusInscriptionPreteur(1)
                 ->setEtapeInscriptionPreteur(Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION)
-                ->setType($clientType);
+                ->setType($clientType)
+                ->setOptin1($newsletterConsent);
 
             $entityManager->beginTransaction();
 
@@ -255,6 +264,11 @@ class LenderSubscriptionController extends Controller
             } catch (\Exception $exception) {
                 $entityManager->getConnection()->rollBack();
                 $this->get('logger')->error('An error occurred while creating client ', [['class' => __CLASS__, 'function' => __FUNCTION__]]);
+            }
+
+            if (Clients::NEWSLETTER_OPT_IN_ENROLLED === $newsletterConsent) {
+                $newsletterManager = $this->get(NewsletterManager::class);
+                $newsletterManager->subscribeNewsletter($client, $request->getClientIp());
             }
 
             $this->addClientToDataLayer($client);
@@ -578,8 +592,10 @@ class LenderSubscriptionController extends Controller
 
         if ($form->isSubmitted()) {
             $this->saveClientHistoryAction($client, $request, Clients::SUBSCRIPTION_STEP_DOCUMENTS);
+
             if ($form->isValid()) {
                 $isValid = $this->handleDocumentsForm($form, $request->files, $countryId);
+
                 if ($isValid) {
                     return $this->redirectToRoute('lender_subscription_money_deposit', ['clientHash' => $client->getHash()]);
                 }
@@ -619,8 +635,8 @@ class LenderSubscriptionController extends Controller
         $bic                 = $form->get('bankAccount')->get('bic')->getData();
         $bankAccountDocument = null;
 
-        if ('FR' !== strtoupper(substr($iban, 0, 2))) {
-            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
         $fundsOrigin = $this->getFundsOrigin($client->getType());
@@ -693,12 +709,21 @@ class LenderSubscriptionController extends Controller
             if ($file instanceof UploadedFile) {
                 try {
                     $attachement = $this->upload($client,  $attachmentTypeId, $file);
+
                     if ($attachmentTypeId == AttachmentType::JUSTIFICATIF_DOMICILE) {
                         $address = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
                         $addressManager->linkAttachmentToAddress($address, $attachement);
                     }
                 } catch (\Exception $exception) {
-                    $form->addError(new FormError($uploadErrorMessage . $attachmentTypeId . ' error : ' . $exception->getMessage()));
+                    $form->addError(new FormError($uploadErrorMessage));
+                    $this->get('logger')->error('Lender attachment could not be uploaded. Message : ' . $exception->getMessage(), [
+                        'file'               => $exception->getFile(),
+                        'line'               => $exception->getLine(),
+                        'class'              => __CLASS__,
+                        'function'           => __FUNCTION__,
+                        'id_type_attachment' => $attachmentTypeId,
+                        'id_client'          => $client->getIdClient()
+                    ]);
                 }
             } else {
                 switch ($attachmentTypeId) {
@@ -751,6 +776,14 @@ class LenderSubscriptionController extends Controller
                     $this->upload($client,  $attachmentTypeId, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($uploadErrorMessage));
+                    $this->get('logger')->error('Lender attachment could not be uploaded. Message : ' . $exception->getMessage(), [
+                        'file'               => $exception->getFile(),
+                        'line'               => $exception->getLine(),
+                        'class'              => __CLASS__,
+                        'function'           => __FUNCTION__,
+                        'id_type_attachment' => $attachmentTypeId,
+                        'id_client'          => $client->getIdClient()
+                    ]);
                 }
             } else {
                 switch ($attachmentTypeId) {
@@ -1115,6 +1148,8 @@ class LenderSubscriptionController extends Controller
      * @param Clients $client
      * @param Request $request
      * @param int     $step
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function saveClientHistoryAction(Clients $client, Request $request, int $step): void
     {
@@ -1122,7 +1157,7 @@ class LenderSubscriptionController extends Controller
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files->all();
 
-        if (1 == $step) {
+        if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION === $step) {
             $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
             $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
             $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
