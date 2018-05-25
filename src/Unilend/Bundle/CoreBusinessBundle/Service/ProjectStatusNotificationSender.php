@@ -8,7 +8,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsGestionTypeNotif, CompanyStatus, Echeanciers, Notifications, Projects, ProjectsStatus, Wallet
+    ClientsGestionTypeNotif, CompanyStatus, Notifications, Projects, ProjectsStatus, Wallet
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
@@ -308,7 +308,7 @@ class ProjectStatusNotificationSender
      *
      * @throws \Exception
      */
-    private function sendLenderNotifications(Projects $project, $notificationType, $mailTypePerson, $mailTypeLegalEntity, array $keywords = [], $forceNotification = false)
+    private function sendLenderNotifications(Projects $project, int $notificationType, string $mailTypePerson, string $mailTypeLegalEntity, array $keywords = [], bool $forceNotification = false): void
     {
         $walletRepository                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -324,39 +324,22 @@ class ProjectStatusNotificationSender
 
         /** @var \loans $loans */
         $loans        = $this->entityManagerSimulator->getRepository('loans');
-        $aLenderLoans = $loans->getProjectLoansByLender($project->getIdProject());
+        $lenderLoans = $loans->getProjectLoansByLender($project->getIdProject());
 
-        if (is_array($aLenderLoans)) {
-            $nextRepayment = $lenderRepaymentRepository->findNextPendingScheduleAfter(new \DateTime(), $project);
-            if (null === $nextRepayment) {
-                throw new \Exception('There is no pending repayment on the project ' . $project->getIdProject());
-            }
+        if (is_array($lenderLoans)) {
+            $repaymentRepository = null === $project->getCloseOutNettingDate() ? $lenderRepaymentRepository : $closeOutNettingRepaymentRepository;
 
-            if (null === $project->getCloseOutNettingDate()) {
-                $repaymentRepository = $lenderRepaymentRepository;
-            } else {
-                $repaymentRepository = $closeOutNettingRepaymentRepository;
-            }
-
-            foreach ($aLenderLoans as $aLoans) {
+            foreach ($lenderLoans as $loanDetails) {
                 /** @var Wallet $wallet */
-                $wallet = $walletRepository->find($aLoans['id_lender']);
+                $wallet = $walletRepository->find($loanDetails['id_lender']);
 
-                $netRepayment     = 0.0;
-                $loansAmount      = round(bcdiv($aLoans['amount'], 100, 4), 2);
-                $allLoans         = explode(',', $aLoans['loans']);
+                $loansAmount      = round(bcdiv($loanDetails['amount'], 100, 4), 2);
+                $allLoans         = explode(',', $loanDetails['loans']);
                 $remainingCapital = $repaymentRepository->getRemainingCapitalByLoan($allLoans);
-                $repaidLoans      = $lenderRepaymentRepository->findBy([
-                    'idLoan' => $allLoans,
-                    'status' => [Echeanciers::STATUS_PARTIALLY_REPAID, Echeanciers::STATUS_REPAID]
-                ]);
-
-                foreach ($repaidLoans as $aPayment) {
-                    $netRepayment += $operationRepository->getNetAmountByRepaymentScheduleId($aPayment->getIdEcheancier());
-                }
+                $netRepayment     = $operationRepository->getNetRepaidAmountByWalletAndProject($wallet, $project);
 
                 $notificationsData->type       = $notificationType;
-                $notificationsData->id_lender  = $aLoans['id_lender'];
+                $notificationsData->id_lender  = $loanDetails['id_lender'];
                 $notificationsData->id_project = $project->getIdProject();
                 $notificationsData->amount     = bcsub($loansAmount, $netRepayment);
                 $notificationsData->id_bid     = 0;
