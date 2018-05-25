@@ -102,8 +102,8 @@
         {% set
             inProceeding = [
                 constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
-                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'),
-                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')
+                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
+                constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
         ] %}
         <table class="table">
             <tbody>
@@ -132,14 +132,14 @@
                         {{ loan.rate|localizednumberwithprecision(1) }}&nbsp;%
                     </td>
                     <td class="item-date">
-                        {{ loan.startDate|date('d/m/Y') }}
+                        {{ loan.startDate }}
                     </td>
                     {% if constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_COMPLETED') == loan.loanStatus %}
                         <td colspan="3" class="item-date">
                             {% if loan.isCloseOutNetting %}
-                                {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
+                                {% trans with {'%date%': loan.finalRepaymentDate} %} lender-loans_pdf-project-status-label-collected-on-date {% endtrans %}
                             {% else %}
-                                {% trans with {'%date%': loan.finalRepaymentDate|date('d/m/Y')} %} lender-loans_pdf-project-status-label-repayment-finished-on-date {% endtrans %}
+                                {% trans with {'%date%': loan.finalRepaymentDate} %} lender-loans_pdf-project-status-label-repayment-finished-on-date {% endtrans %}
                             {% endif %}
                         </td>
                     {% elseif loan.loanStatus in inProceeding %}
@@ -151,8 +151,8 @@
                             {% trans %} lender-loans_pdf-project-status-label-lost {% endtrans %}
                         </td>
                     {% else %}
-                        <td class="item-date">{{ loan.nextRepaymentDate|date('d/m/Y') }}</td>
-                        <td class="item-date">{{ loan.endDate|date('d/m/Y') }}</td>
+                        <td class="item-date">{{ loan.nextRepaymentDate }}</td>
+                        <td class="item-date">{{ loan.endDate }}</td>
                         <td class="item-amount">{{ loan.monthlyRepaymentAmount|localizedcurrency('EUR') }}</td>
                     {% endif %}
                 </tr>
