@@ -681,6 +681,7 @@ class dossiersController extends bootstrap
             $this->sectors               = $this->loadData('company_sector')->select();
             $this->sources               = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
             $this->ratings               = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
+            $this->ratings               = $this->addUnilendPrescoringToProjectRatings($this->ratings, $this->projects_notes);
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
@@ -3034,5 +3035,25 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers');
             die;
         }
+    }
+
+    /**
+     * @param array          $ratings
+     * @param projects_notes $projectNotes
+     *
+     * @return array
+     */
+    private function addUnilendPrescoringToProjectRatings(array &$ratings, \projects_notes $projectNotes)
+    {
+        $date = \DateTime::createFromFormat('Y-m-d H:i:s', $projectNotes->added);
+
+        $ratings['unilend_prescore'] = [
+            'value'  => $projectNotes->pre_scoring,
+            'date'   => $date->format('d/m/Y H:i'),
+            'action' => 'Test d&#39éligibilité',
+            'user'   => ''
+        ];
+
+        return $ratings;
     }
 }
