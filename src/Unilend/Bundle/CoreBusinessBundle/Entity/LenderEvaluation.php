@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * LenderEvaluation
  *
  * @ORM\Table(name="lender_evaluation", indexes={@ORM\Index(name="id_lender_questionnaire", columns={"id_lender_questionnaire"}), @ORM\Index(name="fk_lender_evaluation_id_lender", columns={"id_lender"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\LenderEvaluationRepository")
  */
 class LenderEvaluation
 {
@@ -32,6 +32,13 @@ class LenderEvaluation
      * @ORM\Column(name="updated", type="datetime", nullable=false)
      */
     private $updated;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="validated", type="datetime", nullable=true)
+     */
+    private $validated;
 
     /**
      * @var integer
@@ -192,5 +199,25 @@ class LenderEvaluation
     public function getIdLender()
     {
         return $this->idLender;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getValidated(): \DateTime
+    {
+        return $this->validated;
+    }
+
+    /**
+     * @param \DateTime $validated
+     *
+     * @return LenderEvaluation
+     */
+    public function setValidated(\DateTime $validated): LenderEvaluation
+    {
+        $this->validated = $validated;
+
+        return $this;
     }
 }

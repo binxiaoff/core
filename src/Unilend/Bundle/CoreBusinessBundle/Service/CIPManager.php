@@ -105,23 +105,23 @@ class CIPManager
     }
 
     /**
-     * @param Clients $client
+     * @param Clients        $client
+     * @param \DateTime|null $date
      *
      * @return bool
      * @throws \Exception
      */
-    public function hasValidEvaluation(Clients $client)
+    public function hasValidEvaluation(Clients $client, ?\DateTime $date = null)
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
-        $evaluation = $this->getCurrentEvaluation($client);
 
-        if (null === $evaluation) {
-            return false;
-        }
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
-        return $this->isValidEvaluation($evaluation);
+        $validEvaluation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderEvaluation')->findValidEvaluation($wallet, $date);
+
+        return null !== $validEvaluation;
     }
 
     /**
@@ -218,8 +218,8 @@ class CIPManager
      */
     public function validateEvaluation(\lender_evaluation $evaluation)
     {
-        $expiryDate              = new \DateTime('NOW + 1 YEAR');
-        $evaluation->expiry_date = $expiryDate->format('Y-m-d H:i:s');
+        $evaluation->validated   = (new \DateTime())->format('Y-m-d H:i:s');
+        $evaluation->expiry_date = (new \DateTime('NOW + 1 YEAR'))->format('Y-m-d H:i:s');
         $evaluation->update();
     }
 
@@ -501,7 +501,7 @@ class CIPManager
 
         if (null !== $indicators[self::INDICATOR_TOTAL_AMOUNT]) {
             /** @var \ficelle $ficelle */
-            $ficelle   = Loader::loadLib('ficelle');
+            $ficelle = Loader::loadLib('ficelle');
 
             if ($indicators[self::INDICATOR_TOTAL_AMOUNT] < \lender_questionnaire_question::VALUE_ESTATE_THRESHOLD * 0.101) {
                 $advices[] = $this->translator->trans('lender-evaluation_low-estate-low-boundary-advice', [
@@ -622,7 +622,7 @@ class CIPManager
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function isCIPValidationNeeded(Bids $bid) : bool
+    public function isCIPValidationNeeded(Bids $bid): bool
     {
         /** @var \projects $project */
         $project = $this->entityManagerSimulator->getRepository('projects');

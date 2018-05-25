@@ -147,12 +147,13 @@ class BidsRepository extends EntityRepository
      * @param int          $limit
      * @param int          $offset
      *
-     * @return Bids[]|array
+     * @return Bids[]
      */
     public function getAutoBids($project, int $status, int $limit = 100, int $offset = 0): array
     {
         $queryBuilder = $this->createQueryBuilder('b');
-        $queryBuilder->where('b.idProject = :project')
+        $queryBuilder
+            ->where('b.idProject = :project')
             ->andWhere('b.status = :status')
             ->andWhere('b.idAutobid IS NOT NULL')
             ->setMaxResults($limit)

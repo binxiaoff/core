@@ -56,7 +56,7 @@ class BidManager
      * @param CIPManager             $cipManager
      * @param EntityManager          $entityManager
      * @param WalletManager          $walletManager
-     * @param SponsorshipManager $sponsorshipManager
+     * @param SponsorshipManager     $sponsorshipManager
      * @param CacheItemPoolInterface $cachePool
      *
      */
