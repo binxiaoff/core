@@ -31,7 +31,7 @@ class MailChimpGdprCatchUpCommand extends ContainerAwareCommand
         $mailChimp = $this->getContainer()->get('welp_mailchimp.mailchimp_master');
         $listId    = $this->getContainer()->getParameter('mailchimp.list_id');
         $segmentId = $this->getContainer()->getParameter('mailchimp.gdpr_segment_id');
-        $response  = $mailChimp->get('lists/' . $listId . '/segments/' . $segmentId . '/members?fields=total_items,members.email_address,members.status&count=100000');
+        $response  = $mailChimp->get('lists/' . $listId . '/segments/' . $segmentId . '/members?fields=total_items,members.email_address,members.status&count=100000', [], 120);
 
         if (false !== $mailChimp->getLastError()) {
             $this->getContainer()->get('logger')->error('Could not catchup MailChimp GDPR consent. MailChimp API error: ' . $mailChimp->getLastError(), [
