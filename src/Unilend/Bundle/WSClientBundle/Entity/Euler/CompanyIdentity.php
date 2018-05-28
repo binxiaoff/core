@@ -25,9 +25,9 @@ class CompanyIdentity
 
     /**
      * @JMS\SerializedName("ExternalIds")
-     * @JMS\Type("array")
+     * @JMS\Type("array<Unilend\Bundle\WSClientBundle\Entity\Euler\ExternalId>")
      */
-    private $externalServices;
+    private $externalIds;
 
     /**
      * @return string
@@ -53,8 +53,8 @@ class CompanyIdentity
     /**
      * @return array
      */
-    public function getExternalServices()
+    public function getExternalIds()
     {
-        return $this->externalServices;
+        return $this->externalIds;
     }
 }
