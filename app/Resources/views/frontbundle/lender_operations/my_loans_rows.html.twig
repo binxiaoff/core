@@ -35,7 +35,11 @@
                 {% endif %}
             </em>
         </td>
-    {% elseif loan.loanStatus in [constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'), constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_AMICABLE_DC'), constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOANS_STATUS_DISPLAY_LITIGATION_DC')] %}
+    {% elseif loan.loanStatus in [
+        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_PROCEEDING'),
+        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_AMICABLE_DC'),
+        constant('\\Unilend\\Bundle\\FrontBundle\\Service\\LenderLoansDisplayManager::LOAN_STATUS_DISPLAY_LITIGATION_DC')
+    ] %}
         <td colspan="4" class="table-myloans-item-next">
             <em class="c-t2">
                 {% transchoice loan.count.declaration %} lender-operations_loans-table-project-procedure-in-progress {% endtranschoice %}
