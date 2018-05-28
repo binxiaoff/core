@@ -381,7 +381,7 @@ class EulerHermesManager
 
                 return true;
             } else {
-                $this->logger->warning('Long term monitoring could not activated for siren ' . $siren . ' Status Code: ' . $response->getStatusCode() . ' / Reason: ' . $response->getReasonPhrase() . ' / Content: ' . $response->getBody()->getContents());
+                $this->logger->warning('Long term monitoring could not be activated for siren ' . $siren . ' Status Code: ' . $response->getStatusCode() . ' / Reason: ' . $response->getReasonPhrase() . ' / Content: ' . $response->getBody()->getContents());
             }
         }
 
