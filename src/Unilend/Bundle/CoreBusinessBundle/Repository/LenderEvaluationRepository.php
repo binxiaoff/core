@@ -15,7 +15,7 @@ class LenderEvaluationRepository extends EntityRepository
      * @return LenderEvaluation|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    function findValidEvaluation(Wallet $lenderWallet, ?\DateTime $date): ?LenderEvaluation
+    public function findValidEvaluation(Wallet $lenderWallet, ?\DateTime $date = null): ?LenderEvaluation
     {
         $today = (new \DateTime())->setTime(23, 59, 59);
 

@@ -34,7 +34,7 @@ class LenderEvaluation
     private $updated;
 
     /**
-     * @var \DateTime
+     * @var \DateTime|null
      *
      * @ORM\Column(name="validated", type="datetime", nullable=true)
      */
@@ -202,19 +202,19 @@ class LenderEvaluation
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getValidated(): \DateTime
+    public function getValidated(): ?\DateTime
     {
         return $this->validated;
     }
 
     /**
-     * @param \DateTime $validated
+     * @param \DateTime|null $validated
      *
      * @return LenderEvaluation
      */
-    public function setValidated(\DateTime $validated): LenderEvaluation
+    public function setValidated(?\DateTime $validated = null): LenderEvaluation
     {
         $this->validated = $validated;
 
