@@ -844,7 +844,7 @@ class preteursController extends bootstrap
             $clientData = $this->loadData('clients');
             $clientIds  = empty($_POST['id_client']) ? null : filter_var($_POST['id_client'], FILTER_SANITIZE_STRING);
 
-            if (null !== $clientIds && 0 === preg_match('/[^\d,\s]/', $clientIds)) {
+            if (null !== $clientIds && 0 === preg_match('/^[,]|[^\d,\s]|[,]$/', $clientIds)) {
                 $this->clientsWithoutWelcomeOffer = $clientData->getClientsWithNoWelcomeOffer($clientIds);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id_client'] = $_POST['id_client'];
 
