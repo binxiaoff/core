@@ -111,8 +111,9 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                 <tr>
                     <th style="width: 300px">Préscore Unilend</th>
                     <td style="width: 250px">
-                        <span><?= $this->projects_notes->pre_scoring ?></span>
-                    </td>
+                        <?php if (false === empty($this->ratings['unilend_prescore']['value'])) : ?>
+                            <span class="rating-tooltip" title="unilend_prescore"><?= $this->ratings['unilend_prescore']['value'] ?></span>
+                        <?php else : ?>-<?php endif; ?>                    </td>
                 </tr>
                 <tr>
                     <th style="width: 300px"><label>Traffic Light Euler-Hermes</label></th>
