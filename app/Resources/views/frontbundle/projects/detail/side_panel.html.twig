@@ -132,7 +132,9 @@
                                             </div>
                                             <div class="col-input">
                                                 <div class="input-group set-right">
-                                                    <input id="bid-amount" type="text" name="invest[amount]" value="{% if app.session.flashBag.has('cipBid') %}{{ app.session.flashBag.get('cipBid')[0].amount }}{% endif %}" class="input-field" autocomplete="off" data-has-spinner="#repayment-estimation-spinner" data-formvalidation-input data-formvalidation-type="number" data-formvalidation-required="true" data-bid-amount>
+                                                    <input id="bid-amount" type="text" name="invest[amount]" value="{% if app.session.flashBag.has('cipBid') %}{{ app.session.flashBag.get('cipBid')[0].amount }}{% endif %}"
+                                                           class="input-field" autocomplete="off" data-has-spinner="#repayment-estimation-spinner"
+                                                           data-formvalidation-input data-formvalidation-type="integer" data-formvalidation-required="true" data-bid-amount>
                                                     <div class="btn-group">
                                                         <span class="icon fa-euro"></span>
                                                     </div>
