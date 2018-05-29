@@ -1557,7 +1557,7 @@ class LenderProfileController extends Controller
         $clientAuditer = $this->get(ClientAuditer::class);
         $clientChanges = $clientAuditer->logChanges($client, $frontUser);
 
-        if (isset($clientChanges['email']) && false === empty($clientChanges['email'][0])) {
+        if (false === empty($clientChanges['email'][0])) {
             $this->notifyEmailChangeToOldAddress($client, $clientChanges['email'][0]);
         }
 
