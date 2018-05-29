@@ -301,10 +301,31 @@ class ClientDataHistoryManager
         } else {
             $templateName = 'synthese-modification-donnees-personne-morale';
             /** @var Companies $company */
-            $company  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $keywords += [
-                'companyName' => $company->getName()
-            ];
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+
+            if (null !== $company && false === empty($company->getName())) {
+                $keywords += [
+                    'companyName' => $company->getName()
+                ];
+            } else {
+                $keywords += [
+                    'companyName' => null
+                ];
+                $reason = null === $company ? 'Client company not found' : 'Client company (id_company: ' . $company->getIdCompany() . ') name is empty';
+                $this->logger->error('Could not fill company name keyword for email "synthese-modification-donnees-personne-morale". ' . $reason, [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__
+                ]);
+            }
+        }
+
+        if (empty($client->getPrenom())) {
+            $this->logger->error('Could not fill client first name keyword for email "' . $templateName . '". ', [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
         }
 
         $message = $this->messageProvider->newMessage($templateName, $keywords);
@@ -329,7 +350,8 @@ class ClientDataHistoryManager
      */
     private function getFormFieldsTranslationsForEmail()
     {
-        $formFields = [
+        $translations = [];
+        $formFields   = [
             self::MAIN_ADDRESS_FORM_LABEL,
             self::POSTAL_ADDRESS_FORM_LABEL,
             self::BANK_ACCOUNT_FORM_LABEL
@@ -339,7 +361,7 @@ class ClientDataHistoryManager
             $translations[$field] = $this->translator->trans('lender-modification-email_field-' . $field);
         }
 
-        return $translations ?? [];
+        return $translations;
     }
 
     /**
