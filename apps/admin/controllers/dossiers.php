@@ -677,15 +677,16 @@ class dossiersController extends bootstrap
             $needs        = $oProjectNeed->getTree();
             $this->aNeeds = $needs;
 
-            $this->xerfi                 = $this->loadData('xerfi');
-            $this->sectors               = $this->loadData('company_sector')->select();
-            $this->sources               = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
-            $this->ratings               = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
-            $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
-            $this->iCompanyProjectsCount = count($this->aCompanyProjects);
-            $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
-            $companiesRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
-            $this->bIsProblematicCompany = $companiesRepository->isProblematicCompany($this->companies->siren);
+            $this->xerfi                       = $this->loadData('xerfi');
+            $this->sectors                     = $this->loadData('company_sector')->select();
+            $this->sources                     = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
+            $this->ratings                     = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
+            $this->ratings['unilend_prescore'] = $this->addUnilendPrescoring($this->projects_notes);
+            $this->aCompanyProjects            = $this->companies->getProjectsBySIREN();
+            $this->iCompanyProjectsCount       = count($this->aCompanyProjects);
+            $this->fCompanyOwedCapital         = $this->companies->getOwedCapitalBySIREN();
+            $companiesRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies');
+            $this->bIsProblematicCompany       = $companiesRepository->isProblematicCompany($this->companies->siren);
 
             /** @var \product $product */
             $product = $this->loadData('product');
@@ -3035,4 +3036,21 @@ class dossiersController extends bootstrap
             die;
         }
     }
+
+    /**
+     * @param projects_notes $projectNotes
+     *
+     * @return array
+     */
+    private function addUnilendPrescoring(\projects_notes $projectNotes)
+    {
+        $date = \DateTime::createFromFormat('Y-m-d H:i:s', $projectNotes->added);
+
+        return [
+            'value'  => $projectNotes->pre_scoring,
+            'date'   => $date->format('d/m/Y H:i'),
+            'action' => 'Test d&#39éligibilité',
+            'user'   => ''
+        ];
+        }
 }

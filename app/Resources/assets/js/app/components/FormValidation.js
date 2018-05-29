@@ -196,7 +196,7 @@ var FormValidation = function (elem, options) {
 
   /**
    * The main settings for the FormValidation.
-   * 
+   *
    * @typedef {object} FormValidationSettings
    * @param {string|HTMLElement|jQuery} formElem,
    * @param {boolean} showNotifications - Whether to show notifications or not
@@ -209,8 +209,8 @@ var FormValidation = function (elem, options) {
    * @param {boolean} showErrorOnField - Whether to mark that the field errored
    * @param {boolean} showAllErrors - Whether to show errors on all fields (`true`) or stop after the first one (`false`)
    * @param {boolean} render - Render messages to the form/group/field
-   * @param {Function} onfieldbeforevalidate 
-   * @param {Function} onfieldaftervalidate 
+   * @param {Function} onfieldbeforevalidate
+   * @param {Function} onfieldaftervalidate
    * @param {Function} onfieldsuccess
    * @param {Function} onfielderror
    * @param {Function} onfieldcomplete
@@ -408,7 +408,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
 
   /**
    * Field validation input object.
-   * 
+   *
    * @typedef {object} FormValidationInput
    * @param {string} validation - The type of validation
    * @param {boolean} isValid - If the field/input is valid
@@ -436,7 +436,7 @@ FormValidation.prototype.validateInput = function (elem, options) {
 
     /**
      * Options to modify the form validation behaviours on the single input.
-     * 
+     *
      * @typedef {object} FormValidationInputOptions
      * @param {object} rules - An object with the names and functions to perform the validation rules
      * @param {boolean} showNotifications - show the notifications
@@ -664,7 +664,7 @@ FormValidation.prototype.validate = function (options) {
   // Validation object
   /**
    * Form group validation object.
-   * 
+   *
    * @typedef {object} FormValidationGroup
    * @param {string} validation - The type of validation
    * @param {boolean} isValid
@@ -692,7 +692,7 @@ FormValidation.prototype.validate = function (options) {
 
     /**
      * A subset of the main {FormValidationSettings} for the group validation.
-     * 
+     *
      * @typedef {object} FormValidationGroupOptions
      * @param {boolean} render
      * @param {boolean} showNotifications
@@ -1035,7 +1035,8 @@ FormValidation.prototype.rules = {
           break
 
         case 'integer':
-          if (isNaN(Utility.convertStringToFloat(inputValidation.value))) {
+          var value = Utility.convertStringToFloat(inputValidation.value)
+          if (isNaN(value) || !Number.isInteger(value)) {
             inputValidation.errors.push({
                 type: 'inputType',
                 description: __.__('Field accepts only integers', 'error-field-input-type-integer')
@@ -1289,7 +1290,7 @@ FormValidation.prototype.rules = {
     if (maxValue && parseFloat(valueToCheck) > maxValue) {
       inputValidation.errors.push({
         type: 'maxValue',
-        description: sprintf(__.__('Amounts above %s are not allowed', 'error-field-max-value'), __Utility.formatNumber(maxValue, 0))
+        description: sprintf(__.__('Amounts above %s are not allowed', 'error-field-max-value'), __Utility.formatNumber(maxValue, 2))
       })
 
       return false
@@ -1499,7 +1500,7 @@ module.exports = FormValidation
 
 /*
  * @debug Testing
- * 
+ *
  * If you change the above, ensure to uncomment and run the below tests to check it all works.
  */
 // console.log('### TESTING FORM VALIDATION ###')
