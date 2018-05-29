@@ -6,9 +6,8 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientDataHistory, Clients, Users, WalletType
+    ClientDataHistory, Clients, Users
 };
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ClientAuditer
 {
@@ -36,23 +35,15 @@ class ClientAuditer
     private $entityManager;
     /** @var LoggerInterface */
     private $logger;
-    /** @var TemplateMessageProvider */
-    private $messageProvider;
-    /** @var \Swift_Mailer */
-    private $mailer;
 
     /**
-     * @param EntityManager           $entityManager
-     * @param LoggerInterface         $logger
-     * @param TemplateMessageProvider $messageProvider
-     * @param \Swift_Mailer           $mailer
+     * @param EntityManager   $entityManager
+     * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, LoggerInterface $logger, TemplateMessageProvider $messageProvider, \Swift_Mailer $mailer)
+    public function __construct(EntityManager $entityManager, LoggerInterface $logger)
     {
-        $this->entityManager   = $entityManager;
-        $this->logger          = $logger;
-        $this->messageProvider = $messageProvider;
-        $this->mailer          = $mailer;
+        $this->entityManager = $entityManager;
+        $this->logger        = $logger;
     }
 
     /**
@@ -105,10 +96,6 @@ class ClientAuditer
             $this->entityManager->persist($clientDataHistory);
 
             $flushEntities[] = $clientDataHistory;
-
-            if ('email' === $clientDataHistory->getField()) {
-                $this->notifyEmailChangeToOldAddress($client, $clientDataHistory);
-            }
         }
 
         try {
@@ -122,36 +109,5 @@ class ClientAuditer
         }
 
         return array_intersect_key($changeSet, array_flip(self::LOGGED_FIELDS));
-    }
-
-    /**
-     * @param Clients           $client
-     * @param ClientDataHistory $clientDataHistory
-     */
-    private function notifyEmailChangeToOldAddress(Clients $client, ClientDataHistory $clientDataHistory): void
-    {
-        $walletRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $wallet           = $walletRepository->getWalletByType($client, WalletType::LENDER);
-
-        $keyWords = [
-            'firstName'     => $client->getPrenom(),
-            'lastName'      => $client->getNom(),
-            'lenderPattern' => $wallet->getWireTransferPattern()
-        ];
-        $message  = $this->messageProvider->newMessage('alerte-changement-email-preteur', $keyWords);
-
-        try {
-            $message->setTo($clientDataHistory->getOldValue());
-            $this->mailer->send($message);
-        } catch (\Exception $exception) {
-            $this->logger->error('Could not send email modification alert to the previous lender email. Error: ' . $exception->getMessage(), [
-                'id_client'   => $client->getIdClient(),
-                'template_id' => $message->getTemplateId(),
-                'class'       => __CLASS__,
-                'function'    => __FUNCTION__,
-                'file'        => $exception->getFile(),
-                'line'        => $exception->getLine()
-            ]);
-        }
     }
 }
