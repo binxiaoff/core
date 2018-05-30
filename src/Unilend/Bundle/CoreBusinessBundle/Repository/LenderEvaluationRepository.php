@@ -9,8 +9,8 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
 class LenderEvaluationRepository extends EntityRepository
 {
     /**
-     * @param Wallet                   $lenderWallet
-     * @param \DateTime|null           $date
+     * @param Wallet         $lenderWallet
+     * @param \DateTime|null $date
      *
      * @return LenderEvaluation|null
      * @throws \Doctrine\ORM\NonUniqueResultException
