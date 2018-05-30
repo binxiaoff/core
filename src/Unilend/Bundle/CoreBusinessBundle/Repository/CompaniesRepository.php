@@ -45,7 +45,9 @@ class CompaniesRepository extends EntityRepository
     public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = c.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren);
 
