@@ -22,22 +22,18 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
     public function getActiveExecutives(string $siren) : array
     {
         $query = '
-            SELECT DISTINCT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
-                FROM infolegale_executive_personal_change
-                WHERE siren = :siren
-                AND ended IS NULL
-                AND title NOT LIKE :company
-            UNION
-                SELECT DISTINCT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
-                FROM infolegale_executive_personal_change
-                WHERE siren IN (
-                  SELECT DISTINCT id_executive
-                  FROM infolegale_executive_personal_change
-                  WHERE siren = :siren
-                  AND ended IS NULL
-                  AND siren_if_company IS NOT NULL
-                )
-                AND ended IS NULL';
+            SELECT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
+            FROM infolegale_executive_personal_change
+            WHERE ended IS NULL
+            AND siren = :siren OR siren IN (
+              SELECT DISTINCT siren_if_company
+              FROM infolegale_executive_personal_change
+              WHERE siren = :siren
+                    AND ended IS NULL
+                    AND siren_if_company IS NOT NULL
+            )
+            GROUP BY id_executive
+            HAVING title != :company';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, ['siren' => $siren, 'company' => 'Ste'], [])->fetchAll();
     }
