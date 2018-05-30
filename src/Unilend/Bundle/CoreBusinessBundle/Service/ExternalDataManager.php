@@ -425,6 +425,8 @@ class ExternalDataManager
                     }
                 } elseif (null === $change->getTitle() && false === empty($executive->getTitle())) { // As we added the "title" column after the table had been created, we need to catch it up.
                     $change->setTitle($executive->getTitle());
+                } elseif (null === $change->getSirenIfCompany() && false === empty($executive->getSiren())) { // As we added the "sirent_if_company" column after the table had been created, we need to catch it up.
+                    $change->setSirenIfCompany($executive->getSiren());
                 }
 
                 if (null === $change->getNominated()) {
