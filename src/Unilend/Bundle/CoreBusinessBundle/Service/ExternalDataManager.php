@@ -172,7 +172,7 @@ class ExternalDataManager
             }
 
             $this->setRating(CompanyRating::TYPE_ALTARES_SCORE_20, $score->getScore20());
-            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getSectoralScore100());
+            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20, $score->getSectoralScore20());
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);

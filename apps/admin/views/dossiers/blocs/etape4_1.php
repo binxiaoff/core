@@ -164,13 +164,13 @@ use Unilend\Bundle\WSClientBundle\Service\InfogreffeManager;
                     <th><label>Score sectoriel Altares</label></th>
                     <td>
                         <?php if (false === empty($this->ratings['score_sectoriel_altares']['value'])) : ?>
-                            <span class="rating-tooltip" title="score_sectoriel_altares"><?= round($this->ratings['score_sectoriel_altares']['value'] / 5) ?> / 20</span>
+                            <span class="rating-tooltip" title="score_sectoriel_altares"><?= round($this->ratings['score_sectoriel_altares']['value']) ?> / 20</span>
                         <?php else : ?>-<?php endif; ?>
                     </td>
                     <?php if (isset($this->targetRatings)) : ?>
                         <td>
                             <?php if (false === empty($this->targetRatings['score_sectoriel_altares']['value'])) : ?>
-                                <span class="rating-tooltip" title="target_score_sectoriel_altares"><?= round($this->targetRatings['score_sectoriel_altares']['value'] / 5) ?> / 20</span>
+                                <span class="rating-tooltip" title="target_score_sectoriel_altares"><?= round($this->targetRatings['score_sectoriel_altares']['value']) ?> / 20</span>
                             <?php else : ?>-<?php endif; ?>
                         </td>
                     <?php endif; ?>
