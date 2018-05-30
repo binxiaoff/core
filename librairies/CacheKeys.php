@@ -38,6 +38,11 @@ class CacheKeys
     const FOOTER_MENU = 'footer_menu';
 
     /**
+     * constant for project rate range
+     */
+    const PROJECT_RATE_RANGE = 'project_rate_range';
+
+    /**
      * constant for statistics
      */
     const UNILEND_STATISTICS            = 'unilend_front_statistics';

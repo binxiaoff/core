@@ -1,3 +1,8 @@
+<?php
+
+use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
@@ -45,7 +50,7 @@
         <div class="case2">
         </div>
         <div class="case3">
-            <?php if ($this->contract->getLabel() == \underlying_contract::CONTRACT_IFP) : ?>
+            <?php if ($this->contract->getLabel() === UnderlyingContract::CONTRACT_IFP) : ?>
                 Contrat de prêt émis le <?= $this->loan->getAdded()->format('d/m/Y') ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->loan->getAmount() / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->loan->getRate(), 1) ?>%, amortissable mensuellement.
             <?php else : ?>
                 Bon de caisse à ordre, émis le <?= $this->loan->getAdded()->format('d/m/Y') ?>, échéance au <?= $this->lastEcheance ?>, d’un montant de <?= $this->ficelle->formatNumber(($this->loan->getAmount() / 100)) ?>€ assorti d’un taux d’intérêt annuel de <?= $this->ficelle->formatNumber($this->loan->getRate(), 1) ?>%, amortissable mensuellement.

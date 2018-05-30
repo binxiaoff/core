@@ -330,7 +330,7 @@ class LenderCIPController extends Controller
         $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
 
         $evaluation            = $cipManager->getCurrentEvaluation($client);
-        $evaluationDate        = new \DateTime($evaluation->expiry_date . ' - 1 year');
+        $evaluationDate        = new \DateTime($evaluation->validated);
         $filename              = sprintf('conseils-investissement-%s.pdf', $evaluationDate->format('Y-m-d'));
 
         return new Response(
