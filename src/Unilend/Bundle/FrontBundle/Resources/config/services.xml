@@ -12,7 +12,7 @@
             <argument type="service" id="unilend.service.statistics_manager"/>
             <argument type="service" id="unilend.service.translation_manager"/>
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="cache"/>
             <argument type="service" id="unilend.service.location_manager"/>
         </service>
 
@@ -22,7 +22,7 @@
 
         <service id="unilend.frontbundle.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="cache"/>
         </service>
 
         <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
@@ -66,7 +66,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.location_manager"/>
             <argument type="service" id="translator"/>
-            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="cache"/>
             <argument type="service" id="unilend.service.cip_manager"/>
             <argument type="service" id="unilend.service_product.product_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
@@ -98,7 +98,7 @@
 
         <service id="unilend.frontbundle.service.content_manager" class="Unilend\Bundle\FrontBundle\Service\ContentManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="memcache.default"/>
+            <argument type="service" id="cache"/>
         </service>
 
         <service id="unilend.frontbundle.service.universign_manager" class="Unilend\Bundle\FrontBundle\Service\UniversignManager">

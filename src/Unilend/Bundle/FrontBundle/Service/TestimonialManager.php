@@ -2,8 +2,8 @@
 
 namespace Unilend\Bundle\FrontBundle\Service;
 
+use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Cache\Adapter\Memcache\MemcacheCachePool;
 use Unilend\librairies\CacheKeys;
 
 class TestimonialManager
@@ -11,10 +11,10 @@ class TestimonialManager
     /** @var  EntityManager */
     private $entityManager;
 
-    /** @var MemcacheCachePool */
+    /** @var CacheItemPoolInterface */
     private $cachePool;
 
-    public function __construct(EntityManager $entityManager, MemcacheCachePool $cachePool)
+    public function __construct(EntityManager $entityManager, CacheItemPoolInterface $cachePool)
     {
         $this->entityManager      = $entityManager;
         $this->cachePool          = $cachePool;

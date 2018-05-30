@@ -1,0 +1,75 @@
+<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse in">
+    {% if idDocumentDetails is not null %}
+        <dl class="list-2col">
+            <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
+            <dd>{{ idDocumentDetails.getIdentityDocumentNumber() }}</dd>
+            <dt>{% trans %}  lender-data-update_id-doc-expiration-date {% endtrans %}</dt>
+            <dd>{{ idDocumentDetails.getIdentityExpirationDate()|localizeddate('short', 'none') }}</dd>
+        </dl>
+        {% if idDocumentDetails.getIdentityExpirationDate() < date() %}
+            {% trans %} lender-data-update_id-doc-expired {% endtrans %}
+        {% else %}
+            {% trans %} lender-data-update_id-doc-validated {% endtrans %}
+        {% endif %}
+    {% else %}
+        <dl class="list-2col">
+            <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
+            <dd>{{ idDocumentAttachment.getAdded()|localizeddate('short', 'none') }}</dd>
+        </dl>
+        {% trans %} lender-data-update_id-doc-non-checked {% endtrans %}
+    {% endif %}
+    <div class="btn-controls">
+        <button data-target="#data-update-id-doc-edit" role="button" data-toggle="collapse" data-parent="#profile-id-doc-section" class="btn-default"
+                aria-controls="#data-update-id-doc-edit" aria-expanded="false" type="button">
+            <span class="icon fa-pencil-u32"></span>
+            <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
+        </button>
+        <button data-target="#panel-data-update-telephone" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary"
+                aria-controls="#panel-data-update-telephone" aria-expanded="false" type="button">
+            <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
+        </button>
+    </div>
+</section>
+
+<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse">
+    <div class="row">
+        <div id="form-profile-info-identity-files-field" class="form-field">
+            <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+
+            <div class="form-field file-identity-side-a">
+                <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
+                     data-formvalidation-input
+                     data-formvalidation-required='input[type="file"][name="id_recto"]'
+                     data-fileattach
+                     data-fileattach-inputname="id_recto"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
+                     data-fileattach-fileremove="false">
+                    <input type="file" name="id_recto" value="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"/>
+                </div><!-- /.ui-fileattach -->
+            </div>
+
+            <div class="form-field file-identity-side-b">
+                <div class="custom-input-file" id="form-profile-info-file-identite-cni-2"
+                     data-fileattach
+                     data-fileattach-inputname="id_verso"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
+                    <input type="file" name="id_verso" value="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}"/>
+                </div><!-- /.ui-fileattach -->
+            </div>
+
+            <div class="field-help">
+                <p>{% trans %} lender-profile_information-tab-indentity-section-ID-document-notice {% endtrans %}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="btn-controls">
+        <button class="btn-primary" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#profile-id-doc-section"
+                aria-controls="#data-update-id-doc-view" aria-expanded="false" type="button">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
+        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#profile-id-doc-section"
+                aria-controls="#data-update-id-doc-view" aria-expanded="false" type="reset">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+    </div>
+</section><!-- /.data-update-info-edit -->

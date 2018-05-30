@@ -1,0 +1,74 @@
+{% extends 'lender_account/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'lender-data-update_details-page-title'|trans,
+    classNames: 'user-preter-profile'
+} %}
+
+{% form_theme form '/frontbundle/forms/fields.html.twig' %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include 'lender_profile/partials/tab_navigation.html.twig' with {'isDataUpdate': true} %}
+        <div class="dashboard-tabs-content tab-content">
+            {{ form_start(form, {
+                'multipart' : true,
+                'attr' : {
+                    'class' : 'form-profile form-data-update-info-edit',
+                    'data-formvalidation data-formvalidation-notificationselem' : '#form-data-update-info-notifications'
+                }}) }}
+            <div id="data-update-section" role="tabpanel" class="dashboard-tab-pane tab-pane active ui-toggle-group">
+
+                <article id="panel-data-update-identity" class="panel collapse in">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_identity-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_identity.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-data-update-id-doc" class="panel collapse">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_id-doc-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-id-doc-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_id_doc.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-data-update-telephone" class="panel collapse">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_telephone-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-telephone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_telephone.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-data-update-main-address" class="panel collapse">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_main-address-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="profile-main-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_main_address.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <p class="pull-right">
+                    <a href="{{ path('lender_dashboard') }}">{% trans %} lender-data-update_finish-later {% endtrans %}</a>
+                </p>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
