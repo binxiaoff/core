@@ -1,7 +1,7 @@
 <div class="field-help">
     <p>{% trans %} lender-profile_information-tab-fiscal-address-help-message {% endtrans %}</p>
 </div>
-<section id="data-update-main-address-view" role="tabpanel" class="profile-address-view collapse in">
+<section id="data-update-main-address-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}</dt>
         <dd id="data-update-main-address-street-output">{{ clientMainAddress.getAddress()|default('') }}</dd>
@@ -35,12 +35,12 @@
     </dl>
 
     <div class="btn-controls">
-        <button data-target="#data-update-main-address-edit" role="button" data-toggle="collapse" data-parent="#profile-main-address-section" class="btn-default"
+        <button data-target="#data-update-main-address-edit" role="button" data-toggle="collapse" data-parent="#data-update-main-address-section" class="btn-default"
                 aria-controls="#data-update-main-address-edit" aria-expanded="false" type="button">
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
         </button>
-        <button data-target="#panel-data-update-id-doc" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary"
+        <button data-target="#panel-data-update-bank-account" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary"
                 aria-controls="#panel-data-update-id-doc" aria-expanded="false" type="button">
             <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
         </button>
@@ -208,9 +208,9 @@
     </div><!-- /#upload-housed-by-third-person -->
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-main-address-view" data-parent="#profile-main-address-section"
-                aria-controls="#data-update-main-address-view" aria-expanded="false" type="button">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
-        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-main-address-view" data-parent="#profile-main-address-section"
-                aria-controls="#data-update-main-address-view" aria-expanded="false" type="reset">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-main-address-view" data-parent="#data-update-main-address-section"
+                aria-controls="#data-update-main-address-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
+        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-main-address-view" data-parent="#data-update-main-address-section"
+                aria-controls="#data-update-main-address-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
     </div>
 </section><!-- /.profile-address-edit -->

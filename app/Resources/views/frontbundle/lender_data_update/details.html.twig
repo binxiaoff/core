@@ -24,7 +24,7 @@
                     <header class="panel-header">
                         <h3>{% trans %} lender-data-update_identity-section-title {% endtrans %}</h3>
                     </header>
-                    <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    <section id="data-update-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                             {% include 'lender_data_update/partials/person_identity.html.twig' %}
                         {% endif %}
@@ -35,7 +35,7 @@
                     <header class="panel-header">
                         <h3>{% trans %} lender-data-update_id-doc-section-title {% endtrans %}</h3>
                     </header>
-                    <section id="profile-id-doc-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    <section id="data-update-id-doc-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                             {% include 'lender_data_update/partials/person_id_doc.html.twig' %}
                         {% endif %}
@@ -46,7 +46,7 @@
                     <header class="panel-header">
                         <h3>{% trans %} lender-data-update_telephone-section-title {% endtrans %}</h3>
                     </header>
-                    <section id="profile-telephone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    <section id="data-update-telephone-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                             {% include 'lender_data_update/partials/person_telephone.html.twig' %}
                         {% endif %}
@@ -57,12 +57,44 @@
                     <header class="panel-header">
                         <h3>{% trans %} lender-data-update_main-address-section-title {% endtrans %}</h3>
                     </header>
-                    <section id="profile-main-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                    <section id="data-update-main-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
                         {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
                             {% include 'lender_data_update/partials/person_main_address.html.twig' %}
                         {% endif %}
                     </section><!-- /.ui-toggle-group -->
                 </article><!-- /.panel -->
+
+                <article id="panel-data-update-bank-account" class="panel collapse">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_bank-account-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="data-update-bank-account-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_bank_account.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                <article id="panel-data-update-funds-origin" class="panel collapse">
+                    <header class="panel-header">
+                        <h3>{% trans %} lender-data-update_funds-origin-section-title {% endtrans %}</h3>
+                    </header>
+                    <section id="data-update-funds-origin-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                            {% include 'lender_data_update/partials/person_funds_origin.html.twig' %}
+                        {% endif %}
+                    </section><!-- /.ui-toggle-group -->
+                </article><!-- /.panel -->
+
+                {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                    <article id="panel-data-update-us-person" class="panel collapse">
+                        <section id="data-update-us-person-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
+
+                            {% include 'lender_data_update/partials/us_person.html.twig' %}
+
+                        </section><!-- /.ui-toggle-group -->
+                    </article><!-- /.panel -->
+                {% endif %}
 
                 <p class="pull-right">
                     <a href="{{ path('lender_dashboard') }}">{% trans %} lender-data-update_finish-later {% endtrans %}</a>

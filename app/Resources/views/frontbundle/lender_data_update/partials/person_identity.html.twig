@@ -15,7 +15,7 @@
     </dl>
 
     <div class="btn-controls">
-        <button data-target="#data-update-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-default"
+        <button data-target="#data-update-info-edit" role="button" data-toggle="collapse" data-parent="#data-update-info-section" class="btn-default"
                 aria-controls="#data-update-info-edit" aria-expanded="false" type="button">
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
@@ -38,7 +38,8 @@
             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                 {{ form_widget(form.client.civilite, {'attr' : {
                     'required' : false,
-                    'data-impacted-element-id' : 'data-update-info-title-output'
+                    'data-impacted-element-id' : 'data-update-info-title-output',
+                    'data-original-value' : client.civilite
                 }}) }}
                 {{ form_errors(form.client.civilite) }}
             </ul>
@@ -55,7 +56,8 @@
                 'attr' : {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'false',
-                    'data-impacted-element-id' : 'data-update-info-used-name-output'
+                    'data-impacted-element-id' : 'data-update-info-used-name-output',
+                    'data-original-value' : client.nomUsage
                 }}) }}
             {{ form_errors(form.client.nomUsage) }}
         </div><!-- /.form-field -->
@@ -72,7 +74,8 @@
                 'attr' : {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true',
-                    'data-impacted-element-id' : 'data-update-info-first-name-output'
+                    'data-impacted-element-id' : 'data-update-info-first-name-output',
+                    'data-original-value' : client.prenom
                 }}) }}
             {{ form_errors(form.client.prenom) }}
         </div><!-- /.form-field -->
@@ -88,16 +91,17 @@
                 'attr' : {
                     'class' : 'input-field',
                     'data-formvalidation-input data-formvalidation-required' : 'true',
-                    'data-impacted-element-id' : 'data-update-info-nationality-output'
+                    'data-impacted-element-id' : 'data-update-info-nationality-output',
+                    'data-original-value' : client.idNationalite
                 }}) }}
             {{ form_errors(form.client.idNationalite) }}
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#profile-info-section"
-                aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-profile_information-tab-identity-save-modifications-button {% endtrans %}</button>
-        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#profile-info-section"
-                aria-controls="#data-update-info-view" aria-expanded="false" type="reset">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
+        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
+                aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
+        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
+                aria-controls="#data-update-info-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
     </div>
 </section><!-- /.data-update-info-edit -->

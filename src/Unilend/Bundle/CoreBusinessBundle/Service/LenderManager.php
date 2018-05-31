@@ -155,4 +155,30 @@ class LenderManager
 
         return $lossRate;
     }
+
+    /**
+     * @param int $clientType
+     *
+     * @return array
+     */
+    public function getFundsOrigins(int $clientType): array
+    {
+        switch ($clientType) {
+            case Clients::TYPE_PERSON:
+            case Clients::TYPE_PERSON_FOREIGNER:
+                $settingName = 'Liste deroulante origine des fonds';
+                break;
+            default:
+                $settingName = 'Liste deroulante origine des fonds societe';
+                break;
+        }
+
+        $fundsOriginList = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => $settingName])
+            ->getValue();
+        $fundsOriginList = explode(';', $fundsOriginList);
+
+        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
+    }
 }

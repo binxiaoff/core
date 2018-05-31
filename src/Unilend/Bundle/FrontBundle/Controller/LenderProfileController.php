@@ -585,7 +585,7 @@ class LenderProfileController extends Controller
                     'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
                     'rib'         => $bankAccount ? $bankAccount->getAttachment() : '',
-                    'fundsOrigin' => $this->getFundsOrigin($client->getType())
+                    'fundsOrigin' => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType())
                 ]
             ],
             'clientAddress'                => $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS),
@@ -1134,32 +1134,6 @@ class LenderProfileController extends Controller
             'balance'     => null !== $history ? bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2) : 0,
             'owedCapital' => $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastYear)
         ];
-    }
-
-    /**
-     * @param int $clientType
-     *
-     * @return array
-     */
-    private function getFundsOrigin(int $clientType): array
-    {
-        switch ($clientType) {
-            case Clients::TYPE_PERSON:
-            case Clients::TYPE_PERSON_FOREIGNER:
-                $settingName = 'Liste deroulante origine des fonds';
-                break;
-            default:
-                $settingName = 'Liste deroulante origine des fonds societe';
-                break;
-        }
-
-        $fundsOriginList = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => $settingName])
-            ->getValue();
-        $fundsOriginList = explode(';', $fundsOriginList);
-
-        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 
     /**

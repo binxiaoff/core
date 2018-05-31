@@ -61,7 +61,8 @@ class LenderDataUpdateController extends Controller
             ])
             ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
             ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
-            ->add('originOfFundsType', OriginOfFundsType::class, ['data' => $client]);
+            ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client])
+            ->add('noUsPerson', CheckboxType::class, ['required' => false]);
 
         $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
         /** @var Attachment $idDocument */
@@ -91,6 +92,8 @@ class LenderDataUpdateController extends Controller
                 AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT),
                 AttachmentType::JUSTIFICATIF_FISCAL           => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_FISCAL),
             ],
+            'bankAccount'          => $bankAccount,
+            'fundsOrigins'         => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
             'form'                 => $identityFormBuilder->getForm()->createView()
         ]);
     }
