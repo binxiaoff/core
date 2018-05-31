@@ -599,7 +599,6 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $descriptionRow . ':' . self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $descriptionRow, '8DBAD8');
         $this->fillCellsWithColor($activeSheet, self::LENDER_LOAN_COLUMN . $additionalInfoRow . ':' . self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $additionalInfoRow, 'D6D6D6');
         $this->fillCellsWithColor($activeSheet, self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, $differenceColor);
-        $this->fillCellsWithColor($activeSheet, self::COLLECTION_COMMISSION_UNILEND . $additionalInfoRow, 'FFFF00');
 
         /** bank account movements */
         $this->fillCellsWithColor($activeSheet, self::WIRE_TRANSFER_OUT_COLUMN . $descriptionRow . ':' . self::DIRECT_DEBIT_COLUMN . $descriptionRow, 'BFBFBF');
