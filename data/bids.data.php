@@ -393,7 +393,7 @@ class bids extends bids_crud
                 ROUND(b.amount / 100) AS amount, 
                 b.rate AS rate
             FROM bids b
-            INNER JOIN wallet w ON w.id = b.id_lender_account
+              INNER JOIN wallet w ON w.id = b.id_lender_account
             WHERE b.id_lender_account = :idLenderAccount';
 
         if ($dateTimeStart && $dateTimeEnd) {
