@@ -133,13 +133,13 @@
                                     {{ project.closeOutNettingDate|localizeddate('short', 'none') }}
                                 {% endif %}
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" data-order="{{ project.overdueAmount }}">
                                 {{ project.overdueAmount|localizedcurrency('EUR') }}
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" data-order="{{ project.entrustedToDebtCollector }}">
                                 {{ project.entrustedToDebtCollector > 0 ? project.entrustedToDebtCollector|localizedcurrency('EUR') : '0 €' }}
                             </td>
-                            <td class="text-right">
+                            <td class="text-right" data-order="{{ project.pendingWireTransferInAmount }}">
                                 {{ project.pendingWireTransferInAmount > 0 ? project.pendingWireTransferInAmount|localizedcurrency('EUR') : '0 €' }}
                             </td>
                             <td class="text-center">

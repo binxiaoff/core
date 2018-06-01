@@ -87,14 +87,6 @@ class LenderOperationsManager
     const FILTER_OFFERS             = 5;
     const FILTER_REPAYMENT          = 6;
 
-    const LOAN_STATUS_DISPLAY_IN_PROGRESS     = 'in-progress';
-    const LOAN_STATUS_DISPLAY_LATE            = 'late';
-    const LOANS_STATUS_DISPLAY_AMICABLE_DC    = 'amicable-dc';
-    const LOANS_STATUS_DISPLAY_LITIGATION_DC  = 'litigation-dc';
-    const LOAN_STATUS_DISPLAY_COMPLETED       = 'completed';
-    const LOAN_STATUS_DISPLAY_PROCEEDING      = 'proceeding';
-    const LOAN_STATUS_DISPLAY_LOSS            = 'loss';
-
     /** @var EntityManager */
     private $entityManager;
     /** @var TranslatorInterface */

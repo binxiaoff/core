@@ -58,6 +58,12 @@
                             </ul>
                             <ul class="help">
                                 <li>
+                                    <a href="{{ path('partner_cost_simulator') }}">
+                                        <span class="icon fa-balance-u"></span>
+                                        <span class="label">{{ ('partner-account-nav_text-simulator-' ~ app.user.partner.label)|trans }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ ('partner-account-nav_link-arguments-' ~ app.user.partner.label)|trans }}">
                                         <span class="icon fa-list-u"></span>
                                         <span class="label">{{ ('partner-account-nav_text-arguments-' ~ app.user.partner.label)|trans }}</span>

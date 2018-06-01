@@ -33,7 +33,41 @@ class emprunteursController extends bootstrap
         }
 
         if (isset($_POST['form_search_emprunteur'])) {
-            $this->lClients = $this->clients->searchEmprunteurs('AND', $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['societe'], $_POST['siren']);
+            if (empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['societe']) && empty($_POST['siren'])) {
+                $_SESSION['error_search_borrower'][] = 'Veuillez remplir au moins un champ';
+            }
+
+            $email = empty($_POST['email']) ? null : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            if (false === $email) {
+                $_SESSION['error_search_borrower'][] = 'Format de l\'email est non valide';
+            }
+
+            $lastName = empty($_POST['nom']) ? null : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            if (false === $lastName) {
+                $_SESSION['error_search_borrower'][] = 'Le format du nom n\'est pas valide';
+            }
+
+            $firstName = empty($_POST['prenom']) ? null : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            if (false === $firstName) {
+                $_SESSION['error_search_borrower'][] = 'Le format du prenom n\'est pas valide';
+            }
+
+            $companyName = empty($_POST['societe']) ? null : filter_var($_POST['societe'], FILTER_SANITIZE_STRING);
+            if (false === $companyName) {
+                $_SESSION['error_search_borrower'][] = 'Le format du nom de la societe n\'est pas valide';
+            }
+
+            $siren = empty($_POST['siren']) ? null : trim(filter_var($_POST['siren'], FILTER_SANITIZE_STRING));
+            if (false === $siren) {
+                $_SESSION['error_search_borrower'][] = 'Le format du siren n\'est pas valide';
+            }
+
+            if (false === empty($_SESSION['error_search_borrower'])) {
+                header('Location: ' . $this->lurl . '/emprunteurs/gestion');
+                die;
+            }
+
+            $this->lClients = $this->clients->searchEmprunteurs('AND', $lastName, $firstName, $email, $companyName, $siren);
 
             $_SESSION['freeow']['title']   = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';

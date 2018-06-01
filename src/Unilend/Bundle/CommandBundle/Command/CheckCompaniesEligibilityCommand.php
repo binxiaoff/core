@@ -167,16 +167,34 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 try {
                     $templateMessage = $messageProvider->newMessage('resultat-test-eligibilite-liste', ['details' => $message]);
                     $templateMessage->setTo($user->getEmail());
-                    if (isset($outputFileName)) {
-                        $templateMessage->attach(\Swift_Attachment::fromPath($outputFilePath . $outputFileName));
+
+                    if (isset($outputFileName) && $fileSystem->exists($outputFilePath . $outputFileName)) {
+                        $attachment = \Swift_Attachment::fromPath($outputFilePath . $outputFileName);
+                        $templateMessage->attach($attachment);
+                        $logger->info('Checking companies eligibility. Attachment file info: ', [
+                            'file_name'       => $outputFileName,
+                            'content_type'    => $templateMessage->getContentType(),
+                            'max_line_length' => $templateMessage->getMaxLineLength(),
+                            'user_email'      => $user->getEmail(),
+                            'class'           => __CLASS__,
+                            'function'        => __FUNCTION__
+                        ]);
+                    } else {
+                        throw new \Exception('Could not attach the result file. Output file name was not set. Original file name: ' . $fileName);
                     }
                     $mailer = $this->getContainer()->get('mailer');
                     $mailer->send($templateMessage);
                 } catch (\Exception $exception) {
                     $logger->warning(
-                        'Could not send email : resultat-test-eligibilite-liste - Exception: ' . $exception->getMessage(),
-                        ['method' => __METHOD__, 'email address' => $user->getEmail(), 'user_email' => $user->getEmail(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                    );
+                        'Could not send email : resultat-test-eligibilite-liste - Exception: ' . $exception->getMessage(), [
+                        'siren_list'    => $sirenList,
+                        'email_address' => $user->getEmail(),
+                        'user_email'    => $user->getEmail(),
+                        'class'         => __CLASS__,
+                        'function'      => __FUNCTION__,
+                        'file'          => $exception->getFile(),
+                        'line'          => $exception->getLine()
+                    ]);
                 }
             }
         }

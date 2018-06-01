@@ -5,13 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, Echeanciers, OperationType, Projects, ProjectsStatus, Wallet, WalletType
+};
 
 class WalletRepository extends EntityRepository
 {
@@ -270,11 +266,11 @@ class WalletRepository extends EntityRepository
     }
 
     /**
-     * @param int $projectId
+     * @param Projects|int $project
      *
-     * @return array
+     * @return Wallet[]|array
      */
-    public function findLendersWithAcceptedBidsByProject(int $projectId) : array
+    public function findLendersWithAcceptedBidsByProject($project) : array
     {
         $queryBuilder = $this->createQueryBuilder('w');
         $queryBuilder
@@ -282,7 +278,7 @@ class WalletRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:AcceptedBids', 'ab', Join::WITH, 'b.idBid = ab.idBid')
             ->where('b.idProject = :project')
             ->groupBy('w.id')
-            ->setParameter('project', $projectId);
+            ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getResult();
     }

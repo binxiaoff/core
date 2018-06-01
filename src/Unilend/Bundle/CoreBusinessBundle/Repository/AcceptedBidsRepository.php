@@ -4,8 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AcceptedBids, Projects, Wallet
+};
 
 class AcceptedBidsRepository extends EntityRepository
 {
@@ -14,7 +15,7 @@ class AcceptedBidsRepository extends EntityRepository
      * @param Wallet|int   $wallet
      * @param Projects|int $project
      *
-     * @return array
+     * @return AcceptedBids[]
      */
     public function findAcceptedBidsByLenderAndProject($wallet, $project): array
     {
