@@ -24,7 +24,7 @@
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
         </button>
-        <button data-target="#panel-data-update-telephone" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary"
+        <button data-target="#panel-data-update-telephone" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
                 aria-controls="#panel-data-update-telephone" aria-expanded="false" type="button">
             <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
         </button>
@@ -46,7 +46,6 @@
                      data-fileattach-maxfiles="1"
                      data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"
                      data-fileattach-fileremove="false">
-                    <input type="file" name="id_recto" value="{% trans %} lender-profile_information-tab-identity-section-ID-recto {% endtrans %}"/>
                 </div><!-- /.ui-fileattach -->
             </div>
 
@@ -56,7 +55,6 @@
                      data-fileattach-inputname="id_verso"
                      data-fileattach-maxfiles="1"
                      data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
-                    <input type="file" name="id_verso" value="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}"/>
                 </div><!-- /.ui-fileattach -->
             </div>
 

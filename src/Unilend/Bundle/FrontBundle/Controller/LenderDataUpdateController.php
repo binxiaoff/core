@@ -7,6 +7,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
 };
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
@@ -35,20 +36,23 @@ class LenderDataUpdateController extends Controller
         ]);
     }
 
+
     /**
      * @Route("/profile/mise-a-jour/details", name="lender_data_update_details")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
+     *
      * @return Response
      */
-    public function detailsAction(): Response
+    public function detailsAction(Request $request): Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $client                  = $this->getClient();
         $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
         $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $identityFormBuilder     = $this->createFormBuilder()
+        $formBuilder             = $this->createFormBuilder()
             ->add('client', PersonProfileType::class, ['data' => $client])
             ->add('phone', PersonPhoneType::class, ['data' => $client])
             ->add('mainAddress', ClientAddressType::class, [
@@ -62,7 +66,18 @@ class LenderDataUpdateController extends Controller
             ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
             ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
             ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false]);
+            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => $client->getUsPerson()]);
+
+        $form = $formBuilder->getForm();
+        if ($request->isMethod(Request::METHOD_POST)) {
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $client->setusPerson($form->get('noUsPerson')->getData());
+
+                return $this->redirectToRoute('lender_data_update_end');
+            }
+        }
+
 
         $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
         /** @var Attachment $idDocument */
@@ -94,7 +109,22 @@ class LenderDataUpdateController extends Controller
             ],
             'bankAccount'          => $bankAccount,
             'fundsOrigins'         => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
-            'form'                 => $identityFormBuilder->getForm()->createView()
+            'form'                 => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/profile/mise-a-jour/fin", name="lender_data_update_end")
+     * @Security("has_role('ROLE_LENDER')")
+     *
+     * @param Request $request
+     *
+     * @return Response
+     */
+    public function endAction(): Response
+    {
+        return $this->render('lender_data_update/end.html.twig', [
+            'hasValidCipEvaluation' => $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->getClient())
         ]);
     }
 

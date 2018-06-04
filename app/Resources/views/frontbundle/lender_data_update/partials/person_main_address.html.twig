@@ -40,7 +40,7 @@
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
         </button>
-        <button data-target="#panel-data-update-bank-account" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary"
+        <button data-target="#panel-data-update-bank-account" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
                 aria-controls="#panel-data-update-id-doc" aria-expanded="false" type="button">
             <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
         </button>
@@ -151,9 +151,6 @@
                  data-fileattach-maxfiles="1"
                  data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}"
                  data-fileattach-fileremove="false">
-                {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_DOMICILE')].path is defined %}
-                    <input type="file" name="housing-certificate" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_DOMICILE')].path }}" />
-                {% endif %}
             </div><!-- /.ui-fileattach -->
         </div>
     </div>
@@ -180,10 +177,8 @@
                  data-fileattach
                  data-fileattach-inputname="housed-by-third-person-declaration"
                  data-fileattach-maxfiles="1"
+                 data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-housed-by-third-person-declaration {% endtrans %}"
                  data-fileattach-fileremove="false">
-                {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::ATTESTATION_HEBERGEMENT_TIERS')].path is defined %}
-                    <input type="file" name="housed-by-third-person-declaration" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::ATTESTATION_HEBERGEMENT_TIERS')].path }}" />
-                {% endif %}
             </div><!-- /.ui-fileattach -->
         </div><!-- /.form-field -->
 
@@ -198,10 +193,8 @@
                      data-fileattach
                      data-fileattach-inputname="id-third-person-housing"
                      data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}"
                      data-fileattach-fileremove="false">
-                    {% if residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT')].path is defined %}
-                        <input type="file" name="id-third-person-housing" value="{{ residenceAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT')].path }}" />
-                    {% endif %}
                 </div><!-- /.ui-fileattach -->
             </div>
         </div><!-- /.form-field -->

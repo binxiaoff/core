@@ -1,0 +1,32 @@
+{% extends 'lender_account/_layout_lender.html.twig' %}
+
+{% set page = {
+    id: 'user-preter-profile',
+    title: 'lender-data-update_start-page-title'|trans,
+    classNames: 'user-preter-profile'
+} %}
+
+{% block dashboardContent %}
+    <div class="dashboard-tabs tabs">
+        {% include 'lender_profile/partials/tab_navigation.html.twig' with {'isDataUpdate': true} %}
+        <div class="dashboard-tabs-content tab-content">
+            <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+                <article id="panel-data-update-start" class="panel">
+                    <div class="panel-content">
+                        {% trans %} lender-data-update_end-page-instruction {% endtrans %}
+                        <br><br>
+                        {% if hasValidCipEvaluation %}
+                            <a href="{{ path('lender_dashboard') }}" class="btn-primary col-lg-6 push-lg-3 col-md-5 push-md-3 col-sm-5 push-sm-1 col-xs-4 center">
+                                {% trans %} lender-data-update_return-to-profile-button {% endtrans %}
+                            </a>
+                        {% else %}
+                            <a href="{{ path('cip_index') }}" class="btn-primary col-lg-8 push-lg-2 col-md-7 push-md-2 col-sm-6 push-sm-1 col-xs-4">
+                                {% trans %} lender-data-update_start-cip-survey-button {% endtrans %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+{% endblock %}

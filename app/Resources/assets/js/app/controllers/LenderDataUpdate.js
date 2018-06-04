@@ -1,6 +1,8 @@
 var $ = require('jquery')
+var Utility = require('Utility')
 
-$('.lender-data-update-save-btn').on('click', function () {
+var $doc = $(document)
+$doc.on(Utility.clickEvent, '.lender-data-update-save-btn', function () {
   var $section = $(this).parents('section.lender-data-update-edit')
   //$section.find('form').uiFormValidation('validate')
   var elementId, text
@@ -30,7 +32,7 @@ $('.lender-data-update-save-btn').on('click', function () {
   //$section.find('form').uiFormValidation('clearAll')
 })
 
-$('#lender-data-update-identity-save-btn').on('click', function () {
+$doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function () {
   var $inputs = $('#data-update-info-edit :input')
   var isModified = false
   $inputs.each(function (index, input) {
@@ -70,3 +72,11 @@ $('#lender-data-update-identity-save-btn').on('click', function () {
 $.fn.getType = function () {
   return this[0].tagName === 'INPUT' ? this[0].type.toLowerCase() : this[0].tagName.toLowerCase()
 }
+
+
+$doc.on(Utility.clickEvent, '.data-update-continue-btn', function () {
+  var progressBar = $('.data-update-progress')
+  var current = progressBar.data('progressbar-current') + 1
+
+  progressBar.uiProgressBar('setCurrent', current, false)
+})
