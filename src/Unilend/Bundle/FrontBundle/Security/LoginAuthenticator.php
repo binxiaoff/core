@@ -29,6 +29,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsHistory, ClientsStatus, LoginLog
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\FrontBundle\Security\User\{
     BaseUser, UserLender
 };
@@ -52,6 +53,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $csrfTokenManager;
     /** @var GoogleRecaptchaManager */
     private $googleRecaptchaManager;
+    /** @var LenderManager */
+    private $lenderManager;
     /** @var LoggerInterface */
     private $logger;
 
@@ -62,6 +65,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
      * @param CsrfTokenManagerInterface              $csrfTokenManager
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
+     * @param  LenderManager                         $lenderManager
      * @param LoggerInterface                        $logger
      */
     public function __construct(
@@ -71,6 +75,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         SessionAuthenticationStrategyInterface $sessionStrategy,
         CsrfTokenManagerInterface $csrfTokenManager,
         GoogleRecaptchaManager $googleRecaptchaManager,
+        LenderManager $lenderManager,
         LoggerInterface $logger
     )
     {
@@ -80,6 +85,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->sessionStrategy         = $sessionStrategy;
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->googleRecaptchaManager  = $googleRecaptchaManager;
+        $this->lenderManager           = $lenderManager;
         $this->logger                  = $logger;
     }
 
@@ -204,7 +210,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
             try {
                 $client->setPassword($this->securityPasswordEncoder->encodePassword($user, $this->getCredentials($request)['password']));
             } catch (BadCredentialsException $exeption) {
-                $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT)); // hack for the old password which cannot pass the security check in encodePassword()
+                // hack for the old password which cannot pass the security check in encodePassword()
+                $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT));
             }
             $this->entityManager->flush($client);
         }
@@ -212,8 +219,29 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->saveLogin($client);
         $this->sessionStrategy->onAuthentication($request, $token);
 
-        $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
-        $response   = new RedirectResponse($targetPath);
+        try {
+            $needUpdatePersonalData = $this->lenderManager->needUpdatePersonalData($client);
+        } catch (\InvalidArgumentException $exception) {
+            $needUpdatePersonalData = false;
+        } catch (\Exception $exception) {
+            $needUpdatePersonalData = false;
+
+            $this->logger->error('An error occurs when calling LenderManager::needUpdatePersonalData() Error : ' . $exception->getMessage(), [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+                'id_client' => $client->getIdClient(),
+            ]);
+        }
+
+        if ($needUpdatePersonalData) {
+            $targetPath = $this->router->generate('lender_data_update_start');
+        } else {
+            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
+        }
+
+        $response = new RedirectResponse($targetPath);
 
         $cookie = new Cookie(self::COOKIE_NO_CF, 1);
         $response->headers->setCookie($cookie);
@@ -331,6 +359,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
     /**
      * Remove the host part from URL to avoid the external redirection
+     *
      * @param $target
      *
      * @return string
