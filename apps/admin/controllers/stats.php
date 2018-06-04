@@ -103,7 +103,7 @@ class statsController extends bootstrap
         }
     }
 
-    private function downloadIfufile($fileName)
+    private function downloadIfuFile($fileName)
     {
         $this->autoFireView = false;
         $this->hideDecoration();
@@ -132,12 +132,12 @@ class statsController extends bootstrap
 
     public function _requete_infosben_download()
     {
-        $this->downloadIfufile(IfuManager::FILE_NAME_INFOSBEN);
+        $this->downloadIfuFile(IfuManager::FILE_NAME_INFOSBEN);
     }
 
     public function _requete_beneficiaires_download()
     {
-        $this->downloadIfufile(IfuManager::FILE_NAME_BENEFICIARY);
+        $this->downloadIfuFile(IfuManager::FILE_NAME_BENEFICIARY);
     }
 
     /**
@@ -146,7 +146,7 @@ class statsController extends bootstrap
      */
     public function _requete_revenus_download()
     {
-        $this->downloadIfufile(IfuManager::FILE_NAME_INCOME);
+        $this->downloadIfuFile(IfuManager::FILE_NAME_INCOME);
     }
 
     public function _requete_encheres()
@@ -254,13 +254,13 @@ class statsController extends bootstrap
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
      */
-    private function exportCSV(array $data, string $fileName, array $header = []): void
+    private function export(array $data, string $fileName, array $header = []): void
     {
         $this->bdd->close();
 
-        $writer = WriterFactory::create(Type::CSV);
+        $writer = WriterFactory::create(Type::XLSX);
         $writer
-            ->openToBrowser($fileName . '.csv')
+            ->openToBrowser($fileName . '.xlsx')
             ->addRow($header)
             ->addRows($data)
             ->close();
@@ -310,7 +310,7 @@ class statsController extends bootstrap
                     'status',
                     'date fin de projet'
                 );
-                $this->exportCSV($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
+                $this->export($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
             }
         }
     }
@@ -330,7 +330,7 @@ class statsController extends bootstrap
                 $borrowers = $clientRepository->getBorrowersContactDetailsAndSource($start, $end, $groupBySiren);
                 $header    = array_keys(array_shift($borrowers));
 
-                $this->exportCSV($borrowers, 'requete_source_emprunteurs' . date('Ymd'), $header);
+                $this->export($borrowers, 'requete_source_emprunteurs' . date('Ymd'), $header);
             } catch (\Exception $exception) {
                 $this->get('logger')->error('An exception occurred while exporting BorrowersContactDetailsAndSource. Message: ' . $exception->getMessage(), [
                     'line'     => $exception->getLine(),
@@ -610,7 +610,7 @@ class statsController extends bootstrap
             'reprise et transmission'
         ];
 
-        $this->exportCSV($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
+        $this->export($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
     }
 
     public function _requete_crs_dac()
