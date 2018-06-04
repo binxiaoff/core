@@ -1,5 +1,7 @@
 <?php
 
+use Box\Spout\Common\Type;
+use Box\Spout\Writer\WriterFactory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Bids, ClientsStatus, CompanyRating, OperationType, Product, ProjectProductAssessment, Projects, WalletType, Zones
 };
@@ -242,47 +244,26 @@ class statsController extends bootstrap
         }
     }
 
-    private function exportCSV($aData, $sFileName, array $aHeaders = null)
+    /**
+     * @param array  $data
+     * @param string $fileName
+     * @param array  $header
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Common\Exception\InvalidArgumentException
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
+     */
+    private function exportCSV(array $data, string $fileName, array $header = []): void
     {
         $this->bdd->close();
 
-        PHPExcel_Settings::setCacheStorageMethod(
-            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
-        );
-
-        $oDocument    = new PHPExcel();
-        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
-
-        if (count($aHeaders) > 0) {
-            foreach ($aHeaders as $iIndex => $sColumnName) {
-                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
-            }
-        }
-
-        foreach ($aData as $iRowIndex => $aRow) {
-            $iColIndex = 0;
-            foreach ($aRow as $sCellValue) {
-                /** Excel is expecting a formula when a cell starts with one of those characters.
-                 * And thus does not represent the value properly in the file  */
-                if (preg_match('/^[=+-]/', $sCellValue)) {
-                    $sCellValue = ' ' . $sCellValue;
-                }
-
-                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
-            }
-        }
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=' . $sFileName . '.csv');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        /** @var \PHPExcel_Writer_CSV $oWriter */
-        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
-        $oWriter->setUseBOM(true);
-        $oWriter->setDelimiter(';');
-        $oWriter->save('php://output');
+        $writer = WriterFactory::create(Type::CSV);
+        $writer
+            ->openToBrowser($fileName . '.csv')
+            ->addRow($header)
+            ->addRows($data)
+            ->close();
 
         die;
     }
