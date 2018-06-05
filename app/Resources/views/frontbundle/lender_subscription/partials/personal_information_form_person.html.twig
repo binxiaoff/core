@@ -18,7 +18,7 @@
             <p>{% trans %} lender-subscription_person-mandatory-documents-information {% endtrans %}</p>
         </div><!-- /.message-alert -->
 
-        <div id="form-preter-notifications" class="ui-formvalidation-notifications">
+        <div id="form-preter-person-1-notifications" class="ui-formvalidation-notifications">
             {{ form_errors(identityForm) }}
         </div>
 
@@ -26,14 +26,14 @@
         <h3 class="h3">{% trans %} lender-subscription_identity-section-title {% endtrans %}</h3>
 
         <div class="row">
-            <div class="form-field form-field-multi {% if identityForm.clientType.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi{% if identityForm.clientType.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label>{% trans %} lender-subscription_identity-client-type-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                    {% for key, type in identityForm.clientType.children %}
+                    {% for type in identityForm.clientType.children %}
                         <li>
                             {{ form_widget(type) }}
                             {{ form_label(type) }}
@@ -41,14 +41,14 @@
                     {% endfor %}
                 </ul>
             </div><!-- /.form-field -->
-        </div>
+        </div><!-- /.row -->
 
         <div class="row">
-            <div class="form-field form-field-multi {% if identityForm.client.civilite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-multi{% if identityForm.client.civilite.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <div class="field-label">
                     <label class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-title-data-use-tooltip'|trans|escape('html_attr') }}">
                         {% trans %} common_title {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -64,10 +64,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.nom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.nom.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-name" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-last-name-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_birth-name {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.client.nom, {
                     'id' : 'form-lender-person-name',
@@ -79,14 +79,14 @@
                 {{ form_errors(identityForm.client.nom) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.prenom.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-first-name"  class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-first-name-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_firstname {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.client.prenom, {
                     'id' : 'form-lender-person-first-name',
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true'
                     }
@@ -96,7 +96,7 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.nomUsage.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-used-name" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-used-name-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_used-name {% endtrans %}
                 </label>
@@ -109,8 +109,7 @@
                 {{ form_errors(identityForm.client.nomUsage) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6">
-            </div><!-- /.form-field -->
+            <div class="form-field col-lg-6 col-md-6"></div><!-- /.form-field -->
         </div>
     </fieldset>
 
@@ -123,14 +122,14 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if identityForm.mainAddress.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field{% if identityForm.mainAddress.address.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-street" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-address-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.mainAddress.address, {
                     'id' : 'form-lender-person-fiscal-address-street',
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true',
                         'placeholder' : 'lender-subscription_address-form-fiscal-address-placeholder'|trans
@@ -141,10 +140,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.mainAddress.zip.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-zip" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-zip-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(identityForm.mainAddress.zip, {
@@ -166,10 +165,11 @@
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.mainAddress.city.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-city" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-city-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(identityForm.mainAddress.city, {
@@ -195,10 +195,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.mainAddress.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.mainAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-fiscal-address-country" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-country-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.mainAddress.idCountry, {
                     'id' : 'form-lender-person-fiscal-address-country',
@@ -211,10 +211,10 @@
                 {{ form_errors(identityForm.mainAddress.idCountry) }}
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.mobile.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-client-mobile" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-mobile-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_mobile-phone {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group">
                     {{ form_widget(identityForm.client.mobile, {
@@ -233,7 +233,7 @@
             <div class="form-field form-field-single-checkbox ">
                 <label>
                     {{ form_widget(identityForm.samePostalAddress, {
-                        'attr' :  {
+                        'attr' : {
                             'class' : 'toggle-correspondence-address'
                         }
                     }) }}
@@ -253,10 +253,10 @@
         </div>
 
         <div class="row">
-            <div class="form-field {% if identityForm.postalAddress.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field{% if identityForm.postalAddress.address.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-postal-address-street" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-postal-address-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-postal-address-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.postalAddress.address, {
                     'id' : 'form-lender-person-postal-address-street',
@@ -270,10 +270,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.postalAddress.zip.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-postal-address-zip" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-postal-address-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(identityForm.postalAddress.zip, {
@@ -296,10 +296,10 @@
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
 
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.postalAddress.city.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-postal-address-city" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-postal-address-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(identityForm.postalAddress.city, {
@@ -325,10 +325,10 @@
         </div>
 
         <div class="row row-multi-col-computer">
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.postalAddress.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.postalAddress.idCountry.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-postal-address-country" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-postal-address-data-use-tooltip'|trans|escape('html_attr')}}">
                     {% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.postalAddress.idCountry, {
                     'id' : 'form-lender-person-postal-address-country',
@@ -354,27 +354,27 @@
 
         <div class="row row-multi-col-computer">
             <div id="form-lender-person-birthdate"
-                 class="form-field col-lg-6 col-md-6 {% if identityForm.client.naissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                 class="form-field col-lg-6 col-md-6{% if identityForm.client.naissance.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="client_day_of_birth" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-birth-date-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_birthday {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.client.naissance.children.day, {
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field input-field-short',
                         'data-formvalidation-input data-formvalidation-required' : "true",
                         'data-formvalidation-date' : 'day'
                     }
                 }) }}
                 {{ form_widget(identityForm.client.naissance.children.month, {
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field input-field-short',
                         'data-formvalidation-input data-formvalidation-required' : "true",
                         'data-formvalidation-date' : 'month'
                     }
                 }) }}
                 {{ form_widget(identityForm.client.naissance.children.year, {
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field input-field-short',
                         'data-formvalidation-input data-formvalidation-required' : 'true',
                         'data-formvalidation-date' : 'year'
@@ -382,16 +382,17 @@
                 }) }}
                 {{ form_errors(identityForm.client.naissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.idNationalite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.idNationalite.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-nationality" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-nationality-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_nationality {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.client.idNationalite, {
                     'id' : 'form-lender-person-nationality',
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' :  'true'
+                        'data-formvalidation-input data-formvalidation-required' : 'true'
                     }
                 }) }}
                 {{ form_errors(identityForm.client.idNationalite) }}
@@ -404,32 +405,33 @@
 
         <div class="row row-multi-col-computer">
             <div id="form-lender-person-birth-place"
-                 class="form-field col-lg-6 col-md-6 {% if identityForm.client.idPaysNaissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                 class="form-field col-lg-6 col-md-6{% if identityForm.client.idPaysNaissance.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-country" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-place-of-birth-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_birth-country {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(identityForm.client.idPaysNaissance, {
                     'id' : 'form-lender-person-birth-country',
-                    'attr' :  {
+                    'attr' : {
                         'class' : 'input-field',
                         'data-formvalidation-input data-formvalidation-required' : 'true'
                     }
                 }) }}
                 {{ form_errors(identityForm.client.idPaysNaissance) }}
             </div><!-- /.form-field -->
-            <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.villeNaissance.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+
+            <div class="form-field col-lg-6 col-md-6{% if identityForm.client.villeNaissance.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label for="form-lender-person-birth-city" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-place-of-birth-data-use-tooltip'|trans|escape('html_attr') }}">
                     {% trans %} common_birth-city {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(identityForm.client.villeNaissance, {
                         'id' : 'form-lender-person-birth-city',
-                        'attr' :  {
+                        'attr' : {
                             'autocomplete' : 'off',
                             'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required': 'true',
+                            'data-formvalidation-input data-formvalidation-required' : 'true',
                             'data-autocomplete data-autocomplete-ajaxurl' : path('lender_subscription_ajax_birth_place'),
                             'data-autocomplete-ajaxprop' : 'birthPlace',
                             'data-has-spinner' : '#person-birth-city-spinner'
@@ -449,16 +451,16 @@
 
     <fieldset class="panel">
         <div class="row">
-            <div class="form-field form-field-single-checkbox {% if identityForm.tos.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+            <div class="form-field form-field-single-checkbox{% if identityForm.tos.vars.errors|length > 0 %} ui-formvalidation-error{% endif %}">
                 <label>
                     {{ form_widget(identityForm.tos, {
-                        'attr' :  {
+                        'attr' : {
                             'data-formvalidation-input data-formvalidation-required' : 'true'
                         }
                     }) }}
                     <span class="label">
                         {% trans with {'%tosStart%' : '<a href="' ~ termsOfUsePerson ~ '" target="_blank">', '%tosEnd%' : '</a>'} %} lender-subscription_terms-of-use-acceptance {% endtrans %}
-                        <span class="field-required">* <span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}
                             </span>
                         </span>
                     </span>
