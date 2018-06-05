@@ -313,6 +313,16 @@ class ProjectStatusManager
                 }
                 break;
             case ProjectsStatus::A_FUNDER:
+                $company = $project->getIdCompany();
+                if (null !== $company && null !== $company->getIdClientOwner()) {
+                    $this->mailerManager->sendBorrowerAccount($company->getIdClientOwner(), 'ouverture-espace-emprunteur-plein');
+                } else {
+                    $this->logger->error('Could not send "ouverture-espace-emprunteur-plein" email to the borrower. Either company or client is not found', [
+                        'id_project' => $project->getIdProject(),
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__
+                    ]);
+                }
                 $this->mailerManager->sendProjectOnlineToBorrower($project);
                 break;
             case ProjectsStatus::PRET_REFUSE:
