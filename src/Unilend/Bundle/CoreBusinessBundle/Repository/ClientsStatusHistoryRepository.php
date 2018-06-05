@@ -3,10 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, ClientsStatusHistory
+    Clients, ClientsStatus, ClientsStatusHistory, WalletType
 };
 
 class ClientsStatusHistoryRepository extends EntityRepository
@@ -61,6 +60,8 @@ class ClientsStatusHistoryRepository extends EntityRepository
             ) AS min_csh_validated
             INNER JOIN clients_status_history csh ON min_csh_validated.added = csh.added AND min_csh_validated.id_client = csh.id_client
             INNER JOIN clients c ON csh.id_client = c.id_client
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = "' . WalletType::LENDER . '"
             WHERE csh.added BETWEEN :start AND :end';
 
         $params    = ['start' => $start->format('Y-m-d H:i:s'), 'end' => $end->format('Y-m-d H:i:s')];
