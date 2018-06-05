@@ -17,11 +17,11 @@
 
                     <div class="row">
                         <div class="col-form col-md-9 col-lg-8">
-                            <div id="form-lender-person">
+                            <div id="form-lender-person"{% if companyIdentityForm.vars.submitted %} style="display: none;"{% endif %}>
                                 {% include 'lender_subscription/partials/personal_information_form_person.html.twig' %}
                             </div><!-- /.form-preter-content -->
 
-                            <div id="form-lender-legal-entity" style="display: none;">
+                            <div id="form-lender-legal-entity"{% if not companyIdentityForm.vars.submitted %} style="display: none;"{% endif %}>
                                 {% include 'lender_subscription/partials/personal_information_form_legal_entity.html.twig' %}
                             </div><!-- /.form-preter-content -->
                         </div>
