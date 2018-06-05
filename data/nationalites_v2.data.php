@@ -28,8 +28,6 @@
 
 class nationalites_v2 extends nationalites_v2_crud
 {
-    const NATIONALITY_FRENCH = 1;
-
     public function __construct($bdd, $params = '')
     {
         parent::__construct($bdd, $params);
