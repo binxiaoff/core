@@ -29,6 +29,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service.wallet_manager"/>
             <argument type="service" id="unilend.service.sponsorship_manager"/>
+            <argument type="service" id="cache"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -54,8 +55,8 @@
         </service>
 
         <service id="unilend.service.loan_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LoanManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="unilend.service_product_contract.contract_attribute_manager"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -108,6 +109,7 @@
             <argument>%router.request_context.scheme%://%url.host_default%</argument>
             <argument type="service" id="number_formatter"/>
             <argument type="service" id="currency_formatter"/>
+            <argument type="service" id="unilend.service.cip_manager"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>

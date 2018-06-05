@@ -3048,7 +3048,7 @@ class dossiersController extends bootstrap
 
         return [
             'value'  => $projectNotes->pre_scoring,
-            'date'   => $date->format('d/m/Y H:i'),
+            'date'   => $date instanceof \DateTime ? $date->format('d/m/Y H:i') : '',
             'action' => 'Test d&#39éligibilité',
             'user'   => ''
         ];

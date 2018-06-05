@@ -30,6 +30,14 @@
 </style>
 <div id="contenu">
     <h1>Liste des <?= isset($this->lClients) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1>
+    <?php if (isset($_SESSION['error_search_borrower'])) : ?>
+        <div class="attention">
+            <?php foreach ($_SESSION['error_search_borrower'] as $error ) : ?>
+                <?= $error ?><br>
+            <?php endforeach; ?>
+            <?php unset($_SESSION['error_search_borrower']); ?>
+        </div>
+    <?php endif; ?>
     <div class="form-container">
         <form method="post" name="search_emprunteurs" id="search_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/gestion" target="_parent">
             <fieldset>

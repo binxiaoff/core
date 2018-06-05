@@ -3,7 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UniversignEntityInterface
+    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
 };
 
 class pdfController extends bootstrap
@@ -490,13 +490,13 @@ class pdfController extends bootstrap
         $contract               = $this->loadData('underlying_contract');
         $this->walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
-        $contract->get(\underlying_contract::CONTRACT_BDC, 'label');
+        $contract->get(UnderlyingContract::CONTRACT_BDC, 'label');
         $BDCContractId = $contract->id_contract;
 
-        $contract->get(\underlying_contract::CONTRACT_IFP, 'label');
+        $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
         $IFPContractId = $contract->id_contract;
 
-        $contract->get(\underlying_contract::CONTRACT_MINIBON, 'label');
+        $contract->get(UnderlyingContract::CONTRACT_MINIBON, 'label');
         $minibonContractId = $contract->id_contract;
 
         $this->montantPrete        = $this->projects->amount;
