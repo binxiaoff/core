@@ -1,7 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids as BidsEntity;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids as BidsEntity, Wallet
+};
 
 class bids extends bids_crud
 {
@@ -374,8 +375,9 @@ class bids extends bids_crud
      * @param DateTime|null $dateTimeEnd
      *
      * @return array
+     * @throws Exception
      */
-    public function getBidsByLenderAndDates(Wallet $wallet, $dateTimeStart = null, $dateTimeEnd = null)
+    public function getBidsByLenderAndDates(Wallet $wallet, ?\DateTime $dateTimeStart = null, ?\DateTime $dateTimeEnd = null): array
     {
         $sql = '
             SELECT
@@ -388,13 +390,15 @@ class bids extends bids_crud
                     WHEN ' . BidsEntity::STATUS_ACCEPTED . ' THEN "OK" 
                     WHEN ' . BidsEntity::STATUS_REJECTED . ' THEN "KO" 
                 END AS status, 
-                ROUND((b.amount / 100), 0) AS amount, 
-                REPLACE (b.rate, ".", ",") AS rate
+                ROUND(b.amount / 100) AS amount, 
+                b.rate AS rate
             FROM bids b
               INNER JOIN wallet w ON w.id = b.id_lender_account
             WHERE b.id_lender_account = :idLenderAccount';
 
         if ($dateTimeStart && $dateTimeEnd) {
+            $dateTimeStart->setTime(0, 0, 0);
+            $dateTimeEnd->setTime(23, 59, 59);
             $sql .= ' AND (b.added BETWEEN :dateStart AND :dateEnd)';
         }
 
@@ -409,16 +413,16 @@ class bids extends bids_crud
 
     public function getMaxCountBidsPerDay()
     {
-        $query = 'SELECT MAX(t.numberBids)
-                    FROM (
-                           SELECT count(id_bid) AS numberBids
-                           FROM bids
-                           GROUP BY DATE(added)) AS t';
+        $query = '
+            SELECT MAX(t.numberBids)
+            FROM (
+                SELECT COUNT(id_bid) AS numberBids
+                FROM bids
+                GROUP BY DATE(added)
+            ) AS t';
 
         $statement = $this->bdd->executeQuery($query);
 
         return $statement->fetchColumn(0);
     }
-
-
 }

@@ -72,7 +72,7 @@ class SlackController extends Controller
             'status' => Users::STATUS_ONLINE
         ]);
 
-        if (null === $user || false === ($userManager->isGrantedSales($user) || $userManager->isGrantedManagement($user))) {
+        if (null === $user || false === ($userManager->isGrantedSales($user) || $userManager->isGrantedRisk($user) || $userManager->isGrantedManagement($user))) {
             return new JsonResponse([
                 'response_type' => 'ephemeral',
                 'text'          => 'Vous ne disposez pas des droits nécessaires. Veuillez contacter l\'administrateur pour en savoir plus.'

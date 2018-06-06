@@ -113,6 +113,7 @@ class TemplateMessageProvider
      * @param bool          $wrapKeywords
      *
      * @return TemplateMessage
+     * @throws \Swift_RfcComplianceException
      */
     private function setMessageAttributes(MailTemplates $mailTemplate, array $keywords = [], bool $wrapKeywords = true) : TemplateMessage
     {
@@ -129,9 +130,9 @@ class TemplateMessageProvider
             if (false !== strpos($keywords['title'], self::KEYWORDS_SUFFIX) && false !== strpos($keywords['title'], self::KEYWORDS_PREFIX)) {
                 $keywords['title'] = str_replace(self::KEYWORDS_SUFFIX, '', str_replace(self::KEYWORDS_PREFIX, '', $keywords['title']));
             }
-        }
 
-        $keywords = array_merge($commonKeywords, $keywords);
+            $keywords = array_merge($commonKeywords, $keywords);
+        }
 
         if ($wrapKeywords) {
             $keywords = $this->wrapKeywords($keywords);

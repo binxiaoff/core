@@ -1590,7 +1590,10 @@ class preteursController extends bootstrap
             foreach ($lenderBids as $rowIndex => $row) {
                 $colIndex = 0;
                 foreach ($row as $cellValue) {
-                    $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                    if (6 === $colIndex) {
+                        $cellValue = number_format($cellValue, 1, ',', '');
+                    }
+                    $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
                 }
             }
 

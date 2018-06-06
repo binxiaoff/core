@@ -3,18 +3,16 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Form\Extension\Core\Type\{
-    CheckboxType, ChoiceType
-};
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, ClientsHistoryActions, Companies, CompanyAddress
+    AddressType, ClientAddress, Clients, ClientsHistoryActions, CompanyAddress
 };
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, ClientAddressType, CompanyAddressType, CompanyIdentityType, LegalEntityType, OriginOfFundsType, PersonType, SecurityQuestionType
+    BankAccountType, ClientAddressType, CompanyAddressType, OriginOfFundsType
 };
 
 class FormManager
@@ -70,66 +68,6 @@ class FormManager
         }
 
         return $differences;
-    }
-
-    /**
-     * @param Clients $client
-     *
-     * @return FormInterface
-     */
-    public function getLenderSubscriptionPersonIdentityForm(Clients $client): FormInterface
-    {
-        $form = $this->formFactory->createBuilder()
-            ->add('client', PersonType::class, ['data' => $client])
-            ->add('mainAddress', ClientAddressType::class)
-            ->add('samePostalAddress', CheckboxType::class)
-            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false])
-            ->add('postalAddress', ClientAddressType::class)
-            ->add('security', SecurityQuestionType::class, ['data' => $client])
-            ->add('clientType', ChoiceType::class, [
-                'choices'  => [
-                    $this->translator->trans('lender-subscription_identity-client-type-person-label')       => 'person',
-                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label') => 'legalEntity'
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'data'     => 'person'
-            ])
-            ->add('tos', CheckboxType::class)
-            ->getForm();
-
-        return $form;
-    }
-
-    /**
-     * @param Clients   $client
-     * @param Companies $company
-     *
-     * @return \Symfony\Component\Form\FormInterface
-     */
-    public function getLenderSubscriptionLegalEntityIdentityForm(Clients $client, Companies $company)
-    {
-        $form = $this->formFactory->createBuilder()
-            ->add('client', LegalEntityType::class, ['data' => $client])
-            ->add('company', CompanyIdentityType::class, ['data' => $company])
-            ->add('mainAddress', CompanyAddressType::class)
-            ->add('samePostalAddress', CheckboxType::class)
-            ->add('postalAddress', CompanyAddressType::class)
-            ->add('security', SecurityQuestionType::class, ['data' => $client])
-            ->add('clientType', ChoiceType::class, [
-                'choices'  => [
-                    $this->translator->trans('lender-subscription_identity-client-type-person-label')       => 'person',
-                    $this->translator->trans('lender-subscription_identity-client-type-legal-entity-label') => 'legalEntity'
-                ],
-                'expanded' => true,
-                'multiple' => false,
-                'data'     => 'legalEntity'
-            ])
-            ->add('tos', CheckboxType::class)
-            ->getForm();
-
-        return $form;
     }
 
     /**
