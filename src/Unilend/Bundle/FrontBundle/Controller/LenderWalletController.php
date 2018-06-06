@@ -98,6 +98,7 @@ class LenderWalletController extends Controller
      *
      * @param Request $request
      *
+     * @throws \Doctrine\ORM\OptimisticLockException
      * @return Response
      */
     public function withdrawalAction(Request $request): Response
@@ -109,8 +110,12 @@ class LenderWalletController extends Controller
         $client        = $this->getClient();
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-        $form          = $this->createForm(LenderWithdrawalType::class);
-        $template      = [
+
+        if (null === $bankAccount) {
+            $this->setWithdrawalInformationMessage($client);
+        }
+        $form     = $this->createForm(LenderWithdrawalType::class);
+        $template = [
             'balance'         => $this->getUser()->getBalance(),
             'client'          => $client,
             'bankAccount'     => $bankAccount,
@@ -139,8 +144,25 @@ class LenderWalletController extends Controller
     }
 
     /**
+     * @param Clients $client
+     */
+    private function setWithdrawalInformationMessage(Clients $client): void
+    {
+        $lastModifiedBankAccount = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $translator              = $this->get('translator');
+
+        if (null === $lastModifiedBankAccount) {
+            $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-or-pending-iban', ['%fiscalUrl%' => $this->generateUrl('lender_profile_fiscal_information')]));
+        } else {
+            $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-iban'));
+        }
+    }
+
+    /**
      * @param Request $request
      * @param array   $post
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function handleWithdrawalPost(Request $request, array $post): void
     {
