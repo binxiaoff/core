@@ -153,8 +153,19 @@ class LenderWalletController extends Controller
 
         if (null === $lastModifiedBankAccount) {
             $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-or-pending-iban', ['%fiscalUrl%' => $this->generateUrl('lender_profile_fiscal_information')]));
+            $this->get('logger')->error('This client attempted to perform a withdrawal from he account but he has not a bank account', [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
         } else {
             $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-iban'));
+            $this->get('logger')->warning('This client attempted to perform a withdrawal from his account but his pending bank account is not validated yet.', [
+                'id_client'       => $client->getIdClient(),
+                'id_bank_account' => $lastModifiedBankAccount->getId(),
+                'class'           => __CLASS__,
+                'function'        => __FUNCTION__
+            ]);
         }
     }
 
