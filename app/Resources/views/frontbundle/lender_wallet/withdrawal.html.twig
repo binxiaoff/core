@@ -22,7 +22,7 @@
                             </div>
                         {% endif %}
                         {% if app.session.flashBag.has('withdrawalErrors') %}
-                            <div class="message-alert">
+                            <div class="message-error">
                                 {% for error in app.session.flashBag.get('withdrawalErrors') %}
                                     {{ error|raw }}
                                 {% endfor %}
