@@ -2,11 +2,11 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementCollection;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetailsCollection;
@@ -104,7 +104,10 @@ class InfolegaleManager
      */
     public function getScore($siren)
     {
-        if (null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
+        if (
+            null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))
+            && $result->count() > 0
+        ) {
             return $this->serializer->deserialize($result->scoreInfo[0]->asXML(), ScoreDetails::class, 'xml');
         }
 
