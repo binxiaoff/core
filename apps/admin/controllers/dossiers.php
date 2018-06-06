@@ -2759,18 +2759,15 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \partner $partner */
-        $partner = $this->loadData('partner');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             isset($this->params[0], $this->params[1])
-            && $project->get($this->params[0])
-            && $partner->get($this->params[1])
+            && null !== ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]))
+            && null !== ($partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[1]))
         ) {
-            $project->id_partner = $partner->id;
+            $project->setIdPartner($partner);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
             $productManager   = $this->get('unilend.service_product.product_manager');
