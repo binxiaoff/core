@@ -2,20 +2,16 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
+use GuzzleHttp\{
+    Client, ClientInterface
+};
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetailsCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Identity;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\MandateCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
+    AnnouncementCollection, AnnouncementDetailsCollection, DirectorAnnouncementCollection, ExecutiveCollection, HomonymCollection, Identity, MandateCollection, ScoreDetails
+};
 
 class InfolegaleManager
 {
