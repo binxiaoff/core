@@ -102,7 +102,7 @@ class InfolegaleManager
     {
         if (
             null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))
-            && $result->count() > 0
+            && false === empty($result->scoreInfo[0])
         ) {
             return $this->serializer->deserialize($result->scoreInfo[0]->asXML(), ScoreDetails::class, 'xml');
         }
