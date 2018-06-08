@@ -1,16 +1,16 @@
 {% extends 'layout.html.twig' %}
 
 {% block pluginsCSS %}
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
-    <link rel="stylesheet" href="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker3.min.css">
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
 {% endblock %}
 
 {% block pluginsJS %}
-    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
-    <script src="{{ adminUrl }}/oneui/js/pages/base_forms_wizard.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="{{ app.adminUrl }}/oneui/js/pages/base_forms_wizard.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
@@ -382,9 +382,6 @@
 {% endblock %}
 
 {% block pageHeader %}
-    <div class="pull-left">
-        <a href="/dossiers/{{ repaymentProjectStatus }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Projets</a>
-    </div>
     <div class="pull-right">
         <small>
             SIREN : <a href="/emprunteurs/edit/{{ project.idCompany.idClientOwner.idClient }}">{{ project.idCompany.siren }}</a>
@@ -401,9 +398,20 @@
             Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>
-    <h1 class="page-heading push" style="clear:both;margin:30px 0 30px;">
+    <h1 class="page-heading push">
         Remboursement du projet <a href="/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
     </h1>
+    <div>
+        <div class="pull-right">
+            <div class="btn-group">
+                <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" class="btn btn-default btn-sm">Échéancier emprunteur</a>
+                <a href="/dossiers/detail_remb_preteur/{{ project.idProject }}" class="btn btn-default btn-sm">Échéanciers prêteurs</a>
+            </div>
+        </div>
+        <h2 class="h5 push">
+            <a href="/dossiers/{{ repaymentProjectStatus }}" class="text-muted"><span class="fa fa-arrow-left"></span>&nbsp;Projets</a>
+        </h2>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -414,13 +422,6 @@
                 <div class="col-lg-3">
                     <div class="block">
                         <div class="block-header">
-                            <ul class="block-options">
-                                <li>
-                                    <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher l'échéancier emprunteur">
-                                        <i class="fa fa-list-ol"></i>
-                                    </a>
-                                </li>
-                            </ul>
                             <h3 class="block-title">Nombre d'échéances</h3>
                         </div>
                         <div class="block-content">
@@ -440,13 +441,6 @@
                 <div class="col-lg-3">
                     <div class="block">
                         <div class="block-header">
-                            <ul class="block-options">
-                                <li>
-                                    <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher l'échéancier emprunteur">
-                                        <i class="fa fa-list-ol"></i>
-                                    </a>
-                                </li>
-                            </ul>
                             <h3 class="block-title">Montant remboursement</h3>
                         </div>
                         <div class="block-content">
@@ -490,13 +484,6 @@
             <div class="col-lg-2">
                 <div class="block">
                     <div class="block-header">
-                        <ul class="block-options">
-                            <li>
-                                <a href="/dossiers/detail_remb_preteur/{{ project.idProject }}" data-toggle="tooltip" data-placement="top" data-original-title="Afficher la liste de prêts">
-                                    <i class="fa fa-list-ol"></i>
-                                </a>
-                            </li>
-                        </ul>
                         <h3 class="block-title">Nombre de prêteurs</h3>
                     </div>
                     <div class="block-content text-center" style="padding-top: 20px; padding-bottom: 19px;">
