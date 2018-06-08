@@ -1421,7 +1421,10 @@ class dossiersController extends bootstrap
 
     public function _detail_remb_preteur()
     {
-        if (empty($this->params[0]) || false === filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+        if (
+            empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+        ) {
             header('Location: /dossiers');
             exit;
         }
@@ -1476,38 +1479,95 @@ class dossiersController extends bootstrap
 
     public function _detail_echeance_preteur()
     {
+        if (
+            empty($this->params[0])
+            || empty($this->params[1])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+            || false === filter_var($this->params[1], FILTER_VALIDATE_INT)
+        ) {
+            header('Location: /dossiers');
+            exit;
+        }
+
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var NumberFormatter numberFormatter */
-        $this->numberFormatter = $this->get('number_formatter');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
-        $this->loanManager = $this->get('unilend.service.loan_manager');
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
 
-        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $this->walletRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $this->operationRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-
-        if (isset($this->params[1])) {
-            $this->loan   = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
-            $this->client = $this->loan->getIdLender()->getIdClient();
-            $this->lRemb  = $repaymentScheduleRepository->findBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
-
-            // on check si on est en remb anticipé
-            // ON recup la date de statut remb
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-
-            $this->montant_ra = 0;
-
-            if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
-                $this->montant_ra = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($this->loan);
-                $this->date_ra    = $repaymentScheduleRepository->findOneBy(['idLoan' => $this->loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
-            }
+        if (null === $project || null === $loan) {
+            header('Location: /dossiers');
+            exit;
         }
+
+        $leftRepayments              = 0;
+        $repayments                  = [];
+        $lenderCompanyName           = null;
+        $earlyRepayment              = null;
+        $owedCapital                 = $loan->getAmount() / 100;
+        $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+        $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getIdLender()->getIdClient()]);
+        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $repaymentEntities           = $repaymentScheduleRepository->findBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
+        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        if ($lenderCompany) {
+            $lenderCompanyName = $lenderCompany->getName();
+        }
+
+        foreach ($repaymentEntities as $repaymentEntity) {
+            if (Echeanciers::STATUS_REPAID !== $repaymentEntity->getStatus()) {
+                ++$leftRepayments;
+            }
+
+            $owedCapital -= $repaymentEntity->getCapitalRembourse() / 100;
+
+            $taxes = 0;
+            if (Echeanciers::STATUS_PENDING !== $repaymentEntity->getStatus()) {
+                $taxes = $operationRepository->getTaxAmountByRepaymentScheduleId($repaymentEntity);
+            }
+
+            $repayments[] = [
+                'sequence'                 => $repaymentEntity->getOrdre(),
+                'capital'                  => $repaymentEntity->getCapital() / 100,
+                'repaidCapital'            => $repaymentEntity->getCapitalRembourse() / 100,
+                'interests'                => $repaymentEntity->getInterets() / 100,
+                'repaidInterests'          => $repaymentEntity->getInteretsRembourses() / 100,
+                'taxes'                    => $taxes,
+                'theoreticalRepaymentDate' => $repaymentEntity->getDateEcheance(),
+                'actualRepaymentDate'      => $repaymentEntity->getDateEcheanceReel(),
+                'status'                   => $repaymentEntity->getStatus()
+            ];
+        }
+
+        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+            $earlyRepaymentAmount = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($loan);
+            $earlyRepaymentDate   = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
+            $earlyRepayment       = [
+                'amount'        => $earlyRepaymentAmount,
+                'repaymentDate' => $earlyRepaymentDate
+            ];
+        }
+
+        $this->render(null, [
+            'project'           => $project,
+            'projectStatus'     => $projectStatus,
+            'companyStatus'     => $companyStatus,
+            'loan'              => $loan,
+            'lenderCompanyName' => $lenderCompanyName,
+            'leftRepayments'    => $leftRepayments,
+            'owedCapital'       => $owedCapital,
+            'repayments'        => $repayments,
+            'earlyRepayment'    => $earlyRepayment
+        ]);
     }
 
     public function _echeancier_emprunteur()
     {
-        if (empty($this->params[0]) || false === filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+        if (
+            empty($this->params[0])
+            || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
+        ) {
             header('Location: /dossiers');
             exit;
         }

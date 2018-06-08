@@ -17,14 +17,13 @@
 {% endblock %}
 
 {% block pageHeader %}
-    <div class="pull-right">
-        <span class="label ui-project-status-{{ project.status }}-bg ui-company-status-{{ companyStatus.label }}-bg">
+    <div class="pull-right text-right">
+        <div class="push-5"><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a></div>
+        <div class="label ui-project-status-{{ project.status }}-bg ui-company-status-{{ companyStatus.label }}-bg">
             {{ projectStatus.label }}
-        </span>
+        </div>
     </div>
-    <h1 class="page-heading push">
-        Échéancier emprunteur <a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
-    </h1>
+    <h1 class="page-heading push">Échéancier emprunteur</h1>
 {% endblock %}
 
 {% block content %}
