@@ -1,0 +1,21 @@
+{% extends 'layout.html.twig' %}
+
+{% block pageHeader %}
+    <h1 class="page-heading push">Une erreur est survenue</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content bg-white pulldown overflow-hidden">
+        <div class="row text-center">
+            <div class="col-sm-6 col-sm-offset-3">
+                <h1 class="font-s128 font-w300 text-city animated flipInX">500</h1>
+                <h2 class="h3 font-w300 push-50 animated fadeInUp">Oups ! Veuillez contacter votre adminstrateur.</h2>
+            </div>
+        </div>
+        {% if errorMessage is defined and errorMessage is not empty %}
+            <div class="row alert alert-warning">
+                {{ errorMessage }}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

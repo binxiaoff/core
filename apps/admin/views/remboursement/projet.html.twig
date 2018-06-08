@@ -393,8 +393,7 @@
         </span>
         <br>
         <label class="css-input switch switch-sm switch-primary">
-            <input type="checkbox" name="auto-repayment"
-                   {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %}checked{% endif %}><span></span>
+            <input type="checkbox" name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}><span></span>
             Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>
@@ -405,7 +404,7 @@
         <div class="pull-right">
             <div class="btn-group">
                 <a href="/dossiers/echeancier_emprunteur/{{ project.idProject }}" class="btn btn-default btn-sm">Échéancier emprunteur</a>
-                <a href="/dossiers/detail_remb_preteur/{{ project.idProject }}" class="btn btn-default btn-sm">Échéanciers prêteurs</a>
+                <a href="/dossiers/detail_remb_preteur/{{ project.idProject }}" class="btn btn-default btn-sm">Prêts</a>
             </div>
         </div>
         <h2 class="h5 push">

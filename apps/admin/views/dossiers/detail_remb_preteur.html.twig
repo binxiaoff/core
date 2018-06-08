@@ -1,0 +1,134 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            App.initHelper('datatables')
+
+            $('#loans-table').dataTable({
+                columnDefs: [{
+                    targets: [5, 6],
+                    orderable: false
+                }],
+                order: [[3, 'asc']]
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="pull-right">
+        <span class="label ui-project-status-{{ project.status }}-bg ui-company-status-{{ companyStatus.label }}-bg">
+            {{ projectStatus.label }}
+        </span>
+    </div>
+    <h1 class="page-heading push">
+        Prêts <a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a>
+    </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Montant emprunté</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ project.amount|localizednumber }}&nbsp;€</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Durée de l'emprunt</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ project.period|localizednumber }} mois</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Nombre de prêteurs</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ lendersCount|localizednumber }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-6 col-sm-3">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Taux moyen</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ project.interestRate|localizednumber }}&nbsp;%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block">
+            <div class="block-content block-content-full">
+                <table id="loans-table" class="table table-bordered table-striped table-header-bg" data-page-length="100" data-searching="true">
+                    <thead>
+                    <tr>
+                        <th>Montant</th>
+                        <th>Taux</th>
+                        <th>Mensualité</th>
+                        <th>Prêteur</th>
+                        <th>Sous-jacent</th>
+                        <th>Documents</th>
+                        <th>Échéancier</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for loan in loans %}
+                        <tr>
+                            <td class="text-right" data-order="{{ loan.amount }}">{{ loan.amount|localizednumber }}&nbsp;€</td>
+                            <td class="text-right">{{ loan.rate|localizednumber }}&nbsp;%</td>
+                            <td class="text-right" data-order="{{ loan.monthlyRepayment }}">{{ loan.monthlyRepayment|localizedcurrency('EUR') }}</td>
+                            <td>
+                                {% if loan.companyName is not empty %}
+                                    <span class="fa fa-briefcase"></span>
+                                    <a href="{{ app.adminUrl }}/preteurs/edit/{{ loan.idClient }}">{{ loan.companyName }}</a>
+                                {% else %}
+                                    <span class="fa fa-user-o"></span>
+                                    <a href="{{ app.adminUrl }}/preteurs/edit/{{ loan.idClient }}">{{ loan.firstName }} {{ loan.lastName }}</a>
+                                {% endif %}
+                            </td>
+                            <td>{{ ('contract-type-label_' ~ loan.contractType)|trans }}</td>
+                            <td class="text-center">
+                                {% if loan.idClientOrigin is not empty %}
+                                    <a href="{{ app.adminUrl }}/preteurs/edit/{{ loan.idClientOrigin }}" data-toggle="popover" data-placement="top" data-content="Ce prêt à été transféré. Cliquez sur ce lien pour accéder à la fiche du précédent propriétaire." title="Prêteur précédent">
+                                        <span class="fa fa-external-link"></span>
+                                    </a>
+                                {% endif %}
+                                <a href="{{ app.adminUrl }}/protected/contrat/{{ loan.clientHash }}/{{ loan.idLoan }}">
+                                    <span class="fa fa-file-pdf-o"></span>
+                                </a>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ app.adminUrl }}/dossiers/detail_echeance_preteur/{{ project.idProject }}/{{ loan.idLoan }}">
+                                    <span class="fa fa-calendar-o"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

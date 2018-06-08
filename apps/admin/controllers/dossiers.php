@@ -1,5 +1,6 @@
 <?php
 
+use Doctrine\ORM\Query\Expr\Join;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
@@ -1420,29 +1421,57 @@ class dossiersController extends bootstrap
 
     public function _detail_remb_preteur()
     {
-        $this->clients     = $this->loadData('clients');
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->projects    = $this->loadData('projects');
-        /** @var \loans loan */
-        $this->loan = $this->loadData('loans');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager lenderManager */
-        $this->lenderManager = $this->get('unilend.service.lender_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LoanManager loanManager */
-        $this->loanManager = $this->get('unilend.service.loan_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository walletRepository */
-        $this->walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
-
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            /** @var \loans $loans */
-            $loans = $this->loadData('loans');
-            /** @var \echeanciers_emprunteur $repaymentSchedule */
-            $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
-
-            $this->nbPeteurs = $loans->getNbPreteurs($this->projects->id_project);
-            $this->tauxMoyen = $this->projects->getAverageInterestRate();
-            $this->montant   = $repaymentSchedule->sum('montant', 'id_project = ' . $this->projects->id_project) / 100;
-            $this->lLenders  = $loans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        if (empty($this->params[0]) || false === filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+            header('Location: /dossiers');
+            exit;
         }
+
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+
+        if (null === $project) {
+            header('Location: /dossiers');
+            exit;
+        }
+
+        $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
+        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+        $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $loans          = $entityManager->createQueryBuilder()
+            ->select('
+                l.idLoan,
+                ROUND(l.amount / 100) AS amount,
+                l.rate,
+                uc.label AS contractType,
+                ROUND(e.montant / 100, 2) AS monthlyRepayment,
+                c.idClient,
+                c.hash AS clientHash,
+                c.prenom AS firstName,
+                c.nom AS lastName,
+                co.name AS companyName,
+                IDENTITY(t.idClientOrigin) AS idClientOrigin'
+            )
+            ->from('UnilendCoreBusinessBundle:Loans', 'l')
+            ->innerJoin('UnilendCoreBusinessBundle:UnderlyingContract', 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
+            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idClientOwner = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:LoanTransfer', 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
+            ->leftJoin('UnilendCoreBusinessBundle:Transfer', 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project)
+            ->getQuery()
+            ->getResult();
+
+        $this->render(null, [
+            'project'       => $project,
+            'projectStatus' => $projectStatus,
+            'companyStatus' => $companyStatus,
+            'lendersCount'  => $loanRepository->getLenderNumber($project),
+            'loans'         => $loans
+        ]);
     }
 
     public function _detail_echeance_preteur()
@@ -1532,7 +1561,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        $template = [
+        $this->render(null, [
             'project'         => $project,
             'projectStatus'   => $projectStatus,
             'companyStatus'   => $companyStatus,
@@ -1542,9 +1571,7 @@ class dossiersController extends bootstrap
             'totalCommission' => array_sum(array_column($payments, 'commission')),
             'totalVat'        => array_sum(array_column($payments, 'vat')),
             'earlyRepayment'  => $earlyRepayment
-        ];
-
-        $this->render(null, $template);
+        ]);
     }
 
     /**
