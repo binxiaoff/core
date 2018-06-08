@@ -12,7 +12,6 @@ $doc.on('ready', function () {
       lastNameField = $('[name=lastName]'),
       firstNameField = $('[name=firstName]'),
       functionField = $('[name=function]'),
-      executiveContent = $('.toggle-if-executive'),
       selectedExecutive = executiveSelector.find(':selected')
 
     if ('M' === selectedExecutive.data('executiveTitle')) {
@@ -28,14 +27,12 @@ $doc.on('ready', function () {
       lastNameField.prop('readonly', false)
       firstNameField.prop('readonly', false)
       functionField.prop('readonly', false)
-      executiveContent.collapse('hide')
     } else {
       titleField.filter(':not(:checked)').prop('disabled', true)
       titleField.filter(':checked').prop('disabled', false)
       lastNameField.prop('readonly', true).val(selectedExecutive.data('executiveLastName'))
       firstNameField.prop('readonly', true).val(selectedExecutive.data('executiveFirstName'))
       functionField.prop('readonly', true).val(selectedExecutive.data('executiveFunction'))
-      executiveContent.collapse('show')
     }
 
     lastNameField.val(selectedExecutive.data('executiveLastName'))

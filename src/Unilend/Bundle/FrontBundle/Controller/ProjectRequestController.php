@@ -13,13 +13,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, Prescripteurs,  Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
+    AttachmentType, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
 };
 use Unilend\Bundle\FrontBundle\Service\{
-    DataLayerCollector, SourceManager
+    DataLayerCollector
 };
 use Unilend\core\Loader;
 
@@ -208,12 +208,6 @@ class ProjectRequestController extends Controller
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        $advisorClient = null;
-        if (false === empty($project->getIdPrescripteur())) {
-            $advisor       = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
-            $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
-        }
-
         $settingsRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
         $treeId                         = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
         $tree                           = $entityManager->getRepository('UnilendCoreBusinessBundle:Tree')->findOneBy(['idTree' => $treeId->getValue()]);
@@ -235,7 +229,7 @@ class ProjectRequestController extends Controller
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
         }
 
-        $contact   = $advisorClient ?? $project->getIdCompany()->getIdClientOwner();
+        $contact   = $project->getIdCompany()->getIdClientOwner();
         $title     = $values['contact']['title'] ?? $contact->getCivilite();
         $lastName  = $values['contact']['lastname'] ?? $contact->getNom();
         $firstName = $values['contact']['firstname'] ?? $contact->getPrenom();
@@ -265,7 +259,17 @@ class ProjectRequestController extends Controller
             $function  = $firstExecutiveFound['position'];
         }
 
-        $template['form'] = [
+        $contactInList = false;
+        if ($contact->getNom() && false === empty($template['activeExecutives'])) {
+            foreach ($template['activeExecutives'] as $executive) {
+                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($contact->getPrenom() . $contact->getNom())) {
+                    $contactInList = true;
+                    break;
+                }
+            }
+        }
+
+        $template['form']                   = [
             'errors' => $session['errors'] ?? [],
             'values' => [
                 'contact'      => [
@@ -277,12 +281,12 @@ class ProjectRequestController extends Controller
                     'function'  => $function
                 ],
                 'otherContact' => [
-                    'title'     => $advisorClient ? $advisorClient->getCivilite() : '',
-                    'lastName'  => $advisorClient ? $advisorClient->getNom() : '',
-                    'firstName' => $advisorClient ? $advisorClient->getPrenom() : '',
-                    'email'     => $advisorClient ? $this->removeEmailSuffix($advisorClient->getEmail()) : '',
-                    'mobile'    => $advisorClient ? $advisorClient->getTelephone() : '',
-                    'function'  => $advisorClient ? $advisorClient->getFonction() : ''
+                    'title'     => false === $contactInList ? $contact->getCivilite() : '',
+                    'lastName'  => false === $contactInList ? $contact->getNom() : '',
+                    'firstName' => false === $contactInList ? $contact->getPrenom() : '',
+                    'email'     => false === $contactInList ? $this->removeEmailSuffix($contact->getEmail()) : '',
+                    'mobile'    => false === $contactInList ? $contact->getTelephone() : '',
+                    'function'  => false === $contactInList ? $contact->getFonction() : ''
                 ],
                 'project'      => [
                     'duration'    => $values['project']['duration'] ?? $project->getPeriod(),
@@ -290,7 +294,7 @@ class ProjectRequestController extends Controller
                 ]
             ]
         ];
-
+        $template['contactInList']          = $contactInList;
         $template['project']                = $project;
         $template['averageFundingDuration'] = $this->get('unilend.service.project_manager')->getAverageFundingDuration($project->getAmount());
 
@@ -372,96 +376,20 @@ class ProjectRequestController extends Controller
 
             return $this->redirectToRoute(self::PAGE_ROUTE_CONTACT, ['hash' => $project->getHash()]);
         }
-        if ($request->request->get('executive')) {
-            $this->saveContactDetails($project->getIdCompany(), $email, $title, $firstName, $lastName, $function, $mobile);
-            $project->setIdPrescripteur(0);
 
-            /** @var \acceptations_legal_docs $tosAcceptation */
-            $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
+        $this->saveContactDetails($project->getIdCompany(), $email, $title, $firstName, $lastName, $function, $mobile);
 
-            $treeId = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
+        /** @var \acceptations_legal_docs $tosAcceptation */
+        $tosAcceptation = $entityManagerSimulator->getRepository('acceptations_legal_docs');
 
-            if ($tosAcceptation->get($treeId->getValue(), 'id_client = ' . $project->getIdCompany()->getIdClientOwner()->getIdClient() . ' AND id_legal_doc')) {
-                $tosAcceptation->update();
-            } else {
-                $tosAcceptation->id_legal_doc = $treeId->getValue();
-                $tosAcceptation->id_client    = $project->getIdCompany()->getIdClientOwner()->getIdClient();
-                $tosAcceptation->create();
-            }
+        $treeId = $settingsRepository->findOneBy(['type' => 'Lien conditions generales depot dossier']);
+
+        if ($tosAcceptation->get($treeId->getValue(), 'id_client = ' . $project->getIdCompany()->getIdClientOwner()->getIdClient() . ' AND id_legal_doc')) {
+            $tosAcceptation->update();
         } else {
-            $sourceManager    = $this->get('unilend.frontbundle.service.source_manager');
-            $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
-            $advisorClient = new Clients();
-            $newAdvisor    = true;
-
-            if (false === empty($project->getIdPrescripteur())) {
-                $advisor = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
-                if ($advisor && false === empty($advisor->getIdClient())) {
-                    $advisorClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($advisor->getIdClient());
-                    $newAdvisor    = false;
-                }
-            }
-
-            if ($clientRepository->existEmail($email) && $this->removeEmailSuffix($advisorClient->getEmail()) !== $email) {
-                $email = $email . '-' . time();
-            }
-
-            $advisorClient
-                ->setEmail($email)
-                ->setCivilite($title)
-                ->setNom($lastName)
-                ->setPrenom($firstName)
-                ->setFonction($function)
-                ->setTelephone($mobile)
-                ->setSlug($firstName . ' ' . $lastName)
-                ->setSource($sourceManager->getSource(SourceManager::SOURCE1))
-                ->setSource2($sourceManager->getSource(SourceManager::SOURCE2))
-                ->setSource3($sourceManager->getSource(SourceManager::SOURCE3))
-                ->setSlugOrigine($sourceManager->getSource(SourceManager::ENTRY_SLUG));
-
-            if ($newAdvisor) {
-                $entityManager->getConnection()->beginTransaction();
-                try {
-                    $entityManager->persist($advisorClient);
-                    $entityManager->flush($advisorClient);
-
-                    /** @var \clients_adresses $advisorAddress */
-                    $advisorAddress            = $entityManagerSimulator->getRepository('clients_adresses');
-                    $advisorAddress->id_client = $advisorClient->getIdClient();
-                    $advisorAddress->civilite  = $title;
-                    $advisorAddress->prenom    = $firstName;
-                    $advisorAddress->nom       = $lastName;
-                    $advisorAddress->mobile    = $mobile;
-                    $advisorAddress->create();
-
-                    $advisorCompany = new Companies();
-
-                    $entityManager->persist($advisorCompany);
-                    $entityManager->flush($advisorCompany);
-
-                    $advisor = new Prescripteurs();
-                    $advisor
-                        ->setIdClient($advisorClient->getIdClient())
-                        ->setIdEntite($advisorCompany->getIdCompany())
-                        ->setIdEnseigne(0)
-                        ->setTypeDepotDossier(0);
-
-                    $entityManager->persist($advisor);
-                    $entityManager->flush($advisor);
-
-                    $project->setIdPrescripteur($advisor->getIdPrescripteur());
-
-                    $entityManager->getConnection()->commit();
-                } catch (\Exception $exception) {
-                    $entityManager->getConnection()->rollBack();
-
-                    throw $exception;
-                }
-
-            } else {
-                $entityManager->flush($advisorClient);
-            }
+            $tosAcceptation->id_legal_doc = $treeId->getValue();
+            $tosAcceptation->id_client    = $project->getIdCompany()->getIdClientOwner()->getIdClient();
+            $tosAcceptation->create();
         }
 
         $project->setPeriod($duration);
@@ -1201,7 +1129,7 @@ class ProjectRequestController extends Controller
                 $subtitle = $translator->trans('project-request_end-page-rejection-subtitle');
 
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
-                $message = $projectRequestManager->getMainRejectionReasonMessage($project);
+                $message               = $projectRequestManager->getMainRejectionReasonMessage($project);
                 break;
         }
 

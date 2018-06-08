@@ -165,7 +165,7 @@
                                                         <select id="identity-executive-selector" name="executive" class="input-field">
                                                             {% for executive in activeExecutives %}
                                                                 <option value="{{ executive.idExecutive|escape('html_attr') }}"
-                                                                        {% if executive.lastName ~ executive.firstName == form.values.contact.lastName ~ form.values.contact.firstName %} selected{% endif %}
+                                                                        {% if (executive.lastName ~ executive.firstName)|lower == (form.values.contact.lastName ~ form.values.contact.firstName)|lower %} selected{% endif %}
                                                                         data-executive-title="{{ executive.title|escape('html_attr') }}"
                                                                         data-executive-last-name="{{ executive.lastName|escape('html_attr') }}"
                                                                         data-executive-first-name="{{ executive.firstName|escape('html_attr') }}"
@@ -173,7 +173,8 @@
                                                                     {{ executive.title }}{% if 'M' == executive.title %}.{% endif %} {{ executive.lastName }} {{ executive.firstName }}
                                                                 </option>
                                                             {% endfor %}
-                                                            <option value="" {% if project.idPrescripteur is not empty %} selected{% endif %}
+                                                            <option value=""
+                                                                    {% if contactInList == false and (form.values.otherContact.lastName ~ form.values.otherContact.firstName)|lower == (form.values.contact.lastName ~ form.values.contact.firstName)|lower %} selected{% endif %}
                                                                     data-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
                                                                     data-executive-last-name="{{ form.values.otherContact.lastName|escape('html_attr') }}"
                                                                     data-executive-first-name="{{ form.values.otherContact.firstName|escape('html_attr') }}"
@@ -327,7 +328,7 @@
                                             </div>
                                         </fieldset>
 
-                                        <fieldset class="toggle-if-executive panel collapse in">
+                                        <fieldset class="panel collapse in">
                                             <div class="row">
                                                 <div class="form-field form-field-single-checkbox{% if form.errors.terms is defined %} ui-formvalidation-error{% endif %}">
                                                     <label>

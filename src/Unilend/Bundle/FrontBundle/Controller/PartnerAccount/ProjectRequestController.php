@@ -229,7 +229,7 @@ class ProjectRequestController extends Controller
             ]);
         }
 
-        $template                 = [
+        $template = [
             'project'                  => $project,
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
@@ -258,27 +258,18 @@ class ProjectRequestController extends Controller
             $firstName = $firstExecutiveFound['firstName'];
             $function  = $firstExecutiveFound['position'];
         }
-        $otherContact = [
-            'title'     => '',
-            'lastName'  => '',
-            'firstName' => '',
-            'function'  => ''
-        ];
+
+        $contactInList = false;
         if ($client->getNom() && false === empty($template['activeExecutives'])) {
             foreach ($template['activeExecutives'] as $executive) {
-                if ($client->getNom() . $client->getPrenom() !== $executive['lastName'] . $executive['firstName']) {
-                    $otherContact = [
-                        'title'     => $executive['title'],
-                        'lastName'  => $executive['lastName'],
-                        'firstName' => $executive['firstName'],
-                        'function'  => $executive['position']
-                    ];
+                if (mb_strtolower($executive['firstName'] . $executive['lastName']) === mb_strtolower($client->getPrenom() . $client->getNom())) {
+                    $contactInList = true;
                     break;
                 }
             }
         }
-
-        $template['form'] = [
+        $template['contactInList'] = $contactInList;
+        $template['form']          = [
             'errors' => $session['errors'] ?? [],
             'values' => [
                 'contact'      => [
@@ -289,7 +280,14 @@ class ProjectRequestController extends Controller
                     'mobile'    => $mobile,
                     'function'  => $function
                 ],
-                'otherContact' => $otherContact,
+                'otherContact' => [
+                    'title'     => false === $contactInList ? $client->getCivilite() : '',
+                    'lastName'  => false === $contactInList ? $client->getNom() : '',
+                    'firstName' => false === $contactInList ? $client->getPrenom() : '',
+                    'email'     => false === $contactInList ? $this->removeEmailSuffix($client->getEmail()) : '',
+                    'mobile'    => false === $contactInList ? $client->getTelephone() : '',
+                    'function'  => false === $contactInList ? $client->getFonction() : ''
+                ],
                 'project'      => [
                     'description' => $values['project']['description'] ?? $project->getComments()
                 ]
@@ -319,8 +317,8 @@ class ProjectRequestController extends Controller
         }
 
         $errors     = [];
-        $action     = $request->request->get('action', 'submit');
-        $checkEmpty = 'save' !== $action;
+        $submitBtn  = $request->request->get('submit');
+        $checkEmpty = $submitBtn !== null;
 
         $title       = $request->request->get('title');
         $lastName    = $request->request->get('lastName');
@@ -443,7 +441,7 @@ class ProjectRequestController extends Controller
             $entityManager->flush($project);
         }
 
-        if ('save' === $action) {
+        if (null === $submitBtn) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
         } elseif (false === in_array($project->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::COMPLETE_REQUEST])) {
             try {
