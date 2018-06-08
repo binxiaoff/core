@@ -2,7 +2,8 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
+    ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     TermsOfSaleManager, WireTransferOutManager
@@ -1477,57 +1478,111 @@ class dossiersController extends bootstrap
 
     public function _echeancier_emprunteur()
     {
-        $this->clients                 = $this->loadData('clients');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->receptions              = $this->loadData('receptions');
-        /** @var \echeanciers_emprunteur $repaymentSchedule */
-        $repaymentSchedule = $this->loadData('echeanciers_emprunteur');
+        if (empty($this->params[0]) || false === filter_var($this->params[0], FILTER_VALIDATE_INT)) {
+            header('Location: /dossiers');
+            exit;
+        }
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager                = $this->get('doctrine.orm.entity_manager');
-            $this->directDebitsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements');
-            $this->lRemb                  = $repaymentSchedule->getDetailedProjectRepaymentSchedule($this->projects);
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-            $this->montantPreteur    = 0;
-            $this->MontantEmprunteur = 0;
-            $this->commission        = 0;
-            $this->comParMois        = 0;
-            $this->comTtcParMois     = 0;
-            $this->tva               = 0;
-            $this->totalTva          = 0;
-            $this->capital           = 0;
+        if (null === $project) {
+            header('Location: /dossiers');
+            exit;
+        }
 
-            foreach ($this->lRemb as $r) {
-                $this->montantPreteur    += $r['montant'];
-                $this->MontantEmprunteur += round($r['montant'] + $r['commission'] + $r['tva'], 2);
-                $this->commission        += $r['commission'];
-                $this->comParMois        = $r['commission'];
-                $this->comTtcParMois     = $r['commission'] + $r['tva'];
-                $this->tva               = $r['tva'];
-                $this->totalTva          += $r['tva'];
+        $earlyRepayment = [];
+        $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
+        $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $payments       = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getDetailedProjectPaymentSchedule($project);
+        $owedCapital    = $project->getAmount() - array_sum(array_column($payments, 'paidCapital'));
+        $payments       = array_map(function ($payment) {
+            $payment['borrowerPaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['borrowerPaymentDate']);
+            $payment['lenderRepaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['lenderRepaymentDate']);
+            $payment['borrowerPaymentStatus'] = $this->getBorrowerPaymentStatusLabel($payment);
+            $payment['lenderRepaymentStatus'] = $this->getLenderRepaymentStatusLabel($payment);
+            return $payment;
+        }, $payments);
 
-                $this->capital += $r['capital'];
+        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+            $wireTransferInRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
+            $earlyRepaymentWireTransferIn = $wireTransferInRepository->findOneBy([
+                'idProject'      => $project,
+                'typeRemb'       => Receptions::REPAYMENT_TYPE_EARLY,
+                'statusVirement' => Receptions::WIRE_TRANSFER_STATUS_RECEIVED,
+                'type'           => Receptions::TYPE_WIRE_TRANSFER
+            ]);
+
+            if (null !== $earlyRepaymentWireTransferIn) {
+                $earlyRepayment = [
+                    'amount'             => round($earlyRepaymentWireTransferIn->getMontant() / 100, 2),
+                    'witeTransferInDate' => $earlyRepaymentWireTransferIn->getAdded(),
+                    'repaymentDate'      => null
+                ];
+
+                $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy(
+                    ['idWireTransferIn' => $earlyRepaymentWireTransferIn],
+                    ['repayAt' => 'DESC']
+                );
+
+                if (null !== $repaymentTask) {
+                    $earlyRepayment['repaymentDate'] = $repaymentTask->getRepayAt();
+                }
             }
-            // on check si on est en remb anticipé
-            // ON recup la date de statut remb
-            $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC, id_project_status_history DESC', 0, 1);
-            $this->montant_ra = 0;
+        }
 
-            $this->projects_status->get(ProjectsStatus::REMBOURSEMENT_ANTICIPE, 'status');
+        $template = [
+            'project'         => $project,
+            'projectStatus'   => $projectStatus,
+            'companyStatus'   => $companyStatus,
+            'owedCapital'     => $owedCapital,
+            'payments'        => $payments,
+            'totalInterests'  => array_sum(array_column($payments, 'interests')),
+            'totalCommission' => array_sum(array_column($payments, 'commission')),
+            'totalVat'        => array_sum(array_column($payments, 'vat')),
+            'earlyRepayment'  => $earlyRepayment
+        ];
 
-            if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
-                //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
-                $this->receptions->get($this->projects->id_project, 'type_remb = ' . Receptions::REPAYMENT_TYPE_EARLY . ' AND status_virement = ' . Receptions::WIRE_TRANSFER_STATUS_RECEIVED . ' AND type = ' . Receptions::TYPE_WIRE_TRANSFER . ' AND id_project');
-                $this->montant_ra = ($this->receptions->montant / 100);
-                $this->date_ra    = $dernierStatut[0]['added'];
+        $this->render(null, $template);
+    }
 
-                //on ajoute ce qu'il reste au capital restant
-                $this->capital += ($this->montant_ra * 100);
-            }
+    /**
+     * @param array $payment
+     *
+     * @return string
+     */
+    private function getLenderRepaymentStatusLabel(array $payment): string
+    {
+        if ($payment['payment'] === $payment['paid']) {
+            return 'Remboursé';
+        } elseif ($payment['paid'] > 0) {
+            return 'Partiellement remboursé';
+        }
+
+        return 'En cours';
+    }
+
+    /**
+     * @param array $payment
+     *
+     * @return string
+     */
+    private function getBorrowerPaymentStatusLabel(array $payment): string
+    {
+        switch ($payment['debitStatus']) {
+            case Prelevements::STATUS_PENDING:
+                return 'A venir';
+            case Prelevements::STATUS_SENT:
+                return 'Envoyé';
+            case Prelevements::STATUS_VALID:
+                return 'Validé';
+            case Prelevements::STATUS_TERMINATED:
+                return 'Terminé';
+            case Prelevements::STATUS_TEMPORARILY_BLOCKED:
+                return 'Bloqué temporairement';
+            default:
+                return 'Inconnu';
         }
     }
 
