@@ -842,14 +842,17 @@ class preteursController extends bootstrap
         if (isset($_POST['spy_search'])) {
             /** @var \clients $clientData */
             $clientData = $this->loadData('clients');
+            $clientIds  = empty($_POST['id_client']) ? null : filter_var($_POST['id_client'], FILTER_SANITIZE_STRING);
 
-            if (false === empty($_POST['id_client'])) {
-                $this->clientsWithoutWelcomeOffer = $clientData->getClientsWithNoWelcomeOffer($_POST['id_client']);
-
+            if (null !== $clientIds && 0 !== preg_match('/^[0-9]+(\s*,\s*[0-9]+\s*)*$/', $clientIds)) {
+                $this->clientsWithoutWelcomeOffer = $clientData->getClientsWithNoWelcomeOffer($clientIds);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id_client'] = $_POST['id_client'];
+
+                if (empty($this->clientsWithoutWelcomeOffer)) {
+                    $this->errorMessage = 'Il n\'y a aucun utilisateur pour le moment.';
+                }
             } else {
-                $_SESSION['freeow']['title']   = 'Recherche non aboutie. Indiquez la liste des ID clients';
-                $_SESSION['freeow']['message'] = 'Il faut séparer les ids par des virgules';
+                $this->errorMessage = 'Recherche non aboutie. Indiquez la liste des ID clients <br />Il faut séparer les ids par des virgules';
             }
         }
 
@@ -1587,7 +1590,10 @@ class preteursController extends bootstrap
             foreach ($lenderBids as $rowIndex => $row) {
                 $colIndex = 0;
                 foreach ($row as $cellValue) {
-                    $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                    if (6 === $colIndex) {
+                        $cellValue = number_format($cellValue, 1, ',', '');
+                    }
+                    $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
                 }
             }
 

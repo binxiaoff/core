@@ -120,7 +120,7 @@ require('./app/controllers/Projects')
 require('./app/controllers/BidConfirmation')
 require('./app/controllers/ProjectRequest')
 require('./app/controllers/Autolend')
-require('./app/controllers/PartnerDashboard')
+require('./app/controllers/Partner')
 
   // @debug
   // window.__ = __

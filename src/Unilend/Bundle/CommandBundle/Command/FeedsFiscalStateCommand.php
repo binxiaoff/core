@@ -109,13 +109,13 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
             if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
                 switch ($contract->getLabel()) {
-                    case \underlying_contract::CONTRACT_BDC:
+                    case UnderlyingContract::CONTRACT_BDC:
                         $statutoryContributionsInterestsBDC = $row['interests'];
                         break;
-                    case \underlying_contract::CONTRACT_IFP:
+                    case UnderlyingContract::CONTRACT_IFP:
                         $statutoryContributionsInterestsIFP = $row['interests'];
                         break;
-                    case \underlying_contract::CONTRACT_MINIBON:
+                    case UnderlyingContract::CONTRACT_MINIBON:
                         $statutoryContributionsInterestsMiniBon = $row['interests'];
                         break;
                 }
@@ -140,13 +140,13 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $contract = $entityManager->getRepository('UnilendCoreBusinessBundle:UnderlyingContract')->find($row['id_type_contract']);
             if ('person' == $row['client_type'] && 'fr' == $row['fiscal_residence'] && 'taxable' == $row['exemption_status']) {
                 switch ($contract->getLabel()) {
-                    case \underlying_contract::CONTRACT_BDC:
+                    case UnderlyingContract::CONTRACT_BDC:
                         $statutoryContributionsInterestsBDC = round(bcsub($statutoryContributionsInterestsBDC, $row['interests'], 4), 2);
                         break;
-                    case \underlying_contract::CONTRACT_IFP:
+                    case UnderlyingContract::CONTRACT_IFP:
                         $statutoryContributionsInterestsIFP = round(bcsub($statutoryContributionsInterestsIFP, $row['interests'], 4), 2);
                         break;
-                    case \underlying_contract::CONTRACT_MINIBON:
+                    case UnderlyingContract::CONTRACT_MINIBON:
                         $statutoryContributionsInterestsMiniBon = round(bcsub($statutoryContributionsInterestsMiniBon, $row['interests'], 4), 2);
                         break;
                 }

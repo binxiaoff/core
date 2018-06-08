@@ -1,7 +1,7 @@
 <fieldset class="panel">
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if identityForm.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-            <label for="form-lender-{{ idClientType }}-email">
+            <label for="form-lender-{{ idClientType }}-email" class="ui-has-tooltip" data-original-title="{{ 'lender-subscription_label-email-data-use-tooltip'|trans|escape('html_attr') }}">
                 {% trans %} common_email {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>

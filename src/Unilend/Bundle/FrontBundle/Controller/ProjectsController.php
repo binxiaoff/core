@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContractAttributeType, WalletType
+    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -343,7 +343,7 @@ class ProjectsController extends Controller
 
             $cipManager           = $this->get('unilend.service.cip_manager');
             $productContracts     = $productManager->getAvailableContracts($product);
-            $displayCipDisclaimer = in_array(\underlying_contract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($client);
+            $displayCipDisclaimer = in_array(UnderlyingContract::CONTRACT_MINIBON, array_column($productContracts, 'label')) && $cipManager->hasValidEvaluation($client);
 
             if (
                 in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])
@@ -1155,7 +1155,7 @@ class ProjectsController extends Controller
         $productManager     = $this->get('unilend.service_product.product_manager');
         $availableContracts = $productManager->getAvailableContracts($product);
 
-        if (false === in_array(\underlying_contract::CONTRACT_MINIBON, array_column($availableContracts, 'label'))) {
+        if (false === in_array(UnderlyingContract::CONTRACT_MINIBON, array_column($availableContracts, 'label'))) {
             throw $this->createNotFoundException();
         }
 

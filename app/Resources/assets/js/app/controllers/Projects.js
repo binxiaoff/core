@@ -317,6 +317,10 @@ $doc.on('ready', function () {
       return
     }
 
+    amount = Utility.convertStringToFloat(amount)
+    duration = Utility.convertStringToFloat(duration)
+    rate = Utility.convertStringToFloat(rate)
+
     $message.html('').removeClass('c-error')
 
     // @trigger elem `Spinner:showLoading`

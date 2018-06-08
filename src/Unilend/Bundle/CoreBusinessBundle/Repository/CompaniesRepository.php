@@ -45,7 +45,9 @@ class CompaniesRepository extends EntityRepository
     public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
-        $queryBuilder->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Projects', 'p', Join::WITH, 'p.idCompany = c.idCompany')
+            ->innerJoin('UnilendCoreBusinessBundle:RiskDataMonitoring', 'rdm', Join::WITH, 'c.siren = rdm.siren')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren);
 
@@ -202,17 +204,66 @@ class CompaniesRepository extends EntityRepository
             DISTINCT(co.siren) AS siren 
           FROM companies co 
             INNER JOIN projects p ON co.id_company = p.id_company 
-            INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren 
-          WHERE p.status >= ' . ProjectsStatus::COMPLETE_REQUEST . ' 
-            AND p.status NOT IN (' . implode(',', MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS) . ') 
+            INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren
+            INNER JOIN company_status cs ON co.id_status = cs.id
+          WHERE p.status >= :completeRequest 
+            AND p.status NOT IN (:projectStatus)
+            AND cs.label NOT IN (:companyStatus)
             AND rdm.end <= NOW() 
             AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL
-            AND co.siren !=\'\'
+            AND co.siren != \'\'
             AND co.siren IS NOT NULL';
 
         return $this->getEntityManager()
             ->getConnection()
-            ->executeQuery($query)
+            ->executeQuery($query, [
+                'completeRequest' => ProjectsStatus::COMPLETE_REQUEST,
+                'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
+                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
+            ], [
+                'completeRequest' => \PDO::PARAM_INT,
+                'projectStatus'   => Connection::PARAM_INT_ARRAY,
+                'companyStatus'   => Connection::PARAM_STR_ARRAY
+            ])
+            ->fetchAll();
+    }
+
+    /**
+     * @param string $provider
+     *
+     * @return array
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public function getSirenWithActiveProjectsAndNoMonitoringByProvider(string $provider)
+    {
+        $query = '
+          SELECT
+            DISTINCT(co.siren) AS siren 
+          FROM companies co 
+            INNER JOIN projects p ON co.id_company = p.id_company 
+            INNER JOIN risk_data_monitoring rdm ON co.siren = rdm.siren AND rdm.provider = :provider
+            INNER JOIN company_status cs ON co.id_status = cs.id
+          WHERE p.status >= :completeRequest 
+            AND p.status NOT IN (:projectStatus)
+            AND cs.label NOT IN (:companyStatus)
+            AND rdm.end <= NOW() 
+            AND (SELECT rdm2.end FROM risk_data_monitoring rdm2 WHERE rdm2.siren = co.siren AND rdm2.provider = :provider ORDER BY rdm2.start DESC LIMIT 1) IS NOT NULL
+            AND co.siren != \'\'
+            AND co.siren IS NOT NULL';
+
+        return $this->getEntityManager()
+            ->getConnection()
+            ->executeQuery($query, [
+                'provider'        => $provider,
+                'completeRequest' => ProjectsStatus::COMPLETE_REQUEST,
+                'projectStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_PROJECTS_STATUS,
+                'companyStatus'   => MonitoringCycleManager::LONG_TERM_MONITORING_EXCLUDED_COMPANY_STATUS
+            ], [
+                'provider'        => \PDO::PARAM_STR,
+                'completeRequest' => \PDO::PARAM_INT,
+                'projectStatus'   => Connection::PARAM_INT_ARRAY,
+                'companyStatus'   => Connection::PARAM_STR_ARRAY
+            ])
             ->fetchAll();
     }
 }

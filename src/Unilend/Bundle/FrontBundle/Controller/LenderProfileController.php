@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\OptimisticLockException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
 };
@@ -17,12 +18,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Users, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientAuditer, LocationManager
+    ClientAuditer, LocationManager, NewsletterManager
 };
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class LenderProfileController extends Controller
 {
@@ -336,7 +338,6 @@ class LenderProfileController extends Controller
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $translator         = $this->get('translator');
         $addressManager     = $this->get('unilend.service.address_manager');
-        $modifications      = [];
         $housingCertificate = null;
 
         $zip       = $form->get('zip')->getData();
@@ -348,10 +349,8 @@ class LenderProfileController extends Controller
                     $form->get('zip')->addError(new FormError($translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
                 }
 
-                // @todo US person declaration must be historized in a proper way (Karla on the way)
-                if ($form->get('noUsPerson')->getData()) {
-                    $modifications[] = 'noUsPerson';
-                }
+                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+                $this->logClientChanges($client);
 
                 $files[AttachmentType::JUSTIFICATIF_DOMICILE] = $fileBag->get('housing-certificate');
                 if ($countryId !== PaysV2::COUNTRY_FRANCE) {
@@ -448,7 +447,7 @@ class LenderProfileController extends Controller
                 }
             }
 
-            $this->updateClientStatusAndNotifyClient($client, $modifications);
+            $this->updateClientStatusAndNotifyClient($client);
 
             $this->addFlash($success, $translation);
 
@@ -676,16 +675,26 @@ class LenderProfileController extends Controller
      * @Route("/profile/alertes", name="lender_profile_notifications")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param Request $request
+     *
      * @return Response
      */
-    public function notificationsAction(): Response
+    public function notificationsAction(Request $request): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        /** @var UserLender $user */
+        $user = $this->getUser();
+
+        if (false === in_array($user->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
+        $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client           = $clientRepository->find($user->getClientId());
+
         $templateData = [
-            'isCIPActive' => $this->isCIPActive()
+            'isCIPActive'       => $this->isCIPActive(),
+            'newsletterConsent' => $client->getOptin1(),
+            'siteUrl'           => $request->getSchemeAndHttpHost()
         ];
 
         $this->addNotificationSettingsTemplate($templateData);
@@ -756,9 +765,54 @@ class LenderProfileController extends Controller
         }
 
         $sendingPeriod = $request->request->filter('period', FILTER_SANITIZE_STRING);
-        $typeId        = $request->request->getInt('type_id');
         $active        = $request->request->getBoolean('active');
-        $type          = null;
+
+        switch ($sendingPeriod) {
+            case 'newsletter':
+                return $this->updateNewsletterConsent($active, $request->getClientIp());
+            case 'immediate':
+            case 'daily':
+            case 'weekly':
+            case 'monthly':
+                return $this->updateNotificationSettings($sendingPeriod, $active, $request->request->getInt('type_id'));
+            default:
+                return $this->json('ko');
+        }
+    }
+
+    /**
+     * @param bool        $active
+     * @param null|string $ipAddress
+     *
+     * @return JsonResponse
+     */
+    private function updateNewsletterConsent(bool $active, ?string $ipAddress): JsonResponse
+    {
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $clientRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $client            = $clientRepository->find($this->getUser()->getClientId());
+        $newsletterManager = $this->get(NewsletterManager::class);
+
+        if ($active) {
+            $response = $newsletterManager->subscribeNewsletter($client, $ipAddress);
+        } else {
+            $response = $newsletterManager->unsubscribeNewsletter($client, $ipAddress);
+        }
+
+        $response = $response ? 'ok' : 'ko';
+        return $this->json($response);
+    }
+
+    /**
+     * @param string   $sendingPeriod
+     * @param bool     $active
+     * @param int|null $typeId
+     *
+     * @return JsonResponse
+     */
+    private function updateNotificationSettings(string $sendingPeriod, bool $active, ?int $typeId): JsonResponse
+    {
+        $type = null;
 
         /* Put it temporary here, because we don't need it after the project refectory notification  */
         $immediateTypes = [
@@ -791,48 +845,59 @@ class LenderProfileController extends Controller
             ClientsGestionTypeNotif::TYPE_REPAYMENT
         ];
 
-        $error = false;
-
         switch ($sendingPeriod) {
             case 'immediate':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE;
                 if (false === in_array($typeId, $immediateTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'daily':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY;
                 if (false === in_array($typeId, $dailyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'weekly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY;
                 if (false === in_array($typeId, $weeklyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             case 'monthly':
                 $type = \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY;
                 if (false === in_array($typeId, $monthlyTypes, true)) {
-                    $error = true;
+                    return $this->json('ko');
                 }
                 break;
             default:
-                $error = true;
+                return $this->json('ko');
         }
 
-        if (false === $error) {
-            /** @var \clients_gestion_notifications $notificationSettings */
-            $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
-            $notificationSettings->get(['id_client' => $this->getUser()->getClientId(), 'id_notif' => $typeId]);
-            $notificationSettings->$type = $active ? 1 : 0;
-            $notificationSettings->update(['id_client' => $this->getUser()->getClientId(), 'id_notif' => $typeId]);
+        try {
+            $entityManager                  = $this->get('doctrine.orm.entity_manager');
+            $notificationSettingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
+            $notificationSettings           = $notificationSettingsRepository->findOneBy([
+                'idClient' => $this->getUser()->getClientId(),
+                'idNotif'  => $typeId
+            ]);
 
-            return $this->json('ok');
+            $notificationSettings->{'set' . ucfirst($type)}($active);
+
+            $entityManager->flush($notificationSettings);
+        } catch (OptimisticLockException $exception) {
+            $this->get('logger')->error('Could not update lender notifications. Error: ' . $exception->getMessage(), [
+                'id_client' => $this->getUser()->getClientId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+
+            return $this->json('ko');
         }
 
-        return $this->json('ko');
+        return $this->json('ok');
     }
 
     /**
@@ -906,7 +971,7 @@ class LenderProfileController extends Controller
 
         $translator     = $this->get('translator');
         $isFileUploaded = false;
-        $uploadError    = [];
+        $error          = '';
         $files          = $request->request->get('files', []);
         $client         = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
 
@@ -920,21 +985,26 @@ class LenderProfileController extends Controller
                         $form               = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
                         $iban               = $form['bankAccount']['iban'];
                         $bic                = $form['bankAccount']['bic'];
-                        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                        $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
+
+                        if (in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+                            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+                            $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
+                        } else {
+                            $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
+                        }
                     }
                 } catch (\Exception $exception) {
-                    $uploadError[] = $translator->trans('projet_document-type-' . $request->request->get('files')[$fileName]);
+                    $error = $translator->trans('lender-profile_completeness-form-error-message');
                 }
             }
         }
 
-        if (empty($uploadError) && $isFileUploaded) {
+        if (empty($error) && $isFileUploaded) {
             $this->updateClientStatusAndNotifyClient($client);
 
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
-        } elseif (false === empty($uploadError)) {
-            $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
+        } elseif (false === empty($error)) {
+            $this->addFlash('completenessError', $error);
         }
 
         return $this->redirectToRoute('lender_completeness');
@@ -991,8 +1061,12 @@ class LenderProfileController extends Controller
         // Data in $modifiedData should only be data not historized in tables `bank_account`, `attachment`, `*_address` or `client_data_history`
         $historyContent      = $this->formatArrayToUnorderedList($modifiedData);
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
 
+        if ($client->getUsPerson()) {
+            $clientStatusManager->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED);
+        } else {
+            $clientStatusManager->changeClientStatusTriggeredByClientAction($client, $historyContent);
+        }
         $this->sendAccountModificationEmail($client);
     }
 
@@ -1077,8 +1151,8 @@ class LenderProfileController extends Controller
         $client              = $form->get('client')->getData();
         $bankAccountDocument = null;
 
-        if ('FR' !== strtoupper(substr($iban, 0, 2))) {
-            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-french-error-message')));
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+            $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
         if (
@@ -1483,8 +1557,54 @@ class LenderProfileController extends Controller
         $clientAuditer = $this->get(ClientAuditer::class);
         $clientChanges = $clientAuditer->logChanges($client, $frontUser);
 
+        if (false === empty($clientChanges['email'][0])) {
+            $this->notifyEmailChangeToOldAddress($client, $clientChanges['email'][0]);
+        }
+
         $entityManager->flush($client);
 
         return $clientChanges;
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $oldEmail
+     */
+    private function notifyEmailChangeToOldAddress(Clients $client, string $oldEmail): void
+    {
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var Wallet $wallet */
+        $wallet = $walletRepository->getWalletByType($client, WalletType::LENDER);
+
+        if (null === $wallet) {
+            $this->get('logger')->error('Could not notify email modification to old email address. Unable to find lender wallet.', [
+                'id_client' => $client,
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
+
+            return;
+        }
+
+        $message = $this->get('unilend.swiftmailer.message_provider')
+            ->newMessage('alerte-changement-email-preteur', [
+                'firstName'     => $client->getPrenom(),
+                'lastName'      => $client->getNom(),
+                'lenderPattern' => $wallet->getWireTransferPattern()
+            ]);
+
+        try {
+            $message->setTo($oldEmail);
+            $this->get('mailer')->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('Could not send email modification alert to the previous lender email. Error: ' . $exception->getMessage(), [
+                'id_client'   => $client->getIdClient(),
+                'template_id' => $message->getTemplateId(),
+                'class'       => __CLASS__,
+                'function'    => __FUNCTION__,
+                'file'        => $exception->getFile(),
+                'line'        => $exception->getLine()
+            ]);
+        }
     }
 }

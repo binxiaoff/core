@@ -13,7 +13,10 @@ var $doc = $(document)
 $doc
   // Sanitise integers
   .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="integer"]', function (event, FormValidation, inputValidation) {
-    $(this).val(Utility.convertStringToFloat($(this).val()))
+    var convertedValue = Utility.convertStringToFloat($(this).val())
+    if (false === isNaN(convertedValue)) {
+      $(this).val(convertedValue)
+    }
   })
 
   // Sanitise Title (e.g. Raison Sociale)

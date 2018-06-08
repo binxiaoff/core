@@ -302,3 +302,23 @@ eight_points_guzzle:
 cl_slack:
     api_token: "%slack.token%"
     test:      false
+
+welp_mailchimp:
+    api_key: "%mailchimp.api_key%"
+    list_provider: welp_mailchimp.list_provider
+    lists:
+        "%mailchimp.list_id%":
+            subscriber_provider: 'Unilend\Bundle\CoreBusinessBundle\Event\MailChimpEventSubscriber'
+            webhook_secret: "%mailchimp.webhook_secret%"
+            webhook_url: "%router.request_context.scheme%://%url.host_default%"
+            merge_fields:
+                -
+                    tag: FNAME
+                    name: Prénom
+                    type: text
+                    public: true
+                -
+                    tag: LNAME
+                    name: Nom
+                    type: text
+                    public: true

@@ -25,7 +25,7 @@ class BidsRepository extends EntityRepository
         if (false === empty($criteria)) {
             foreach ($criteria as $field => $value) {
                 $qb->andWhere('b.' . $field . ' = :' . $field)
-                   ->setParameter($field, $value);
+                    ->setParameter($field, $value);
             }
         }
         $query = $qb->getQuery();
@@ -139,5 +139,27 @@ class BidsRepository extends EntityRepository
             ->setFirstResult(0);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param int          $status
+     * @param int          $limit
+     * @param int          $offset
+     *
+     * @return Bids[]
+     */
+    public function getAutoBids($project, int $status, int $limit = 100, int $offset = 0): array
+    {
+        $queryBuilder = $this->createQueryBuilder('b');
+        $queryBuilder
+            ->where('b.idProject = :project')
+            ->andWhere('b.status = :status')
+            ->andWhere('b.idAutobid IS NOT NULL')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->setParameters(['project' => $project, 'status' => $status]);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

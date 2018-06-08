@@ -27,5 +27,6 @@ class UnilendCoreBusinessExtension extends Extension
         $loader->load('product_model.xml');
         $loader->load('eligibility.xml');
         $loader->load('repayment.xml');
+        $loader->load('events.xml');
     }
 }
