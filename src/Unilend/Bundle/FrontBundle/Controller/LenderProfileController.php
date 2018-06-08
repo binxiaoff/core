@@ -1557,8 +1557,54 @@ class LenderProfileController extends Controller
         $clientAuditer = $this->get(ClientAuditer::class);
         $clientChanges = $clientAuditer->logChanges($client, $frontUser);
 
+        if (false === empty($clientChanges['email'][0])) {
+            $this->notifyEmailChangeToOldAddress($client, $clientChanges['email'][0]);
+        }
+
         $entityManager->flush($client);
 
         return $clientChanges;
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $oldEmail
+     */
+    private function notifyEmailChangeToOldAddress(Clients $client, string $oldEmail): void
+    {
+        $walletRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet');
+        /** @var Wallet $wallet */
+        $wallet = $walletRepository->getWalletByType($client, WalletType::LENDER);
+
+        if (null === $wallet) {
+            $this->get('logger')->error('Could not notify email modification to old email address. Unable to find lender wallet.', [
+                'id_client' => $client,
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
+
+            return;
+        }
+
+        $message = $this->get('unilend.swiftmailer.message_provider')
+            ->newMessage('alerte-changement-email-preteur', [
+                'firstName'     => $client->getPrenom(),
+                'lastName'      => $client->getNom(),
+                'lenderPattern' => $wallet->getWireTransferPattern()
+            ]);
+
+        try {
+            $message->setTo($oldEmail);
+            $this->get('mailer')->send($message);
+        } catch (\Exception $exception) {
+            $this->get('logger')->error('Could not send email modification alert to the previous lender email. Error: ' . $exception->getMessage(), [
+                'id_client'   => $client->getIdClient(),
+                'template_id' => $message->getTemplateId(),
+                'class'       => __CLASS__,
+                'function'    => __FUNCTION__,
+                'file'        => $exception->getFile(),
+                'line'        => $exception->getLine()
+            ]);
+        }
     }
 }

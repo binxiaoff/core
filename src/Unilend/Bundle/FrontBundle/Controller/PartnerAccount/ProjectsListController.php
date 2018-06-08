@@ -172,12 +172,6 @@ class ProjectsListController extends Controller
         $display    = [];
         $translator = $this->get('translator');
 
-        if ($abandoned) {
-            $entityManager        = $this->get('doctrine.orm.entity_manager');
-            $historyRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
-            $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
-        }
-
         foreach ($projects as $project) {
             $display[$project->getIdProject()] = [
                 'id'         => $project->getIdProject(),
@@ -186,6 +180,7 @@ class ProjectsListController extends Controller
                 'amount'     => $project->getAmount(),
                 'duration'   => $project->getPeriod(),
                 'status'     => $project->getStatus(),
+                'date'       => $project->getAdded(),
                 'submitter'  => [
                     'firstName' => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getPrenom() : '',
                     'lastName'  => $project->getIdClientSubmitter() && $project->getIdClientSubmitter()->getIdClient() ? $project->getIdClientSubmitter()->getNom() : '',
@@ -203,8 +198,11 @@ class ProjectsListController extends Controller
             }
 
             if ($abandoned) {
+                $entityManager        = $this->get('doctrine.orm.entity_manager');
+                $historyRepository    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory');
+                $abandonProjectStatus = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => ProjectsStatus::ABANDONED]);
                 $history = $historyRepository->findOneBy([
-                    'idProject' => $project->getIdProject(),
+                    'idProject'       => $project->getIdProject(),
                     'idProjectStatus' => $abandonProjectStatus
                 ]);
                 $display[$project->getIdProject()]['projectAbandonReasons'] = $history ? $history->getAbandonReasons() : [];

@@ -74,5 +74,13 @@
             <tag name="form.type" />
             <argument type="service" id="translator" />
         </service>
+
+        <service id="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionIdentityPerson" autowire="true">
+            <tag name="form.type" />
+        </service>
+
+        <service id="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionIdentityLegalEntity" autowire="true">
+            <tag name="form.type" />
+        </service>
     </services>
 </container>
