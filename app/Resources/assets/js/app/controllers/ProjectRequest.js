@@ -62,6 +62,8 @@ if ($borrowerReasonInput.length) {
         $borrowerSirenLabel.find('.field-required').hide()
         $borrowerSirenInput
           .removeAttr('data-formvalidation-required')
+        $borrowerCompanyNameInput
+          .attr('data-formvalidation-required', true)
         break
 
       // Rachat de parts sociale
@@ -72,6 +74,8 @@ if ($borrowerReasonInput.length) {
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
+        $borrowerCompanyNameInput
+          .removeAttr('data-formvalidation-required')
         break
 
       // Everything else
@@ -82,6 +86,8 @@ if ($borrowerReasonInput.length) {
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
+        $borrowerCompanyNameInput
+          .removeAttr('data-formvalidation-required')
         break
     }
   }

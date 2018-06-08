@@ -126,6 +126,7 @@
                                     <div class="col-lg-2 col-md-3">
                                         <label for="borrower-lp-input-company-name" class="field-label">
                                             {% trans %} borrower-landing-page_company-name-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                                         </label>
                                     </div>
                                     <div class="col-lg-8 col-md-8">
@@ -133,7 +134,8 @@
                                                id="borrower-lp-input-company-name"
                                                name="company_name"
                                                value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
-                                               class="input-field">
+                                               class="input-field"
+                                               data-formvalidation-input>
                                         <ul class="ui-formvalidation-messages"></ul>
                                     </div>
                                 </div>

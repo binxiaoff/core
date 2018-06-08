@@ -307,12 +307,16 @@
                                     <div class="form-field col-xs-12">
                                         <label for="esim-input-company-name">
                                             {% trans %} home-borrower_simulator-company-name-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
                                         </label>
                                         <input type="text"
                                                id="esim-input-company-name"
                                                name="esim[company_name]"
                                                value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
-                                               class="input-field">
+                                               class="input-field"
+                                               data-formvalidation-input>
                                     </div>
                                 </div>
                                 {# /COMPANY NAME: Remove if not required #}

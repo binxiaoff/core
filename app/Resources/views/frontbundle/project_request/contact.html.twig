@@ -86,21 +86,27 @@
                                                 </div><!-- /.form-field -->
                                             </div>
                                         </fieldset>
-                                        {% if project.idCompany.siren is not empty %}
-                                            <fieldset class="panel">
-                                                <h3 class="h3">{% trans %} project-request_step-1-company-information-title {% endtrans %}</h3>
+                                        <fieldset class="panel">
+                                            <h3 class="h3">
+                                                {% if project.getIdBorrowingMotive() == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
+                                                    {% trans %} project-request_step-1-franchiser-information-title {% endtrans %}
+                                                {% else %}
+                                                    {% trans %} project-request_step-1-company-information-title {% endtrans %}
+                                                {% endif %}
+                                            </h3>
 
-                                                <div class="row">
-                                                    {% if project.idCompany.name is not empty %}
-                                                        <div class="form-field col-lg-6 col-md-6">
-                                                            <div class="field-label">
-                                                                {% trans %} project-request_step-1-company-name-field-label {% endtrans %}
-                                                            </div>
-                                                            <div class="input-group">
-                                                                <strong>{{ project.idCompany.name }}</strong>
-                                                            </div><!-- /.input-group -->
-                                                        </div><!-- /.form-field -->
-                                                    {% endif %}
+                                            <div class="row">
+                                                {% if project.idCompany.name is not empty %}
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <div class="field-label">
+                                                            {% trans %} project-request_step-1-company-name-field-label {% endtrans %}
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <strong>{{ project.idCompany.name }}</strong>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if project.idCompany.siren is not empty %}
                                                     <div class="form-field col-lg-6 col-md-6">
                                                         <div class="field-label">
                                                             {% trans %} project-request_step-1-company-siren-field-label {% endtrans %}
@@ -109,50 +115,50 @@
                                                             <strong>{{ project.idCompany.siren }}</strong>
                                                         </div><!-- /.input-group -->
                                                     </div><!-- /.form-field -->
-                                                    {% if project.idCompany.dateCreation is not empty %}
-                                                        <div class="form-field col-lg-6 col-md-6">
-                                                            <div class="field-label">
-                                                                {% trans %} project-request_step-1-company-creation-date-field-label {% endtrans %}
-                                                            </div>
-                                                            <div class="input-group">
-                                                                <strong>{{ project.idCompany.dateCreation|localizeddate('short', 'none') }}</strong>
-                                                            </div><!-- /.input-group -->
-                                                        </div><!-- /.form-field -->
-                                                    {% endif %}
-                                                    {% if project.idCompany.capital > 0 %}
-                                                        <div class="form-field col-lg-6 col-md-6">
-                                                            <div class="field-label">
-                                                                {% trans %} project-request_step-1-company-capital-field-label {% endtrans %}
-                                                            </div>
-                                                            <div class="input-group">
-                                                                <strong>{{ project.idCompany.capital|localizedcurrency('EUR') }}</strong>
-                                                            </div><!-- /.input-group -->
-                                                        </div><!-- /.form-field -->
-                                                    {% endif %}
-                                                    {% if project.idCompany.idAddress is not null %}
-                                                        <div class="form-field col-lg-6 col-md-6">
-                                                            <div class="field-label">
-                                                                {% trans %} project-request_step-1-company-address-field-label {% endtrans %}
-                                                            </div>
-                                                            <div class="input-group">
-                                                                <strong>{{ project.idCompany.idAddress.address }}<br>{{ project.idCompany.idAddress.zip }} {{ project.idCompany.idAddress.city }}
-                                                                </strong>
-                                                            </div><!-- /.input-group -->
-                                                        </div><!-- /.form-field -->
-                                                    {% endif %}
-                                                    {% if lastBalanceSheet is not null %}
-                                                        <div class="form-field col-lg-6 col-md-6">
-                                                            <div class="field-label">
-                                                                {% trans %} project-request_step-1-company-last-balance-sheet-date-field-label {% endtrans %}
-                                                            </div>
-                                                            <div class="input-group">
-                                                                <strong>{{ lastBalanceSheet.clotureExerciceFiscal|localizeddate('short', 'none') }}</strong>
-                                                            </div><!-- /.input-group -->
-                                                        </div><!-- /.form-field -->
-                                                    {% endif %}
-                                                </div>
-                                            </fieldset>
-                                        {% endif %}
+                                                {% endif %}
+                                                {% if project.idCompany.dateCreation is not empty %}
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <div class="field-label">
+                                                            {% trans %} project-request_step-1-company-creation-date-field-label {% endtrans %}
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <strong>{{ project.idCompany.dateCreation|localizeddate('short', 'none') }}</strong>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if project.idCompany.capital > 0 %}
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <div class="field-label">
+                                                            {% trans %} project-request_step-1-company-capital-field-label {% endtrans %}
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <strong>{{ project.idCompany.capital|localizedcurrency('EUR') }}</strong>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if project.idCompany.idAddress is not null %}
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <div class="field-label">
+                                                            {% trans %} project-request_step-1-company-address-field-label {% endtrans %}
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <strong>{{ project.idCompany.idAddress.address }}<br>{{ project.idCompany.idAddress.zip }} {{ project.idCompany.idAddress.city }}
+                                                            </strong>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                {% endif %}
+                                                {% if lastBalanceSheet is not null %}
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <div class="field-label">
+                                                            {% trans %} project-request_step-1-company-last-balance-sheet-date-field-label {% endtrans %}
+                                                        </div>
+                                                        <div class="input-group">
+                                                            <strong>{{ lastBalanceSheet.clotureExerciceFiscal|localizeddate('short', 'none') }}</strong>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                {% endif %}
+                                            </div>
+                                        </fieldset>
                                         <fieldset class="panel">
                                             <h3 class="h3">{% trans %} project-request_step-1-representative-identity-section-title {% endtrans %}</h3>
 
