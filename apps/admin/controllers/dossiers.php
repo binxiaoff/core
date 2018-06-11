@@ -719,7 +719,7 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
 
-            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projects, true);
+            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projectEntity, true);
             $this->selectedProduct        = $product;
             $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
             $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
@@ -2752,18 +2752,15 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
-
-        /** @var \projects $project */
-        $project = $this->loadData('projects');
-        /** @var \partner $partner */
-        $partner = $this->loadData('partner');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
         if (
             isset($this->params[0], $this->params[1])
-            && $project->get($this->params[0])
-            && $partner->get($this->params[1])
+            && ($project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]))
+            && ($partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($this->params[1]))
         ) {
-            $project->id_partner = $partner->id;
+            $project->setIdPartner($partner);
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */
             $productManager   = $this->get('unilend.service_product.product_manager');
