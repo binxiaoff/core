@@ -631,13 +631,14 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('lender_dashboard');
         }
 
-        $translator     = $this->get('translator');
-        $isFileUploaded = false;
-        $error          = '';
-        $files          = $request->request->get('files', []);
-        $client         = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $newAttachments = [];
-        $modifiedData   = [];
+        $translator            = $this->get('translator');
+        $isFileUploaded        = false;
+        $error                 = '';
+        $files                 = $request->request->get('files', []);
+        $client                = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $newAttachments        = [];
+        $modifiedData          = [];
+        $isBankAccountModified = false;
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -656,6 +657,7 @@ class LenderProfileController extends Controller
                             $modifiedData = [
                                 ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL => ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL
                             ];
+                            $isBankAccountModified = true;
                         } else {
                             $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
                         }
@@ -666,7 +668,7 @@ class LenderProfileController extends Controller
             }
         }
         $this->get('unilend.service.client_status_manager')
-            ->changeClientStatusTriggeredByClientAction($client, null, isset($modifiedData[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL]), false, $newAttachments);
+            ->changeClientStatusTriggeredByClientAction($client, null, false, $isBankAccountModified, $newAttachments);
 
         if (empty($error) && $isFileUploaded) {
             $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $modifiedData, $newAttachments);

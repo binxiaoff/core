@@ -37,16 +37,13 @@ class CompanyAddressRepository extends EntityRepository
     }
 
     /**
-     * @param Companies|int      $idCompany
-     * @param AddressType|string $type
+     * @param Companies|int $idCompany
      *
      * @return null|CompanyAddress
      * @throws \Doctrine\ORM\NonUniqueResultException,
      */
-    public function findValidatedCompanyAddress($idCompany, $type): ?CompanyAddress
+    public function findValidatedMainCompanyAddress($idCompany): ?CompanyAddress
     {
-        $typeLabel = $type instanceof AddressType ? $type->getLabel() : $type;
-
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
@@ -56,7 +53,7 @@ class CompanyAddressRepository extends EntityRepository
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('ca.dateValidated', 'DESC')
             ->setParameter(':idCompany', $idCompany)
-            ->setParameter('type', $typeLabel)
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
             ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();

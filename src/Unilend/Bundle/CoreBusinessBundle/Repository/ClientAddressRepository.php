@@ -38,15 +38,12 @@ class ClientAddressRepository extends EntityRepository
 
     /**
      * @param Clients|int $idClient
-     * @param AddressType|string $type
      *
      * @return null|ClientAddress
      * @throws \Doctrine\ORM\NonUniqueResultException,
      */
-    public function findValidatedClientAddress($idClient, $type): ?ClientAddress
+    public function findValidatedMainClientAddress($idClient): ?ClientAddress
     {
-        $typeLabel = $type instanceof AddressType ? $type->getLabel() : $type;
-
         $queryBuilder = $this->createQueryBuilder('ca');
         $queryBuilder
             ->innerJoin('UnilendCoreBusinessBundle:AddressType', 'at', Join::WITH, 'ca.idType = at.id')
@@ -56,7 +53,7 @@ class ClientAddressRepository extends EntityRepository
             ->andWhere('ca.dateArchived IS NULL')
             ->orderBy('ca.dateValidated', 'DESC')
             ->setParameter(':idClient', $idClient)
-            ->setParameter('type', $typeLabel)
+            ->setParameter('type', AddressType::TYPE_MAIN_ADDRESS)
             ->setMaxResults(1);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();

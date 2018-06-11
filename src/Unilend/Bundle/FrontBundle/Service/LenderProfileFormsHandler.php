@@ -45,6 +45,19 @@ class LenderProfileFormsHandler
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param EntityManager            $entityManager
+     * @param AttachmentManager        $attachmentManager
+     * @param ClientStatusManager      $clientStatusManager
+     * @param ClientAuditer            $clientAuditer
+     * @param ClientDataHistoryManager $clientDataHistoryManager
+     * @param AddressManager           $addressManager
+     * @param BankAccountManager       $bankAccountManager
+     * @param TranslatorInterface      $translator
+     * @param TemplateMessageProvider  $messageProvider
+     * @param \Swift_Mailer            $mailer
+     * @param LoggerInterface          $logger
+     */
     public function __construct(
         EntityManager $entityManager,
         AttachmentManager $attachmentManager,
@@ -100,6 +113,13 @@ class LenderProfileFormsHandler
                     }
                 } catch (\Exception $exception) {
                     $form->get('client')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -141,7 +161,7 @@ class LenderProfileFormsHandler
     {
         $isFileUploaded = false;
 
-        if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
+        if (Companies::CLIENT_STATUS_MANAGER != $company->getStatusClient()) {
             if (
                 Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT === $company->getStatusClient()
                 && empty($company->getStatusConseilExterneEntreprise())
@@ -200,6 +220,13 @@ class LenderProfileFormsHandler
                     $isFileUploaded   = true;
                 } catch (\Exception $exception) {
                     $form->get('company')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -294,6 +321,13 @@ class LenderProfileFormsHandler
                             }
                         } catch (\Exception $exception) {
                             $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+                            $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                                'id_client' => $client->getIdClient(),
+                                'class'     => __CLASS__,
+                                'method'    => __METHOD__,
+                                'file'      => $exception->getFile(),
+                                'line'      => $exception->getLine()
+                            ]);
                         }
                     } else {
                         switch ($attachmentTypeId) {
@@ -355,7 +389,7 @@ class LenderProfileFormsHandler
                     ]);
                 }
             }
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, $addressModification, $newAttachments);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $addressModification, false, $newAttachments);
 
             $modifiedData += $this->logClientChanges($client);
 
@@ -402,7 +436,7 @@ class LenderProfileFormsHandler
                 ];
                 break;
             default:
-                $this->logger->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender subscription', [
+                $this->logger->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender profile', [
                     'class'    => __CLASS__,
                     'function' => __FUNCTION__
                 ]);
@@ -429,7 +463,7 @@ class LenderProfileFormsHandler
                 $addressModification = true;
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), null, false, $addressModification);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), null, $addressModification);
             $this->clientDataHistoryManager->sendAccountModificationEmail($company->getIdClientOwner(), $modifiedData);
 
             return true;
@@ -470,6 +504,13 @@ class LenderProfileFormsHandler
                     $bankAccountDocument = $this->upload($client, AttachmentType::RIB, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($this->translator->trans('lender-profile_fiscal-tab-rib-file-error')));
+                    $this->logger->error('An error occurred while uploading IBAN attachment type id: ' . AttachmentType::RIB . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -481,7 +522,7 @@ class LenderProfileFormsHandler
             ];
 
             $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, true, false, [$bankAccountDocument]);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, true, [$bankAccountDocument]);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, [$bankAccountDocument]);
 
             return true;
