@@ -114,8 +114,8 @@ class LenderWalletController extends Controller
         if (null === $bankAccount) {
             $this->setWithdrawalInformationMessage($client);
         }
-        $form = $this->createForm(LenderWithdrawalType::class);
 
+        $form     = $this->createForm(LenderWithdrawalType::class);
         $template = [
             'balance'         => $this->getUser()->getBalance(),
             'client'          => $client,
@@ -154,14 +154,14 @@ class LenderWalletController extends Controller
 
         if (null === $lastModifiedBankAccount) {
             $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-or-pending-iban', ['%fiscalUrl%' => $this->generateUrl('lender_profile_fiscal_information')]));
-            $this->get('logger')->error('This client attempted to perform a withdrawal from his account, but he has no bank account', [
+            $this->get('logger')->error('The client ' . $client->getIdClient() . ' navigated to withdrawal page, but he has no bank account', [
                 'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__
             ]);
         } else {
             $this->addFlash('withdrawalInfo', $translator->trans('lender-wallet_withdrawal-error-no-valid-iban'));
-            $this->get('logger')->warning('This client attempted to perform a withdrawal from his account, but his pending bank account is not validated yet.', [
+            $this->get('logger')->warning('The client ' . $client->getIdClient() . ' navigated to withdrawal page, but his pending bank account is not validated yet.', [
                 'id_client'       => $client->getIdClient(),
                 'id_bank_account' => $lastModifiedBankAccount->getId(),
                 'class'           => __CLASS__,
