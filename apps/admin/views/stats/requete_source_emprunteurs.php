@@ -78,7 +78,7 @@
                         </td>
                         <td width=20%>
                             <br>
-                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Télécharger (CSV)</button>
+                            <button type="submit" name="send_query" id="send_query" class="btn-primary">Télécharger (Fichier Excel)</button>
                         </td>
                     </tr>
                 </table>

@@ -11,7 +11,7 @@
         <?php endif; ?>
     });
 </script>
-<form method="post" id="formQueryBrute" action="<?= $this->lurl ?>/queries/export/<?= $this->params[0] ?>" target="_blank">
+<form method="post" id="formQuery" action="<?= $this->lurl ?>/queries/export/<?= $this->params[0] ?>" target="_blank">
     <?php foreach ($this->sqlParams as $param) : ?>
         <input type="hidden" name="<?= 'param_' . str_replace('@', '', $param[0]) ?>" value="<?= $_POST[ 'param_' . str_replace('@', '', $param[0]) ] ?>"/>
     <?php endforeach; ?>
@@ -19,7 +19,7 @@
 <div id="contenu">
     <h1><?= $this->queries->name ?></h1>
     <div class="btnDroite">
-        <a onclick="document.getElementById('formQueryBrute').submit(); return false;" class="btn_link">Export</a>
+        <a onclick="document.getElementById('formQuery').submit(); return false;" class="btn_link">Export</a>
     </div>
     <?php if (count($this->result) > 0) : ?>
         <table class="tablesorter">
