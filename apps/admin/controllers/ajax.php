@@ -826,13 +826,6 @@ class ajaxController extends bootstrap
                     $existingStatus[] = $status['status'];
                 }
             }
-
-            if (false === in_array(ProjectsStatus::PREP_FUNDING, $existingStatus)) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
-                $mailerManager = $this->get('unilend.service.email_manager');
-                $mailerManager->sendBorrowerAccount($client, 'ouverture-espace-emprunteur-plein');
-            }
-
             $projectStatusManager->addProjectStatus($this->userEntity, ProjectsStatus::PREP_FUNDING, $project);
         } elseif ($_POST['status'] == 2) {
             /** @var ProjectRejectionReason[] $rejectionReasons */
