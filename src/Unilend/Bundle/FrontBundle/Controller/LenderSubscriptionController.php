@@ -20,6 +20,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     GoogleRecaptchaManager, NewsletterManager, SponsorshipManager
 };
+use Unilend\Bundle\FrontBundle\Form\{
+    LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson
+};
 use Unilend\Bundle\FrontBundle\Security\{
     BCryptPasswordEncoder, User\UserPartner
 };
@@ -79,9 +82,8 @@ class LenderSubscriptionController extends Controller
             $client->setOrigine(Clients::ORIGIN_WELCOME_OFFER_LP);
         }
 
-        $formManager         = $this->get('unilend.frontbundle.service.form_manager');
-        $identityForm        = $formManager->getLenderSubscriptionPersonIdentityForm($client);
-        $companyIdentityForm = $formManager->getLenderSubscriptionLegalEntityIdentityForm($client, $company);
+        $identityForm        = $this->createForm(LenderSubscriptionIdentityPerson::class, ['client' => $client]);
+        $companyIdentityForm = $this->createForm(LenderSubscriptionIdentityLegalEntity::class, ['client' => $client, 'company' => $company]);
 
         $identityForm->handleRequest($request);
         $companyIdentityForm->handleRequest($request);
@@ -1157,10 +1159,23 @@ class LenderSubscriptionController extends Controller
         $post        = $formManager->cleanPostData($request->request->all());
         $files       = $request->files->all();
 
+        if (isset($post['form_person'])) {
+            $form = $post['form_person'];
+        } elseif (isset($post['form_legal_entity'])) {
+            $form = $post['form_legal_entity'];
+        } else {
+            $this->get('logger')->error('Unable to save client action history: submitted form cannot be found.', [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__
+            ]);
+
+            return;
+        }
+
         if (Clients::SUBSCRIPTION_STEP_PERSONAL_INFORMATION === $step) {
-            $post['form']['client']['password']['first']  = md5($post['form']['client']['password']['first']);
-            $post['form']['client']['password']['second'] = md5($post['form']['client']['password']['second']);
-            $post['form']['security']['secreteReponse']   = md5($post['form']['security']['secreteReponse']);
+            $form['client']['password']['first']  = md5($form['client']['password']['first']);
+            $form['client']['password']['second'] = md5($form['client']['password']['second']);
+            $form['security']['secreteReponse']   = md5($form['security']['secreteReponse']);
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_PERSONAL_INFORMATION : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_PERSONAL_INFORMATION;
         } else {
             $formType = $client->isNaturalPerson() ? ClientsHistoryActions::LENDER_PERSON_SUBSCRIPTION_BANK_DOCUMENTS : ClientsHistoryActions::LENDER_LEGAL_ENTITY_SUBSCRIPTION_BANK_DOCUMENTS;

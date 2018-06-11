@@ -95,10 +95,9 @@ var PasswordCheck = function (input, options) {
 
       // Show description of evaluation
       var infoLabel = evaluation.level.label
-      var infoMoreHtml = ''
+      var infoMessages = ''
       if (evaluation.info.length > 0) {
         infoLabel += self.templates.infoToggle
-        infoMessages = ''
         for (var i = 0; i < evaluation.info.length; i++) {
           var helpText = (!Utility.isEmpty(evaluation.info[i].help) ? evaluation.info[i].help : '')
           var descriptionText = (!Utility.isEmpty(evaluation.info[i].description) ? '<strong>' + evaluation.info[i].description + '</strong><br/>' : '')
