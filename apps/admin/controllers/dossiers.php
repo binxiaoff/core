@@ -2007,20 +2007,17 @@ class dossiersController extends bootstrap
                             && $this->secondRangeEnd <= $today
                             && $this->secondRangeStart <= $this->secondRangeEnd
                         ) {
-                            $baseStatus = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->firstRangeStart, $this->firstRangeEnd);
+                            $baseStatus           = $projectStatusHistoryRepository->getStatusByDates($this->baseStatus, $this->secondRangeStart, $this->secondRangeEnd);
+                            $this->compareHistory = [
+                                'label'    => $projectStatus->getLabel(),
+                                'count'    => count($baseStatus),
+                                'status'   => $projectStatus->getStatus(),
+                                'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
+                            ];
 
-                            if (false === empty($baseStatus)) {
-                                $this->compareHistory = [
-                                    'label'    => $projectStatus->getLabel(),
-                                    'count'    => count($baseStatus),
-                                    'status'   => $projectStatus->getStatus(),
-                                    'children' => $this->getStatusChildren(array_column($baseStatus, 'idProjectStatusHistory'))
-                                ];
-
-                                foreach ($this->compareHistory['children'] as $childStatus => &$child) {
-                                    if ($childStatus > 0) {
-                                        $this->compareHistory['children'][$childStatus]['children'] = $this->getStatusChildren($child['id_project_status_history']);
-                                    }
+                            foreach ($this->compareHistory['children'] as $childStatus => &$child) {
+                                if ($childStatus > 0) {
+                                    $this->compareHistory['children'][$childStatus]['children'] = $this->getStatusChildren($child['id_project_status_history']);
                                 }
                             }
                         }
