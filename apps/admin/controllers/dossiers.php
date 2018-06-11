@@ -718,9 +718,8 @@ class dossiersController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\PartnerRepository $partnerRepository */
             $partnerRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner');
-            $project           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->projects->id_project);
 
-            $this->eligibleProducts       = $productManager->findEligibleProducts($project, true);
+            $this->eligibleProducts       = $productManager->findEligibleProducts($this->projectEntity, true);
             $this->selectedProduct        = $product;
             $this->isProductUsable        = empty($product->id_product) ? false : in_array($this->selectedProduct, $this->eligibleProducts);
             $this->partnerList            = $partnerRepository->getPartnersSortedByName(Partner::STATUS_VALIDATED);
