@@ -120,7 +120,7 @@
                         </div>
                         <div class="block-content text-center">
                             <p class="h3 text-primary pull-t">
-                                {{ earlyRepayment.repaymentDate|date('d/m/Y') }}
+                                {{ earlyRepayment.repaymentDate|localizeddate('short', 'none') }}
                             </p>
                         </div>
                     </div>
@@ -164,8 +164,8 @@
                                     {{ repayment.taxes|localizedcurrency('EUR') }}
                                 {% endif %}
                             </td>
-                            <td>{{ repayment.theoreticalRepaymentDate|date('d/m/Y') }}</td>
-                            <td>{% if repayment.actualRepaymentDate is not empty %}{{ repayment.actualRepaymentDate|date('d/m/Y') }}{% endif %}</td>
+                            <td>{{ repayment.theoreticalRepaymentDate|localizeddate('short', 'none') }}</td>
+                            <td>{% if repayment.actualRepaymentDate is not empty %}{{ repayment.actualRepaymentDate|localizeddate('short', 'none') }}{% endif %}</td>
                             <td>
                                 {% if repayment.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Echeanciers::STATUS_PENDING') %}
                                     À venir

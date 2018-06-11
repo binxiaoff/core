@@ -65,7 +65,7 @@
                         <h3 class="block-title">Total intérêts</h3>
                     </div>
                     <div class="block-content text-center">
-                        <p class="h3 text-primary pull-t">{{ totalInterests|localizednumber }}&nbsp;€</p>
+                        <p class="h3 text-primary pull-t">{{ totalInterests|localizedcurrency('EUR') }}</p>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                         <h3 class="block-title">Total commission</h3>
                     </div>
                     <div class="block-content text-center">
-                        <p class="h3 text-primary pull-t">{{ totalCommission|localizednumber }}&nbsp;€</p>
+                        <p class="h3 text-primary pull-t">{{ totalCommission|localizedcurrency('EUR') }}</p>
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                         <h3 class="block-title">Total TVA</h3>
                     </div>
                     <div class="block-content text-center">
-                        <p class="h3 text-primary pull-t">{{ totalVat|localizednumber }}&nbsp;€</p>
+                        <p class="h3 text-primary pull-t">{{ totalVat|localizedcurrency('EUR') }}</p>
                     </div>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                             <h3 class="block-title">Date réception remboursement anticipé</h3>
                         </div>
                         <div class="block-content text-center">
-                            <p class="h3 text-primary pull-t">{{ earlyRepayment.witeTransferInDate|date('d/m/Y') }}</p>
+                            <p class="h3 text-primary pull-t">{{ earlyRepayment.witeTransferInDate|localizeddate('short', 'none') }}</p>
                         </div>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
                         <div class="block-content text-center">
                             <p class="h3 text-primary pull-t">
                                 {% if earlyRepayment.repaymentDate is not empty %}
-                                    {{ earlyRepayment.repaymentDate|date('d/m/Y') }}
+                                    {{ earlyRepayment.repaymentDate|localizeddate('short', 'none') }}
                                 {% else %}
                                     N/A
                                 {% endif %}
@@ -161,9 +161,9 @@
                             <td class="text-right" data-order="{{ payment.vat }}">{{ payment.vat|localizedcurrency('EUR') }}</td>
                             <td class="text-right" data-order="{{ payment.paid }}">{{ payment.paid|localizedcurrency('EUR') }}</td>
                             <td class="text-right" data-order="{{ owedCapital }}">{{ owedCapital|localizedcurrency('EUR') }}</td>
-                            <td>{{ payment.debitDate|date('d/m/Y') }}</td>
-                            <td>{{ payment.borrowerPaymentDate|date('d/m/Y') }}</td>
-                            <td>{{ payment.lenderRepaymentDate|date('d/m/Y') }}</td>
+                            <td>{{ payment.debitDate|localizeddate('short', 'none') }}</td>
+                            <td>{{ payment.borrowerPaymentDate|localizeddate('short', 'none') }}</td>
+                            <td>{{ payment.lenderRepaymentDate|localizeddate('short', 'none') }}</td>
                             <td>{{ payment.borrowerPaymentStatus }}</td>
                             <td>{{ payment.lenderRepaymentStatus }}</td>
                         </tr>

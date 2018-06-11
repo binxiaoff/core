@@ -1,13 +1,12 @@
 <?php
 
-use Doctrine\ORM\Query\Expr\Join;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
     ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    TermsOfSaleManager, WireTransferOutManager
+    ProjectManager, TermsOfSaleManager, WireTransferOutManager
 };
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -1441,32 +1440,7 @@ class dossiersController extends bootstrap
         $loanRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
         $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
         $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
-        $loans          = $entityManager->createQueryBuilder()
-            ->select('
-                l.idLoan,
-                ROUND(l.amount / 100) AS amount,
-                l.rate,
-                uc.label AS contractType,
-                ROUND(e.montant / 100, 2) AS monthlyRepayment,
-                c.idClient,
-                c.hash AS clientHash,
-                c.prenom AS firstName,
-                c.nom AS lastName,
-                co.name AS companyName,
-                IDENTITY(t.idClientOrigin) AS idClientOrigin'
-            )
-            ->from('UnilendCoreBusinessBundle:Loans', 'l')
-            ->innerJoin('UnilendCoreBusinessBundle:UnderlyingContract', 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
-            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
-            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
-            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idClientOwner = w.idClient')
-            ->leftJoin('UnilendCoreBusinessBundle:LoanTransfer', 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
-            ->leftJoin('UnilendCoreBusinessBundle:Transfer', 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
-            ->where('l.idProject = :project')
-            ->setParameter('project', $project)
-            ->getQuery()
-            ->getResult();
+        $loans          = $loanRepository->getProjectLoans($project);
 
         $this->render(null, [
             'project'       => $project,
@@ -1481,9 +1455,7 @@ class dossiersController extends bootstrap
     {
         if (
             empty($this->params[0])
-            || empty($this->params[1])
             || false === filter_var($this->params[0], FILTER_VALIDATE_INT)
-            || false === filter_var($this->params[1], FILTER_VALIDATE_INT)
         ) {
             header('Location: /dossiers');
             exit;
@@ -1491,10 +1463,9 @@ class dossiersController extends bootstrap
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[1]);
+        $loan          = $entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->find($this->params[0]);
 
-        if (null === $project || null === $loan) {
+        if (null === $loan) {
             header('Location: /dossiers');
             exit;
         }
@@ -1503,9 +1474,9 @@ class dossiersController extends bootstrap
         $repayments                  = [];
         $lenderCompanyName           = null;
         $earlyRepayment              = null;
-        $owedCapital                 = $loan->getAmount() / 100;
-        $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-        $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
+        $owedCapital                 = bcdiv($loan->getAmount(), 100, 2);
+        $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $loan->getProject()->getStatus()]);
+        $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
         $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getIdLender()->getIdClient()]);
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $repaymentEntities           = $repaymentScheduleRepository->findBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_NOT_EARLY_REPAID]);
@@ -1520,7 +1491,7 @@ class dossiersController extends bootstrap
                 ++$leftRepayments;
             }
 
-            $owedCapital -= $repaymentEntity->getCapitalRembourse() / 100;
+            $owedCapital = bcsub($owedCapital, bcdiv($repaymentEntity->getCapitalRembourse(), 100, 5), 5);
 
             $taxes = 0;
             if (Echeanciers::STATUS_PENDING !== $repaymentEntity->getStatus()) {
@@ -1529,10 +1500,10 @@ class dossiersController extends bootstrap
 
             $repayments[] = [
                 'sequence'                 => $repaymentEntity->getOrdre(),
-                'capital'                  => $repaymentEntity->getCapital() / 100,
-                'repaidCapital'            => $repaymentEntity->getCapitalRembourse() / 100,
-                'interests'                => $repaymentEntity->getInterets() / 100,
-                'repaidInterests'          => $repaymentEntity->getInteretsRembourses() / 100,
+                'capital'                  => bcdiv($repaymentEntity->getCapital(), 100, 2),
+                'repaidCapital'            => bcdiv($repaymentEntity->getCapitalRembourse(), 100, 2),
+                'interests'                => bcdiv($repaymentEntity->getInterets(), 100, 2),
+                'repaidInterests'          => bcdiv($repaymentEntity->getInteretsRembourses(), 100, 2),
                 'taxes'                    => $taxes,
                 'theoreticalRepaymentDate' => $repaymentEntity->getDateEcheance(),
                 'actualRepaymentDate'      => $repaymentEntity->getDateEcheanceReel(),
@@ -1540,7 +1511,7 @@ class dossiersController extends bootstrap
             ];
         }
 
-        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
+        if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $loan->getProject()->getStatus()) {
             $earlyRepaymentAmount = $repaymentScheduleRepository->getEarlyRepaidCapitalByLoan($loan);
             $earlyRepaymentDate   = $repaymentScheduleRepository->findOneBy(['idLoan' => $loan, 'statusRa' => Echeanciers::IS_EARLY_REPAID])->getDateEcheanceReel();
             $earlyRepayment       = [
@@ -1550,7 +1521,7 @@ class dossiersController extends bootstrap
         }
 
         $this->render(null, [
-            'project'           => $project,
+            'project'           => $loan->getProject(),
             'projectStatus'     => $projectStatus,
             'companyStatus'     => $companyStatus,
             'loan'              => $loan,
@@ -1581,11 +1552,13 @@ class dossiersController extends bootstrap
             exit;
         }
 
+        /** @var ProjectManager $projectManager */
+        $projectManager = $this->get('unilend.service.project_manager');
+        $owedCapital    = $projectManager->getRemainingAmounts($project)['capital'];
         $earlyRepayment = [];
         $projectStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
         $companyStatus  = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $project->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
         $payments       = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getDetailedProjectPaymentSchedule($project);
-        $owedCapital    = $project->getAmount() - array_sum(array_column($payments, 'paidCapital'));
         $payments       = array_map(function ($payment) {
             $payment['borrowerPaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['borrowerPaymentDate']);
             $payment['lenderRepaymentDate']   = \DateTime::createFromFormat('Y-m-d H:i:s', $payment['lenderRepaymentDate']);
@@ -1605,7 +1578,7 @@ class dossiersController extends bootstrap
 
             if (null !== $earlyRepaymentWireTransferIn) {
                 $earlyRepayment = [
-                    'amount'             => round($earlyRepaymentWireTransferIn->getMontant() / 100, 2),
+                    'amount'             => bcdiv($earlyRepaymentWireTransferIn->getMontant(),  100, 2),
                     'witeTransferInDate' => $earlyRepaymentWireTransferIn->getAdded(),
                     'repaymentDate'      => null
                 ];
