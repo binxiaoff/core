@@ -28,8 +28,9 @@ use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsHistory, ClientsStatus, LoginLog
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    GoogleRecaptchaManager, LenderManager
+};
 use Unilend\Bundle\FrontBundle\Security\User\{
     BaseUser, UserLender
 };
@@ -65,7 +66,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param SessionAuthenticationStrategyInterface $sessionStrategy
      * @param CsrfTokenManagerInterface              $csrfTokenManager
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
-     * @param  LenderManager                         $lenderManager
+     * @param LenderManager                          $lenderManager
      * @param LoggerInterface                        $logger
      */
     public function __construct(

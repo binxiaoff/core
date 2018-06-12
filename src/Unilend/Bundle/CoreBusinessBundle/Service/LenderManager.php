@@ -189,7 +189,7 @@ class LenderManager
      *
      * @return bool
      */
-    public function needUpdatePersonalData(Clients $client)
+    public function needUpdatePersonalData(Clients $client): bool
     {
         if (false === $client->isLender()) {
             throw new \InvalidArgumentException('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -204,12 +204,12 @@ class LenderManager
 
         $personalDataUpdated = $client->getPersonalDataUpdated() ?? $client->getAdded();
         $interval            = $personalDataUpdated->diff(new \DateTime());
-        $intervalOnMonth     = $interval->y * 12 + $interval->m;
+        $intervalInMonths     = $interval->y * 12 + $interval->m;
 
         if (VigilanceRule::VIGILANCE_STATUS_HIGH === $currentVigilanceStatus) {
-            $needUpdatePersonalData = $intervalOnMonth >= 6;
+            $needUpdatePersonalData = $intervalInMonths >= 6;
         } else {
-            $needUpdatePersonalData = $intervalOnMonth >= 12;
+            $needUpdatePersonalData = $intervalInMonths >= 12;
         }
 
         return $needUpdatePersonalData;
