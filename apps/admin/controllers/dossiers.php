@@ -1474,7 +1474,7 @@ class dossiersController extends bootstrap
         $repayments                  = [];
         $lenderCompanyName           = null;
         $earlyRepayment              = null;
-        $owedCapital                 = bcdiv($loan->getAmount(), 100, 2);
+        $owedCapital                 = round(bcdiv($loan->getAmount(), 100, 5), 2);
         $projectStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $loan->getProject()->getStatus()]);
         $companyStatus               = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatusHistory')->findOneBy(['idCompany' => $loan->getProject()->getIdCompany()], ['added' => 'DESC'])->getIdStatus();
         $lenderCompany               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $loan->getIdLender()->getIdClient()]);
@@ -1500,10 +1500,10 @@ class dossiersController extends bootstrap
 
             $repayments[] = [
                 'sequence'                 => $repaymentEntity->getOrdre(),
-                'capital'                  => bcdiv($repaymentEntity->getCapital(), 100, 2),
-                'repaidCapital'            => bcdiv($repaymentEntity->getCapitalRembourse(), 100, 2),
-                'interests'                => bcdiv($repaymentEntity->getInterets(), 100, 2),
-                'repaidInterests'          => bcdiv($repaymentEntity->getInteretsRembourses(), 100, 2),
+                'capital'                  => round(bcdiv($repaymentEntity->getCapital(), 100, 5), 2),
+                'repaidCapital'            => round(bcdiv($repaymentEntity->getCapitalRembourse(), 100, 5), 2),
+                'interests'                => round(bcdiv($repaymentEntity->getInterets(), 100, 5), 2),
+                'repaidInterests'          => round(bcdiv($repaymentEntity->getInteretsRembourses(), 100, 5), 2),
                 'taxes'                    => $taxes,
                 'theoreticalRepaymentDate' => $repaymentEntity->getDateEcheance(),
                 'actualRepaymentDate'      => $repaymentEntity->getDateEcheanceReel(),
@@ -1527,7 +1527,7 @@ class dossiersController extends bootstrap
             'loan'              => $loan,
             'lenderCompanyName' => $lenderCompanyName,
             'leftRepayments'    => $leftRepayments,
-            'owedCapital'       => $owedCapital,
+            'owedCapital'       => round($owedCapital, 2),
             'repayments'        => $repayments,
             'earlyRepayment'    => $earlyRepayment
         ]);
@@ -1568,29 +1568,16 @@ class dossiersController extends bootstrap
         }, $payments);
 
         if (ProjectsStatus::REMBOURSEMENT_ANTICIPE === $project->getStatus()) {
-            $wireTransferInRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions');
-            $earlyRepaymentWireTransferIn = $wireTransferInRepository->findOneBy([
-                'idProject'      => $project,
-                'typeRemb'       => Receptions::REPAYMENT_TYPE_EARLY,
-                'statusVirement' => Receptions::WIRE_TRANSFER_STATUS_RECEIVED,
-                'type'           => Receptions::TYPE_WIRE_TRANSFER
-            ]);
+            $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy(
+                ['idProject' => $project, 'type' => ProjectRepaymentTask::TYPE_EARLY, 'status' => ProjectRepaymentTask::STATUS_REPAID],
+                ['repayAt' => 'DESC']
+            );
 
-            if (null !== $earlyRepaymentWireTransferIn) {
+            if (null !== $repaymentTask) {
                 $earlyRepayment = [
-                    'amount'             => bcdiv($earlyRepaymentWireTransferIn->getMontant(),  100, 2),
-                    'witeTransferInDate' => $earlyRepaymentWireTransferIn->getAdded(),
-                    'repaymentDate'      => null
+                    'amount'        => round(bcadd(bcadd($repaymentTask->getCapital(), $repaymentTask->getInterest(), 5), $repaymentTask->getCommissionUnilend(), 5), 2),
+                    'repaymentDate' => $repaymentTask->getRepayAt()
                 ];
-
-                $repaymentTask = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findOneBy(
-                    ['idWireTransferIn' => $earlyRepaymentWireTransferIn],
-                    ['repayAt' => 'DESC']
-                );
-
-                if (null !== $repaymentTask) {
-                    $earlyRepayment['repaymentDate'] = $repaymentTask->getRepayAt();
-                }
             }
         }
 

@@ -92,7 +92,7 @@
         </div>
         {% if earlyRepayment is not empty %}
             <div class="row">
-                <div class="col-xs-4 col-sm-4">
+                <div class="col-xs-6 col-sm-6">
                     <div class="block">
                         <div class="block-header">
                             <h3 class="block-title">Montant remboursement anticipé</h3>
@@ -102,17 +102,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xs-4 col-sm-4">
-                    <div class="block">
-                        <div class="block-header">
-                            <h3 class="block-title">Date réception remboursement anticipé</h3>
-                        </div>
-                        <div class="block-content text-center">
-                            <p class="h3 text-primary pull-t">{{ earlyRepayment.witeTransferInDate|localizeddate('short', 'none') }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xs-4 col-sm-4">
+                <div class="col-xs-6 col-sm-6">
                     <div class="block">
                         <div class="block-header">
                             <h3 class="block-title">Date remboursement anticipé</h3>
