@@ -388,9 +388,9 @@ class remboursementController extends bootstrap
         if (false === empty($this->params[0])) {
             $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-            $projectId                        = filter_var($this->params[0], FILTER_VALIDATE_INT);
-            $latePaymentData                  = [];
-            $project                          = $projectRepository->find($projectId);
+            $projectId       = filter_var($this->params[0], FILTER_VALIDATE_INT);
+            $latePaymentData = [];
+            $project         = $projectRepository->find($projectId);
 
             if (null !== $project && $project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */

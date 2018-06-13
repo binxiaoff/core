@@ -196,7 +196,8 @@ abstract class Controller implements ContainerAwareInterface
         try {
             $this->twigEnvironment->loadTemplate($template);
         } catch (\Twig_Error $exception) {
-            $template = '404.html.twig';
+            $template = 'error.html.twig';
+            $context['errorMessage'] = $exception->getMessage();
         }
 
         $context['app'] += [

@@ -1,0 +1,166 @@
+{% extends 'layout.html.twig' %}
+
+{% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/datatables/jquery.dataTables.min.js"></script>
+{% endblock %}
+
+{% block pageScripts %}
+    <script>
+        $(function () {
+            App.initHelper('datatables')
+        })
+    </script>
+{% endblock %}
+
+{% block pageHeader %}
+    <div class="pull-right text-right">
+        <div class="push-5"><a href="{{ app.adminUrl }}/dossiers/edit/{{ project.idProject }}">{{ project.title }}</a></div>
+        <div class="label ui-project-status-{{ project.status }}-bg ui-company-status-{{ companyStatus.label }}-bg">
+            {{ projectStatus.label }}
+        </div>
+    </div>
+    <h1 class="page-heading push">Échéancier emprunteur</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Montant emprunté</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ project.amount|localizednumber }}&nbsp;€</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Durée de l'emprunt</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ project.period|localizednumber }} mois</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Capital restant dû</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ owedCapital|localizedcurrency('EUR') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Total intérêts</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ totalInterests|localizedcurrency('EUR') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Total commission</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ totalCommission|localizedcurrency('EUR') }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+                <div class="block">
+                    <div class="block-header">
+                        <h3 class="block-title">Total TVA</h3>
+                    </div>
+                    <div class="block-content text-center">
+                        <p class="h3 text-primary pull-t">{{ totalVat|localizedcurrency('EUR') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if earlyRepayment is not empty %}
+            <div class="row">
+                <div class="col-xs-6 col-sm-6">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Montant remboursement anticipé</h3>
+                        </div>
+                        <div class="block-content text-center">
+                            <p class="h3 text-primary pull-t">{{ earlyRepayment.amount|localizedcurrency('EUR') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6 col-sm-6">
+                    <div class="block">
+                        <div class="block-header">
+                            <h3 class="block-title">Date remboursement anticipé</h3>
+                        </div>
+                        <div class="block-content text-center">
+                            <p class="h3 text-primary pull-t">
+                                {% if earlyRepayment.repaymentDate is not empty %}
+                                    {{ earlyRepayment.repaymentDate|localizeddate('short', 'none') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        <div class="block">
+            <div class="block-content block-content-full">
+                <table class="table table-bordered table-striped table-header-bg" data-table data-paging="false" data-lengthchange="false" data-info="false">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Capital</th>
+                        <th>Intérêts</th>
+                        <th>Commission</th>
+                        <th>TVA</th>
+                        <th>Remboursé</th>
+                        <th>CRD</th>
+                        <th>Demande prélèvement</th>
+                        <th>Échéance emprunteur</th>
+                        <th>Échéance prêteur</th>
+                        <th>Statut emprunteur</th>
+                        <th>Statut prêteur</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% set owedCapital = project.amount %}
+                    {% for payment in payments %}
+                        {% set owedCapital = owedCapital - payment.capital %}
+                        <tr>
+                            <td class="text-right">{{ payment.sequence }}</td>
+                            <td class="text-right" data-order="{{ payment.capital }}">{{ payment.capital|localizedcurrency('EUR') }}</td>
+                            <td class="text-right" data-order="{{ payment.interests }}">{{ payment.interests|localizedcurrency('EUR') }}</td>
+                            <td class="text-right" data-order="{{ payment.commission }}">{{ payment.commission|localizedcurrency('EUR') }}</td>
+                            <td class="text-right" data-order="{{ payment.vat }}">{{ payment.vat|localizedcurrency('EUR') }}</td>
+                            <td class="text-right" data-order="{{ payment.paid }}">{{ payment.paid|localizedcurrency('EUR') }}</td>
+                            <td class="text-right" data-order="{{ owedCapital }}">{{ owedCapital|localizedcurrency('EUR') }}</td>
+                            <td>{{ payment.debitDate|localizeddate('short', 'none') }}</td>
+                            <td>{{ payment.borrowerPaymentDate|localizeddate('short', 'none') }}</td>
+                            <td>{{ payment.lenderRepaymentDate|localizeddate('short', 'none') }}</td>
+                            <td>{{ payment.borrowerPaymentStatus }}</td>
+                            <td>{{ payment.lenderRepaymentStatus }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
