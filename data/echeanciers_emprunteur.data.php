@@ -1,10 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur as EcheanciersEmprunteurEntity;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    CompanyStatus, Echeanciers, EcheanciersEmprunteur as EcheanciersEmprunteurEntity, ProjectsStatus, UnilendStats
+};
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
@@ -67,36 +65,6 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                 AND status_emprunteur = ' . EcheanciersEmprunteurEntity::STATUS_PENDING . ' 
                 AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
-    }
-
-    /**
-     * @param \projects $project
-     * @return mixed
-     */
-    public function getDetailedProjectRepaymentSchedule(\projects $project) {
-        $sql = 'SELECT
-                  ee.*,
-                  e.date_echeance AS date_echeance_preteur,
-                  CASE
-                    WHEN SUM(e.capital) = SUM(e.capital_rembourse) AND SUM(e.interets) = SUM(e.interets_rembourses) THEN "Remboursé"
-                    WHEN SUM(e.capital_rembourse) > 0 THEN "Remboursé partiellement"
-                    ELSE "En cours"
-                  END AS "statut_preteur"
-                FROM echeanciers_emprunteur ee
-                  INNER JOIN echeanciers e ON e.id_project = ee.id_project
-                WHERE ee.id_project = :idProject
-                      AND ee.ordre = e.ordre
-                      AND ee.status_ra = :earlyRefundStatus
-                GROUP BY ee.id_project, ee.ordre
-                ORDER BY ee.ordre ASC';
-
-        $paramValues = array('idProject' => $project->id_project, 'earlyRefundStatus' => EcheanciersEmprunteurEntity::STATUS_NO_EARLY_REPAYMENT);
-        $paramTypes  = array('idProject' => \PDO::PARAM_INT, 'earlyRefundStatus' => \PDO::PARAM_INT);
-
-        $statement = $this->bdd->executeQuery($sql, $paramValues, $paramTypes);
-        $result    = $statement->fetchAll(PDO::FETCH_ASSOC);
-
-        return $result;
     }
 
     /**

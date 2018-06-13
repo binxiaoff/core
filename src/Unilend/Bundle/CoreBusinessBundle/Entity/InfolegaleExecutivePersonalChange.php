@@ -21,6 +21,13 @@ class InfolegaleExecutivePersonalChange
     private $idExecutive;
 
     /**
+     * @var ?string
+     *
+     * @ORM\Column(name="title", type="string", length=10, nullable=true)
+     */
+    private $title;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="first_name", type="string", length=50, nullable=false)
@@ -37,9 +44,15 @@ class InfolegaleExecutivePersonalChange
     /**
      * @var string
      *
-     * @ORM\Column(name="siren", type="string", length=10, nullable=false)
+     * @ORM\Column(name="siren", type="string", length=9, nullable=false)
      */
     private $siren;
+
+    /**
+     * @var string
+     * @ORM\Column(name="siren_if_company", type="string", length=9, nullable=true)
+     */
+    private $sirenIfCompany;
 
     /**
      * @var string
@@ -186,6 +199,28 @@ class InfolegaleExecutivePersonalChange
     public function getSiren()
     {
         return $this->siren;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSirenIfCompany(): ?string
+    {
+        return $this->sirenIfCompany;
+    }
+
+    /**
+     * @param string|null $sirenIfCompany
+     *
+     * @return InfolegaleExecutivePersonalChange
+     */
+    public function setSirenIfCompany(?string $sirenIfCompany): InfolegaleExecutivePersonalChange
+    {
+        if (false === empty((int) $sirenIfCompany)) {
+            $this->sirenIfCompany = $sirenIfCompany;
+        }
+
+        return $this;
     }
 
     /**
@@ -358,5 +393,25 @@ class InfolegaleExecutivePersonalChange
     public function setUpdatedValue()
     {
         $this->updated = new \DateTime();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return InfolegaleExecutivePersonalChange
+     */
+    public function setTitle(string $title): InfolegaleExecutivePersonalChange
+    {
+        $this->title = $title;
+
+        return $this;
     }
 }

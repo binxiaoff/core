@@ -26,15 +26,14 @@ class PartnerProductManager extends ProductManager
     }
 
     /**
-     * @param \projects|Projects $project
-     * @param bool               $includeInactiveProduct
+     * @param Projects $project
+     * @param bool     $includeInactiveProduct
      *
      * @return \product[]
      */
-    public function findEligibleProducts($project, bool $includeInactiveProduct = false): array
+    public function findEligibleProducts(Projects $project, bool $includeInactiveProduct = false): array
     {
         $eligibleProducts = [];
-        $project          = $this->convertProject($project);
 
         foreach ($this->getAvailableProducts($includeInactiveProduct, $project->getIdPartner()->getId()) as $product) {
             if ($this->isProjectEligible($project, $product)) {

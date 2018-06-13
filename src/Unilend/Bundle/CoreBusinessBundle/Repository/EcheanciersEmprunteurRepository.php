@@ -4,12 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    CompanyStatus, Echeanciers, EcheanciersEmprunteur, Projects, ProjectsStatus, Receptions
+};
 
 class EcheanciersEmprunteurRepository extends EntityRepository
 {
@@ -291,5 +288,47 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('project', $project);
 
         return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getDetailedProjectPaymentSchedule(Projects $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('ee')
+            ->select('
+                ee.ordre AS sequence,
+                ROUND(ee.capital / 100, 2) AS capital,
+                ROUND(SUM(e.capitalRembourse) / 100, 2) AS paidCapital,
+                ROUND(ee.interets / 100, 2) AS interests,
+                ROUND(ee.commission / 100, 2) AS commission,
+                ROUND(ee.tva / 100, 2) AS vat,
+                ROUND(SUM(ee.capital + ee.interets + ee.commission + ee.tva) / 100 / COUNT(ee.ordre), 2) AS payment,
+                ROUND(SUM(ee.paidCapital + ee.paidInterest + ee.paidCommissionVatIncl) / 100 / COUNT(ee.ordre), 2) AS paid,
+                CASE
+                  WHEN ee.dateEcheanceEmprunteurReel = \'0000-00-00 00:00:00\' THEN ee.dateEcheanceEmprunteur
+                  WHEN ee.dateEcheanceEmprunteurReel IS NULL THEN ee.dateEcheanceEmprunteur
+                  ELSE ee.dateEcheanceEmprunteurReel
+                END AS borrowerPaymentDate,
+                ee.statusEmprunteur AS borrowerPaymentStatus,
+                prel.dateExecutionDemandePrelevement AS debitDate,
+                prel.status AS debitStatus,
+                CASE
+                  WHEN e.dateEcheanceReel = \'0000-00-00 00:00:00\' THEN e.dateEcheance
+                  WHEN e.dateEcheanceReel IS NULL THEN e.dateEcheance
+                  ELSE e.dateEcheanceReel
+                END AS lenderRepaymentDate'
+            )
+            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Projects', 'p', Join::WITH, 'ee.idProject = p.idProject')
+            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Prelevements', 'prel', Join::WITH, 'ee.ordre = prel.numPrelevement AND ee.idProject = prel.idProject')
+            ->innerJoin('Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers', 'e', Join::WITH, 'e.ordre = prel.numPrelevement AND e.idProject = prel.idProject')
+            ->where('ee.idProject = :projectId')
+            ->andWhere('ee.statusRa = ' . EcheanciersEmprunteur::STATUS_NO_EARLY_REPAYMENT)
+            ->groupBy('ee.idProject, ee.ordre')
+            ->setParameter('projectId', $project);
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
