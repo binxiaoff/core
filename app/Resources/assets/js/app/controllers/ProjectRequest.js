@@ -7,31 +7,6 @@ var $doc = $(document)
 var __ = require('__')
 
 /**
- * Handle any changes on the Project Create form
- */
-var $formProjectCreate = $('#form-project-create');
-
-// Continue only if form is in DOM
-if ($formProjectCreate.length) {
-  // Show/hide manager details panel and confirm TOS checkbox if user is/is not manager
-  function checkIsManager() {
-    if ($('#form-project-create input[name="manager"]:checked').val() === 'no') {
-      $('#form-project-create .toggle-if-not-manager').collapse('show')
-      $('#form-project-create .toggle-if-manager').collapse('hide')
-    } else {
-      $('#form-project-create .toggle-if-not-manager').collapse('hide')
-      $('#form-project-create .toggle-if-manager').collapse('show')
-    }
-  }
-
-  $doc.on('change', '#form-project-create input[name="manager"]', function () {
-    checkIsManager()
-  })
-
-  checkIsManager()
-}
-
-/**
  * Handle any UI changes for borrower's reason
  */
 var $borrowerReasonInput = $('select[data-borrower-reason-input]')
@@ -99,7 +74,9 @@ if ($borrowerReasonInput.length) {
   handleBorrowingReason($('select[data-borrower-reason-input]').val())
 }
 
-$doc.on('ready', function () {
+var executiveSelector = $('#identity-executive-selector')
+
+if (executiveSelector.length) {
   function autofillExecutive() {
     var executiveSelector = $('#identity-executive-selector');
     var titleField = $('[name=title]'),
@@ -140,4 +117,4 @@ $doc.on('ready', function () {
     $('#form-project-create').uiFormValidation('clearAll')
     autofillExecutive()
   })
-})
+}

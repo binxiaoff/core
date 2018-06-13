@@ -228,7 +228,7 @@
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-nom" type="text" name="lastName" value="{{ form.values.contact.lastName|escape('html_attr') }}" class="input-field"
-                                                           data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name" readonly/>
+                                                           data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.contact.lastName is defined %}
                                                         <ul class="ui-formvalidation-messages">
                                                             <li>{% trans %} form-validation_error-field-required {% endtrans %}</li>
@@ -242,7 +242,7 @@
                                                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                                     </label>
                                                     <input id="form-project-create-identity-prenom" type="text" name="firstName" value="{{ form.values.contact.firstName|escape('html_attr') }}"
-                                                           class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name" readonly/>
+                                                           class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name"/>
                                                     {% if form.errors.contact.firstName is defined %}
                                                         <ul class="ui-formvalidation-messages">
                                                             <li>{% trans %} form-validation_error-field-required {% endtrans %}</li>
@@ -291,7 +291,7 @@
                                                     </label>
                                                     <div class="input-group">
                                                         <input id="form-project-create-identity-function" type="text" name="function" value="{{ form.values.contact.function|escape('html_attr') }}"
-                                                               class="input-field" data-formvalidation-input data-formvalidation-required="true" readonly/>
+                                                               class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
                                                         {% if form.errors.contact.function is defined %}
                                                             <ul class="ui-formvalidation-messages">
                                                                 <li>{% trans %} form-validation_error-field-required {% endtrans %}</li>
