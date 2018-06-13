@@ -781,7 +781,7 @@ class CompanyValidator
                                     }
                                 }
                             } else {
-                                $this->logger->error('The Siren ' . $siren . ' will be rejected: Checking infolegale pejorative events: The event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() .
+                                $this->logger->warning('The Siren ' . $siren . ' will be rejected: Checking infolegale pejorative events: The event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() .
                                     ' matched DEPOSITOR_WITH_ROLE. The event has no role (contentious participants). Events codes in this list should specify whether the company is "complainant" (Demandeur) or solicited (Solicité)', [
                                     'method' => __METHOD__,
                                     'siren'  => $siren,
