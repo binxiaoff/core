@@ -208,7 +208,7 @@ class ClientStatusManager
      *
      * @return bool|null
      *
-     * true suspend the client, false pass to next status, null do nothing
+     * true suspend the client, false passes on to next status, null does nothing
      */
     private function checkIfSuspendByAttachments(Clients $client, array $newAttachments): ?bool
     {
