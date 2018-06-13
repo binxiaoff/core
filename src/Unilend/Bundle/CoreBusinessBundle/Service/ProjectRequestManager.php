@@ -131,6 +131,7 @@ class ProjectRequestManager
      * @param string|null $amount
      * @param string|null $siren
      * @param string|null $siret
+     * @param string|null $companyName
      * @param string|null $email
      * @param int|null    $durationInMonth
      * @param int|null    $reason
@@ -145,6 +146,7 @@ class ProjectRequestManager
         ?string $amount = null,
         ?string $siren = null,
         ?string $siret = null,
+        ?string $companyName = null,
         ?string $email = null,
         ?int $durationInMonth = null,
         ?int $reason = null
@@ -155,21 +157,20 @@ class ProjectRequestManager
         }
 
         if (null !== $siren) {
-            if (false === empty($siren)) {
-                $siren = preg_replace('/\s/', '', $siren);
-            }
-
-            if (1 !== preg_match('/^([0-9]{9})$/', $siren)) {
+            $siren = $this->validateSiren($siren);
+            if (false === $siren) {
                 throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
             }
+
+        } elseif (Users::USER_ID_FRONT === $user->getIdUser() && BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $reason) {
+            throw new \InvalidArgumentException('Invalid SIREN = ' . $siren, self::EXCEPTION_CODE_INVALID_SIREN);
         }
 
-        if (false === empty($siret)) {
-            $siret = preg_replace('/\s/', '', $siret);
-        }
-
-        if (1 !== preg_match('/^([0-9]{14})$/', $siren)) {
-            $siret = null;
+        if (null !== $siret) {
+            $siret = $this->validateSiret($siret);
+            if (false === $siret) {
+                $siret = null;
+            }
         }
 
         if (null !== $amount) {
@@ -199,7 +200,7 @@ class ProjectRequestManager
         $this->entityManager->beginTransaction();
 
         try {
-            $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret);
+            $company = $this->companyManager->createBorrowerCompany($user, $email, $siren, $siret, $companyName);
             $client  = $company->getIdClientOwner();
             $client
                 ->setSource($this->sourceManager->getSource(SourceManager::SOURCE1))

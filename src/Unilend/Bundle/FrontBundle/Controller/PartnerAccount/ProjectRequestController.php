@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
+    BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
@@ -68,12 +68,20 @@ class ProjectRequestController extends Controller
         $siren    = $projectRequestManager->validateSiren($formData['siren']);
 
         try {
-            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration']) || empty($formData['siren'])) {
+            if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration'])) {
                 throw new InvalidArgumentException($translator->trans('partner-project-request_required-fields-error'));
             }
-            // We accept in the same field both siren and siret
-            $siret = $projectRequestManager->validateSiret($formData['siren']);
-            $siret = $siret === false ? null : $siret;
+
+            if (false === empty($formData['siren'])) {
+                $siren = $projectRequestManager->validateSiren($formData['siren']);
+                $siren = $siren === false ? null : $siren;
+                // We accept in the same field both siren and siret
+                $siret = $projectRequestManager->validateSiret($formData['siren']);
+                $siret = $siret === false ? null : $siret;
+            } else {
+                $siren = null;
+                $siret = null;
+            }
 
             /** @var Users $frontUser */
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
@@ -82,17 +90,21 @@ class ProjectRequestController extends Controller
 
             /** @var Clients $submitter */
             $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
-            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, null, $duration, $reason);
+            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, null, null, $duration, $reason);
             $project
                 ->setIdClientSubmitter($submitter)
                 ->setIdCompanySubmitter($partnerUser->getCompany());
 
             $entityManager->flush($project);
 
-            $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+            if ($siren) {
+                $riskCheck = $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
 
-            if (null === $riskCheck) {
-                $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+                if (null === $riskCheck) {
+                    $projectRequestManager->assignEligiblePartnerProduct($project, Users::USER_ID_FRONT, true);
+                }
+            } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION !== $project->getIdBorrowingMotive()) {
+                throw new \InvalidArgumentException();
             }
 
             return $this->redirectToRoute('partner_project_request_eligibility', ['hash' => $project->getHash()]);
