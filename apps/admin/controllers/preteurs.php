@@ -467,7 +467,7 @@ class preteursController extends bootstrap
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
                     $birthCountry = $this->request->request->getInt('id_pays_naissance');
-                    $type         = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+                    $type         = (false !== $birthCountry && $birthCountry == \Unilend\Bundle\CoreBusinessBundle\Entity\NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $email        = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
                     $birthday     = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
 
@@ -1590,7 +1590,10 @@ class preteursController extends bootstrap
             foreach ($lenderBids as $rowIndex => $row) {
                 $colIndex = 0;
                 foreach ($row as $cellValue) {
-                    $activeSheet->setCellValueByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
+                    if (6 === $colIndex) {
+                        $cellValue = number_format($cellValue, 1, ',', '');
+                    }
+                    $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
                 }
             }
 

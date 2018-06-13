@@ -8,8 +8,12 @@ use DrewM\MailChimp\MailChimp;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
+/**
+ * @link https://developer.mailchimp.com/documentation/mailchimp/guides/manage-subscribers-with-the-mailchimp-api/
+ */
 class NewsletterManager
 {
+    const MAILCHIMP_STATUS_PENDING      = 'pending';
     const MAILCHIMP_STATUS_SUBSCRIBED   = 'subscribed';
     const MAILCHIMP_STATUS_UNSUBSCRIBED = 'unsubscribed';
     const MAILCHIMP_STATUS_CLEANED      = 'cleaned';
@@ -74,10 +78,17 @@ class NewsletterManager
             null === $currentSubscriptionStatus && self::MAILCHIMP_STATUS_SUBSCRIBED === $status
             || null !== $currentSubscriptionStatus && false === in_array($currentSubscriptionStatus, [$status, self::MAILCHIMP_STATUS_CLEANED]) // Do not update status if email was cleaned
         ) {
+            $mailChimpStatus = $status;
+
+            // If client has already unsubscribed, it cannot be subscribed again directly, email confirmation is needed
+            if (null !== $currentSubscriptionStatus && self::MAILCHIMP_STATUS_UNSUBSCRIBED === $currentSubscriptionStatus) {
+                $mailChimpStatus = self::MAILCHIMP_STATUS_PENDING;
+            }
+
             $this->mailChimp->put('lists/' . $this->listId . '/members/' . md5(strtolower($client->getEmail())), [
                 'email_address'    => $client->getEmail(),
                 'email_type'       => 'html',
-                'status'           => $status,
+                'status'           => $mailChimpStatus,
                 'merge_fields'     => [
                     'FNAME' => $client->getPrenom(),
                     'LNAME' => $client->getNom(),

@@ -3,14 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, ClientAddress, Clients, Companies, CompanyAddress, PaysV2, TaxType, Wallet
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\IfuManager;
 
 class QueriesBeneficiaryQueryCommand extends ContainerAwareCommand
@@ -51,9 +50,13 @@ EOF
             unlink($file);
         }
 
-        $locationManager = $this->getContainer()->get('unilend.service.location_manager');
-        $entityManager   = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $numberFormatter = $this->getContainer()->get('number_formatter');
+        $locationManager          = $this->getContainer()->get('unilend.service.location_manager');
+        $entityManager            = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $numberFormatter          = $this->getContainer()->get('number_formatter');
+        $logger                   = $this->getContainer()->get('logger');
+        $clientAddressRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+        $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+        $countryRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
 
         $walletsWithMovements = $ifuManager->getWallets($year);
 
@@ -91,66 +94,85 @@ EOF
             'Obs'
         ];
 
-        $fiscalAndLocationData = [];
-        $countryRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
-
         /** @var Wallet $wallet */
         foreach ($walletsWithMovements as $wallet) {
-            $clientEntity  = $wallet->getIdClient();
-            $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $clientEntity->getIdClient()]);
+            $client  = $wallet->getIdClient();
 
-            if ($clientEntity->isNaturalPerson()) {
+            if ($client->isNaturalPerson()) {
+                /** @var ClientAddress $mostRecentAddress */
+                $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                if (null === $mostRecentAddress) {
+                    $logger->error('Client ' . $client->getIdClient() . ' has no main address' . [
+                            'class'     => __CLASS__,
+                            'function'  => __FUNCTION__,
+                            'id_client' => $client->getIdClient()
+                        ]);
+
+                    $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_POSTAL_ADDRESS);
+                    if (null === $mostRecentAddress) {
+                        $logger->error('Client ' . $client->getIdClient() . ' has no postal address' . [
+                                'class'     => __CLASS__,
+                                'function'  => __FUNCTION__,
+                                'id_client' => $client->getIdClient()
+                            ]);
+                    }
+                }
+
                 $fiscalAndLocationData = [
-                    'address'    => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getAdresseFiscal()) ? trim($clientAddress->getAdresse1()) : trim($clientAddress->getAdresseFiscal()),
-                    'zip'        => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getCpFiscal()) ? trim($clientAddress->getCp()) : trim($clientAddress->getCpFiscal()),
-                    'city'       => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getVilleFiscal()) ? trim($clientAddress->getVille) : trim($clientAddress->getVilleFiscal()),
-                    'id_country' => $clientAddress->getMemeAdresseFiscal() && empty($clientAddress->getIdPaysFiscal()) ? $clientAddress->getIdPays() : $clientAddress->getIdPaysFiscal()
+                    'address'          => null === $mostRecentAddress ? '' : $mostRecentAddress->getAddress(),
+                    'zip'              => null === $mostRecentAddress ? '' : $mostRecentAddress->getZip(),
+                    'city'             => null === $mostRecentAddress ? '' : $mostRecentAddress->getCity(),
+                    'id_country'       => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIdPays(),
+                    'isoFiscal'        => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIso(),
+                    'location'         => '',
+                    'inseeFiscal'      => '',
+                    'deductedAtSource' => ''
                 ];
 
-                if (0 == $fiscalAndLocationData['id_country']) {
-                    $fiscalAndLocationData['id_country'] = PaysV2::COUNTRY_FRANCE;
-                }
+                if (null !== $mostRecentAddress) {
+                    if ($fiscalAndLocationData['id_country'] !== PaysV2::COUNTRY_FRANCE && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
+                        $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
+                        $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
 
-                $clientCountry                      = $countryRepository->find($fiscalAndLocationData['id_country']);
-                $fiscalAndLocationData['isoFiscal'] = $clientCountry->getIso();
+                        $fiscalAndLocationData['city'] = $mostRecentAddress->getIdCountry()->getFr();
+                        $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($mostRecentAddress->getIdCountry()->getIso());
+                        $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
 
-                if ($fiscalAndLocationData['id_country'] > PaysV2::COUNTRY_FRANCE && false === in_array($fiscalAndLocationData['id_country'], PaysV2::FRANCE_DOM_TOM)) {
-                    $fiscalAndLocationData['inseeFiscal'] = $fiscalAndLocationData['zip'];
-                    $fiscalAndLocationData['location']    = $fiscalAndLocationData['city'];
-
-                    $fiscalAndLocationData['city'] = $clientCountry->getFr();
-                    $inseeCountry                  = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike(trim($clientCountry->getIso()));
-                    $fiscalAndLocationData['zip']  = null !== $inseeCountry ? $inseeCountry->getCog() : '';
-
-                    // The tax rate is change in 2018. We need to use TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON instead.
-                    // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
-                    $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
-                    $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
-                } else {
-                    $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
-                    if (false === $inseeCode && true === $clientAddress->getMemeAdresseFiscal()) {
-                        $inseeCode = $locationManager->getInseeCode(trim($clientAddress->getCp()), trim($clientAddress->getVille()));
+                        // The tax rate is change in 2018. We need to use TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE_PERSON instead.
+                        // But as we don't have the history of tax rate, we leave it unchanged till March 2018.
+                        $taxType                                   = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE);
+                        $fiscalAndLocationData['deductedAtSource'] = $numberFormatter->format($taxType->getRate()) . '%';
+                    } else {
+                        $inseeCode = $locationManager->getInseeCode($fiscalAndLocationData['zip'], $fiscalAndLocationData['city']);
+                        if (false === $inseeCode) {
+                            $logger->error('Client ' . $client->getIdClient() . ' has no insee code corresponding to his ' . $mostRecentAddress->getIdType()->getLabel(), [
+                                    'class'     => __CLASS__,
+                                    'function'  => __FUNCTION__,
+                                    'id_client' => $client->getIdClient()
+                                ]);
+                            $inseeCode = '';
+                        }
+                        $fiscalAndLocationData['inseeFiscal'] = $inseeCode;
+                        $fiscalAndLocationData['location']    = ''; //commune fiscal
                     }
-                    $fiscalAndLocationData['inseeFiscal'] = false === $inseeCode ? '' : $inseeCode;
-                    $fiscalAndLocationData['location']    = ''; //commune fiscal
                 }
 
-                $fiscalAndLocationData['birth_country'] = (0 == $clientEntity->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $clientEntity->getIdPaysNaissance();
+                $fiscalAndLocationData['birth_country'] = (0 == $client->getIdPaysNaissance()) ? PaysV2::COUNTRY_FRANCE : $client->getIdPaysNaissance();
                 $birthCountry                           = $countryRepository->find($fiscalAndLocationData['birth_country']);
                 $fiscalAndLocationData['isoBirth']      = null !== $birthCountry ? $birthCountry->getIso() : '';
 
                 if (PaysV2::COUNTRY_FRANCE < $fiscalAndLocationData['birth_country'] && false === in_array($fiscalAndLocationData['birth_country'], PaysV2::FRANCE_DOM_TOM)) {
                     $fiscalAndLocationData['birthPlace'] = $birthCountry->getFr();
-                    if (empty($clientEntity->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
+                    if (empty($client->getInseeBirth()) && $fiscalAndLocationData['isoBirth']) {
                         $inseeBirthCountry                   = $entityManager->getRepository('UnilendCoreBusinessBundle:InseePays')->findCountryWithCodeIsoLike($fiscalAndLocationData['isoBirth']);
                         $fiscalAndLocationData['inseeBirth'] = $inseeBirthCountry ? $inseeBirthCountry->getCog() : '00000';
                     } else {
                         $fiscalAndLocationData['inseeBirth'] = '00000';
                     }
                 } else {
-                    $fiscalAndLocationData['birthPlace'] = $clientEntity->getVilleNaissance();
-                    if (empty($clientEntity->getInseeBirth())) {
-                        $cityList = $locationManager->getCities($clientEntity->getVilleNaissance(), true);
+                    $fiscalAndLocationData['birthPlace'] = $client->getVilleNaissance();
+                    if (empty($client->getInseeBirth())) {
+                        $cityList = $locationManager->getCities($client->getVilleNaissance(), true);
                         if (1 < count($cityList)) {
                             $fiscalAndLocationData['inseeBirth'] = 'Doublon ville de naissance';
                         } elseif (1 === count($cityList)) {
@@ -161,17 +183,43 @@ EOF
                     }
                 }
 
-                $fiscalAndLocationData['deductedAtSource'] = '';
-                $data[]                                    = $this->addPersonLineToBeneficiaryQueryData($wallet, $fiscalAndLocationData);
+                $data[] = $this->addPersonLineToBeneficiaryQueryData($wallet, $fiscalAndLocationData);
             }
 
             if (
-                false === $clientEntity->isNaturalPerson()
-                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $clientEntity])
+                false === $client->isNaturalPerson()
+                && null !== $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client])
             ) {
-                $fiscalAndLocationData['isoFiscal']   = $company->getIdAddress()->getIdCountry()->getIso();
-                $fiscalAndLocationData['inseeFiscal'] = $locationManager->getInseeCode($company->getIdAddress()->getZip(), $company->getIdAddress()->getCity());
-                $data[]                               = $this->addLegalEntityLineToBeneficiaryQueryData($company, $wallet, $fiscalAndLocationData);
+                /** @var CompanyAddress $mostRecentAddress */
+                $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                if (null === $mostRecentAddress) {
+                    $logger->error('Company ' . $company->getIdCompany() . ' has no main address' . [
+                            'class'      => __CLASS__,
+                            'function'   => __FUNCTION__,
+                            'id_company' => $company->getIdCompany()
+                        ]);
+
+                    $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_POSTAL_ADDRESS);
+                    if (null === $mostRecentAddress) {
+                        $logger->error('Company ' . $company->getIdCompany() . ' has no postal address' . [
+                                'class'      => __CLASS__,
+                                'function'   => __FUNCTION__,
+                                'id_company' => $company->getIdCompany()
+                            ]);
+                    }
+                }
+
+                $fiscalAndLocationData = [
+                    'address'     => null === $mostRecentAddress ? '' : $mostRecentAddress->getAddress(),
+                    'zip'         => null === $mostRecentAddress ? '' : $mostRecentAddress->getZip(),
+                    'city'        => null === $mostRecentAddress ? '' : $mostRecentAddress->getCity(),
+                    'id_country'  => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIdPays(),
+                    'isoFiscal'   => null === $mostRecentAddress ? '' : $mostRecentAddress->getIdCountry()->getIso(),
+                    'location'    => '',
+                    'inseeFiscal' => null === $mostRecentAddress ? '' : $locationManager->getInseeCode($mostRecentAddress->getZip(), $mostRecentAddress->getCity())
+                ];
+
+                $data[] = $this->addLegalEntityLineToBeneficiaryQueryData($company, $wallet, $fiscalAndLocationData);
             }
         }
 
@@ -243,11 +291,11 @@ EOF
             $company->getSiret(),
             $fiscalAndLocationData['isoFiscal'],
             '',
-            str_replace(';', ',', $company->getAdresse1()),
+            str_replace(';', ',', $fiscalAndLocationData['address']),
             $fiscalAndLocationData['inseeFiscal'],
             '',
-            $company->getIdAddress()->getZip(),
-            $company->getIdAddress()->getCity(),
+            $fiscalAndLocationData['zip'],
+            $fiscalAndLocationData['city'],
             $fiscalAndLocationData['isoFiscal'],
             '',
             $company->getPhone(),

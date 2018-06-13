@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, OperationType, WalletType
+    AddressType, ClientAddress, Clients, Companies, CompanyAddress, OperationType, WalletType
 };
 
 class QueriesCrsDacCommand extends ContainerAwareCommand
@@ -46,14 +46,10 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
             return;
         }
 
-        $filePath                       = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $clientRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
-        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
-        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
-        $clientStatusHistoryRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
-        $lenderImpositionRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
+        $filePath         = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'preteurs_crs_dac' . $year . '.xlsx';
+        $logger           = $this->getContainer()->get('logger');
+        $entityManager    = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
         /** @var \PHPExcel $document */
         $document    = new \PHPExcel();
@@ -83,43 +79,17 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
 
         /** @var Clients $client */
         foreach ($clientRepository->findValidatedClientsUntilYear($year) as $client) {
-            $clientAddress               = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsAdresses')->findOneBy(['idClient' => $client]);
-            $wallet                      = $walletRepository->getWalletByType($client, WalletType::LENDER);
-            $endOfYearBalanceHistory     = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastDayOfTheYear);
-            $endOfYearBalance            = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
-            $remainingDuCapital          = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
-            $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
-            $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
-            $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
-            $nationalityCountry          = $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite());
-            $grossInterest               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $year);
-            $grossInterestRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], null, $year);
-            $yearlyGrossInterest         = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
-
-            if (false === $client->isNaturalPerson()) {
-                /** @var Companies $company */
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            try {
+                $this->writeLineForClient($client, $row, $activeSheet, $lastDayOfTheYear);
+            } catch (\Exception $exception) {
+                $logger->error('An exception occurred while adding line for client ' . $client->getIdClient() . '. Message: ' . $exception->getMessage(), [
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => __FILE__,
+                    'line'      => __LINE__,
+                    'id_client' => $client->getIdClient()
+                ]);
             }
-
-            $activeSheet->setCellValue('A' . $row, $client->getIdClient());
-            $activeSheet->setCellValue('B' . $row, $client->getNaissance()->format('Y-m-d'));
-            $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
-            $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->getCodePays() : '');
-            $activeSheet->setCellValue('E' . $row, $firstValidation->getAdded()->format('Y-m-d'));
-            $activeSheet->setCellValue('F' . $row, $client->getIdClientStatusHistory()->getIdStatus()->getId());
-            $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
-            $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
-            $activeSheet->setCellValue('I' . $row, $client->getNom());
-            $activeSheet->setCellValue('J' . $row, $client->getNomUsage());
-            $activeSheet->setCellValue('K' . $row, $client->getPrenom());
-            $activeSheet->setCellValue('L' . $row, $clientAddress->getAdresseFiscal());
-            $activeSheet->setCellValue('M' . $row, $clientAddress->getVilleFiscal());
-            $activeSheet->setCellValue('N' . $row, $clientAddress->getCpFiscal());
-            $activeSheet->setCellValue('O' . $row, $fiscalCountryIso['iso']);
-            $activeSheet->setCellValueExplicit('P' . $row, $endOfYearBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit('Q' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit('R' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
-            $activeSheet->setCellValueExplicit('S' . $row, $yearlyGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $row += 1;
         }
@@ -130,5 +100,107 @@ class QueriesCrsDacCommand extends ContainerAwareCommand
         /** @var \PHPExcel_Writer_CSV $writer */
         $writer = \PHPExcel_IOFactory::createWriter($document, 'Excel2007');
         $writer->save(str_replace(__FILE__, $filePath, __FILE__));
+    }
+
+    /**
+     * @param Clients             $client
+     * @param int                 $row
+     * @param \PHPExcel_Worksheet $activeSheet
+     * @param \DateTime           $lastDayOfTheYear
+     *
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
+     */
+    private function writeLineForClient(Clients $client, int $row, \PHPExcel_Worksheet $activeSheet, \DateTime $lastDayOfTheYear)
+    {
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $walletRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
+        $walletBalanceHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
+        $operationRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+        $clientStatusHistoryRepository  = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
+        $lenderImpositionRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:LendersImpositionHistory');
+
+        $clientAddress               = $this->getMostRecentMainAddress($client);
+        $wallet                      = $walletRepository->getWalletByType($client, WalletType::LENDER);
+        $endOfYearBalanceHistory     = $walletBalanceHistoryRepository->getBalanceOfTheDay($wallet, $lastDayOfTheYear);
+        $endOfYearBalance            = null !== $endOfYearBalanceHistory ? bcadd($endOfYearBalanceHistory->getAvailableBalance(), $endOfYearBalanceHistory->getCommittedBalance(), 2) : 0;
+        $remainingDuCapital          = $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastDayOfTheYear);
+        $amountInvested              = $operationRepository->sumDebitOperationsByTypeUntil($wallet, [OperationType::LENDER_LOAN], null, $lastDayOfTheYear);
+        $firstValidation             = $clientStatusHistoryRepository->getFirstClientValidation($client);
+        $fiscalCountryIso            = $lenderImpositionRepository->getFiscalIsoAtDate($wallet, $lastDayOfTheYear);
+        $nationalityCountry          = $entityManager->getRepository('UnilendCoreBusinessBundle:Nationalites')->find($client->getIdNationalite());
+        $grossInterest               = $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT], null, $lastDayOfTheYear->format('Y'));
+        $grossInterestRegularization = $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION], null, $lastDayOfTheYear->format('Y'));
+        $yearlyGrossInterest         = round(bcsub($grossInterest, $grossInterestRegularization, 4), 2);
+
+        if (false === $client->isNaturalPerson()) {
+            /** @var Companies $company */
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        }
+
+        $activeSheet->setCellValue('A' . $row, $client->getIdClient());
+        $activeSheet->setCellValue('B' . $row, $client->getNaissance()->format('Y-m-d'));
+        $activeSheet->setCellValue('C' . $row, $client->getVilleNaissance());
+        $activeSheet->setCellValue('D' . $row, null !== $nationalityCountry ? $nationalityCountry->get : '');
+        $activeSheet->setCellValue('E' . $row, $firstValidation instanceof \DateTime ? $firstValidation->getAdded()->format('Y-m-d') : '');
+        $activeSheet->setCellValue('F' . $row, $client->getIdClientStatusHistory()->getIdStatus()->getId());
+        $activeSheet->setCellValue('G' . $row, $client->isNaturalPerson() ? 'Physique' : 'Morale');
+        $activeSheet->setCellValue('H' . $row, $client->isNaturalPerson() ? '' : $company->getName());
+        $activeSheet->setCellValue('I' . $row, $client->getNom());
+        $activeSheet->setCellValue('J' . $row, $client->getNomUsage());
+        $activeSheet->setCellValue('K' . $row, $client->getPrenom());
+        $activeSheet->setCellValue('L' . $row, null === $clientAddress ? '' : $clientAddress->getAddress());
+        $activeSheet->setCellValue('M' . $row, null === $clientAddress ? '' : $clientAddress->getCity());
+        $activeSheet->setCellValue('N' . $row, null === $clientAddress ? '' : $clientAddress->getZip());
+        $activeSheet->setCellValue('O' . $row, $fiscalCountryIso['iso']);
+        $activeSheet->setCellValueExplicit('P' . $row, $endOfYearBalance, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit('Q' . $row, $amountInvested, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit('R' . $row, $remainingDuCapital, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+        $activeSheet->setCellValueExplicit('S' . $row, $yearlyGrossInterest, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return ClientAddress|CompanyAddress|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Exception
+     */
+    private function getMostRecentMainAddress(Clients $client)
+    {
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $logger        = $this->getContainer()->get('logger');
+
+        if ($client->isNaturalPerson()) {
+            $clientAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+            /** @var ClientAddress $mostRecentAddress */
+            $mostRecentAddress = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            if (null === $mostRecentAddress) {
+                $logger->error('Client ' . $client->getIdClient() . ' has no main address' . [
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'id_client' => $client->getIdClient()
+                    ]);
+            }
+        } else {
+            /** @var Companies $company */
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            if (null === $company) {
+                throw new \Exception('Client' . $client->getIdClient() . ' of type legal entity has no company');
+            }
+
+            $companyAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+            /** @var CompanyAddress $mostRecentAddress */
+            $mostRecentAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            if (null === $mostRecentAddress) {
+                $logger->error('Company ' . $company->getIdCompany() . ' has no main address' . [
+                        'class'      => __CLASS__,
+                        'function'   => __FUNCTION__,
+                        'id_company' => $company->getIdCompany()
+                    ]);
+            }
+        }
+
+        return $mostRecentAddress;
     }
 }

@@ -16,7 +16,9 @@ class PaysV2
     const VIGILANCE_STATUS_MEDIUM_RISK = 1;
     const VIGILANCE_STATUS_HIGH_RISK   = 2;
 
-    const COUNTRY_FRANCE = 1;
+    const COUNTRY_FRANCE  = 1;
+    const COUNTRY_USA     = 62;
+    const COUNTRY_ERITREA = 59;
 
     const FRANCE_DOM_TOM = [155, 195, 196, 197, 198];
 
