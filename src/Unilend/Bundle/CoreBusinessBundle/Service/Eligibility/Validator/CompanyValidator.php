@@ -781,10 +781,12 @@ class CompanyValidator
                                     }
                                 }
                             } else {
-                                $this->logger->error(
-                                    'Event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() . ' matched DEPOSITOR_WITH_ROLE but no role ("contentious participants") was found.',
-                                    ['method' => __METHOD__, 'siren' => $siren, 'line' => __LINE__]
-                                );
+                                $this->logger->error('The Siren ' . $siren . ' will be rejected: Checking infolegale pejorative events: The event code : ' . $event->getCode() . ' of announcement details ID : ' . $announcement->getId() .
+                                    ' matched DEPOSITOR_WITH_ROLE. The event has no role (contentious participants). Events codes in this list should specify whether the company is "complainant" (Demandeur) or solicited (Solicité)', [
+                                    'method' => __METHOD__,
+                                    'siren'  => $siren,
+                                    'line'   => __LINE__
+                                ]);
                                 throw new \UnexpectedValueException(ProjectRejectionReason::INFOLEGALE_CURRENT_MANAGER_DEPOSITOR_ROLE_MISSING_INCIDENT);
                             }
                         }
