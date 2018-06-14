@@ -3,7 +3,7 @@
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
-    ProjectsComments, ProjectsPouvoir, ProjectsStatus, Receptions, Users, UsersTypes, Virements, WalletType, Zones
+    ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectManager, TermsOfSaleManager, WireTransferOutManager
@@ -1251,35 +1251,44 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        if (isset($_POST['send_etape5']) && isset($this->params[0])) {
+        $this->tablResult = [];
+
+        if (isset($_POST['send_etape5'], $this->params[0])) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\AttachmentTypeRepository $attachmentTypeRepo */
-            $attachmentTypeRepo = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-            /** @var Projects $project */
-            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
+            $entityManager            = $this->get('doctrine.orm.entity_manager');
+            $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
+            $project                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
 
-            $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
-            $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
-
-            $this->tablResult = array();
+            $serialize = serialize(['id_project' => $this->params[0], 'files' => $_FILES]);
+            $this->users_history->histo(UsersHistory::FORM_ID_PROJECT_UPLOAD, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
 
             foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
                 if ($uploadedFile) {
                     $attachment        = null;
                     $projectAttachment = null;
-                    /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType $attachmentType */
-                    $attachmentType = $attachmentTypeRepo->find($attachmentTypeId);
+                    $attachmentType    = $attachmentTypeRepository->find($attachmentTypeId);
+
+                    $this->tablResult['fichier_' . $attachmentTypeId] = 'ko';
+
                     if ($attachmentType) {
-                        $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile);
-                    }
-                    if ($attachment) {
-                        $projectAttachment = $attachmentManager->attachToProject($attachment, $project);
-                    }
-                    if ($projectAttachment) {
-                        $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
+                        try {
+                            $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile, false);
+                            $attachmentManager->attachToProject($attachment, $project);
+
+                            $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
+                        } catch (\Doctrine\ORM\OptimisticLockException $exception) {
+                            /** @var LoggerInterface $logger */
+                            $logger = $this->get('logger');
+                            $logger->error('Unable to upload file of type "' . $attachmentType->getLabel() . '" for project ID ' . $project->getIdProject() . ' - Message: ' . $exception->getMessage(), [
+                                'id_project' => $project->getIdProject(),
+                                'class'      => __CLASS__,
+                                'function'   => __FUNCTION__,
+                                'file'       => $exception->getFile(),
+                                'line'       => $exception->getLine(),
+                            ]);
+                        }
                     }
                 }
             }
