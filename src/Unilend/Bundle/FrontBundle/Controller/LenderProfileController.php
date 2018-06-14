@@ -25,6 +25,7 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
@@ -87,7 +88,7 @@ class LenderProfileController extends Controller
         $identityForm = $identityFormBuilder->getForm();
 
         if ($request->isMethod(Request::METHOD_POST)) {
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
             $translator  = $this->get('translator');
             $isValid     = false;
 
@@ -211,7 +212,7 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
         }
 
-        $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+        $formHandler = $this->get(LenderProfileFormsHandler::class);
         $form->handleRequest($request);
 
         if (
@@ -281,7 +282,7 @@ class LenderProfileController extends Controller
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $isValid     = false;
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
 
             $emailForm->handleRequest($request);
             if (
