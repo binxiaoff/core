@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="prescripteurs", indexes={@ORM\Index(name="id_client", columns={"id_client", "id_entite"}), @ORM\Index(name="id_enseigne", columns={"id_enseigne"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class Prescripteurs
 {
@@ -43,7 +44,7 @@ class Prescripteurs
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -217,5 +218,23 @@ class Prescripteurs
     public function getIdPrescripteur()
     {
         return $this->idPrescripteur;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

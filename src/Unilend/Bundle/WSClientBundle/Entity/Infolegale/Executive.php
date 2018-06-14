@@ -70,6 +70,15 @@ class Executive extends Staff
     private $changeDate;
 
     /**
+     * If it's a legal entity
+     * @var string
+     *
+     * @JMS\SerializedName("siren")
+     * @JMS\Type("string")
+     */
+    private $siren;
+
+    /**
      * @return int
      */
     public function getExecutiveId()
@@ -123,5 +132,13 @@ class Executive extends Staff
     public function getChangeDate()
     {
         return $this->changeDate;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSiren()
+    {
+        return $this->siren;
     }
 }

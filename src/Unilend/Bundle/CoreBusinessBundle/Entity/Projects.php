@@ -560,11 +560,11 @@ class Projects
     /**
      * Set idPrescripteur
      *
-     * @param integer $idPrescripteur
+     * @param integer|null $idPrescripteur
      *
      * @return Projects
      */
-    public function setIdPrescripteur($idPrescripteur)
+    public function setIdPrescripteur(?int $idPrescripteur = null)
     {
         $this->idPrescripteur = $idPrescripteur;
 
@@ -574,7 +574,7 @@ class Projects
     /**
      * Get idPrescripteur
      *
-     * @return integer
+     * @return integer|null
      */
     public function getIdPrescripteur()
     {

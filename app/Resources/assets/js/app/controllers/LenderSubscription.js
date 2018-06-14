@@ -31,7 +31,7 @@ var cached = {
 
 // Change from person to society form
 function checkClientType() {
-  var $clientTypePerson = $('input[name="form[clientType]"][value="person"]:visible')
+  var $clientTypePerson = $('input[name*="[clientType]"][value="person"]:visible')
 
   // @debug
   // console.log('checkClientType', $clientTypePerson.prop('checked'))
@@ -46,8 +46,8 @@ function checkClientType() {
     $('#form-lender-legal-entity').hide()
 
     // Change values across inputs on both forms
-    $('input[name="form[clientType]"][value="person"]').prop('checked', true)
-    $('input[name="form[clientType]"][value="legalEntity"]').removeProp('checked')
+    $('input[name*="[clientType]"][value="person"]').prop('checked', true)
+    $('input[name*="[clientType]"][value="legalEntity"]').removeProp('checked')
 
     // Show legal entity form
   } else {
@@ -59,8 +59,8 @@ function checkClientType() {
     $('#form-lender-legal-entity').show()
 
     // Change values across inputs on both forms
-    $('input[name="form[clientType]"][value="person"]').removeProp('checked')
-    $('input[name="form[clientType]"][value="legalEntity"]').prop('checked', true)
+    $('input[name*="[clientType]"][value="person"]').removeProp('checked')
+    $('input[name*="[clientType]"][value="legalEntity"]').prop('checked', true)
   }
 }
 
@@ -82,7 +82,6 @@ function checkAddressIsNotSame() {
 
 // Validate address by code/postcode/zip, city and country values
 function checkPostCodeCity(elem) {
-
   var $zip = $($(elem).attr('data-autocomplete-address-zipelem'))
   var $city = $($(elem).attr('data-autocomplete-address-cityelem'))
   var $country = $($(elem).attr('data-autocomplete-address-countryelem'))
@@ -192,7 +191,7 @@ $doc.on('ready', function () {
    */
 
   checkClientType()
-  $doc.on('change', '#devenir-preteur input[name="form[clientType]"]:visible', function () {
+  $doc.on('change', '#devenir-preteur input[name*="[clientType]"]:visible', function () {
     checkClientType()
   })
 

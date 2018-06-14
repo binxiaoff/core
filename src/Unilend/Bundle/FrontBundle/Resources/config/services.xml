@@ -128,8 +128,8 @@
             <argument type="service" id="cache"/>
         </service>
 
-        <service id="unilend.frontbundle.service.lender_loans_display_manager" class="Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager" autowire="true"/>
+        <service id="Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager" autowire="true"/>
 
-        <service id="unilend.frontbundle.service.lender_profile_forms_handler" class="Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler" autowire="true"/>
+        <service id="Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler" autowire="true"/>
     </services>
 </container>

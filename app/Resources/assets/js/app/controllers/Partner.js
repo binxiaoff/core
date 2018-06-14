@@ -10,7 +10,7 @@ var Templating = require('Templating')
 
 // Partner Project Details
 // @todo probably needing to be reviewed by a frontend dev
-$doc.on(Utility.clickEvent, '#form-project-details .btn-save', function (event) {
+$doc.on(Utility.clickEvent, '#form-project-create .btn-save', function (event) {
   // We only want to save data, do not check required fields
   var $form = $(this).closest('form')
   $form.find('[data-formvalidation-required]').each(function () {
@@ -18,7 +18,6 @@ $doc.on(Utility.clickEvent, '#form-project-details .btn-save', function (event) 
     $input.removeAttr('data-formvalidation-required')
   })
   $('[data-spinnerbutton]').uiSpinnerButton('destroy')
-  $form.find('[name=action]').val('save')
   $form.submit()
 })
 
