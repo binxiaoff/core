@@ -742,7 +742,7 @@ $doc.ready(function ($) {
   $doc.on(Utility.clickEvent, '.ui-toggle, [data-ui-toggle]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
-    var $target
+    var $target = $(targetSelector)
 
     // If visible, dismiss
     if ($target.is(':visible')) {
