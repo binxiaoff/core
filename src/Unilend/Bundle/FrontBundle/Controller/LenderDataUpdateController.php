@@ -36,7 +36,6 @@ class LenderDataUpdateController extends Controller
         ]);
     }
 
-
     /**
      * @Route("/profile/mise-a-jour/details", name="lender_data_update_details")
      * @Security("has_role('ROLE_LENDER')")
@@ -77,7 +76,6 @@ class LenderDataUpdateController extends Controller
                 return $this->redirectToRoute('lender_data_update_end');
             }
         }
-
 
         $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
         /** @var Attachment $idDocument */
@@ -123,8 +121,20 @@ class LenderDataUpdateController extends Controller
      */
     public function endAction(): Response
     {
+        try {
+            $hasValidEvaluation = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->getClient());
+        } catch (\Exception $exception) {
+            $hasValidEvaluation = false;
+            $this->get('logger')->error('Could not get lender CIP evaluation information. Error: ' . $exception->getMessage(), [
+                'id_client' => $this->getClient()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
         return $this->render('lender_data_update/end.html.twig', [
-            'hasValidCipEvaluation' => $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->getClient())
+            'hasValidCipEvaluation' => $hasValidEvaluation
         ]);
     }
 
