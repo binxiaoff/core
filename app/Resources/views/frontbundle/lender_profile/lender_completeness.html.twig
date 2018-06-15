@@ -112,6 +112,90 @@
                                                         </div>
                                                     </div>
                                                 {% endif %}
+                                                {% if mainAddressForm %}
+                                                    <div class="row row-multi-col margin-20-b collapse" id="completeness-main-address">
+                                                        <div class="row">
+                                                            <input type="hidden" id="document-id-housing-certificate" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::JUSTIFICATIF_DOMICILE') }}">
+                                                            <div class="form-field {% if mainAddressForm.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                                                                <label for="form-completeness-address-street">{% trans %} lender-profile_completeness-fiscal-address-section-address-label {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                                </label>
+                                                                {{ form_widget(mainAddressForm.address, {
+                                                                    'attr' : {
+                                                                        'class' : 'input-field',
+                                                                        'data-formvalidation-input' : true,
+                                                                        'data-formvalidation-required' : true
+                                                                    }})
+                                                                }}
+                                                                {{ form_errors(mainAddressForm.address) }}
+                                                            </div><!-- /.form-field -->
+                                                        </div>
+
+                                                        <div class="row row-multi-col-computer">
+                                                            <div class="form-field col-lg-6 col-md-6 {% if mainAddressForm.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                                                                <label for="form-completeness-address-code">{% trans %} lender-profile_completeness-fiscal-address-section-zip-label {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                                                                </label>
+                                                                <div class="input-group set-right">
+                                                                    {{ form_widget(mainAddressForm.zip, {
+                                                                        'id' : 'form-completeness-address-code',
+                                                                        'attr' : {
+                                                                            'class' : 'input-field',
+                                                                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                                                                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
+                                                                            'data-autocomplete-address-countryelem' : '#form-completeness-address-pays',
+                                                                            'data-autocomplete-address-cityelem' : '#form-completeness-address-ville',
+                                                                            'data-autocomplete-address-zipelem' : '#form-completeness-address-code',
+                                                                            'data-has-spinner' : '#spinner-completeness-address-code'
+                                                                        }})
+                                                                    }}
+                                                                    {{ form_errors(mainAddressForm.zip) }}
+                                                                    <div class="btn-group">
+                                                                        <span id="spinner-completeness-address-code" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
+                                                                    </div>
+                                                                </div><!-- /.input-group -->
+                                                            </div><!-- /.form-field -->
+                                                            <div class="form-field col-lg-6 col-md-6 {% if mainAddressForm.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                                                                <label for="form-completeness-address-ville">{% trans %} lender-profile_completeness-fiscal-address-section-city-label {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                                                <div class="input-group set-right">
+                                                                    {{ form_widget(mainAddressForm.city, {
+                                                                        'id' : 'form-completeness-address-ville',
+                                                                        'attr' : {
+                                                                            'class' : 'input-field',
+                                                                            'data-formvalidation-input data-formvalidation-required' : 'true',
+                                                                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
+                                                                            'data-autocomplete-address-countryelem' : '#form-completeness-address-pays',
+                                                                            'data-autocomplete-address-cityelem' : '#form-completeness-address-ville',
+                                                                            'data-autocomplete-address-zipelem' : '#form-completeness-address-code',
+                                                                            'data-has-spinner' : '#spinner-completeness-address-city'
+                                                                        }})
+                                                                    }}
+                                                                    {{ form_errors(mainAddressForm.city) }}
+                                                                    <div class="btn-group">
+                                                                        <span id="spinner-completeness-address-city" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
+                                                                    </div>
+                                                                </div><!-- /.input-group -->
+                                                            </div><!-- /.form-field -->
+                                                        </div>
+
+                                                        <div class="row row-multi-col-computer">
+                                                            <div class="form-field col-lg-6 col-md-6 {% if mainAddressForm.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                                                                <label for="form-completeness-address-pays">{% trans %} lender-profile_completeness-fiscal-address-section-country-label {% endtrans %}
+                                                                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                                                                {{ form_widget(mainAddressForm.idCountry, {
+                                                                    'id' : 'form-completeness-address-pays',
+                                                                    'attr' : {
+                                                                        'class' : 'input-field',
+                                                                        'data-formvalidation-input' : true,
+                                                                        'data-formvalidation-required' : true
+                                                                    }})
+                                                                }}
+                                                                {{ form_errors(mainAddressForm.idCountry) }}
+                                                            </div><!-- /.form-field -->
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
 
                                                 <div class="form-extrafiles-list">
                                                     <div class="form-field row row-multi-col-computer" style="margin-bottom: 0">
