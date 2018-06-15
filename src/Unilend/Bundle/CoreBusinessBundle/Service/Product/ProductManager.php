@@ -76,12 +76,12 @@ abstract class ProductManager
     }
 
     /**
-     * @param \projects|Projects $project
-     * @param bool               $includeInactiveProduct
+     * @param Projects $project
+     * @param bool     $includeInactiveProduct
      *
      * @return mixed
      */
-    abstract public function findEligibleProducts($project, bool $includeInactiveProduct = false);
+    abstract public function findEligibleProducts(Projects $project, bool $includeInactiveProduct = false);
 
     /**
      * @param Projects|\projects $project

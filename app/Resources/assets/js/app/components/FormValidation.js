@@ -1559,191 +1559,191 @@ module.exports = FormValidation
  *
  * If you change the above, ensure to uncomment and run the below tests to check it all works.
  */
-console.log('### TESTING FORM VALIDATION ###')
+// console.log('### TESTING FORM VALIDATION ###')
 
-var checkTestStatus = Utility.checkTestStatus
+// var checkTestStatus = Utility.checkTestStatus
 
-var validationRules = FormValidation.prototype.rules
+// var validationRules = FormValidation.prototype.rules
 
-function mockFormField (elem) {
-  return $(elem).wrap('<div class="form-field"></div>')
-}
+// function mockFormField (elem) {
+//   return $(elem).wrap('<div class="form-field"></div>')
+// }
 
-function mockInput (type, value) {
-  var inputType = type || 'text'
-  return mockFormField($('<input type="' + inputType + '" id="mock-input-' + inputType + '-' + Utility.randomString() + '" data-formvalidation-input>').val(value))
-}
+// function mockInput (type, value) {
+//   var inputType = type || 'text'
+//   return mockFormField($('<input type="' + inputType + '" id="mock-input-' + inputType + '-' + Utility.randomString() + '" data-formvalidation-input>').val(value))
+// }
 
-function mockTextarea (value) {
-  return mockFormField($('<textarea id="mock-input-' + Utility.randomString() + '" data-formvalidation-input></textarea>').val(value))
-}
+// function mockTextarea (value) {
+//   return mockFormField($('<textarea id="mock-input-' + Utility.randomString() + '" data-formvalidation-input></textarea>').val(value))
+// }
 
-function mockSelect (values, selected) {
-  var selectValues = Utility.convertStringToArray(values)
+// function mockSelect (values, selected) {
+//   var selectValues = Utility.convertStringToArray(values)
 
-  var selectOptions = ''
-  for (var i = 0; i < selectValues.length; i++) {
-    selectOptions += '<option>' + selectValues[i] + '</option>'
-  }
+//   var selectOptions = ''
+//   for (var i = 0; i < selectValues.length; i++) {
+//     selectOptions += '<option>' + selectValues[i] + '</option>'
+//   }
 
-  return mockFormField($('<select id="mock-select-' + Utility.randomString() + '" data-formvalidation-input>' + selectOptions + '</select>').val(selected))
-}
+//   return mockFormField($('<select id="mock-select-' + Utility.randomString() + '" data-formvalidation-input>' + selectOptions + '</select>').val(selected))
+// }
 
-function mockFormValidationInputValidation (elem) {
-  var $elem = $(elem)
+// function mockFormValidationInputValidation (elem) {
+//   var $elem = $(elem)
 
-  return {
-    validation: 'input',
-    isValid: false,
-    $elem: $elem,
-    $formField: $elem.closest('.form-field'),
-    $notifications: undefined,
-    value: getFieldValue($elem),
-    type: 'auto',
-    errors: [],
-    messages: [],
-    options: {
-      rules: Utility.inherit({},
-        // Use default rules as a base
-        FormValidation.prototype.rules.defaultRules,
+//   return {
+//     validation: 'input',
+//     isValid: false,
+//     $elem: $elem,
+//     $formField: $elem.closest('.form-field'),
+//     $notifications: undefined,
+//     value: getFieldValue($elem),
+//     type: 'auto',
+//     errors: [],
+//     messages: [],
+//     options: {
+//       rules: Utility.inherit({},
+//         // Use default rules as a base
+//         FormValidation.prototype.rules.defaultRules,
 
-        // Inherit attribute values
-        ElementAttrsObject(elem, {
-          required: 'data-formvalidation-required',
-          minLength: 'data-formvalidation-minlength',
-          maxLength: 'data-formvalidation-maxlength',
-          setValues: 'data-formvalidation-setvalues',
-          inputType: 'data-formvalidation-type',
-          sameValueAs: 'data-formvalidation-samevalueas',
-          minValue: 'data-formvalidation-minvalue',
-          maxValue: 'data-formvalidation-maxvalue'
-        })
-      ),
-      showNotifications: false,
-      notificationsElem: undefined,
-      render: false,
-      showSuccess: false,
-      showError: false,
-      showAllErrors: true,
-      onbeforevalidate: undefined,
-      onaftervalidate: undefined,
-      onsuccess: undefined,
-      onerror: undefined,
-      oncomplete: undefined
-    }
-  }
-}
+//         // Inherit attribute values
+//         ElementAttrsObject(elem, {
+//           required: 'data-formvalidation-required',
+//           minLength: 'data-formvalidation-minlength',
+//           maxLength: 'data-formvalidation-maxlength',
+//           setValues: 'data-formvalidation-setvalues',
+//           inputType: 'data-formvalidation-type',
+//           sameValueAs: 'data-formvalidation-samevalueas',
+//           minValue: 'data-formvalidation-minvalue',
+//           maxValue: 'data-formvalidation-maxvalue'
+//         })
+//       ),
+//       showNotifications: false,
+//       notificationsElem: undefined,
+//       render: false,
+//       showSuccess: false,
+//       showError: false,
+//       showAllErrors: true,
+//       onbeforevalidate: undefined,
+//       onaftervalidate: undefined,
+//       onsuccess: undefined,
+//       onerror: undefined,
+//       oncomplete: undefined
+//     }
+//   }
+// }
 
-// Build elements to test
-var $testForm = $('<form id="mock-form-' + Utility.randomString() + '" data-formvalidation/>')
-var $testEmail1 = mockInput('email', 'firstname@example.com').appendTo($testForm)
-var $testEmail2 = mockInput('email', 'firstname.lastname@gmail.com').appendTo($testForm)
-var $testEmail3 = mockInput('email', 'firstname.lastname+test@example.com').appendTo($testForm)
-var $testEmail4 = mockInput('email', 'firstname.lastname_123-456@example.co.nz').appendTo($testForm)
-var $testEmail5 = mockInput('email', 'firstname.lastname_123-456@example.co').appendTo($testForm)
-var $testEmail6 = mockInput('email', 'firstname lastname').appendTo($testForm)
-var $testEmail7 = mockInput('email', 'firstnamelastname@').appendTo($testForm)
-var $testEmail8 = mockInput('email', 'firstname lastname @ example . com').appendTo($testForm)
-var $testEmail9 = mockInput('email', 'firstname.lastname@example.c').appendTo($testForm)
+// // Build elements to test
+// var $testForm = $('<form id="mock-form-' + Utility.randomString() + '" data-formvalidation/>')
+// var $testEmail1 = mockInput('email', 'firstname@example.com').appendTo($testForm)
+// var $testEmail2 = mockInput('email', 'firstname.lastname@gmail.com').appendTo($testForm)
+// var $testEmail3 = mockInput('email', 'firstname.lastname+test@example.com').appendTo($testForm)
+// var $testEmail4 = mockInput('email', 'firstname.lastname_123-456@example.co.nz').appendTo($testForm)
+// var $testEmail5 = mockInput('email', 'firstname.lastname_123-456@example.co').appendTo($testForm)
+// var $testEmail6 = mockInput('email', 'firstname lastname').appendTo($testForm)
+// var $testEmail7 = mockInput('email', 'firstnamelastname@').appendTo($testForm)
+// var $testEmail8 = mockInput('email', 'firstname lastname @ example . com').appendTo($testForm)
+// var $testEmail9 = mockInput('email', 'firstname.lastname@example.c').appendTo($testForm)
 
-// Check email validation
-var testRuleInputTypeEmail1 = validationRules.inputType(mockFormValidationInputValidation($testEmail1), 'email')
-var testRuleInputTypeEmail2 = validationRules.inputType(mockFormValidationInputValidation($testEmail2), 'email')
-var testRuleInputTypeEmail3 = validationRules.inputType(mockFormValidationInputValidation($testEmail3), 'email')
-var testRuleInputTypeEmail4 = validationRules.inputType(mockFormValidationInputValidation($testEmail4), 'email')
-var testRuleInputTypeEmail5 = validationRules.inputType(mockFormValidationInputValidation($testEmail5), 'email')
-var testRuleInputTypeEmail6 = validationRules.inputType(mockFormValidationInputValidation($testEmail6), 'email')
-var testRuleInputTypeEmail7 = validationRules.inputType(mockFormValidationInputValidation($testEmail7), 'email')
-var testRuleInputTypeEmail8 = validationRules.inputType(mockFormValidationInputValidation($testEmail8), 'email')
-var testRuleInputTypeEmail9 = validationRules.inputType(mockFormValidationInputValidation($testEmail9), 'email')
+// // Check email validation
+// var testRuleInputTypeEmail1 = validationRules.inputType(mockFormValidationInputValidation($testEmail1), 'email')
+// var testRuleInputTypeEmail2 = validationRules.inputType(mockFormValidationInputValidation($testEmail2), 'email')
+// var testRuleInputTypeEmail3 = validationRules.inputType(mockFormValidationInputValidation($testEmail3), 'email')
+// var testRuleInputTypeEmail4 = validationRules.inputType(mockFormValidationInputValidation($testEmail4), 'email')
+// var testRuleInputTypeEmail5 = validationRules.inputType(mockFormValidationInputValidation($testEmail5), 'email')
+// var testRuleInputTypeEmail6 = validationRules.inputType(mockFormValidationInputValidation($testEmail6), 'email')
+// var testRuleInputTypeEmail7 = validationRules.inputType(mockFormValidationInputValidation($testEmail7), 'email')
+// var testRuleInputTypeEmail8 = validationRules.inputType(mockFormValidationInputValidation($testEmail8), 'email')
+// var testRuleInputTypeEmail9 = validationRules.inputType(mockFormValidationInputValidation($testEmail9), 'email')
 
-console.log('Email 1', $testEmail1, $testEmail1/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail1, true)
-console.log('Email 2', $testEmail2, $testEmail2/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail2, true)
-console.log('Email 3', $testEmail3, $testEmail3/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail3, true)
-console.log('Email 4', $testEmail4, $testEmail4/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail4, true)
-console.log('Email 5', $testEmail5, $testEmail5/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail5, true)
-console.log('Email 6', $testEmail6, $testEmail6/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail6, false)
-console.log('Email 7', $testEmail7, $testEmail7/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail7, false)
-console.log('Email 8', $testEmail8, $testEmail8/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail8, false)
-console.log('Email 9', $testEmail9, $testEmail9/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeEmail9, false)
+// console.log('Email 1', $testEmail1, $testEmail1/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail1, true)
+// console.log('Email 2', $testEmail2, $testEmail2/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail2, true)
+// console.log('Email 3', $testEmail3, $testEmail3/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail3, true)
+// console.log('Email 4', $testEmail4, $testEmail4/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail4, true)
+// console.log('Email 5', $testEmail5, $testEmail5/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail5, true)
+// console.log('Email 6', $testEmail6, $testEmail6/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail6, false)
+// console.log('Email 7', $testEmail7, $testEmail7/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail7, false)
+// console.log('Email 8', $testEmail8, $testEmail8/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail8, false)
+// console.log('Email 9', $testEmail9, $testEmail9/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeEmail9, false)
 
-// Check number validation
-var $testNumber1 = mockInput('text', '1234567890').appendTo($testForm)
-var $testNumber2 = mockInput('text', '12345.67890').appendTo($testForm)
-var $testNumber3 = mockInput('text', '1 234 567 890,00 €').appendTo($testForm)
-var $testNumber4 = mockInput('text', '-1234e+5').appendTo($testForm)
-var $testNumber5 = mockInput('text', 'nothing to do with numbers').appendTo($testForm)
-var testRuleInputTypeNumber1 = validationRules.inputType(mockFormValidationInputValidation($testNumber1), 'number')
-var testRuleInputTypeNumber2 = validationRules.inputType(mockFormValidationInputValidation($testNumber2), 'number')
-var testRuleInputTypeNumber3 = validationRules.inputType(mockFormValidationInputValidation($testNumber3), 'number')
-var testRuleInputTypeNumber4 = validationRules.inputType(mockFormValidationInputValidation($testNumber4), 'number')
-var testRuleInputTypeNumber5 = validationRules.inputType(mockFormValidationInputValidation($testNumber5), 'number')
-console.log('Number 1', $testNumber1, $testNumber1/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeNumber1, true)
-console.log('Number 2', $testNumber2, $testNumber2/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeNumber2, true)
-console.log('Number 3', $testNumber3, $testNumber3/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeNumber3, true)
-console.log('Number 4', $testNumber4, $testNumber4/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeNumber4, true)
-console.log('Number 5', $testNumber5, $testNumber5/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeNumber5, false)
+// // Check number validation
+// var $testNumber1 = mockInput('text', '1234567890').appendTo($testForm)
+// var $testNumber2 = mockInput('text', '12345.67890').appendTo($testForm)
+// var $testNumber3 = mockInput('text', '1 234 567 890,00 €').appendTo($testForm)
+// var $testNumber4 = mockInput('text', '-1234e+5').appendTo($testForm)
+// var $testNumber5 = mockInput('text', 'nothing to do with numbers').appendTo($testForm)
+// var testRuleInputTypeNumber1 = validationRules.inputType(mockFormValidationInputValidation($testNumber1), 'number')
+// var testRuleInputTypeNumber2 = validationRules.inputType(mockFormValidationInputValidation($testNumber2), 'number')
+// var testRuleInputTypeNumber3 = validationRules.inputType(mockFormValidationInputValidation($testNumber3), 'number')
+// var testRuleInputTypeNumber4 = validationRules.inputType(mockFormValidationInputValidation($testNumber4), 'number')
+// var testRuleInputTypeNumber5 = validationRules.inputType(mockFormValidationInputValidation($testNumber5), 'number')
+// console.log('Number 1', $testNumber1, $testNumber1/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeNumber1, true)
+// console.log('Number 2', $testNumber2, $testNumber2/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeNumber2, true)
+// console.log('Number 3', $testNumber3, $testNumber3/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeNumber3, true)
+// console.log('Number 4', $testNumber4, $testNumber4/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeNumber4, true)
+// console.log('Number 5', $testNumber5, $testNumber5/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeNumber5, false)
 
-// Check integer validation
-var $testInteger1 = mockInput('text', '1234567890').appendTo($testForm)
-var $testInteger2 = mockInput('text', '12345.67890').appendTo($testForm)
-var $testInteger3 = mockInput('text', '1 234 567 890,00 €').appendTo($testForm)
-var $testInteger4 = mockInput('text', '-1234e+5').appendTo($testForm)
-var $testInteger5 = mockInput('text', 'nothing to do with integers').appendTo($testForm)
-var testRuleInputTypeInteger1 = validationRules.inputType(mockFormValidationInputValidation($testInteger1), 'integer')
-var testRuleInputTypeInteger2 = validationRules.inputType(mockFormValidationInputValidation($testInteger2), 'integer')
-var testRuleInputTypeInteger3 = validationRules.inputType(mockFormValidationInputValidation($testInteger3), 'integer')
-var testRuleInputTypeInteger4 = validationRules.inputType(mockFormValidationInputValidation($testInteger4), 'integer')
-var testRuleInputTypeInteger5 = validationRules.inputType(mockFormValidationInputValidation($testInteger5), 'integer')
-console.log('Integer 1', $testInteger1, $testInteger1/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeInteger1, true)
-console.log('Integer 2', $testInteger2, $testInteger2/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeInteger2, false)
-console.log('Integer 3', $testInteger3, $testInteger3/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeInteger3, false)
-console.log('Integer 4', $testInteger4, $testInteger4/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeInteger4, true)
-console.log('Integer 5', $testInteger5, $testInteger5/* .find('input') */.val())
-checkTestStatus(testRuleInputTypeInteger5, false)
+// // Check integer validation
+// var $testInteger1 = mockInput('text', '1234567890').appendTo($testForm)
+// var $testInteger2 = mockInput('text', '12345.67890').appendTo($testForm)
+// var $testInteger3 = mockInput('text', '1 234 567 890,00 €').appendTo($testForm)
+// var $testInteger4 = mockInput('text', '-1234e+5').appendTo($testForm)
+// var $testInteger5 = mockInput('text', 'nothing to do with integers').appendTo($testForm)
+// var testRuleInputTypeInteger1 = validationRules.inputType(mockFormValidationInputValidation($testInteger1), 'integer')
+// var testRuleInputTypeInteger2 = validationRules.inputType(mockFormValidationInputValidation($testInteger2), 'integer')
+// var testRuleInputTypeInteger3 = validationRules.inputType(mockFormValidationInputValidation($testInteger3), 'integer')
+// var testRuleInputTypeInteger4 = validationRules.inputType(mockFormValidationInputValidation($testInteger4), 'integer')
+// var testRuleInputTypeInteger5 = validationRules.inputType(mockFormValidationInputValidation($testInteger5), 'integer')
+// console.log('Integer 1', $testInteger1, $testInteger1/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeInteger1, true)
+// console.log('Integer 2', $testInteger2, $testInteger2/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeInteger2, false)
+// console.log('Integer 3', $testInteger3, $testInteger3/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeInteger3, false)
+// console.log('Integer 4', $testInteger4, $testInteger4/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeInteger4, true)
+// console.log('Integer 5', $testInteger5, $testInteger5/* .find('input') */.val())
+// checkTestStatus(testRuleInputTypeInteger5, false)
 
-// Check SIREN
-var $testSiren1 = mockInput('text', '123456789').appendTo($testForm)
-var $testSiren2 = mockInput('text', '123 456 789').appendTo($testForm)
-var $testSiren3 = mockInput('text', '123 456 789 asd').appendTo($testForm)
-var testRuleSiren1 = validationRules.inputType(mockFormValidationInputValidation($testSiren1), 'siren')
-var testRuleSiren2 = validationRules.inputType(mockFormValidationInputValidation($testSiren2), 'siren')
-var testRuleSiren3 = validationRules.inputType(mockFormValidationInputValidation($testSiren3), 'siren')
-console.log('Siren 1', $testSiren1, $testSiren1/* .find('input') */.val())
-checkTestStatus(testRuleSiren1, true)
-console.log('Siren 2', $testSiren2, $testSiren2/* .find('input') */.val())
-checkTestStatus(testRuleSiren2, true)
-console.log('Siren 3', $testSiren3, $testSiren3/* .find('input') */.val())
-checkTestStatus(testRuleSiren3, false)
+// // Check SIREN
+// var $testSiren1 = mockInput('text', '123456789').appendTo($testForm)
+// var $testSiren2 = mockInput('text', '123 456 789').appendTo($testForm)
+// var $testSiren3 = mockInput('text', '123 456 789 asd').appendTo($testForm)
+// var testRuleSiren1 = validationRules.inputType(mockFormValidationInputValidation($testSiren1), 'siren')
+// var testRuleSiren2 = validationRules.inputType(mockFormValidationInputValidation($testSiren2), 'siren')
+// var testRuleSiren3 = validationRules.inputType(mockFormValidationInputValidation($testSiren3), 'siren')
+// console.log('Siren 1', $testSiren1, $testSiren1/* .find('input') */.val())
+// checkTestStatus(testRuleSiren1, true)
+// console.log('Siren 2', $testSiren2, $testSiren2/* .find('input') */.val())
+// checkTestStatus(testRuleSiren2, true)
+// console.log('Siren 3', $testSiren3, $testSiren3/* .find('input') */.val())
+// checkTestStatus(testRuleSiren3, false)
 
-// Check SIRET
-var $testSiret1 = mockInput('text', '12345678901234').appendTo($testForm)
-var $testSiret2 = mockInput('text', '123 456 789 01234').appendTo($testForm)
-var $testSiret3 = mockInput('text', '123 456 789 01234 asd').appendTo($testForm)
-var testRuleSiret1 = validationRules.inputType(mockFormValidationInputValidation($testSiret1), 'siret')
-var testRuleSiret2 = validationRules.inputType(mockFormValidationInputValidation($testSiret2), 'siret')
-var testRuleSiret3 = validationRules.inputType(mockFormValidationInputValidation($testSiret3), 'siret')
-console.log('Siret 1', $testSiret1, $testSiret1/* .find('input') */.val())
-checkTestStatus(testRuleSiret1, true)
-console.log('Siret 2', $testSiret2, $testSiret2/* .find('input') */.val())
-checkTestStatus(testRuleSiret2, true)
-console.log('Siret 3', $testSiret3, $testSiret3/* .find('input') */.val())
-checkTestStatus(testRuleSiret3, false)
+// // Check SIRET
+// var $testSiret1 = mockInput('text', '12345678901234').appendTo($testForm)
+// var $testSiret2 = mockInput('text', '123 456 789 01234').appendTo($testForm)
+// var $testSiret3 = mockInput('text', '123 456 789 01234 asd').appendTo($testForm)
+// var testRuleSiret1 = validationRules.inputType(mockFormValidationInputValidation($testSiret1), 'siret')
+// var testRuleSiret2 = validationRules.inputType(mockFormValidationInputValidation($testSiret2), 'siret')
+// var testRuleSiret3 = validationRules.inputType(mockFormValidationInputValidation($testSiret3), 'siret')
+// console.log('Siret 1', $testSiret1, $testSiret1/* .find('input') */.val())
+// checkTestStatus(testRuleSiret1, true)
+// console.log('Siret 2', $testSiret2, $testSiret2/* .find('input') */.val())
+// checkTestStatus(testRuleSiret2, true)
+// console.log('Siret 3', $testSiret3, $testSiret3/* .find('input') */.val())
+// checkTestStatus(testRuleSiret3, false)

@@ -45,6 +45,19 @@ class LenderProfileFormsHandler
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * @param EntityManager            $entityManager
+     * @param AttachmentManager        $attachmentManager
+     * @param ClientStatusManager      $clientStatusManager
+     * @param ClientAuditer            $clientAuditer
+     * @param ClientDataHistoryManager $clientDataHistoryManager
+     * @param AddressManager           $addressManager
+     * @param BankAccountManager       $bankAccountManager
+     * @param TranslatorInterface      $translator
+     * @param TemplateMessageProvider  $messageProvider
+     * @param \Swift_Mailer            $mailer
+     * @param LoggerInterface          $logger
+     */
     public function __construct(
         EntityManager $entityManager,
         AttachmentManager $attachmentManager,
@@ -77,11 +90,12 @@ class LenderProfileFormsHandler
      * @param Clients       $client
      * @param FormInterface $form
      * @param FileBag       $fileBag
+     * @param bool          $saveImmediately
      *
      * @return bool
      * @throws \Exception
      */
-    public function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag): bool
+    public function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag, bool $saveImmediately = true): bool
     {
         $isRectoUploaded = false;
         $files           = [
@@ -100,6 +114,13 @@ class LenderProfileFormsHandler
                     }
                 } catch (\Exception $exception) {
                     $form->get('client')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -115,13 +136,14 @@ class LenderProfileFormsHandler
         }
 
         if ($form->isValid()) {
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, false, $newAttachments);
-            $clientChanges = $this->logClientChanges($client);
+            if ($saveImmediately) {
+                $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, false, $newAttachments);
+                $clientChanges = $this->logClientChanges($client);
 
-            if ($isRectoUploaded || false === empty($clientChanges)) {
-                $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+                if ($isRectoUploaded) {
+                    $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+                }
             }
-
             return true;
         }
 
@@ -141,12 +163,16 @@ class LenderProfileFormsHandler
     {
         $isFileUploaded = false;
 
-        if ($company->getStatusClient() > Companies::CLIENT_STATUS_MANAGER) {
+        $companyForm = $form->get('company');
+
+        if (Companies::CLIENT_STATUS_MANAGER != $company->getStatusClient()) {
             if (
                 Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT === $company->getStatusClient()
                 && empty($company->getStatusConseilExterneEntreprise())
             ) {
-                $form->get('company')->get('statusConseilExterneEntreprise')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                $companyForm
+                    ->get('statusConseilExterneEntreprise')
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
             }
 
             if (
@@ -154,31 +180,35 @@ class LenderProfileFormsHandler
                 && Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER === $company->getStatusConseilExterneEntreprise()
                 && empty($company->getPreciserConseilExterneEntreprise())
             ) {
-                $form->get('company')->get('preciserConseilExterneEntreprise')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
+                $companyForm
+                    ->get('preciserConseilExterneEntreprise')
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-external-counsel-error-message')));
             }
 
             if (empty($company->getCiviliteDirigeant())) {
-                $form->get('company')->get('civiliteDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')));
+                $companyForm
+                    ->get('civiliteDirigeant')
+                    ->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-form-of-address-missing')));
             }
 
             if (empty($company->getNomDirigeant())) {
-                $form->get('company')->get('nomDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing')));
+                $companyForm->get('nomDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-name-missing')));
             }
 
             if (empty($company->getPrenomDirigeant())) {
-                $form->get('company')->get('prenomDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing')));
+                $companyForm->get('prenomDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-first-name-missing')));
             }
 
             if (empty($company->getFonctionDirigeant())) {
-                $form->get('company')->get('fonctionDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing')));
+                $companyForm->get('fonctionDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-position-missing')));
             }
 
             if (empty($company->getPhoneDirigeant())) {
-                $form->get('company')->get('phoneDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing')));
+                $companyForm->get('phoneDirigeant')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-company-director-phone-missing')));
             }
 
             if (empty($company->getEmailDirigeant())) {
-                $form->get('company')->get('emailDirigeant')->addError(new FormError($this->translator->trans('common-validator_email-address-invalid')));
+                $companyForm->get('emailDirigeant')->addError(new FormError($this->translator->trans('common-validator_email-address-invalid')));
             }
         }
 
@@ -199,7 +229,14 @@ class LenderProfileFormsHandler
                     $newAttachments[] = $this->upload($client, $attachmentTypeId, $file);
                     $isFileUploaded   = true;
                 } catch (\Exception $exception) {
-                    $form->get('company')->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                    $companyForm->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-upload-files-error-message')));
+                    $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
@@ -217,7 +254,7 @@ class LenderProfileFormsHandler
 
             $this->entityManager->flush($company);
 
-            if ($isFileUploaded || false === empty($clientChanges) || false === empty($modifiedDataCompany)) {
+            if ($isFileUploaded || false === empty($modifiedDataCompany)) {
                 $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
             }
 
@@ -233,13 +270,14 @@ class LenderProfileFormsHandler
      * @param FileBag            $fileBag
      * @param string             $type
      * @param ClientAddress|null $address
+     * @param bool               $saveImmediately
      *
      * @return bool
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address): bool
+    public function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $address, bool $saveImmediately = true): bool
     {
         $housingCertificate = null;
         $newAttachments     = [];
@@ -294,6 +332,13 @@ class LenderProfileFormsHandler
                             }
                         } catch (\Exception $exception) {
                             $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-upload-files-error-message')));
+                            $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
+                                'id_client' => $client->getIdClient(),
+                                'class'     => __CLASS__,
+                                'method'    => __METHOD__,
+                                'file'      => $exception->getFile(),
+                                'line'      => $exception->getLine()
+                            ]);
                         }
                     } else {
                         switch ($attachmentTypeId) {
@@ -355,11 +400,12 @@ class LenderProfileFormsHandler
                     ]);
                 }
             }
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, $addressModification, $newAttachments);
 
-            $modifiedData += $this->logClientChanges($client);
-
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $modifiedData, $newAttachments);
+            if ($saveImmediately) {
+                $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $addressModification, false, $newAttachments);
+                $modifiedData += $this->logClientChanges($client);
+                $this->clientDataHistoryManager->sendAccountModificationEmail($client, $modifiedData, $newAttachments);
+            }
 
             return true;
         }
@@ -402,7 +448,7 @@ class LenderProfileFormsHandler
                 ];
                 break;
             default:
-                $this->logger->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender subscription', [
+                $this->logger->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender profile', [
                     'class'    => __CLASS__,
                     'function' => __FUNCTION__
                 ]);
@@ -429,7 +475,7 @@ class LenderProfileFormsHandler
                 $addressModification = true;
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), null, false, $addressModification);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), null, $addressModification);
             $this->clientDataHistoryManager->sendAccountModificationEmail($company->getIdClientOwner(), $modifiedData);
 
             return true;
@@ -442,11 +488,12 @@ class LenderProfileFormsHandler
      * @param FormInterface    $form
      * @param FileBag          $fileBag
      * @param BankAccount|null $unattachedBankAccount
+     * @param bool             $saveImmediately
      *
      * @return bool
      * @throws \Exception
      */
-    public function handleBankDetailsForm(FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
+    public function handleBankDetailsForm(FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount, bool $saveImmediately = true): bool
     {
         $iban                = $form->get('bankAccount')->get('iban')->getData();
         $bic                 = $form->get('bankAccount')->get('bic')->getData();
@@ -470,18 +517,25 @@ class LenderProfileFormsHandler
                     $bankAccountDocument = $this->upload($client, AttachmentType::RIB, $file);
                 } catch (\Exception $exception) {
                     $form->addError(new FormError($this->translator->trans('lender-profile_fiscal-tab-rib-file-error')));
+                    $this->logger->error('An error occurred while uploading IBAN attachment type id: ' . AttachmentType::RIB . '. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'method'    => __METHOD__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
             }
         }
 
-        if ($form->isValid() && $bankAccountDocument) {
+        if ($form->isValid() && $bankAccountDocument && $saveImmediately) {
             $clientChanges = $this->logClientChanges($client);
             $clientChanges += [
                 ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL => ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL
             ];
 
             $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, true, false, [$bankAccountDocument]);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, true, [$bankAccountDocument]);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, [$bankAccountDocument]);
 
             return true;
@@ -507,10 +561,7 @@ class LenderProfileFormsHandler
         if ($form->isValid()) {
             $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client);
             $clientChanges = $this->logClientChanges($client);
-
-            if (false === empty($clientChanges)) {
-                $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
-            }
+            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
 
             return true;
         }
@@ -520,16 +571,16 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients $client
+     * @param bool    $saveImmediately
      *
      * @return bool
      * @throws OptimisticLockException
      */
-    public function handlePhoneForm(Clients $client): bool
+    public function handlePhoneForm(Clients $client, bool $saveImmediately = true): bool
     {
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client);
-        $clientChanges = $this->logClientChanges($client);
-
-        if (false === empty($clientChanges)) {
+        if ($saveImmediately) {
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client);
+            $clientChanges = $this->logClientChanges($client);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
         }
 
@@ -545,7 +596,7 @@ class LenderProfileFormsHandler
      * @return array
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function logClientChanges(Clients $client): array
+    public function logClientChanges(Clients $client): array
     {
         $frontUser     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
         $clientChanges = $this->clientAuditer->logChanges($client, $frontUser);

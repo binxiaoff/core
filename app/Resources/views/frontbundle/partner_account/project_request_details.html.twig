@@ -13,8 +13,7 @@
                     <header class="panel-header">
                         <h3>{% trans %} partner-project-details_title {% endtrans %}</h3>
                     </header>
-                    <form id="form-project-details" action="{{ path('partner_project_request_details_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
-                        <input type="hidden" name="action">
+                    <form id="form-project-create" action="{{ path('partner_project_request_details_form', {'hash' : project.hash}) }}" method="post" enctype="multipart/form-data" class="form-project-details" data-formvalidation data-formvalidation-notificationselem="#form-project-details-notifications">
                         <div class="row" ui-sticky-parent>
                             <div class="col-main col-md-8 col-lg-8">
 
@@ -28,11 +27,11 @@
                                     <div class="row columns-with-space">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-company-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-company">{{ project.company }}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-company">{{ project.idCompany.name }}</strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-siren-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-siren">{{ project.siren }}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-siren">{{ project.idCompany.siren }}</strong></dd>
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
@@ -40,13 +39,45 @@
                                         </dl>
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-duration-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%': project.duration} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                            <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%': project.period} %} partner-project-details_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
                                         </dl>
                                     </div>
                                 </fieldset><!-- /.form-project-details-fieldset -->
 
                                 <fieldset class="form-project-details-fieldset">
                                     <h4>{% trans %} partner-project-details_identity-section-title {% endtrans %}</h4>
+
+                                    {% if activeExecutives is not empty %}
+                                        <div class="row row-multi-col-computer">
+                                            <div class="form-field field-label col-lg-3 col-md-3">
+                                                <label>
+                                                    {% trans %} partner-project-details_representative-identity-who {% endtrans %}
+                                                </label>
+                                            </div><!-- /.form-field -->
+                                            <div class="form-field col-lg-9 col-md-9">
+                                                <select id="identity-executive-selector" name="executive" class="input-field">
+                                                    {% for executive in activeExecutives %}
+                                                        <option value="{{ executive.idExecutive|escape('html_attr') }}"
+                                                                {% if (executive.lastName ~ executive.firstName)|lower == (form.values.contact.lastName ~ form.values.contact.firstName)|lower %} selected{% endif %}
+                                                                data-executive-title="{{ executive.title|escape('html_attr') }}"
+                                                                data-executive-last-name="{{ executive.lastName|escape('html_attr') }}"
+                                                                data-executive-first-name="{{ executive.firstName|escape('html_attr') }}"
+                                                                data-executive-function="{{ executive.position|escape('html_attr') }}">
+                                                            {{ executive.title }}{% if 'M' == executive.title %}.{% endif %} {{ executive.lastName }} {{ executive.firstName }}
+                                                        </option>
+                                                    {% endfor %}
+                                                    <option value=""
+                                                            {% if contactInList == false and (form.values.otherContact.lastName ~ form.values.otherContact.firstName)|lower == (form.values.contact.lastName ~ form.values.contact.firstName)|lower %} selected{% endif %}
+                                                            data-executive-title="{{ form.values.otherContact.title|escape('html_attr') }}"
+                                                            data-executive-last-name="{{ form.values.otherContact.lastName|escape('html_attr') }}"
+                                                            data-executive-first-name="{{ form.values.otherContact.firstName|escape('html_attr') }}"
+                                                            data-executive-function="{{ form.values.otherContact.function|escape('html_attr') }}">
+                                                        {% trans %} partner-project-details_representative-identity-other-people {% endtrans %}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    {% endif %}
 
                                     <div class="form-field form-field-multi{% if form.errors.contact.title is defined %} ui-formvalidation-error{% endif %}">
                                         <div class="field-label">
@@ -56,13 +87,13 @@
                                         <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="contact[title]" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-female {% endtrans %}
                                                 </label>
                                             </li>
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="contact[title]" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-male {% endtrans %}
                                                 </label>
                                             </li>
@@ -73,24 +104,24 @@
                                     </div><!-- /.form-field -->
 
                                     <div class="row columns-with-space">
-                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastname is defined %} ui-formvalidation-error{% endif %}">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.lastName is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-nom">
                                                 {% trans %} common_name {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
-                                            <input id="form-project-details-identity-nom" type="text" name="contact[lastname]" value="{{ form.values.contact.lastname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
-                                            {% if form.errors.contact.lastname is defined %}
+                                            <input id="form-project-details-identity-nom" type="text" name="lastName" value="{{ form.values.contact.lastName|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                            {% if form.errors.contact.lastName is defined %}
                                                 <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                             {% endif %}
                                         </div><!-- /.form-field -->
 
-                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstname is defined %} ui-formvalidation-error{% endif %}">
+                                        <div class="form-field col-lg-6 col-md-6{% if form.errors.contact.firstName is defined %} ui-formvalidation-error{% endif %}">
                                             <label for="form-project-details-identity-prenom">
                                                 {% trans %} common_firstname {% endtrans %}
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
-                                            <input id="form-project-details-identity-prenom" type="text" name="contact[firstname]" value="{{ form.values.contact.firstname|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
-                                            {% if form.errors.contact.firstname is defined %}
+                                            <input id="form-project-details-identity-prenom" type="text" name="firstName" value="{{ form.values.contact.firstName|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="name">
+                                            {% if form.errors.contact.firstName is defined %}
                                                 <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                             {% endif %}
                                         </div><!-- /.form-field -->
@@ -103,7 +134,7 @@
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
                                             <div class="input-group">
-                                                <input id="form-project-details-identity-email" type="text" name="contact[email]" value="{{ form.values.contact.email|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                                <input id="form-project-details-identity-email" type="text" name="email" value="{{ form.values.contact.email|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                                 {% if form.errors.contact.email is defined %}
                                                     <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                 {% endif %}
@@ -116,7 +147,7 @@
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
                                             <div class="input-group">
-                                                <input id="form-project-details-identity-mobile" type="text" name="contact[mobile]" value="{{ form.values.contact.mobile|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="mobile">
+                                                <input id="form-project-details-identity-mobile" type="text" name="mobile" value="{{ form.values.contact.mobile|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="mobile">
                                                 {% if form.errors.contact.mobile is defined %}
                                                     <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                 {% endif %}
@@ -131,7 +162,7 @@
                                                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                                             </label>
                                             <div class="input-group">
-                                                <input id="form-project-details-identity-function" type="text" name="contact[function]" value="{{ form.values.contact.function|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                <input id="form-project-details-identity-function" type="text" name="function" value="{{ form.values.contact.function|e('html_attr') }}" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                                 {% if form.errors.contact.function is defined %}
                                                     <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                                 {% endif %}
@@ -150,7 +181,7 @@
                                             <div class="row">
                                                 <p>{{ ('partner-project-details_description-instructions-' ~ app.user.partner.label)|trans|raw }}</p>
                                             </div>
-                                            <textarea id="form-project-details-description" name="project[description]" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
+                                            <textarea id="form-project-details-description" name="description" class="input-field" rows="5" placeholder="{{ 'partner-project-details_description-placeholder'|trans|escape('html_attr') }}" data-formvalidation-input data-formvalidation-required="true">{{ form.values.project.description }}</textarea>
                                             {% if form.errors.project.description is defined %}
                                                 <ul class="ui-formvalidation-messages"><li>{% trans %} form-validation_error-field-required {% endtrans %}</li></ul>
                                             {% endif %}
@@ -190,10 +221,10 @@
                                         <button type="button" class="btn-default btn-abandon btn-shape-sm" data-equal-width data-equal-width-group="form-actions" data-modal-toggle="#modal-partner-prospect-abandon">
                                             {% trans %} partner-project-details_abandon-button {% endtrans %}
                                         </button>
-                                        <button type="button" class="btn-default btn-abandon btn-shape-sm btn-save" data-equal-width data-equal-width-group="form-actions">
+                                        <button type="submit" class="btn-default btn-abandon btn-shape-sm btn-save" data-equal-width data-equal-width-group="form-actions" name="save">
                                             {% trans %} partner-project-details_save-button {% endtrans %}
                                         </button>
-                                        <button type="submit" class="btn-primary btn-submit btn-shape-sm" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton data-spinnerbutton-targetelem="form-project-details">
+                                        <button type="submit" class="btn-primary btn-submit btn-shape-sm" data-equal-width data-equal-width-group="form-actions" data-spinnerbutton data-spinnerbutton-targetelem="form-project-details" name="submit">
                                             {% trans %} partner-project-details_validate-button {% endtrans %}
                                         </button>
                                     </div>
@@ -210,9 +241,9 @@
                                                 <dt id="simulator-label-amount">{% trans %} partner-project-details_simulator-panel-amount-label {% endtrans %}</dt>
                                                 <dd id="simulator-output-amount"><strong>{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
                                                 <dt id="simulator-label-duration">{% trans %} partner-project-details_simulator-panel-estimated-funding-time-label {% endtrans %}</dt>
-                                                <dd id="simulator-output-duration"><strong>{% transchoice project.averageFundingDuration with {'%averageFundingDuration%': project.averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</strong></dd>
+                                                <dd id="simulator-output-duration"><strong>{% transchoice averageFundingDuration with {'%averageFundingDuration%': averageFundingDuration} %} partner-project-details_simulator-panel-estimated-funding-time-value {% endtranschoice %}</strong></dd>
                                                 <dt id="simulator-label-monthly">{% trans %} partner-project-details_simulator-panel-estimated-monthly-repayment-label {% endtrans %}</dt>
-                                                <dd id="simulator-output-monthly"><strong>{{ project.monthlyPaymentBoundaries.minimum|localizednumber }} / {{ project.monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</strong></dd>
+                                                <dd id="simulator-output-monthly"><strong>{{ monthlyPaymentBoundaries.minimum|localizednumber }} / {{ monthlyPaymentBoundaries.maximum|localizednumber }}&nbsp;€</strong></dd>
                                             </dl>
                                         </div>
                                     </div><!-- /.simulator -->
@@ -229,7 +260,7 @@
 {% block modals %}
     <div id="modal-partner-prospect-abandon" data-modal>
         <form action="{{ path('partner_project_request_abandon') }}" method="post" data-formvalidation>
-            <input type="hidden" name="hash" value="{{ project.hash }}">
+            <input type="hidden" name="hash" value="{{ project.hash|escape('html_attr') }}">
             <div class="modal-body text-align-center">
                 <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
                 <div class="form-field">
@@ -237,7 +268,7 @@
                     <select name="reason" id="prospect-abandon-motif" class="input-field">
                         <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
                         {% for abandonReason in abandonReasons %}
-                            <option value="{{ abandonReason.idAbandon }}">{{ abandonReason.reason|capitalize }}</option>
+                            <option value="{{ abandonReason.idAbandon|escape('html_attr') }}">{{ abandonReason.reason|capitalize }}</option>
                         {% endfor %}
                     </select>
                 </div>

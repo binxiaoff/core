@@ -25,6 +25,7 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
@@ -87,7 +88,7 @@ class LenderProfileController extends Controller
         $identityForm = $identityFormBuilder->getForm();
 
         if ($request->isMethod(Request::METHOD_POST)) {
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
             $translator  = $this->get('translator');
             $isValid     = false;
 
@@ -211,7 +212,7 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
         }
 
-        $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+        $formHandler = $this->get(LenderProfileFormsHandler::class);
         $form->handleRequest($request);
 
         if (
@@ -281,7 +282,7 @@ class LenderProfileController extends Controller
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $isValid     = false;
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
 
             $emailForm->handleRequest($request);
             if (
@@ -631,13 +632,14 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('lender_dashboard');
         }
 
-        $translator     = $this->get('translator');
-        $isFileUploaded = false;
-        $error          = '';
-        $files          = $request->request->get('files', []);
-        $client         = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $newAttachments = [];
-        $modifiedData   = [];
+        $translator            = $this->get('translator');
+        $isFileUploaded        = false;
+        $error                 = '';
+        $files                 = $request->request->get('files', []);
+        $client                = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $newAttachments        = [];
+        $modifiedData          = [];
+        $isBankAccountModified = false;
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -656,6 +658,7 @@ class LenderProfileController extends Controller
                             $modifiedData = [
                                 ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL => ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL
                             ];
+                            $isBankAccountModified = true;
                         } else {
                             $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
                         }
@@ -666,7 +669,7 @@ class LenderProfileController extends Controller
             }
         }
         $this->get('unilend.service.client_status_manager')
-            ->changeClientStatusTriggeredByClientAction($client, null, isset($modifiedData[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL]), false, $newAttachments);
+            ->changeClientStatusTriggeredByClientAction($client, null, false, $isBankAccountModified, $newAttachments);
 
         if (empty($error) && $isFileUploaded) {
             $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $modifiedData, $newAttachments);

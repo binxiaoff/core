@@ -332,32 +332,32 @@ module.exports = Sanity
  *
  * If you change any of the above, make sure to uncomment below to run these tests
  */
-console.log('### TESTING SANITY ###')
+// console.log('### TESTING SANITY ###')
 
-var testPhone = Sanity('+123 456 789 ext. 1456').sanitise.phone()
-var testPhone2 = Sanity('+123 (0) 456-789 ext. 1456').sanitise.phone()
-var testPhone3 = Sanity('+123 (0) 456.789 ext. 1456').sanitise.phone()
-var testPhoneBrackets = Sanity('(+123) 456 789 ext. 1456').sanitise.phone()
-var testPhoneRedundantZero = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone()
-var testPhoneStrict = Sanity('+123 456 789 ext. 1456').sanitise.phone(true)
-var testPhoneRedundantZeroStrict = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone(true)
+// var testPhone = Sanity('+123 456 789 ext. 1456').sanitise.phone()
+// var testPhone2 = Sanity('+123 (0) 456-789 ext. 1456').sanitise.phone()
+// var testPhone3 = Sanity('+123 (0) 456.789 ext. 1456').sanitise.phone()
+// var testPhoneBrackets = Sanity('(+123) 456 789 ext. 1456').sanitise.phone()
+// var testPhoneRedundantZero = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone()
+// var testPhoneStrict = Sanity('+123 456 789 ext. 1456').sanitise.phone(true)
+// var testPhoneRedundantZeroStrict = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone(true)
 
-console.log('Phone:', testPhone, testPhone === '+123 456 789')
-console.log('Phone:', testPhone2, testPhone2 === '+123 456 789')
-console.log('Phone:', testPhone3, testPhone3 === '+123 456 789')
-console.log('Phone:', testPhoneBrackets, testPhoneBrackets === '+123 456 789')
-console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
-console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
-console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
+// console.log('Phone:', testPhone, testPhone === '+123 456 789')
+// console.log('Phone:', testPhone2, testPhone2 === '+123 456 789')
+// console.log('Phone:', testPhone3, testPhone3 === '+123 456 789')
+// console.log('Phone:', testPhoneBrackets, testPhoneBrackets === '+123 456 789')
+// console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
+// console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
+// console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
 
-var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title() // eslint-disable-line
-console.log('Title:', testTitle, testTitle === "MATT'S SSUPER-FUN & HAPPY RAISON SOCIALE SARL")
+// var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title() // eslint-disable-line
+// console.log('Title:', testTitle, testTitle === "MATT'S SSUPER-FUN & HAPPY RAISON SOCIALE SARL")
 
-var testNormaliseWhitespace = Sanity('0 1 2 3 4 5 6 7 8 9').normalise.whitespace('')
-console.log('Whitespace:', testNormaliseWhitespace, testNormaliseWhitespace === '0123456789')
+// var testNormaliseWhitespace = Sanity('0 1 2 3 4 5 6 7 8 9').normalise.whitespace('')
+// console.log('Whitespace:', testNormaliseWhitespace, testNormaliseWhitespace === '0123456789')
 
-var testSiren = Sanity('123456789abc').sanitise.siren()
-var testSiret = Sanity('12345678901234abc').sanitise.siret()
+// var testSiren = Sanity('123456789abc').sanitise.siren()
+// var testSiret = Sanity('12345678901234abc').sanitise.siret()
 
-console.log('Siren:', testSiren, testSiren === '123456789')
-console.log('Siret:', testSiret, testSiret === '12345678901234')
+// console.log('Siren:', testSiren, testSiren === '123456789')
+// console.log('Siret:', testSiret, testSiret === '12345678901234')

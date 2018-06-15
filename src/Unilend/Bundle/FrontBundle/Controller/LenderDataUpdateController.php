@@ -7,19 +7,18 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
 };
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AddressType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Attachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\BankAccountType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\ClientAddressType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\OriginOfFundsType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonPhoneType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\PersonProfileType;
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager;
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
+    BankAccountType, ClientAddressType, OriginOfFundsType, PersonPhoneType, PersonProfileType
+};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderDataUpdateController extends Controller
 {
@@ -49,31 +48,50 @@ class LenderDataUpdateController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
 
         $client                  = $this->getClient();
+        $unattachedClient        = clone $client;
         $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
         $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $formBuilder             = $this->createFormBuilder()
+        $unattachedBankAccount   = clone $bankAccount;
+
+        $addressForm = $this->get('form.factory')->createNamedBuilder('mainAddress', ClientAddressType::class, [
+            'address'   => $lastModifiedMainAddress->getAddress(),
+            'zip'       => $lastModifiedMainAddress->getZip(),
+            'city'      => $lastModifiedMainAddress->getCity(),
+            'idCountry' => $lastModifiedMainAddress->getIdCountry()->getIdPays(),
+        ]);
+        $addressForm
+            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
+            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => $client->getUsPerson()]);
+        $form = $this->createFormBuilder()
             ->add('client', PersonProfileType::class, ['data' => $client])
             ->add('phone', PersonPhoneType::class, ['data' => $client])
-            ->add('mainAddress', ClientAddressType::class, [
-                'data' => [
-                    'address'   => $lastModifiedMainAddress->getAddress(),
-                    'zip'       => $lastModifiedMainAddress->getZip(),
-                    'city'      => $lastModifiedMainAddress->getCity(),
-                    'idCountry' => $lastModifiedMainAddress->getIdCountry()->getIdPays(),
-                ]
-            ])
-            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
+            ->add($addressForm)
             ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
             ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => $client->getUsPerson()]);
+            ->getForm();
 
-        $form = $formBuilder->getForm();
         if ($request->isMethod(Request::METHOD_POST)) {
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
-                $client->setusPerson($form->get('noUsPerson')->getData());
+                $formsHandler = $this->get(LenderProfileFormsHandler::class);
+                try {
+                    $uploadedFiles = $request->files;
+                    $formsHandler->handlePersonIdentity($unattachedClient, $client, $form, $uploadedFiles, false);
+                    $formsHandler->handlePhoneForm($client, false);
+                    $formsHandler->handlePersonAddress($client, $form->get('mainAddress'), $uploadedFiles, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress, false);
+                    $formsHandler->handleBankDetailsForm($form, $uploadedFiles, $unattachedBankAccount, false);
 
-                return $this->redirectToRoute('lender_data_update_end');
+                    if ($form->isValid()) {
+                        $this->get('unilend.service.client_status_manager')->changeClientStatusTriggeredByClientAction($client);
+                        $clientChanges = $formsHandler->logClientChanges($client);
+                        $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $clientChanges);
+                        return $this->redirectToRoute('lender_data_update_end');
+                    }
+                } catch (\Exception $exception) {
+                    //nothing to do
+                }
+
+                return $this->redirectToRoute('lender_data_update_details');
             }
         }
 

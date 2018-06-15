@@ -1,12 +1,12 @@
 <section id="profile-info-edit-legal-entity" role="tabpanel" class="profile-info-edit collapse {{ identityFormCollapse }}">
     {{ form_start(forms.identity, {
-        'multipart' : true,
-        'id' : 'form-profile-info-edit-legal-entity',
-        'attr' : {
-            'class' : 'form-profile form-profile-info-edit',
-            'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-info-notifications'
-        }})
-    }}
+        'multipart': true,
+        'id': 'form-profile-info-edit-legal-entity',
+        'attr': {
+            'class': 'form-profile form-profile-info-edit',
+            'data-formvalidation data-formvalidation-notificationselem': '#form-profile-info-notifications'
+        }
+    }) }}
         <div class="row">
             <div class="form-field form-field-multi">
                 <div class="field-label">
@@ -27,10 +27,11 @@
             <div class="form-field col-lg-6 col-md-6 {% if forms.identity.company.name.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-company-name">{% trans %} lender-profile_information-tab-identity-section-company-name-label {% endtrans %}</label>
                 {{ form_widget(forms.identity.company.name, {
-                    'id' : 'form-profile-info-company-name',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-name',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.company.name) }}
@@ -40,10 +41,11 @@
                 <label for="form-profile-info-company-legal-form">{% trans %} lender-profile_information-tab-identity-section-company-legal-form-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 {{ form_widget(forms.identity.company.forme, {
-                    'id' : 'form-profile-info-company-legal-form',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-legal-form',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.company.forme) }}
@@ -54,10 +56,11 @@
             <div class="form-field col-lg-6 col-md-6 {% if forms.identity.company.capital.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-company-social-capital">{% trans %} lender-profile_information-tab-identity-section-company-social-capital-label {% endtrans %}</label>
                 {{ form_widget(forms.identity.company.capital, {
-                    'id' : 'form-profile-info-company-social-capital',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-social-capital',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.company.capital) }}
@@ -73,10 +76,11 @@
             <div class="form-field col-lg-6 col-md-6 {% if forms.identity.company.phone.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-info-company-phone">{% trans %} lender-profile_information-tab-identity-section-company-phone-label {% endtrans %}</label>
                 {{ form_widget(forms.identity.company.phone, {
-                    'id' : 'form-profile-info-company-phone',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-phone',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.company.phone) }}
@@ -90,8 +94,10 @@
         <div class="row">
             <div class="form-field form-field-multi {% if forms.identity.client.civilite.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
-                    <label>{% trans %} common_title {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <label>
+                        {% trans %} common_title {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     {% for key, civilite in forms.identity.client.civilite.children %}
@@ -108,8 +114,10 @@
         <div class="row">
             <div class="form-field form-field-multi {% if forms.identity.company.statusClient.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <div class="field-label">
-                    <label>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                    <label>
+                        {% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                     {% for key, status in forms.identity.company.statusClient.children %}
@@ -129,13 +137,15 @@
                 <div class="form-field col-lg-6 col-md-6 {% if forms.identity.company.statusConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-profile-info-company-client-status">
                         {% trans %} lender-profile_information-tab-identity-section-company-external-counsel-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
                     {{ form_widget(forms.identity.company.statusConseilExterneEntreprise, {
-                        'id' : 'form-profile-info-company-client-status',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'ncompany_external_counselame' : 'company_external_counsel',
-                            'data-formvalidation-input' : ''
+                        'id': 'form-profile-info-company-client-status',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'ncompany_external_counselame': 'company_external_counsel',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.statusConseilExterneEntreprise) }}
@@ -150,10 +160,11 @@
                             <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                         </label>
                         {{ form_widget(forms.identity.company.preciserConseilExterneEntreprise, {
-                            'id' : 'form-profile-info-company-client-status-other',
-                            'attr' : {
-                                'class'  : 'input-field',
-                                'data-formvalidation-input data-formvalidation-required' : 'true'
+                            'id': 'form-profile-info-company-client-status-other',
+                            'required': false,
+                            'attr': {
+                                'class': 'input-field',
+                                'data-formvalidation-input data-formvalidation-required': 'true'
                             }
                         }) }}
                         {{ form_errors(forms.identity.company.preciserConseilExterneEntreprise) }}
@@ -167,10 +178,11 @@
                 <label for="form-profile-info-company-client-name">{% trans %} common_name {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 {{ form_widget(forms.identity.client.nom, {
-                    'id' : 'form-profile-info-company-client-name',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-client-name',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.client.nom) }}
@@ -182,10 +194,11 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.identity.client.prenom, {
-                    'id' : 'form-profile-info-company-client-first-name',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-client-first-name',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.client.prenom) }}
@@ -198,10 +211,11 @@
                     {% trans %} common_position {% endtrans %}
                 </label>
                 {{ form_widget(forms.identity.client.fonction, {
-                    'id' : 'form-profile-info-company-client-function',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-client-function',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.client.fonction) }}
@@ -217,12 +231,13 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.identity.client.mobile, {
-                    'id' : 'form-profile-info-company-client-telephone',
-                    'type' : 'tel',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true',
-                        'data-formvalidation-type' : 'mobile'
+                    'id': 'form-profile-info-company-client-telephone',
+                    'type': 'tel',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true',
+                        'data-formvalidation-type': 'mobile'
                     }
                 }) }}
                 {{ form_errors(forms.identity.client.mobile) }}
@@ -234,10 +249,11 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.identity.client.email, {
-                    'id' : 'form-profile-info-company-client-email',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
+                    'id': 'form-profile-info-company-client-email',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
                     }
                 }) }}
                 {{ form_errors(forms.identity.client.email) }}
@@ -301,7 +317,7 @@
                         {% for key, civilite in forms.identity.company.civiliteDirigeant.children %}
                         <li>
                             {{ form_widget(civilite, {
-                                'required' : false
+                                'required': false
                             }) }}
                             {{ form_label(civilite) }}
                         </li>
@@ -318,10 +334,11 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.identity.company.nomDirigeant, {
-                        'id' : 'form-profile-info-company-director-name',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'id': 'form-profile-info-company-director-name',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.nomDirigeant) }}
@@ -333,10 +350,11 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.identity.company.prenomDirigeant, {
-                        'id' : 'form-profile-info-company-director-first-name',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'id': 'form-profile-info-company-director-first-name',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.prenomDirigeant) }}
@@ -350,10 +368,11 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.identity.company.fonctionDirigeant, {
-                        'id' : 'form-profile-info-company-director-function',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'id': 'form-profile-info-company-director-function',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.fonctionDirigeant) }}
@@ -369,11 +388,12 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.identity.company.phoneDirigeant, {
-                        'id' : 'form-profile-info-company-director-telephone',
-                        'type' : 'tel',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'id': 'form-profile-info-company-director-telephone',
+                        'type': 'tel',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.phoneDirigeant) }}
@@ -385,10 +405,11 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.identity.company.emailDirigeant, {
-                        'id' : 'form-profile-info-company-director-email',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
+                        'id': 'form-profile-info-company-director-email',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
                         }
                     }) }}
                     {{ form_errors(forms.identity.company.emailDirigeant) }}

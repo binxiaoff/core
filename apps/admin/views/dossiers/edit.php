@@ -285,24 +285,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         })
         <?php endif; ?>
 
-        $('body').on('change', '#partner', function () {
-            var partnerId = $(this).find('option:selected').val()
-
-            if (partnerId !== '') {
-                $.ajax({
-                    type: 'POST',
-                    url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + partnerId,
-                    dataType: 'json',
-                    success: function (products) {
-                        $('#product').find('option').remove().end().append('<option value=""></option>')
-                        $.each(products, function (index, product) {
-                            $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
-                        })
-                    }
-                })
-            }
-        })
-
         $(document).click(function (event) {
             var $clicked = $(event.target)
             if ($clicked.hasClass('tab_title')) {
@@ -471,6 +453,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $clientSubmitterSelect.val('').html('<option value="0"></option>')
 
             var $select = $(this)
+            if ($select.val() !== '') {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + $select.val(),
+                    dataType: 'json',
+                    success: function (products) {
+                        $('#product').find('option').remove().end().append('<option value=""></option>')
+                        $.each(products, function (index, product) {
+                            $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
+                        })
+                    }
+                })
+            }
             if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_UNILEND_ID ?>') {
                 return false
             }

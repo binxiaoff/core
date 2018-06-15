@@ -43,28 +43,29 @@
 
 <section id="profile-address-edit" role="tabpanel" class="profile-address-edit collapse {{ fiscalAddressFormCollapse }}">
     {{ form_start(forms.mainAddress, {
-        'multipart' : true,
-        'attr' : {
-            'class' : 'form-profile form-profile-address-edit',
-            'data-formvalidation' : true,
-            'data-formvalidation-notificationselem' : '#form-profile-address-notifications'
-        }})
-    }}
+        'multipart': true,
+        'attr': {
+            'class': 'form-profile form-profile-address-edit',
+            'data-formvalidation data-formvalidation-notificationselem': '#form-profile-address-notifications'
+        }
+    }) }}
         <div class="row">
             <div class="form-field {% if forms.mainAddress.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.mainAddress.address, {
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input' : true,
-                        'data-formvalidation-required' : true
-                    }})
-                }}
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
+                    }
+                }) }}
                 {{ form_errors(forms.mainAddress.address) }}
             </div><!-- /.form-field -->
         </div>
+
+        <div id="form-profile-address-notifications"></div>
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6 {% if forms.mainAddress.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
@@ -73,17 +74,18 @@
                 </label>
                 <div class="input-group set-right">
                     {{ form_widget(forms.mainAddress.zip, {
-                        'id' : 'form-profile-address-code',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
-                            'data-autocomplete-address-countryelem' : '#form-profile-address-pays',
-                            'data-autocomplete-address-cityelem' : '#form-profile-address-ville',
-                            'data-autocomplete-address-zipelem' : '#form-profile-address-code',
-                            'data-has-spinner' : '#spinner-profile-address-code'
-                        }})
-                    }}
+                        'id': 'form-profile-address-code',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl': path('lender_profile_ajax_zip'),
+                            'data-autocomplete-address-countryelem': '#form-profile-address-pays',
+                            'data-autocomplete-address-cityelem': '#form-profile-address-ville',
+                            'data-autocomplete-address-zipelem': '#form-profile-address-code',
+                            'data-has-spinner': '#spinner-profile-address-code'
+                        }
+                    }) }}
                     {{ form_errors(forms.mainAddress.zip) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-code" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
@@ -95,17 +97,18 @@
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 <div class="input-group set-right">
                     {{ form_widget(forms.mainAddress.city, {
-                        'id' : 'form-profile-address-ville',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true',
-                            'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
-                            'data-autocomplete-address-countryelem' : '#form-profile-address-pays',
-                            'data-autocomplete-address-cityelem' : '#form-profile-address-ville',
-                            'data-autocomplete-address-zipelem' : '#form-profile-address-code',
-                            'data-has-spinner' : '#spinner-profile-address-city'
-                        }})
-                    }}
+                        'id': 'form-profile-address-ville',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true',
+                            'data-autocomplete-address data-autocomplete-ajaxurl': path('lender_profile_ajax_zip'),
+                            'data-autocomplete-address-countryelem': '#form-profile-address-pays',
+                            'data-autocomplete-address-cityelem': '#form-profile-address-ville',
+                            'data-autocomplete-address-zipelem': '#form-profile-address-code',
+                            'data-has-spinner': '#spinner-profile-address-city'
+                        }
+                    }) }}
                     {{ form_errors(forms.mainAddress.city) }}
                     <div class="btn-group">
                         <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
@@ -119,13 +122,13 @@
                 <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
                 {{ form_widget(forms.mainAddress.idCountry, {
-                    'id' : 'form-profile-address-pays',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input' : true,
-                        'data-formvalidation-required' : true
-                    }})
-                }}
+                    'id': 'form-profile-address-pays',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
+                    }
+                }) }}
                 {{ form_errors(forms.mainAddress.idCountry) }}
             </div><!-- /.form-field -->
         </div>
@@ -135,7 +138,7 @@
             <div class="form-field form-field-single-checkbox">
                 <label>
                     {{ form_widget(forms.mainAddress.noUsPerson, {
-                        'id' : 'form-profile-no-us-person'
+                        'id': 'form-profile-no-us-person'
                     }) }}
                     <span class="label">{% trans %} common_no-us-person-declaration {% endtrans %}</span>
                 </label>
@@ -150,7 +153,7 @@
                 </label>
                 <div class="custom-input-file" id="form-profile-info-file-tax-certificate"
                      data-formvalidation-input
-                     data-formvalidation-required='#tax-certificate.collapse.in input[type="file"][name="tax-certificate"]'
+                     data-formvalidation-required='input[type="file"][name="tax-certificate"]'
                      data-fileattach
                      data-fileattach-inputname="tax-certificate"
                      data-fileattach-maxfiles="1"
@@ -191,8 +194,8 @@
         {# Housed by Third Person #}
         <div class="row">
             <div class="form-field form-field-single-checkbox">
-                {{ form_widget(forms.mainAddress.housedByThirdPerson, {'id' : 'housed-by-third-person' }) }}
                 <label>
+                    {{ form_widget(forms.mainAddress.housedByThirdPerson, {'id': 'housed-by-third-person' }) }}
                     <span class="label">{% trans %} lender-profile_information-tab-fiscal-address-section-housed-by-third-person-checkbox {% endtrans %}</span>
                 </label>
             </div><!-- /.form-field -->
@@ -206,7 +209,7 @@
                 </label>
                 <div class="custom-input-file" id="form-profile-info-file-housed-by-third-person-declaration"
                      data-formvalidation-input
-                     data-formvalidation-required='#upload-housed-by-third-person.collapse.in input[type="file"][name="housed-by-third-person-declaration"]'
+                     data-formvalidation-required='input[type="file"][name="housed-by-third-person-declaration"]'
                      data-fileattach
                      data-fileattach-inputname="housed-by-third-person-declaration"
                      data-fileattach-maxfiles="1"
@@ -224,7 +227,7 @@
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-id-third-person-housing"
                          data-formvalidation-input
-                         data-formvalidation-required='#upload-housed-by-third-person.collapse.in input[type="file"][name="id-third-person-housing"]'
+                         data-formvalidation-required='input[type="file"][name="id-third-person-housing"]'
                          data-fileattach
                          data-fileattach-inputname="id-third-person-housing"
                          data-fileattach-maxfiles="1"
