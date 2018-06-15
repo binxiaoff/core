@@ -96,6 +96,10 @@ doctrine:
             port: "%server1.memcache_port%"
             instance_class: Memcache
 
+doctrine_migrations:
+    name: Unilend Application Migrations
+    organize_migrations: BY_YEAR_AND_MONTH
+
 doctrine_mongodb:
     connections:
         default:
