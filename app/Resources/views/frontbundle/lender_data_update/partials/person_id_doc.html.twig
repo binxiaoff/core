@@ -31,7 +31,8 @@
     </div>
 </section>
 
-<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse">
+<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-id-doc-edit-notifications">
+    <div id="data-update-id-doc-edit-notifications"></div>
     <div class="row">
         <div id="form-profile-info-identity-files-field" class="form-field">
             <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
@@ -65,7 +66,7 @@
     </div>
 
     <div class="btn-controls">
-        <button class="btn-primary" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#data-update-id-doc-section"
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-id-doc-section"
                 aria-controls="#data-update-id-doc-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#data-update-id-doc-section"
                 aria-controls="#data-update-id-doc-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>

@@ -17,17 +17,17 @@ var RE_PHONE_LAX = /[^0-9 +]/g
 var RE_PHONE_CONVERT_TO_SPACE = /[ .-]+/g
 var RE_PHONE_STRICT = /[^0-9]+/g
 var RE_PHONE_INTL = /^\(?\+/
-var RE_PHONE_TEXT = /[()]|[^0-9 +.\-]+.*$/g
+var RE_PHONE_TEXT = /[()]|[^0-9 +.-]+.*$/g
 var RE_PHONE_REDUNDANT_ZERO = /^((?:0{2}|\+)\d+)\s*\(0\)(\s*)/
-var REPLACE_PHONE_REDUNDANT_ZERO = "$1$2"
+var REPLACE_PHONE_REDUNDANT_ZERO = "$1$2" // eslint-disable-line
 var RE_SIREN = /[^0-9]+/g
 
 var RE_NORMALISE_APOSTROPHE = /['\u2016-\u2019]|&(?:lsquo|rsquo|sbquo|#(?:821[6-9]|x201[89ab]));/gi
 var REPLACE_NORMALISE_APOSTROPHE = "'"
 var RE_NORMALISE_SPACE = /[ \t\u0020\u2007\u202F\u2060\uFEFF]|&(?:nbsp|#(?:160|xa0));/gi
 var REPLACE_NORMALISE_SPACE = ' '
-var RE_NORMALISE_NEWLINE = /[\n\r\u000A-\u000D]|&(?:#(?:1[0-3]|x[a-d]))|<br\s*\/?>/gi
-var REPLACE_NORMALISE_NEWLINE = "\n"
+var RE_NORMALISE_NEWLINE = /[\n\r]|&(?:#(?:1[0-3]|x[a-d]))|<br\s*\/?>/gi
+var REPLACE_NORMALISE_NEWLINE = "\n" // eslint-disable-line
 
 var RE_TRANSFORM_CAPITALISE = /\b([a-z])([a-z]*)\b/gi
 var REPLACE_TRANSFORM_CAPITALISE = function (match, p1, p2) {
@@ -65,7 +65,7 @@ function normaliseDiacritic (input) {
  */
 function normaliseSpace (input, replacement) {
   return (input + '')
-    .replace(RE_NORMALISE_SPACE, replacement || REPLACE_NORMALISE_SPACE)
+    .replace(RE_NORMALISE_SPACE, replacement !== undefined ? replacement : REPLACE_NORMALISE_SPACE)
     .trim()
 }
 
@@ -78,7 +78,7 @@ function normaliseSpace (input, replacement) {
  */
 function normaliseNewline (input, replacement) {
   return (input + '')
-    .replace(RE_NORMALISE_NEWLINE, replacement || REPLACE_NORMALISE_NEWLINE)
+    .replace(RE_NORMALISE_NEWLINE, replacement !== undefined ? replacement : REPLACE_NORMALISE_NEWLINE)
     .trim()
 }
 
@@ -102,7 +102,7 @@ function normaliseWhitespace (input, replacement) {
  */
 function normaliseApostrophe (input, replacement) {
   return (input + '')
-    .replace(RE_NORMALISE_APOSTROPHE, replacement || REPLACE_NORMALISE_APOSTROPHE)
+    .replace(RE_NORMALISE_APOSTROPHE, replacement !== undefined ? replacement : REPLACE_NORMALISE_APOSTROPHE)
 }
 
 /**
@@ -186,9 +186,9 @@ function sanitiseSiret (input) {
 
 /**
  * Sanitise phone number values.
- * 
+ *
  * If the phone number has a `(0)` after the country code, it will remove it.
- * 
+ *
  * Normal (lax) mode retains phone-friendly characters like the plus and space.
  *
  * Strict mode strips all characters than aren't numbers.
@@ -246,7 +246,7 @@ var normalise = {
 }
 
 /** Funky utility */
-function curryFn(context, fn) {
+function curryFn (context, fn) {
   return function () {
     var props = Array.prototype.slice.call(arguments)
     props.unshift(context.output)
@@ -261,8 +261,8 @@ function curryFn(context, fn) {
  * @returns {Sanity}
  * @constructor
  */
-function Sanity(input) {
-  if (!(this instanceof Sanity)){
+function Sanity (input) {
+  if (!(this instanceof Sanity)) {
     return new Sanity(input)
   }
 
@@ -329,26 +329,35 @@ module.exports = Sanity
 
 /*
  * @debug Tests
- * 
+ *
  * If you change any of the above, make sure to uncomment below to run these tests
  */
-// console.log('### TESTING SANITY ###')
+console.log('### TESTING SANITY ###')
 
-// var testPhone = Sanity('+123 456 789 ext. 1456').sanitise.phone()
-// var testPhone2 = Sanity('+123 (0) 456-789 ext. 1456').sanitise.phone()
-// var testPhone3 = Sanity('+123 (0) 456.789 ext. 1456').sanitise.phone()
-// var testPhoneBrackets = Sanity('(+123) 456 789 ext. 1456').sanitise.phone()
-// var testPhoneRedundantZero = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone()
-// var testPhoneStrict = Sanity('+123 456 789 ext. 1456').sanitise.phone(true)
-// var testPhoneRedundantZeroStrict = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone(true)
+var testPhone = Sanity('+123 456 789 ext. 1456').sanitise.phone()
+var testPhone2 = Sanity('+123 (0) 456-789 ext. 1456').sanitise.phone()
+var testPhone3 = Sanity('+123 (0) 456.789 ext. 1456').sanitise.phone()
+var testPhoneBrackets = Sanity('(+123) 456 789 ext. 1456').sanitise.phone()
+var testPhoneRedundantZero = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone()
+var testPhoneStrict = Sanity('+123 456 789 ext. 1456').sanitise.phone(true)
+var testPhoneRedundantZeroStrict = Sanity('+123 (0) 456 789 ext. 1456').sanitise.phone(true)
 
-// console.log('Phone:', testPhone, testPhone === '+123 456 789')
-// console.log('Phone:', testPhone2, testPhone2 === '+123 456 789')
-// console.log('Phone:', testPhone3, testPhone3 === '+123 456 789')
-// console.log('Phone:', testPhoneBrackets, testPhoneBrackets === '+123 456 789')
-// console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
-// console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
-// console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
+console.log('Phone:', testPhone, testPhone === '+123 456 789')
+console.log('Phone:', testPhone2, testPhone2 === '+123 456 789')
+console.log('Phone:', testPhone3, testPhone3 === '+123 456 789')
+console.log('Phone:', testPhoneBrackets, testPhoneBrackets === '+123 456 789')
+console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
+console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
+console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
 
-// var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title()
-// console.log('Title:', testTitle)
+var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title() // eslint-disable-line
+console.log('Title:', testTitle, testTitle === "MATT'S SSUPER-FUN & HAPPY RAISON SOCIALE SARL")
+
+var testNormaliseWhitespace = Sanity('0 1 2 3 4 5 6 7 8 9').normalise.whitespace('')
+console.log('Whitespace:', testNormaliseWhitespace, testNormaliseWhitespace === '0123456789')
+
+var testSiren = Sanity('123456789abc').sanitise.siren()
+var testSiret = Sanity('12345678901234abc').sanitise.siret()
+
+console.log('Siren:', testSiren, testSiren === '123456789')
+console.log('Siret:', testSiret, testSiret === '12345678901234')

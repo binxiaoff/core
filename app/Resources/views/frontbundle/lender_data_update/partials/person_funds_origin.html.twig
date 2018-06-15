@@ -19,24 +19,26 @@
     </div>
 </section>
 
-<section id="data-update-funds-origin-edit" role="tabpanel" class="lender-data-update-edit collapse">
+<section id="data-update-funds-origin-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-funds-origin-edit-notifications">
+    <div id="data-update-funds-origin-edit-notifications"></div>
     <div class="row">
         <div class="form-field {% if form.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="funds-origin">{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.fundsOrigin.fundsOrigin, {
-                'id' : 'funds-origin',
-                'attr' : {
-                    'class' : 'input-field',
-                    'data-impacted-element-id' : 'data-update-funds-origin-output'
+                'id': 'funds-origin',
+                'attr': {
+                    'class': 'input-field',
+                    'data-formvalidation-input data-formvalidation-required': 'true',
+                    'data-impacted-element-id': 'data-update-funds-origin-output'
                 }
             }) }}
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-funds-origin-view" data-parent="#data-update-funds-origin-section"
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-funds-origin-section"
                 aria-controls="#data-update-funds-origin-view" aria-expanded="false" type="button">
             {% trans %} lender-data-update_save-button {% endtrans %}
         </button>

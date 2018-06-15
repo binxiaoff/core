@@ -107,6 +107,8 @@ require('./app/controllers/Fancybox')
 require('./app/controllers/Pikaday')
 require('./app/controllers/Swipers')
 require('./app/controllers/Promos')
+require('./app/controllers/Collapses')
+require('./app/controllers/ToggleGroup')
 require('./app/controllers/FieldSanitisation')
 require('./app/controllers/NewPasswordRequest')
 require('./app/controllers/BorrowerOperations')
@@ -144,6 +146,11 @@ $doc.ready(function ($) {
     container: 'body'
   })
 
+  // Basic jQuery plugin to get the element's tagName or type of input element
+  $.fn.getType = function () {
+    return (this[0].tagName === 'INPUT' ? this[0].type : this[0].tagName).toLowerCase()
+  }
+
   /*
    * Tabs
    * @todo refactor into Tabs.js controller
@@ -157,8 +164,8 @@ $doc.ready(function ($) {
     var tabIndex = $tabs.index($tab)
 
     if (tabIndex >= 0) {
-      $tabs.filter(':gt('+tabIndex+')').parents('li').removeClass('active complete')
-      $tabs.filter(':lt('+tabIndex+')').parents('li').removeClass('active').addClass('complete')
+      $tabs.filter(':gt(' + tabIndex + ')').parents('li').removeClass('active complete')
+      $tabs.filter(':lt(' + tabIndex + ')').parents('li').removeClass('active').addClass('complete')
       $tab.parents('li').removeClass('complete').addClass('active')
     }
 
@@ -251,10 +258,10 @@ $doc.ready(function ($) {
     })
     .on('shown.bs.tab', '[href="#esim2"]', function () {
       var period = $("input[id^='esim-input-duration-']:checked").val()
-      var amount = $("#esim-input-amount").val()
-      var motiveId = $("#esim-input-reason > option:selected").val()
+      var amount = $('#esim-input-amount').val()
+      var motiveId = $('#esim-input-reason > option:selected').val()
 
-      if (! $(".form-validation-notifications .message-error").length) {
+      if (!$('.form-validation-notifications .message-error').length) {
         $.ajax({
           type: 'POST',
           url: '/simulateur-projet-etape1',
@@ -263,13 +270,13 @@ $doc.ready(function ($) {
             amount: amount,
             motiveId: motiveId
           },
-          success: function(response) {
+          success: function (response) {
             // Show the continue button
             $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
 
             $('#esim-input-siren').focus()
 
-            $(".ui-esim-output-cost").prepend(response.amount);
+            $('.ui-esim-output-cost').prepend(response.amount)
             $('.ui-esim-output-duration').prepend(response.period)
             $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
             $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
@@ -280,24 +287,23 @@ $doc.ready(function ($) {
                 $('.ui-esim-output-duration')[0].nextSibling.remove()
               }
               $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
-            }
-            else {
+            } else {
               var text = $('p[data-borrower-motive]').html()
               text = text.replace(/\.$/g, '')
 
               $('p[data-borrower-motive]')
-                  .show()
-                  .html(text + response.translationComplement + '.')
+                .show()
+                .html(text + response.translationComplement + '.')
             }
           },
-          error: function() {
-            console.log("error retrieving data");
+          error: function () {
+            console.log('error retrieving data')
           }
-        });
+        })
 
         $('a[href*="esim1"]')
-            .removeAttr("href data-toggle aria-expanded")
-            .attr("nohref", "nohref")
+          .removeAttr('href data-toggle aria-expanded')
+          .attr('nohref', 'nohref')
       }
     })
 
@@ -362,7 +368,6 @@ $doc.ready(function ($) {
       $('#form-preter-fieldset-correspondence [data-formvalidation-required]').attr('data-formvalidation-required', false)
       // Hide the fieldset
       $('#form-preter-fieldset-correspondence').hide()
-
     } else {
       // Clear field values? Yeah, why not
       $('#form-preter-fieldset-correspondence').find('input, textarea, select').val('')
@@ -455,52 +460,53 @@ $doc.ready(function ($) {
    * Validate IBAN Input
    * @todo should be refactored out to own app component
    */
-  function checkIbanInput (event) {
-    // Default: check all on the page
-    if (typeof event === 'undefined') event = {target: '.custom-input-iban .iban-input', which: 0}
+  // @note is this required? The FieldSanitisation now strips the spaces, so it might not need to add new spaces
+  // function checkIbanInput (event) {
+  //   // Default: check all on the page
+  //   if (typeof event === 'undefined') event = {target: '.custom-input-iban .iban-input', which: 0}
 
-    $(event.target).each(function (i, elem) {
-      // Get the current input
-      var iban = $(this).val().toUpperCase().replace(/[^0-9A-Z]+/g, '')
-      var caretPos = $(this).caret() || $(this).val().length
+  //   $(event.target).each(function (i, elem) {
+  //     // Get the current input
+  //     var iban = $(this).val().toUpperCase().replace(/[^0-9A-Z]+/g, '')
+  //     var caretPos = $(this).caret() || $(this).val().length
 
-      // Reformat the input if entering text
-      // @TODO when user types fast the caret sometimes gets left behind. May need to figure out better method for this
-      if ((event.which >= 48 && event.which <= 90) || (event.which >= 96 && event.which <= 105) || event.which === 8 || event.which === 46 || event.which === 32) {
-        if (iban) {
-          // Format preview
-          var previewIban = iban.match(/.{1,4}/g)
-          var newCaretPos = (caretPos % 5 === 0 ? caretPos + 1 : caretPos)
+  //     // Reformat the input if entering text
+  //     // @TODO when user types fast the caret sometimes gets left behind. May need to figure out better method for this
+  //     if ((event.which >= 48 && event.which <= 90) || (event.which >= 96 && event.which <= 105) || event.which === 8 || event.which === 46 || event.which === 32) {
+  //       if (iban) {
+  //         // Format preview
+  //         var previewIban = iban.match(/.{1,4}/g)
+  //         var newCaretPos = (caretPos % 5 === 0 ? caretPos + 1 : caretPos)
 
-          // @debug
-          // console.log({
-          //   value: $(this).val(),
-          //   valueLength: $(this).val().length,
-          //   iban: iban,
-          //   ibanLength: iban.length,
-          //   groupCount: previewIban.length,
-          //   groupCountDivided: previewIban.length / 4,
-          //   groupCountMod: previewIban.length % 4,
-          //   caretPos: caretPos,
-          //   caretPosDivided: caretPos / 4,
-          //   caretPosMod: caretPos % 4
-          // })
+  //         // @debug
+  //         // console.log({
+  //         //   value: $(this).val(),
+  //         //   valueLength: $(this).val().length,
+  //         //   iban: iban,
+  //         //   ibanLength: iban.length,
+  //         //   groupCount: previewIban.length,
+  //         //   groupCountDivided: previewIban.length / 4,
+  //         //   groupCountMod: previewIban.length % 4,
+  //         //   caretPos: caretPos,
+  //         //   caretPosDivided: caretPos / 4,
+  //         //   caretPosMod: caretPos % 4
+  //         // })
 
-          // Add in spaces and assign the new caret position
-          $(this).val(previewIban.join(' ')).caret(newCaretPos)
-        }
-      }
+  //         // Add in spaces and assign the new caret position
+  //         $(this).val(previewIban.join(' ')).caret(newCaretPos)
+  //       }
+  //     }
 
-      // Check if valid
-      if (Iban.isValid(iban)) {
-        // Valid
-      } else {
-        // Invalid
-      }
-    })
-  }
-  $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
-  checkIbanInput()
+  //     // Check if valid
+  //     if (Iban.isValid(iban)) {
+  //       // Valid
+  //     } else {
+  //       // Invalid
+  //     }
+  //   })
+  // }
+  // $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
+  // checkIbanInput()
 
   /*
    * Custom Input Duration
@@ -586,12 +592,12 @@ $doc.ready(function ($) {
   })
 
   // Technically these operations should be fired from a successful AJAX result
-  function successBalanceDeposit() {
+  function successBalanceDeposit () {
     $('#balance-deposit-2').collapse('show')
     Utility.scrollTo('#user-preter-balance')
   }
 
-  function successBalanceWithdraw() {
+  function successBalanceWithdraw () {
     $('#balance-withdraw-2').collapse('show')
     Utility.scrollTo('#user-preter-balance')
   }
@@ -636,52 +642,6 @@ $doc.ready(function ($) {
   })
 
   /*
-   * Collapse
-   * @todo refactor into Collapses.js controller
-   */
-  // Mark on [data-toggle] triggers that the collapseable is/isn't collapsed
-  $doc.on('shown.bs.collapse', function (event) {
-    var targetTrigger = '[data-toggle="collapse"][data-target="#'+$(event.target).attr('id')+'"],[data-toggle="collapse"][href="#'+$(event.target).attr('id')+'"]'
-    $(targetTrigger).addClass('ui-collapse-open')
-  })
-  .on('hidden.bs.collapse', function (event) {
-    var targetTrigger = '[data-toggle="collapse"][data-target="#'+$(event.target).attr('id')+'"],[data-toggle="collapse"][href="#'+$(event.target).attr('id')+'"]'
-    $(targetTrigger).removeClass('ui-collapse-open')
-  })
-
-  // Force a collapse open
-  $doc.on(Utility.clickEvent, '.ui-collapse-set-open', function (event) {
-    var $elem = $(this)
-    var $target = $($elem.attr('target') || $elem.attr('html')).filter('.collapse')
-
-    if ($target.length > 0) $target.collapse('show')
-  })
-
-  /*
-   * Collapse Toggle Groups
-   * Because bootstrap is quite opinionated and I don't need all their markup and specific classes
-   * this here is a work-around to use the collapse within toggleable groups, i.e. accordians
-   * minus all the reliance on certain element classes, e.g. `.panel`
-   * To use this behaviour, the collapsable element must be within a `.ui-toggle-group`
-   * @todo refactor into Collapses.js controller
-   */
-  $doc.on('show.bs.collapse', '.ui-toggle-group > .collapse', function (event) {
-    var $target = $(event.target)
-
-    // Only fire on direct descendants of the `.ui-toggle-group`
-    if ($target.is('.ui-toggle-group > .collapse')) {
-      // var $group = $target.parents('.ui-toggle-group').first()
-      var $siblings = $target.siblings('.collapse')
-
-      // @debug
-      // console.log('ui-toggle-group hiding siblings', event.target, $siblings)
-
-      // This one is already showing, so hide the others via bootstrap
-      $siblings.collapse('hide')
-    }
-  })
-
-  /*
    * Reveal an element on page init
    * @todo refactor into General controller
    */
@@ -708,7 +668,6 @@ $doc.ready(function ($) {
 
     // Reveal!
     if ($target.length > 0) {
-
       // Reveal the element
       Utility.revealElem($target)
 
@@ -742,7 +701,7 @@ $doc.ready(function ($) {
   $doc.on(Utility.clickEvent, '.ui-toggle, [data-ui-toggle]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
-    var $target
+    var $target = $(targetSelector)
 
     // If visible, dismiss
     if ($target.is(':visible')) {
@@ -817,7 +776,7 @@ $doc.ready(function ($) {
     }
 
     // Handle scroll state
-    function offsetScrollMore() {
+    function offsetScrollMore () {
       var winScrollTop = $win.scrollTop()
       var startScrollFixed = 0
       var endScrollFixed = $('footer').offset().top - $win.height()
@@ -857,7 +816,7 @@ $doc.ready(function ($) {
   })
 
   // Page Statistics (FPF)
-  $('.table-stats-fpf-filter a').click(function(){
+  $('.table-stats-fpf-filter a').click(function () {
     var $btn = $(this)
     var $table = $('#table-stats-fpf')
     $btn.parent().siblings().removeClass('active')
@@ -868,17 +827,16 @@ $doc.ready(function ($) {
       $table.removeClass('ui-display-volume').addClass('ui-display-number')
     }
   })
-  $('#table-stats-fpf-dateselect').change(function(){
+  $('#table-stats-fpf-dateselect').change(function () {
     $('body').addClass('ui-is-loading')
     $(this).closest('form').submit()
   })
-  $('[data-sup-index]').click(function(){
+  $('[data-sup-index]').click(function () {
     var index = $(this).data('sup-index')
     Utility.scrollTo(('[data-legend-index=' + index + ']'))
   })
-  $('[data-legend-index]').click(function(){
+  $('[data-legend-index]').click(function () {
     var index = $(this).data('legend-index')
     Utility.scrollTo(('[data-sup-index=' + index + ']'))
   })
 })
-

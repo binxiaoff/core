@@ -299,6 +299,16 @@
     }
   }
 
+  .data-update-progress {
+    background-color: $c-white;
+  }
+
+  .lender-data-update-edit {
+    > .ui-formvalidation-messages {
+      padding: 0;
+    }
+  }
+
   // CIP
   #dashboard-cip {
     background: $c-white;

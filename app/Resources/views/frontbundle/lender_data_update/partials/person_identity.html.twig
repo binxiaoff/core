@@ -27,79 +27,82 @@
     </div>
 </section>
 
-<section id="data-update-info-edit" role="tabpanel" class="lender-data-update-edit collapse">
+<section id="data-update-info-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-info-edit-notifications">
+    <div id="data-update-info-edit-notifications"></div>
     <div class="row">
-        <div class="form-field form-field-multi">
+        <div class="col-lg-6 col-md-6 form-field form-field-multi">
             <div class="field-label">
                 <label>{% trans %} common_title {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                {{ form_widget(form.client.civilite, {'attr' : {
-                    'required' : false,
-                    'data-impacted-element-id' : 'data-update-info-title-output',
-                    'data-original-value' : client.civilite
-                }}) }}
+                {{ form_widget(form.client.civilite, {
+                    'attr': {
+                        'data-formvalidation-input data-formvalidation-required': 'true',
+                        'data-impacted-element-id': 'data-update-info-title-output',
+                        'data-original-value': client.civilite
+                    }
+                }) }}
                 {{ form_errors(form.client.civilite) }}
             </ul>
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
-    <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6 {% if form.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 form-field {% if form.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-prenom">{% trans %} common_used-name {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.nomUsage, {
-                'id' : 'form-data-update-info-nomUsage',
-                'attr' : {
-                    'class' : 'input-field',
-                    'data-formvalidation-input data-formvalidation-required' : 'false',
-                    'data-impacted-element-id' : 'data-update-info-used-name-output',
-                    'data-original-value' : client.nomUsage
+                'id': 'form-data-update-info-nomUsage',
+                'attr': {
+                    'class': 'input-field',
+                    'data-formvalidation-input data-formvalidation-required': 'true',
+                    'data-impacted-element-id': 'data-update-info-used-name-output',
+                    'data-original-value': client.nomUsage
                 }}) }}
             {{ form_errors(form.client.nomUsage) }}
-        </div><!-- /.form-field -->
-        <div class="form-field col-lg-6 col-md-6">
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
     <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6 {% if form.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+        <div class="col-lg-6 col-md-6 form-field {% if form.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-prenom">{% trans %} common_firstname {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.client.prenom, {
-                'id' : 'form-data-update-info-prenom',
-                'attr' : {
-                    'class' : 'input-field',
-                    'data-formvalidation-input data-formvalidation-required' : 'true',
-                    'data-impacted-element-id' : 'data-update-info-first-name-output',
-                    'data-original-value' : client.prenom
-                }}) }}
+                'id': 'form-data-update-info-prenom',
+                'attr': {
+                    'class': 'input-field',
+                    'data-formvalidation-input data-formvalidation-required': 'true',
+                    'data-impacted-element-id': 'data-update-info-first-name-output',
+                    'data-original-value': client.prenom
+                }
+            }) }}
             {{ form_errors(form.client.prenom) }}
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
-    <div class="row row-multi-col-computer">
-        <div class="form-field col-lg-6 col-md-6">
+    <div class="row">
+        <div class="col-lg-6 col-md-6 form-field">
             <label for="form-data-update-info-nationalite">{% trans %} common_nationality {% endtrans %}
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.idNationalite, {
-                'id' : 'form-data-update-info-nationalite',
-                'attr' : {
-                    'class' : 'input-field',
-                    'data-formvalidation-input data-formvalidation-required' : 'true',
-                    'data-impacted-element-id' : 'data-update-info-nationality-output',
-                    'data-original-value' : client.idNationalite
-                }}) }}
+                'id': 'form-data-update-info-nationalite',
+                'attr': {
+                    'class': 'input-field',
+                    'data-formvalidation-input data-formvalidation-required': 'true',
+                    'data-impacted-element-id': 'data-update-info-nationality-output',
+                    'data-original-value': client.idNationalite
+                }
+            }) }}
             {{ form_errors(form.client.idNationalite) }}
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
     <div class="btn-controls">
-        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
+        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-info-section"
                 aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
                 aria-controls="#data-update-info-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>

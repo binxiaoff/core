@@ -1,0 +1,42 @@
+.link:before, .link:link:before, .link:visited
+.link:hover:before, .link:active:before,
+.link-1:before,
+.link-1:link:before,
+.link-1:visited
+.link:hover:before,
+.link-1:active:before,
+.link-2:before,
+.link-2:link:before,
+.link-2:visited
+.link:hover:before,
+.link-2:active:before, .link:visited
+.link-1:hover:before,
+.link-1:visited
+.link-1:hover:before,
+.link-2:visited
+.link-1:hover:before, .link:visited
+.link-2:hover:before,
+.link-1:visited
+.link-2:hover:before,
+.link-2:visited
+.link-2:hover:before {
+  text-decoration: none !important;
+}
+
+.page-section h1 a, .page-section h2 a, .page-section h3 a, .page-section h4 a, .page-section h5 a, .page-section h6 a, .page-section .h1 a, .page-section .h2 a, .page-section .h3 a, .page-section .h4 a {
+  display: inline-block;
+}
+
+.ie9 .project-list-item {
+  height: 100%;
+}
+.ie9 .project-list-item-category {
+  overflow: auto;
+  height: 100%;
+}
+.ie9 .project-list-item-image {
+  zoom: 1;
+  height: 100%;
+}
+
+/*# sourceMappingURL=ie.css.map */

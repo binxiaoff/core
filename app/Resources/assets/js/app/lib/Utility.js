@@ -15,51 +15,51 @@ var $body = $('body')
 // Default values
 var defaults = {
   secondsAsUnits: [{
-      min: 0,
-      max: 5,
-      single: __.__('now', 'timeUnitNow'),
-      plural: __.__('now', 'timeUnitNow')
-    },{
-      min: 1,
-      max: 60,
-      single: '%d ' + __.__('second', 'timeUnitSecond'),
-      plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
-    },{
-      min: 60,
-      max: 3600,
-      single: '%d ' + __.__('minute', 'timeUnitMinute'),
-      plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
-    },{
-      min: 3600,
-      max: 86400,
-      single: '%d ' + __.__('hour', 'timeUnitHour'),
-      plural: '%d ' + __.__('hours', 'timeUnitHours')
-    },{
-      min: 86400,
-      max: 604800,
-      single: '%d ' + __.__('day', 'timeUnitDay'),
-      plural: '%d ' + __.__('days', 'timeUnitDays')
-    },{
-      min: 604800,
-      max: 2419200,
-      single: '%d ' + __.__('week', 'timeUnitWeek'),
-      plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
-    },{
-      min: 2628000,
-      max: 31536000,
-      single: '%d ' + __.__('month', 'timeUnitMonth'),
-      plural: '%d ' + __.__('months', 'timeUnitMonths'),
-    },{
-      min: 31536000,
-      max: -1,
-      single: '%d ' + __.__('year', 'timeUnitYear'),
-      plural: '%d ' + __.__('years', 'timeUnitYears')
-    }]
+    min: 0,
+    max: 5,
+    single: __.__('now', 'timeUnitNow'),
+    plural: __.__('now', 'timeUnitNow')
+  }, {
+    min: 1,
+    max: 60,
+    single: '%d ' + __.__('second', 'timeUnitSecond'),
+    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
+  }, {
+    min: 60,
+    max: 3600,
+    single: '%d ' + __.__('minute', 'timeUnitMinute'),
+    plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
+  }, {
+    min: 3600,
+    max: 86400,
+    single: '%d ' + __.__('hour', 'timeUnitHour'),
+    plural: '%d ' + __.__('hours', 'timeUnitHours')
+  }, {
+    min: 86400,
+    max: 604800,
+    single: '%d ' + __.__('day', 'timeUnitDay'),
+    plural: '%d ' + __.__('days', 'timeUnitDays')
+  }, {
+    min: 604800,
+    max: 2419200,
+    single: '%d ' + __.__('week', 'timeUnitWeek'),
+    plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
+  }, {
+    min: 2628000,
+    max: 31536000,
+    single: '%d ' + __.__('month', 'timeUnitMonth'),
+    plural: '%d ' + __.__('months', 'timeUnitMonths')
+  }, {
+    min: 31536000,
+    max: -1,
+    single: '%d ' + __.__('year', 'timeUnitYear'),
+    plural: '%d ' + __.__('years', 'timeUnitYears')
+  }]
 }
 
 var Utility = {
   // Click event
-  clickEvent: 'click', //$html.is('.has-touchevents') ? 'touchend' : 'click',
+  clickEvent: 'click', // $html.is('.has-touchevents') ? 'touchend' : 'click',
 
   // Input start event depending on device
   inputStartEvent: $html.is('.has-touchevents') ? 'touchstart' : 'mousedown',
@@ -83,17 +83,17 @@ var Utility = {
   breakpoints: {
     'mobile-p': [0, 599],
     'mobile-l': [600, 799],
-    'mobile':   [0, 799], // group of mobile-p and mobile-l
+    'mobile': [0, 799], // group of mobile-p and mobile-l
     'tablet-p': [800, 1023],
     'tablet-l': [1024, 1299],
-    'tablet':   [800, 1299], // group of tablet-p and tablet-l
-    'laptop':   [1300, 1599],
-    'desktop':  [1600, 99999],
+    'tablet': [800, 1299], // group of tablet-p and tablet-l
+    'laptop': [1300, 1599],
+    'desktop': [1600, 99999],
     'computer': [1300, 99999], // group of laptop and computer
-    'xs':       [0, 599], // mobile-p
-    'sm':       [600, 1023], // mobile-l[0], tablet-p[1]
-    'md':       [1024, 1599], // tablet-l[0], laptop[1]
-    'lg':       [1600, 99999] // desktop
+    'xs': [0, 599], // mobile-p
+    'sm': [600, 1023], // mobile-l[0], tablet-p[1]
+    'md': [1024, 1599], // tablet-l[0], laptop[1]
+    'lg': [1600, 99999] // desktop
   },
 
   // Get a string of the currently active breakpoints
@@ -107,7 +107,7 @@ var Utility = {
     var bp = []
 
     for (var x in self.breakpoints) {
-      if ( width >= self.breakpoints[x][0] && width <= self.breakpoints[x][1]) bp.push(x)
+      if (width >= self.breakpoints[x][0] && width <= self.breakpoints[x][1]) bp.push(x)
     }
 
     return bp.join(' ')
@@ -128,9 +128,9 @@ var Utility = {
     return false
   },
 
-  isMobile: function() {
+  isMobile: function () {
     var check = false
-    var userAgent = navigator.userAgent||navigator.vendor||window.opera
+    var userAgent = navigator.userAgent || navigator.vendor || window.opera
     if (/(Mobile|Android|Windows Phone|webOS|iPhone|iPad|iPod|BlackBerry)/.test(userAgent)) {
       check = true
     }
@@ -307,7 +307,7 @@ var Utility = {
         output += '0'
       }
 
-      output = output + str.replace(/^\-/,'')
+      output = output + str.replace(/^\-/, '')
     } else {
       mag -= str.length
       while (mag--) {
@@ -342,7 +342,7 @@ var Utility = {
   // Escape a string for regexp purposes
   // See: http://stackoverflow.com/a/6969486
   reEscape: function (str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")
+    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&')
   },
 
   // Check if element has an attribute set
@@ -390,7 +390,7 @@ var Utility = {
     var coerce_types = { 'true': !0, 'false': !1, 'null': null }
 
     // Iterate over all name=value pairs.
-    $.each(params.replace(/\+/g, ' ').split('&'), function (j,v) {
+    $.each(params.replace(/\+/g, ' ').split('&'), function (j, v) {
       var param = v.split('=')
       var key = decodeURIComponent(param[0])
       var val
@@ -424,13 +424,13 @@ var Utility = {
 
         // Coerce values.
         if (coerce) {
-          val = (val && !isNaN(val)           ? +val              // number
-            : val === 'undefined'             ? undefined         // undefined
-            : coerce_types[val] !== undefined ? coerce_types[val] // true, false, null
-            : val)                                                // string
+          val = (val && !isNaN(val) ? +val // number
+            : val === 'undefined' ? undefined // undefined
+              : coerce_types[val] !== undefined ? coerce_types[val] // true, false, null
+                : val) // string
         }
 
-        if ( keys_last ) {
+        if (keys_last) {
           // Complex key, build deep object structure based on a few rules:
           // * The 'cur' pointer starts at the object top-level.
           // * [] = array push (n is set to array length), [n] = array if n is
@@ -443,10 +443,9 @@ var Utility = {
           for (; i <= keys_last; i++) {
             key = keys[i] === '' ? cur.length : keys[i]
             cur = cur[key] = (i < keys_last
-              ? cur[key] || (keys[i+1] && isNaN(keys[i+1]) ? {} : [])
+              ? cur[key] || (keys[i + 1] && isNaN(keys[i + 1]) ? {} : [])
               : val)
           }
-
         } else {
           // Simple key, even simpler rules, since only scalars and shallow
           // arrays are allowed.
@@ -454,18 +453,15 @@ var Utility = {
           if ($.isArray(obj[key])) {
             // val is already an array, so push on the next value.
             obj[key].push(val)
-
           } else if (obj[key] !== undefined) {
             // val isn't an array, but since a second value has been specified,
             // convert val into an array.
             obj[key] = [obj[key], val]
-
           } else {
             // val is a scalar.
             obj[key] = val
           }
         }
-
       } else if (key) {
         // No value was defined, so set something meaningful.
         obj[key] = (coerce ? undefined : '')
@@ -519,7 +515,6 @@ var Utility = {
   // @note TimeCount relies on this to output as an object
   // See: http://www.sitepoint.com/build-javascript-countdown-timer-no-dependencies/
   getTimeDiff: function (startTime, endTime) {
-
     // Get the dates and the direction
     var startDate = Utility.getDate(startTime)
     var endDate = Utility.getDate(endTime)
@@ -534,12 +529,12 @@ var Utility = {
 
     // Get the differences
     var t = endDate - startDate
-    var seconds = Math.floor(Math.abs(t/1000) % 60)
-    var minutes = Math.floor(Math.abs(t/(1000 * 60)) % 60)
-    var hours = Math.floor(Math.abs(t/(1000 * 60 * 60)) % 24)
-    var days = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24)) % 30)
-    var months = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24 * 30)) % 12)
-    var years = Math.floor(Math.abs(t/(1000 * 60 * 60 * 24 * 365)))
+    var seconds = Math.floor(Math.abs(t / 1000) % 60)
+    var minutes = Math.floor(Math.abs(t / (1000 * 60)) % 60)
+    var hours = Math.floor(Math.abs(t / (1000 * 60 * 60)) % 24)
+    var days = Math.floor(Math.abs(t / (1000 * 60 * 60 * 24)) % 30)
+    var months = Math.floor(Math.abs(t / (1000 * 60 * 60 * 24 * 30)) % 12)
+    var years = Math.floor(Math.abs(t / (1000 * 60 * 60 * 24 * 365)))
 
     return {
       'startDate': startDate,
@@ -587,9 +582,9 @@ var Utility = {
       if (Math.abs(diffSeconds) >= u.min && (Math.abs(diffSeconds) < u.max || u.max === -1)) {
         // Show the difference via number
         if (u.min > 0) {
-          var mod = u.min;
+          var mod = u.min
           if (typeof u.mod !== 'undefined') {
-            mod = u.mod;
+            mod = u.mod
           }
           outputDiff = Math.floor(Math.abs(diffSeconds) / mod)
           output = sprintf((outputDiff === 1 ? u.single : u.plural), outputDiff)
@@ -623,7 +618,9 @@ var Utility = {
   getObjectLength: function (obj) {
     var len = 0
     for (var i in obj) {
-      len += 1
+      if (obj.hasOwnProperty(i)) {
+        len += 1
+      }
     }
     return len
   },
@@ -806,7 +803,6 @@ var Utility = {
         // Take site header height into account
         var siteHeaderHeight = $('.site-header').outerHeight()
         toScrollTop -= siteHeaderHeight + 25 // + buffer
-
       } else {
         toScrollTop = self.elemOffsetBetweenAbsolute($target, $elem).top
       }
@@ -1012,8 +1008,8 @@ var Utility = {
 
     // Set attributes
     var titleAttr = (title ? ' title="' + title + '"' : '')
-    var widthAttr = (width ? ' width="' + width + '"' : '' )
-    var heightAttr = (height ? ' height="' + height + '"' : '' )
+    var widthAttr = (width ? ' width="' + width + '"' : '')
+    var heightAttr = (height ? ' height="' + height + '"' : '')
     var viewBox = '0 0 ' + width + ' ' + height
     // @note don't need this set anymore as it is set in the individual SVGs
     var viewBoxAttr = ''// ' viewBox="' + viewBox + '"'
@@ -1274,12 +1270,10 @@ var Utility = {
         // Height was originally set on element via inline CSS, so reference that value
         if ($elem.is('.ui-equal-height-inlinecss')) {
           elemHeight = parseFloat($elem.attr('data-equal-height-original'))
-
         } else {
           // Remove height set via inline CSS to test height of element
           elemHeight = $elem.css('height', '').outerHeight()
         }
-
       } else {
         // Mark elem's height was set via inline CSS
         if ($elem.attr('style') && $elem.attr('style').match(/[^-]height:/i)) {
@@ -1358,50 +1352,48 @@ var Utility = {
    * Equal Width
    * Sets multiple elements to be the equal (maximum) width
    */
-  setEqualWidths: function() {
-
+  setEqualWidths: function () {
     // Set vars
-    var groups        = [],
-    maxWidth          = 0,
-    addGroup          = function(group) {
-      var groupIndex = $.inArray(group, groups)
-      if (groupIndex == -1) {
-        groups.push(group)
-      }
-    },
-    equaliseWidth    = function($elem) {
-      $elem.each(function() {
-        // Update max width
-        maxWidth = Math.max(maxWidth, $(this).width())
-      })
-      // Resize the element
-          .width(maxWidth + 2)
-      // Reset the max width
-      maxWidth = 0
-    },
-    applyToBreakpoint = function($elem) {
-
-      // Only apply to certain breakpoints
-      applyToBp = $elem.attr('data-equal-width')
-
-      if (applyToBp && typeof applyToBp === 'string') {
-        applyToBp = applyToBp.split(/[ ,]+/)
-        // Test breakpoint
-        if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
-          // Bp active = set equal width
-          equaliseWidth($elem)
-        } else {
-          // Bp inactive = remove height
-          $elem.removeAttr('style')
+    var groups = [],
+      maxWidth = 0,
+      addGroup = function (group) {
+        var groupIndex = $.inArray(group, groups)
+        if (groupIndex == -1) {
+          groups.push(group)
         }
-      } else {
+      },
+      equaliseWidth = function ($elem) {
+        $elem.each(function () {
+        // Update max width
+          maxWidth = Math.max(maxWidth, $(this).width())
+        })
+        // Resize the element
+          .width(maxWidth + 2)
+        // Reset the max width
+        maxWidth = 0
+      },
+      applyToBreakpoint = function ($elem) {
+      // Only apply to certain breakpoints
+        applyToBp = $elem.attr('data-equal-width')
+
+        if (applyToBp && typeof applyToBp === 'string') {
+          applyToBp = applyToBp.split(/[ ,]+/)
+          // Test breakpoint
+          if (new RegExp(applyToBp.join('|'), 'i').test(Utility.getActiveBreakpoints())) {
+          // Bp active = set equal width
+            equaliseWidth($elem)
+          } else {
+          // Bp inactive = remove height
+            $elem.removeAttr('style')
+          }
+        } else {
         // No breakpoint set? Apply indiscriminately
-        equaliseWidth($elem)
+          equaliseWidth($elem)
+        }
       }
-    }
 
     // Iterate through elements with data-equal-width
-    $('[data-equal-width]').each(function() {
+    $('[data-equal-width]').each(function () {
       // Add to group if attribute is present
       var applyToGroup = $(this).data('equal-width-group')
       if (applyToGroup && typeof applyToGroup === 'string') {
@@ -1470,7 +1462,7 @@ var Utility = {
   },
 
   checkTestStatus: function (testValue, expectedValue) {
-    var output = "Received:\n\t`" + testValue + "`\nExpected:\n\t`" + expectedValue + "`\n--> Test "
+    var output = 'Received:\n\t`' + testValue + '`\nExpected:\n\t`' + expectedValue + '`\n--> Test '
 
     if (testValue === expectedValue) {
       if (window && window.console && window.console.log) console.log(output + 'passed!')
@@ -1485,11 +1477,11 @@ var Utility = {
   // https://gist.github.com/maarten00/23400873d51bf2ec4eeb
   pmt: function (rate, duration, amount) {
     if (rate !== 0.0) {
-        var q = Math.pow(1 + rate, duration)
-        return - rate * q * amount / (q - 1)
+      var q = Math.pow(1 + rate, duration)
+      return -rate * q * amount / (q - 1)
     } else if (duration !== 0.0) {
-        // No interest rate, but number of payments exists
-        return - amount / duration
+      // No interest rate, but number of payments exists
+      return -amount / duration
     }
 
     return 0
@@ -1518,13 +1510,11 @@ $.fn.uiScrollTo = function (options) {
  * jQuery Events
  */
 $doc.on('ready', function () {
-
   // Hook into orientationchange/resize event to update the window
   $win.on('orientationchange resize', Utility.debounceUpdateWindow)
 
   // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
   $doc.on('UI:updateWindow', Utility.debounceUpdateWindow)
-
 })
 
 module.exports = Utility
