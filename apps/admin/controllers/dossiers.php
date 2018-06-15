@@ -782,11 +782,10 @@ class dossiersController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->aAttachments                   = $this->projectEntity->getAttachments();
-            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
-            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
-            $this->isFundsCommissionRateEditable  = $this->isFundsCommissionRateEditable();
-            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+            $this->aAttachments                  = $this->projectEntity->getAttachments();
+            $this->aAttachmentTypes              = $attachmentManager->getAllTypesForProjects();
+            $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
+            $this->lastBalanceSheet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);

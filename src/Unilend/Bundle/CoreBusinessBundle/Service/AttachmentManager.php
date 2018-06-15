@@ -198,11 +198,9 @@ class AttachmentManager
     }
 
     /**
-     * @param bool $includeOthers
-     *
      * @return AttachmentType[]
      */
-    public function getAllTypesForProjects($includeOthers = true)
+    public function getAllTypesForProjects(): array
     {
         $types = [
             AttachmentType::KBIS,
@@ -236,17 +234,12 @@ class AttachmentManager
             AttachmentType::BALANCE_FOURNISSEUR,
             AttachmentType::PHOTOS_ACTIVITE,
             AttachmentType::PRESENTATION_PROJET,
-            AttachmentType::PRESENTATION_ENTRERPISE
+            AttachmentType::PRESENTATION_ENTRERPISE,
+            AttachmentType::AUTRE1,
+            AttachmentType::AUTRE2,
+            AttachmentType::AUTRE3,
+            AttachmentType::AUTRE4
         ];
-
-        if ($includeOthers) {
-            $types = array_merge($types, [
-                AttachmentType::AUTRE1,
-                AttachmentType::AUTRE2,
-                AttachmentType::AUTRE3,
-                AttachmentType::AUTRE4
-            ]);
-        }
 
         $sortedTypes = [];
         /** @var AttachmentType $attachmentType */
