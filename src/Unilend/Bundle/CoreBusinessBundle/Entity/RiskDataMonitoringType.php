@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * RiskDataMonitoringType
  *
- * @ORM\Table(name="risk_data_monitoring_type", uniqueConstraints={@ORM\UniqueConstraint(name="unq_label", columns={"label"})}, indexes={@ORM\Index(name="idx_risk_data_monitoring_type_provider", columns={"provider"})})
+ * @ORM\Table(name="risk_data_monitoring_type", indexes={@ORM\Index(name="idx_risk_data_monitoring_type_provider", columns={"provider"})})
  * @ORM\Entity
  */
 class RiskDataMonitoringType
@@ -70,7 +70,7 @@ class RiskDataMonitoringType
     }
 
     /**
-     * Set label
+     * Set CompanyRating
      *
      * @param string $companyRating
      *
@@ -84,7 +84,7 @@ class RiskDataMonitoringType
     }
 
     /**
-     * Get label
+     * Get CompanyRating
      *
      * @return string
      */
