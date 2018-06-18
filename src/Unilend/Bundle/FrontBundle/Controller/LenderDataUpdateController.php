@@ -11,8 +11,9 @@ use Symfony\Component\HttpFoundation\{
     Request, Response
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
+    AddressType, Attachment, AttachmentType, ClientAddress, Clients, GreenpointAttachment, Users
 };
+use Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientAddressType, OriginOfFundsType, PersonPhoneType, PersonProfileType
@@ -61,7 +62,7 @@ class LenderDataUpdateController extends Controller
         ]);
         $addressForm
             ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => $client->getUsPerson()]);
+            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => false === $client->getUsPerson()]);
         $form = $this->createFormBuilder()
             ->add('client', PersonProfileType::class, ['data' => $client])
             ->add('phone', PersonPhoneType::class, ['data' => $client])
@@ -75,16 +76,9 @@ class LenderDataUpdateController extends Controller
             if ($form->isSubmitted() && $form->isValid()) {
                 $formsHandler = $this->get(LenderProfileFormsHandler::class);
                 try {
-                    $uploadedFiles = $request->files;
-                    $formsHandler->handlePersonIdentity($unattachedClient, $client, $form, $uploadedFiles, false);
-                    $formsHandler->handlePhoneForm($client, false);
-                    $formsHandler->handlePersonAddress($client, $form->get('mainAddress'), $uploadedFiles, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress, false);
-                    $formsHandler->handleBankDetailsForm($form, $uploadedFiles, $unattachedBankAccount, false);
+                    $formsHandler->handleAllPersonalData($client, $unattachedClient, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $unattachedBankAccount, $form, $request->files);
 
                     if ($form->isValid()) {
-                        $this->get('unilend.service.client_status_manager')->changeClientStatusTriggeredByClientAction($client);
-                        $clientChanges = $formsHandler->logClientChanges($client);
-                        $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $clientChanges);
                         return $this->redirectToRoute('lender_data_update_end');
                     }
                 } catch (\Exception $exception) {

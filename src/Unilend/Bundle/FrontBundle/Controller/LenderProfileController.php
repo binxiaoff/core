@@ -95,9 +95,9 @@ class LenderProfileController extends Controller
             $identityForm->handleRequest($request);
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $formHandler->handlePersonIdentity($unattachedClient, $client, $identityForm, $request->files);
+                    $isValid = $formHandler->handlePersonIdentity($unattachedClient, $client, $identityForm->get('client'), $request->files);
                 } else {
-                    $isValid = $formHandler->handleCompanyIdentity($client, $company, $identityForm, $request->files);
+                    $isValid = $formHandler->handleCompanyIdentity($client, $company, $identityForm->get('company'), $request->files);
                 }
 
                 if ($isValid) {
@@ -218,7 +218,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($form, $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $form->get('bankAccount'), $request->files, $bankAccount)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));

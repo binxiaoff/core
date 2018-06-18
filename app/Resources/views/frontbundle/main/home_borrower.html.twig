@@ -184,7 +184,9 @@
                     </div><!-- /.emprunter-sim-nav -->
                     <div class="tab-content emprunter-sim-content">
                         <div id="esim1" role="tabpanel" class="tab-pane{% if activeTab == 'first' %} active{% endif %}">
-                            <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                            <fieldset class="emprunter-sim-pane-inner"
+                                      data-formvalidation
+                                      data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
                                     {% if projectSimulatorErrorCode is defined %}
                                         <div class="message-error">
@@ -205,10 +207,18 @@
                                 </div>
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
+                                        <label for="esim-input-amount">
+                                            {% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
                                             <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span>
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
                                         </label>
-                                        <input id="esim-input-amount" type="text" step="any" name="esim[amount]" value="{% if app.session.has('esim') and app.session.get('esim')['amount'] is defined %}{{ app.session.get('esim')['amount'] }}{% endif %}"
+                                        <input id="esim-input-amount"
+                                               type="text"
+                                               step="any"
+                                               name="esim[amount]"
+                                               value="{% if app.session.has('esim') and app.session.get('esim')['amount'] is defined %}{{ app.session.get('esim')['amount'] }}{% endif %}"
                                                placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
                                                class="input-field"
                                                data-formvalidation-input
@@ -218,22 +228,50 @@
                                                data-formvalidation-type="integer">
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
-                                        <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="motive">
-                                            <option value="">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
+                                        <label for="esim-input-reason">
+                                            {% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
+                                        <select id="esim-input-reason"
+                                                name="esim[reason]"
+                                                class="input-field"
+                                                data-formvalidation-input
+                                                data-formvalidation-required="true"
+                                                data-formvalidation-type="motive"
+                                                data-borrower-reason-input>
+                                            <option value="">
+                                                {% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}&hellip;
+                                            </option>
                                             {% for motive in borrowingMotives %}
-                                                <option value="{{ motive.id_motive }}"{% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.id_motive %} selected{% endif %}>{{ ('borrowing-motive_motive-' ~ motive.id_motive)|trans }}</option>
+                                                <option value="{{ motive.idMotive }}"
+                                                        {% if app.session.has('esim') and app.session.get('esim')['reason'] is defined and app.session.get('esim')['reason'] == motive.idMotive %} selected{% endif %}>
+                                                    {{ ('borrowing-motive_motive-' ~ motive.idMotive)|trans }}
+                                                </option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-12 col-md-12">
-                                        <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
-                                        <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
+                                        <label>
+                                            {% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
+                                        <div class="custom-input-duration"
+                                             data-formvalidation-input
+                                             data-formvalidation-required="true"
+                                             data-formvalidation-type="duration">
                                             {% for period in loanPeriods %}
                                                 <label>
-                                                    <input type="radio" id="esim-input-duration-{{ period }}" name="esim[duration]" value="{{ period }}"{% if app.session.has('esim') and app.session.get('esim')['duration'] is defined and app.session.get('esim')['duration'] == period %} checked{% endif %}>
+                                                    <input type="radio"
+                                                           id="esim-input-duration-{{ period }}"
+                                                           name="esim[duration]"
+                                                           value="{{ period }}"
+                                                            {% if app.session.has('esim') and app.session.get('esim')['duration'] is defined and app.session.get('esim')['duration'] == period %}checked{% endif %}>
                                                     <span class="label">{{ period }}</span>
                                                 </label>
                                             {% endfor %}
@@ -244,7 +282,9 @@
                         </div><!-- /.tab-pane -->
 
                         <div id="esim2" role="tabpanel" class="tab-pane{% if activeTab == 'second' %} active{% endif %}">
-                            <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
+                            <fieldset class="emprunter-sim-pane-inner"
+                                      data-formvalidation
+                                      data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications">
                                     {% if projectSimulatorErrorCode is defined %}
                                         <div class="message-error">
@@ -258,23 +298,60 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12">
-                                        <p data-borrower-motive>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>
+                                        <p data-esim-borrower-motive-output>{% trans %} home-borrower_simulator-step-2-text-for-motive {% endtrans %}</p>
                                         <p>{% trans %} home-borrower_simulator-step-2-text-fill-field {% endtrans %}</p>
                                     </div>
                                 </div>
+                                {# COMPANY NAME: Remove if not required #}
+                                <div class="row" data-borrower-company-name style="display: none;">
+                                    <div class="form-field col-xs-12">
+                                        <label for="esim-input-company-name">
+                                            {% trans %} home-borrower_simulator-company-name-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
+                                        <input type="text"
+                                               id="esim-input-company-name"
+                                               name="esim[company_name]"
+                                               value="{% if app.session.has('esim') and app.session.get('esim')['company_name'] is defined %}{{ app.session.get('esim')['company_name'] }}{% endif %}"
+                                               class="input-field"
+                                               data-formvalidation-input>
+                                    </div>
+                                </div>
+                                {# /COMPANY NAME: Remove if not required #}
                                 <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
-                                        <input type="text" id="esim-input-siren" name="esim[siren]" value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
+                                        <label for="esim-input-siren" data-borrower-siren-label>
+                                            <span class="text">
+                                                {% trans %} home-borrower_simulator-siren-field-label {% endtrans %}
+                                            </span>
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
+                                        <input type="text"
+                                               id="esim-input-siren"
+                                               name="esim[siren]"
+                                               value="{% if app.session.has('esim') and app.session.get('esim')['siren'] is defined %}{{ app.session.get('esim')['siren'] }}{% endif %}"
                                                class="input-field"
                                                data-formvalidation-input
                                                data-formvalidation-required="true"
-                                               data-formvalidation-type="siren">
+                                               data-formvalidation-type="siren"
+                                               data-borrower-siren-input>
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
+                                        <label for="esim-input-email">
+                                            {% trans %} home-borrower_simulator-email-field-label {% endtrans %}
+                                            <span class="field-required">*<span class="sr-only">
+                                                    {% trans %} common_mandatory-field {% endtrans %}
+                                                </span></span>
+                                        </label>
                                         <div class="input-group">
-                                            <input type="email" id="esim-input-email" name="esim[email]" value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}"
+                                            <input type="email"
+                                                   id="esim-input-email"
+                                                   name="esim[email]"
+                                                   value="{% if app.session.has('esim') and app.session.get('esim')['email'] is defined %}{{ app.session.get('esim')['email'] }}{% endif %}"
                                                    class="input-field"
                                                    data-formvalidation-input
                                                    data-formvalidation-required="true"
@@ -369,4 +446,13 @@
         {% include 'partials/scroll_more.html.twig' %}
 
     </article><!-- /.page -->
+{% endblock %}
+
+{% block pageHeadScripts %}
+    <script type="text/javascript">
+      var borrowerEsim = {
+        idMotiveFranchiserCreation: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') }},
+        idMotiveShareBuyBack: {{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_SHARE_BUYBACK') }}
+      }
+    </script>
 {% endblock %}
