@@ -119,29 +119,44 @@ EOF
                     ->setIdUser(null);
 
                 $entityManager->persist($reception);
-                $entityManager->flush();
 
-                if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
-                    $this->processDirectDebit($motif, $reception);
-                } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
-                    if (
-                        isset($aRow['libelleOpe3'])
-                        && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
-                        && $project = $projectRepository->find((int) $matches[1])
-                    ) {
-                        $this->processBorrowerAnticipatedRepayment($reception, $project);
-                    } elseif (
-                        isset($aRow['libelleOpe3'])
-                        && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
-                        && $project = $projectRepository->find((int) $matches[1])
-                    ) {
-                        $this->processRegulation($reception, $project);
-                    } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
-                        $this->processLenderBankTransfer($motif, $reception);
+                try {
+                    $entityManager->flush();
+
+                    if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
+                        $this->processDirectDebit($motif, $reception);
+                    } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
+                        if (
+                            isset($aRow['libelleOpe3'])
+                            && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
+                            && $project = $projectRepository->find((int) $matches[1])
+                        ) {
+                            $this->processBorrowerAnticipatedRepayment($reception, $project);
+                        } elseif (
+                            isset($aRow['libelleOpe3'])
+                            && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
+                            && $project = $projectRepository->find((int) $matches[1])
+                        ) {
+                            $this->processRegulation($reception, $project);
+                        } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
+                            $this->processLenderBankTransfer($motif, $reception);
+                        }
+                    } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
+                        $this->processBorrowerRepaymentRejection($aRow, $reception);
                     }
-                } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
-                    $this->processBorrowerRepaymentRejection($aRow, $reception);
+                } catch (\Exception $exception) {
+                    $this->logger->error('An error occurs when treating the daily incoming feeds (reception) from SFPMEI', [
+                        'class'        => __CLASS__,
+                        'function'     => __FUNCTION__,
+                        'id_reception' => $reception->getIdReception(),
+                        'motif'        => $reception->getMotif(), // when no reception id
+                        'line'         => $exception->getLine(),
+                        'file'         => $exception->getFile()
+                    ]);
+
+                    continue;
                 }
+
             }
 
             $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
@@ -259,6 +274,8 @@ EOF
     /**
      * @param string     $motif
      * @param Receptions $reception
+     *
+     * @throws \Exception
      */
     private function processDirectDebit($motif, Receptions $reception)
     {
@@ -300,6 +317,8 @@ EOF
     /**
      * @param Receptions $reception
      * @param Projects   $project
+     *
+     * @throws \Exception
      */
     private function processBorrowerAnticipatedRepayment(Receptions $reception, Projects $project)
     {
@@ -323,6 +342,8 @@ EOF
     /**
      * @param Receptions $reception
      * @param Projects   $project
+     *
+     * @throws \Exception
      */
     private function processRegulation(Receptions $reception, Projects $project)
     {
@@ -349,6 +370,8 @@ EOF
     /**
      * @param            $pattern
      * @param Receptions $reception
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function processLenderBankTransfer($pattern, Receptions $reception)
     {
@@ -440,6 +463,8 @@ EOF
     /**
      * @param array      $aRow
      * @param Receptions $reception
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function processBorrowerRepaymentRejection(array $aRow, Receptions $reception)
     {
