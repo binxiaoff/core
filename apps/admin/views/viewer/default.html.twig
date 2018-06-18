@@ -1,6 +1,7 @@
 {% extends 'layout_basic.html.twig' %}
 
 {% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.css">
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.css">
     <style>
         .docview {
@@ -74,6 +75,7 @@
 {% endblock %}
 
 {% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
     <script src="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.js"></script>
 {% endblock %}
 
@@ -181,6 +183,11 @@
 
           // Trigger loading the first document on DOM ready
           $('.docview-switcher:eq(0)').trigger('Docview:init')
+
+          // Initialise select2
+          $('.select2').select2({
+              minimumResultsForSearch: 4
+          })
         })
     </script>
 {% endblock %}
@@ -204,7 +211,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
@@ -220,7 +227,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
