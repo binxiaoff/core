@@ -97,7 +97,8 @@ var $html = $('html')
 var $body = $('body')
 var $win = $(window)
 
-/*
+$doc.ready(function ($) {
+  /*
  * Unilend Controllers
  * The order is very important
  */
@@ -111,6 +112,7 @@ require('./app/controllers/Collapses')
 require('./app/controllers/ToggleGroup')
 require('./app/controllers/FieldSanitisation')
 require('./app/controllers/NewPasswordRequest')
+require('./app/controllers/BorrowerEsim')
 require('./app/controllers/BorrowerOperations')
 require('./app/controllers/LenderSubscription')
 require('./app/controllers/LenderDashboard')
@@ -123,7 +125,6 @@ require('./app/controllers/Autolend')
 require('./app/controllers/Partner')
 require('./app/controllers/LenderDataUpdate')
 
-$doc.ready(function ($) {
   // @debug
   // window.__ = __
   // window.Utility = Utility
@@ -244,68 +245,6 @@ $doc.ready(function ($) {
     // @debug
     // console.log(nextTabId, event.target, $navTabs, $contentTabs)
   })
-
-  /*
-   * Emprunter Sim
-   * @todo refactor into separate component
-   */
-  $doc
-  // Step 1
-    .on('FormValidation:validate:error', '#esim1', function (event) {
-      // Hide the continue button
-      $('.emprunter-sim').removeClass('ui-emprunter-sim-estimate-show')
-      event.stopPropagation()
-    })
-    .on('shown.bs.tab', '[href="#esim2"]', function () {
-      var period = $("input[id^='esim-input-duration-']:checked").val()
-      var amount = $('#esim-input-amount').val()
-      var motiveId = $('#esim-input-reason > option:selected').val()
-
-      if (!$('.form-validation-notifications .message-error').length) {
-        $.ajax({
-          type: 'POST',
-          url: '/simulateur-projet-etape1',
-          data: {
-            period: period,
-            amount: amount,
-            motiveId: motiveId
-          },
-          success: function (response) {
-            // Show the continue button
-            $('.emprunter-sim').addClass('ui-emprunter-sim-estimate-show')
-
-            $('#esim-input-siren').focus()
-
-            $('.ui-esim-output-cost').prepend(response.amount)
-            $('.ui-esim-output-duration').prepend(response.period)
-            $('.ui-esim-funding-duration-output').html(response.estimatedFundingDuration)
-            $('.ui-esim-monthly-output').html(response.estimatedMonthlyRepayment)
-
-            if (!response.motiveSentenceComplementToBeDisplayed) {
-              $('p[data-borrower-motive]').show()
-              while ($('.ui-esim-output-duration')[0].nextSibling != null) {
-                $('.ui-esim-output-duration')[0].nextSibling.remove()
-              }
-              $('#esim2 > fieldset > div:nth-child(2) > div > p:nth-child(1)').append('.')
-            } else {
-              var text = $('p[data-borrower-motive]').html()
-              text = text.replace(/\.$/g, '')
-
-              $('p[data-borrower-motive]')
-                .show()
-                .html(text + response.translationComplement + '.')
-            }
-          },
-          error: function () {
-            console.log('error retrieving data')
-          }
-        })
-
-        $('a[href*="esim1"]')
-          .removeAttr('href data-toggle aria-expanded')
-          .attr('nohref', 'nohref')
-      }
-    })
 
   /*
    * Smooth scrolling to point on screen or specific element
