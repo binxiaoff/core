@@ -82,7 +82,7 @@
                     <?php endif; ?>
                         <td><input type="file" name="<?= $attachmentType->getId() ?>" id="fichier_project_<?= $attachmentType->getId() ?>"/></td>
                     <?php if ($currentAttachment) : ?>
-                        <td><a href="<?= $this->lurl ?>/viewer/<?= $this->projects->id_project ?>/<?= $currentAttachment->getId() ?>" class="colorbox-iframe">Voir</a></td>
+                        <td><a href="<?= $this->lurl ?>/viewer/project/<?= $this->projects->id_project ?>/<?= $currentAttachment->getId() ?>" target="_blank" <?php /* class="colorbox-iframe" */ ?>>Voir</a></td>
                     <?php else :?>
                         <td>&nbsp;</td>
                     <?php endif; ?>

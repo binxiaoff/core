@@ -228,7 +228,7 @@
         <table class="attachment-list" style="width: auto; border-collapse: separate; border-spacing: 2px;">
             <tr>
                 <th>Type de fichier</th>
-                <th>Nom (cliquer pour télécharger)</th>
+                <th>Nom (cliquer pour voir)</th>
                 <th>Statut GreenPoint</th>
                 <th>&Eacute;tat de validation</th>
             </tr>
@@ -274,9 +274,14 @@
                 <tr style="height: 2em; padding: 2px; ">
                     <th ><?= $attachmentType->getLabel() ?></th>
                     <td>
+                        <a href="<?= $this->url ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $attachment->getId() ?>" target="_blank">
+                            <?= $attachment->getPath() ?>
+                        </a>
+                        <?php /* OLD
                         <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
                             <?= $attachment->getPath() ?>
                         </a>
+                        */ ?>
                     </td>
                     <td class="td-greenPoint-status-<?= $greenpointColor?>"><?= $greenpointLabel ?></td>
                     <td><?= $greenpointFinalStatus ?></td>
@@ -295,7 +300,12 @@
                 ?>
                     <tr>
                         <td>
+                            <a href="<?= $this->url ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $attachment->getId() ?>" target="_blank">
+                                <?= $attachment->getPath() ?>
+                            </a>
+                            <?php /* OLD
                             <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
+                            */ ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

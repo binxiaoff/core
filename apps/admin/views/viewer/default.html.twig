@@ -207,7 +207,10 @@
                         <select class="docview-switcher">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {% set document = document.getAttachment() %}
+                                {# Project attachments need this extra step #}
+                                {% if document.getAttachment() %}
+                                    {% set document = document.getAttachment() %}
+                                {% endif %}
                                 <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"{% if document.getId() == currentDocumentId %} selected="selected"{% endif %}>
                                     {{ document.getType().getLabel() }}
                                 </option>
@@ -223,7 +226,10 @@
                         <select class="docview-switcher">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {% set document = document.getAttachment() %}
+                                {# Project attachments need this extra step #}
+                                {% if document.getAttachment() %}
+                                    {% set document = document.getAttachment() %}
+                                {% endif %}
                                 <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
                                     {{ document.getType().getLabel() }}
                                 </option>
