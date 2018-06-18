@@ -82,44 +82,44 @@ $doc.on('ready', function () {
     $editArea.collapse('hide')
   })
 
-  // $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
-  //   var $inputs = $('#data-update-info-edit :input')
-  //   var isModified = false
+   $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
+     var $inputs = $('#data-update-info-edit :input')
+     var isModified = false
 
-  //   $inputs.each(function (index, input) {
-  //     var submittedValue
-  //     var $input = $(input)
-  //     var originalValue = $input.data('original-value')
+     $inputs.each(function (index, input) {
+       var submittedValue
+       var $input = $(input)
+       var originalValue = $input.data('original-value')
 
-  //     if ($input.getType() === 'radio') {
-  //       originalValue = $input.parent('div').data('original-value')
-  //     }
+       if ($input.getType() === 'radio') {
+         originalValue = $input.parent('div').data('original-value')
+       }
 
-  //     if (originalValue) {
-  //       switch ($input.getType()) {
-  //         case 'radio':
-  //           submittedValue = $('input[name="' + $input.attr('name') + '"]:checked').val()
-  //           break
+       if (originalValue) {
+         switch ($input.getType()) {
+           case 'radio':
+             submittedValue = $('input[name="' + $input.attr('name') + '"]:checked').val()
+             break
 
-  //         case 'select':
-  //           submittedValue = ~~$input.find(':selected').val()
-  //           break
+           case 'select':
+             submittedValue = ~~$input.find(':selected').val()
+             break
 
-  //         case 'text':
-  //           submittedValue = $input.val()
-  //           break
-  //       }
+           case 'text':
+             submittedValue = $input.val()
+             break
+         }
 
-  //       if (originalValue !== submittedValue) {
-  //         isModified = true
-  //         return false
-  //       }
-  //     }
-  //   })
+         if (originalValue !== submittedValue) {
+           isModified = true
+           return false
+         }
+       }
+     })
 
-  //   if (isModified) {
-  //     $('#data-update-id-doc-view').collapse('hide')
-  //     $('#data-update-id-doc-edit').collapse('show')
-  //   }
-  // })
+     if (isModified) {
+       $('#data-update-id-doc-view').collapse('hide')
+       $('#data-update-id-doc-edit').collapse('show')
+     }
+   })
 })

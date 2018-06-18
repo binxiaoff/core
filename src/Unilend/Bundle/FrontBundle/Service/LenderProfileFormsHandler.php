@@ -747,4 +747,123 @@ class LenderProfileFormsHandler
 
         return $attachment;
     }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param ClientAddress $clientAddress
+     * @param string        $clientAddressType
+     * @param BankAccount   $unattachedBankAccount
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     *
+     * @throws \Exception
+     */
+    public function handleAllPersonalData(
+        Clients $client,
+        Clients $unattachedClient,
+        ClientAddress $clientAddress,
+        string $clientAddressType,
+        BankAccount $unattachedBankAccount,
+        FormInterface $form,
+        FileBag $fileBag
+    )
+    {
+        $clientForm  = $form->get('client');
+        $addressForm = $form->get('mainAddress');
+        $bankForm    = $form->get('bankAccount');
+
+        $newAttachments = [];
+        $clientChanges  = [];
+
+        // Identity
+        $isPersonalIdentityModified = $this->isPersonalIdentityModified($client, $unattachedClient);
+
+        if ($isPersonalIdentityModified) {
+            $newAttachments = array_merge($this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag), $newAttachments);
+        }
+
+        // Address
+        $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
+        if ($isAddressModified) {
+            $this->checkPersonAddressForm($addressForm, $clientAddressType);
+            $newAttachments = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $clientAddressType), $newAttachments);
+
+            if (AddressType::TYPE_MAIN_ADDRESS === $clientAddressType) {
+                $clientChanges[ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL;
+            } else {
+                $clientChanges[ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL;
+            }
+        }
+
+        //Bank Account
+        $isBankAccountModified = $this->isBankAccountModified($bankForm, $unattachedBankAccount);
+        if ($isBankAccountModified) {
+            $this->checkBankDetailsForm($bankForm);
+            $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $unattachedBankAccount);
+
+            if ($bankAccountAttachment) {
+                $newAttachments[AttachmentType::RIB]                              = $bankAccountAttachment;
+                $clientChanges[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL] = ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL;
+            }
+        }
+
+        if ($form->isValid()) {
+            if ($isAddressModified) {
+                $this->savePersonAddress($client, $addressForm, $clientAddressType, $clientAddress, $newAttachments);
+            }
+
+            $addressForm->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+
+            if ($isBankAccountModified) {
+                $iban = $bankForm->get('iban')->getData();
+                $bic  = $bankForm->get('bic')->getData();
+                if (false === empty($newAttachments[AttachmentType::RIB])) {
+                    $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
+                }
+            }
+
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $isAddressModified, $isBankAccountModified, $newAttachments);
+            $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
+            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+        }
+    }
+
+    /**
+     * @param Clients $client
+     * @param Clients $unattachedClient
+     *
+     * @return bool
+     */
+    private function isPersonalIdentityModified(Clients $client, Clients $unattachedClient)
+    {
+        dump($client, $unattachedClient);
+        if ($client->getCivilite() !== $unattachedClient->getCivilite()
+            || $client->getNomUsage() !== $unattachedClient->getNomUsage()
+            || $client->getPrenom() !== $unattachedClient->getPrenom()
+            || $client->getIdNationalite() !== $unattachedClient->getIdNationalite()
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param FormInterface $bankForm
+     * @param BankAccount   $unattachedBankAccount
+     *
+     * @return bool
+     */
+    private function isBankAccountModified(FormInterface $bankForm, BankAccount $unattachedBankAccount)
+    {
+        if (
+            $bankForm->get('iban')->getData() !== $unattachedBankAccount->getIban()
+            || $bankForm->get('bic')->getData() !== $unattachedBankAccount->getBic()
+        ) {
+            return true;
+        }
+
+        return false;
+    }
 }
