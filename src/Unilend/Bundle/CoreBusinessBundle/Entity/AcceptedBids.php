@@ -8,9 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * AcceptedBids
  *
  * @ORM\Table(name="accepted_bids", uniqueConstraints={@ORM\UniqueConstraint(name="unq_accepted_bids_id_bid_id_loan", columns={"id_bid", "id_loan"})}, indexes={@ORM\Index(name="idx_accepted_bids_id_loan", columns={"id_loan"}), @ORM\Index(name="idx_accepted_bids_id_bid", columns={"id_bid"})})
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\AcceptedBidsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class AcceptedBids
 {

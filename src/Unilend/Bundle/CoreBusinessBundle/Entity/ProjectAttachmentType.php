@@ -7,8 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * ProjectAttachmentType
  *
- * @ORM\Table(name="project_attachment_type", indexes={@ORM\Index(name="fk_project_attachment_type_id_type", columns={"id_type"}), @ORM\Index(name="fk_project_attachment_type_id_category", columns={"id_category"})})
- * @ORM\Entity
+ * @ORM\Table(
+ *     name="project_attachment_type",
+ *     indexes={@ORM\Index(name="fk_project_attachment_type_id_type", columns={"id_type"}), @ORM\Index(name="fk_project_attachment_type_id_category", columns={"id_category"})},
+ *     uniqueConstraints={@ORM\UniqueConstraint(name="unq_project_attachment_type_id_type", columns={"id_type"})}
+ * )
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectAttachmentTypeRepository")
  */
 class ProjectAttachmentType
 {
@@ -61,6 +65,14 @@ class ProjectAttachmentType
      * })
      */
     private $idType;
+
+    /**
+     * Column only used to index results, no getter/setter necessary
+     * @var int
+     *
+     * @ORM\Column(name="id_type", type="integer", nullable=false)
+     */
+    private $type;
 
 
 

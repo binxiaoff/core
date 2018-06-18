@@ -126,6 +126,24 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         font-weight: bold;
     }
 
+    #documents-table .attachment-category {
+        cursor: pointer;
+        border: 1px solid #fff;
+    }
+
+    #documents-table tr:not(.attachment-category) {
+        display: none;
+    }
+
+    #documents-table > tbody > tr > th {
+        background-color: #6d1f4f;
+        color: #fff;
+        font-size: 13px;
+        font-weight: normal;
+        padding: 5px;
+        text-align: center;
+    }
+
     .spinner_etape {
         display: none;
         height: 32px;
@@ -514,6 +532,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 }
             })
         })
+
         $('#reason').select2({
             width: 'resolve',
             dropdownParent: $('#abandon-project-memo')
@@ -938,19 +957,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                 $blockingPublishingError[] = 'Veuillez sélectionner une durée de prêt';
                             }
 
-                            if (in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)) {
-                                $hasDebtsStatement = false;
-                                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
-                                foreach ($this->aAttachments as $projectAttachment) {
-                                    $attachment = $projectAttachment->getAttachment();
-                                    if (AttachmentType::DEBTS_STATEMENT === $attachment->getType()->getId()) {
-                                        $hasDebtsStatement = true;
-                                        break;
-                                    }
-                                }
-                                if (false === $hasDebtsStatement) {
-                                    $blockingPublishingError[] = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
-                                }
+                            if (
+                                in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)
+                                && false === isset($this->projectAttachmentsByType[AttachmentType::DEBTS_STATEMENT])
+                            ) {
+                                $blockingPublishingError[] = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
                             }
 
                             if (false === $this->isProductUsable) {
