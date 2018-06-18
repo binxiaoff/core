@@ -545,7 +545,7 @@ class simulationController extends bootstrap
                     $parameter = 'true' === $parameter;
                     break;
                 case 'announcementsId':
-                    $parameter =  explode(',', str_replace(' ', '', $parameter));
+                    $parameter = explode(',', str_replace(' ', '', $parameter));
                     break;
             }
 
