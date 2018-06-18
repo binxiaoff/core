@@ -15,7 +15,10 @@
             {{ form_start(form, {
                 'multipart': true,
                 'attr': {
+                    'id': 'form-profile-update-info',
                     'class': 'form-profile form-data-update-info-edit',
+                    'data-cacheform data-cacheform-clearonsubmit': 'true',
+                    'data-cacheform-ignore-change': 'true',
                     'data-formvalidation data-formvalidation-notificationselem': '#form-data-update-info-notifications'
                 }
             }) }}

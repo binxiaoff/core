@@ -55,7 +55,7 @@ var CacheForm = {
     formData.$fields = $form.find(self.supportedFormFields).not(self.unsupportedFormFields)
 
     // Get all the form fields (only those which have names)
-    if (getAllFormFields) formData.$fields = $form.find('input, select, textarea')
+    if (getAllFormFields) formData.$fields = $form.find('input, select, textarea').not('[type="password"]')
 
     // Collate all the form's input field values into an {Object} to save into the storage
     formData.$fields.each(function (i, field) {
@@ -119,6 +119,9 @@ var CacheForm = {
       }
     })
 
+    // @debug
+    console.log('CacheForm.getFormData', formData)
+
     return formData
   },
 
@@ -145,7 +148,10 @@ var CacheForm = {
     if ($form.is('.ui-cacheform-saving-state, .ui-cacheform-restoring-state')) return false
 
     // Only supports forms with an ID
-    if (!formId) return false
+    if (!formId) {
+      console.error('CacheForm only supports forms with an ID attribute')
+      return false
+    }
 
     // Set default storage type if value doesn't match
     if (!storageType) storageType = self.defaultStorageType
@@ -174,7 +180,12 @@ var CacheForm = {
     delete formData.$fields
 
     // @debug
-    // console.log('saving form data', formData)
+    // console.log('CacheForm.save', {
+    //   $form: $form,
+    //   $fields: $fields,
+    //   dataKey: dataKey,
+    //   formData: formData
+    // })
 
     // @trigger form `CacheForm:saveFormState:beforeSave` [formData]
     $form.trigger('CacheForm:saveFormState:beforeSave', [formData])
@@ -202,7 +213,10 @@ var CacheForm = {
     if ($form.length === 0) return false
 
     // Only supports forms with an ID
-    if (!formId) return false
+    if (!formId) {
+      console.error('CacheForm only supports forms with an ID attribute')
+      return false
+    }
 
     // Form's already having work done
     if ($form.is('.ui-cacheform-saving-state, .ui-cacheform-restoring-state')) return false
@@ -301,7 +315,7 @@ var CacheForm = {
           $input.find('option').each(function (j, option) {
             var $option = $(option)
             if ($option.val() == fieldSetting.value) {
-              $option.attr('selected', 'selected')
+              $option.prop('selected', true)
               return true
             }
           })
@@ -310,21 +324,26 @@ var CacheForm = {
         } else if ($input.is('[type="checkbox"]')) {
           // Check if field's setting's value matches the input field's value
           if (fieldSetting.value == inputValue) {
-            $input.attr('checked', 'checked')
+            $input.prop('checked', true)
           } else {
-            $input.removeAttr('checked')
+            $input.prop('checked', false)
           }
 
         // Radio buttons
         } else if ($input.is('[type="radio"]')) {
+          // Check if field's setting's value matches the input field's value
           if (fieldSetting.value == inputValue) {
             // Uncheck any related fields
-            $relatedFields.not($input).removeAttr('checked')
+            $relatedFields.not($input).prop('checked', false)
 
-            // Check if field's setting's value matches the input field's value
-            $input.attr('checked', 'checked')
+            $input.prop('checked', true)
+
+            // @debug
+            console.log('restoring radio input', {
+              fieldSetting: fieldSetting
+            })
           } else {
-            $input.removeAttr('checked')
+            $input.prop('checked', false)
           }
 
         // Everything else
@@ -357,7 +376,10 @@ var CacheForm = {
     if ($form.length === 0) return false
 
     // Only supports forms with an ID
-    if (!formId) return false
+    if (!formId) {
+      console.error('CacheForm only supports forms with an ID attribute')
+      return false
+    }
 
     // Form's already having work done
     if ($form.is('.ui-cacheform-saving-state, .ui-cacheform-restoring-state')) return false
@@ -374,6 +396,13 @@ var CacheForm = {
 
     // Generate the dataKey
     dataKey = 'formState:' + formId + version
+
+    // @debug
+    // console.log('CacheForm.clear', {
+    //   $form: $form,
+    //   $fields: $fields,
+    //   dataKey: dataKey
+    // })
 
     // Remove from the storage
     CacheData.removeFrom(storageType, dataKey)
@@ -393,7 +422,7 @@ var CacheForm = {
  */
 $.fn.uiCacheForm = function (op) {
   // Test if valid operation to run
-  if (typeof op === 'string' && /^(save|restore|clear)$/i.test(op) && CacheForm.hasOwnProperty(op)) {
+  if (typeof op === 'string' && /^(getFormData|save|restore|clear)$/i.test(op) && CacheForm.hasOwnProperty(op)) {
     var cacheFormOp = CacheForm[op]
     if (typeof cacheFormOp === 'function') {
       // Get any additional args to pass to the functions
@@ -407,7 +436,7 @@ $.fn.uiCacheForm = function (op) {
         params.unshift(elem)
 
         // @debug
-        // console.log('uiCacheForm', op, params)
+        console.log('uiCacheForm', op, { cacheFormOp: cacheFormOp, params: params })
 
         cacheFormOp.apply(CacheForm, params)
       })
@@ -426,7 +455,7 @@ $doc
 
     $doc
       // If form changes, save its state
-      .on('change', 'form[data-cacheform]', function (event) {
+      .on('change', 'form[data-cacheform]:not([data-cacheform-ignore-change])', function (event) {
         $(this).uiCacheForm('save')
       })
 

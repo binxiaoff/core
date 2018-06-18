@@ -1,6 +1,7 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var $doc = $(document)
+var CacheForm = require('CacheForm')
 
 $doc.on('ready', function () {
   // Only apply this controller logic if this element is within the DOM
@@ -8,6 +9,8 @@ $doc.on('ready', function () {
     return
   }
 
+  var $form = $('form.form-data-update-info-edit[data-cacheform]')
+  var formIsEdited = false
   var progressBarStep = 1
 
   // Clear FormValidation messages when the panel is hidden
@@ -20,6 +23,14 @@ $doc.on('ready', function () {
   $doc.on(Utility.clickEvent, '.data-update-continue-btn', function () {
     progressBarStep = progressBarStep + 1
     $('.data-update-progress').uiProgressBar('setCurrent', progressBarStep, false)
+  })
+
+  // Click on reset button to reset only the fields within the panel
+  $doc.on(Utility.clickEvent, '.form-data-update-info-edit button[type="reset"]', function (event) {
+    event.preventDefault()
+
+    // Restore the form state
+    $form.uiCacheForm('restore', formIsEdited ? 'newState' : 'initialState')
   })
 
   // Click on save button within a form validation area
@@ -77,49 +88,62 @@ $doc.on('ready', function () {
       }
     })
 
+    // Save the form state
+    $form.uiCacheForm('save', 'newState')
+    formIsEdited = true
+
     // I've removed the data-toggle/data-target from the save button and are managing the show/hide of the panel here
     $viewArea.collapse('show')
     $editArea.collapse('hide')
   })
 
-  // $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
-  //   var $inputs = $('#data-update-info-edit :input')
-  //   var isModified = false
+  // Show/hide the upload identity documents panel if the user has modified their personal info
+  $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
+    var $inputs = $('#data-update-info-edit :input')
+    var isModified = false
 
-  //   $inputs.each(function (index, input) {
-  //     var submittedValue
-  //     var $input = $(input)
-  //     var originalValue = $input.data('original-value')
+    $inputs.each(function (index, input) {
+      var submittedValue
+      var $input = $(input)
+      var originalValue = $input.data('original-value')
 
-  //     if ($input.getType() === 'radio') {
-  //       originalValue = $input.parent('div').data('original-value')
-  //     }
+      if ($input.getType() === 'radio') {
+        originalValue = $input.parent('div').data('original-value')
+      }
 
-  //     if (originalValue) {
-  //       switch ($input.getType()) {
-  //         case 'radio':
-  //           submittedValue = $('input[name="' + $input.attr('name') + '"]:checked').val()
-  //           break
+      if (originalValue) {
+        switch ($input.getType()) {
+          case 'radio':
+            submittedValue = $('input[name="' + $input.attr('name') + '"]:checked').val()
+            break
 
-  //         case 'select':
-  //           submittedValue = ~~$input.find(':selected').val()
-  //           break
+          case 'select':
+            submittedValue = ~~$input.find(':selected').val()
+            break
 
-  //         case 'text':
-  //           submittedValue = $input.val()
-  //           break
-  //       }
+          case 'text':
+            submittedValue = $input.val()
+            break
+        }
 
-  //       if (originalValue !== submittedValue) {
-  //         isModified = true
-  //         return false
-  //       }
-  //     }
-  //   })
+        if (originalValue !== submittedValue) {
+          isModified = true
+          return false
+        }
+      }
+    })
 
-  //   if (isModified) {
-  //     $('#data-update-id-doc-view').collapse('hide')
-  //     $('#data-update-id-doc-edit').collapse('show')
-  //   }
-  // })
+    if (isModified) {
+      $('#data-update-id-doc-view').collapse('hide')
+      $('#data-update-id-doc-edit').collapse('show')
+    }
+  })
+
+  // Save the initial form state
+  $form.uiCacheForm('save', 'initialState')
+
+  // Clear the form state after closing window or navigating away
+  $(window).on('beforeunload', function () {
+    $form.uiCacheForm('clear')
+  })
 })
