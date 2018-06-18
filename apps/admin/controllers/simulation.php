@@ -1,7 +1,7 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 
 class simulationController extends bootstrap
@@ -545,7 +545,7 @@ class simulationController extends bootstrap
                     $parameter = 'true' === $parameter;
                     break;
                 case 'announcementsId':
-                    $parameter = explode(',', $parameter);
+                    $parameter =  explode(',', str_replace(' ', '', $parameter));
                     break;
             }
 
@@ -571,6 +571,8 @@ class simulationController extends bootstrap
         $parameters = [];
         if (isset($_POST['parameter']['execId'])) {
             $parameters['execId'] = $_POST['parameter']['execId'];
+        } elseif (isset($_POST['parameter']['announcementsId'])) {
+            $parameters['adsId'] = explode(',', str_replace(' ', '', $_POST['parameter']['announcementsId']));
         } elseif (isset($_POST['parameter']['siren'])) {
             $siren = $_POST['parameter']['siren'];
         }

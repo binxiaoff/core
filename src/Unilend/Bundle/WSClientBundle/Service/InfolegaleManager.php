@@ -148,7 +148,7 @@ class InfolegaleManager
     }
 
     /**
-     * @param int[] $announcementsId
+     * @param array $announcementsId
      *
      * @return AnnouncementDetailsCollection|null
      */
