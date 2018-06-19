@@ -31,3 +31,4 @@
 /node_modules
 npm-debug.log
 /public/default/assets/
+/app/Resources/assets/css
