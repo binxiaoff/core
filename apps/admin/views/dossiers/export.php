@@ -11,7 +11,7 @@
 "Notes externes";"";"Déclaration client"
 "Grade Euler-Hermes";"<?= empty($this->ratings['grade_euler_hermes']['value']) ? 'N/A' : $this->ratings['grade_euler_hermes']['value'] ?>";"Chiffe d'affaires declaré par client";"<?= $this->iDeclaredRevenue ?>"
 "Score Altares";"<?php if (isset($this->ratings['score_altares']['value'])) : ?><?= $this->ratings['score_altares']['value'] ?> / 20<?php else : ?>N/A<?php endif; ?>";"Résultat d'exploitation declaré par client";"<?= $this->iDeclaredOperatingIncome ?>"
-"Score sectoriel Altares";"<?php if (isset($this->ratings['score_sectoriel_altares']['value'])) : ?><?= round($this->ratings['score_sectoriel_altares']['value']) ?> / 20<?php else : ?>N/A<?php endif; ?>";"Fonds propres declarés par client";"<?= $this->iDeclaredCapitalStock ?>"
+"Score sectoriel Altares";"<?php if (isset($this->ratings['score_sectoriel_altares']['value'])) : ?><?= $this->ratings['score_sectoriel_altares']['value'] ?> / 20<?php else : ?>N/A<?php endif; ?>";"Fonds propres declarés par client";"<?= $this->iDeclaredCapitalStock ?>"
 "Note Infolegale";"<?= empty($this->ratings['note_infolegale']['value']) ? 'N/A' : $this->ratings['note_infolegale']['value'] ?>"
 "Présence de RPC < 6 mois";"<?= isset($this->ratings['rpc_6mois']['value']) && '1' === $this->ratings['rpc_6mois']['value'] ? 'Oui' : (isset($this->ratings['rpc_6mois']['value']) ? 'Non' : 'N/A') ?>"
 "Présence de RPC > 12 mois";"<?= isset($this->ratings['rpc_12mois']['value']) && '1' === $this->ratings['rpc_12mois']['value'] ? 'Oui' : (isset($this->ratings['rpc_6mois']['value']) ? 'Non' : 'N/A') ?>"
