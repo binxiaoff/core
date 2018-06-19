@@ -187,6 +187,7 @@
             <argument type="service" id="unilend.service.company_balance_sheet_manager"/>
             <argument type="service" id="unilend.service.address_manager"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="cache"/>
         </service>
 
         <service id="unilend.service.location_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\LocationManager">
