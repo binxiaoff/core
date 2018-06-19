@@ -1,7 +1,8 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    WsExternalResource, Zones
+};
 use Unilend\Bundle\StoreBundle\Document\WsCall;
 
 class simulationController extends bootstrap

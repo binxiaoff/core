@@ -148,11 +148,11 @@ class InfolegaleManager
     }
 
     /**
-     * @param array $announcementsId
+     * @param string[] $announcementsId
      *
      * @return AnnouncementDetailsCollection|null
      */
-    public function getAnnouncementsDetails(array $announcementsId)
+    public function getAnnouncementsDetails(array $announcementsId): ?AnnouncementDetailsCollection
     {
         if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]))) {
             return $this->serializer->deserialize($result->asXML(), AnnouncementDetailsCollection::class, 'xml');
