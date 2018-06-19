@@ -126,15 +126,13 @@ class MainController extends Controller
         $projectManager        = $this->get('unilend.service.project_manager');
         $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        /** @var \borrowing_motive $borrowingMotive */
-        $borrowingMotive = $this->get('unilend.service.entity_manager')->getRepository('borrowing_motive');
 
         $template = [];
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(true);
         $template['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $template['projectAmountMax']  = $projectManager->getMaxProjectAmount();
         $template['projectAmountMin']  = $projectManager->getMinProjectAmount();
-        $template['borrowingMotives']  = $borrowingMotive->select('rank');
+        $template['borrowingMotives']  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $template['projects'] = $projectDisplayManager->getProjectsList(
             [\projects_status::EN_FUNDING],
             [\projects::SORT_FIELD_END => \projects::SORT_DIRECTION_DESC]
@@ -212,10 +210,6 @@ class MainController extends Controller
                 throw new \InvalidArgumentException('Invalid email', ProjectRequestManager::EXCEPTION_CODE_INVALID_EMAIL);
             }
 
-            if (empty($formData['siren']) || false === $siren = $projectRequestManager->validateSiren($formData['siren'])) {
-                throw new \InvalidArgumentException('Invalid SIREN = ' . $formData['siren'], ProjectRequestManager::EXCEPTION_CODE_INVALID_SIREN);
-            }
-
             if (empty($formData['amount'])) {
                 throw new \InvalidArgumentException('Invalid amount = ' . $formData['amount'], ProjectRequestManager::EXCEPTION_CODE_INVALID_AMOUNT);
             }
@@ -227,13 +221,27 @@ class MainController extends Controller
             if (empty($formData['reason'])) {
                 throw new \InvalidArgumentException('Invalid reason', ProjectRequestManager::EXCEPTION_CODE_INVALID_REASON);
             }
-            // We accept in the same field both siren and siret
-            $siret = $projectRequestManager->validateSiret($formData['siren']);
-            $siret = $siret === false ? null : $siret;
+
+            if (false === empty($formData['siren'])) {
+                $siren = $projectRequestManager->validateSiren($formData['siren']);
+                $siren = $siren === false ? null : $siren;
+                // We accept in the same field both siren and siret
+                $siret = $projectRequestManager->validateSiret($formData['siren']);
+                $siret = $siret === false ? null : $siret;
+            } else {
+                $siren = null;
+                $siret = null;
+            }
+
+            if (empty($formData['company_name'])) {
+                $companyName = null;
+            } else {
+                $companyName = $formData['company_name'];
+            }
 
             $partner = $this->get('unilend.service.partner_manager')->getDefaultPartner();
 
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $formData['email'], $formData['duration'], $formData['reason']);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $formData['amount'], $siren, $siret, $companyName, $formData['email'], $formData['duration'], $formData['reason']);
 
             return $this->redirectToRoute('project_request_simulator_start', ['hash' => $project->getHash()]);
         } catch (\Exception $exception) {

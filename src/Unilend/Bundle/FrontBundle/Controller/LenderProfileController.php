@@ -26,6 +26,7 @@ use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
@@ -71,6 +72,7 @@ class LenderProfileController extends Controller
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
             $company                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $unattachedCompany       = clone $company;
             $lastModifiedMainAddress = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $postalAddress           = $company->getIdPostalAddress();
 
@@ -88,16 +90,16 @@ class LenderProfileController extends Controller
         $identityForm = $identityFormBuilder->getForm();
 
         if ($request->isMethod(Request::METHOD_POST)) {
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
             $translator  = $this->get('translator');
             $isValid     = false;
 
             $identityForm->handleRequest($request);
             if ($identityForm->isSubmitted() && $identityForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $formHandler->handlePersonIdentity($unattachedClient, $client, $identityForm, $request->files);
+                    $isValid = $formHandler->handlePersonIdentity($client, $unattachedClient, $identityForm->get('client'), $request->files);
                 } else {
-                    $isValid = $formHandler->handleCompanyIdentity($client, $company, $identityForm, $request->files);
+                    $isValid = $formHandler->handleCompanyIdentity($client, $unattachedClient, $company, $unattachedCompany, $identityForm->get('company'), $request->files);
                 }
 
                 if ($isValid) {
@@ -108,7 +110,7 @@ class LenderProfileController extends Controller
             $mainAddressForm->handleRequest($request);
             if ($mainAddressForm->isSubmitted() && $mainAddressForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $formHandler->handlePersonAddress($client, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
+                    $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 } else {
                     $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
                 }
@@ -121,7 +123,7 @@ class LenderProfileController extends Controller
             $postalAddressForm->handleRequest($request);
             if ($postalAddressForm->isSubmitted() && $postalAddressForm->isValid()) {
                 if ($client->isNaturalPerson()) {
-                    $isValid = $formHandler->handlePersonAddress($client, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
+                    $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 } else {
                     $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
                 }
@@ -133,7 +135,7 @@ class LenderProfileController extends Controller
 
             $phoneForm->handleRequest($request);
             if ($phoneForm->isSubmitted() && $phoneForm->isValid()) {
-                $formHandler->handlePhoneForm($client);
+                $formHandler->handlePhoneForm($client, $unattachedClient);
                 $this->addFlash('phoneSuccess', $translator->trans('lender-profile_information-tab-phone-form-success-message'));
 
                 $isValid = true;
@@ -212,13 +214,13 @@ class LenderProfileController extends Controller
             $form->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
         }
 
-        $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+        $formHandler = $this->get(LenderProfileFormsHandler::class);
         $form->handleRequest($request);
 
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($form, $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $form->get('bankAccount'), $request->files, $bankAccount)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
@@ -274,21 +276,22 @@ class LenderProfileController extends Controller
             return $this->redirectToRoute('home');
         }
 
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
-        $emailForm     = $this->createForm(ClientEmailType::class, $client);
-        $passwordForm  = $this->createForm(ClientPasswordType::class);
-        $questionForm  = $this->createForm(SecurityQuestionType::class, $client);
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $client           = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $unattachedClient = clone $client;
+        $emailForm        = $this->createForm(ClientEmailType::class, $client);
+        $passwordForm     = $this->createForm(ClientPasswordType::class);
+        $questionForm     = $this->createForm(SecurityQuestionType::class, $client);
 
         if ($request->isMethod(Request::METHOD_POST)) {
             $isValid     = false;
-            $formHandler = $this->get('unilend.frontbundle.service.lender_profile_forms_handler');
+            $formHandler = $this->get(LenderProfileFormsHandler::class);
 
             $emailForm->handleRequest($request);
             if (
                 $emailForm->isSubmitted() &&
                 $emailForm->isValid() &&
-                $formHandler->handleEmailForm($client, $emailForm)
+                $formHandler->handleEmailForm($client, $unattachedClient, $emailForm)
             ) {
                 $this->addFlash('securityIdentificationSuccess', $this->get('translator')->trans('lender-profile_security-identification-form-success-message'));
                 $isValid = true;
@@ -692,6 +695,7 @@ class LenderProfileController extends Controller
         $translator            = $this->get('translator');
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $client                = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $unattachedClient      = clone $client;
         $company               = null;
         $isFileUploaded        = false;
         $isBankAccountModified = false;
@@ -734,7 +738,7 @@ class LenderProfileController extends Controller
             }
 
             $this->get('unilend.service.client_status_manager')
-                ->changeClientStatusTriggeredByClientAction($client, $company, $isMainAddressModified, $isBankAccountModified, $newAttachments);
+                ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, $isBankAccountModified, $newAttachments);
 
             $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $modifiedData, $newAttachments);
 

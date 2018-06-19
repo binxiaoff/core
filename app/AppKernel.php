@@ -35,6 +35,7 @@ class AppKernel extends Kernel
             new Unilend\Bundle\WSClientBundle\UnilendWSClientBundle(),
             new RobertoTru\ToInlineStyleEmailBundle\RobertoTruToInlineStyleEmailBundle(),
             new Welp\MailchimpBundle\WelpMailchimpBundle(),
+            new Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle(),
         ];
 
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

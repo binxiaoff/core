@@ -253,12 +253,6 @@ class ClientDataHistoryManager
     public function sendAccountModificationEmail(Clients $client, array $modifiedData = [], array $modifiedAttachments = []): void
     {
         if (empty($modifiedData) && empty($modifiedAttachments)) {
-            $this->logger->warning('There are no modified data or attachments, the notification email will not be sent to the client: ' . $client->getIdClient(), [
-                'id_client' => $client,
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__
-            ]);
-
             return;
         }
 

@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
+    AttachmentType, BorrowingMotive, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectRequestManager, ProjectStatusManager
@@ -76,12 +76,13 @@ class ProjectRequestController extends Controller
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
-        $amount    = $request->request->get('amount');
-        $siren     = $request->request->get('siren');
-        $email     = $request->request->get('email');
-        $reason    = $request->request->getInt('reason');
-        $duration  = $request->request->getInt('duration');
-        $partnerId = $request->request->getInt('partner');
+        $amount      = $request->request->get('amount');
+        $siren       = $request->request->get('siren');
+        $email       = $request->request->get('email');
+        $reason      = $request->request->getInt('reason');
+        $duration    = $request->request->getInt('duration');
+        $partnerId   = $request->request->getInt('partner');
+        $companyName = $request->request->get('company_name');
 
         if (empty($partnerId) || null === $partner = $entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->find($partnerId)) {
             $partnerManager = $this->get('unilend.service.partner_manager');
@@ -93,17 +94,22 @@ class ProjectRequestController extends Controller
         }
 
         try {
-            if (null === $siren || null === $amount || (null === $email && empty($request->getSession()->get('partnerProjectRequest'))) || 0 === $reason || 0 === $duration) {
+            if (null === $amount || (null === $email && empty($request->getSession()->get('partnerProjectRequest'))) || 0 === $reason || 0 === $duration) {
                 throw new \InvalidArgumentException();
             }
+            if (false === empty($siren)) {
+                $siren = $projectRequestManager->validateSiren($siren);
+                $siren = $siren === false ? null : $siren;
+                // We accept in the same field both siren and siret
+                $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
+                $siret = $siret === false ? null : $siret;
+            } else {
+                $siren = null;
+                $siret = null;
+            }
+            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
-            $user  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            $siren = $projectRequestManager->validateSiren($siren);
-            // We accept in the same field both siren and siret
-            $siret = $projectRequestManager->validateSiret($request->request->get('siren'));
-            $siret = $siret === false ? null : $siret;
-
-            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $email, $duration, $reason);
+            $project = $projectRequestManager->newProject($user, $partner, ProjectsStatus::INCOMPLETE_REQUEST, $amount, $siren, $siret, $companyName, $email, $duration, $reason);
 
             $client = $project->getIdCompany()->getIdClientOwner();
             $request->getSession()->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
@@ -173,7 +179,13 @@ class ProjectRequestController extends Controller
     private function start(Projects $project)
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+        if ($project->getIdCompany()->getSiren()) {
+            $projectRequestManager->checkProjectRisk($project, Users::USER_ID_FRONT);
+        } elseif (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_CONTACT, ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION);
+        } else {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_PROSPECT, ProjectsStatus::NOT_ELIGIBLE, ProjectsStatus::NON_ELIGIBLE_REASON_UNKNOWN_SIREN);
+        }
 
         if (ProjectsStatus::NOT_ELIGIBLE == $project->getStatus()) {
             return $this->redirectToRoute(self::PAGE_ROUTE_PROSPECT, ['hash' => $project->getHash()]);
@@ -420,6 +432,10 @@ class ProjectRequestController extends Controller
 
         if ($project instanceof Response) {
             return $project;
+        }
+
+        if (BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION === $project->getIdBorrowingMotive()) {
+            return $this->redirectStatus($project, self::PAGE_ROUTE_END, ProjectsStatus::COMPLETE_REQUEST);
         }
 
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
