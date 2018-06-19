@@ -46,7 +46,7 @@ class LenderAutoEvaluationController extends Controller
         $currentStep           = $step;
 
         if ($estateAmount = $request->request->getInt('estate-answer')) {
-            $answers      = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE => $estateAmount]);
+            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE => $estateAmount]);
         }
         if (\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE == $submittedQuestionType) {
             if ($answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE] >= self::VALUE_TOTAL_ESTATE_THRESHOLD) {
@@ -54,8 +54,8 @@ class LenderAutoEvaluationController extends Controller
                 $currentStep      = 3;
             } else {
                 $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS;
-            $currentStep   = 2;
-        }
+                $currentStep      = 2;
+            }
         }
 
         if ($savingAmount = filter_var($request->request->getInt('savings-answer'), FILTER_VALIDATE_INT)) {
@@ -121,7 +121,7 @@ class LenderAutoEvaluationController extends Controller
     {
         /** @var \ficelle $ficelle */
         $ficelle    = Loader::loadLib('ficelle');
-        $translator      = $this->get('translator');
+        $translator = $this->get('translator');
 
         $estate         = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE];
         $monthlySavings = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS] : 0;
