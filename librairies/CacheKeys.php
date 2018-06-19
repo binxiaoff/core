@@ -64,5 +64,4 @@ class CacheKeys
      * const for Altares Identity Address Log
      */
     const ALTARES_IDENTITY_ADDRESS_LOG = 'altares_identity_address_log';
-
 }
