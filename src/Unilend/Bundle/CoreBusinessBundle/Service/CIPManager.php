@@ -584,7 +584,7 @@ class CIPManager
      *
      * @return array
      */
-    private function getIndicatorsBasedOnAnswers($estate, $monthlySavings, $blockingPeriod)
+    public function getIndicatorsBasedOnAnswers($estate, $monthlySavings, $blockingPeriod)
     {
         $totalAmountIndicator     = null;
         $amountByMonthIndicator   = null;
