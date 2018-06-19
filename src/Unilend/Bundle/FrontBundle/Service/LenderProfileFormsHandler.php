@@ -767,7 +767,7 @@ class LenderProfileFormsHandler
         BankAccount $unattachedBankAccount,
         FormInterface $form,
         FileBag $fileBag
-    )
+    ): void
     {
         $clientForm  = $form->get('client');
         $addressForm = $form->get('mainAddress');
@@ -777,11 +777,7 @@ class LenderProfileFormsHandler
         $clientChanges  = [];
 
         // Identity
-        $isPersonalIdentityModified = $this->isPersonalIdentityModified($client, $unattachedClient);
-
-        if ($isPersonalIdentityModified) {
-            $newAttachments = array_merge($this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag), $newAttachments);
-        }
+        $newAttachments = array_merge($this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag), $newAttachments);
 
         // Address
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
@@ -827,26 +823,6 @@ class LenderProfileFormsHandler
             $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
         }
-    }
-
-    /**
-     * @param Clients $client
-     * @param Clients $unattachedClient
-     *
-     * @return bool
-     */
-    private function isPersonalIdentityModified(Clients $client, Clients $unattachedClient)
-    {
-        dump($client, $unattachedClient);
-        if ($client->getCivilite() !== $unattachedClient->getCivilite()
-            || $client->getNomUsage() !== $unattachedClient->getNomUsage()
-            || $client->getPrenom() !== $unattachedClient->getPrenom()
-            || $client->getIdNationalite() !== $unattachedClient->getIdNationalite()
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

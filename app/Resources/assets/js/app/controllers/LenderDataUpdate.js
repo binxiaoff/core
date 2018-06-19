@@ -19,6 +19,11 @@ $doc.on('ready', function () {
     $(this).uiFormValidation('clear')
   })
 
+  // Clear the disabled property for the reset button in identity document upload section when the panel is hidden
+  $doc.on('hidden.bs.collapse', '#data-update-id-doc-edit', function (event) {
+    $(this).find('button[type="reset"]').prop('disabled', false)
+  })
+
   // Update the progress bar length
   $doc.on(Utility.clickEvent, '.data-update-continue-btn', function () {
     progressBarStep = progressBarStep + 1
@@ -97,7 +102,7 @@ $doc.on('ready', function () {
     $editArea.collapse('hide')
   })
 
-  // Show/hide the upload identity documents panel if the user has modified their personal info
+  // Show/hide the upload identity documents panel if the users have modified their personal info and disable the cancel button in the the upload panel
   $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
     var $inputs = $('#data-update-info-edit :input')
     var isModified = false
@@ -126,9 +131,10 @@ $doc.on('ready', function () {
             break
         }
 
-        if (originalValue !== submittedValue) {
+        if (originalValue !== submittedValue && 'form-data-update-info-nomUsage' !== $input.attr('id')) {
           isModified = true
-          return false
+
+          return false //break
         }
       }
     })
@@ -136,6 +142,7 @@ $doc.on('ready', function () {
     if (isModified) {
       $('#data-update-id-doc-view').collapse('hide')
       $('#data-update-id-doc-edit').collapse('show')
+      $('#data-update-id-doc-edit button[type="reset"]').prop('disabled', true)
     }
   })
 
