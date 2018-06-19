@@ -86,21 +86,21 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Clients       $unattachedClient
      * @param Clients       $client
+     * @param Clients       $unattachedClient
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
      * @return bool
      * @throws \Exception
      */
-    public function handlePersonIdentity(Clients $unattachedClient, Clients $client, FormInterface $form, FileBag $fileBag): bool
+    public function handlePersonIdentity(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
         $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $form, $fileBag);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || $form->isValid()) {
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, false, $newAttachments);
+        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
             $clientChanges = $this->logAndSaveClientChanges($client);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, false, $newAttachments);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
 
             return true;
@@ -119,7 +119,6 @@ class LenderProfileFormsHandler
      */
     private function uploadPersonalIdentityDocuments(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): array
     {
-
         $newAttachments = [];
 
         $files = [
@@ -147,7 +146,11 @@ class LenderProfileFormsHandler
 
         if (
             false === in_array(AttachmentType::CNI_PASSPORTE, array_keys($newAttachments))
-            && ($unattachedClient->getIdNationalite() !== $client->getIdNationalite() || $unattachedClient->getCivilite() !== $client->getCivilite())
+            && (
+                $unattachedClient->getIdNationalite() !== $client->getIdNationalite()
+                || $unattachedClient->getCivilite() !== $client->getCivilite()
+                || $unattachedClient->getPrenom() !== $client->getPrenom()
+            )
         ) {
             $form->addError(new FormError($this->translator->trans('lender-profile_information-tab-identity-section-change-ID-warning-message')));
         }
@@ -157,23 +160,26 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients       $client
+     * @param Clients       $unattachedClient
      * @param Companies     $company
+     * @param Companies     $unattachedCompany
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
      * @return bool
      * @throws \Exception
      */
-    public function handleCompanyIdentity(Clients $client, Companies $company, FormInterface $form, FileBag $fileBag): bool
+    public function handleCompanyIdentity(Clients $client, Clients $unattachedClient, Companies $company, Companies $unattachedCompany, FormInterface $form, FileBag $fileBag): bool
     {
         $this->checkCompanyIdentityForm($company, $form);
 
         $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $form, $fileBag);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || $form->isValid()) {
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $company, false, false, $newAttachments);
-            $this->entityManager->flush($company);
+        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
             $clientChanges = $this->logAndSaveClientChanges($client);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, $company, $unattachedCompany, false, false, $newAttachments);
+
+            $this->entityManager->flush($company);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
 
             return true;
@@ -282,6 +288,7 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients            $client
+     * @param Clients            $unattachedClient
      * @param FormInterface      $form
      * @param FileBag            $fileBag
      * @param string             $type
@@ -290,7 +297,7 @@ class LenderProfileFormsHandler
      * @return bool
      * @throws OptimisticLockException
      */
-    public function handlePersonAddress(Clients $client, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $clientAddress): bool
+    public function handlePersonAddress(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, string $type, ?ClientAddress $clientAddress): bool
     {
         $addressModified = $this->isAddressModified($form, $clientAddress);
         if (false === $addressModified) {
@@ -301,7 +308,7 @@ class LenderProfileFormsHandler
 
         $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || $form->isValid()) {
+        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
             if (AddressType::TYPE_MAIN_ADDRESS === $type) {
                 $clientChanges = [ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL => ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL];
             } else {
@@ -312,8 +319,8 @@ class LenderProfileFormsHandler
 
             $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $addressModified, false, $newAttachments);
             $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, $addressModified, false, $newAttachments);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
 
             return true;
@@ -527,7 +534,7 @@ class LenderProfileFormsHandler
                 $addressModification = true;
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), null, $addressModification);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, $addressModification);
             $this->clientDataHistoryManager->sendAccountModificationEmail($company->getIdClientOwner(), $modifiedData);
 
             return true;
@@ -550,7 +557,7 @@ class LenderProfileFormsHandler
         $this->checkBankDetailsForm($form);
         $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $unattachedBankAccount);
 
-        if (((null !== $form->getParent() && $form->getParent()->isValid()) || $form->isValid())) {
+        if (((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid()))) {
             $newAttachments      = [];
             $clientChanges       = [];
             $bankAccountModified = false;
@@ -565,7 +572,7 @@ class LenderProfileFormsHandler
             }
 
             $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, false, $bankAccountModified, $newAttachments);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $client, null, null, false, $bankAccountModified, $newAttachments);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
 
             return true;
@@ -626,21 +633,22 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients       $client
+     * @param Clients       $unattachedClient
      * @param FormInterface $form
      *
      * @return bool
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function handleEmailForm(Clients $client, FormInterface $form): bool
+    public function handleEmailForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
     {
         if (false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN))) {
             $form->addError(new FormError($this->translator->trans('lender-profile_security-identification-error-existing-email')));
         }
 
         if ($form->isValid()) {
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client);
             $clientChanges = $this->logAndSaveClientChanges($client);
+            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient);
             $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
 
             return true;
@@ -651,14 +659,15 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients $client
+     * @param Clients $unattachedClient
      *
      * @return bool
      * @throws OptimisticLockException
      */
-    public function handlePhoneForm(Clients $client): bool
+    public function handlePhoneForm(Clients $client, Clients $unattachedClient): bool
     {
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client);
         $clientChanges = $this->logAndSaveClientChanges($client);
+        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient);
         $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
 
         return true;
