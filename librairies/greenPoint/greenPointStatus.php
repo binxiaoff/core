@@ -2,7 +2,7 @@
 
 namespace Unilend\librairies\greenPoint;
 
-use Unilend\data;
+use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
 
 /**
  * Class greenPointStatus
@@ -21,7 +21,7 @@ class greenPointStatus
     CONST CONFORM_COHERENT_NOT_QUALIFIED = 8;
     CONST CONFORM_COHERENT_QUALIFIED     = 9;
 
-    public static $aIdControlStatusLabel = array(
+    public static $aIdControlStatusLabel = [
         self::NOT_VERIFIED                   => 'Non vérifié',
         self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un document d\'identité)',
         self::FALSIFIED_OR_MINOR             => 'Falsifiée ou mineur',
@@ -32,8 +32,9 @@ class greenPointStatus
         self::EXPIRED                        => 'Expiré',
         self::CONFORM_COHERENT_NOT_QUALIFIED => 'Conforme, cohérent et valide mais non labellisable',
         self::CONFORM_COHERENT_QUALIFIED     => 'Conforme, cohérent et valide + label GREENPOINT IDCONTROL'
-    );
-    public static $aIbanFlashStatusLabel = array(
+    ];
+
+    public static $aIbanFlashStatusLabel = [
         self::NOT_VERIFIED                   => 'Non vérifié',
         self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un RIB)',
         self::FALSIFIED_OR_MINOR             => 'Falsifié',
@@ -44,8 +45,9 @@ class greenPointStatus
         self::EXPIRED                        => '-',
         self::CONFORM_COHERENT_NOT_QUALIFIED => 'Vérifié sauf prénom du titulaire non vérifié',
         self::CONFORM_COHERENT_QUALIFIED     => 'Conforme, cohérent et valide'
-    );
-    public static $aAddressControlStatusLabel = array(
+    ];
+
+    public static $aAddressControlStatusLabel = [
         self::NOT_VERIFIED                   => 'Non vérifié',
         self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un justificatif de domicile)',
         self::FALSIFIED_OR_MINOR             => 'Falsifié',
@@ -56,7 +58,7 @@ class greenPointStatus
         self::EXPIRED                        => '-',
         self::CONFORM_COHERENT_NOT_QUALIFIED => 'Vérifié sauf prénom du titulaire non vérifié',
         self::CONFORM_COHERENT_QUALIFIED     => 'Conforme, cohérent et valide'
-    );
+    ];
 
     /**
      * @param array $aResponse
@@ -97,17 +99,17 @@ class greenPointStatus
         $aAttachment['validation_status'] = (int) $fGetColumnValue($aResponse, 'statut_verification');
 
         switch ($iAttachmentTypeId) {
-            case \attachment_type::CNI_PASSPORTE:
-            case \attachment_type::CNI_PASSPORTE_VERSO:
-            case \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
-            case \attachment_type::CNI_PASSPORTE_DIRIGEANT:
+            case AttachmentType::CNI_PASSPORTE:
+            case AttachmentType::CNI_PASSPORTE_VERSO:
+            case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
+            case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
                 $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIdControlStatusLabel, $aAttachment['validation_status']);
                 break;
-            case \attachment_type::RIB:
+            case AttachmentType::RIB:
                 $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIbanFlashStatusLabel, $aAttachment['validation_status']);
                 break;
-            case \attachment_type::JUSTIFICATIF_DOMICILE:
-            case \attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+            case AttachmentType::JUSTIFICATIF_DOMICILE:
+            case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
                 $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aAddressControlStatusLabel, $aAttachment['validation_status']);
                 break;
         }

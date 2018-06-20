@@ -1,11 +1,11 @@
 /*!
- * Viewer.js v1.0.0-beta.1
- * https://github.com/fengyuanchen/viewerjs
+ * Viewer.js v1.1.0
+ * https://fengyuanchen.github.io/viewerjs
  *
- * Copyright (c) 2015-2017 Chen Fengyuan
+ * Copyright 2015-present Chen Fengyuan
  * Released under the MIT license
  *
- * Date: 2017-12-23T04:31:47.134Z
+ * Date: 2018-05-27T07:33:11.301Z
  */
 
 .viewer-zoom-in::before,
@@ -203,6 +203,18 @@
   margin-left: 1px;
 }
 
+.viewer-list > .viewer-loading {
+  position: relative;
+}
+
+.viewer-list > .viewer-loading::after {
+  border-width: 2px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  width: 20px;
+}
+
 .viewer-list > .viewer-active,
 .viewer-list > .viewer-active:hover {
   opacity: 1;
@@ -380,6 +392,48 @@
 .viewer-transition {
   -webkit-transition: all .3s;
   transition: all .3s;
+}
+
+@-webkit-keyframes viewer-spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes viewer-spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
+.viewer-loading::after {
+  -webkit-animation: viewer-spinner 1s linear infinite;
+  animation: viewer-spinner 1s linear infinite;
+  border: 4px solid rgba(255, 255, 255, .1);
+  border-left-color: rgba(255, 255, 255, .5);
+  border-radius: 50%;
+  content: '';
+  display: inline-block;
+  height: 40px;
+  left: 50%;
+  margin-left: -20px;
+  margin-top: -20px;
+  position: absolute;
+  top: 50%;
+  width: 40px;
+  z-index: 1;
 }
 
 @media (max-width: 767px) {
