@@ -42,7 +42,7 @@ class societeController extends bootstrap
             CompanyRating::TYPE_EULER_HERMES_GRADE,
             CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT,
             CompanyRating::TYPE_ALTARES_SCORE_20,
-            CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100,
+            CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20,
             CompanyRating::TYPE_INFOLEGALE_SCORE,
             CompanyRating::TYPE_XERFI_RISK_SCORE,
             CompanyRating::TYPE_UNILEND_XERFI_RISK
@@ -90,7 +90,7 @@ class societeController extends bootstrap
                 && $ratings[$previousIndex][CompanyRating::TYPE_EULER_HERMES_GRADE] === $ratings[$index][CompanyRating::TYPE_EULER_HERMES_GRADE]
                 && $ratings[$previousIndex][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT] === $ratings[$index][CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT]
                 && $ratings[$previousIndex][CompanyRating::TYPE_ALTARES_SCORE_20] === $ratings[$index][CompanyRating::TYPE_ALTARES_SCORE_20]
-                && $ratings[$previousIndex][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100] === $ratings[$index][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100]
+                && $ratings[$previousIndex][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20] === $ratings[$index][CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20]
                 && $ratings[$previousIndex][CompanyRating::TYPE_INFOLEGALE_SCORE] === $ratings[$index][CompanyRating::TYPE_INFOLEGALE_SCORE]
                 && $ratings[$previousIndex][CompanyRating::TYPE_XERFI_RISK_SCORE] === $ratings[$index][CompanyRating::TYPE_XERFI_RISK_SCORE]
                 && $ratings[$previousIndex][CompanyRating::TYPE_UNILEND_XERFI_RISK] === $ratings[$index][CompanyRating::TYPE_UNILEND_XERFI_RISK]
@@ -144,7 +144,7 @@ class societeController extends bootstrap
         if (null !== $firstRating && null !== $secondRating) {
             switch ($ratingType) {
                 case CompanyRating::TYPE_ALTARES_SCORE_20:
-                case CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100:
+                case CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20:
                 case CompanyRating::TYPE_INFOLEGALE_SCORE:
                     if ($firstRating > $secondRating) {
                         $change = [
