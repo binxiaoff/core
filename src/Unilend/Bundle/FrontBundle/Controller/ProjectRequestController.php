@@ -581,7 +581,7 @@ class ProjectRequestController extends Controller
         if ($taxReturnFile instanceof UploadedFile && $project->getIdCompany()->getIdClientOwner() instanceof Clients) {
             try {
                 $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::DERNIERE_LIASSE_FISCAL);
-                $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $taxReturnFile);
+                $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $taxReturnFile, false);
                 $attachmentManager->attachToProject($attachment, $project);
             } catch (\Exception $exception) {
                 $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
@@ -608,7 +608,7 @@ class ProjectRequestController extends Controller
                     $attachmentTypeId = $fileTypes[$inputName];
                     try {
                         $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
-                        $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file);
+                        $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                         $attachmentManager->attachToProject($attachment, $project);
                     } catch (\Exception $exception) {
                         $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
@@ -874,7 +874,7 @@ class ProjectRequestController extends Controller
                 $attachmentTypeId = $fileTypes[$inputName];
                 try {
                     $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
-                    $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file);
+                    $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
                     $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
@@ -1018,23 +1018,45 @@ class ProjectRequestController extends Controller
             ]
         ];
 
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-
-        $projectAttachments = $project->getAttachments();
-        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         $attachmentTypes    = [];
+        $partnerAttachments = $project->getIdPartner()->getAttachmentTypes();
         foreach ($partnerAttachments as $partnerAttachment) {
-            $attachmentTypes[] = $partnerAttachment->getAttachmentType();
+            $attachmentTypes[$partnerAttachment->getAttachmentType()->getId()] = $partnerAttachment->getAttachmentType();
         }
+
+        $maxItemsByAttachmentType = [];
+        $entityManager            = $this->get('doctrine.orm.entity_manager');
+        $projectAttachmentTypes   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findBy([
+            'idType' => $attachmentTypes
+        ]);
+        foreach ($projectAttachmentTypes as $projectAttachmentType) {
+            $maxItemsByAttachmentType[$projectAttachmentType->getIdType()->getId()] = $projectAttachmentType->getMaxItems();
+        }
+
+        $itemsByAttachmentType = [];
+        $projectAttachments    = $project->getAttachments();
         foreach ($projectAttachments as $projectAttachment) {
-            $index = array_search($projectAttachment->getAttachment()->getType(), $attachmentTypes);
-            unset($attachmentTypes[$index]);
+            $attachmentTypeId = $projectAttachment->getAttachment()->getType()->getId();
+
+            if (false === isset($itemsByAttachmentType[$attachmentTypeId])) {
+                $itemsByAttachmentType[$attachmentTypeId] = 0;
+            }
+
+            ++$itemsByAttachmentType[$attachmentTypeId];
+
+            if (
+                false === isset($maxItemsByAttachmentType[$attachmentTypeId]) && $itemsByAttachmentType[$attachmentTypeId] > 1
+                || isset($maxItemsByAttachmentType[$attachmentTypeId]) && $itemsByAttachmentType[$attachmentTypeId] >= $maxItemsByAttachmentType[$attachmentTypeId]
+            ) {
+                unset($attachmentTypes[$attachmentTypeId]);
+            }
         }
 
         $template['attachment_types'] = $attachmentTypes;
 
         /** @var \projects_status_history $projectStatusHistory */
-        $projectStatusHistory = $entityManagerSimulator->getRepository('projects_status_history');
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $projectStatusHistory   = $entityManagerSimulator->getRepository('projects_status_history');
         $projectStatusHistory->loadLastProjectHistory($project->getIdProject());
 
         if (false === empty($projectStatusHistory->content)) {
@@ -1077,7 +1099,7 @@ class ProjectRequestController extends Controller
                 $attachmentTypeId = $fileTypes[$inputName];
                 try {
                     $attachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find($attachmentTypeId);
-                    $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file);
+                    $attachment     = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $file, false);
                     $attachmentManager->attachToProject($attachment, $project);
                 } catch (\Exception $exception) {
                     $logger->error('Cannot upload the file. Error : ' . $exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine()]);
