@@ -395,6 +395,8 @@ class dashboardController extends bootstrap
             'statusCashFlowCount'                 => $statusCashFlowCount,
             'statusAcquisitionCount'              => $statusAcquisitionCount,
             'statusPartnerCount'                  => $statusPartnerCount,
+            'dateLastMonth'                       => $lastDayOfLastMonth,
+            'dateTwoMonthsAgo'                    => $lastDayOfTwoMonthAgo
         ]);
     }
 
