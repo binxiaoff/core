@@ -27,14 +27,14 @@ class ProjectAttachmentTypeCategory
     private $name;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="rank", type="smallint", nullable=true)
+     * @ORM\Column(name="rank", type="smallint", nullable=false)
      */
     private $rank;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -71,11 +71,11 @@ class ProjectAttachmentTypeCategory
     /**
      * Set name
      *
-     * @param string $name
+     * @param string|null $name
      *
      * @return ProjectAttachmentTypeCategory
      */
-    public function setName(string $name): ProjectAttachmentTypeCategory
+    public function setName(?string $name): ProjectAttachmentTypeCategory
     {
         $this->name = $name;
 
@@ -85,9 +85,9 @@ class ProjectAttachmentTypeCategory
     /**
      * Get name
      *
-     * @return string
+     * @return string|null
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
