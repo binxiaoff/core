@@ -5,6 +5,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 };
 
 ?>
+<link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/dropzonejs/dropzone.min.css">
+<script src="<?= $this->lurl ?>/oneui/js/plugins/dropzonejs/dropzone.min.js"></script>
+
 <style type="text/css">
     table.tablesorter tbody td.grisfonceBG, .grisfonceBG {
         background: #d2d2d2 !important;
@@ -126,22 +129,49 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         font-weight: bold;
     }
 
-    #documents-table .attachment-category {
+    #attachments-table .attachment-category {
         cursor: pointer;
         border: 1px solid #fff;
     }
 
-    #documents-table tr:not(.attachment-category) {
+    #attachments-table tr:not(.attachment-category) {
         display: none;
     }
 
-    #documents-table > tbody > tr > th {
+    #attachments-table .attachment-file {
+        margin: 5px;
+    }
+
+    #attachments-table .attachment-file a.attachment-remove {
+        text-decoration: none;
+    }
+
+    #attachments-table > tbody > tr > th {
         background-color: #6d1f4f;
         color: #fff;
         font-size: 13px;
         font-weight: normal;
         padding: 5px;
         text-align: center;
+    }
+
+    .dropzone {
+        min-height: auto;
+        border: 1px dashed #ccc;
+        padding: inherit;
+        color: #ccc;
+    }
+
+    .dropzone .dz-message {
+        margin: auto;
+    }
+
+    .dropzone .dz-preview {
+        min-height: auto;
+    }
+
+    .dropzone .dz-preview.dz-file-preview .dz-image, .dropzone .dz-preview .dz-image {
+        border-radius: inherit;
     }
 
     .spinner_etape {
@@ -349,45 +379,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 }
             } else {
                 event.preventDefault();
-            }
-        });
-
-        $('.icon_remove_attachment').click(function (e) {
-            e.preventDefault();
-            var id = $(this).data('id');
-            var type = $(this).data('label');
-            var response = confirm("Voulez-vous supprimer " + type + "?");
-            if (response == true) {
-                $.ajax({
-                    url: "<?= $this->lurl ?>/dossiers/remove_file",
-                    dataType: 'json',
-                    type: 'POST',
-                    data: {
-                        attachment_id: id
-                    },
-                    error: function () {
-                        alert('An error has occurred');
-                    },
-                    success: function (data) {
-                        if (false === $.isEmptyObject(data)) {
-                            $.each(data, function (fileId, value) {
-                                if ('ok' == value) {
-                                    $("#statut_fichier_id_" + fileId).html('Supprimé');
-                                    $(this).remove;
-                                    $("#statut_fichier_id_" + fileId).parent().find('.label_col').html('');
-                                    $("#statut_fichier_id_" + fileId).parent().find('.remove_col').html('');
-                                }
-
-                            });
-                            $("#valid_etape5").slideDown();
-                            setTimeout(function () {
-                                $("#valid_etape5").slideUp();
-                            }, 4000);
-                        } else {
-                            alert('An error has occurred');
-                        }
-                    }
-                });
             }
         });
 
