@@ -64,14 +64,18 @@ class ClientStatusManager
 
     /**
      * @param Clients        $modifiedClient
+     * @param Clients        $unattachedClient
      * @param Companies|null $modifiedCompany
+     * @param Companies|null $unattachedCompany
      * @param bool           $isAddressModified
      * @param bool           $isBankAccountModified
      * @param Attachment[]   $newAttachments
      */
     public function changeClientStatusTriggeredByClientAction(
         Clients $modifiedClient,
+        Clients $unattachedClient,
         ?Companies $modifiedCompany = null,
+        ?Companies $unattachedCompany = null,
         bool $isAddressModified = false,
         bool $isBankAccountModified = false,
         array $newAttachments = []
@@ -92,14 +96,25 @@ class ClientStatusManager
         }
 
         $isSuspendByAttachments = $this->checkIfSuspendByAttachments($modifiedClient, $newAttachments);
-        $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient);
-        $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($modifiedCompany) : null;
+        $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient, $unattachedClient);
+        $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($modifiedCompany, $unattachedCompany) : null;
         $isSuspendByAddress     = $this->checkIfSuspendByClientAddress($modifiedClient, $isAddressModified);
 
-        $companyChangeSet = $this->getModifiedFields($modifiedCompany);
+        try {
+            $companyChangeSet = $this->getModifiedFields($unattachedCompany, $modifiedCompany);
+        } catch (\Exception $exception) {
+            $companyChangeSet = [];
+            $this->logger->error('Could not calculate modified company fields. Error: ' . $exception->getMessage(), [
+                'id_client' => $modifiedClient->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
 
         if ($isSuspendByAttachments || $isSuspendByClientData || $isSuspendByCompanyData || $isSuspendByAddress) {
-            $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED, $this->formatArrayToUnorderedList(array_keys($companyChangeSet)));
+            $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED, $this->formatArrayToUnorderedList($companyChangeSet));
             return;
         }
 
@@ -227,10 +242,11 @@ class ClientStatusManager
 
     /**
      * @param Clients $client
+     * @param Clients $unattachedClient
      *
      * @return bool|null
      */
-    private function checkIfSuspendByClientData(Clients $client): ?bool
+    private function checkIfSuspendByClientData(Clients $client, Clients $unattachedClient): ?bool
     {
         if ($client->getUsPerson() || NationalitesV2::NATIONALITY_OTHER === $client->getIdNationalite()) {
             return true;
@@ -252,10 +268,21 @@ class ClientStatusManager
             ];
         }
 
-        $suspend         = null;
-        $clientChangeSet = $this->getModifiedFields($client);
+        $suspend = null;
+        try {
+            $clientChangeSet = $this->getModifiedFields($unattachedClient, $client);
+        } catch (\Exception $exception) {
+            $clientChangeSet = [];
+            $this->logger->error('Could not calculate modified client fields. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
 
-        if (0 < count(array_intersect(array_keys($clientChangeSet), $clientModifiableFields))) {
+        if (0 < count(array_intersect($clientChangeSet, $clientModifiableFields))) {
             $suspend = false;
         }
 
@@ -264,10 +291,11 @@ class ClientStatusManager
 
     /**
      * @param Companies $company
+     * @param Companies $unattachedCompany
      *
      * @return bool|null
      */
-    private function checkIfSuspendByCompanyData(Companies $company): ?bool
+    private function checkIfSuspendByCompanyData(Companies $company, Companies $unattachedCompany): ?bool
     {
         $companyModifiableFields = [
             'name',
@@ -282,9 +310,21 @@ class ClientStatusManager
             'phoneDirigeant'
         ];
         $suspend                 = null;
-        $companyChangeSet        = $this->getModifiedFields($company);
 
-        if (0 < count(array_intersect(array_keys($companyChangeSet), $companyModifiableFields))) {
+        try {
+            $companyChangeSet = $this->getModifiedFields($unattachedCompany, $company);
+        } catch (\Exception $exception) {
+            $companyChangeSet = [];
+            $this->logger->error('Could not calculate modified company fields. Error: ' . $exception->getMessage(), [
+                'id_client' => $company->getIdClientOwner()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        if (0 < count(array_intersect($companyChangeSet, $companyModifiableFields))) {
             $suspend = false;
         }
 
@@ -336,23 +376,37 @@ class ClientStatusManager
     }
 
     /**
-     * @param $entityObject
+     * @param $unattachedObject
+     * @param $modifiedObject
      *
      * @return array
+     * @throws \Exception
      */
-    private function getModifiedFields($entityObject): array
+    public function getModifiedFields($unattachedObject, $modifiedObject): array
     {
-        if (null === $entityObject) {
+        if (null === $unattachedObject || null === $modifiedObject) {
             return [];
         }
-        $classMetaData = $this->entityManager->getClassMetadata(get_class($entityObject));
-        $unitOfWork    = $this->entityManager->getUnitOfWork();
-        $unitOfWork->computeChangeSet($classMetaData, $entityObject);
 
-        $entityChangeSet = $unitOfWork->getEntityChangeSet($entityObject);
-        unset($entityChangeSet['updated']);
+        if (get_class($unattachedObject) !== get_class($modifiedObject)) {
+            throw new \Exception('The objects to be compared are not of the same class');
+        }
 
-        return $entityChangeSet;
+        $differences = [];
+        $object      = new \ReflectionObject($unattachedObject);
+
+        foreach ($object->getMethods() as $method) {
+            if (
+                substr($method->name, 0, 3) === 'get'
+                && $method->invoke($unattachedObject) != $method->invoke($modifiedObject)
+            ) {
+                if ($method->name !== 'getUpdated') {
+                    $differences[] = str_replace('get', '', $method->name);
+                }
+            }
+        }
+
+        return $differences;
     }
 
     /**
