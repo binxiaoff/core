@@ -11,10 +11,8 @@ use Symfony\Component\HttpFoundation\{
     Request, Response
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, ClientAddress, Clients, GreenpointAttachment, Users
+    AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientAuditer;
-use Unilend\Bundle\CoreBusinessBundle\Service\ClientDataHistoryManager;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientAddressType, OriginOfFundsType, PersonPhoneType, PersonProfileType
 };
@@ -32,7 +30,7 @@ class LenderDataUpdateController extends Controller
     public function startAction(): Response
     {
         return $this->render('lender_data_update/start.html.twig', [
-            'firstName' => $this->getClient()->getPrenom()
+            'client' => $this->getClient()
         ]);
     }
 
