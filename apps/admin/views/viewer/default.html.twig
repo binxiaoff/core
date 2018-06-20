@@ -1,6 +1,7 @@
 {% extends 'layout_basic.html.twig' %}
 
 {% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.css">
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.css">
     <style>
         .docview {
@@ -109,7 +110,7 @@
             .docview {
                 min-width: 600px;
             }
-            
+
             .docview-viewer-container {
                 flex-direction: column;
                 justify-content: flex-start;
@@ -130,6 +131,7 @@
 {% endblock %}
 
 {% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
     <script src="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.js"></script>
 {% endblock %}
 
@@ -279,8 +281,13 @@
             // Force fullscreen
             $('[data-action="fullscreen_toggle"]').click()
 
-            // Trigger loading the first document on DOM ready
-            $('.docview-switcher:eq(0)').trigger('Docview:init')
+          // Trigger loading the first document on DOM ready
+          $('.docview-switcher:eq(0)').trigger('Docview:init')
+
+          // Initialise select2
+          $('.select2').select2({
+              minimumResultsForSearch: 4
+          })
         })
     </script>
 {% endblock %}
@@ -304,7 +311,7 @@
             <div class="docview-viewer-container">
                 <div id="docview-viewer" class="docview-viewer-frame">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
@@ -324,7 +331,7 @@
                 </div>
                 <div id="docview-viewer-compare" class="docview-viewer-frame hidden">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
                                 {% set document = document.getAttachment() %}
