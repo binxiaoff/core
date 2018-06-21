@@ -83,11 +83,6 @@
                             <a href="<?= $this->url ?>/viewer/client/<?= $this->client->getIdClient() ?>/<?= $attachment->getId() ?>" target="_blank">
                                 <?= $attachment->getPath() ?>
                             </a>
-                            <?php /* OLD
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                                <?= $attachment->getPath() ?>
-                            </a>
-                            */ ?>
                         </td>
                         <td class="td-greenPoint-status-<?= $greenpointColor?>" width="25%">
                             <?= $greenpointLabel ?>

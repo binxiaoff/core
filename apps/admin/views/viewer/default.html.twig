@@ -204,17 +204,25 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher" title="Type de document">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {# Project attachments need this extra step #}
-                                {% if document.getAttachment() %}
-                                    {% set document = document.getAttachment() %}
+                                {% if hasCategories %}
+                                    {% if categoryId is not defined %}
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% elseif categoryId != document.categoryId %}
+                                        </optgroup>
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% endif %}
+                                    {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"{% if document.getId() == currentDocumentId %} selected="selected"{% endif %}>
-                                    {{ document.getType().getLabel() }}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}"{% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
+                                    {{ document.typeName }}
                                 </option>
                             {% endfor %}
+                            {% if hasCategories %}
+                                </optgroup>
+                            {% endif %}
                         </select>
                     </div>
                     <div class="docview-viewer">
@@ -223,17 +231,25 @@
                 </div>
                 <div class="col-md-6">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher" title="Type de document">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {# Project attachments need this extra step #}
-                                {% if document.getAttachment() %}
-                                    {% set document = document.getAttachment() %}
+                                {% if hasCategories %}
+                                    {% if categoryId is not defined %}
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% elseif categoryId != document.categoryId %}
+                                        </optgroup>
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% endif %}
+                                    {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
-                                    {{ document.getType().getLabel() }}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}">
+                                    {{ document.typeName }}
                                 </option>
                             {% endfor %}
+                            {% if hasCategories %}
+                                </optgroup>
+                            {% endif %}
                         </select>
                     </div>
                     <div class="docview-viewer">

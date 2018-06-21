@@ -277,11 +277,6 @@
                         <a href="<?= $this->url ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $attachment->getId() ?>" target="_blank">
                             <?= $attachment->getPath() ?>
                         </a>
-                        <?php /* OLD
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
-                            <?= $attachment->getPath() ?>
-                        </a>
-                        */ ?>
                     </td>
                     <td class="td-greenPoint-status-<?= $greenpointColor?>"><?= $greenpointLabel ?></td>
                     <td><?= $greenpointFinalStatus ?></td>
@@ -293,7 +288,7 @@
             <h2>Document de transfert (en cas de succession)</h2>
             <table class="attachment-list" style="width: auto; border-collapse: separate; border-spacing: 2px;">
                 <?php
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\TransferAttachment $transferDocument */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Transfer $transfer */
                 foreach ($this->transfers as $transfer) :
                     foreach ($transfer->getAttachments() as $transferAttachment) :
                     $attachment = $transferAttachment->getAttachment();
@@ -303,9 +298,6 @@
                             <a href="<?= $this->url ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $attachment->getId() ?>" target="_blank">
                                 <?= $attachment->getPath() ?>
                             </a>
-                            <?php /* OLD
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
-                            */ ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>

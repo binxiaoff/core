@@ -120,7 +120,7 @@ class AttachmentManager
     public function attachToProject(Attachment $attachment, Projects $project)
     {
         $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $attached                    = $projectAttachmentRepository->getAttachedAttachments($project, $attachment->getType());
+        $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
         $projectAttachmentType       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy([
             'idType' => $attachment->getType()
         ]);
