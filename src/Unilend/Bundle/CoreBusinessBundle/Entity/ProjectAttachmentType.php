@@ -17,14 +17,14 @@ use Doctrine\ORM\Mapping as ORM;
 class ProjectAttachmentType
 {
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="rank", type="integer", nullable=true)
+     * @ORM\Column(name="rank", type="integer", nullable=false)
      */
     private $rank;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="max_items", type="smallint", nullable=false)
      */
@@ -38,7 +38,7 @@ class ProjectAttachmentType
     private $name;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -93,9 +93,9 @@ class ProjectAttachmentType
     /**
      * Get rank
      *
-     * @return int|null
+     * @return int
      */
-    public function getRank(): ?int
+    public function getRank(): int
     {
         return $this->rank;
     }
@@ -127,11 +127,11 @@ class ProjectAttachmentType
     /**
      * Set name
      *
-     * @param string $name
+     * @param string|null $name
      *
      * @return ProjectAttachmentType
      */
-    public function setName(string $name): ProjectAttachmentType
+    public function setName(?string $name): ProjectAttachmentType
     {
         $this->name = $name;
 
@@ -161,11 +161,11 @@ class ProjectAttachmentType
     /**
      * Set idCategory
      *
-     * @param ProjectAttachmentTypeCategory $idCategory
+     * @param ProjectAttachmentTypeCategory|null $idCategory
      *
      * @return ProjectAttachmentType
      */
-    public function setIdCategory(ProjectAttachmentTypeCategory $idCategory): ProjectAttachmentType
+    public function setIdCategory(?ProjectAttachmentTypeCategory $idCategory): ProjectAttachmentType
     {
         $this->idCategory = $idCategory;
 

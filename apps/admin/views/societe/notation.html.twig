@@ -314,7 +314,7 @@
                                     {% endfor %}
                                 </tr>
                                 <tr>
-                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100')] %}
+                                    {% for ratingInfo in ratings[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20')] %}
                                         <td {% if ratingInfo.change %}class="score-change"{% endif %}>
                                             {% if ratingInfo.value is not empty %}
                                                 {%  if ratingInfo.change %}

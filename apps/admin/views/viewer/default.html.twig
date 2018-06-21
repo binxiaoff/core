@@ -1,10 +1,13 @@
 {% extends 'layout_basic.html.twig' %}
 
 {% block pluginsCSS %}
+    <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.css">
     <link rel="stylesheet" href="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.css">
     <style>
         .docview {
             position: relative;
+            min-width: 950px;
+            min-height: 500px;
         }
 
         .docview .block-options {
@@ -18,13 +21,35 @@
             visibility: hidden;
         }
 
+        .docview-viewer-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+            align-items: flex-start;
+            align-content: flex-start;
+        }
+
+        .docview-viewer-container .docview-viewer-frame {
+            flex: 1 1 auto;
+            width: 50%;
+            min-width: 400px;
+        }
+
+        .docview-viewer-container .docview-viewer-frame.hidden {
+            display: none;
+        }
+
         .docview-body {
             margin: 0;
         }
 
         .docview-form {
-            text-align: center;
+            text-align: left;
             margin-bottom: 1em;
+        }
+
+        #docview-viewer-compare .docview-form {
+            text-align: right;
         }
 
         .docview-viewer {
@@ -39,15 +64,21 @@
             text-align: center;
         }
 
-        .docview-viewer img,
-        .docview-viewer iframe {
+        .docview-viewer > iframe {
             width: 100%;
             height: 100%;
+            padding: 0;
+            margin: 0;
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
+            border: none;
+        }
+
+        .docview-viewer > img {
+            visibility: hidden;
         }
 
         .docview-viewer .viewer-prev,
@@ -57,6 +88,7 @@
         .docview-viewer .viewer-flip-vertical {
             display: none;
         }
+
         .docview-viewer .viewer-toolbar {
             width: 150px;
         }
@@ -65,122 +97,197 @@
             height: 90vh;
         }
 
+        .docview-files-list,
+        .docview-files-list li {
+            display: block;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            text-align: center;
+        }
+
         @media screen and (max-width: 992px) {
-            .docview-form:nth-child(2) {
-                margin-top: 1em;
+            .docview {
+                min-width: 600px;
+            }
+
+            .docview-viewer-container {
+                flex-direction: column;
+                justify-content: flex-start;
+                align-content: stretch;
+            }
+
+            .docview-viewer-container .docview-viewer-frame {
+                width: 100%;
+                min-width: 0;
+            }
+
+            #docview-viewer-compare,
+            #docview-toggle-compare-label {
+                display: none;
             }
         }
     </style>
 {% endblock %}
 
 {% block pluginsJS %}
+    <script src="{{ app.adminUrl }}/oneui/js/plugins/select2/select2.min.js"></script>
     <script src="{{ app.adminUrl }}/oneui/js/plugins/viewerjs/viewer.min.js"></script>
 {% endblock %}
 
 {% block pageScripts %}
     <script>
         $(function () {
-          var $doc = $(document)
-          var Docview = {
-              $elem: $('#docview'),
-              imgViewers: [],
-              settings: {
-                pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
-              },
-              render: function (fileUrl, index) {
-                var $viewer = this.$elem.find('.docview-viewer').eq(index)
+            var $doc = $(document)
+            var Docview = {
+                $elem: $('#docview'),
+                $compare: $('#docview-toggle-compare'),
+                $viewerCompare: $('#docview-viewer-compare'),
+                imgViewers: [],
+                settings: {
+                    pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
+                },
+                compare: false,
+                render: function (fileUrl, index) {
+                    var $viewer = this.$elem.find('.docview-viewer').eq(index)
 
-                // Unload the file
-                if (!fileUrl || fileUrl === '') {
-                  $viewer.html('<div class="docview-message">Sélectionnez un document à visualiser</div>')
-                  return
+                    // Unload the file
+                    if (!fileUrl || fileUrl === '') {
+                        $viewer.html('<div class="docview-message">Sélectionnez un document à visualiser</div>')
+                        return
+                    }
+
+                    // Determine if PDF or image
+                    if (/\.pdf$/i.test(fileUrl)) {
+                        this.renderPdf(fileUrl, index)
+                    } else if (/\.(jpe?g|gif|png)$/i.test(fileUrl)) {
+                        this.renderImg(fileUrl, index)
+                    } else {
+                        $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer<br/><br/><strong><a href="' + fileUrl + '">Télécharger le fichier</a></strong></div>')
+                    }
+                },
+                renderImg: function (fileUrl, index) {
+                    var $viewer = this.$elem.find('.docview-viewer').eq(index)
+                    var $imgViewer = $viewer.find('img').length ? $viewer.find('img').first() : $('<img />')
+
+                    // Do nothing if already loaded
+                    if ($imgViewer.attr('src') === fileUrl) return
+
+                    // Setup viewer options for the image
+                    var imgViewerOptions = {
+                        inline: true,
+                        scalable: true,
+                        movable: true,
+                        navbar: false,
+                        title: false,
+                        transition: false,
+                        fullscreen: false,
+                        built: function () {
+                            $imgViewer.addClass('imgviewer')
+                        }
+                    }
+
+                    // In case an error occurs
+                    $imgViewer.on('error', function () {
+                        $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
+                    })
+
+                    // Set the image src attribute
+                    $imgViewer.attr('src', fileUrl)
+
+                    // Delete any previous image viewer for this index
+                    if (typeof this.imgViewers[index] !== 'undefined') this.imgViewers[index].destroy()
+
+                    // Append to the DOM
+                    if (!$viewer.find('img').length) {
+                        $viewer.html('')
+                        $imgViewer.appendTo($viewer)
+                    }
+
+                    // Create the new image viewer
+                    this.imgViewers[index] = new Viewer($imgViewer[0], imgViewerOptions)
+                },
+                renderPdf: function (fileUrl, index) {
+                    var $viewer = this.$elem.find('.docview-viewer').eq(index)
+                    var $pdfViewer = $viewer.find('iframe').length ? $viewer.find('iframe').first() : $('<iframe />')
+                    var viewFileUrl = this.settings.pdfViewer + '?file=' + encodeURIComponent(fileUrl)
+
+                    // Do nothing if already loaded
+                    if ($pdfViewer.attr('src') === viewFileUrl) return
+
+                    // In case an error occurs
+                    $pdfViewer.on('error', function () {
+                        $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
+                    })
+
+                    // Set the iframe src attribute
+                    $pdfViewer.attr('src', viewFileUrl)
+
+                    // Append to the DOM
+                    if (!$viewer.find('iframe').length) {
+                        $viewer.html('')
+                        $pdfViewer.appendTo($viewer)
+                    }
+                },
+                toggleCompare: function (setCompare, updateView) {
+                    // Default to true
+                    var doUpdateView = (updateView !== undefined
+                        ? updateView
+                        : true)
+
+                    // Determine the new compare state
+                    var newCompare = (setCompare !== undefined
+                        // Explicitly set the new compare state
+                        ? setCompare
+                        // Otherwise toggle the current compare state
+                        : !this.compare)
+
+                    // Update the state & view
+                    this.compare = newCompare
+                    if (doUpdateView) {
+                        this.$compare.prop('checked', this.compare)
+
+                        if (this.compare) {
+                            this.$viewerCompare.removeClass('hidden')
+                        } else {
+                            this.$viewerCompare.addClass('hidden')
+                        }
+                    }
                 }
+            }
 
-                // Determine if PDF or image
-                if (/\.pdf$/i.test(fileUrl)) {
-                  this.renderPdf(fileUrl, index)
-                } else if (/\.(jpe?g|gif|png)$/i.test(fileUrl)) {
-                  this.renderImg(fileUrl, index)
-                } else {
-                  $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer<br/><br/><strong><a href="' + fileUrl + '">Télécharger le fichier</a></strong></div>')
-                }
-              },
-              renderImg: function (fileUrl, index) {
-                var $viewer = this.$elem.find('.docview-viewer').eq(index)
-                var $imgViewer = $viewer.find('img').length ? $viewer.find('img').first() : $('<img />')
+            // Bind `this` to specific Docview functions to stop event listener functions hijacking `this`
+            Docview.toggleCompare = Docview.toggleCompare.bind(Docview)
 
-                // Do nothing if already loaded
-                if ($imgViewer.attr('src') === fileUrl) return
+            // Render a file within the viewer based on the switcher
+            $doc.on('Docview:init change', '.docview-switcher', function () {
+                var index = $(this).closest('.docview').first().find('.docview-switcher').index(this)
+                var fileUrl = $(this).val()
+                Docview.render(fileUrl, index)
+            })
 
-                // Setup viewer options for the image
-                var imgViewerOptions = {
-                  inline: true,
-                  scalable: true,
-                  movable: true,
-                  navbar: false,
-                  title: false,
-                  transition: false,
-                  built: function () {
-                    $imgViewer.addClass('imgviewer')
-                  }
-                }
+            // Toggle compare
+            $doc.on('change', '#docview-toggle-compare', function (event) {
+                Docview.toggleCompare($(event.target).prop('checked'))
+            })
 
-                // In case an error occurs
-                $imgViewer.on('error', function () {
-                  $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
-                })
+            $doc.on('click', '.docview-files-list a', function (event) {
+                var fileUrl = $(event.target).attr('href')
+                var viewerIndex = $('.docviewer').index($(this).closest('.docviewer').first())
+                event.preventDefault()
+                Docview.render(fileUrl, viewerIndex)
+            })
 
-                // Set the image src attribute
-                $imgViewer.attr('src', fileUrl)
-
-                // Delete any previous image viewer for this index
-                if (typeof this.imgViewers[index] !== 'undefined') this.imgViewers[index].destroy()
-
-                // Append to the DOM
-                if (!$viewer.find('img').length) {
-                  $viewer.html('')
-                  $imgViewer.appendTo($viewer)
-                }
-
-                // Create the new image viewer
-                this.imgViewers[index] = new Viewer($imgViewer[0], imgViewerOptions)
-              },
-              renderPdf: function (fileUrl, index) {
-                var $viewer = this.$elem.find('.docview-viewer').eq(index)
-                var $pdfViewer = $viewer.find('iframe').length ? $viewer.find('iframe').first() : $('<iframe />')
-                var viewFileUrl = this.settings.pdfViewer + '?file=' + encodeURIComponent(fileUrl)
-
-                // Do nothing if already loaded
-                if ($pdfViewer.attr('src') === viewFileUrl) return
-
-                // In case an error occurs
-                $pdfViewer.on('error', function () {
-                  $viewer.html('<div class="docview-message">Erreur de chargement du document</div>')
-                })
-
-                // Set the iframe src attribute
-                $pdfViewer.attr('src', viewFileUrl)
-
-                // Append to the DOM
-                if (!$viewer.find('iframe').length) {
-                  $viewer.html('')
-                  $pdfViewer.appendTo($viewer)
-                }
-              }
-          }
-
-          // Render a file within the viewer based on the switcher
-          $doc.on('Docview:init change', '.docview-switcher', function () {
-            var index = $(this).closest('.docview').first().find('.docview-switcher').index(this)
-            var fileUrl = $(this).val()
-            Docview.render(fileUrl, index)
-          })
-
-          // Force fullscreen
-          $('[data-action="fullscreen_toggle"]').click()
+            // Force fullscreen
+            $('[data-action="fullscreen_toggle"]').click()
 
           // Trigger loading the first document on DOM ready
           $('.docview-switcher:eq(0)').trigger('Docview:init')
+
+          // Initialise select2
+          $('.select2').select2({
+              minimumResultsForSearch: 4
+          })
         })
     </script>
 {% endblock %}
@@ -192,7 +299,7 @@
 {% endblock %}
 
 {% block content %}
-    <div id="docview" class="docview block block-bordered" style="min-width: 1000px; min-height: 500px;">
+    <div id="docview" class="docview block block-bordered">
         <div class="docview-body block-content block-content-full">
             <ul class="block-options">
                 <li>
@@ -201,37 +308,72 @@
                     </button>
                 </li>
             </ul>
-            <div class="row">
-                <div class="col-md-6">
+            <div class="docview-viewer-container">
+                <div id="docview-viewer" class="docview-viewer-frame">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2" title="Type de document">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {% set document = document.getAttachment() %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}"{% if document.getId() == currentDocumentId %} selected="selected"{% endif %}>
-                                    {{ document.getType().getLabel() }}
+                                {% if hasCategories %}
+                                    {% if categoryId is not defined %}
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% elseif categoryId != document.categoryId %}
+                                        </optgroup>
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% endif %}
+                                    {% set categoryId = document.categoryId %}
+                                {% endif %}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}"{% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
+                                    {{ document.typeName }}
                                 </option>
                             {% endfor %}
+                            {% if hasCategories %}
+                                </optgroup>
+                            {% endif %}
                         </select>
+                        <label id="docview-toggle-compare-label">
+                            <input type="checkbox" id="docview-toggle-compare" />
+                            Compare
+                        </label>
                     </div>
                     <div class="docview-viewer">
                         <div class="docview-message">Chargement ...</div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div id="docview-viewer-compare" class="docview-viewer-frame hidden">
                     <div class="docview-form">
-                        <select class="docview-switcher">
+                        <select class="docview-switcher select2" title="Type de document">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
-                                {% set document = document.getAttachment() %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}">
-                                    {{ document.getType().getLabel() }}
+                                {% if hasCategories %}
+                                    {% if categoryId is not defined %}
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% elseif categoryId != document.categoryId %}
+                                        </optgroup>
+                                        <optgroup label="{{ document.categoryName }}">
+                                    {% endif %}
+                                    {% set categoryId = document.categoryId %}
+                                {% endif %}
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}">
+                                    {{ document.typeName }}
                                 </option>
                             {% endfor %}
+                            {% if hasCategories %}
+                                </optgroup>
+                            {% endif %}
                         </select>
                     </div>
                     <div class="docview-viewer">
-                        <div class="docview-message">Sélectionnez un document à visualiser</div>
+                        <div class="docview-message">Sélectionnez un document à visualiser
+                            <ul class="docview-files-list">
+                                {% for document in documents %}
+                                    {% set document = document.getAttachment() %}
+                                    <li><a href="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}" target="_blank">
+                                        {{ document.getType().getLabel() }}
+                                    </a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
