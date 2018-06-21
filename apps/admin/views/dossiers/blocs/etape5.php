@@ -28,7 +28,7 @@
                     if (false === $.isEmptyObject(response) && response.hasOwnProperty('success') && response.success && response.hasOwnProperty('data') && $.isArray(response.data)) {
                         $.each(response.data, function (index, file) {
                             var $removeLink = $('<a>').addClass('attachment-remove').attr('href', '<?= $this->lurl ?>/attachment/remove_project/' + file.projectAttachmentId).append('<img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">')
-                            var $viewerLink = $('<a>').addClass('colorbox-iframe').attr('href', '<?= $this->lurl ?>/viewer/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).append(file.name).colorbox({iframe: true})
+                            var $viewerLink = $('<a>').addClass('colorbox-iframe').attr('href', '<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).append(file.name).colorbox({iframe: true})
                             var $file = $('<div>').addClass('attachment-file').append($removeLink).append($viewerLink)
 
                             $form.closest('tr').find('td:nth(1)').append($file)
@@ -145,7 +145,7 @@
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
-                                    <a href="<?= $this->lurl ?>/viewer/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
+                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
                                         <?= $projectAttachment->getAttachment()->getOriginalName() ?>
                                     </a>
                                 </div>
@@ -178,7 +178,7 @@
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
-                                    <a href="<?= $this->lurl ?>/viewer/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
+                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
                                         <?= $projectAttachment->getAttachment()->getOriginalName() ?>
                                     </a>
                                 </div>
