@@ -38,12 +38,12 @@ class AttachmentManager
      * @param Clients        $client
      * @param AttachmentType $attachmentType
      * @param UploadedFile   $file
-     * @param null|string    $name
+     * @param bool           $archivePreviousAttachments
      *
      * @return Attachment
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, $name = null)
+    public function upload(Clients $client, AttachmentType $attachmentType, UploadedFile $file, bool $archivePreviousAttachments = true): Attachment
     {
         $destinationRelative = $this->getUploadDestination($client);
         $destinationAbsolute = $this->getUploadRootDir() . DIRECTORY_SEPARATOR . $destinationRelative;
@@ -52,24 +52,27 @@ class AttachmentManager
             $this->filesystem->mkdir($destinationAbsolute);
         }
 
-        $fileName     = $name === null ? md5(uniqid()) : $name;
-        $fileFullName = $this->sanitizer($fileName) . '.' . $file->getClientOriginalExtension();
+        $fileName     = md5(uniqid());
+        $fileFullName = $fileName . '.' . $file->getClientOriginalExtension();
 
         if (file_exists($destinationAbsolute . DIRECTORY_SEPARATOR . $fileFullName)) {
-            $fileFullName = $this->sanitizer($fileName . '_' . md5(uniqid())) . '.' . $file->getClientOriginalExtension();
+            $fileFullName = $fileName . '_' . md5(uniqid()) . '.' . $file->getClientOriginalExtension();
         }
 
         $file->move($destinationAbsolute, $fileFullName);
 
-        $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
-            ->findBy([
-                'idClient' => $client,
-                'idType'   => $attachmentType,
-                'archived' => null
-            ]);
+        $attachmentsToArchive = [];
+        if ($archivePreviousAttachments) {
+            $attachmentsToArchive = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')
+                ->findBy([
+                    'idClient' => $client,
+                    'idType'   => $attachmentType,
+                    'archived' => null
+                ]);
 
-        foreach ($attachmentsToArchive as $toArchive) {
-            $toArchive->setArchived(new \DateTime());
+            foreach ($attachmentsToArchive as $toArchive) {
+                $toArchive->setArchived(new \DateTime());
+            }
         }
 
         $attachment = new Attachment();
@@ -117,18 +120,29 @@ class AttachmentManager
     public function attachToProject(Attachment $attachment, Projects $project)
     {
         $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $attached                    = $projectAttachmentRepository->getAttachedAttachments($project, $attachment->getType());
+        $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
+        $projectAttachmentType       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy([
+            'idType' => $attachment->getType()
+        ]);
 
-        foreach ($attached as $attachmentToDetach) {
+        foreach ($attached as $index => $attachmentToDetach) {
+            if ($index < $projectAttachmentType->getMaxItems() - 1) {
+                continue;
+            }
+
+            $attachmentToDetach->getAttachment()->setArchived(new \DateTime('now'));
+
             $this->entityManager->remove($attachmentToDetach);
-            $this->entityManager->flush($attachmentToDetach);
+            $this->entityManager->flush([$attachmentToDetach->getAttachment(), $attachmentToDetach]);
         }
 
         $projectAttachment = $projectAttachmentRepository->findOneBy(['idAttachment' => $attachment, 'idProject' => $project]);
         if (null === $projectAttachment) {
             $projectAttachment = new ProjectAttachment();
-            $projectAttachment->setProject($project)
-                              ->setAttachment($attachment);
+            $projectAttachment
+                ->setProject($project)
+                ->setAttachment($attachment);
+
             $this->entityManager->persist($projectAttachment);
             $this->entityManager->flush($projectAttachment);
         }
@@ -272,18 +286,6 @@ class AttachmentManager
         }
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types);
-    }
-
-    private function sanitizer($fileName)
-    {
-        // Remove anything which isn't a word, whitespace, number or any of the following caracters -_~,;[]().
-        $fileName = mb_ereg_replace('([^\w\s\d\-_~,;\[\]\(\).])', '', $fileName);
-        // Remove any runs of periods
-        $fileName = mb_ereg_replace('([\.]{2,})', '', $fileName);
-        // Limit the length of the file name.
-        $fileName = substr($fileName, 0, 255);
-
-        return $fileName;
     }
 
     /**

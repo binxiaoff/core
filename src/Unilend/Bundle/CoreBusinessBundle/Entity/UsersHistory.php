@@ -14,6 +14,7 @@ class UsersHistory
 {
     const FORM_ID_LENDER_STATUS         = 1;
     const FORM_ID_LENDER                = 3;
+    const FORM_ID_PROJECT_UPLOAD        = 9;
     const FORM_ID_BULK_PROJECT_CREATION = 13;
 
     const FORM_NAME_LENDER_STATUS         = 'Statut prêteur';
