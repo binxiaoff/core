@@ -3,8 +3,12 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\{
+    EntityManager, OptimisticLockException
+};
+use Psr\Cache\{
+    CacheException, CacheItemPoolInterface
+};
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, PaysV2
@@ -17,11 +21,12 @@ use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
 use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
-    AnnouncementDetails, DirectorAnnouncement, Executive, Mandate, ScoreDetails
+    AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails
 };
 use Unilend\Bundle\WSClientBundle\Service\{
     AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager
 };
+use Unilend\librairies\CacheKeys;
 
 class ExternalDataManager
 {
@@ -47,6 +52,8 @@ class ExternalDataManager
     private $addressManager;
     /** @var LoggerInterface */
     private $logger;
+    /** @var CacheItemPoolInterface */
+    private $cachePool;
 
     /**
      * @param EntityManager              $entityManager
@@ -59,6 +66,7 @@ class ExternalDataManager
      * @param CompanyBalanceSheetManager $companyBalanceSheetManager
      * @param AddressManager             $addressManager
      * @param LoggerInterface            $logger
+     * @param CacheItemPoolInterface     $cachePool
      */
     public function __construct(
         EntityManager $entityManager,
@@ -70,7 +78,8 @@ class ExternalDataManager
         EllisphereManager $ellisphereManager,
         CompanyBalanceSheetManager $companyBalanceSheetManager,
         AddressManager $addressManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        CacheItemPoolInterface $cachePool
     )
     {
         $this->entityManager              = $entityManager;
@@ -83,6 +92,7 @@ class ExternalDataManager
         $this->companyBalanceSheetManager = $companyBalanceSheetManager;
         $this->addressManager             = $addressManager;
         $this->logger                     = $logger;
+        $this->cachePool                  = $cachePool;
     }
 
     /**
@@ -134,6 +144,8 @@ class ExternalDataManager
                             $company,
                             AddressType::TYPE_MAIN_ADDRESS
                         );
+                    } else {
+                        $this->logAltaresIncompleteCompanyAddress($siren, $identity);
                     }
                 }
             }
@@ -172,7 +184,7 @@ class ExternalDataManager
             }
 
             $this->setRating(CompanyRating::TYPE_ALTARES_SCORE_20, $score->getScore20());
-            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_100, $score->getSectoralScore100());
+            $this->setRating(CompanyRating::TYPE_ALTARES_SECTORAL_SCORE_20, $score->getSectoralScore20());
             $this->setRating(CompanyRating::TYPE_ALTARES_VALUE_DATE, $score->getScoreDate()->format('Y-m-d'));
             $this->setRating(CompanyRating::TYPE_XERFI_RISK_SCORE, $xerfiScore);
             $this->setRating(CompanyRating::TYPE_UNILEND_XERFI_RISK, $xerfiUnilend);
@@ -671,5 +683,36 @@ class ExternalDataManager
         $this->refreshExecutiveChanges($siren);
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
+    }
+
+    /**
+     * @param string                $siren
+     * @param CompanyIdentityDetail $identity
+     */
+    private function logAltaresIncompleteCompanyAddress(string $siren, CompanyIdentityDetail $identity): void
+    {
+        try {
+            $cachedItem = $this->cachePool->getItem(CacheKeys::ALTARES_IDENTITY_ADDRESS_LOG . $siren);
+            $cacheHit   = $cachedItem->isHit();
+        } catch (CacheException $exception) {
+            $cachedItem = null;
+            $cacheHit   = false;
+        }
+
+        $logAlreadyExists = $cacheHit ? $cachedItem->get(): false;
+
+        if (false === $logAlreadyExists) {
+            $this->logger->warning('Altares returned incomplete company address for siren ' . $siren . '. Company address has not been saved.', [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'siren'    => $siren,
+                'address'  => $identity->getAddress() ?? '',
+                'zip'      => $identity->getPostCode() ?? '',
+                'city'     => $identity->getCity() ?? ''
+            ]);
+
+            $cachedItem->set(true)->expiresAfter(CacheKeys::SHORT_TIME);
+            $this->cachePool->save($cachedItem);
+        }
     }
 }

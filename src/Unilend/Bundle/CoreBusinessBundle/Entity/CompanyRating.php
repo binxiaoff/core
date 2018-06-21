@@ -14,7 +14,7 @@ class CompanyRating
 {
     const TYPE_ALTARES_VALUE_DATE         = 'date_valeur_altares';
     const TYPE_ALTARES_SCORE_20           = 'score_altares';
-    const TYPE_ALTARES_SECTORAL_SCORE_100 = 'score_sectoriel_altares';
+    const TYPE_ALTARES_SECTORAL_SCORE_20  = 'score_sectoriel_altares';
     const TYPE_INFOLEGALE_SCORE           = 'note_infolegale';
     const TYPE_XERFI_RISK_SCORE           = 'xerfi';
     const TYPE_UNILEND_XERFI_RISK         = 'xerfi_unilend';
@@ -25,7 +25,7 @@ class CompanyRating
     const AUTOMATIC_RATING_TYPES = [
         self::TYPE_ALTARES_VALUE_DATE,
         self::TYPE_ALTARES_SCORE_20,
-        self::TYPE_ALTARES_SECTORAL_SCORE_100,
+        self::TYPE_ALTARES_SECTORAL_SCORE_20,
         self::TYPE_INFOLEGALE_SCORE,
         self::TYPE_XERFI_RISK_SCORE,
         self::TYPE_UNILEND_XERFI_RISK,
@@ -35,7 +35,7 @@ class CompanyRating
 
     const ALTARES_RATING_TYPES = [
         self::TYPE_ALTARES_SCORE_20,
-        self::TYPE_ALTARES_SECTORAL_SCORE_100,
+        self::TYPE_ALTARES_SECTORAL_SCORE_20,
         self::TYPE_ALTARES_VALUE_DATE
     ];
 
