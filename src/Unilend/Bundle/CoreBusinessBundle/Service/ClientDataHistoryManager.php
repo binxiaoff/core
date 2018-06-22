@@ -12,10 +12,6 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class ClientDataHistoryManager
 {
-    const MAIN_ADDRESS_FORM_LABEL   = 'main_address';
-    const POSTAL_ADDRESS_FORM_LABEL = 'postal_address';
-    const BANK_ACCOUNT_FORM_LABEL   = 'bank_account';
-
     /** @var EntityManager */
     private $entityManager;
     /** @var TranslatorInterface */
@@ -273,17 +269,21 @@ class ClientDataHistoryManager
         }
 
         $wireTransferPattern = '';
-        $wallets = $client->getWallets();
+        $wallets             = $client->getWallets();
 
         foreach ($wallets as $wallet) {
             if (WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-                $wireTransferPattern =  $wallet->getWireTransferPattern();
+                $wireTransferPattern = $wallet->getWireTransferPattern();
                 break;
             }
         }
 
         $modifiedData     = $this->formatArrayToUnorderedList($this->getFormFieldsTranslationsForEmail($client, $clientChanges, $companyChanges, $modifiedAddressType, $isBankAccountChanged));
         $attachmentLabels = $this->formatArrayToUnorderedList($attachmentLabels);
+
+        if (empty($modifiedData) && empty($attachmentLabels)) {
+            return;
+        }
 
         $keywords = [
             'firstName'               => $client->getPrenom(),
@@ -343,6 +343,13 @@ class ClientDataHistoryManager
     }
 
     /**
+     * The translations related to the fields has a pattern like lender-modification-email_[entity]-field-[property]
+     * The client will only be notified with the fields that has its translation defined.
+     * Ex. We define a translation for the name, but we don't define any translation for the birthday. The client modifies both field, he/she will only see the notification on "name"
+     *
+     * If several fields have the same translation, it will be displayed only once. This can be used to group the message for the fields.
+     * Ex. for all the filed in company, we want only to say "you company information is modified"(without details). for doing that, we need to define the same translation for all the fields in "company" entity
+     *
      * @param Clients $client
      * @param array   $clientChanges
      * @param array   $companyChanges
@@ -372,49 +379,41 @@ class ClientDataHistoryManager
         foreach ($clientChanges as $field) {
             $translationKey  = 'lender-modification-email_client-field-' . $field;
             $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
-            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+            $this->addTranslation($translationKey, $translationText, $translations);
         }
 
         foreach ($companyChanges as $field) {
             $translationKey  = 'lender-modification-email_company-field-' . $field;
             $translationText = $this->translator->trans($translationKey, $translationParams);
-            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+            $this->addTranslation($translationKey, $translationText, $translations);
         }
 
         if (in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS])) {
             $translationKey  = 'lender-modification-email_address-type-' . $modifiedAddressType;
             $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
-            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+            $this->addTranslation($translationKey, $translationText, $translations);
         }
 
         if ($isBankAccountChanged) {
             $translationKey  = 'lender-modification-email_bank-account';
             $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
-            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+            $this->addTranslation($translationKey, $translationText, $translations);
         }
 
         return array_unique($translations);
     }
 
     /**
-     * @param Clients $client
-     * @param string  $translationKey
-     * @param string  $translationText
-     * @param array   $translations
+     * @param string $translationKey
+     * @param string $translationText
+     * @param array  $translations
      *
      * @return array
      */
-    private function addTranslation(Clients $client, string $translationKey, string $translationText, array $translations): array
+    private function addTranslation(string $translationKey, string $translationText, array &$translations): array
     {
         if ($translationKey !== $translationText) {
             $translations[] = $translationText;
-        } else {
-            $this->logger->error('Trying to add modified content translations into the email of "lender data modification". Translation with key "' . $translationKey . '" is not found, and will not be added', [
-                'id_client'       => $client->getIdClient(),
-                'translation_key' => $translationKey,
-                'class'           => __CLASS__,
-                'function'        => __FUNCTION__
-            ]);
         }
 
         return $translations;
