@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, Clients, Companies, Wallet, WalletType
+    AddressType, Attachment, Clients, Companies, WalletType
 };
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -247,12 +247,22 @@ class ClientDataHistoryManager
 
     /**
      * @param Clients      $client
-     * @param array        $modifiedData
+     * @param string[]     $clientChanges
+     * @param string[]     $companyChanges
      * @param Attachment[] $modifiedAttachments
+     * @param string       $modifiedAddressType
+     * @param bool         $isBankAccountChanged
      */
-    public function sendAccountModificationEmail(Clients $client, array $modifiedData = [], array $modifiedAttachments = []): void
+    public function sendLenderProfileModificationEmail(
+        Clients $client,
+        array $clientChanges,
+        array $companyChanges,
+        array $modifiedAttachments,
+        string $modifiedAddressType,
+        bool $isBankAccountChanged
+    ): void
     {
-        if (empty($modifiedData) && empty($modifiedAttachments)) {
+        if (empty($clientChanges) && empty($companyChanges) && empty($modifiedAttachments) && empty($modifiedAddressType) && false === $isBankAccountChanged) {
             return;
         }
 
@@ -262,29 +272,22 @@ class ClientDataHistoryManager
             $attachmentLabels[] = $attachment->getType()->getLabel();
         }
 
-        try {
-            /** @var Wallet $lenderWallet */
-            $lenderWallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
-                ->getWalletByType($client, WalletType::LENDER);
-            $wireTransferPattern = null !== $lenderWallet ? $lenderWallet->getWireTransferPattern() : '';
-        } catch (\Exception $exception) {
-            $wireTransferPattern = '';
-            $this->logger->error('Could not get client lender wallet - Exception: ' . $exception->getMessage(), [
-                'id_client' => $client->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
-            ]);
+        $wireTransferPattern = '';
+        $wallets = $client->getWallets();
+
+        foreach ($wallets as $wallet) {
+            if (WalletType::LENDER === $wallet->getIdType()->getLabel()) {
+                $wireTransferPattern =  $wallet->getWireTransferPattern();
+                break;
+            }
         }
 
-        $modifiedData     = $this->formatArrayToUnorderedList(array_intersect_key($this->getFormFieldsTranslationsForEmail(), $modifiedData));
+        $modifiedData     = $this->formatArrayToUnorderedList($this->getFormFieldsTranslationsForEmail($client, $clientChanges, $companyChanges, $modifiedAddressType, $isBankAccountChanged));
         $attachmentLabels = $this->formatArrayToUnorderedList($attachmentLabels);
 
         $keywords = [
             'firstName'               => $client->getPrenom(),
             'lenderPattern'           => $wireTransferPattern,
-            'modifiedDataTitle'       => null === $modifiedData ? null : $this->translator->trans('lender-modification-email_modified-data-title'),
             'modifiedData'            => $modifiedData,
             'modifiedAttachmentTitle' => null === $attachmentLabels ? null : $this->translator->trans('lender-modification-email_modified-attachment-title'),
             'modifiedAttachment'      => $attachmentLabels
@@ -305,7 +308,7 @@ class ClientDataHistoryManager
                 $keywords += [
                     'companyName' => null
                 ];
-                $reason = null === $company ? 'Client company not found' : 'Client company (id_company: ' . $company->getIdCompany() . ') name is empty';
+                $reason   = null === $company ? 'Client company not found' : 'Client company (id_company: ' . $company->getIdCompany() . ') name is empty';
                 $this->logger->error('Could not fill company name keyword for email "synthese-modification-donnees-personne-morale". ' . $reason, [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
@@ -340,19 +343,78 @@ class ClientDataHistoryManager
     }
 
     /**
+     * @param Clients $client
+     * @param array   $clientChanges
+     * @param array   $companyChanges
+     * @param string  $modifiedAddressType
+     * @param bool    $isBankAccountChanged
+     *
+     * @return string[]
+     */
+    public function getFormFieldsTranslationsForEmail(
+        Clients $client,
+        array $clientChanges,
+        array $companyChanges,
+        string $modifiedAddressType,
+        bool $isBankAccountChanged
+    ): array
+    {
+        $translationParams = [];
+        $translations      = [];
+
+        if (false === $client->isNaturalPerson()) {
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            if ($company) {
+                $translationParams = ['%companyName%' => $company->getName()];
+            }
+        }
+
+        foreach ($clientChanges as $field) {
+            $translationKey  = 'lender-modification-email_client-field-' . $field;
+            $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
+            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+        }
+
+        foreach ($companyChanges as $field) {
+            $translationKey  = 'lender-modification-email_company-field-' . $field;
+            $translationText = $this->translator->trans($translationKey, $translationParams);
+            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+        }
+
+        if (in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS])) {
+            $translationKey  = 'lender-modification-email_address-type-' . $modifiedAddressType;
+            $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
+            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+        }
+
+        if ($isBankAccountChanged) {
+            $translationKey  = 'lender-modification-email_bank-account';
+            $translationText = $this->translator->transChoice($translationKey, (int) $client->isNaturalPerson(), $translationParams);
+            $translations    = $this->addTranslation($client, $translationKey, $translationText, $translations);
+        }
+
+        return array_unique($translations);
+    }
+
+    /**
+     * @param Clients $client
+     * @param string  $translationKey
+     * @param string  $translationText
+     * @param array   $translations
+     *
      * @return array
      */
-    private function getFormFieldsTranslationsForEmail()
+    private function addTranslation(Clients $client, string $translationKey, string $translationText, array $translations): array
     {
-        $translations = [];
-        $formFields   = [
-            self::MAIN_ADDRESS_FORM_LABEL,
-            self::POSTAL_ADDRESS_FORM_LABEL,
-            self::BANK_ACCOUNT_FORM_LABEL
-        ];
-
-        foreach (array_merge($formFields, ClientAuditer::LOGGED_FIELDS) as $field) {
-            $translations[$field] = $this->translator->trans('lender-modification-email_field-' . $field);
+        if ($translationKey !== $translationText) {
+            $translations[] = $translationText;
+        } else {
+            $this->logger->error('Trying to add modified content translations into the email of "lender data modification". Translation with key "' . $translationKey . '" is not found, and will not be added', [
+                'id_client'       => $client->getIdClient(),
+                'translation_key' => $translationKey,
+                'class'           => __CLASS__,
+                'function'        => __FUNCTION__
+            ]);
         }
 
         return $translations;

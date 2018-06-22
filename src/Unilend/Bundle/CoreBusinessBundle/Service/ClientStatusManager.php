@@ -95,7 +95,7 @@ class ClientStatusManager
             return;
         }
 
-        $isSuspendByAttachments = $this->checkIfSuspendByAttachments($modifiedClient, $newAttachments);
+        $isSuspendByAttachments = $this->checkIfSuspendByAttachments($newAttachments);
         $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient, $unattachedClient);
         $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($modifiedCompany, $unattachedCompany) : null;
         $isSuspendByAddress     = $this->checkIfSuspendByClientAddress($modifiedClient, $isAddressModified);
@@ -218,14 +218,13 @@ class ClientStatusManager
     }
 
     /**
-     * @param Clients $client
      * @param array   $newAttachments
      *
      * @return bool|null
      *
      * true suspend the client, false passes on to next status, null does nothing
      */
-    private function checkIfSuspendByAttachments(Clients $client, array $newAttachments): ?bool
+    private function checkIfSuspendByAttachments(array $newAttachments): ?bool
     {
         $suspend         = null;
         $attachmentTypes = $this->getAttachmentTypes($newAttachments);
@@ -316,11 +315,11 @@ class ClientStatusManager
         } catch (\Exception $exception) {
             $companyChangeSet = [];
             $this->logger->error('Could not calculate modified company fields. Error: ' . $exception->getMessage(), [
-                'id_client' => $company->getIdClientOwner()->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'id_company' => $company->getIdCompany(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
             ]);
         }
 
@@ -401,7 +400,7 @@ class ClientStatusManager
                 && $method->invoke($unattachedObject) != $method->invoke($modifiedObject)
             ) {
                 if ($method->name !== 'getUpdated') {
-                    $differences[] = str_replace('get', '', $method->name);
+                    $differences[] = lcfirst(str_replace('get', '', $method->name));
                 }
             }
         }

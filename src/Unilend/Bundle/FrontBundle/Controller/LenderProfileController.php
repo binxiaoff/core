@@ -200,6 +200,7 @@ class LenderProfileController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $clientAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
         $client                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $unattachedClient        = clone $client;
         $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
         $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
@@ -219,7 +220,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($client, $form->get('bankAccount'), $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files, $bankAccount)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
@@ -641,7 +642,6 @@ class LenderProfileController extends Controller
         $client                = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
         $unattachedClient      = clone $client;
         $newAttachments        = [];
-        $modifiedData          = [];
         $isBankAccountModified = false;
 
         foreach ($request->files->all() as $fileName => $file) {
@@ -658,9 +658,6 @@ class LenderProfileController extends Controller
                         if (in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
                             $bankAccountManager = $this->get('unilend.service.bank_account_manager');
                             $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
-                            $modifiedData = [
-                                ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL => ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL
-                            ];
                             $isBankAccountModified = true;
                         } else {
                             $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
@@ -675,7 +672,7 @@ class LenderProfileController extends Controller
             ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, $isBankAccountModified, $newAttachments);
 
         if (empty($error) && $isFileUploaded) {
-            $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $modifiedData, $newAttachments);
+            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, '', $isBankAccountModified);
 
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
         } elseif (false === empty($error)) {
