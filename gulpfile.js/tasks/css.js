@@ -12,20 +12,28 @@ var compass      = require('gulp-compass')
 var sourcemaps   = require('gulp-sourcemaps');
 var concat       = require('gulp-concat');
 var gulpIf       = require('gulp-if');
+var rename       = require('gulp-rename');
 
 var paths = {
-  src: path.join(config.root.src, config.tasks.css.src, '/**/*.{' + config.tasks.css.extensions + '}'),
+  src: path.join(config.root.src, config.tasks.css.src, '/*.{' + config.tasks.css.extensions + '}'),
   dest: path.join(config.root.dest, config.tasks.css.dest)
 }
 
 var buildCount = 0
+var rootDir = path.join(__dirname, '../..')
 
 var cssTask = function () {
 
   var compassConfig = {
-    css: path.join(config.root.src, config.tasks.css.compass.css),
-    sass: path.join(config.root.src, config.tasks.css.compass.sass),
-    image: path.join(config.root.src, config.tasks.css.compass.image),
+    project: path.join(rootDir, config.root.src),
+    css: config.tasks.css.compass.css,
+    // sass: config.tasks.css.compass.sass,
+    image: config.tasks.css.compass.image,
+    // Add js/vendor and node_modules to importable paths
+    import_path: [
+      './js/vendor',
+      '../../../node_modules'
+    ],
     sourcemap: true
   }
 
@@ -44,11 +52,11 @@ var cssTask = function () {
   }
 
   return gulp.src(paths.src)
-    .pipe(compass(compassConfig))
     .on('error', handleErrors)
+    .pipe(compass(compassConfig))
     .pipe(gulpIf(!global.production, sourcemaps.init({loadMaps: true})))
     .pipe(autoprefixer(config.tasks.css.autoprefixer))
-    .pipe(concat('main.css'))
+    // .pipe(concat('main.css'))
     .pipe(cleanCss({
         shorthandCompacting: false,
         processImport: false
@@ -56,10 +64,11 @@ var cssTask = function () {
         if (!global.production) {
           var endTime = new Date()
           var totalTime = ((endTime.getTime() - startTime.getTime()) / 1000)
-          gutil.log('Finished compiling CSS (' + buildVer + ' -> ' + totalTime.toFixed(2) + 's)')
+          gutil.log('Finished compiling CSS: ' + path.basename(details.path) + ' (' + buildVer + ' -> ' + totalTime.toFixed(2) + 's)')
         }
       }))
     .pipe(gulpIf(!global.production, sourcemaps.write('./')))
+    .pipe(rename({dirname: ''}))
     .pipe(gulp.dest(paths.dest))
     .pipe(browserSync.stream())
 }
