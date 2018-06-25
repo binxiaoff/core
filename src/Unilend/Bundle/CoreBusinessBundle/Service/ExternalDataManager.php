@@ -673,13 +673,17 @@ class ExternalDataManager
     }
 
     /**
-     * @param string $siren
+     * @param string|null $siren
      *
      * @return iterable
      * @throws \Exception
      */
-    public function getActiveExecutives(string $siren): iterable
+    public function getActiveExecutives(?string $siren): iterable
     {
+        if (empty($siren)) {
+            return [];
+        }
+
         $this->refreshExecutiveChanges($siren);
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:InfolegaleExecutivePersonalChange')->getActiveExecutives($siren);
