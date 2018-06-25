@@ -60,4 +60,8 @@ class CacheKeys
      */
     const EULER_HERMES_MONITORING_API_KEY = 'euler_hermes_monitoring_api_key';
 
+    /**
+     * const for Altares Identity Address Log
+     */
+    const ALTARES_IDENTITY_ADDRESS_LOG = 'altares_identity_address_log';
 }

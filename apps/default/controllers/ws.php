@@ -109,13 +109,13 @@ class wsController extends Controller
 
         switch ($this->aData['type']) {
             case 1:
-                $greenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+                $greenPointData = greenPointStatus::getGreenPointData($this->aData, AttachmentType::CNI_PASSPORTE_DIRIGEANT);
                 break;
             case 2:
-                $greenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::RIB);
+                $greenPointData = greenPointStatus::getGreenPointData($this->aData, AttachmentType::RIB);
                 break;
             case 3:
-                $greenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::JUSTIFICATIF_DOMICILE);
+                $greenPointData = greenPointStatus::getGreenPointData($this->aData, AttachmentType::JUSTIFICATIF_DOMICILE);
                 break;
             default:
                 $this->oLogger->error('Wrong type value (' . $this->aData['type'] . '). Expected to be one of [1, 2, 3]', ['class' => __CLASS__, 'function' => __FUNCTION__]);
