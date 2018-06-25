@@ -23,7 +23,9 @@ class ProjectAttachmentRepository extends EntityRepository
            ->where($qb->expr()->eq('a.idType', ':attachmentType'))
            ->andWhere($qb->expr()->eq('pa.idProject', ':project'))
            ->setParameter(':project', $project)
-           ->setParameter(':attachmentType', $attachmentType);
+           ->setParameter(':attachmentType', $attachmentType)
+            ->addOrderBy('a.added', 'DESC')
+            ->addOrderBy('a.id', 'DESC');
 
         return $qb->getQuery()->getResult();
     }
