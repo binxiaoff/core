@@ -120,7 +120,7 @@ var CacheForm = {
     })
 
     // @debug
-    console.log('CacheForm.getFormData', formData)
+    // console.log('CacheForm.getFormData', formData)
 
     return formData
   },
@@ -436,7 +436,7 @@ $.fn.uiCacheForm = function (op) {
         params.unshift(elem)
 
         // @debug
-        console.log('uiCacheForm', op, { cacheFormOp: cacheFormOp, params: params })
+        // console.log('uiCacheForm', op, { cacheFormOp: cacheFormOp, params: params })
 
         cacheFormOp.apply(CacheForm, params)
       })
@@ -447,7 +447,7 @@ $.fn.uiCacheForm = function (op) {
 /*
  * jQuery Events
  */
-var $doc = $(document)
+var $doc = $(document)/ Use the `pattern` attribute as RegExp if exists
 
 $doc
   // Apply further events only when the form is ready

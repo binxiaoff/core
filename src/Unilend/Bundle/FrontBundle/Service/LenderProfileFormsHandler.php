@@ -134,7 +134,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -269,7 +269,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -390,7 +390,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -592,7 +592,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading IBAN attachment type id: ' . AttachmentType::RIB . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
