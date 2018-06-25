@@ -303,17 +303,11 @@ class LenderProfileFormsHandler
         $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
 
         if ($this->isFormValid($form)) {
-            if (AddressType::TYPE_MAIN_ADDRESS === $type) {
-                $modifiedAddressType = AddressType::TYPE_MAIN_ADDRESS;
-            } else {
-                $modifiedAddressType = AddressType::TYPE_POSTAL_ADDRESS;
-            }
-
             $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
 
             $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $type);
 
             return true;
         }
@@ -690,7 +684,8 @@ class LenderProfileFormsHandler
         }
         $isAddressModified = in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS]);
 
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified, $newAttachments);
+        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified,
+            $newAttachments);
         $this->clientDataHistoryManager->sendLenderProfileModificationEmail($modifiedClient, $clientChanges, $companyChanges, $newAttachments, $modifiedAddressType, $isBankAccountModified);
     }
 
@@ -802,8 +797,8 @@ class LenderProfileFormsHandler
         $addressForm = $form->get('mainAddress');
         $bankForm    = $form->get('bankAccount');
 
-        $newAttachments = [];
-        $clientChanges  = [];
+        $newAttachments      = [];
+        $modifiedAddressType = null;
 
         // Identity
         $newAttachments = array_merge($this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag), $newAttachments);
@@ -812,13 +807,8 @@ class LenderProfileFormsHandler
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
         if ($isAddressModified) {
             $this->checkPersonAddressForm($addressForm, $clientAddressType);
-            $newAttachments = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $clientAddressType), $newAttachments);
-
-            if (AddressType::TYPE_MAIN_ADDRESS === $clientAddressType) {
-                $clientChanges[ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL;
-            } else {
-                $clientChanges[ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL;
-            }
+            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $clientAddressType), $newAttachments);
+            $modifiedAddressType = $clientAddressType;
         }
 
         //Bank Account
@@ -828,8 +818,7 @@ class LenderProfileFormsHandler
             $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $unattachedBankAccount);
 
             if ($bankAccountAttachment) {
-                $newAttachments[AttachmentType::RIB]                              = $bankAccountAttachment;
-                $clientChanges[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL] = ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL;
+                $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
             }
         }
 
@@ -848,9 +837,7 @@ class LenderProfileFormsHandler
                 }
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $isAddressModified, $isBankAccountModified, $newAttachments);
-            $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
         }
     }
 
