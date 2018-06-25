@@ -57,11 +57,11 @@ class ProjectEarlyRepaymentManager
      * @param ProjectRepaymentTask $projectRepaymentTask
      * @param int                  $idUser
      *
-     * @return ProjectRepaymentTaskLog
+     * @return ProjectRepaymentTaskLog|null
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function repay(ProjectRepaymentTask $projectRepaymentTask, $idUser = Users::USER_ID_CRON) : ProjectRepaymentTaskLog
+    public function repay(ProjectRepaymentTask $projectRepaymentTask, $idUser = Users::USER_ID_CRON) : ?ProjectRepaymentTaskLog
     {
         if (ProjectRepaymentTask::TYPE_EARLY !== $projectRepaymentTask->getType()) {
             $this->logger->warning(
