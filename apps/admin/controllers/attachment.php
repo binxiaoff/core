@@ -80,10 +80,11 @@ class attachmentController extends bootstrap
             /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->error('Unable to delete project attachment ' . $this->params[0] . ' - Message: ' . $exception->getMessage(), [
-                'class'    => __CLASS__,
-                'function' => __FUNCTION__,
-                'file'     => $exception->getFile(),
-                'line'     => $exception->getLine()
+                'id_project' => $projectAttachment->getProject()->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
             ]);
 
             $this->sendAjaxResponse(false, null, [$exception->getMessage()]);
@@ -131,7 +132,7 @@ class attachmentController extends bootstrap
         }
 
         $projectAttachmentType = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy(['idType' => $attachmentType]);
-        $projectAttachments    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachments($project, $attachmentType);
+        $projectAttachments    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($project, $attachmentType);
 
         if (count($projectAttachments) >= $projectAttachmentType->getMaxItems()) {
             $this->sendAjaxResponse(false, null, ['Vous ne pouvez pas charger de document supplémentaire de ce type. Veuillez d‘abord supprimer un des documents existants.']);
