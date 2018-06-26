@@ -1,8 +1,9 @@
 <?php
 
-use  Unilend\Bundle\CoreBusinessBundle\Entity\{
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Projects, ProjectsStatus
 };
+
 ?>
 <script>
   var nbPages = <?= isset($this->nb_lignes) && $this->nb_lignes > 0 ? ceil($this->iCountProjects / $this->nb_lignes) : 0 ?>;
@@ -54,22 +55,34 @@ use  Unilend\Bundle\CoreBusinessBundle\Entity\{
       delay: 100
     });
 
+    jQuery.tablesorter.addParser({
+        id: 'frDate',
+        type: 'numeric',
+        is: function (s) {
+            return /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/.test(s)
+        },
+        format: function (s) {
+            s = s.replace(/(\d{2})[\/](\d{2})[\/](\d{4})/, '$3$2$1')
+            return jQuery.tablesorter.formatFloat(s)
+        }
+    })
     $('.tablesorter').tablesorter({
-      headers: {
-        5: {sorter: 'digit'},
-        <?php if ($this->isRiskUser && $this->hasRepaymentAccess) : ?>
-          12: {sorter: false},
-          13: {sorter: false}
-        <?php elseif ($this->hasRepaymentAccess) : ?>
-          11: {sorter: false},
-          12: {sorter: false}
-        <?php elseif ($this->isRiskUser) : ?>
-          11: {sorter: false}
-        <?php else : ?>
-          10: {sorter: false}
-        <?php endif; ?>
-      }
-    });
+        headers: {
+            3: {sorter: 'frDate'},
+            5: {sorter: 'digit'},
+            <?php if ($this->isRiskUser && $this->hasRepaymentAccess) : ?>
+            12: {sorter: false},
+            13: {sorter: false}
+            <?php elseif ($this->hasRepaymentAccess) : ?>
+            11: {sorter: false},
+            12: {sorter: false}
+            <?php elseif ($this->isRiskUser) : ?>
+            11: {sorter: false}
+            <?php else : ?>
+            10: {sorter: false}
+            <?php endif; ?>
+        }
+    05});
 
     $('#display-pager').html($('#page-active').val() + '/' + nbPages);
 
