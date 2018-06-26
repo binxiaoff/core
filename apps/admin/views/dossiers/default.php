@@ -71,15 +71,15 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             3: {sorter: 'frDate'},
             5: {sorter: 'digit'},
             <?php if ($this->isRiskUser && $this->hasRepaymentAccess) : ?>
-            12: {sorter: false},
-            13: {sorter: false}
+              12: {sorter: false},
+              13: {sorter: false}
             <?php elseif ($this->hasRepaymentAccess) : ?>
-            11: {sorter: false},
-            12: {sorter: false}
+              11: {sorter: false},
+              12: {sorter: false}
             <?php elseif ($this->isRiskUser) : ?>
-            11: {sorter: false}
+              11: {sorter: false}
             <?php else : ?>
-            10: {sorter: false}
+              10: {sorter: false}
             <?php endif; ?>
         }
     });
