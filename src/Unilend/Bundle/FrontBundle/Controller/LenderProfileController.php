@@ -201,6 +201,7 @@ class LenderProfileController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $clientAddressRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
         $client                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $unattachedClient        = clone $client;
         $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
         $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
@@ -220,7 +221,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($client, $form->get('bankAccount'), $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files, $bankAccount)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
@@ -700,7 +701,6 @@ class LenderProfileController extends Controller
         $isFileUploaded        = false;
         $isBankAccountModified = false;
         $isMainAddressModified = false;
-        $modifiedData          = [];
         $newAttachments        = [];
         $files                 = $request->request->get('files', []);
 
@@ -711,12 +711,12 @@ class LenderProfileController extends Controller
                     $isFileUploaded   = true;
 
                     if (AttachmentType::RIB === $document->getType()->getId()) {
-                        $this->handleCompletenessRib($request, $client, $document, $modifiedData);
+                        $this->handleCompletenessRib($request, $client, $document);
                         $isBankAccountModified = true;
                     }
 
                     if (AttachmentType::JUSTIFICATIF_DOMICILE === $document->getType()->getId()) {
-                        $this->handleCompletenessHousingCertificate($request, $client, $document, $modifiedData);
+                        $this->handleCompletenessHousingCertificate($request, $client, $document);
                         $isMainAddressModified = true;
                     }
                 } catch (\Exception $exception) {
@@ -740,7 +740,7 @@ class LenderProfileController extends Controller
             $this->get('unilend.service.client_status_manager')
                 ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, $isBankAccountModified, $newAttachments);
 
-            $this->get(ClientDataHistoryManager::class)->sendAccountModificationEmail($client, $modifiedData, $newAttachments);
+            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, '', $isBankAccountModified);
 
             /** currently this message is not displayed because of the redirection. RUN-3054 */
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
@@ -754,11 +754,9 @@ class LenderProfileController extends Controller
      * @param Clients    $client
      * @param Attachment $document
      *
-     * @param array      $modifiedData
-     *
      * @throws \Exception
      */
-    private function handleCompletenessRib(Request $request, Clients $client, Attachment $document, array &$modifiedData): void
+    private function handleCompletenessRib(Request $request, Clients $client, Attachment $document): void
     {
         $translator = $this->get('translator');
         $form       = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
@@ -777,24 +775,20 @@ class LenderProfileController extends Controller
 
         $bankAccountManager = $this->get('unilend.service.bank_account_manager');
         $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
-
-        $modifiedData[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL] = ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL;
     }
 
     /**
      * @param Request    $request
      * @param Clients    $client
      * @param Attachment $document
-     * @param array      $modifiedData
      *
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      * @throws \Exception
      */
-    private function handleCompletenessHousingCertificate(Request $request, Clients $client, Attachment $document, array &$modifiedData): void
+    private function handleCompletenessHousingCertificate(Request $request, Clients $client, Attachment $document): void
     {
         if (false === $client->isNaturalPerson()) {
-            $modifiedData[ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL;
             $this->get('logger')->error('Lender legal entity uploaded a housing certificate which is only used for natural person. ', [
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,

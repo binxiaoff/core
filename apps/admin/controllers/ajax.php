@@ -892,19 +892,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _session_project_completude()
-    {
-        $this->users->checkAccess(Zones::ZONE_LABEL_BORROWERS);
-        $this->autoFireView = false;
-
-        if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
-            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['list']) . '</ul>' . nl2br($_POST['content']);
-            echo 'ok';
-        } else {
-            echo 'nok';
-        }
-    }
-
     public function _check_force_pass()
     {
         $this->autoFireView = false;
