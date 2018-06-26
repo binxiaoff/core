@@ -698,6 +698,7 @@ class LenderProfileController extends Controller
         $client                = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
         $unattachedClient      = clone $client;
         $company               = null;
+        $unattachedCompany     = null;
         $isFileUploaded        = false;
         $isBankAccountModified = false;
         $isMainAddressModified = false;
@@ -734,11 +735,12 @@ class LenderProfileController extends Controller
 
         if ($isFileUploaded && empty($this->get('session')->getFlashBag()->peek('completenessError'))) {
             if (false === $client->isNaturalPerson()) {
-                $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                $unattachedCompany = clone $company;
             }
 
             $this->get('unilend.service.client_status_manager')
-                ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, $isBankAccountModified, $newAttachments);
+                ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, $company, $unattachedCompany, $isMainAddressModified, $isBankAccountModified, $newAttachments);
 
             $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, '', $isBankAccountModified);
 
