@@ -198,61 +198,6 @@ class AttachmentManager
     }
 
     /**
-     * @return AttachmentType[]
-     */
-    public function getAllTypesForProjects(): array
-    {
-        $types = [
-            AttachmentType::KBIS,
-            AttachmentType::RIB,
-            AttachmentType::CNI_PASSPORTE_DIRIGEANT,
-            AttachmentType::CNI_PASSPORTE_VERSO,
-            AttachmentType::DERNIERE_LIASSE_FISCAL,
-            AttachmentType::LIASSE_FISCAL_N_1,
-            AttachmentType::LIASSE_FISCAL_N_2,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N_1,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N_2,
-            AttachmentType::DEBTS_STATEMENT,
-            AttachmentType::ETAT_PRIVILEGES_NANTISSEMENTS,
-            AttachmentType::CGV,
-            AttachmentType::RAPPORT_CAC,
-            AttachmentType::STATUTS,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_3,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            AttachmentType::DERNIERE_LIASSE_FISCAL_HOLDING,
-            AttachmentType::KBIS_HOLDING,
-            AttachmentType::ETAT_ENDETTEMENT,
-            AttachmentType::PREVISIONNEL,
-            AttachmentType::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            AttachmentType::DERNIERS_COMPTES_CONSOLIDES,
-            AttachmentType::BALANCE_CLIENT,
-            AttachmentType::BALANCE_FOURNISSEUR,
-            AttachmentType::PHOTOS_ACTIVITE,
-            AttachmentType::PRESENTATION_PROJET,
-            AttachmentType::PRESENTATION_ENTRERPISE,
-            AttachmentType::AUTRE1,
-            AttachmentType::AUTRE2,
-            AttachmentType::AUTRE3,
-            AttachmentType::AUTRE4
-        ];
-
-        $sortedTypes = [];
-        /** @var AttachmentType $attachmentType */
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types) as $attachmentType) {
-            $index               = array_search($attachmentType->getId(), $types, true);
-            $sortedTypes[$index] = $attachmentType;
-        }
-        ksort($sortedTypes);
-
-        return $sortedTypes;
-    }
-
-    /**
      * @param bool $includeOthers
      *
      * @return AttachmentType[]

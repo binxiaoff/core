@@ -2,8 +2,8 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
-    ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
+    AddressType, AttachmentType, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification,
+    ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     ProjectManager, TermsOfSaleManager, WireTransferOutManager
@@ -267,7 +267,7 @@ class dossiersController extends bootstrap
                     $this->salesPersons[] = $currentSalesPerson;
                 }
             }
-           $this->projectComments      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $this->projectComments      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
@@ -779,37 +779,59 @@ class dossiersController extends bootstrap
                 }
             }
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            $attachmentTypes          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->getAttachmentTypes();
+            $mandatoryAttachmentTypes = array_map(function (PartnerProjectAttachment $type) {
+                return $type->getAttachmentType()->getId();
+            }, $this->projectEntity->getIdPartner()->getAttachmentTypes(true));
 
-            $this->aAttachments                  = $this->projectEntity->getAttachments();
-            $this->aAttachmentTypes              = $attachmentManager->getAllTypesForProjects();
+            $this->attachmentTypes                   = $attachmentTypes;
+            $this->mandatoryAttachmentTypes          = $mandatoryAttachmentTypes;
+            $this->projectAttachmentsByType          = [];
+            $this->projectAttachmentsCountByCategory = [];
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
+            foreach ($this->projectEntity->getAttachments() as $projectAttachment) {
+                $this->projectAttachmentsByType[$projectAttachment->getAttachment()->getType()->getId()][] = $projectAttachment;
+            }
+
+            foreach ($this->projectAttachmentsByType as $attachmentTypeId => $attachmentsByType) {
+                if (false === isset($attachmentTypes[$attachmentTypeId])) {
+                    continue;
+                }
+
+                $categoryId = $attachmentTypes[$attachmentTypeId]->getIdCategory()->getId();
+
+                if (false === isset($this->projectAttachmentsCountByCategory[$categoryId])) {
+                    $this->projectAttachmentsCountByCategory[$categoryId] = 0;
+                }
+
+                ++$this->projectAttachmentsCountByCategory[$categoryId];
+            }
+
             $this->isFundsCommissionRateEditable = $this->isFundsCommissionRateEditable();
             $this->lastBalanceSheet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
-                'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
+                'idType'   => AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
-
-            $this->aMandatoryAttachmentTypes = [];
-            $partnerAttachments              = $this->projectEntity->getIdPartner()->getAttachmentTypes(true);
-            foreach ($partnerAttachments as $partnerAttachment) {
-                $this->aMandatoryAttachmentTypes[] = $partnerAttachment->getAttachmentType();
-            }
 
             if ($this->isTakeover()) {
                 $this->loadTargetCompany();
             }
+
             $this->loadEarlyRepaymentInformation(false);
             $this->treeRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Tree');
             $this->legalDocuments = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:AcceptationsLegalDocs')->findBy(['idClient' => $this->clients->id_client]);
 
             $this->companyManager      = $this->get('unilend.service.company_manager');
             $this->projectStatusHeader = '';
+
             if (null !== $this->projectEntity->getCloseOutNettingDate()) {
                 $this->projectStatusHeader = 'Terme déchu le ' . $this->projectEntity->getCloseOutNettingDate()->format('d/m/Y');
             }
-            if ($this->projectEntity->getIdCompany()->getIdStatus()
-                && \Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus::STATUS_IN_BONIS !== $this->projectEntity->getIdCompany()->getIdStatus()->getLabel()
+
+            if (
+                $this->projectEntity->getIdCompany()->getIdStatus()
+                && CompanyStatus::STATUS_IN_BONIS !== $this->projectEntity->getIdCompany()->getIdStatus()->getLabel()
             ) {
                 $this->projectStatusHeader .= $this->projectStatusHeader !== '' ? ' - ' : '';
                 $this->projectStatusHeader .= 'Société en ' . $this->companyManager->getCompanyStatusNameByLabel($this->projectEntity->getIdCompany()->getIdStatus()->getLabel());
@@ -1244,78 +1266,6 @@ class dossiersController extends bootstrap
 
             $this->sendAjaxResponse(false, null, ['Action inconnue']);
         }
-    }
-
-    public function _file()
-    {
-        $this->hideDecoration();
-
-        $this->tablResult = [];
-
-        if (isset($_POST['send_etape5'], $this->params[0])) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-            $attachmentManager = $this->get('unilend.service.attachment_manager');
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager            = $this->get('doctrine.orm.entity_manager');
-            $attachmentTypeRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType');
-            $project                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($this->params[0]);
-
-            $serialize = serialize(['id_project' => $this->params[0], 'files' => $_FILES]);
-            $this->users_history->histo(UsersHistory::FORM_ID_PROJECT_UPLOAD, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
-
-            foreach ($this->request->files->all() as $attachmentTypeId => $uploadedFile) {
-                if ($uploadedFile) {
-                    $attachment        = null;
-                    $projectAttachment = null;
-                    $attachmentType    = $attachmentTypeRepository->find($attachmentTypeId);
-
-                    $this->tablResult['fichier_' . $attachmentTypeId] = 'ko';
-
-                    if ($attachmentType) {
-                        try {
-                            $attachment = $attachmentManager->upload($project->getIdCompany()->getIdClientOwner(), $attachmentType, $uploadedFile, false);
-                            $attachmentManager->attachToProject($attachment, $project);
-
-                            $this->tablResult['fichier_' . $attachmentTypeId] = 'ok';
-                        } catch (\Doctrine\ORM\OptimisticLockException $exception) {
-                            /** @var LoggerInterface $logger */
-                            $logger = $this->get('logger');
-                            $logger->error('Unable to upload file of type "' . $attachmentType->getLabel() . '" for project ID ' . $project->getIdProject() . ' - Message: ' . $exception->getMessage(), [
-                                'id_project' => $project->getIdProject(),
-                                'class'      => __CLASS__,
-                                'function'   => __FUNCTION__,
-                                'file'       => $exception->getFile(),
-                                'line'       => $exception->getLine(),
-                            ]);
-                        }
-                    }
-                }
-            }
-
-            $this->result = json_encode($this->tablResult);
-        }
-    }
-
-    public function _remove_file()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        $result = [];
-        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
-        if (isset($_POST['attachment_id'])) {
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment $projectAttachment */
-            $projectAttachment = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->find($_POST['attachment_id']);
-            if ($projectAttachment) {
-                $entityManager->remove($projectAttachment);
-                $entityManager->flush($projectAttachment);
-            }
-            $result[$_POST['attachment_id']] = 'ok';
-        }
-
-        echo json_encode($result);
     }
 
     public function _add()
