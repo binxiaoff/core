@@ -82,7 +82,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             10: {sorter: false}
             <?php endif; ?>
         }
-    05});
+    });
 
     $('#display-pager').html($('#page-active').val() + '/' + nbPages);
 
