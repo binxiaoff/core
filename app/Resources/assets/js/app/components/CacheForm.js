@@ -447,7 +447,7 @@ $.fn.uiCacheForm = function (op) {
 /*
  * jQuery Events
  */
-var $doc = $(document)/ Use the `pattern` attribute as RegExp if exists
+var $doc = $(document)
 
 $doc
   // Apply further events only when the form is ready
