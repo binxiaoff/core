@@ -5,7 +5,7 @@ use Doctrine\ORM\{
 };
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    UsersHistory, Zones
+    Attachment, UsersHistory, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager;
 
@@ -24,16 +24,17 @@ class attachmentController extends bootstrap
 
     public function _download()
     {
-        $attachmentId = $this->params[1];
-        $path         = $this->params[3];
-
-        if (is_numeric($attachmentId)) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Attachment $attachment */
+        if (isset($this->params[1], $this->params[3]) && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)) {
+            $attachmentId = $this->params[1];
+            $path         = filter_var($this->params[3], FILTER_SANITIZE_STRING);
+            /** @var Attachment $attachment */
             $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
-            if ($attachment && urldecode($path) == $attachment->getPath()) {
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
+
+            if ($attachment && urldecode($path) === $attachment->getPath()) {
+                /** @var AttachmentManager $attachmentManager */
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
-                $attachmentPath = $attachmentManager->getFullPath($attachment);
+                $attachmentPath    = $attachmentManager->getFullPath($attachment);
+
                 if (file_exists($attachmentPath)) {
                     header('Content-Description: File Transfer');
                     header('Content-Type: application/octet-stream');

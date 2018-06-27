@@ -16,7 +16,9 @@
                     <tr>
                         <td class="type_col"><?= $attachment->getType()->getLabel() ?></td>
                         <td class="label_col">
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>"><?= $attachment->getPath() ?></a>
+                            <a class="colorbox-iframe" href="<?= $this->lurl ?>/viewer/project/<?= $this->projects->id_project ?>/<?= $attachment->getId() ?>">
+                                <?= $attachment->getOriginalName() ?>
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
