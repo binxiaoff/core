@@ -83,7 +83,16 @@ class DataWriter
             ->setValue($value);
 
         $this->entityManager->persist($assessment);
-        $this->entityManager->flush($assessment);
+
+        try {
+            $this->entityManager->flush($assessment);
+        } catch (\PDOException $exception) {
+            if ('23000' == $exception->getCode()) {
+                $this->entityManager->flush($assessment);
+            } else {
+                throw $exception;
+            }
+        }
 
         return $assessment;
     }

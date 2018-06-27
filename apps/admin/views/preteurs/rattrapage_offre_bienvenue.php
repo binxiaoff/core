@@ -43,7 +43,7 @@
                     <?php endif; ?>
                 </form>
                 <?php if (empty($this->clientsWithoutWelcomeOffer)) : ?>
-                    <p style="margin-top: 20px">Il n'y a aucun utilisateur pour le moment.</p>
+                    <p style="margin-top: 20px"><?= empty($this->errorMessage) ? '' : $this->errorMessage ?></p>
                 <?php else : ?>
                     <div id="toggle-target">
                         <div style="height: 34px; overflow-y: scroll; overflow-x: hidden;">

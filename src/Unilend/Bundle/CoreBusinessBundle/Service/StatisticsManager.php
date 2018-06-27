@@ -4,10 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, OperationType, ProjectsStatus, UnderlyingContract,UnilendStats
+};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\librairies\CacheKeys;
@@ -571,16 +570,16 @@ class StatisticsManager
         /** @var \echeanciers $paymentSchedule */
         $paymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP, self::ACPR_INCIDENCE_RATE_LATE_MONTH);
-        $owedCapitalProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
-        $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_IFP);
+        $problematicProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(UnderlyingContract::CONTRACT_IFP, self::ACPR_INCIDENCE_RATE_LATE_MONTH);
+        $owedCapitalProjectsIfp       = $paymentSchedule->getProblematicOwedCapitalByProjects(UnderlyingContract::CONTRACT_IFP);
+        $allProjectsIfp               = $paymentSchedule->getOwedCapitalByProjects(UnderlyingContract::CONTRACT_IFP);
         $incidenceRate['amountIFP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsIfp, 'amount')), array_sum(array_column($allProjectsIfp, 'amount')), 4), 100, 2);
         $incidenceRate['projectsIFP'] = bcmul(bcdiv(count($problematicProjectsIfp), count($allProjectsIfp), 4), 100, 2);
         $incidenceRate['ratioIFP']    = bcmul(bcdiv(count($owedCapitalProjectsIfp), count($allProjectsIfp), 4), 100, 2);
 
-        $problematicProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON, self::ACPR_INCIDENCE_RATE_LATE_MONTH);
-        $owedCapitalProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON);
-        $allProjectsCip               = $paymentSchedule->getOwedCapitalByProjects(\underlying_contract::CONTRACT_MINIBON);
+        $problematicProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(UnderlyingContract::CONTRACT_MINIBON, self::ACPR_INCIDENCE_RATE_LATE_MONTH);
+        $owedCapitalProjectsCip       = $paymentSchedule->getProblematicOwedCapitalByProjects(UnderlyingContract::CONTRACT_MINIBON);
+        $allProjectsCip               = $paymentSchedule->getOwedCapitalByProjects(UnderlyingContract::CONTRACT_MINIBON);
         $incidenceRate['amountCIP']   = bcmul(bcdiv(array_sum(array_column($problematicProjectsCip, 'amount')), array_sum(array_column($allProjectsCip, 'amount')), 4), 100, 2);
         $incidenceRate['projectsCIP'] = bcmul(bcdiv(count($problematicProjectsCip), count($allProjectsCip), 4), 100, 2);
         $incidenceRate['ratioCIP']    = bcmul(bcdiv(count($owedCapitalProjectsCip), count($allProjectsCip), 4), 100, 2);

@@ -3,16 +3,13 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Input\{
+    InputArgument, InputInterface, InputOption
+};
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\DetailedDailyStateBalanceHistory;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Settings;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    DetailedDailyStateBalanceHistory, OperationSubType, OperationType, Settings, Virements, WalletType
+};
 
 class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 {
@@ -68,12 +65,13 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
     const PAYMENT_ASSIGNMENT_COLUMN           = 'AM';
     const FISCAL_DIFFERENCE_COLUMN            = 'AN';
     const DEBT_COLLECTOR_COMMISSION_COLUMN    = 'AO';
-    const BORROWER_CHARGE_REPAYMENT_COLUMN    = 'AP';
-    const PROMOTION_OFFER_DISTRIBUTION_COLUMN = 'AQ';
+    const COLLECTION_COMMISSION_UNILEND       = 'AP';
+    const BORROWER_CHARGE_REPAYMENT_COLUMN    = 'AQ';
+    const PROMOTION_OFFER_DISTRIBUTION_COLUMN = 'AR';
 
     /** Bank account movements */
-    const WIRE_TRANSFER_OUT_COLUMN = 'AR';
-    const DIRECT_DEBIT_COLUMN      = 'AS';
+    const WIRE_TRANSFER_OUT_COLUMN = 'AS';
+    const DIRECT_DEBIT_COLUMN      = 'AT';
 
     const DATE_COLUMN = 'A';
     const LAST_COLUMN = self::DIRECT_DEBIT_COLUMN;
@@ -417,6 +415,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
         $activeSheet->setCellValue(self::PAYMENT_ASSIGNMENT_COLUMN . $additionalInfoRow, 'Affectation Ech. Empr.');
         $activeSheet->setCellValue(self::FISCAL_DIFFERENCE_COLUMN . $additionalInfoRow, 'Ecart fiscal');
         $activeSheet->setCellValue(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $additionalInfoRow, 'Commission Recouvreur');
+        $activeSheet->setCellValue(self::COLLECTION_COMMISSION_UNILEND . $additionalInfoRow, 'Frais payés par Unilend');
         $activeSheet->setCellValue(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $additionalInfoRow, 'Frais remboursés à Unilend');
         $activeSheet->setCellValue(self::PROMOTION_OFFER_DISTRIBUTION_COLUMN . $additionalInfoRow, 'Offre promo');
 
@@ -799,9 +798,13 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $collectionCommissionLenderRegularization   = empty($line[OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_LENDER_REGULARIZATION];
             $collectionCommissionBorrower               = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER];
             $collectionCommissionBorrowerRegularization = empty($line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_BORROWER_REGULARIZATION];
-            $borrowerChargeRepayment                    = empty($line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT]) ? 0 : $line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT];
             $totalCollectionCommission                  = round(bcsub(bcadd(bcsub($collectionCommissionLender, $collectionCommissionLenderRegularization, 4), bcsub($collectionCommissionBorrower, $collectionCommissionBorrowerRegularization, 4), 4), $collectionCommissionProvision, 4), 2);
             $activeSheet->setCellValueExplicit(self::DEBT_COLLECTOR_COMMISSION_COLUMN . $row, $totalCollectionCommission, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $collectionCommissionUnilend = empty($line[OperationType::COLLECTION_COMMISSION_UNILEND]) ? 0 : $line[OperationType::COLLECTION_COMMISSION_UNILEND];
+            $activeSheet->setCellValueExplicit(self::COLLECTION_COMMISSION_UNILEND . $row, $collectionCommissionUnilend, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
+
+            $borrowerChargeRepayment = empty($line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT]) ? 0 : $line[OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT];
             $activeSheet->setCellValueExplicit(self::BORROWER_CHARGE_REPAYMENT_COLUMN . $row, $borrowerChargeRepayment, \PHPExcel_Cell_DataType::TYPE_NUMERIC);
 
             $promotionalOffers       = empty($line[OperationType::UNILEND_PROMOTIONAL_OPERATION]) ? 0 : $line[OperationType::UNILEND_PROMOTIONAL_OPERATION];

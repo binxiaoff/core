@@ -63,6 +63,12 @@
                 $sendPasswordModal.find('input[name=id]').val(id)
                 $sendPasswordModal.modal('show')
             })
+            $(document).on('show.bs.modal', '#modal-send-password', function() {
+                var $form = $(this)
+                $form.find('.messages').html('')
+                $form.find('.submit-button').removeClass('hide').addClass('show-inline')
+                $form.find('.acknowledge-button').removeClass('show-inline').addClass('hide')
+            })
             $(document).on('submit', '#modal-send-password form', function(e) {
                 e.preventDefault()
                 var $form = $(this)
@@ -217,9 +223,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-sm btn-default show-inline" type="button" data-dismiss="modal">Annuler</button>
-                    <button class="btn btn-sm btn-primary show-inline" type="submit">Valider</button>
-                    <button class="btn btn-sm btn-primary hide" type="button" data-dismiss="modal">OK</button>
+                    <button class="btn btn-sm btn-default show-inline submit-button" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary show-inline submit-button" type="submit">Valider</button>
+                    <button class="btn btn-sm btn-primary hide acknowledge-button" type="button" data-dismiss="modal">OK</button>
                 </div>
             </div>
         </form>

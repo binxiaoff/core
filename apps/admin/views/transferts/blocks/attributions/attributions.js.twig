@@ -47,10 +47,10 @@ $(function () {
 
             {% if false == readOnly %}
                 {% if walletType == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\WalletType::LENDER') %}
-            clientIdColum.html('<a href="{{ app.adminUrl }}/preteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+                    clientIdColum.html('<a href="{{ app.adminUrl }}/preteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
                 {% else %}
-            clientIdColum.html('<a href="{{ app.adminUrl }}/emprunteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
-            projectIdColum.html('<a href="{{ app.adminUrl }}/dossiers/edit/' + projectId + '" target="_blank">' + projectId + '</a>')
+                    clientIdColum.html('<a href="{{ app.adminUrl }}/emprunteurs/edit/' + clientId + '" target="_blank">' + clientId + '</a>')
+                    projectIdColum.html('<a href="{{ app.adminUrl }}/dossiers/edit/' + projectId + '" target="_blank">' + projectId + '</a>')
                 {% endif %}
             {% endif %}
 
@@ -75,8 +75,9 @@ $(function () {
             $row.attr('data-reception-id', receptionId)
             var $lastColumn = $row.find('td:last-child');
             $lastColumn.append(showReceptionBtn)
+
             {% if false == readOnly %}
-            $lastColumn.append('&nbsp;' + addCommentBtn)
+                $lastColumn.append('&nbsp;' + addCommentBtn)
             {% endif %}
         }
     })

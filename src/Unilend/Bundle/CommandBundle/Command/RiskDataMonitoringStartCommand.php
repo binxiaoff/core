@@ -23,9 +23,11 @@ class RiskDataMonitoringStartCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $riskDataMonitoringCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');
+
         try {
-            $this->activateMonitoringForNewSiren();
-            $this->activateMonitoringForProjectsBeingReactivated();
+            $riskDataMonitoringCycleManager->activateMonitoringForNewSiren();
+            $riskDataMonitoringCycleManager->reactivateMonitoring();
         } catch (\Exception $exception) {
             $this->getContainer()->get('logger')->error('Could not activate/reactivate monitoring. Message: ' . $exception->getMessage(), [
                 'file'     => $exception->getFile(),
@@ -33,34 +35,6 @@ class RiskDataMonitoringStartCommand extends ContainerAwareCommand
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__
             ]);
-        }
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function activateMonitoringForNewSiren(): void
-    {
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $riskDataMonitoringCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');
-        $sirenToBeActivated             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getNotYetMonitoredSirenWithProjects();
-
-        foreach ($sirenToBeActivated as $siren) {
-            $riskDataMonitoringCycleManager->activateMonitoringForSiren($siren['siren']);
-        }
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\DBALException
-     */
-    private function activateMonitoringForProjectsBeingReactivated(): void
-    {
-        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $riskDataMonitoringCycleManager = $this->getContainer()->get('unilend.service.risk_data_monitoring_cycle_manager');
-        $sirenToBeActivated             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getSirenWithActiveProjectsAndNoMonitoring();
-
-        foreach ($sirenToBeActivated as $siren) {
-            $riskDataMonitoringCycleManager->reactivateMonitoringForSiren($siren['siren']);
         }
     }
 }
