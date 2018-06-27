@@ -98,10 +98,8 @@ class LenderProfileFormsHandler
     {
         $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $form, $fileBag);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
-            $clientChanges = $this->logAndSaveClientChanges($client);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, false, $newAttachments);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+        if ($this->isFormValid($form)) {
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments);
 
             return true;
         }
@@ -136,7 +134,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -175,12 +173,8 @@ class LenderProfileFormsHandler
 
         $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $form, $fileBag);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
-            $clientChanges = $this->logAndSaveClientChanges($client);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, $company, $unattachedCompany, false, false, $newAttachments);
-
-            $this->entityManager->flush($company);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+        if ($this->isFormValid($form)) {
+            $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments);
 
             return true;
         }
@@ -275,7 +269,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -308,20 +302,12 @@ class LenderProfileFormsHandler
 
         $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
 
-        if ((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid())) {
-            if (AddressType::TYPE_MAIN_ADDRESS === $type) {
-                $clientChanges = [ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL => ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL];
-            } else {
-                $clientChanges = [ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL => ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL];
-            }
-
+        if ($this->isFormValid($form)) {
             $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
 
             $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-            $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, $addressModified, false, $newAttachments);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $type);
 
             return true;
         }
@@ -404,7 +390,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -475,23 +461,19 @@ class LenderProfileFormsHandler
     /**
      * @param Companies     $company
      * @param FormInterface $form
-     * @param string        $type
+     * @param string        $addressType
      *
      * @return bool
      * @throws \Exception
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function handleCompanyAddress(Companies $company, FormInterface $form, string $type): bool
+    public function handleCompanyAddress(Companies $company, FormInterface $form, string $addressType): bool
     {
-        $zip          = $form->get('zip')->getData();
-        $countryId    = $form->get('idCountry')->getData();
-        $modifiedData = [];
+        $zip       = $form->get('zip')->getData();
+        $countryId = $form->get('idCountry')->getData();
 
-        switch ($type) {
+        switch ($addressType) {
             case AddressType::TYPE_MAIN_ADDRESS:
-                $modifiedData = [
-                    ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL => ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL
-                ];
 
                 if (
                     false === empty($zip) && false === empty($countryId)
@@ -502,23 +484,18 @@ class LenderProfileFormsHandler
                 }
                 break;
             case AddressType::TYPE_POSTAL_ADDRESS:
-                $modifiedData = [
-                    ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL => ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL
-                ];
                 break;
             default:
-                $this->logger->error('Unknown address type requested. Type: ' . $type . ' is not supported in lender profile', [
+                $this->logger->error('Unknown address type requested. The type: "' . $addressType . '" is not supported in lender profile', [
                     'class'    => __CLASS__,
                     'function' => __FUNCTION__
                 ]);
-                break;
+                return false;
         }
-        $addressModification = false;
 
         if ($form->isValid()) {
             if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
                 $this->addressManager->companyPostalAddressSameAsMainAddress($company);
-                $addressModification = true;
             } elseif (
                 false === $form->has('samePostalAddress')
                 || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
@@ -529,13 +506,11 @@ class LenderProfileFormsHandler
                     $form->get('city')->getData(),
                     $form->get('idCountry')->getData(),
                     $company,
-                    $type
+                    $addressType
                 );
-                $addressModification = true;
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, $addressModification);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($company->getIdClientOwner(), $modifiedData);
+            $this->saveAndNotifyChanges($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, [], $addressType);
 
             return true;
         }
@@ -545,6 +520,7 @@ class LenderProfileFormsHandler
 
     /**
      * @param Clients          $client
+     * @param Clients          $unattachedClient
      * @param FormInterface    $form
      * @param FileBag          $fileBag
      * @param null|BankAccount $unattachedBankAccount
@@ -552,28 +528,24 @@ class LenderProfileFormsHandler
      * @return bool
      * @throws \Exception
      */
-    public function handleBankDetailsForm(Clients $client, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
+    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
     {
         $this->checkBankDetailsForm($form);
         $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $unattachedBankAccount);
 
-        if (((null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid()))) {
+        if ($this->isFormValid($form)) {
             $newAttachments      = [];
-            $clientChanges       = [];
             $bankAccountModified = false;
 
             if ($bankAccountDocument) {
-                $clientChanges = [ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL => ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL];
-                $iban          = $form->get('iban')->getData();
-                $bic           = $form->get('bic')->getData();
+                $iban = $form->get('iban')->getData();
+                $bic  = $form->get('bic')->getData();
                 $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $bankAccountDocument);
                 $bankAccountModified = true;
                 $newAttachments      = [$bankAccountDocument];
             }
 
-            $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $client, null, null, false, $bankAccountModified, $newAttachments);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, '', $bankAccountModified);
 
             return true;
         }
@@ -620,7 +592,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading IBAN attachment type id: ' . AttachmentType::RIB . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -647,9 +619,7 @@ class LenderProfileFormsHandler
         }
 
         if ($form->isValid()) {
-            $clientChanges = $this->logAndSaveClientChanges($client);
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
+            $this->saveAndNotifyChanges($client, $unattachedClient);
 
             return true;
         }
@@ -666,11 +636,57 @@ class LenderProfileFormsHandler
      */
     public function handlePhoneForm(Clients $client, Clients $unattachedClient): bool
     {
-        $clientChanges = $this->logAndSaveClientChanges($client);
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, $unattachedClient);
-        $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges);
+        $this->saveAndNotifyChanges($client, $unattachedClient);
 
         return true;
+    }
+
+    /**
+     * @param FormInterface $form
+     *
+     * @return bool
+     */
+    private function isFormValid(FormInterface $form): bool
+    {
+        return (null !== $form->getParent() && $form->getParent()->isValid()) || (null === $form->getParent() && $form->isValid());
+    }
+
+    /**
+     * @param Clients        $modifiedClient
+     * @param Clients        $unattachedClient
+     * @param null|Companies $modifiedCompany
+     * @param null|Companies $unattachedCompany
+     * @param array          $newAttachments
+     * @param string         $modifiedAddressType
+     * @param bool           $isBankAccountModified
+     *
+     * @throws OptimisticLockException
+     * @throws \Exception
+     */
+    private function saveAndNotifyChanges(
+        Clients $modifiedClient,
+        Clients $unattachedClient,
+        ?Companies $modifiedCompany = null,
+        ?Companies $unattachedCompany = null,
+        array $newAttachments = [],
+        string $modifiedAddressType = '',
+        bool $isBankAccountModified = false
+    ): void
+    {
+        if ($modifiedCompany) {
+            $this->entityManager->flush($modifiedCompany);
+        }
+        $clientChanges  = $this->clientStatusManager->getModifiedFields($modifiedClient, $unattachedClient);
+        $companyChanges = $this->clientStatusManager->getModifiedFields($modifiedCompany, $unattachedCompany);
+
+        if (0 < count($clientChanges)) {
+            $this->logAndSaveClientChanges($modifiedClient);
+        }
+        $isAddressModified = in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS]);
+
+        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified,
+            $newAttachments);
+        $this->clientDataHistoryManager->sendLenderProfileModificationEmail($modifiedClient, $clientChanges, $companyChanges, $newAttachments, $modifiedAddressType, $isBankAccountModified);
     }
 
     /**
@@ -678,15 +694,14 @@ class LenderProfileFormsHandler
      * Thus this method should only be called once form is fully validated, including attachments
      *
      * @param Clients $client
-     * @param array   $additionalChanges
      *
      * @return array
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function logAndSaveClientChanges(Clients $client, array $additionalChanges = []): array
+    private function logAndSaveClientChanges(Clients $client): array
     {
         $frontUser     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-        $clientChanges = array_merge($this->clientAuditer->logChanges($client, $frontUser), $additionalChanges);
+        $clientChanges = $this->clientAuditer->logChanges($client, $frontUser);
 
         if (false === empty($clientChanges['email'][0])) {
             $this->notifyEmailChangeToOldAddress($client, $clientChanges['email'][0]);
@@ -782,8 +797,8 @@ class LenderProfileFormsHandler
         $addressForm = $form->get('mainAddress');
         $bankForm    = $form->get('bankAccount');
 
-        $newAttachments = [];
-        $clientChanges  = [];
+        $newAttachments      = [];
+        $modifiedAddressType = null;
 
         // Identity
         $newAttachments = array_merge($this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag), $newAttachments);
@@ -792,13 +807,8 @@ class LenderProfileFormsHandler
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
         if ($isAddressModified) {
             $this->checkPersonAddressForm($addressForm, $clientAddressType);
-            $newAttachments = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $clientAddressType), $newAttachments);
-
-            if (AddressType::TYPE_MAIN_ADDRESS === $clientAddressType) {
-                $clientChanges[ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::MAIN_ADDRESS_FORM_LABEL;
-            } else {
-                $clientChanges[ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL] = ClientDataHistoryManager::POSTAL_ADDRESS_FORM_LABEL;
-            }
+            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $clientAddressType), $newAttachments);
+            $modifiedAddressType = $clientAddressType;
         }
 
         //Bank Account
@@ -808,8 +818,7 @@ class LenderProfileFormsHandler
             $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $unattachedBankAccount);
 
             if ($bankAccountAttachment) {
-                $newAttachments[AttachmentType::RIB]                              = $bankAccountAttachment;
-                $clientChanges[ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL] = ClientDataHistoryManager::BANK_ACCOUNT_FORM_LABEL;
+                $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
             }
         }
 
@@ -828,9 +837,7 @@ class LenderProfileFormsHandler
                 }
             }
 
-            $this->clientStatusManager->changeClientStatusTriggeredByClientAction($client, null, $isAddressModified, $isBankAccountModified, $newAttachments);
-            $clientChanges = $this->logAndSaveClientChanges($client, $clientChanges);
-            $this->clientDataHistoryManager->sendAccountModificationEmail($client, $clientChanges, $newAttachments);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
         }
     }
 

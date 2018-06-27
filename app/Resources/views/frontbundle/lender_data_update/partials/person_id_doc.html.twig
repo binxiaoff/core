@@ -1,20 +1,20 @@
-<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if idDocumentAttachment is not null %} in {% endif %}">
-    {% if idDocumentDetails is not null %}
+<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if identityDocumentDetails is not null %} in {% endif %}">
+    {% if identityDocumentDetails is not null %}
         <dl class="list-2col">
             <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
-            <dd>{{ idDocumentDetails.getIdentityDocumentNumber() }}</dd>
+            <dd>{{ identityDocumentDetails.getIdentityDocumentNumber() }}</dd>
             <dt>{% trans %}  lender-data-update_id-doc-expiration-date {% endtrans %}</dt>
-            <dd>{{ idDocumentDetails.getIdentityExpirationDate()|localizeddate('short', 'none') }}</dd>
+            <dd>{{ identityDocumentDetails.getIdentityExpirationDate()|localizeddate('short', 'none') }}</dd>
         </dl>
-        {% if idDocumentDetails.getIdentityExpirationDate() < date() %}
+        {% if identityDocumentDetails.getIdentityExpirationDate() < date() %}
             {% trans %} lender-data-update_id-doc-expired {% endtrans %}
         {% else %}
             {% trans %} lender-data-update_id-doc-validated {% endtrans %}
         {% endif %}
-    {% elseif idDocumentAttachment is not null %}
+    {% elseif identityDocumentDetails is not null %}
             <dl class="list-2col">
                 <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
-                <dd>{{ idDocumentAttachment.getAdded()|localizeddate('short', 'none') }}</dd>
+                <dd>{{ identityDocument.getAdded()|localizeddate('short', 'none') }}</dd>
             </dl>
         {% trans %} lender-data-update_id-doc-non-checked {% endtrans %}
     {% endif %}

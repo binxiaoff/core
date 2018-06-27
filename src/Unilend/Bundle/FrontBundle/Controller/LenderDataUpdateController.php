@@ -101,7 +101,13 @@ class LenderDataUpdateController extends Controller
                         return $this->redirectToRoute('lender_data_update_end');
                     }
                 } catch (\Exception $exception) {
-                    //nothing to do
+                    $this->get('logger')->error('An error occurred while updating the lender data. Error message: ' . $exception->getMessage(), [
+                        'id_client' => $client->getIdClient(),
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine()
+                    ]);
                 }
 
                 return $this->redirectToRoute('lender_data_update_details');
@@ -109,16 +115,16 @@ class LenderDataUpdateController extends Controller
         }
 
         $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
-        /** @var Attachment $idDocument */
-        $idDocument = $attachmentRepository->findOneBy([
+        /** @var Attachment $identityDocument */
+        $identityDocument = $attachmentRepository->findOneBy([
             'idClient' => $client,
             'idType'   => AttachmentType::CNI_PASSPORTE,
             'archived' => null
         ]);
 
         $greenPointAttachmentDetails = null;
-        if ($idDocument) {
-            if ($greenPointAttachment = $idDocument->getGreenpointAttachment()) {
+        if ($identityDocument) {
+            if ($greenPointAttachment = $identityDocument->getGreenpointAttachment()) {
                 if (GreenpointAttachment::STATUS_VALIDATION_VALID === $greenPointAttachment->getValidationStatus()) {
                     $greenPointAttachmentDetails = $greenPointAttachment->getGreenpointAttachmentDetail();
                 }
@@ -137,9 +143,9 @@ class LenderDataUpdateController extends Controller
         return $this->render('lender_data_update/details.html.twig', [
             'client'                  => $client,
             'company'                 => $company,
-            'idDocumentAttachment'    => $idDocument,
+            'identityDocument'        => $identityDocument,
             'kbis'                    => $kbis,
-            'idDocumentDetails'       => $greenPointAttachmentDetails,
+            'identityDocumentDetails' => $greenPointAttachmentDetails,
             'mainAddress'             => $lastModifiedMainAddress,
             'residenceAttachments'    => [
                 AttachmentType::JUSTIFICATIF_DOMICILE         => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_DOMICILE),

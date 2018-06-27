@@ -150,19 +150,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         cursor: pointer;
     }
 
-    .div-2-columns {
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex: 1;
-        -ms-flex: 1;
-        flex: 1;
-    }
-
-    .div-left-pos, .div-right-pos {
-        margin: 2px;
-        min-width: 50%;
-    }
-
     .btn-small {
         border-color: transparent;
         font-size: 11px;
@@ -214,13 +201,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 </style>
 
 <script>
-    function deleteWordingli(id) {
-        var id_delete = id;
-        var id_input = id.replace("delete", "input");
-        $("#" + id_delete).remove();
-        $("#" + id_input).remove();
-    }
-
     $(function () {
         $('.tooltip').tooltip();
 
@@ -391,38 +371,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     }
                 });
             }
-        });
-
-        $(".add_wording").click(function (e) {
-            e.preventDefault();
-            var id = $(this).attr("id");
-            var content = $(".content-" + id).html();
-            if ($("#input-" + id).length == 0) {
-                var champ = "<input class=\"input_li\" type=\"text\" value=\"" + content + "\" name=\"input-" + id + "\" id=\"input-" + id + "\">";
-                var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-' + id + '"><img src="' + add_surl + '/images/admin/delete.png" ></a>';
-                $('.content_li_wording').append(champ + clickdelete);
-            }
-        });
-
-        $("#completude_preview").click(function () {
-            var content = $("#content_email_completude").val();
-            var list = '';
-            $(".input_li").each(function () {
-                list = list + "<li>" + $(this).val() + "</li>";
-            });
-
-            $.post(
-                add_url + "/ajax/session_project_completude",
-                {
-                    id_project: "<?= $this->projects->id_project ?>",
-                    content: content,
-                    list: list
-                }
-            ).done(function (data) {
-                if (data != 'nok') {
-                    $("#send_completeness").get(0).click();
-                }
-            });
         });
 
         <?php if (ProjectsStatus::NOT_ELIGIBLE != $this->projects->status) : ?>
