@@ -144,6 +144,10 @@ require('./app/controllers/Partner')
     container: 'body'
   })
 
+  $('.select2').select2({
+    minimumResultsForSearch: 4
+  })
+
   /*
    * Tabs
    * @todo refactor into Tabs.js controller

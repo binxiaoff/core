@@ -4,15 +4,23 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
-use Unilend\core\Loader;
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
 
 class LenderAutoEvaluationController extends Controller
 {
     const VALUE_TOTAL_ESTATE_THRESHOLD    = 20000;
     const VALUE_MONTHLY_SAVINGS_THRESHOLD = 100;
+
+    const TYPE_VALUE_TOTAL_ESTATE    = 'value-total-estate';
+    const TYPE_VALUE_YEARLY_EARNINGS = 'value-yearly-earnings';
+    const TYPE_VALUE_YEARLY_COSTS    = 'value-yearly-costs';
+    const TYPE_VALUE_BLOCKING_PERIOD = 'value-blocking-period';
+
+    const VALUE_BLOCKING_LESS_ONE_YEAR    = '-12';
+    const VALUE_BLOCKING_LESS_THREE_YEARS = '-36';
+    const VALUE_BLOCKING_LESS_FIVE_YEARS  = '-60';
 
     /**
      * @Route("/auto-evaluation", name="lender_auto_evaluation")
@@ -22,6 +30,7 @@ class LenderAutoEvaluationController extends Controller
     public function indexAction(): Response
     {
         $this->get('session')->remove('answers');
+
         return $this->render('lender_auto_evaluation/survey.html.twig');
     }
 
@@ -38,56 +47,61 @@ class LenderAutoEvaluationController extends Controller
         if (empty($this->get('session')->get('answers')) && $step > 1) {
             return $this->redirectToRoute('lender_auto_evaluation_survey', ['step' => 1]);
         }
+
         $answers               = $this->get('session')->get('answers', []);
-        $entityManager         = $this->get('doctrine.orm.entity_manager');
-        $questionsRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderQuestionnaireQuestion');
-        $submittedQuestionType = filter_var($request->request->get('question'), \FILTER_SANITIZE_STRING);
-        $nextQuestionType      = \lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE;
+        $submittedQuestionType = filter_var($request->request->get('question'), FILTER_SANITIZE_STRING);
+        $nextTypeValue         = self::VALUE_TOTAL_ESTATE_THRESHOLD;
         $currentStep           = $step;
 
-        if ($estateAmount = $request->request->getInt('estate-answer')) {
-            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE => $estateAmount]);
-        }
-        if (\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE == $submittedQuestionType) {
-            if ($answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE] >= self::VALUE_TOTAL_ESTATE_THRESHOLD) {
-                $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD;
-                $currentStep      = 3;
-            } else {
-                $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS;
-                $currentStep      = 2;
-            }
+        if ($request->request->has('estate-answer')) {
+            $estateAmount = $request->request->getInt('estate-answer');
+            $answers      = array_merge($answers, [self::VALUE_TOTAL_ESTATE_THRESHOLD => $estateAmount]);
         }
 
-        if ($savingAmount = filter_var($request->request->getInt('savings-answer'), FILTER_VALIDATE_INT)) {
-            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS => $savingAmount]);
+        if (self::VALUE_TOTAL_ESTATE_THRESHOLD === $submittedQuestionType) {
+            $nextTypeValue = self::TYPE_VALUE_YEARLY_EARNINGS;
+            $currentStep   = 2;
         }
-        if (\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS == $submittedQuestionType) {
 
-            if ($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS] < self::VALUE_MONTHLY_SAVINGS_THRESHOLD) {
+        if ($yearlyEarnings = $request->request->getInt('yearly-earnings-answer')) {
+            $answers = array_merge($answers, [self::TYPE_VALUE_YEARLY_EARNINGS => $yearlyEarnings]);
+        }
+
+        if (self::TYPE_VALUE_YEARLY_EARNINGS === $submittedQuestionType) {
+            $nextTypeValue = self::TYPE_VALUE_YEARLY_COSTS;
+            $currentStep   = 3;
+        }
+
+        if ($yearlyCosts = $request->request->getInt('yearly-costs-answer')) {
+            $answers = array_merge($answers, [self::TYPE_VALUE_YEARLY_COSTS => $yearlyCosts]);
+        }
+
+        if (self::TYPE_VALUE_YEARLY_COSTS === $submittedQuestionType) {
+            $nextTypeValue = self::TYPE_VALUE_BLOCKING_PERIOD;
+            $currentStep   = 4;
+
+            if (
+                $answers[self::TYPE_VALUE_TOTAL_ESTATE] < self::VALUE_TOTAL_ESTATE_THRESHOLD
+                && round(bcdiv(bcsub($yearlyEarnings, $yearlyCosts, 4), 12, 4)) < self::VALUE_MONTHLY_SAVINGS_THRESHOLD
+            ) {
                 return $this->render('lender_auto_evaluation/survey.html.twig', [
                     'advices' => [$this->get('translator')->trans('lender-auto-evaluation_rejection-message')]
                 ]);
             }
-            $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD;
-            $currentStep      = 3;
         }
 
         if ($blockingPeriod = filter_var($request->request->get('blocking-period-answer'), FILTER_SANITIZE_STRING)) {
-            $answers = array_merge($answers, [\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD => $blockingPeriod]);
-        }
-        if (\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD == $submittedQuestionType) {
-            $nextQuestionType = \lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE;
-            $currentStep      = 4;
-        }
-
-        if (\lender_questionnaire_question::TYPE_VALUE_OTHER_FINANCIAL_PRODUCTS_USE == $submittedQuestionType) {
-            return $this->redirectToRoute('lender_auto_evaluation_result');
+            $answers = array_merge($answers, [self::TYPE_VALUE_BLOCKING_PERIOD => $blockingPeriod]);
         }
 
         $this->get('session')->set('answers', $answers);
 
+        if (self::TYPE_VALUE_BLOCKING_PERIOD === $submittedQuestionType) {
+            return $this->redirectToRoute('lender_auto_evaluation_result');
+        }
+
         return $this->render('lender_auto_evaluation/survey.html.twig', [
-            'question'    => $questionsRepository->findOneBy(['type' => $nextQuestionType]),
+            'question'    => $nextTypeValue,
             'currentStep' => $currentStep,
             'answers'     => $answers
         ]);
@@ -119,41 +133,44 @@ class LenderAutoEvaluationController extends Controller
      */
     private function getAdvices(array $answers)
     {
-        /** @var \ficelle $ficelle */
-        $ficelle    = Loader::loadLib('ficelle');
-        $translator = $this->get('translator');
+        $numberFormatter = $this->get('number_formatter');
+        $translator      = $this->get('translator');
 
-        $estate         = $answers[\lender_questionnaire_question::TYPE_VALUE_TOTAL_ESTATE];
-        $monthlySavings = isset($answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS]) ? $answers[\lender_questionnaire_question::TYPE_VALUE_MONTHLY_SAVINGS] : 0;
-        $blockingPeriod = $answers[\lender_questionnaire_question::TYPE_VALUE_BLOCKING_PERIOD];
-        $indicators     = $this->get('unilend.service.cip_manager')->getIndicatorsBasedOnAnswers($estate, $monthlySavings, $blockingPeriod);
+        $estate         = $answers[self::TYPE_VALUE_TOTAL_ESTATE];
+        $yearlyEarnings = $answers[self::TYPE_VALUE_YEARLY_EARNINGS];
+        $yearlyCosts    = $answers[self::TYPE_VALUE_YEARLY_COSTS];
+        $blockingPeriod = $answers[self::TYPE_VALUE_BLOCKING_PERIOD];
         $advices[]      = $this->get('translator')->trans('lender-auto-evaluation_results-default-advice');
 
-        if ($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT] >= 2000 ) {
-            if (floor($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT] / 200) <= 20) {
+        $availableMoney = bcadd($estate, $yearlyEarnings, 2);
+        $afterCosts     = bcsub($availableMoney, $yearlyCosts, 2);
+        $amountToInvest = round(bcmul($afterCosts, 0.1, 2));
+
+        if ($amountToInvest >= 2000 ) {
+            if (floor(bcdiv($amountToInvest, 200, 2)) <= 20) {
                 $advices[] = $translator->trans('lender-auto-evaluation_results-estate-advice', [
-                    '%maxAmountEstate%' => $ficelle->formatNumber($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT], 0),
-                    '%maxAmount100%'    => $ficelle->formatNumber(floor($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT] / 100), 0)
+                    '%maxAmountEstate%' => $numberFormatter->format($amountToInvest, 0),
+                    '%maxAmount100%'    => $numberFormatter->format(floor(bcdiv($amountToInvest, 100, 2)), 0)
                 ]);
             } else {
                 $advices[] = $translator->trans('lender-auto-evaluation_results-estate-advice-loan-variation', [
-                    '%maxAmountEstate%' => $ficelle->formatNumber($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT], 0),
-                    '%maxAmount100%'    => $ficelle->formatNumber(floor($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT] / 100), 0),
-                    '%maxAmount200%'    => $ficelle->formatNumber(floor($indicators[CIPManager::INDICATOR_TOTAL_AMOUNT] / 200), 0)
+                    '%maxAmountEstate%' => $numberFormatter->format($amountToInvest, 0),
+                    '%maxAmount100%'    => $numberFormatter->format(floor(bcdiv($amountToInvest, 100, 2)), 0),
+                    '%maxAmount200%'    => $numberFormatter->format(floor(bcdiv($amountToInvest, 200, 2)), 0)
                 ]);
             }
         } else {
             $advices[] = $this->get('translator')->trans('lender-auto-evaluation_results-monthly-investment-advice');
         }
 
-        switch ($indicators[CIPManager::INDICATOR_PROJECT_DURATION]) {
-            case CIPManager::INDICATOR_PROJECT_DURATION_1_YEAR:
+        switch ($blockingPeriod) {
+            case self::VALUE_BLOCKING_LESS_ONE_YEAR:
                 $advices[] = $translator->trans('lender-auto-evaluation_results-blocking-period-less-1-year-advice');
                 break;
-            case CIPManager::INDICATOR_PROJECT_DURATION_3_YEARS:
+            case self::VALUE_BLOCKING_LESS_THREE_YEARS:
                 $advices[] = $translator->trans('lender-auto-evaluation_results-blocking-period-less-3-years-advice');
                 break;
-            case CIPManager::INDICATOR_PROJECT_DURATION_5_YEARS:
+            case self::VALUE_BLOCKING_LESS_FIVE_YEARS:
                 $advices[] = $translator->trans('lender-auto-evaluation_results-blocking-period-less-5-years-advice');
                 break;
             default:
