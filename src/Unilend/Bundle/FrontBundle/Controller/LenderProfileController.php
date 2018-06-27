@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\OptimisticLockException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
 };
@@ -711,7 +710,7 @@ class LenderProfileController extends Controller
         $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
         $notificationSetting  = $notificationSettings->getNotifs($this->getUser()->getClientId());
 
-        if (empty($notificationSetting)) {
+        if (empty($notificationSetting) || ClientsGestionTypeNotif::NUMBER_NOTIFICATION_TYPES > count($notificationSetting)) {
             $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($this->getUser()->getClientId());
             $notificationSetting = $notificationSettings->getNotifs($this->getUser()->getClientId());
         }
@@ -882,10 +881,23 @@ class LenderProfileController extends Controller
                 'idNotif'  => $typeId
             ]);
 
+            if (null === $notificationSettings) {
+                $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($this->getUser()->getClientId());
+                $this->get('logger')->warning('Setting of frequency ' . $type . ' for type ' . $typeId . ' did not exist for client ' . $this->getUser()->getClientId(), [
+                    'id_client' => $this->getUser()->getClientId(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__
+                ]);
+                $notificationSettings = $notificationSettingsRepository->findOneBy([
+                    'idClient' => $this->getUser()->getClientId(),
+                    'idNotif'  => $typeId
+                ]);
+            }
+
             $notificationSettings->{'set' . ucfirst($type)}($active);
 
             $entityManager->flush($notificationSettings);
-        } catch (OptimisticLockException $exception) {
+        } catch (\Exception $exception) {
             $this->get('logger')->error('Could not update lender notifications. Error: ' . $exception->getMessage(), [
                 'id_client' => $this->getUser()->getClientId(),
                 'class'     => __CLASS__,

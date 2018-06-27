@@ -22,6 +22,8 @@ class ClientsGestionTypeNotif
     const TYPE_DEBIT                         = 8;
     const TYPE_PROJECT_PROBLEM               = 9;
     const TYPE_AUTOBID_ACCEPTED_REJECTED_BID = 13;
+
+    const NUMBER_NOTIFICATION_TYPES = 10;
     /**
      * @var string
      *
