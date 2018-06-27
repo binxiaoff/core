@@ -32,6 +32,12 @@ class CompanyIdentityDetail
     private $NAFCode;
 
     /**
+     * @JMS\SerializedName("naf5EntreLibelle")
+     * @JMS\Type("string")
+     */
+    private $NAFCodeLabel;
+
+    /**
      * @JMS\SerializedName("rue")
      * @JMS\Type("string")
      */
@@ -72,10 +78,16 @@ class CompanyIdentityDetail
     private $commercialCourt;
 
     /**
-    $ @JMS\SerializedName("etat")
+     * @JMS\SerializedName("etat")
      * @JMS\Type("integer")
      */
     private $companyStatus;
+
+    /**
+     * @JMS\SerializedName("etatLabel")
+     * @JMS\Type("string")
+     */
+    private $companyStatusLabel;
 
     /**
      * @JMS\SerializedName("procedureCollective")
@@ -88,6 +100,24 @@ class CompanyIdentityDetail
      * @JMS\Type("string")
      */
     private $legalFormCode;
+
+    /**
+     * @JMS\SerializedName("dateDernierBilan")
+     * @JMS\Type("DateTime<'Y-m-d'>")
+     */
+    private $lastPublishedBalanceDate;
+
+    /**
+     * @JMS\SerializedName("chiffreAffaire")
+     * @JMS\Type("double")
+     */
+    private $turnover;
+
+    /**
+     * @JMS\SerializedName("trEffectifEntre")
+     * @JMS\Type("string")
+     */
+    private $workforceSlice;
 
     /**
      * @return mixed
@@ -186,6 +216,14 @@ class CompanyIdentityDetail
     }
 
     /**
+     * @return mixed
+     */
+    public function getCompanyStatusLabel()
+    {
+        return $this->companyStatusLabel;
+    }
+
+    /**
      * return boolean
      */
     public function getCollectiveProcedure()
@@ -200,4 +238,37 @@ class CompanyIdentityDetail
     {
         return $this->legalFormCode;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getLastPublishedBalanceDate()
+    {
+        return $this->lastPublishedBalanceDate;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTurnover()
+    {
+        return $this->turnover;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNAFCodeLabel()
+    {
+        return $this->NAFCodeLabel;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWorkforceSlice()
+    {
+        return $this->workforceSlice;
+    }
+
 }

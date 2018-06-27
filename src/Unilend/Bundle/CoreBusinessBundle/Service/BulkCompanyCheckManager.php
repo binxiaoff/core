@@ -22,6 +22,11 @@ class BulkCompanyCheckManager
     const INPUT_FILE_ERROR_CREATION_PATH     = 'project_creation/input/errors/';
     const OUTPUT_FILE_CREATION_PATH          = 'project_creation/output/';
 
+    const INPUT_FILE_PENDING_DATA_RETRIEVAL_PATH   = 'company_data/input/pending/';
+    const INPUT_FILE_PROCESSED_DATA_RETRIEVAL_PATH = 'company_data/input/processed/';
+    const INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH     = 'company_data/input/errors/';
+    const OUTPUT_FILE_DATA_RETRIEVAL_PATH          = 'company_data/output/';
+
     /** @var string */
     private $baseDir;
     /** @var Filesystem */
@@ -113,6 +118,26 @@ class BulkCompanyCheckManager
         return $this->baseDir . self::OUTPUT_FILE_CREATION_PATH;
     }
 
+    public function getCompanyDataInputPendingDir()
+    {
+        return $this->baseDir . self::INPUT_FILE_PENDING_DATA_RETRIEVAL_PATH;
+    }
+
+    public function getCompanyDataInputProcessedDir()
+    {
+        return $this->baseDir . self::INPUT_FILE_PROCESSED_DATA_RETRIEVAL_PATH;
+    }
+
+    public function getCompanyDataInputErrorDir()
+    {
+        return $this->baseDir . self::INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH;
+    }
+
+    public function getCompanyDataOutputDir()
+    {
+        return $this->baseDir . self::OUTPUT_FILE_DATA_RETRIEVAL_PATH;
+    }
+
     /**
      * @param string       $path
      * @param UploadedFile $file
@@ -178,6 +203,23 @@ class BulkCompanyCheckManager
         $inputDir     = $this->getProjectCreationInputPendingDir();
         $processedDir = $this->getProjectCreationInputProcessedDir();
         $errorDir     = $this->getProjectCreationInputErrorDir();
+
+        return $this->getSirenList(
+            $inputDir,
+            $processedDir . $now->format('Y-m') . DIRECTORY_SEPARATOR,
+            $errorDir . $now->format('Y-m') . DIRECTORY_SEPARATOR
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getSirenListForCompanyDataRetrieval(): array
+    {
+        $now          = new \DateTime();
+        $inputDir     = $this->getCompanyDataInputPendingDir();
+        $processedDir = $this->getCompanyDataInputProcessedDir();
+        $errorDir     = $this->getCompanyDataInputErrorDir();
 
         return $this->getSirenList(
             $inputDir,

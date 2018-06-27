@@ -357,30 +357,69 @@ class emprunteursController extends bootstrap
         $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
 
         if ($userManager->isGrantedRisk($this->userEntity)) {
-            $success = '';
-            $error   = '';
-            /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
-            $uploadedFile = $this->request->files->get('siren_list');
+            $result              = $this->uploadSirenFile($bulkCompanyCheckManager->getEligibilityInputPendingDir());
+            $result['pageTitle'] = $this->get('translator')->trans('upload-siren-file-page_company-eligibility-checker');
 
-            if (false === empty($uploadedFile)) {
-                $uploadDir = $bulkCompanyCheckManager->getEligibilityInputPendingDir();
-                try {
-                    $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
-                    $success = 'Le fichier a été pris en compte. Une notification vous sera envoyé dès qu\'il sera traité';
-                } catch (\Exception $exception) {
-                    /** @var \Psr\Log\LoggerInterface $logger */
-                    $logger = $this->get('logger');
-                    $logger->error(
-                        'Could not upload the file into ' . $uploadDir . ' Error: ' . $exception->getMessage(),
-                        ['method', __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-                    );
-                    $error = 'Le fichier n\'a pas été pris en compte. Veuillez rééssayer ou contacter l\'équipe technique.';
-                }
-            }
-            $this->render(null, ['success' => $success, 'error' => $error]);
+            $this->render('emprunteurs/upload_siren_file.html.twig', $result);
         } else {
             header('Location: ' . $this->lurl);
             die;
         }
+    }
+
+    public function _donnees_externes()
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
+
+        if ($userManager->isGrantedRisk($this->userEntity)) {
+            $result              = $this->uploadSirenFile($bulkCompanyCheckManager->getCompanyDataInputPendingDir());
+            $result['pageTitle'] = $this->get('translator')->trans('upload-siren-file-page_company-external-data');
+
+
+            $this->render('emprunteurs/upload_siren_file.html.twig', $result);
+        } else {
+            header('Location: ' . $this->lurl);
+            die;
+        }
+    }
+
+    /**
+     * @param string $uploadDir
+     *
+     * @return string[]
+     */
+    private function uploadSirenFile(string $uploadDir): array
+    {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BulkCompanyCheckManager $bulkCompanyCheckManager */
+        $bulkCompanyCheckManager = $this->get('unilend.service.eligibility.bulk_company_check_manager');
+
+        $success = '';
+        $error   = '';
+        /** @var \Symfony\Component\HttpFoundation\File\UploadedFile $uploadedFile */
+        $uploadedFile = $this->request->files->get('siren_list');
+
+        if (false === empty($uploadedFile)) {
+            try {
+                $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
+                $success = 'Le fichier a été pris en compte. Une notification vous sera envoyé dès qu\'il sera traité';
+            } catch (\Exception $exception) {
+                /** @var \Psr\Log\LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error(
+                    'Could not upload the file into ' . $uploadDir . ' Error: ' . $exception->getMessage(), [
+                        'method',
+                        __METHOD__,
+                        'file' => $exception->getFile(),
+                        'line' => $exception->getLine()
+                    ]
+                );
+                $error = 'Le fichier n\'a pas été pris en compte. Veuillez rééssayer ou contacter l\'équipe technique.';
+            }
+        }
+
+        return ['success' => $success, 'error' => $error];
     }
 }

@@ -20,7 +20,7 @@
 
 {% block pageHeader %}
     <h1 class="page-heading push">
-        Testeur d'éligibilité
+        {{ pageTitle }}
     </h1>
 {% endblock %}
 
@@ -28,12 +28,16 @@
     <div class="content">
         <div class="block">
             <div class="block-content block-content-full">
-                <div class="from-group">
-                    <form class="validate" enctype="multipart/form-data" action="/emprunteurs/test_eligibilite" method="post">
-                        <label>Fichier Excel (SIREN)</label>
-                        <input class="form-control required" type="file" name="siren_list">
-                        <button type="submit" class="btn btn-primary push-10-t">Charger le fichier</button>
-                    </form>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="from-group">
+                            <form class="validate" enctype="multipart/form-data" method="post">
+                                <label>{{ 'upload-siren-file-page_file-input-label'|trans }}</label>
+                                <input class="form-control required" type="file" name="siren_list">
+                                <button type="submit" class="btn btn-primary push-10-t">{{ 'upload-siren-file-page_file-upload-button'|trans }}</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 {% if success is not empty %}
                     <div class="alert alert-success push-10-t">
