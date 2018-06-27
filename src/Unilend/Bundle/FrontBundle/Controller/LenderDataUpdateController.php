@@ -31,7 +31,7 @@ class LenderDataUpdateController extends Controller
         $client  = $this->getClient();
         $company = null;
 
-        if (false === $this->getClient()->isNaturalPerson()) {
+        if (false === $client->isNaturalPerson()) {
             $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
@@ -60,7 +60,10 @@ class LenderDataUpdateController extends Controller
         $unattachedCompany     = null;
         $bankAccount           = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
         $unattachedBankAccount = clone $bankAccount;
-        $formBuilder           = $this->createFormBuilder()
+        $identityDocumentType  = AttachmentType::CNI_PASSPORTE;
+        $formErrors            = [];
+
+        $formBuilder = $this->createFormBuilder()
             ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
             ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client]);
 
@@ -72,8 +75,9 @@ class LenderDataUpdateController extends Controller
                 ->add('client', PersonProfileType::class, ['data' => $client])
                 ->add('phone', PersonPhoneType::class, ['data' => $client]);
         } else {
-            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            $unattachedCompany = clone $company;
+            $identityDocumentType = AttachmentType::CNI_PASSPORTE_DIRIGEANT;
+            $company              = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $unattachedCompany    = clone $company;
 
             $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
             $addressForm             = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
@@ -95,7 +99,12 @@ class LenderDataUpdateController extends Controller
             if ($form->isSubmitted() && $form->isValid()) {
                 $formsHandler = $this->get(LenderProfileFormsHandler::class);
                 try {
-                    $formsHandler->handleAllPersonalData($client, $unattachedClient, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $unattachedBankAccount, $form, $request->files);
+                    if ($client->isNaturalPerson()) {
+                        $formsHandler->handleAllPersonalData($client, $unattachedClient, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $unattachedBankAccount, $form, $request->files);
+                    } else {
+                        $formsHandler->handleAllLegalEntityData($client, $unattachedClient, $company, $unattachedCompany, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS,
+                            $unattachedBankAccount, $form, $request->files);
+                    }
 
                     if ($form->isValid()) {
                         return $this->redirectToRoute('lender_data_update_end');
@@ -109,16 +118,16 @@ class LenderDataUpdateController extends Controller
                         'line'      => $exception->getLine()
                     ]);
                 }
-
-                return $this->redirectToRoute('lender_data_update_details');
             }
+
+            $formErrors = $form->getErrors(true);
         }
 
         $attachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment');
         /** @var Attachment $identityDocument */
         $identityDocument = $attachmentRepository->findOneBy([
             'idClient' => $client,
-            'idType'   => AttachmentType::CNI_PASSPORTE,
+            'idType'   => $identityDocumentType,
             'archived' => null
         ]);
 
@@ -155,7 +164,8 @@ class LenderDataUpdateController extends Controller
             ],
             'bankAccount'             => $bankAccount,
             'fundsOrigins'            => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
-            'form'                    => $form->createView()
+            'form'                    => $form->createView(),
+            'formErrors'              => $formErrors
         ]);
     }
 
@@ -181,8 +191,17 @@ class LenderDataUpdateController extends Controller
                 'line'      => $exception->getLine()
             ]);
         }
+        $client  = $this->getClient();
+        $company = null;
+
+        if (false === $client->isNaturalPerson()) {
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        }
+
         return $this->render('lender_data_update/end.html.twig', [
-            'hasValidCipEvaluation' => $hasValidEvaluation
+            'hasValidCipEvaluation' => $hasValidEvaluation,
+            'client'                => $client,
+            'company'               => $company,
         ]);
     }
 

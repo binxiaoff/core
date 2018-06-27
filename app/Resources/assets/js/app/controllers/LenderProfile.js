@@ -71,7 +71,13 @@ $doc.on('ready', function () {
       }
     })
 
-    if (legalEntityStatus === 3) {
+    if (parseInt(legalEntityStatus) === 1) {
+      $('.legal-entity-status-not-1').collapse('hide')
+    } else {
+      $('.legal-entity-status-not-1').collapse('show')
+    }
+
+    if (parseInt(legalEntityStatus) === 3) {
       $('.legal-entity-status-3').collapse('show')
     } else {
       $('.legal-entity-status-3').collapse('hide')

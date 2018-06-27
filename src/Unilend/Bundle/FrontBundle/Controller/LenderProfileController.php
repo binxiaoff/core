@@ -111,7 +111,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 }
 
                 if ($isValid) {
@@ -124,7 +124,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 }
 
                 if ($isValid) {

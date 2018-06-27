@@ -6,7 +6,7 @@
         <dd id="data-update-bank-account-bic-output">{{ bankAccount.getBic() }}</dd>
         {% if bankAccount.getAttachment() is not null %}
             {% set ribDate = bankAccount.getAttachment().getUpdated()|default(bankAccount.getAttachment().getAdded())|localizeddate('short', 'none') %}
-            {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
+            {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
             <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
             <dd><span class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip"></span></dd>
         {% endif %}
