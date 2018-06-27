@@ -11,8 +11,12 @@
             <dd><span class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip"></span></dd>
         {% endif %}
     </dl>
+    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+        {% trans %} lender-data-update_bank-account-description {% endtrans %}
+    {% else %}
+        {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-bank-account-description {% endtrans %}
+    {% endif %}
 
-    {% trans %} lender-data-update_bank-account-description {% endtrans %}
 
     <div class="btn-controls">
         <button data-target="#data-update-bank-account-edit" role="button" data-toggle="collapse" data-parent="#data-update-bank-account-section" class="btn-default"
@@ -87,6 +91,8 @@
             <div class="custom-input-file"
                  data-fileattach data-fileattach-inputname="iban-certificate"
                  data-fileattach-maxfiles="1"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="iban-certificate"]'
                  data-fileattach-emptyfilelabel="{{ 'lender-profile_fiscal-tab-iban-certificate'|trans|e('html_attr') }}">
             </div><!-- /.ui-fileattach -->
         </div>

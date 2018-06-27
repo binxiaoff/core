@@ -19,9 +19,9 @@ $doc.on('ready', function () {
     $(this).uiFormValidation('clear')
   })
 
-  // Clear the disabled property for the reset button in identity document upload section when the panel is hidden
-  $doc.on('hidden.bs.collapse', '#data-update-id-doc-edit', function (event) {
-    $(this).find('button[type="reset"]').prop('disabled', false)
+  // Show the reset button in identity document upload or Kbis upload section when the panel is hidden
+  $doc.on('hidden.bs.collapse', '#data-update-id-doc-edit, #data-update-kbis-doc-edit', function (event) {
+    $(this).find('button[type="reset"]').removeClass('hidden')
   })
 
   // Update the progress bar length
@@ -69,10 +69,11 @@ $doc.on('ready', function () {
 
     $inputs.each(function (index, input) {
       var $input = $(input)
+      var text = '';
       elementId = $input.data('impacted-element-id')
 
       if ($input.getType() === 'radio') {
-        elementId = $input.parent('div').data('impacted-element-id')
+        elementId = $input.parent('div, li').data('impacted-element-id')
       }
 
       if (elementId) {
@@ -86,7 +87,7 @@ $doc.on('ready', function () {
             text = $input.find(':selected').text()
             break
 
-          case 'text':
+          default:
             text = $input.val()
         }
         $('#' + elementId).html(text)
@@ -102,13 +103,34 @@ $doc.on('ready', function () {
     $editArea.collapse('hide')
   })
 
-  // Show/hide the upload identity documents panel if the users have modified their personal info and disable the cancel button in the the upload panel
+  // Show the upload identity documents panel if the users have modified their personal info and hide the cancel button in the the upload panel
   $doc.on(Utility.clickEvent, '#lender-data-update-identity-save-btn', function (event) {
-    var $inputs = $('#data-update-info-edit :input')
+
+    var isModified = hasChanges($('#data-update-info-edit :input'))
+
+    if (isModified) {
+      $('#data-update-id-doc-view').collapse('hide')
+      $('#data-update-id-doc-edit').collapse('show')
+      $('#data-update-id-doc-edit button[type="reset"]').addClass('hidden')
+    }
+  })
+
+  // Show the upload Kbis documents panel if the users have modified their companies info and hide the cancel button in the the upload panel
+  $doc.on(Utility.clickEvent, '#lender-data-update-legal-entity-identity-save-btn, #lender-data-update-legal-entity-address-save-btn', function (event) {
+
+    var isModified = hasChanges($('#data-update-legal-entity-identity-edit :input, #data-update-main-address-edit :input'))
+
+    if (isModified) {
+      $('#data-update-kbis-doc-view').collapse('hide')
+      $('#data-update-kbis-doc-edit').collapse('show')
+      $('#data-update-kbis-doc-edit button[type="reset"]').addClass('hidden')
+    }
+  })
+
+  function hasChanges(inputs) {
     var isModified = false
 
-    $inputs.each(function (index, input) {
-      var submittedValue
+    inputs.each(function (index, input) {
       var $input = $(input)
       var originalValue = $input.data('original-value')
 
@@ -117,6 +139,7 @@ $doc.on('ready', function () {
       }
 
       if (originalValue) {
+        var submittedValue
         switch ($input.getType()) {
           case 'radio':
             submittedValue = $('input[name="' + $input.attr('name') + '"]:checked').val()
@@ -131,20 +154,14 @@ $doc.on('ready', function () {
             break
         }
 
-        if (originalValue !== submittedValue && 'form-data-update-info-nomUsage' !== $input.attr('id')) {
-          isModified = true
-
-          return false //break
+        if (originalValue != submittedValue) {
+          isModified = true || isModified;
         }
       }
     })
 
-    if (isModified) {
-      $('#data-update-id-doc-view').collapse('hide')
-      $('#data-update-id-doc-edit').collapse('show')
-      $('#data-update-id-doc-edit button[type="reset"]').prop('disabled', true)
-    }
-  })
+    return isModified
+  }
 
   // Save the initial form state
   $form.uiCacheForm('save', 'initialState')

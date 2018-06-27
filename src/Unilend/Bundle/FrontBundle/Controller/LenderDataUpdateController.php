@@ -6,7 +6,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Route, Security
 };
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\HttpFoundation\{
     Request, Response
 };
@@ -14,7 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
 };
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, ClientAddressType, OriginOfFundsType, PersonPhoneType, PersonProfileType
+    BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
@@ -29,8 +28,16 @@ class LenderDataUpdateController extends Controller
      */
     public function startAction(): Response
     {
+        $client  = $this->getClient();
+        $company = null;
+
+        if (false === $this->getClient()->isNaturalPerson()) {
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        }
+
         return $this->render('lender_data_update/start.html.twig', [
-            'client' => $this->getClient()
+            'client'  => $client,
+            'company' => $company
         ]);
     }
 
@@ -45,28 +52,42 @@ class LenderDataUpdateController extends Controller
     public function detailsAction(Request $request): Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
 
-        $client                  = $this->getClient();
-        $unattachedClient        = clone $client;
-        $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-        $bankAccount             = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $unattachedBankAccount   = clone $bankAccount;
-
-        $addressForm = $this->get('form.factory')->createNamedBuilder('mainAddress', ClientAddressType::class, [
-            'address'   => $lastModifiedMainAddress->getAddress(),
-            'zip'       => $lastModifiedMainAddress->getZip(),
-            'city'      => $lastModifiedMainAddress->getCity(),
-            'idCountry' => $lastModifiedMainAddress->getIdCountry()->getIdPays(),
-        ]);
-        $addressForm
-            ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
-            ->add('noUsPerson', CheckboxType::class, ['required' => false, 'data' => false === $client->getUsPerson()]);
-        $form = $this->createFormBuilder()
-            ->add('client', PersonProfileType::class, ['data' => $client])
-            ->add('phone', PersonPhoneType::class, ['data' => $client])
-            ->add($addressForm)
+        $client                = $this->getClient();
+        $unattachedClient      = clone $client;
+        $company               = null;
+        $unattachedCompany     = null;
+        $bankAccount           = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $unattachedBankAccount = clone $bankAccount;
+        $formBuilder           = $this->createFormBuilder()
             ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
-            ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client])
+            ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client]);
+
+        if ($client->isNaturalPerson()) {
+            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+            $addressForm             = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+            $addressForm->get('noUsPerson')->setData(false === $client->getUsPerson());
+            $formBuilder
+                ->add('client', PersonProfileType::class, ['data' => $client])
+                ->add('phone', PersonPhoneType::class, ['data' => $client]);
+        } else {
+            $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $unattachedCompany = clone $company;
+
+            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            $addressForm             = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+
+            $formBuilder
+                ->add('client', LegalEntityProfileType::class, ['data' => $client])
+                ->add('company', CompanyIdentityType::class, ['data' => $company]);
+
+            $formBuilder->get('company')
+                ->remove('siren');
+        }
+
+        $form = $formBuilder
+            ->add($addressForm)
             ->getForm();
 
         if ($request->isMethod(Request::METHOD_POST)) {
@@ -104,20 +125,31 @@ class LenderDataUpdateController extends Controller
             }
         }
 
+        $kbis = null;
+        if (false === $client->isNaturalPerson()) {
+            $kbis = $attachmentRepository->findOneBy([
+                'idClient' => $client,
+                'idType'   => AttachmentType::KBIS,
+                'archived' => null
+            ]);
+        }
+
         return $this->render('lender_data_update/details.html.twig', [
-            'client'               => $client,
-            'idDocumentAttachment' => $idDocument,
-            'idDocumentDetails'    => $greenPointAttachmentDetails,
-            'clientMainAddress'    => $lastModifiedMainAddress,
-            'residenceAttachments' => [
+            'client'                  => $client,
+            'company'                 => $company,
+            'idDocumentAttachment'    => $idDocument,
+            'kbis'                    => $kbis,
+            'idDocumentDetails'       => $greenPointAttachmentDetails,
+            'mainAddress'             => $lastModifiedMainAddress,
+            'residenceAttachments'    => [
                 AttachmentType::JUSTIFICATIF_DOMICILE         => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_DOMICILE),
                 AttachmentType::ATTESTATION_HEBERGEMENT_TIERS => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::ATTESTATION_HEBERGEMENT_TIERS),
                 AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT),
                 AttachmentType::JUSTIFICATIF_FISCAL           => $attachmentRepository->findOneClientAttachmentByType($client, AttachmentType::JUSTIFICATIF_FISCAL),
             ],
-            'bankAccount'          => $bankAccount,
-            'fundsOrigins'         => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
-            'form'                 => $form->createView()
+            'bankAccount'             => $bankAccount,
+            'fundsOrigins'            => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
+            'form'                    => $form->createView()
         ]);
     }
 

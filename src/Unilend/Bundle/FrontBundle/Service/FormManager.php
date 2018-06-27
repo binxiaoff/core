@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -153,45 +154,48 @@ class FormManager
     /**
      * @param CompanyAddress|null $address
      * @param string              $type
+     * @param array              $option
      *
-     * @return FormInterface
+     * @return FormBuilderInterface
      */
-    public function getCompanyAddressForm(?CompanyAddress $address, string $type): FormInterface
+    public function getCompanyAddressFormBuilder(?CompanyAddress $address, string $type, $option = []): FormBuilderInterface
     {
-        $form = $this->formFactory->createNamed($type, CompanyAddressType::class);
+        $formBuilder = $this->formFactory->createNamedBuilder($type, CompanyAddressType::class, null, $option);
 
         if (null !== $address) {
-            $form->get('address')->setData($address->getAddress());
-            $form->get('zip')->setData($address->getZip());
-            $form->get('city')->setData($address->getCity());
-            $form->get('idCountry')->setData($address->getIdCountry()->getIdPays());
+            $formBuilder->get('address')->setData($address->getAddress());
+            $formBuilder->get('zip')->setData($address->getZip());
+            $formBuilder->get('city')->setData($address->getCity());
+            $formBuilder->get('idCountry')->setData($address->getIdCountry()->getIdPays());
         }
-        return $form;
+
+        return $formBuilder;
     }
 
     /**
      * @param ClientAddress|null $address
      * @param string             $type
+     * @param array              $option
      *
-     * @return FormInterface
+     * @return FormBuilderInterface
      */
-    public function getClientAddressForm(?ClientAddress $address, string $type): FormInterface
+    public function getClientAddressFormBuilder(?ClientAddress $address, string $type, $option = []): FormBuilderInterface
     {
-        $form = $this->formFactory->createNamed($type, ClientAddressType::class);
+        $formBuilder = $this->formFactory->createNamedBuilder($type, ClientAddressType::class, null, $option);
 
         if (null !== $address) {
-            $form->get('address')->setData($address->getAddress());
-            $form->get('zip')->setData($address->getZip());
-            $form->get('city')->setData($address->getCity());
-            $form->get('idCountry')->setData($address->getIdCountry()->getIdPays());
+            $formBuilder->get('address')->setData($address->getAddress());
+            $formBuilder->get('zip')->setData($address->getZip());
+            $formBuilder->get('city')->setData($address->getCity());
+            $formBuilder->get('idCountry')->setData($address->getIdCountry()->getIdPays());
 
             if ($address->getIdClient()->isLender() && AddressType::TYPE_MAIN_ADDRESS === $type) {
-                $form
+                $formBuilder
                     ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
                     ->add('noUsPerson', CheckboxType::class, ['required' => false]);
             }
         }
 
-        return $form;
+        return $formBuilder;
     }
 }

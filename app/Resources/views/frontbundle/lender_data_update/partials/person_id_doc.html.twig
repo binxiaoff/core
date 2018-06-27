@@ -1,4 +1,4 @@
-<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse in">
+<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if idDocumentAttachment is not null %} in {% endif %}">
     {% if idDocumentDetails is not null %}
         <dl class="list-2col">
             <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
@@ -11,11 +11,11 @@
         {% else %}
             {% trans %} lender-data-update_id-doc-validated {% endtrans %}
         {% endif %}
-    {% else %}
-        <dl class="list-2col">
-            <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
-            <dd>{{ idDocumentAttachment.getAdded()|localizeddate('short', 'none') }}</dd>
-        </dl>
+    {% elseif idDocumentAttachment is not null %}
+            <dl class="list-2col">
+                <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
+                <dd>{{ idDocumentAttachment.getAdded()|localizeddate('short', 'none') }}</dd>
+            </dl>
         {% trans %} lender-data-update_id-doc-non-checked {% endtrans %}
     {% endif %}
     <div class="btn-controls">
@@ -31,7 +31,7 @@
     </div>
 </section>
 
-<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-id-doc-edit-notifications">
+<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse {% if idDocumentAttachment is null %} in {% endif %}" data-formvalidation data-formvalidation-notificationselem="#data-update-id-doc-edit-notifications">
     <div id="data-update-id-doc-edit-notifications"></div>
     <div class="row">
         <div id="form-profile-info-identity-files-field" class="form-field">
@@ -69,6 +69,6 @@
         <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-id-doc-section"
                 aria-controls="#data-update-id-doc-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#data-update-id-doc-section"
-                aria-controls="#data-update-id-doc-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+                aria-controls="#data-update-id-doc-view" aria-expanded="false" type="reset" {% if idDocumentAttachment is null %} disabled {% endif %}>{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
     </div>
-</section><!-- /.data-update-info-edit -->
+</section><!-- /.data-update-id-doc-edit -->

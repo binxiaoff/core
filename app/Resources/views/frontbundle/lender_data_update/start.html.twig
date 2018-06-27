@@ -13,10 +13,18 @@
             <div id="profile-info" role="tabpanel" class="dashboard-tab-pane tab-pane active">
                 <article id="panel-data-update-start" class="panel">
                     <div class="panel-content">
-                        {% trans with {'%firstName%': client.getPrenom()} %} lender-data-update_natural-person-start-page-instruction {% endtrans %}
+                        {% if client.isNaturalPerson %}
+                            {% trans with {'%firstName%': client.prenom} %} lender-data-update_natural-person-start-page-instruction {% endtrans %}
+                        {% else %}
+                            {% trans with {'%firstName%': client.prenom, '%company_name%': company.name()} %} lender-data-update_legal-entity-start-page-instruction {% endtrans %}
+                        {% endif %}
                         <br><br>
                         <a href="{{ path('lender_data_update_details') }}" class="btn-primary col-lg-8 push-lg-2 col-md-7 push-md-2 col-sm-6 push-sm-1 col-xs-4">
-                            {% trans %} natural-person-lender-data-update_start-button {% endtrans %}
+                            {% if client.isNaturalPerson %}
+                                {% trans %} lender-data-update_natural-person-start-button {% endtrans %}
+                            {% else %}
+                                {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-start-button {% endtrans %}
+                            {% endif %}
                         </a>
                     </div>
                 </article>
