@@ -3,10 +3,9 @@
 namespace Unilend\Bundle\FrontBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormFactory;
-use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Form\{
+    Extension\Core\Type\CheckboxType, FormBuilderInterface, FormFactory, FormInterface
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{

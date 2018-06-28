@@ -67,7 +67,7 @@
                 <p>{% trans %} lender-profile_information-tab-indentity-section-ID-document-notice {% endtrans %}</p>
             </div>
             {% if false == client.isNaturalPerson %}
-                <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient > 1 or true %} in {% endif %}">
+                <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %} in {% endif %}">
                     <div class="form-field file-domicile">
                         <div class="custom-input-file" id="form-profile-info-file-delegation-authority"
                              data-formvalidation-input

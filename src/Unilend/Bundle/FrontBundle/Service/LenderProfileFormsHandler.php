@@ -335,7 +335,7 @@ class LenderProfileFormsHandler
 
     /**
      * @param FormInterface                     $form
-     * @param null|ClientAddress|CompanyAddress $address
+     * @param ClientAddress|CompanyAddress|null $address
      *
      * @return bool
      */

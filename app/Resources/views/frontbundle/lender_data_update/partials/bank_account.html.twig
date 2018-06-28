@@ -11,7 +11,7 @@
             <dd><span class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip"></span></dd>
         {% endif %}
     </dl>
-    {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+    {% if client.isNaturalPerson %}
         {% trans %} lender-data-update_bank-account-description {% endtrans %}
     {% else %}
         {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-bank-account-description {% endtrans %}
