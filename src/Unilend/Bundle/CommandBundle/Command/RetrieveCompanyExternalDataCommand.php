@@ -38,7 +38,7 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
 
     protected function configure()
     {
-        $this->setName('cron_risk_data_monitoring:retrieve_company_external_data')
+        $this->setName('risk_data_monitoring:retrieve_company_external_data')
             ->setDescription('Takes an Excel file with a list of SIREN, and for each one retrieves external data from Selected WS Providers');
     }
 
