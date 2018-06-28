@@ -59,13 +59,17 @@ class LenderDataUpdateController extends Controller
         $company               = null;
         $unattachedCompany     = null;
         $bankAccount           = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $unattachedBankAccount = clone $bankAccount;
         $identityDocumentType  = AttachmentType::CNI_PASSPORTE;
         $formErrors            = [];
 
         $formBuilder = $this->createFormBuilder()
-            ->add('bankAccount', BankAccountType::class, ['data' => $bankAccount])
+            ->add('bankAccount', BankAccountType::class)
             ->add('fundsOrigin', OriginOfFundsType::class, ['data' => $client]);
+
+        if (null !== $bankAccount) {
+            $formBuilder->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
+            $formBuilder->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        }
 
         if ($client->isNaturalPerson()) {
             $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
@@ -100,10 +104,9 @@ class LenderDataUpdateController extends Controller
                 $formsHandler = $this->get(LenderProfileFormsHandler::class);
                 try {
                     if ($client->isNaturalPerson()) {
-                        $formsHandler->handleAllPersonalData($client, $unattachedClient, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $unattachedBankAccount, $form, $request->files);
+                        $formsHandler->handleAllPersonalData($client, $unattachedClient, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $form, $request->files);
                     } else {
-                        $formsHandler->handleAllLegalEntityData($client, $unattachedClient, $company, $unattachedCompany, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS,
-                            $unattachedBankAccount, $form, $request->files);
+                        $formsHandler->handleAllLegalEntityData($client, $unattachedClient, $company, $unattachedCompany, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS, $form, $request->files);
                     }
 
                     if ($form->isValid()) {
@@ -149,6 +152,12 @@ class LenderDataUpdateController extends Controller
             ]);
         }
 
+        $externalCounselListSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
+        $externalCounselList        = [];
+        if ($externalCounselListSetting) {
+            $externalCounselList = json_decode($externalCounselListSetting->getValue(), true);
+        }
+
         return $this->render('lender_data_update/details.html.twig', [
             'client'                  => $client,
             'company'                 => $company,
@@ -165,7 +174,8 @@ class LenderDataUpdateController extends Controller
             'bankAccount'             => $bankAccount,
             'fundsOrigins'            => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType()),
             'form'                    => $form->createView(),
-            'formErrors'              => $formErrors
+            'formErrors'              => $formErrors,
+            'externalCounselList'     => $externalCounselList
         ]);
     }
 

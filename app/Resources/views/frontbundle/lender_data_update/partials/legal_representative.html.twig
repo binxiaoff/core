@@ -10,13 +10,14 @@
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd>
             <span id="data-update-info-company-client-status-output">{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
-            {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}
-                {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
-                    <span>{{ company.preciserConseilExterneEntreprise }} </span>
-                {% else %}
-                    <span>{{ externalCounselList[company.statusConseilExterneEntreprise]|default() }} </span>
+            <span id="data-update-info-company-status-conseil-externe-entreprise-output" class="legal-entity-status-3 collapse {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %} in {% endif %}">
+                {% if company.statusConseilExterneEntreprise != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
+                    {{ externalCounselList[company.statusConseilExterneEntreprise]|default() }}
                 {% endif %}
-            {% endif %}
+            </span>
+        <span id="data-update-info-company-specify-externe-conseil-output" class="legal-entity-status-other-field collapse {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %} in {% endif %}">
+             {{ company.preciserConseilExterneEntreprise }}
+        </span>
         </dd>
         <dt>{% trans %} common_name {% endtrans %}</dt>
         <dd id="data-update-info-name-output">{{ client.nom }}</dd>
@@ -30,8 +31,8 @@
         <dd id="data-update-info-email-output">{{ client.email }}</dd>
     </dl>
 
-
-    <section role="tabpanel" class="legal-entity-status-not-1 collapse {% if company.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
+    <section role="tabpanel"
+             class="legal-entity-status-not-1 collapse {% if company.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
         <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
         <dl class="list-2col">
             <dt>{% trans %} common_title {% endtrans %}</dt>
@@ -132,9 +133,7 @@
             </div><!-- /.form-field -->
 
             <div class="col-lg-6 col-md-6">
-                <div class="legal-entity-status-other-field form-field
-                                collapse {% if form.company.vars.value.statusConseilExterneEntreprise == 3 %} in {% endif %}
-                                {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="legal-entity-status-other-field form-field collapse {% if form.company.vars.value.statusConseilExterneEntreprise == 3 %} in {% endif %} {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-data-update-info-company-client-status-other">
                         {% trans %} lender-profile_information-tab-identity-section-company-other-external-counsel-label {% endtrans %}
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
@@ -145,7 +144,7 @@
                         'attr': {
                             'class': 'input-field',
                             'data-formvalidation-input data-formvalidation-required': 'true',
-                            'data-impacted-element-id': 'data-update-info-company-preciser-conseil-externe-entreprise-output'
+                            'data-impacted-element-id': 'data-update-info-company-specify-externe-conseil-output'
                         }
                     }) }}
                     {{ form_errors(form.company.preciserConseilExterneEntreprise) }}

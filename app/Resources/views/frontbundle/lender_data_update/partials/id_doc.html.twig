@@ -63,10 +63,28 @@
                      data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div>
-
             <div class="field-help">
                 <p>{% trans %} lender-profile_information-tab-indentity-section-ID-document-notice {% endtrans %}</p>
             </div>
+            {% if false == client.isNaturalPerson %}
+                <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient > 1 or true %} in {% endif %}">
+                    <div class="form-field file-domicile">
+                        <div class="custom-input-file" id="form-profile-info-file-delegation-authority"
+                             data-formvalidation-input
+                             data-formvalidation-required='.collapse.in input[type="file"][name="delegation-of-authority"]'
+                             data-fileattach
+                             data-fileattach-inputname="delegation-of-authority"
+                             data-fileattach-maxfiles="1"
+                             data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}"
+                             data-fileattach-fileremove="false">
+                            {% if companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path is defined %}
+                                <input type="file" name="delegation-of-authority"
+                                       value="{{ companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path }}"/>
+                            {% endif %}
+                        </div><!-- /.ui-fileattach -->
+                    </div><!-- /.form-field -->
+                </div><!-- /.legal-entity-status-not-1 -->
+            {% endif %}
         </div>
     </div>
 

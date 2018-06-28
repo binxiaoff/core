@@ -515,19 +515,19 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Clients          $client
-     * @param Clients          $unattachedClient
-     * @param FormInterface    $form
-     * @param FileBag          $fileBag
-     * @param null|BankAccount $unattachedBankAccount
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
      *
      * @return bool
      * @throws \Exception
      */
-    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
+    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
         $this->checkBankDetailsForm($form);
-        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $unattachedBankAccount);
+        $bankAccount         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $bankAccount);
 
         if ($this->isFormValid($form)) {
             $newAttachments      = [];
@@ -569,13 +569,9 @@ class LenderProfileFormsHandler
      */
     private function uploadBankDocument(Clients $client, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): ?Attachment
     {
-        $iban                = $form->get('iban')->getData();
-        $bic                 = $form->get('bic')->getData();
         $bankAccountDocument = null;
-        if (
-            null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
-            || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
-        ) {
+
+        if ($this->isBankAccountModified($form, $unattachedBankAccount)) {
             $file = $fileBag->get('iban-certificate');
 
             if (false === $file instanceof UploadedFile) {
@@ -773,7 +769,6 @@ class LenderProfileFormsHandler
      * @param Clients       $unattachedClient
      * @param ClientAddress $clientAddress
      * @param string        $addressType
-     * @param BankAccount   $unattachedBankAccount
      * @param FormInterface $form
      * @param FileBag       $fileBag
      *
@@ -784,7 +779,6 @@ class LenderProfileFormsHandler
         Clients $unattachedClient,
         ClientAddress $clientAddress,
         string $addressType,
-        BankAccount $unattachedBankAccount,
         FormInterface $form,
         FileBag $fileBag
     ): void
@@ -806,14 +800,13 @@ class LenderProfileFormsHandler
         }
 
         //Bank Account
-        $isBankAccountModified = $this->isBankAccountModified($bankForm, $unattachedBankAccount);
-        if ($isBankAccountModified) {
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
             $this->checkBankDetailsForm($bankForm);
-            $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $unattachedBankAccount);
-
-            if ($bankAccountAttachment) {
-                $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
-            }
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
         }
 
         if ($form->isValid()) {
@@ -826,9 +819,7 @@ class LenderProfileFormsHandler
             if ($isBankAccountModified) {
                 $iban = $bankForm->get('iban')->getData();
                 $bic  = $bankForm->get('bic')->getData();
-                if (false === empty($newAttachments[AttachmentType::RIB])) {
-                    $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
-                }
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
             }
 
             $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
@@ -836,16 +827,19 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param FormInterface $bankForm
-     * @param BankAccount   $unattachedBankAccount
+     * @param FormInterface    $bankForm
+     * @param BankAccount|null $unattachedBankAccount
      *
      * @return bool
      */
-    private function isBankAccountModified(FormInterface $bankForm, BankAccount $unattachedBankAccount)
+    private function isBankAccountModified(FormInterface $bankForm, ?BankAccount $unattachedBankAccount): bool
     {
+        $iban = $bankForm->get('iban')->getData();
+        $bic  = $bankForm->get('bic')->getData();
+
         if (
-            $bankForm->get('iban')->getData() !== $unattachedBankAccount->getIban()
-            || $bankForm->get('bic')->getData() !== $unattachedBankAccount->getBic()
+            null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
+            || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
         ) {
             return true;
         }
@@ -860,7 +854,6 @@ class LenderProfileFormsHandler
      * @param Companies      $unattachedCompany
      * @param CompanyAddress $companyAddress
      * @param string         $addressType
-     * @param BankAccount    $unattachedBankAccount
      * @param FormInterface  $form
      * @param FileBag        $fileBag
      *
@@ -873,12 +866,10 @@ class LenderProfileFormsHandler
         Companies $unattachedCompany,
         CompanyAddress $companyAddress,
         string $addressType,
-        BankAccount $unattachedBankAccount,
         FormInterface $form,
         FileBag $fileBag
-    )
+    ): void
     {
-        $clientForm          = $form->get('client');
         $companyForm         = $form->get('company');
         $addressForm         = $form->get($addressType);
         $bankForm            = $form->get('bankAccount');
@@ -897,14 +888,13 @@ class LenderProfileFormsHandler
         }
 
         //Bank Account
-        $isBankAccountModified = $this->isBankAccountModified($bankForm, $unattachedBankAccount);
-        if ($isBankAccountModified) {
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
             $this->checkBankDetailsForm($bankForm);
-            $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $unattachedBankAccount);
-
-            if ($bankAccountAttachment) {
-                $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
-            }
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
         }
 
         if ($form->isValid()) {
@@ -915,9 +905,7 @@ class LenderProfileFormsHandler
             if ($isBankAccountModified) {
                 $iban = $bankForm->get('iban')->getData();
                 $bic  = $bankForm->get('bic')->getData();
-                if (false === empty($newAttachments[AttachmentType::RIB])) {
-                    $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
-                }
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
             }
 
             $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments, $modifiedAddressType, $isBankAccountModified);

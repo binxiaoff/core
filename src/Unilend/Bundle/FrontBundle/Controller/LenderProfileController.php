@@ -220,7 +220,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
