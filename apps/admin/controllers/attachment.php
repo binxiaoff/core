@@ -33,16 +33,8 @@ class attachmentController extends bootstrap
             if ($attachment && urldecode($path) === $attachment->getPath()) {
                 /** @var AttachmentManager $attachmentManager */
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
-                $attachmentPath    = $attachmentManager->getFullPath($attachment);
-
-                if (file_exists($attachmentPath)) {
-                    header('Content-Description: File Transfer');
-                    header('Content-Type: application/octet-stream');
-                    header('Content-Disposition: attachment; filename="' . basename($attachmentPath) . '";');
-                    @readfile($attachmentPath);
-
-                    exit;
-                }
+                $attachmentManager->output($attachment);
+                exit;
             }
         }
 

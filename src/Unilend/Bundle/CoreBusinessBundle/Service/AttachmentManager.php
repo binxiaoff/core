@@ -3,7 +3,16 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Filesystem\Filesystem;
+use PhpOffice\PhpSpreadsheet\{
+    Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf
+};
+use PhpOffice\PhpWord\{
+    Exception\Exception as PhpWordException, IOFactory as PhpWordIOFactory, Writer\PDF\DomPDF as PhpWordDomPDF
+};
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\{
+    Exception\FileNotFoundException, Filesystem
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment
@@ -11,27 +20,35 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class AttachmentManager
 {
-    /**  @var EntityManager */
+    const PHPOFFICE_TEMPORARY_DIR = '/tmp/phpoffice';
+
+    /** @var EntityManager */
     private $entityManager;
-
-    /** @var string */
-    private $uploadRootDir;
-
     /** @var Filesystem */
     private $filesystem;
+    /** @var string */
+    private $uploadRootDirectory;
+    /** @var string */
+    private $rootDirectory;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * AttachmentManager constructor.
      *
-     * @param EntityManager $entityManager
-     * @param Filesystem    $filesystem
-     * @param               $uploadRootDir
+     * @param EntityManager   $entityManager
+     * @param Filesystem      $filesystem
+     * @param string          $uploadRootDirectory
+     * @param string          $rootDirectory
+     * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, Filesystem $filesystem, $uploadRootDir)
+    public function __construct(EntityManager $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $rootDirectory, LoggerInterface $logger)
     {
-        $this->entityManager = $entityManager;
-        $this->filesystem    = $filesystem;
-        $this->uploadRootDir = $uploadRootDir;
+        $this->entityManager       = $entityManager;
+        $this->filesystem          = $filesystem;
+        $this->uploadRootDirectory = $uploadRootDirectory;
+        $this->rootDirectory       = $rootDirectory;
+        $this->logger              = $logger;
     }
 
     /**
@@ -105,9 +122,132 @@ class AttachmentManager
      */
     private function getUploadRootDir()
     {
-        $rootDir = realpath($this->uploadRootDir);
+        $rootDir = realpath($this->uploadRootDirectory);
 
         return substr($rootDir, -1) === DIRECTORY_SEPARATOR ? substr($rootDir, 0, -1) : $rootDir;
+    }
+
+    /**
+     * @param Attachment $attachment
+     */
+    public function output(Attachment $attachment): void
+    {
+        $path = $this->getFullPath($attachment);
+
+        if (false === file_exists($path)) {
+            throw new FileNotFoundException(null, 0, null, $path);
+        }
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        switch ($extension) {
+            case 'csv':
+            case 'xls':
+            case 'xlsx':
+                $this->outputExcel($attachment);
+                break;
+            case 'doc':
+            case 'docx':
+                $this->outputWord($attachment);
+                break;
+            default:
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . basename($attachment->getPath()) . '";');
+                header('Content-Length: '. filesize($path));
+
+                echo file_get_contents($path);
+                break;
+        }
+    }
+
+    /**
+     * @param Attachment $attachment
+     */
+    private function outputExcel(Attachment $attachment): void
+    {
+        try {
+            $path     = $this->getFullPath($attachment);
+            $document = PhpSpreadsheetIOFactory::load($path);
+
+            /** @var PhpSpreadsheetMpdf $writer */
+            $writer = PhpSpreadsheetIOFactory::createWriter($document, 'Mpdf');
+            $this->outputOffice($attachment, $writer);
+        } catch (PhpSpreadsheetException $exception) {
+            $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
+                'id_client' => $attachment->getClient()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+    }
+
+    /**
+     * @param Attachment $attachment
+     */
+    private function outputWord(Attachment $attachment): void
+    {
+        try {
+            \PhpOffice\PhpWord\Settings::setPdfRendererPath($this->rootDirectory . '/../vendor/dompdf/dompdf');
+            \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
+
+            $path     = $this->getFullPath($attachment);
+            $document = PhpWordIOFactory::load($path);
+
+            /** @var PhpWordDomPDF $writer */
+            $writer = PhpWordIOFactory::createWriter($document, 'PDF');
+            $this->outputOffice($attachment, $writer);
+        } catch (PhpWordException $exception) {
+            $this->logger->error('Unable to load Word file to PDF. Message: ' . $exception->getMessage(), [
+                'id_client' => $attachment->getClient()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+    }
+
+    /**
+     * @param Attachment                       $attachment
+     * @param PhpSpreadsheetMpdf|PhpWordDomPDF $writer
+     */
+    private function outputOffice(Attachment $attachment, $writer): void
+    {
+        try {
+            if (false === $this->filesystem->exists(self::PHPOFFICE_TEMPORARY_DIR)) {
+                $this->filesystem->mkdir(self::PHPOFFICE_TEMPORARY_DIR);
+            }
+
+            $temporaryPath = self::PHPOFFICE_TEMPORARY_DIR . '/' . uniqid() . '.pdf';
+            $path          = $this->getFullPath($attachment);
+
+            /** @var PhpSpreadsheetMpdf|PhpWordDomPDF $writer */
+            $writer->setTempDir(self::PHPOFFICE_TEMPORARY_DIR);
+            $writer->save($temporaryPath);
+
+            $fileName = pathinfo($path, PATHINFO_FILENAME) . '.pdf';
+            $fileSize = filesize($temporaryPath);
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Transfer-Encoding: binary');
+            header('Content-Disposition: attachment; filename="' . $fileName . '";');
+            header('Content-Length: ' . $fileSize);
+            readfile($temporaryPath);
+
+            $this->filesystem->remove($temporaryPath);
+        } catch (\Exception $exception) {
+            $this->logger->error('Unable to convert Office file to PDF. Message: ' . $exception->getMessage(), [
+                'id_client' => $attachment->getClient()->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
     }
 
     /**

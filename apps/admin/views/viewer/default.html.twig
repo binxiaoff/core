@@ -158,9 +158,9 @@
                     }
 
                     // Determine if PDF or image
-                    if (/\.pdf$/i.test(fileUrl)) {
+                    if (/\.(pdf|doc|docx|xls|xlsx|csv)$/i.test(fileUrl)) {
                         this.renderPdf(fileUrl, index)
-                    } else if (/\.(jpe?g|gif|png)$/i.test(fileUrl)) {
+                    } else if (/\.(jpe?g|png|gif|bmp)$/i.test(fileUrl)) {
                         this.renderImg(fileUrl, index)
                     } else {
                         $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer<br/><br/><strong><a href="' + fileUrl + '">Télécharger le fichier</a></strong></div>')
