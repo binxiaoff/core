@@ -6,13 +6,17 @@
         <dd id="data-update-bank-account-bic-output">{{ bankAccount.getBic() }}</dd>
         {% if bankAccount.getAttachment() is not null %}
             {% set ribDate = bankAccount.getAttachment().getUpdated()|default(bankAccount.getAttachment().getAdded())|localizeddate('short', 'none') %}
-            {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\attachment_type::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
+            {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
             <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
             <dd><span class="file-justificatif file-rib" title="{{ ribProvidedTranslation }}" data-toggle="tooltip"></span></dd>
         {% endif %}
     </dl>
+    {% if client.isNaturalPerson %}
+        {% trans %} lender-data-update_bank-account-description {% endtrans %}
+    {% else %}
+        {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-bank-account-description {% endtrans %}
+    {% endif %}
 
-    {% trans %} lender-data-update_bank-account-description {% endtrans %}
 
     <div class="btn-controls">
         <button data-target="#data-update-bank-account-edit" role="button" data-toggle="collapse" data-parent="#data-update-bank-account-section" class="btn-default"
@@ -87,6 +91,8 @@
             <div class="custom-input-file"
                  data-fileattach data-fileattach-inputname="iban-certificate"
                  data-fileattach-maxfiles="1"
+                 data-formvalidation-input
+                 data-formvalidation-required='input[type="file"][name="iban-certificate"]'
                  data-fileattach-emptyfilelabel="{{ 'lender-profile_fiscal-tab-iban-certificate'|trans|e('html_attr') }}">
             </div><!-- /.ui-fileattach -->
         </div>

@@ -61,12 +61,12 @@ class LenderProfileController extends Controller
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
-            $mainAddressForm     = $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+            $mainAddressForm     = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
             $mainAddressForm
                 ->add('noUsPerson', CheckboxType::class, ['data' => true !== $client->getUsPerson(), 'required' => false])
                 ->add('housedByThirdPerson', CheckboxType::class, ['required' => false]);
 
-            $postalAddressForm = $formManager->getClientAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $postalAddressForm = $formManager->getClientAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
@@ -80,8 +80,8 @@ class LenderProfileController extends Controller
                 ->add('company', CompanyIdentityType::class, ['data' => $company]);
             $identityFormBuilder->get('company')->remove('siren');
 
-            $mainAddressForm   = $formManager->getCompanyAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
-            $postalAddressForm = $formManager->getCompanyAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $mainAddressForm   = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
+            $postalAddressForm = $formManager->getCompanyAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         }
@@ -111,7 +111,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 }
 
                 if ($isValid) {
@@ -124,7 +124,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 }
 
                 if ($isValid) {
@@ -220,7 +220,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files)
         ) {
             $translator = $this->get('translator');
             $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));

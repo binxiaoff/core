@@ -26,90 +26,145 @@
                 <div class="data-update-progress" data-progressbar data-progressbar-current="1" data-progressbar-total="8">
                     <div data-progressbar-bar></div>
                 </div>
-
-                <div id="form-data-update-info-notifications"></div>
-
-                <article id="panel-data-update-identity" class="panel collapse in">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_identity-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-info-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_identity.html.twig' %}
+                <div class="panel">
+                    <div id="form-data-update-info-notifications">
+                        {% if formErrors is not empty %}
+                            <div class="message-error">
+                                {% for error in formErrors %}
+                                    <p>{{ error.message }}</p>
+                                {% endfor %}
+                            </div>
                         {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
+                    </div>
 
-                <article id="panel-data-update-id-doc" class="panel collapse">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_id-doc-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-id-doc-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_id_doc.html.twig' %}
-                        {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
+                    {% if client.isNaturalPerson %}
+                        <article id="panel-data-update-identity" class="collapse in">
+                            <header class="panel-header">
+                                <h3>
+                                    {% trans %} lender-data-update_identity-section-title {% endtrans %}
+                                </h3>
+                            </header>
+                            <section id="data-update-info-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/person_identity.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
 
-                <article id="panel-data-update-telephone" class="panel collapse">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_telephone-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-telephone-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_telephone.html.twig' %}
-                        {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
+                    {% if false == client.isNaturalPerson %}
+                        <article id="panel-data-update-legal-entity-identity" class="collapse in">
+                            <header class="panel-header">
+                                <h3>{% trans %} lender-data-update_legal-entity-identity-section-title {% endtrans %}</h3>
+                            </header>
+                            <section id="data-update-legal-entity-identity-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/legal_entity_identity.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
 
-                <article id="panel-data-update-main-address" class="panel collapse">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_main-address-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-main-address-section" role="tablist" aria-multiselectable="true"  data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_main_address.html.twig' %}
-                        {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
-
-                <article id="panel-data-update-bank-account" class="panel collapse">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_bank-account-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-bank-account-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_bank_account.html.twig' %}
-                        {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
-
-                <article id="panel-data-update-funds-origin" class="panel collapse">
-                    <header class="panel-header">
-                        <h3>{% trans %} lender-data-update_funds-origin-section-title {% endtrans %}</h3>
-                    </header>
-                    <section id="data-update-funds-origin-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-                        {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                            {% include 'lender_data_update/partials/person_funds_origin.html.twig' %}
-                        {% endif %}
-                    </section><!-- /.ui-toggle-group -->
-                </article><!-- /.panel -->
-
-                {% if client.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
-                    <article id="panel-data-update-us-person" class="panel collapse">
-                        <section id="data-update-us-person-section" role="tablist" aria-multiselectable="true" data-toggle-group>
-
-                            {% include 'lender_data_update/partials/us_person.html.twig' %}
-
+                    <article id="panel-data-update-id-doc" class="collapse">
+                        <header class="panel-header">
+                            <h3>{% trans %} lender-data-update_id-doc-section-title {% endtrans %}</h3>
+                        </header>
+                        <section id="data-update-id-doc-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                            {% include 'lender_data_update/partials/id_doc.html.twig' %}
                         </section><!-- /.ui-toggle-group -->
                     </article><!-- /.panel -->
-                {% endif %}
 
-                <p class="pull-right">
-                    <a href="{{ path('lender_dashboard') }}">{% trans %} lender-data-update_finish-later {% endtrans %}</a>
-                </p>
+                    {% if client.isNaturalPerson %}
+                        <article id="panel-data-update-telephone" class="collapse">
+                            <header class="panel-header">
+                                <h3>{% trans %} lender-data-update_telephone-section-title {% endtrans %}</h3>
+                            </header>
+                            <section id="data-update-telephone-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/person_telephone.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
+
+                    <article id="panel-data-update-main-address" class="collapse">
+                        <header class="panel-header">
+                            <h3>
+                                {% if client.isNaturalPerson %}
+                                    {% trans %} lender-data-update_main-address-section-title {% endtrans %}
+                                {% else %}
+                                    {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-main-address-section-title {% endtrans %}
+                                {% endif %}
+                            </h3>
+                        </header>
+                        <section id="data-update-main-address-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                            {% if client.isNaturalPerson %}
+                                {% include 'lender_data_update/partials/person_main_address.html.twig' %}
+                            {% else %}
+                                {% include 'lender_data_update/partials/legal_entity_main_address.html.twig' %}
+                            {% endif %}
+                        </section><!-- /.ui-toggle-group -->
+                    </article><!-- /.panel -->
+
+                    {% if false == client.isNaturalPerson %}
+                        <article id="panel-data-update-kbis-doc" class="collapse">
+                            <header class="panel-header">
+                                <h3>{% trans with {'%company_name%': company.name} %} lender-data-update_kbis-doc-section-title {% endtrans %}</h3>
+                            </header>
+                            <section id="data-update-kbis-doc-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/kbis_doc.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
+
+                    <article id="panel-data-update-bank-account" class="collapse">
+                        <header class="panel-header">
+                            <h3>
+                                {% if client.isNaturalPerson %}
+                                    {% trans %} lender-data-update_bank-account-section-title {% endtrans %}
+                                {% else %}
+                                    {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-bank-account-section-title {% endtrans %}
+                                {% endif %}
+                            </h3>
+                        </header>
+                        <section id="data-update-bank-account-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                            {% include 'lender_data_update/partials/bank_account.html.twig' %}
+                        </section><!-- /.ui-toggle-group -->
+                    </article><!-- /.panel -->
+
+                    <article id="panel-data-update-funds-origin" class="collapse">
+                        <header class="panel-header">
+                            <h3>
+                                {% if client.isNaturalPerson %}
+                                    {% trans %} lender-data-update_funds-origin-section-title {% endtrans %}
+                                {% else %}
+                                    {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-funds-origin-section-title {% endtrans %}
+                                {% endif %}
+                            </h3>
+                        </header>
+                        <section id="data-update-funds-origin-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                            {% include 'lender_data_update/partials/funds_origin.html.twig' %}
+                        </section><!-- /.ui-toggle-group -->
+                    </article><!-- /.panel -->
+
+                    {% if client.isNaturalPerson %}
+                        <article id="panel-data-update-us-person" class="collapse">
+                            <section id="data-update-us-person-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/us_person.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
+
+                    {% if false == client.isNaturalPerson %}
+                        <article id="panel-data-update-info" class="collapse">
+                            <header class="panel-header">
+                                <h3>{% trans with {'%company_name%': company.name} %} lender-data-update_legal-representative-section-title {% endtrans %}</h3>
+                            </header>
+                            <section id="data-update-info-section" role="tablist" aria-multiselectable="true" data-toggle-group>
+                                {% include 'lender_data_update/partials/legal_representative.html.twig' %}
+                            </section><!-- /.ui-toggle-group -->
+                        </article><!-- /.panel -->
+                    {% endif %}
+                </div>
             </div>
             {{ form_end(form) }}
+            <p class="pull-right">
+                <a href="{{ path('lender_dashboard') }}">{% trans %} lender-data-update_finish-later {% endtrans %}</a>
+            </p>
         </div>
     </div>
 {% endblock %}

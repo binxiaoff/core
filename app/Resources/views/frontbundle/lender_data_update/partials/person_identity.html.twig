@@ -1,7 +1,7 @@
 <section id="data-update-info-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} common_title {% endtrans %}</dt>
-        {% if client.civilite == 'M.' %}
+        {% if client.civilite == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') %}
             <dd id="data-update-info-title-output">{% trans %} common_title-male {% endtrans %}</dd>
         {% else %}
             <dd id="data-update-info-title-output">{% trans %} common_title-female {% endtrans %}</dd>
@@ -59,8 +59,7 @@
                 'attr': {
                     'class': 'input-field',
                     'data-formvalidation-input data-formvalidation-required': 'true',
-                    'data-impacted-element-id': 'data-update-info-used-name-output',
-                    'data-original-value': client.nomUsage
+                    'data-impacted-element-id': 'data-update-info-used-name-output'
                 }}) }}
             {{ form_errors(form.client.nomUsage) }}
         </div><!-- /.form-field -->

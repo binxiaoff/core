@@ -1,4 +1,4 @@
-<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse in">
+<section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if identityDocument is not null %} in {% endif %}">
     {% if identityDocumentDetails is not null %}
         <dl class="list-2col">
             <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
@@ -11,7 +11,7 @@
         {% else %}
             {% trans %} lender-data-update_id-doc-validated {% endtrans %}
         {% endif %}
-    {% else %}
+    {% elseif identityDocument is not null %}
         <dl class="list-2col">
             <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
             <dd>{{ identityDocument.getAdded()|localizeddate('short', 'none') }}</dd>
@@ -24,14 +24,19 @@
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
         </button>
-        <button data-target="#panel-data-update-telephone" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
-                aria-controls="#panel-data-update-telephone" aria-expanded="false" type="button">
-            <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
-        </button>
+        {% if client.isNaturalPerson %}
+            <button data-target="#panel-data-update-telephone" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
+                    aria-controls="#panel-data-update-telephone" aria-expanded="false" type="button">
+                <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
+            </button>
+        {% else %}
+            <button class="btn-primary" role="button" type="submit">{% trans %} lender-data-update_confirm-button {% endtrans %}</button>
+        {% endif %}
     </div>
 </section>
 
-<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-id-doc-edit-notifications">
+<section id="data-update-id-doc-edit" role="tabpanel" class="lender-data-update-edit collapse {% if identityDocument is null %} in {% endif %}" data-formvalidation
+         data-formvalidation-notificationselem="#data-update-id-doc-edit-notifications">
     <div id="data-update-id-doc-edit-notifications"></div>
     <div class="row">
         <div id="form-profile-info-identity-files-field" class="form-field">
@@ -58,10 +63,28 @@
                      data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-ID-verso {% endtrans %}">
                 </div><!-- /.ui-fileattach -->
             </div>
-
             <div class="field-help">
                 <p>{% trans %} lender-profile_information-tab-indentity-section-ID-document-notice {% endtrans %}</p>
             </div>
+            {% if false == client.isNaturalPerson %}
+                <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %} in {% endif %}">
+                    <div class="form-field file-domicile">
+                        <div class="custom-input-file" id="form-profile-info-file-delegation-authority"
+                             data-formvalidation-input
+                             data-formvalidation-required='.collapse.in input[type="file"][name="delegation-of-authority"]'
+                             data-fileattach
+                             data-fileattach-inputname="delegation-of-authority"
+                             data-fileattach-maxfiles="1"
+                             data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}"
+                             data-fileattach-fileremove="false">
+                            {% if companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path is defined %}
+                                <input type="file" name="delegation-of-authority"
+                                       value="{{ companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path }}"/>
+                            {% endif %}
+                        </div><!-- /.ui-fileattach -->
+                    </div><!-- /.form-field -->
+                </div><!-- /.legal-entity-status-not-1 -->
+            {% endif %}
         </div>
     </div>
 
@@ -69,6 +92,7 @@
         <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-id-doc-section"
                 aria-controls="#data-update-id-doc-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-id-doc-view" data-parent="#data-update-id-doc-section"
-                aria-controls="#data-update-id-doc-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+                aria-controls="#data-update-id-doc-view" aria-expanded="false"
+                type="reset" {% if identityDocument is null %} disabled {% endif %}>{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
     </div>
-</section><!-- /.data-update-info-edit -->
+</section><!-- /.data-update-id-doc-edit -->

@@ -1,3 +1,8 @@
+{% if client.isNaturalPerson %}
+    {% set nextPanel = '#panel-data-update-us-person' %}
+{% else %}
+    {% set nextPanel = '#panel-data-update-info' %}
+{% endif %}
 <section id="data-update-funds-origin-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-funds-origin-label {% endtrans %}</dt>
@@ -12,14 +17,15 @@
             <span class="icon fa-pencil-u32"></span>
             <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
         </button>
-        <button data-target="#panel-data-update-us-person" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
-                aria-controls="#panel-data-update-us-person" aria-expanded="false" type="button">
+        <button data-target="{{ nextPanel }}" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
+                aria-controls="{{ nextPanel }}" aria-expanded="false" type="button">
             <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
         </button>
     </div>
 </section>
 
-<section id="data-update-funds-origin-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation data-formvalidation-notificationselem="#data-update-funds-origin-edit-notifications">
+<section id="data-update-funds-origin-edit" role="tabpanel" class="lender-data-update-edit collapse" data-formvalidation
+         data-formvalidation-notificationselem="#data-update-funds-origin-edit-notifications">
     <div id="data-update-funds-origin-edit-notifications"></div>
     <div class="row">
         <div class="form-field {% if form.fundsOrigin.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
