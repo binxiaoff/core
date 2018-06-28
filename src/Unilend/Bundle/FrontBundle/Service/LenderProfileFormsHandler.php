@@ -311,7 +311,9 @@ class LenderProfileFormsHandler
 
             $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
 
-            $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+            if ($form->has('noUsPerson')) {
+                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+            }
 
             $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType);
 
