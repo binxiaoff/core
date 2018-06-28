@@ -229,7 +229,7 @@ class ClientStatusManager
         $suspend         = null;
         $attachmentTypes = $this->getAttachmentTypes($newAttachments);
 
-        $hasUploadedIdentityAttachments = 0 < count(array_intersect([AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_VERSO], $attachmentTypes));
+        $hasUploadedIdentityAttachments = 0 < count(array_intersect([AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_DIRIGEANT, AttachmentType::CNI_PASSPORTE_VERSO], $attachmentTypes));
         if ($hasUploadedIdentityAttachments) {
             $suspend = true;
         } elseif (0 < count($newAttachments)) {
