@@ -5,22 +5,18 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationSubType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Receptions;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    OperationSubType, OperationType, Receptions, TaxType, WalletType
+};
 
 class BorrowerOperationsManager
 {
-    const OP_EARLY_PAYMENT                  = 'early-payment';
-    const OP_MONTHLY_PAYMENT                = 'monthly-payment';
-    const OP_RECOVERY_PAYMENT               = 'recovery-payment';
-    const OP_MONTHLY_PAYMENT_REGULARIZATION = 'monthly-payment-regularization';
     const OP_PROJECT_CHARGE_REPAYMENT       = 'project-charge-repayment';
     const OP_LENDER_MONTHLY_REPAYMENT       = 'lender-monthly-repayment';
     const OP_LENDER_EARLY_REPAYMENT         = 'lender-early-repayment';
     const OP_LENDER_RECOVERY_REPAYMENT      = 'lender-recovery-repayment';
+    const OP_BORROWER_DIRECT_DEBIT          = 'monthly-payment-direct-debit';
+    const OP_WIRE_TRANSFER_IN               = 'wire-transfer-in';
 
     /** @var EntityManager */
     private $entityManager;
@@ -85,25 +81,16 @@ class BorrowerOperationsManager
                 $operationEntity = $operationRepository->find($operation['id']);
 
                 if (null !== $operationEntity->getWireTransferIn()) {
-                    switch ($operationEntity->getWireTransferIn()->getTypeRemb()) {
-                        case Receptions::REPAYMENT_TYPE_EARLY:
-                            $operation['label'] = self::OP_EARLY_PAYMENT;
-                            break;
-                        case Receptions::REPAYMENT_TYPE_NORMAL:
-                            $operation['label'] = self::OP_MONTHLY_PAYMENT;
-                            break;
-                        case Receptions::REPAYMENT_TYPE_RECOVERY:
-                            $operation['label'] = self::OP_RECOVERY_PAYMENT;
-                            break;
-                        case Receptions::REPAYMENT_TYPE_REGULARISATION:
-                            $operation['label'] = self::OP_MONTHLY_PAYMENT_REGULARIZATION;
-                            break;
-                        default:
-                            $this->logger->warning(
-                                'Unknown "receptions.typeRemb" value (' . $operationEntity->getWireTransferIn()->getTypeRemb() . ')',
-                                ['id_reception' => $operationEntity->getWireTransferIn()->getIdReception(), 'method' => __METHOD__]
-                            );
-                            break;
+                    if (Receptions::WIRE_TRANSFER_STATUS_RECEIVED === $operationEntity->getWireTransferIn()->getStatusVirement()) {
+                        $operation['label'] = self::OP_WIRE_TRANSFER_IN;
+                    } elseif (Receptions::DIRECT_DEBIT_STATUS_SENT === $operationEntity->getWireTransferIn()->getStatusPrelevement()) {
+                        $operation['label'] = self::OP_BORROWER_DIRECT_DEBIT;
+                    } else {
+                        $this->logger->error('Unable to define the type of reception for reception ' . $operationEntity->getWireTransferIn()->getIdReception(), [
+                            'class'        => __CLASS__,
+                            'function'     => __FUNCTION__,
+                            'id_reception' => $operationEntity->getWireTransferIn()->getIdReception()
+                        ]);
                     }
                 }
             }
