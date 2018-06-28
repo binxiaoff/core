@@ -24,6 +24,11 @@ $doc
     $(this).val(Sanity($(this).val()).sanitiseTitle())
   })
 
+  // Sanitise Title (e.g. Raison Sociale)
+  .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="currency"]', function (event, FormValidation, inputValidation) {
+    $(this).val(Sanity($(this).val()).sanitiseCurrency())
+  })
+
   // Sanitise Siren
   .on('FormValidation:validateInput:beforeValidate', 'input[data-formvalidation-type="siren"]', function (event, FormValidation, inputValidation) {
     $(this).val(Sanity($(this).val()).sanitiseSiren())

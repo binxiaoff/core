@@ -62,6 +62,8 @@ EOF
         $aReception    = $entityManager->getRepository('UnilendCoreBusinessBundle:Receptions')->getByDate(new \DateTime());
 
         if (false === empty($aReceivedData) && (empty($aReception) || $input->getOption('force-replay'))) {
+            $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
+
             foreach ($aReceivedData as $aRow) {
                 $motif               = '';
                 $code                = $aRow['codeOpInterbancaire'];
@@ -119,32 +121,54 @@ EOF
                     ->setIdUser(null);
 
                 $entityManager->persist($reception);
-                $entityManager->flush();
 
-                if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
-                    $this->processDirectDebit($motif, $reception);
-                } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
-                    if (
-                        isset($aRow['libelleOpe3'])
-                        && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
-                        && $project = $projectRepository->find((int) $matches[1])
-                    ) {
-                        $this->processBorrowerAnticipatedRepayment($reception, $project);
-                    } elseif (
-                        isset($aRow['libelleOpe3'])
-                        && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
-                        && $project = $projectRepository->find((int) $matches[1])
-                    ) {
-                        $this->processRegulation($reception, $project);
-                    } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
-                        $this->processLenderBankTransfer($motif, $reception);
+                try {
+                    $entityManager->flush();
+
+                    if ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_SENT) {
+                        $this->processDirectDebit($motif, $reception);
+                    } elseif ($type === Receptions::TYPE_WIRE_TRANSFER && $iBankTransferStatus === Receptions::WIRE_TRANSFER_STATUS_RECEIVED) {
+                        if (
+                            isset($aRow['libelleOpe3'])
+                            && 1 === preg_match('/RA-?([0-9]+)/', $aRow['libelleOpe3'], $matches)
+                            && $project = $projectRepository->find((int) $matches[1])
+                        ) {
+                            $this->processBorrowerAnticipatedRepayment($reception, $project);
+                        } elseif (
+                            isset($aRow['libelleOpe3'])
+                            && preg_match('/([0-9]+) REGULARISATION/', $aRow['libelleOpe3'], $matches)
+                            && $project = $projectRepository->find((int) $matches[1])
+                        ) {
+                            $this->processRegulation($reception, $project);
+                        } elseif (self::FRENCH_BANK_TRANSFER_BNPP_CODE === $aRow['codeOpBNPP']) {
+                            $this->processLenderBankTransfer($motif, $reception);
+                        }
+                    } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
+                        $this->processBorrowerRepaymentRejection($aRow, $reception);
                     }
-                } elseif ($type === Receptions::TYPE_DIRECT_DEBIT && $iBankDebitStatus === Receptions::DIRECT_DEBIT_STATUS_REJECTED) {
-                    $this->processBorrowerRepaymentRejection($aRow, $reception);
+                } catch (\Exception $exception) {
+                    $errorMsg = 'An error occurs when treating the daily incoming feeds (reception) from SFPMEI. Error: ' . $exception->getMessage();
+
+                    $this->logger->alert($errorMsg, [
+                        'class'        => __CLASS__,
+                        'function'     => __FUNCTION__,
+                        'id_reception' => $reception->getIdReception(),
+                        'motif'        => $reception->getMotif(), // when no reception id
+                        'line'         => $exception->getLine(),
+                        'file'         => $exception->getFile()
+                    ]);
+
+                    try {
+                        $channel = $this->getContainer()->getParameter('slack.monitoring_channel');
+                    } catch (\InvalidArgumentException $exception) {
+                        $channel = null;
+                    }
+
+                    $slackManager->sendMessage($errorMsg, $channel);
+
+                    continue;
                 }
             }
-
-            $slackManager = $this->getContainer()->get('unilend.service.slack_manager');
             $slackManager->sendMessage('SFPMEI - ' . count($aReceivedData) . ' opérations réceptionnées');
         }
     }
@@ -155,7 +179,7 @@ EOF
      *
      * @return array
      */
-    private function parseReceptionFile($file, array $aEmittedLeviesStatus)
+    private function parseReceptionFile(string $file, array $aEmittedLeviesStatus): array
     {
         $aPattern = [
             '{' => 0,
@@ -250,7 +274,7 @@ EOF
     /**
      * @param array $aRow
      */
-    private function processWelcomeOffer(array $aRow)
+    private function processWelcomeOffer(array $aRow): void
     {
         $amount = round(bcdiv($aRow['montant'], 100, 4), 2);
         $this->getContainer()->get('unilend.service.operation_manager')->provisionUnilendPromotionalWallet($amount);
@@ -262,7 +286,7 @@ EOF
      *
      * @throws \Exception
      */
-    private function processDirectDebit(string $motif, Receptions $reception)
+    private function processDirectDebit(string $motif, Receptions $reception): void
     {
         if (1 === preg_match('#[0-9]+#', $motif, $extract)) {
             $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
@@ -305,8 +329,10 @@ EOF
     /**
      * @param Receptions $reception
      * @param Projects   $project
+     *
+     * @throws \Exception
      */
-    private function processBorrowerAnticipatedRepayment(Receptions $reception, Projects $project)
+    private function processBorrowerAnticipatedRepayment(Receptions $reception, Projects $project): void
     {
         $entityManager               = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager            = $this->getContainer()->get('unilend.service.operation_manager');
@@ -328,8 +354,10 @@ EOF
     /**
      * @param Receptions $reception
      * @param Projects   $project
+     *
+     * @throws \Exception
      */
-    private function processRegulation(Receptions $reception, Projects $project)
+    private function processRegulation(Receptions $reception, Projects $project): void
     {
         $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
@@ -352,10 +380,12 @@ EOF
     }
 
     /**
-     * @param            $pattern
+     * @param string     $pattern
      * @param Receptions $reception
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function processLenderBankTransfer($pattern, Receptions $reception)
+    private function processLenderBankTransfer(string $pattern, Receptions $reception): void
     {
         /** @var \notifications $notifications */
         $notifications = $this->entityManagerSimulator->getRepository('notifications');
@@ -445,8 +475,10 @@ EOF
     /**
      * @param array      $aRow
      * @param Receptions $reception
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function processBorrowerRepaymentRejection(array $aRow, Receptions $reception)
+    private function processBorrowerRepaymentRejection(array $aRow, Receptions $reception): void
     {
         $entityManager         = $this->getContainer()->get('doctrine.orm.entity_manager');
         $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
@@ -499,7 +531,7 @@ EOF
      *
      * @return null|SepaRejectionReason
      */
-    private function getRejectionIsoCode(array $row)
+    private function getRejectionIsoCode(array $row): ?SepaRejectionReason
     {
         if (false === empty($row['libelleOpe6']) && false !== ($isoCode = substr($row['libelleOpe6'], -4, 4))) {
             return $this->getContainer()->get('doctrine.orm.entity_manager')
@@ -513,7 +545,7 @@ EOF
     /**
      * @param Receptions $wireTransferIn
      */
-    private function sendBorrowerRepaymentRejectionNotification(Receptions $wireTransferIn)
+    private function sendBorrowerRepaymentRejectionNotification(Receptions $wireTransferIn): void
     {
         try {
             $motive = '';

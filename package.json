@@ -93,6 +93,7 @@
     "raf": "3.2.0",
     "require-dir": "0.3.0",
     "rev-del": "^1.0.5",
+    "select2": "^4.0.6-rc.1",
     "sortablejs": "1.4.2",
     "sprintf-js": "1.0.3",
     "svg4everybody": "2.0.3",
