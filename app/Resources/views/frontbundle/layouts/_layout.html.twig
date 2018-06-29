@@ -22,7 +22,10 @@
                 <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css" rel="stylesheet" />
             {% endif %}
 
-            <link rel="stylesheet" href="{{ asset('css/main.css', 'gulp') }}" />
+            <link rel="stylesheet" href="{{ asset('css/screen.css', 'gulp') }}" />
+            <!--[if lte IE 10]>
+            <link rel="stylesheet" href="{{ asset('css/ie.css', 'gulp') }}" />
+            <[endif]-->
         {% endblock %}
 
         <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicons/apple-touch-icon.png', 'gulp') }}">

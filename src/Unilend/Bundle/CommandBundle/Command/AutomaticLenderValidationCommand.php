@@ -25,7 +25,6 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
     {
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
         $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
-        $logger                  = $this->getContainer()->get('monolog.logger.console');
         $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
 
         /** @var \clients $clientDataClass */
@@ -46,10 +45,8 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 $validation = $lenderValidationManager->validateClient($client, $user, $duplicates);
 
                 if (true !== $validation) {
-                    $logger->warning(
-                        'Processing client ID: ' . $client->getIdClient() . ' - Duplicate client found: ' . implode(', ', $duplicates),
-                        ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $client->getIdClient()]
-                    );
+                    $this->getContainer()->get('unilend.service.slack_manager')
+                        ->sendMessage('La validation automatique a détectée un client en double. Le client ' . $client->getIdClient() . ' est un doublon de ' . implode(', ', $duplicates), '#team-marketing');
                     continue;
                 }
             }

@@ -1,0 +1,12 @@
+@import 'select2/src/scss/core';
+
+// Need to put select2 dropdown above fancybox modals
+.select2-dropdown {
+  z-index: 8031;
+}
+
+// Ensure that the container width is the full width, not some weird calculated width (which is incorrectly calculated on hidden elements)
+.select2-container {
+  min-width: 100%;
+  max-width: 100%;
+}

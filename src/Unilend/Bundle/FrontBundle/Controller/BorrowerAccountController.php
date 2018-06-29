@@ -179,13 +179,11 @@ class BorrowerAccountController extends Controller
             OperationType::LENDER_LOAN,
             OperationType::BORROWER_WITHDRAW,
             OperationSubType::BORROWER_COMMISSION_FUNDS,
-            BorrowerOperationsManager::OP_MONTHLY_PAYMENT,
-            BorrowerOperationsManager::OP_MONTHLY_PAYMENT_REGULARIZATION,
             OperationSubType::BORROWER_COMMISSION_REPAYMENT,
-            BorrowerOperationsManager::OP_EARLY_PAYMENT,
+            BorrowerOperationsManager::OP_BORROWER_DIRECT_DEBIT,
+            BorrowerOperationsManager::OP_WIRE_TRANSFER_IN,
             BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
             BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
-            BorrowerOperationsManager::OP_RECOVERY_PAYMENT,
             BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT,
             OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT
         ];

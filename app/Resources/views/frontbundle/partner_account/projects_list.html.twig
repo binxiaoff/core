@@ -485,10 +485,8 @@
             <input type="hidden" name="hash" value>
             <div class="modal-body text-align-center">
                 <p>{% trans with {'%companyName%' : '<span class="ui-modal-output-company"></span>'} %} partner-project-list_popup-prospect-cancel-message {% endtrans %}</p>
-                {# @todo find a way to add a select2-like solution to be able to choose more than one reason at time #}
                 <div class="form-field">
-                    <select name="reason" id="prospect-abandon-motif" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                        <option value="">{% trans %} partner-project-list_simulator-abandon-motif-select {% endtrans %}</option>
+                    <select multiple name="reason[]" id="prospect-abandon-motif" class="input-field select2" data-formvalidation-input data-formvalidation-required="true">
                         {% for abandonReason in abandonReasons %}
                             <option value="{{ abandonReason.idAbandon }}">{{ abandonReason.reason|capitalize }}</option>
                         {% endfor %}

@@ -11,6 +11,7 @@ if (!String.prototype.hasOwnProperty('normalize')) {
 
 // Declare once, reuse ∞
 var RE_TEXT_TITLE = /[^a-z0-9'& \-]+/gi
+var RE_CURRENCY = /[^\s0-9,.\$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]+/gi
 var RE_HTML_SCRIPT = /<script[^>]*>(?:.*?)<\/script>/gi
 var RE_HTML_JS_EVAL = /javascript:[^;]*/gi
 var RE_PHONE_LAX = /[^0-9 +]/g
@@ -141,6 +142,7 @@ function sanitiseTitle (input, setCase) {
   return output
     // Strip all unaccepted characters
     .replace(RE_TEXT_TITLE, '')
+    .trim()
 }
 
 /**
@@ -151,11 +153,23 @@ function sanitiseTitle (input, setCase) {
  */
 function sanitiseHtml (input) {
   return (input + '')
-    .trim()
     // Remove script blocks
     .replace(RE_HTML_SCRIPT, '')
     // Remove inline javascript eval()
     .replace(RE_HTML_JS_EVAL, '')
+    .trim()
+}
+
+/**
+ * Sanitise currency values.
+ * 
+ * @param {number|string} input
+ * @returns {string}
+ */
+function sanitiseCurrency (input) {
+  return (input + '')
+    .replace(RE_CURRENCY, '')
+    .trim()
 }
 
 /**
@@ -231,6 +245,7 @@ var transform = {
 var sanitise = {
   title: sanitiseTitle,
   html: sanitiseHtml,
+  currency: sanitiseCurrency,
   siren: sanitiseSiren,
   siret: sanitiseSiret,
   phone: sanitisePhone
@@ -349,6 +364,16 @@ module.exports = Sanity
 // console.log('Phone:', testPhoneRedundantZero, testPhoneRedundantZero === '+123 456 789')
 // console.log('Phone:', testPhoneStrict, testPhoneStrict === '00123456789')
 // console.log('Phone:', testPhoneRedundantZeroStrict, testPhoneRedundantZeroStrict === '00123456789')
+
+// var testCurrency1 = Sanity('100 000,00€ abcdef').sanitise.currency()
+// var testCurrency2 = Sanity('$100,000.00 abcdef').sanitise.currency()
+// var testCurrency3 = Sanity('abcdef ¥10000000.123456').sanitise.currency()
+// var testCurrency4 = Sanity('abcdef £10000000.123456').sanitise.currency()
+
+// console.log('Currency:', testCurrency1, testCurrency1 === '100 000,00€')
+// console.log('Currency:', testCurrency2, testCurrency2 === '$100,000.00')
+// console.log('Currency:', testCurrency3, testCurrency3 === '¥10000000.123456')
+// console.log('Currency:', testCurrency4, testCurrency4 === '£10000000.123456')
 
 // var testTitle = Sanity("Mått’s ßuper-fun & háppy Ràisoñ soçiale sAR`L.").sanitise.title()
 // console.log('Title:', testTitle)

@@ -186,7 +186,7 @@ class LenderProfileFormsHandler
      * @param Companies     $company
      * @param FormInterface $companyForm
      */
-    private function checkCompanyIdentityForm(Companies $company, FormInterface $companyForm)
+    private function checkCompanyIdentityForm(Companies $company, FormInterface $companyForm): void
     {
         if (Companies::CLIENT_STATUS_MANAGER != $company->getStatusClient()) {
             if (
@@ -246,7 +246,6 @@ class LenderProfileFormsHandler
      */
     private function uploadCompanyIdentityDocuments(Clients $client, Companies $company, FormInterface $form, FileBag $fileBag): array
     {
-
         $newAttachments = [];
 
         $files = [
@@ -311,7 +310,9 @@ class LenderProfileFormsHandler
 
             $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
 
-            $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+            if ($form->has('noUsPerson')) {
+                $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+            }
 
             $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType);
 
@@ -480,11 +481,9 @@ class LenderProfileFormsHandler
 
         switch ($addressType) {
             case AddressType::TYPE_MAIN_ADDRESS:
-
                 if (
-                    false === empty($zip) && false === empty($countryId)
-                    && PaysV2::COUNTRY_FRANCE == $countryId
-                    && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])
+                    (empty($zip) || empty($countryId))
+                    || (PaysV2::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip]))
                 ) {
                     $form->get('zip')->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
                 }
@@ -660,8 +659,8 @@ class LenderProfileFormsHandler
     /**
      * @param Clients        $modifiedClient
      * @param Clients        $unattachedClient
-     * @param null|Companies $modifiedCompany
-     * @param null|Companies $unattachedCompany
+     * @param Companies|null $modifiedCompany
+     * @param Companies|null $unattachedCompany
      * @param array          $newAttachments
      * @param string         $modifiedAddressType
      * @param bool           $isBankAccountModified
@@ -695,7 +694,7 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * Changes should only be logged when client is actually updated meaning form should be valid
+     * Changes should only be logged when client is actually updated, meaning the form should be valid
      * Thus this method should only be called once form is fully validated, including attachments
      *
      * @param Clients $client
@@ -736,7 +735,7 @@ class LenderProfileFormsHandler
             return;
         }
 
-        $message = $this->messageProvider->newMessage('alerte-changement-email-preteur', [
+        $message = $this->messageProvider->newMessage('notification-changement-email-preteur', [
             'firstName'     => $client->getPrenom(),
             'lastName'      => $client->getNom(),
             'lenderPattern' => $wallet->getWireTransferPattern()
