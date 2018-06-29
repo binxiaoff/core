@@ -587,8 +587,8 @@ class LenderProfileController extends Controller
         $template = [
             'attachmentTypes' => $attachmentManager->getAllTypesForLender(),
             'attachmentsList' => $this->getAttachmentList($client),
-            'bankForm'        => $bankAccountForm->createView(),
-            'mainAddressForm' => $mainAddressForm->createView()
+            'bankForm'        => null === $bankAccountForm ? null : $bankAccountForm->createView(),
+            'mainAddressForm' => null === $mainAddressForm ? null : $mainAddressForm->createView()
         ];
 
         return $this->render('lender_profile/lender_completeness.html.twig', $template);
@@ -615,12 +615,15 @@ class LenderProfileController extends Controller
             return null;
         }
 
+        $iban = $bankAccount ? $bankAccount->getIban() : '';
+        $bic  = $bankAccount ? $bankAccount->getBic() : '';
+
         $bankAccountForm = $this->createFormBuilder()
             ->add('bankAccount', BankAccountType::class)
             ->getForm();
 
-        $bankAccountForm->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
-        $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
+        $bankAccountForm->get('bankAccount')->get('iban')->setData($iban);
+        $bankAccountForm->get('bankAccount')->get('bic')->setData($bic);
 
         return $bankAccountForm;
     }
@@ -640,6 +643,16 @@ class LenderProfileController extends Controller
                 ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
         } catch (NonUniqueResultException $exception) {
             $this->get('logger')->error('Client has more than one last modified main address', [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'id_client' => $client->getIdClient()
+            ]);
+
+            return null;
+        }
+
+        if (null === $lastModifiedMainAddress) {
+            $this->get('logger')->error('Client has no main address', [
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'id_client' => $client->getIdClient()
@@ -703,6 +716,7 @@ class LenderProfileController extends Controller
         $isMainAddressModified = false;
         $newAttachments        = [];
         $files                 = $request->request->get('files', []);
+        $modifiedAddressType   = '';
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -718,6 +732,7 @@ class LenderProfileController extends Controller
                     if (AttachmentType::JUSTIFICATIF_DOMICILE === $document->getType()->getId()) {
                         $this->handleCompletenessHousingCertificate($request, $client, $document);
                         $isMainAddressModified = true;
+                        $modifiedAddressType   = AddressType::TYPE_MAIN_ADDRESS;
                     }
                 } catch (\Exception $exception) {
                     $this->get('logger')->error('An exception occurred during handling of completeness form. Message: ' . $exception->getMessage(), [
@@ -741,7 +756,7 @@ class LenderProfileController extends Controller
             $this->get('unilend.service.client_status_manager')
                 ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, $company, $unattachedCompany, $isMainAddressModified, $isBankAccountModified, $newAttachments);
 
-            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, '', $isBankAccountModified);
+            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, $modifiedAddressType, $isBankAccountModified);
 
             /** currently this message is not displayed because of the redirection. RUN-3054 */
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));

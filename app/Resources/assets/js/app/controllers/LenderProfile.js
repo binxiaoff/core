@@ -261,14 +261,14 @@ $doc.on('ready', function () {
             $bankAccount.collapse('show')
             $bankAccount.removeClass('disabled')
         } else {
-            hideBankDetails(ribDocumentId, $bankAccount)
+            hideDetails(ribDocumentId, $bankAccount)
         }
 
         if (housingCertificateType === $(this).val()) {
             $mainAddress.collapse('show')
             $mainAddress.removeClass('disabled')
         } else {
-            hideMainAddress(housingCertificateType, $mainAddress)
+            hideDetails(housingCertificateType, $mainAddress)
         }
     })
 
@@ -277,38 +277,23 @@ $doc.on('ready', function () {
         var $bankAccount           = $('#completeness-bank-account')
         var housingCertificateType = $('#document-id-housing-certificate').val()
         var $mainAddress           = $('#completeness-main-address')
-        hideBankDetails(ribDocumentId, $bankAccount)
-        hideMainAddress(housingCertificateType, $mainAddress)
+        hideDetails(ribDocumentId, $bankAccount)
+        hideDetails(housingCertificateType, $mainAddress)
 
     })
 
-    function hideBankDetails(ribDocumentId, $bankAccount) {
-        var ribSelected = false
+    function hideDetails(documentId, $dataSection) {
+        var documentSelected = false
         var $extraFiles  = $('.form-extrafiles-list');
         $extraFiles.find('select[name^="files["]').each(function () {
-            if (ribDocumentId === $(this).find(':selected').val()) {
-                ribSelected = true
+            if (documentId === $(this).find(':selected').val()) {
+                documentSelected = true
                 return
             }
         })
-        if (false === ribSelected) {
-            $bankAccount.collapse('hide')
-            $bankAccount.addClass('disabled')
-        }
-    }
-
-    function hideMainAddress(housingCertificateType, $mainAddress) {
-        var housingCertificateSelected = false
-        var $extraFiles  = $('.form-extrafiles-list');
-        $extraFiles.find('select[name^="files["]').each(function () {
-            if (housingCertificateType === $(this).find(':selected').val()) {
-                housingCertificateSelected = true
-                return
-            }
-        })
-        if (false === housingCertificateSelected) {
-            $mainAddress.collapse('hide')
-            $mainAddress.addClass('disabled')
+        if (false === documentSelected) {
+            $dataSection.collapse('hide')
+            $dataSection.addClass('disabled')
         }
     }
 })
