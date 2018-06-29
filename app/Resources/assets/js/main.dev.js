@@ -152,6 +152,10 @@ require('./app/controllers/LenderDataUpdate')
     return (this[0].tagName === 'INPUT' ? this[0].type : this[0].tagName).toLowerCase()
   }
 
+  $('.select2').select2({
+    minimumResultsForSearch: 4
+  })
+
   /*
    * Tabs
    * @todo refactor into Tabs.js controller

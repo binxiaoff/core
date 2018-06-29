@@ -268,14 +268,19 @@ class ClientDataHistoryManager
             $attachmentLabels[] = $attachment->getType()->getLabel();
         }
 
-        $wireTransferPattern = '';
-        $wallets             = $client->getWallets();
-
-        foreach ($wallets as $wallet) {
-            if (WalletType::LENDER === $wallet->getIdType()->getLabel()) {
-                $wireTransferPattern = $wallet->getWireTransferPattern();
-                break;
-            }
+        try {
+            $lenderWallet        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+                ->getWalletByType($client, WalletType::LENDER);
+            $wireTransferPattern = null !== $lenderWallet ? $lenderWallet->getWireTransferPattern() : '';
+        } catch (\Exception $exception) {
+            $wireTransferPattern = '';
+            $this->logger->error('Could not get lender wallet - Exception: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
         }
 
         $modifiedData     = $this->formatArrayToUnorderedList($this->getFormFieldsTranslationsForEmail($client, $clientChanges, $companyChanges, $modifiedAddressType, $isBankAccountChanged));
@@ -343,12 +348,12 @@ class ClientDataHistoryManager
     }
 
     /**
-     * The translations related to the fields has a pattern like lender-modification-email_[entity]-field-[property]
-     * The client will only be notified with the fields that has its translation defined.
-     * Ex. We define a translation for the name, but we don't define any translation for the birthday. The client modifies both field, he/she will only see the notification on "name"
+     * The translations related to the fields have a pattern like lender-modification-email_[entity]-field-[property]
+     * The client will only be notified about the fields that have their translation defined.
+     * Ex. We define a translation for the name, but we don't define any translation for the birthday. The client modifies both fields, he/she will only see the notification on "name"
      *
      * If several fields have the same translation, it will be displayed only once. This can be used to group the message for the fields.
-     * Ex. for all the filed in company, we want only to say "you company information is modified"(without details). for doing that, we need to define the same translation for all the fields in "company" entity
+     * Ex. for all the fields in company, we only want to say "your company information is modified"(without details). In order to do that we need to define the same translation for all the fields in "company" entity
      *
      * @param Clients     $client
      * @param array       $clientChanges

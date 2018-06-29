@@ -1051,15 +1051,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             </tr>
                             <?php unset($_SESSION['publish_error']); ?>
                         <?php endif; ?>
-                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == UniversignEntityInterface::STATUS_SIGNED) : ?>
+                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project')) : ?>
                             <tr>
-                                <th><label for="pouvoir">Pouvoir</label></th>
+                                <th>
+                                    <?php if ($this->projects_pouvoir->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
+                                        <span>&nbsp;&#9989;</span>
+                                    <?php else: ?>
+                                        <span>&nbsp;&#10060;</span>
+                                    <?php endif; ?>
+                                    <label for="pouvoir">Pouvoir</label>
+                                </th>
                                 <td>
                                     <div>
                                         <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
-                                        <?php if ($this->projects_pouvoir->status_remb == '1') : ?>
-                                            <span style="color:green;">&nbsp;Validé</span>
-                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>

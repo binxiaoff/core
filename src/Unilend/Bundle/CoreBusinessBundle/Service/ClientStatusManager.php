@@ -104,7 +104,7 @@ class ClientStatusManager
             $companyChangeSet = $this->getModifiedFields($unattachedCompany, $modifiedCompany);
         } catch (\Exception $exception) {
             $companyChangeSet = [];
-            $this->logger->error('Could not calculate modified company fields. Error: ' . $exception->getMessage(), [
+            $this->logger->error('Could not determine modified company fields. Error: ' . $exception->getMessage(), [
                 'id_client' => $modifiedClient->getIdClient(),
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
@@ -222,14 +222,14 @@ class ClientStatusManager
      *
      * @return bool|null
      *
-     * true suspend the client, false passes on to next status, null does nothing
+     * true suspends the client, false passes on to next status, null does nothing
      */
     private function checkIfSuspendByAttachments(array $newAttachments): ?bool
     {
         $suspend         = null;
         $attachmentTypes = $this->getAttachmentTypes($newAttachments);
 
-        $hasUploadedIdentityAttachments = 0 < count(array_intersect([AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_VERSO], $attachmentTypes));
+        $hasUploadedIdentityAttachments = 0 < count(array_intersect([AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_DIRIGEANT, AttachmentType::CNI_PASSPORTE_VERSO], $attachmentTypes));
         if ($hasUploadedIdentityAttachments) {
             $suspend = true;
         } elseif (0 < count($newAttachments)) {
@@ -272,7 +272,7 @@ class ClientStatusManager
             $clientChangeSet = $this->getModifiedFields($unattachedClient, $client);
         } catch (\Exception $exception) {
             $clientChangeSet = [];
-            $this->logger->error('Could not calculate modified client fields. Error: ' . $exception->getMessage(), [
+            $this->logger->error('Could not determine modified client fields. Error: ' . $exception->getMessage(), [
                 'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
@@ -296,6 +296,7 @@ class ClientStatusManager
      */
     private function checkIfSuspendByCompanyData(Companies $company, Companies $unattachedCompany): ?bool
     {
+        $suspend                 = null;
         $companyModifiableFields = [
             'name',
             'forme',
@@ -308,13 +309,12 @@ class ClientStatusManager
             'fonctionDirigeant',
             'phoneDirigeant'
         ];
-        $suspend                 = null;
 
         try {
             $companyChangeSet = $this->getModifiedFields($unattachedCompany, $company);
         } catch (\Exception $exception) {
             $companyChangeSet = [];
-            $this->logger->error('Could not calculate modified company fields. Error: ' . $exception->getMessage(), [
+            $this->logger->error('Could not determine modified company fields. Error: ' . $exception->getMessage(), [
                 'id_company' => $company->getIdCompany(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,

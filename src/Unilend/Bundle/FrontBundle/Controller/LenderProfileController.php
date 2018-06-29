@@ -222,8 +222,7 @@ class LenderProfileController extends Controller
             $form->isValid() &&
             $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files)
         ) {
-            $translator = $this->get('translator');
-            $this->addFlash('bankInfoUpdateSuccess', $translator->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
+            $this->addFlash('bankInfoUpdateSuccess', $this->get('translator')->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
             return $this->redirectToRoute('lender_profile_fiscal_information');
         }
 
@@ -238,14 +237,6 @@ class LenderProfileController extends Controller
             'bankAccount'                  => $bankAccount,
             'isCIPActive'                  => $this->isCIPActive(),
             'bankForm'                     => $form->createView(),
-            'lender'                       => [
-                'fiscal_info' => [
-                    'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
-                    'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
-                    'rib'         => $bankAccount ? $bankAccount->getAttachment() : '',
-                    'fundsOrigin' => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType())
-                ]
-            ],
             'clientAddress'                => $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS),
             'currentYear'                  => date('Y'),
             'lastYear'                     => date('Y') - 1,
@@ -254,7 +245,15 @@ class LenderProfileController extends Controller
             'rateOfTaxDeductionAtSource'   => $taxType->getRate(),
             'exemptions'                   => $taxExemptionHistory,
             'taxExemptionEligibility'      => $isEligible,
-            'declarationIsPossible'        => $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible)
+            'declarationIsPossible'        => $this->checkIfTaxExemptionIsPossible($taxExemptionHistory, $taxExemptionDateRange, $isEligible),
+            'lender'                       => [
+                'fiscal_info' => [
+                    'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
+                    'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
+                    'rib'         => $bankAccount ? $bankAccount->getAttachment() : '',
+                    'fundsOrigin' => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType())
+                ]
+            ],
         ];
 
         return $this->render('lender_profile/fiscal_information.html.twig', $templateData);
