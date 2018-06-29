@@ -38,6 +38,16 @@
     margin-bottom: 10px;
     color: $c-t1;
   }
+
+  &.disabled {
+    opacity: 0.5;
+
+    // Hide any previous validation messages and/or required field elements
+    .ui-formvalidation-messages,
+    .field-required {
+      display: none;
+    }
+  }
 }
 
 .field-label-inline {
