@@ -404,7 +404,7 @@ class emprunteursController extends bootstrap
         if (false === empty($uploadedFile)) {
             try {
                 $bulkCompanyCheckManager->uploadFile($uploadDir, $uploadedFile, $this->userEntity);
-                $success = 'Le fichier a été pris en compte. Une notification vous sera envoyé dès qu\'il sera traité';
+                $success = 'Le fichier a été pris en compte. Une notification vous sera envoyée dès qu\'il sera traité.';
             } catch (\Exception $exception) {
                 /** @var \Psr\Log\LoggerInterface $logger */
                 $logger = $this->get('logger');

@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-
 use Box\Spout\{
     Common\Type, Writer\CSV\Writer, Writer\WriterFactory
 };
@@ -36,12 +35,21 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
         'Impayés Codinf'
     ];
 
+    /**
+     * @inheritdoc
+     */
     protected function configure()
     {
         $this->setName('risk_data_monitoring:retrieve_company_external_data')
-            ->setDescription('Takes an Excel file with a list of SIREN, and for each one retrieves external data from Selected WS Providers');
+            ->setDescription('Takes an Excel file with a list of SIREN, and for each one retrieves external data from selected WS Providers');
     }
 
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int|null|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $companyValidator        = $this->getContainer()->get('unilend.service.eligibility.company_validator');
@@ -54,7 +62,6 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
 
         $now            = new \DateTime();
         $outputFilePath = $bulkCompanyCheckManager->getCompanyDataOutputDir() . $now->format('Y-m') . DIRECTORY_SEPARATOR;
-
 
         foreach ($bulkCompanyCheckManager->getSirenListForCompanyDataRetrieval() as $fileName => $sirenList) {
             $outputFileName = $this->createFile($fileName, $sirenList, $outputFilePath, $fileSystem, $projectRequestManager, $altaresManager, $companyValidator);
@@ -152,6 +159,15 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
         return $outputFileName;
     }
 
+    /**
+     * @param string                  $inputFileName
+     * @param string                  $outputFileName
+     * @param string                  $outputFilePath
+     * @param BulkCompanyCheckManager $bulkCompanyCheckManager
+     * @param Filesystem              $fileSystem
+     * @param SlackManager            $slackManager
+     * @param TemplateMessageProvider $messageProvider
+     */
     private function sendNotifications(
         string $inputFileName,
         string $outputFileName,
