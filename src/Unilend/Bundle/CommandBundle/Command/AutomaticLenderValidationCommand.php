@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\{
 };
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Users, VigilanceRule
+    Clients, ClientsStatus, PaysV2, Users, VigilanceRule
 };
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
@@ -34,13 +34,24 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
         try {
             $clientsToValidate = $clientDataClass->getClientsToAutoValidate(
-                [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
+                [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_SUSPENDED],
                 [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]
             );
 
             foreach ($clientsToValidate as $clientData) {
                 $duplicates = [];
+                /** @var Clients $client */
                 $client     = $clientRepository->find($clientData['id_client']);
+
+                if (
+                    null !== $client->getIdClientStatusHistory()
+                    && ClientsStatus::STATUS_SUSPENDED === $client->getIdClientStatusHistory()->getIdStatus()->getLabel()
+                    && null !== $client->getIdAddress()
+                    && PaysV2::COUNTRY_FRANCE !== $client->getIdAddress()->getIdCountry()
+                ) {
+                    continue;
+                }
+                /** @var Users $user */
                 $user       = $userRepository->find(Users::USER_ID_CRON);
                 $validation = $lenderValidationManager->validateClient($client, $user, $duplicates);
 

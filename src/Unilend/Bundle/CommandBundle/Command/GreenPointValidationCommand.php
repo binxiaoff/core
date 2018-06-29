@@ -38,7 +38,8 @@ EOF
         $statusToCheck            = [
             ClientsStatus::STATUS_TO_BE_CHECKED,
             ClientsStatus::STATUS_COMPLETENESS_REPLY,
-            ClientsStatus::STATUS_MODIFICATION
+            ClientsStatus::STATUS_MODIFICATION,
+            ClientsStatus::STATUS_SUSPENDED
         ];
         $attachmentTypeToValidate = [
             AttachmentType::CNI_PASSPORTE,
@@ -61,6 +62,9 @@ EOF
             $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
 
             foreach ($clients as $client) {
+                if ($client->getUsPerson()) {
+                    continue;
+                }
                 $attachments = $client->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
