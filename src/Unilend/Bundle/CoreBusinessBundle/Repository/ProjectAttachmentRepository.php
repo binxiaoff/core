@@ -40,8 +40,9 @@ class ProjectAttachmentRepository extends EntityRepository
     {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder
-            ->select('cat.id AS categoryId, cat.name AS categoryName, pat.id AS typeId, pat.name AS typeName, a.id AS attachmentId, a.path, a.originalName')
+            ->select('cat.id AS categoryId, cat.name AS categoryName, pat.id AS typeId, pat.name AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
             ->from('UnilendCoreBusinessBundle:Attachment', 'a')
+            ->innerJoin('UnilendCoreBusinessBundle:AttachmentType', 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
             ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
             ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachmentType', 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
             ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachmentTypeCategory', 'cat', Join::WITH, $queryBuilder->expr()->eq('cat.id', 'pat.idCategory'))
