@@ -134,7 +134,7 @@ class AttachmentManager
     {
         $path = $this->getFullPath($attachment);
 
-        if (false === file_exists($path)) {
+        if (false === $this->filesystem->exists($path)) {
             throw new FileNotFoundException(null, 0, null, $path);
         }
 
@@ -175,11 +175,12 @@ class AttachmentManager
             $this->outputOffice($attachment, $writer);
         } catch (PhpSpreadsheetException $exception) {
             $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
-                'id_client' => $attachment->getClient()->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'id_attachment' => $attachment->getId(),
+                'id_client'     => $attachment->getClient()->getIdClient(),
+                'class'         => __CLASS__,
+                'function'      => __FUNCTION__,
+                'file'          => $exception->getFile(),
+                'line'          => $exception->getLine()
             ]);
         }
     }
@@ -201,11 +202,12 @@ class AttachmentManager
             $this->outputOffice($attachment, $writer);
         } catch (PhpWordException $exception) {
             $this->logger->error('Unable to load Word file to PDF. Message: ' . $exception->getMessage(), [
-                'id_client' => $attachment->getClient()->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'id_attachment' => $attachment->getId(),
+                'id_client'     => $attachment->getClient()->getIdClient(),
+                'class'         => __CLASS__,
+                'function'      => __FUNCTION__,
+                'file'          => $exception->getFile(),
+                'line'          => $exception->getLine()
             ]);
         }
     }
@@ -241,11 +243,12 @@ class AttachmentManager
             $this->filesystem->remove($temporaryPath);
         } catch (\Exception $exception) {
             $this->logger->error('Unable to convert Office file to PDF. Message: ' . $exception->getMessage(), [
-                'id_client' => $attachment->getClient()->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
+                'id_attachment' => $attachment->getId(),
+                'id_client'     => $attachment->getClient()->getIdClient(),
+                'class'         => __CLASS__,
+                'function'      => __FUNCTION__,
+                'file'          => $exception->getFile(),
+                'line'          => $exception->getLine()
             ]);
         }
     }
