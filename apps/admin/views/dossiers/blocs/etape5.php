@@ -5,7 +5,7 @@
         Dropzone.prototype.defaultOptions.dictFallbackMessage = 'Votre navigateur ne supporte pas les chargements par drag & drop'
         Dropzone.prototype.defaultOptions.dictFallbackText = 'Veuillez utiliser le formulaire ci-dessous pour charger vos fichiers.'
         Dropzone.prototype.defaultOptions.dictFileTooBig = 'Taille du fichier trop importante ({{filesize}} Mo). Taille max : {{maxFilesize}} Mo.'
-        Dropzone.prototype.defaultOptions.dictInvalidFileType = 'Vous ne pouvez pas charger ce type de fichiers.'
+        Dropzone.prototype.defaultOptions.dictInvalidFileType = 'Vous ne pouvez pas charger ce type de fichier. Formats pris en charge : PDF, JPEG, PNG, DOC, XLS'
         Dropzone.prototype.defaultOptions.dictResponseError = 'Le serveur a répondu avec un code {{statusCode}}.'
         Dropzone.prototype.defaultOptions.dictCancelUpload = 'Annuler le chargement'
         Dropzone.prototype.defaultOptions.dictCancelUploadConfirmation = 'Voulez-vous vraiment annuler le chargement ?'
@@ -19,7 +19,8 @@
                 var $form = $(this)
                 var myDropzone = new Dropzone('#' + $form.attr('id'), {
                     uploadMultiple: true,
-                    maxFiles: $form.data('dz-maxfiles')
+                    maxFiles: $form.data('dz-maxfiles'),
+                    acceptedFiles: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx'
                 })
 
                 myDropzone.on('success', function (file, response) {
@@ -28,7 +29,7 @@
                     if (false === $.isEmptyObject(response) && response.hasOwnProperty('success') && response.success && response.hasOwnProperty('data') && $.isArray(response.data)) {
                         $.each(response.data, function (index, file) {
                             var $removeLink = $('<a>').addClass('attachment-remove').attr('href', '<?= $this->lurl ?>/attachment/remove_project/' + file.projectAttachmentId).append('<img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">')
-                            var $viewerLink = $('<a>').addClass('colorbox-iframe').attr('href', '<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).append(file.name).colorbox({iframe: true})
+                            var $viewerLink = $('<a>').attr('href', '<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/' + file.attachmentId).attr('target', '_blank').append(file.name)
                             var $file = $('<div>').addClass('attachment-file').append($removeLink).append($viewerLink)
 
                             $form.closest('tr').find('td:nth(1)').append($file)
@@ -145,7 +146,7 @@
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
-                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
+                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" target="_blank">
                                         <?= $projectAttachment->getAttachment()->getOriginalName() ?>
                                     </a>
                                 </div>
@@ -178,7 +179,7 @@
                                     <a class="attachment-remove" href="<?= $this->lurl ?>/attachment/remove_project/<?= $projectAttachment->getId() ?>">
                                         <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer">
                                     </a>
-                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" class="colorbox-iframe">
+                                    <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projectEntity->getIdProject() ?>/<?= $projectAttachment->getAttachment()->getId() ?>" target="_blank">
                                         <?= $projectAttachment->getAttachment()->getOriginalName() ?>
                                     </a>
                                 </div>

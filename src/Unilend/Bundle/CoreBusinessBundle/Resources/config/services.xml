@@ -328,6 +328,8 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="filesystem"/>
             <argument>%path.protected%attachments</argument>
+            <argument>%kernel.root_dir%</argument>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="currency_formatter" class="NumberFormatter">

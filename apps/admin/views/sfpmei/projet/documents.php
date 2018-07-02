@@ -16,7 +16,7 @@
                     <tr>
                         <td class="type_col"><?= $attachment->getType()->getLabel() ?></td>
                         <td class="label_col">
-                            <a class="colorbox-iframe" href="<?= $this->lurl ?>/viewer/project/<?= $this->projects->id_project ?>/<?= $attachment->getId() ?>">
+                            <a href="<?= $this->lurl ?>/viewer/project/<?= $this->projects->id_project ?>/<?= $attachment->getId() ?>" target="_blank">
                                 <?= $attachment->getOriginalName() ?>
                             </a>
                         </td>
