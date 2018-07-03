@@ -9,39 +9,54 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="clients_gestion_notifications", indexes={@ORM\Index(name="immediatement", columns={"immediatement"}), @ORM\Index(name="quotidienne", columns={"quotidienne"}), @ORM\Index(name="hebdomadaire", columns={"hebdomadaire"}), @ORM\Index(name="mensuelle", columns={"mensuelle"})})
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks
  */
 class ClientsGestionNotifications
 {
+    const TYPE_NOTIFICATION_IMMEDIATE = 'immediatement';
+    const TYPE_NOTIFICATION_DAILY     = 'quotidienne';
+    const TYPE_NOTIFICATION_WEEKLY    = 'hebdomadaire';
+    const TYPE_NOTIFICATION_MONTHLY   = 'mensuelle';
+    const TYPE_NOTIFICATION_NO_MAIL   = 'uniquement_notif';
+
+    const ALL_PERIOD = [
+        self::TYPE_NOTIFICATION_IMMEDIATE,
+        self::TYPE_NOTIFICATION_DAILY,
+        self::TYPE_NOTIFICATION_WEEKLY,
+        self::TYPE_NOTIFICATION_MONTHLY,
+        self::TYPE_NOTIFICATION_NO_MAIL
+    ];
+
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="immediatement", type="integer", nullable=false)
      */
     private $immediatement;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="quotidienne", type="integer", nullable=false)
      */
     private $quotidienne;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
      */
     private $hebdomadaire;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="mensuelle", type="integer", nullable=false)
      */
     private $mensuelle;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="uniquement_notif", type="integer", nullable=false)
      */
@@ -57,12 +72,12 @@ class ClientsGestionNotifications
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client", type="integer")
      * @ORM\Id
@@ -71,7 +86,7 @@ class ClientsGestionNotifications
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_notif", type="integer")
      * @ORM\Id
@@ -84,11 +99,11 @@ class ClientsGestionNotifications
     /**
      * Set immediatement
      *
-     * @param integer $immediatement
+     * @param int $immediatement
      *
      * @return ClientsGestionNotifications
      */
-    public function setImmediatement($immediatement)
+    public function setImmediatement(int $immediatement): ClientsGestionNotifications
     {
         $this->immediatement = $immediatement;
 
@@ -98,9 +113,9 @@ class ClientsGestionNotifications
     /**
      * Get immediatement
      *
-     * @return integer
+     * @return int
      */
-    public function getImmediatement()
+    public function getImmediatement(): int
     {
         return $this->immediatement;
     }
@@ -108,11 +123,11 @@ class ClientsGestionNotifications
     /**
      * Set quotidienne
      *
-     * @param integer $quotidienne
+     * @param int $quotidienne
      *
      * @return ClientsGestionNotifications
      */
-    public function setQuotidienne($quotidienne)
+    public function setQuotidienne(int $quotidienne): ClientsGestionNotifications
     {
         $this->quotidienne = $quotidienne;
 
@@ -122,9 +137,9 @@ class ClientsGestionNotifications
     /**
      * Get quotidienne
      *
-     * @return integer
+     * @return int
      */
-    public function getQuotidienne()
+    public function getQuotidienne(): int
     {
         return $this->quotidienne;
     }
@@ -132,11 +147,11 @@ class ClientsGestionNotifications
     /**
      * Set hebdomadaire
      *
-     * @param integer $hebdomadaire
+     * @param int $hebdomadaire
      *
      * @return ClientsGestionNotifications
      */
-    public function setHebdomadaire($hebdomadaire)
+    public function setHebdomadaire(int $hebdomadaire): ClientsGestionNotifications
     {
         $this->hebdomadaire = $hebdomadaire;
 
@@ -146,9 +161,9 @@ class ClientsGestionNotifications
     /**
      * Get hebdomadaire
      *
-     * @return integer
+     * @return int
      */
-    public function getHebdomadaire()
+    public function getHebdomadaire(): int
     {
         return $this->hebdomadaire;
     }
@@ -156,11 +171,11 @@ class ClientsGestionNotifications
     /**
      * Set mensuelle
      *
-     * @param integer $mensuelle
+     * @param int $mensuelle
      *
      * @return ClientsGestionNotifications
      */
-    public function setMensuelle($mensuelle)
+    public function setMensuelle(int $mensuelle): ClientsGestionNotifications
     {
         $this->mensuelle = $mensuelle;
 
@@ -170,9 +185,9 @@ class ClientsGestionNotifications
     /**
      * Get mensuelle
      *
-     * @return integer
+     * @return int
      */
-    public function getMensuelle()
+    public function getMensuelle(): int
     {
         return $this->mensuelle;
     }
@@ -180,11 +195,11 @@ class ClientsGestionNotifications
     /**
      * Set uniquementNotif
      *
-     * @param integer $uniquementNotif
+     * @param int $uniquementNotif
      *
      * @return ClientsGestionNotifications
      */
-    public function setUniquementNotif($uniquementNotif)
+    public function setUniquementNotif(int $uniquementNotif): ClientsGestionNotifications
     {
         $this->uniquementNotif = $uniquementNotif;
 
@@ -194,9 +209,9 @@ class ClientsGestionNotifications
     /**
      * Get uniquementNotif
      *
-     * @return integer
+     * @return int
      */
-    public function getUniquementNotif()
+    public function getUniquementNotif(): int
     {
         return $this->uniquementNotif;
     }
@@ -208,7 +223,7 @@ class ClientsGestionNotifications
      *
      * @return ClientsGestionNotifications
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): ClientsGestionNotifications
     {
         $this->added = $added;
 
@@ -220,7 +235,7 @@ class ClientsGestionNotifications
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -228,11 +243,11 @@ class ClientsGestionNotifications
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return ClientsGestionNotifications
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): ClientsGestionNotifications
     {
         $this->updated = $updated;
 
@@ -242,9 +257,9 @@ class ClientsGestionNotifications
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -252,11 +267,11 @@ class ClientsGestionNotifications
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param int $idClient
      *
      * @return ClientsGestionNotifications
      */
-    public function setIdClient($idClient)
+    public function setIdClient(int $idClient): ClientsGestionNotifications
     {
         $this->idClient = $idClient;
 
@@ -266,9 +281,9 @@ class ClientsGestionNotifications
     /**
      * Get idClient
      *
-     * @return integer
+     * @return int
      */
-    public function getIdClient()
+    public function getIdClient(): int
     {
         return $this->idClient;
     }
@@ -276,11 +291,11 @@ class ClientsGestionNotifications
     /**
      * Set idNotif
      *
-     * @param integer $idNotif
+     * @param int $idNotif
      *
      * @return ClientsGestionNotifications
      */
-    public function setIdNotif($idNotif)
+    public function setIdNotif(int $idNotif): ClientsGestionNotifications
     {
         $this->idNotif = $idNotif;
 
@@ -290,10 +305,28 @@ class ClientsGestionNotifications
     /**
      * Get idNotif
      *
-     * @return integer
+     * @return int
      */
-    public function getIdNotif()
+    public function getIdNotif(): int
     {
         return $this->idNotif;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue(): void
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue(): void
+    {
+        $this->updated = new \DateTime();
     }
 }

@@ -4,11 +4,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 
 class clients_gestion_notifications extends clients_gestion_notifications_crud
 {
-    const TYPE_NOTIFICATION_IMMEDIATE = 'immediatement';
-    const TYPE_NOTIFICATION_DAILY     = 'quotidienne';
-    const TYPE_NOTIFICATION_WEEKLY    = 'hebdomadaire';
-    const TYPE_NOTIFICATION_MONTHLY   = 'mensuelle';
-    const TYPE_NOTIFICATION_NO_MAIL   = 'uniquement_notif';
 
     public function create($list_field_value = array())
     {
@@ -152,19 +147,5 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
                 AND (cgmn.' . $frequency . ' = 0 OR cgmn.' . $frequency . ' IS NULL)
                 AND (cgmn.status_check_' . $frequency . ' = 0 OR cgmn.status_check_' . $frequency . ' IS NULL)
                 AND cgmn.id_notif = ' . $notificationType;
-    }
-
-    /**
-     * @return int[]
-     */
-    public static function getAllPeriod(): array
-    {
-        return [
-            self::TYPE_NOTIFICATION_IMMEDIATE,
-            self::TYPE_NOTIFICATION_DAILY,
-            self::TYPE_NOTIFICATION_WEEKLY,
-            self::TYPE_NOTIFICATION_MONTHLY,
-            self::TYPE_NOTIFICATION_NO_MAIL
-        ];
     }
 }
