@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
@@ -16,17 +15,16 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Companies, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Users, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientDataHistoryManager, LocationManager, NewsletterManager
+    LocationManager, NewsletterManager
 };
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
