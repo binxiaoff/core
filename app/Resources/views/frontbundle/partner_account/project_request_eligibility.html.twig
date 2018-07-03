@@ -22,19 +22,23 @@
                                     <dt>{% trans %} partner-project-request_simulator-eligibility-company-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-simulator-output-company">{{ company }}</strong></dd>
                                 </dl>
-                                <dl class="col-sm-4 col-md-6 col-lg-6">
-                                    <dt>{% trans %} partner-project-request_simulator-eligibility-siren-field-label {% endtrans %}</dt>
-                                    <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
-                                </dl>
+                                {% if siren is not empty %}
+                                    <dl class="col-sm-4 col-md-6 col-lg-6">
+                                        <dt>{% trans %} partner-project-request_simulator-eligibility-siren-field-label {% endtrans %}</dt>
+                                        <dd><strong class="ui-simulator-output-siren">{{ siren }}</strong></dd>
+                                    </dl>
+                                {% endif %}
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} partner-project-request_simulator-eligibility-amount-field-label {% endtrans %}</dt>
                                     <dd><strong class="ui-simulator-output-cost">{{ amount|localizednumber }}&nbsp;€</strong></dd>
                                 </dl>
                                 <dl class="col-sm-4 col-md-6 col-lg-6">
                                     <dt>{% trans %} partner-project-request_simulator-eligibility-duration-field-label {% endtrans %}</dt>
-                                    <dd><strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%' : duration} %} partner-project-request_simulator-eligibility-duration-value {% endtrans %}</strong></dd>
+                                    <dd>
+                                        <strong class="ui-simulator-output-duration">{% trans with {'%numberMonth%' : duration} %} partner-project-request_simulator-eligibility-duration-value {% endtrans %}</strong>
+                                    </dd>
                                 </dl>
-                             </div>
+                            </div>
                         </fieldset><!-- /.simulator-pane-inner -->
                         <div class="simulator-pane-inner results bg-p1 c-bg5">
                             {% if rejectionReason is defined %}
@@ -53,22 +57,24 @@
                                         <dd id="simulator-output-duration">{% transchoice averageFundingDuration with {'%numberDays%': averageFundingDuration} %} partner-project-request_simulator-eligibility-estimated-funding-time-value {% endtranschoice %}</dd>
                                         <dt id="simulator-label-monthly-payment">{% trans %} partner-project-request_simulator-eligibility-monthly-payment-label {% endtrans %}</dt>
                                         <dd id="simulator-output-monthly-payment">{% trans with {
-                                            '%minimumMonthlyPayment%': payment.monthly.min|localizednumberwithprecision(0),
-                                            '%maximumMonthlyPayment%': payment.monthly.max|localizednumberwithprecision(0)
-                                            } %} partner-project-request_simulator-eligibility-monthly-payment-value {% endtrans %}</dd>
+                                                '%minimumMonthlyPayment%': payment.monthly.min|localizednumberwithprecision(0),
+                                                '%maximumMonthlyPayment%': payment.monthly.max|localizednumberwithprecision(0)
+                                                } %} partner-project-request_simulator-eligibility-monthly-payment-value {% endtrans %}</dd>
                                         <dt id="simulator-label-interests">{% trans %} partner-project-request_simulator-eligibility-interests-label {% endtrans %}</dt>
                                         <dd id="simulator-output-interests">{% trans with {
-                                            '%minimumInterests%': payment.interests.min|localizednumberwithprecision(0),
-                                            '%maximumInterests%': payment.interests.max|localizednumberwithprecision(0)
-                                            } %} partner-project-request_simulator-eligibility-interests-value {% endtrans %}</dd>
+                                                '%minimumInterests%': payment.interests.min|localizednumberwithprecision(0),
+                                                '%maximumInterests%': payment.interests.max|localizednumberwithprecision(0)
+                                                } %} partner-project-request_simulator-eligibility-interests-value {% endtrans %}</dd>
                                     </dl>
                                 </div>
                             {% endif %}
                         </div><!-- /.simulator-pane-inner -->
                         <footer class="simulator-pane-inner actions bg-p1 c-bg5 text-align-center">
                             {% if rejectionReason is defined %}
-                                <a href="{{ path('partner_projects_list') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-projects-list-button {% endtrans %}</a>
-                                <a href="{{ path('partner_project_request') }}" class="btn-alternate" data-equal-width>{% trans %} partner-project-request_simulator-footer-request-another-button {% endtrans %}</a>
+                                <a href="{{ path('partner_projects_list') }}" class="btn-alternate"
+                                   data-equal-width>{% trans %} partner-project-request_simulator-footer-projects-list-button {% endtrans %}</a>
+                                <a href="{{ path('partner_project_request') }}" class="btn-alternate"
+                                   data-equal-width>{% trans %} partner-project-request_simulator-footer-request-another-button {% endtrans %}</a>
                             {% else %}
                                 <button type="button" class="btn-abandon btn-alternate" data-equal-width data-modal-toggle="#modal-partner-prospect-abandon">
                                     {% trans %} partner-project-request_simulator-footer-abandon-button {% endtrans %}
