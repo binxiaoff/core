@@ -1,7 +1,8 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientSettingType, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates,
+    OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -1395,7 +1396,7 @@ class preteursController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager $clientSettingsManager */
             $clientSettingsManager = $this->get('unilend.service.client_settings_manager');
-            $clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_BETA_TESTER, $value);
+            $clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_BETA_TESTER, $value);
 
             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $client->getIdClient());
             die;

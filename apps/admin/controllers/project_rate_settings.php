@@ -1,8 +1,12 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Doctrine\ORM\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    ClientSettingType, Wallet, WalletType, Zones
+};
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    AutoBidSettingsManager, LenderManager
+};
 
 class project_rate_settingsController extends bootstrap
 {
@@ -62,27 +66,28 @@ class project_rate_settingsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var client_settings $clientSettings */
+        /** @var \client_settings $clientSettings */
         $clientSettings = $this->loadData('client_settings');
-        /** @var client_setting_type $clientSettingType */
-        $clientSettingType = $this->loadData('client_setting_type');
         /** @var \project_rate_settings $projectRateSettings */
         $projectRateSettings = $this->loadData('project_rate_settings');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $lenderManager */
+        $projectRates        = $projectRateSettings->getSettings();
+        /** @var LenderManager $lenderManager */
         $lenderManager = $this->get('unilend.service.lender_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $autoBidSettingsManager */
+        /** @var AutoBidSettingsManager $autoBidSettingsManager */
         $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $projectRates           = $projectRateSettings->getSettings();
+        /** @var EntityManager $entityManager */
+        $entityManager    = $this->get('doctrine.orm.entity_manager');
+        $walletRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
 
-        $clientSettingType->get('autobid_switch', 'label');
-        $offset = 0;
-        $limit  = 100;
-        while ($autoLendActiveClients = $clientSettings->select('id_type=' . $clientSettingType->id_type . ' AND value = ' . client_settings::AUTO_BID_ON, '', $offset, $limit)) {
+        $offset            = 0;
+        $limit             = 100;
+        $clientSettingType = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientSettingType')->findOneBy(['label' => ClientSettingType::LABEL_AUTOBID_SWICTH]);
+
+        while ($autoLendActiveClients = $clientSettings->select('id_type=' . $clientSettingType->getIdType() . ' AND value = ' . client_settings::AUTO_BID_ON, '', $offset, $limit)) {
             $offset += $limit;
             foreach ($autoLendActiveClients as $autoLendClient) {
                 /** @var Wallet $wallet */
-                $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($autoLendClient['id_client'], WalletType::LENDER);
+                $wallet = $walletRepository->getWalletByType($autoLendClient['id_client'], WalletType::LENDER);
                 if (
                     null === $wallet
                     || false === $lenderManager->canBid($wallet->getIdClient())
