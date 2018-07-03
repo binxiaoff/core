@@ -597,9 +597,9 @@ class LenderProfileController extends Controller
     /**
      * @param Clients $client
      *
-     * @return FormInterface
+     * @return FormInterface|null
      */
-    private function getBankAccountForm(Clients $client): FormInterface
+    private function getBankAccountForm(Clients $client): ?FormInterface
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
 
