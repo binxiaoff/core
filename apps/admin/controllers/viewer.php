@@ -49,6 +49,7 @@ class viewerController extends bootstrap
                         'attachmentId' => $attachment->getId(),
                         'path'         => $attachment->getPath(),
                         'originalName' => $attachment->getOriginalName(),
+                        'downloadable' => $attachment->getType()->getDownloadable()
                     ];
                 }
                 break;

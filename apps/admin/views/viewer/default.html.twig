@@ -48,6 +48,11 @@
             margin-bottom: 1em;
         }
 
+        .docview-download-link {
+            font-size: 18px;
+            margin: 0 4px;
+        }
+
         #docview-viewer-compare .docview-form {
             text-align: right;
         }
@@ -57,6 +62,11 @@
             min-height: 500px;
             position: relative;
             background: #fafafa;
+        }
+
+        .docview-form .select2 {
+            min-width: 300px;
+            text-align: left;
         }
 
         .docview-viewer .docview-message {
@@ -97,14 +107,6 @@
             height: 90vh;
         }
 
-        .docview-files-list,
-        .docview-files-list li {
-            display: block;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-            text-align: center;
-        }
 
         @media screen and (max-width: 992px) {
             .docview {
@@ -148,8 +150,15 @@
                     pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
                 },
                 compare: false,
-                render: function (fileUrl, index) {
+                render: function (fileUrl, index, downloadable) {
                     var $viewer = this.$elem.find('.docview-viewer').eq(index)
+                    var $downloadLink = this.$elem.find('.docview-download-link').eq(index)
+
+                    if (downloadable) {
+                        $downloadLink.removeClass('hidden').attr('href', fileUrl)
+                    } else {
+                        $downloadLink.addClass('hidden').attr('href', '')
+                    }
 
                     // Unload the file
                     if (!fileUrl || fileUrl === '') {
@@ -163,7 +172,7 @@
                     } else if (/\.(jpe?g|png|gif|bmp)$/i.test(fileUrl)) {
                         this.renderImg(fileUrl, index)
                     } else {
-                        $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer<br/><br/><strong><a href="' + fileUrl + '">Télécharger le fichier</a></strong></div>')
+                        $viewer.html('<div class="docview-message">Format de fichier non supporté par le viewer</div>')
                     }
                 },
                 renderImg: function (fileUrl, index) {
@@ -263,19 +272,13 @@
             $doc.on('Docview:init change', '.docview-switcher', function () {
                 var index = $(this).closest('.docview').first().find('.docview-switcher').index(this)
                 var fileUrl = $(this).val()
-                Docview.render(fileUrl, index)
+                var downloadable = $(this).find(':selected').data('downloadable')
+                Docview.render(fileUrl, index, downloadable)
             })
 
             // Toggle compare
             $doc.on('change', '#docview-toggle-compare', function (event) {
                 Docview.toggleCompare($(event.target).prop('checked'))
-            })
-
-            $doc.on('click', '.docview-files-list a', function (event) {
-                var fileUrl = $(event.target).attr('href')
-                var viewerIndex = $('.docviewer').index($(this).closest('.docviewer').first())
-                event.preventDefault()
-                Docview.render(fileUrl, viewerIndex)
             })
 
             // Force fullscreen
@@ -323,7 +326,7 @@
                                     {% endif %}
                                     {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}"{% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}" data-downloadable="{{ document.downloadable }}"{% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
                                     {{ document.typeName }}
                                 </option>
                             {% endfor %}
@@ -331,9 +334,10 @@
                                 </optgroup>
                             {% endif %}
                         </select>
+                        <a href="" title="Télécharger" class="docview-download-link hidden"><i class="fa fa-download"></i></a>
                         <label id="docview-toggle-compare-label">
-                            <input type="checkbox" id="docview-toggle-compare" />
-                            Compare
+                            <input type="checkbox" id="docview-toggle-compare">
+                            Comparer
                         </label>
                     </div>
                     <div class="docview-viewer">
@@ -342,6 +346,7 @@
                 </div>
                 <div id="docview-viewer-compare" class="docview-viewer-frame hidden">
                     <div class="docview-form">
+                        <a href="" title="Télécharger" class="docview-download-link hidden"><i class="fa fa-download"></i></a>
                         <select class="docview-switcher select2" title="Type de document">
                             <option value="">Sélectionner un document ...</option>
                             {% for document in documents %}
@@ -354,7 +359,7 @@
                                     {% endif %}
                                     {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}">
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}" data-downloadable="{{ document.downloadable }}">
                                     {{ document.typeName }}
                                 </option>
                             {% endfor %}
@@ -364,16 +369,7 @@
                         </select>
                     </div>
                     <div class="docview-viewer">
-                        <div class="docview-message">Sélectionnez un document à visualiser
-                            <ul class="docview-files-list">
-                                {% for document in documents %}
-                                    {% set document = document.getAttachment() %}
-                                    <li><a href="{{ app.adminUrl }}/attachment/download/id/{{ document.getId() }}/file/{{ document.getPath()|url_encode }}" target="_blank">
-                                        {{ document.getType().getLabel() }}
-                                    </a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
+                        <div class="docview-message">Sélectionnez un document à visualiser</div>
                     </div>
                 </div>
             </div>
