@@ -22,18 +22,36 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
     public function getActiveExecutives(string $siren) : array
     {
         $query = '
-            SELECT id_executive AS idExecutive, title, first_name AS firstName, last_name AS lastName, position, code_position AS codePosition, nominated
-            FROM infolegale_executive_personal_change
-            WHERE ended IS NULL
-            AND siren = :siren OR siren IN (
-              SELECT DISTINCT siren_if_company
+            SELECT *
+            FROM(
+              SELECT
+                id_executive  AS idExecutive,
+                title,
+                first_name    AS firstName,
+                last_name     AS lastName,
+                position,
+                code_position AS codePosition,
+                nominated,
+                null as companyName
               FROM infolegale_executive_personal_change
-              WHERE siren = :siren
-                    AND ended IS NULL
-                    AND siren_if_company IS NOT NULL
-            )
-            GROUP BY id_executive
-            HAVING title != :company';
+              WHERE ended IS NULL
+                    AND siren = :siren
+                    and title != :company
+              union
+              SELECT
+                i2.id_executive  AS idExecutive,
+                i2.title,
+                i2.first_name    AS firstName,
+                i2.last_name     AS lastName,
+                i2.position,
+                i2.code_position AS codePosition,
+                i2.nominated,
+                i1.last_name as companyName
+              FROM infolegale_executive_personal_change i1
+                INNER JOIN infolegale_executive_personal_change i2 ON i1.siren_if_company = i2.siren
+              WHERE i1.siren = :siren
+            ) executives
+            GROUP BY idExecutive, companyName';
 
         return $this->getEntityManager()->getConnection()->executeQuery($query, ['siren' => $siren, 'company' => 'Ste'], [])->fetchAll();
     }
