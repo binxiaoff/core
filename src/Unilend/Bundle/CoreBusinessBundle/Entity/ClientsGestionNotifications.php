@@ -28,35 +28,35 @@ class ClientsGestionNotifications
     ];
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="immediatement", type="integer", nullable=false)
      */
     private $immediatement;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="quotidienne", type="integer", nullable=false)
      */
     private $quotidienne;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="hebdomadaire", type="integer", nullable=false)
      */
     private $hebdomadaire;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="mensuelle", type="integer", nullable=false)
      */
     private $mensuelle;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="uniquement_notif", type="integer", nullable=false)
      */
@@ -77,7 +77,7 @@ class ClientsGestionNotifications
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_client", type="integer")
      * @ORM\Id
@@ -86,7 +86,7 @@ class ClientsGestionNotifications
     private $idClient;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_notif", type="integer")
      * @ORM\Id
@@ -99,7 +99,7 @@ class ClientsGestionNotifications
     /**
      * Set immediatement
      *
-     * @param integer $immediatement
+     * @param int $immediatement
      *
      * @return ClientsGestionNotifications
      */
@@ -113,7 +113,7 @@ class ClientsGestionNotifications
     /**
      * Get immediatement
      *
-     * @return integer
+     * @return int
      */
     public function getImmediatement(): int
     {
@@ -123,7 +123,7 @@ class ClientsGestionNotifications
     /**
      * Set quotidienne
      *
-     * @param integer $quotidienne
+     * @param int $quotidienne
      *
      * @return ClientsGestionNotifications
      */
@@ -137,7 +137,7 @@ class ClientsGestionNotifications
     /**
      * Get quotidienne
      *
-     * @return integer
+     * @return int
      */
     public function getQuotidienne(): int
     {
@@ -147,7 +147,7 @@ class ClientsGestionNotifications
     /**
      * Set hebdomadaire
      *
-     * @param integer $hebdomadaire
+     * @param int $hebdomadaire
      *
      * @return ClientsGestionNotifications
      */
@@ -161,7 +161,7 @@ class ClientsGestionNotifications
     /**
      * Get hebdomadaire
      *
-     * @return integer
+     * @return int
      */
     public function getHebdomadaire(): int
     {
@@ -171,7 +171,7 @@ class ClientsGestionNotifications
     /**
      * Set mensuelle
      *
-     * @param integer $mensuelle
+     * @param int $mensuelle
      *
      * @return ClientsGestionNotifications
      */
@@ -185,7 +185,7 @@ class ClientsGestionNotifications
     /**
      * Get mensuelle
      *
-     * @return integer
+     * @return int
      */
     public function getMensuelle(): int
     {
@@ -195,7 +195,7 @@ class ClientsGestionNotifications
     /**
      * Set uniquementNotif
      *
-     * @param integer $uniquementNotif
+     * @param int $uniquementNotif
      *
      * @return ClientsGestionNotifications
      */
@@ -209,7 +209,7 @@ class ClientsGestionNotifications
     /**
      * Get uniquementNotif
      *
-     * @return integer
+     * @return int
      */
     public function getUniquementNotif(): int
     {
@@ -267,7 +267,7 @@ class ClientsGestionNotifications
     /**
      * Set idClient
      *
-     * @param integer $idClient
+     * @param int $idClient
      *
      * @return ClientsGestionNotifications
      */
@@ -281,7 +281,7 @@ class ClientsGestionNotifications
     /**
      * Get idClient
      *
-     * @return integer
+     * @return int
      */
     public function getIdClient(): int
     {
@@ -291,7 +291,7 @@ class ClientsGestionNotifications
     /**
      * Set idNotif
      *
-     * @param integer $idNotif
+     * @param int $idNotif
      *
      * @return ClientsGestionNotifications
      */
@@ -305,7 +305,7 @@ class ClientsGestionNotifications
     /**
      * Get idNotif
      *
-     * @return integer
+     * @return int
      */
     public function getIdNotif(): int
     {

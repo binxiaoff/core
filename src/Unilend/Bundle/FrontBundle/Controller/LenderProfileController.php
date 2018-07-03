@@ -547,11 +547,7 @@ class LenderProfileController extends Controller
             ]);
 
             if (null === $notificationSetting) {
-                $this->get('unilend.service.notification_manager')->createMissingNotificationSettingWithDefaultValue($settingType, $client);
-                $notificationSetting = $notificationSettingsRepository->findOneBy([
-                    'idClient' => $client->getIdClient(),
-                    'idNotif'  => $settingType->getidClientGestionTypeNotif()
-                ]);
+                $notificationSetting = $this->get('unilend.service.notification_manager')->createMissingNotificationSettingWithDefaultValue($settingType, $client);
             }
 
             $notificationSetting->{'set' . ucfirst($type)}($active);

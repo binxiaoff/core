@@ -180,13 +180,14 @@ class NotificationManager
      */
     public function checkNotificationSettingsAndCreateDefaultIfMissing(Clients $client): void
     {
-        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
         $settings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications')->getNotifs($client->getIdClient());
 
         if (empty($settings)) {
             $this->generateDefaultNotificationSettings($client);
             return;
         }
+
+        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
 
         /** @var ClientsGestionTypeNotif $type */
         foreach ($allTypes as $type) {
@@ -200,32 +201,14 @@ class NotificationManager
      * @param ClientsGestionTypeNotif $type
      * @param Clients                 $client
      *
+     * @return ClientsGestionNotifications
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createMissingNotificationSettingWithDefaultValue(ClientsGestionTypeNotif $type, Clients $client): void
+    public function createMissingNotificationSettingWithDefaultValue(ClientsGestionTypeNotif $type, Clients $client): ClientsGestionNotifications
     {
-        $defaultImmediate = [
-            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-            ClientsGestionTypeNotif::TYPE_BID_REJECTED,
-            ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT,
-            ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT,
-            ClientsGestionTypeNotif::TYPE_DEBIT
-        ];
-
-        $defaultDaily = [
-            ClientsGestionTypeNotif::TYPE_BID_PLACED,
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
-            ClientsGestionTypeNotif::TYPE_REPAYMENT
-        ];
-
-        $defaultWeekly = [
-            ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED
-        ];
-
-        $immediateSetting = in_array($type->getIdClientGestionTypeNotif(), $defaultImmediate) ? 1 : 0;
-        $dailySetting     = in_array($type->getIdClientGestionTypeNotif(), $defaultDaily) ? 1 : 0;
-        $weeklySetting    = in_array($type->getIdClientGestionTypeNotif(), $defaultWeekly) ? 1 : 0;
+        $immediateSetting = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_IMMEDIATE) ? 1 : 0;
+        $dailySetting     = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_DAILY) ? 1 : 0;
+        $weeklySetting    = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_WEEKLY) ? 1 : 0;
         $monthlySetting   = 0;
         $onlyNotification = 0;
 
@@ -241,6 +224,8 @@ class NotificationManager
 
         $this->entityManager->persist($setting);
         $this->entityManager->flush($setting);
+
+        return $setting;
     }
 
     /**
