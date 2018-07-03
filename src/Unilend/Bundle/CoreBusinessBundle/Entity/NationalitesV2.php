@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class NationalitesV2
 {
+    const NATIONALITY_FRENCH = 1;
+    const NATIONALITY_OTHER  = 35;
+
     /**
      * @var string
      *

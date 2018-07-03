@@ -1051,10 +1051,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             </tr>
                             <?php unset($_SESSION['publish_error']); ?>
                         <?php endif; ?>
-                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == UniversignEntityInterface::STATUS_SIGNED) : ?>
+                        <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project')) : ?>
                             <tr>
                                 <th>
-                                    <?php if ($this->projects_pouvoir->status_remb == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_REPAYMENT_VALIDATED) : ?>
+                                    <?php if ($this->projects_pouvoir->status == \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir::STATUS_SIGNED) : ?>
                                         <span>&nbsp;&#9989;</span>
                                     <?php else: ?>
                                         <span>&nbsp;&#10060;</span>

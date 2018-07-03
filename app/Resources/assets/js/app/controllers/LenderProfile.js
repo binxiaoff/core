@@ -252,35 +252,48 @@ $doc.on('ready', function () {
     updateNotificationSettings()
 
     $doc.on('change', '#form-lender-completeness select[name^="files["]', function () {
-        var ribDocumentId = $('#document-id-rib').val()
-        var $bankAccount   = $('#completeness-bank-account')
+        var ribDocumentId          = $('#document-id-rib').val()
+        var $bankAccount           = $('#completeness-bank-account')
+        var housingCertificateType = $('#document-id-housing-certificate').val()
+        var $mainAddress           = $('#completeness-main-address')
 
         if (ribDocumentId === $(this).val()) {
             $bankAccount.collapse('show')
             $bankAccount.removeClass('disabled')
         } else {
-            hideBankDetails(ribDocumentId, $bankAccount)
+            hideDetails(ribDocumentId, $bankAccount)
+        }
+
+        if (housingCertificateType === $(this).val()) {
+            $mainAddress.collapse('show')
+            $mainAddress.removeClass('disabled')
+        } else {
+            hideDetails(housingCertificateType, $mainAddress)
         }
     })
 
     $doc.on('FileAttach:removed', '.file-upload-extra .ui-fileattach', function (event) {
-        var ribDocumentId = $('#document-id-rib').val()
-        var $bankAccount   = $('#completeness-bank-account')
-        hideBankDetails(ribDocumentId, $bankAccount)
+        var ribDocumentId          = $('#document-id-rib').val()
+        var $bankAccount           = $('#completeness-bank-account')
+        var housingCertificateType = $('#document-id-housing-certificate').val()
+        var $mainAddress           = $('#completeness-main-address')
+        hideDetails(ribDocumentId, $bankAccount)
+        hideDetails(housingCertificateType, $mainAddress)
+
     })
 
-    function hideBankDetails(ribDocumentId, $bankAccount) {
-        var ribSelected = false
+    function hideDetails(documentId, $dataSection) {
+        var documentSelected = false
         var $extraFiles  = $('.form-extrafiles-list');
         $extraFiles.find('select[name^="files["]').each(function () {
-            if (ribDocumentId === $(this).find(':selected').val()) {
-                ribSelected = true
+            if (documentId === $(this).find(':selected').val()) {
+                documentSelected = true
                 return
             }
         })
-        if (false === ribSelected) {
-            $bankAccount.collapse('hide')
-            $bankAccount.addClass('disabled')
+        if (false === documentSelected) {
+            $dataSection.collapse('hide')
+            $dataSection.addClass('disabled')
         }
     }
 })
