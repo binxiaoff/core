@@ -16,6 +16,7 @@ if ($borrowerReasonInput.length) {
   // Default labels in case can't get from DB
   var TRANS_SIREN_LABEL_DEFAULT = 'SIREN'
   var TRANS_SIREN_LABEL_MOTIVE_9 = 'SIREN de la cible'
+  var TRANS_SIREN_LABEL_MOTIVE_8 = 'SIREN du franchiseur'
 
   // Related elements
   var $borrowerSirenInput = $('input[data-borrower-siren-input]')
@@ -33,7 +34,7 @@ if ($borrowerReasonInput.length) {
       // Création de franchise
       case borrowerEsim.idMotiveFranchiserCreation:
         $borrowerCompanyName.show()
-        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel') || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_8, 'franchisorSirenLabel'))
         $borrowerSirenLabel.find('.field-required').hide()
         $borrowerSirenInput
           .removeAttr('data-formvalidation-required')
@@ -45,7 +46,7 @@ if ($borrowerReasonInput.length) {
       case borrowerEsim.idMotiveShareBuyBack:
         $borrowerCompanyName.hide()
         $borrowerCompanyNameInput.val('')
-        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_9, 'targetSirenLabel') || TRANS_SIREN_LABEL_MOTIVE_9)
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_9, 'targetSirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
@@ -57,7 +58,7 @@ if ($borrowerReasonInput.length) {
       default:
         $borrowerCompanyName.hide()
         $borrowerCompanyNameInput.val('')
-        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel') || TRANS_SIREN_LABEL_DEFAULT)
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
