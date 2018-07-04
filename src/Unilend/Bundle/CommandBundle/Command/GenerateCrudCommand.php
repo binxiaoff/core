@@ -1,12 +1,13 @@
 <?php
+
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\DBAL\DBALException;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Symfony\Component\Console\{
+    Input\InputArgument, Input\InputInterface, Output\OutputInterface, Style\SymfonyStyle
+};
+use Unilend\core\Loader;
 
 class GenerateCrudCommand extends ContainerAwareCommand
 {
@@ -30,34 +31,18 @@ class GenerateCrudCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $oLogger = $this->getContainer()->get('monolog.logger.console');
+        $generatedCruds = [];
+        $table          = $input->getArgument('table');
 
-        /** @var EntityManager $entityManager */
-        $entityManager      = $this->getContainer()->get('unilend.service.entity_manager');
-        $generatedCruds      = [];
-        $table              = $input->getArgument('table');
         if ($table) {
-            if ($entityManager->getRepository($table)) {
-                $generatedCruds[] = [$table, 'OK'];
-            } else {
-                $generatedCruds[] = [$table, 'Failed'];
-            }
+            $generatedCruds[] = [$table, $this->checkCrud($table)];
         } else {
-            $dataDir = $this->getContainer()->getParameter('kernel.root_dir') . '/../data';
-            $dataFiles = array_diff(scandir($dataDir), array('.', '..'));
+            $dataDir   = $this->getContainer()->getParameter('kernel.root_dir') . '/../data';
+            $dataFiles = array_diff(scandir($dataDir), ['.', '..']);
             foreach ($dataFiles as $file) {
                 if (false === is_dir($file) && 1 === preg_match('#(.+)\.data\.php$#', $file, $matches)) {
                     $table = $matches[1];
-                    try {
-                        if ($entityManager->getRepository($table)) {
-                            $generatedCruds[] = [$table, 'OK'];
-                        } else {
-                            $generatedCruds[] = [$table, 'Failed'];
-                        }
-                    } catch (\Exception $exception) {
-                        $generatedCruds[] = [$table, 'Failed'];
-                        $oLogger->error('Generate crud for ' . $table . ' failed. Reason: ' . $exception->getMessage());
-                    }
+                    $generatedCruds[] = [$table, $this->checkCrud($table)];
                 }
             }
         }
@@ -65,5 +50,30 @@ class GenerateCrudCommand extends ContainerAwareCommand
         $io->title('Unilend Crud Generation');
         $headers = ['Table', 'Generated'];
         $io->table($headers, $generatedCruds);
+    }
+
+    /**
+     * @param string $table
+     *
+     * @return string
+     */
+    private function checkCrud(string $table): string
+    {
+        if (Loader::crudExists($table)) {
+            return 'OK';
+        }
+
+        try {
+            Loader::generateCRUD($table);
+            return 'OK';
+        } catch (DBALException $exception) {
+            $this->getContainer()->get('monolog.logger.console')->error('Cannot generate CRUD for ' . $table . '. Reason: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine()
+            ]);
+            return 'Failed';
+        }
     }
 }
