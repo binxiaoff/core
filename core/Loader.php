@@ -3,7 +3,8 @@
 namespace Unilend\core;
 
 use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
-use Unilend\Bridge\Doctrine\DBAL\Connection;
+use Unilend\Bridge\Doctrine\DBAL\Connection as UnilendConnection;
+use Doctrine\DBAL\Connection as DoctrineConnection;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -13,45 +14,18 @@ use Symfony\Component\Yaml\Yaml;
 class Loader
 {
     /**
-     * @param string          $object
-     * @param array           $params
-     * @param Connection|null $db
+     * @param string                 $object
+     * @param array                  $params
+     * @param UnilendConnection|null $db
      *
      * @internal You cannot call this method directly.
      *
      * @return object|bool
      */
-    public static function loadData($object, array $params = [], Connection $db = null)
+    public static function loadData(string $object, array $params = [], ?UnilendConnection $db = null)
     {
         if (null === $db) {
-            $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
-
-            if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
-                $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
-            }
-
-            $connectionFactory = new ConnectionFactory([]);
-            $db                = $connectionFactory->createConnection(
-                [
-                    'driver'       => $params['parameters']['database_driver'],
-                    'host'         => $params['parameters']['database_host'],
-                    'dbname'       => $params['parameters']['database_name'],
-                    'user'         => $params['parameters']['database_user'],
-                    'password'     => $params['parameters']['database_password'],
-                    'charset'      => 'utf8',
-                    'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
-                    'driverClass'  => $params['parameters']['dbal_driver_class'],
-                ]
-            );
-        }
-
-        $path = realpath(dirname(__FILE__) . '/..') . '/';
-
-        if (
-            false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
-            || false === file_exists($path . 'data/' . $object . '.data.php')
-        ) {
-            return false;
+            $db = self::getConnection();
         }
 
         $object = '\\' . $object;
@@ -59,14 +33,51 @@ class Loader
     }
 
     /**
-     * @param string     $table
-     * @param Connection $db
-     * @param string     $path
+     * @return DoctrineConnection
+     */
+    private static function getConnection(): DoctrineConnection
+    {
+        $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
+
+        if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
+            $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
+        }
+
+        $connectionFactory = new ConnectionFactory([]);
+
+        return $connectionFactory->createConnection([
+            'driver'       => $params['parameters']['database_driver'],
+            'host'         => $params['parameters']['database_host'],
+            'dbname'       => $params['parameters']['database_name'],
+            'user'         => $params['parameters']['database_user'],
+            'password'     => $params['parameters']['database_password'],
+            'charset'      => 'utf8',
+            'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
+            'driverClass'  => $params['parameters']['dbal_driver_class'],
+        ]);
+    }
+
+    /**
+     * @param string $object
      *
      * @return bool
      */
-    private static function generateCRUD($table, Connection $db, $path)
+    public static function crudExists(string $object): bool
     {
+        $path = realpath(dirname(__FILE__) . '/..') . '/data/crud/' . $object . '.crud.php';
+        return file_exists($path);
+    }
+
+    /**
+     * @param string $table
+     *
+     * @return bool
+     * @throws \Doctrine\DBAL\DBALException
+     */
+    public static function generateCrud(string $table): bool
+    {
+        $db     = self::getConnection();
+        $path   = realpath(dirname(__FILE__) . '/..') . '/';
         $result = $db->query('DESC ' . $table);
 
         if ($result) {
@@ -184,6 +195,7 @@ class Loader
 
             return true;
         }
+
         return false;
     }
 
