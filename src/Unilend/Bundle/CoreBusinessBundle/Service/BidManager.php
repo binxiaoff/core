@@ -106,11 +106,6 @@ class BidManager
      */
     public function bid(Wallet $wallet, Projects $project, $amount, float $rate, Autobid $autobidSetting = null, bool $sendNotification = true): Bids
     {
-        /** @var \projects $legacyProject */
-        $legacyProject = $this->entityManagerSimulator->getRepository('projects');
-        $projectId     = $project->getIdProject();
-        $legacyProject->get($projectId);
-
         $minAmountSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Pret min']);
         $amountMin        = (int) $minAmountSetting->getValue();
 
@@ -124,65 +119,92 @@ class BidManager
 
         if ($amountMin > $amount) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('Amount is less than the min amount for a bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+                $this->logger->warning('Amount is less than the min amount for a bid', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate
+                ]);
             }
             throw new BidException('bids-invalid-amount');
         }
 
-        $projectRates = $this->getProjectRateRange($legacyProject);
+        $projectRates = $this->getProjectRateRange($project);
 
         if (bccomp($rate, $projectRates['rate_max'], 1) > 0 || bccomp($rate, $projectRates['rate_min'], 1) < 0) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning(
-                    'The rate is less than the min rate for a bid',
-                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]
-                );
+                $this->logger->warning('The rate is less than the min rate for a bid', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate
+                ]);
             }
             throw new BidException('bids-invalid-rate');
         }
 
         if (false === in_array($project->getStatus(), array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning(
-                    'Project status is not valid for bidding',
-                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_status' => $project->getStatus()]
-                );
+                $this->logger->warning('Project status is not valid for bidding', [
+                    'project_id'     => $project->getIdProject(),
+                    'lender_id'      => $wallet->getId(),
+                    'amount'         => $amount,
+                    'rate'           => $rate,
+                    'project_status' => $project->getStatus()
+                ]);
             }
             throw new BidException('bids-invalid-project-status');
         }
 
         $currentDate = new \DateTime();
-        $endDate     = $project->getDateRetrait();
-        if ($legacyProject->date_fin != '0000-00-00 00:00:00') {
-            $endDate = $project->getDateFin();
-        }
+        $endDate     = $project->getDateFin() ?? $project->getDateRetrait();
 
         if ($currentDate > $endDate) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning(
-                    'Project end date is passed for bidding',
-                    ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'project_ended' => $endDate->format('c'), 'now' => $currentDate->format('c')]);
+                $this->logger->warning('Project end date is passed for bidding', [
+                    'project_id'    => $project->getIdProject(),
+                    'lender_id'     => $wallet->getId(),
+                    'amount'        => $amount,
+                    'rate'          => $rate,
+                    'project_ended' => $endDate->format('c'),
+                    'now'           => $currentDate->format('c')
+                ]);
             }
             throw new BidException('bids-invalid-project-status');
         }
 
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('Wallet is no Lender', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+                $this->logger->warning('Wallet is no Lender', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate
+                ]);
             }
             throw new BidException('bids-invalid-lender');
         }
 
         if (false === $this->lenderManager->canBid($wallet->getIdClient())) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('lender cannot bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+                $this->logger->warning('lender cannot bid', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate
+                ]);
             }
             throw new BidException('bids-lender-cannot-bid');
         }
 
         if (false === $this->productManager->isBidEligible($bid)) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('The Bid is not eligible for the project', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate]);
+                $this->logger->warning('The Bid is not eligible for the project', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate
+                ]);
             }
             throw new BidException('bids-not-eligible');
         }
@@ -192,7 +214,13 @@ class BidManager
 
         if ($balance < $amount) {
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('lender\'s balance not enough for a bid', ['project_id' => $projectId, 'lender_id' => $wallet->getId(), 'amount' => $amount, 'rate' => $rate, 'balance' => $balance]);
+                $this->logger->warning('lender\'s balance not enough for a bid', [
+                    'project_id' => $project->getIdProject(),
+                    'lender_id'  => $wallet->getId(),
+                    'amount'     => $amount,
+                    'rate'       => $rate,
+                    'balance'    => $balance
+                ]);
             }
             throw new BidException('bids-low-balance');
         }
@@ -201,7 +229,7 @@ class BidManager
             throw new BidException('bids-cip-validation-needed');
         }
 
-        $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $projectId]);
+        $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
         $bidNb ++;
         $bid->setOrdre($bidNb);
         $this->entityManager->persist($bid);
@@ -247,7 +275,7 @@ class BidManager
                 $bid->getAutobid() !== null ? ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ClientsGestionTypeNotif::TYPE_BID_PLACED,
                 $clientId,
                 'sendBidConfirmation',
-                $projectId,
+                $project->getIdProject(),
                 $amount,
                 $bid->getIdBid(),
                 $walletBalanceHistory
@@ -261,12 +289,12 @@ class BidManager
      * @param Autobid  $autoBid
      * @param Projects $project
      * @param float    $rate
-     * @param bool     $sendNotification
      *
      * @return bool|Bids
+     * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Exception
      */
-    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate, bool $sendNotification = true)
+    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate)
     {
         $biddenAutobid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idProject' => $project, 'idAutobid' => $autoBid]);
         if (
@@ -277,7 +305,7 @@ class BidManager
             && $this->autoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
             && $this->autoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
         ) {
-            return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, $sendNotification);
+            return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, false);
         }
 
         return false;
@@ -415,36 +443,47 @@ class BidManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects|\projects $project
      *
      * @return array
      */
-    public function getProjectRateRange(\projects $project): array
+    public function getProjectRateRange($project): array
     {
+        if ($project instanceof \projects) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
+        }
+
         try {
-            $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECT_RATE_RANGE . '_' . $project->id_project);
+            $cachedItem = $this->cachePool->getItem(CacheKeys::PROJECT_RATE_RANGE . '_' . $project->getIdProject());
             $cacheHit   = $cachedItem->isHit();
         } catch (CacheException $exception) {
             $cachedItem = null;
             $cacheHit   = false;
         }
 
-        if (false === $cacheHit) {
-            /** @var \project_rate_settings $projectRateSettings */
-            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+        if ($cacheHit) {
+            return $cachedItem->get();
+        }
 
-            if (false === empty($project->id_rate) && $projectRateSettings->get($project->id_rate)) {
-                $projectRateRange = ['rate_min' => (float) $projectRateSettings->rate_min, 'rate_max' => (float) $projectRateSettings->rate_max];
-            } else {
-                $projectRateRange = $projectRateSettings->getGlobalMinMaxRate();
-            }
+        $projectRateSettings           = null;
+        $projectRateSettingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRateSettings');
 
-            if (false === empty($cachedItem)) {
-                $cachedItem->set($projectRateRange)->expiresAfter(CacheKeys::SHORT_TIME);
-                $this->cachePool->save($cachedItem);
-            }
+        if (false === empty($project->getIdRate())) {
+            $projectRateSettings = $projectRateSettingsRepository->find($project->getIdRate());
+        }
+
+        if (null === $projectRateSettings) {
+            $projectRateRange = $projectRateSettingsRepository->getGlobalMinMaxRate();
         } else {
-            $projectRateRange = $cachedItem->get();
+            $projectRateRange = [
+                'rate_min' => $projectRateSettings->getRateMin(),
+                'rate_max' => $projectRateSettings->getRateMax()
+            ];
+        }
+
+        if (false === empty($cachedItem)) {
+            $cachedItem->set($projectRateRange)->expiresAfter(CacheKeys::SHORT_TIME);
+            $this->cachePool->save($cachedItem);
         }
 
         return $projectRateRange;

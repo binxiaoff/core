@@ -425,7 +425,7 @@ class AutolendController extends Controller
 
         foreach ($projectPeriods as $period) {
             foreach ($availableRisks as $risk) {
-                $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
+                $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . ProjectRateSettings::STATUS_ACTIVE);
                 $key         = $period['min'] . $risk;
 
                 if (false === array_key_exists($key, $autobidUserSettings)) {
