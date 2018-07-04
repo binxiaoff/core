@@ -569,9 +569,6 @@ class dossiersController extends bootstrap
                     $this->clients->update();
                 }
 
-                if ($this->isSirenEditable) {
-                    $this->setFranchiseeSiren();
-                }
                 $this->companies->sector       = isset($_POST['sector']) ? $_POST['sector'] : $this->companies->sector;
                 $this->companies->name         = $_POST['societe'];
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
@@ -652,6 +649,14 @@ class dossiersController extends bootstrap
 
                 if (isset($_POST['current_status']) && $_POST['status'] != $_POST['current_status'] && $this->projects->status != $_POST['status']) {
                     $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $this->projects);
+                }
+
+                if ($this->isSirenEditable) {
+                    // Save any changes made until now and refresh objects data
+                    $this->projects->update();
+                    $this->companies->update();
+
+                    $this->setFranchiseeSiren();
                 }
 
                 $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
@@ -841,7 +846,7 @@ class dossiersController extends bootstrap
         /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
-        if(
+        if (
             empty($this->companies->siren)
             && BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION == $this->projects->id_borrowing_motive
             && ($userManager->isGrantedRisk($this->userEntity) || $userManager->isGrantedSales($this->userEntity))
@@ -856,17 +861,22 @@ class dossiersController extends bootstrap
     {
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $siren                 = $projectRequestManager->validateSiren($this->request->request->get('siren', ''));
 
-        if (false === empty($_POST['siren']) && ($siren = $projectRequestManager->validateSiren($_POST['siren']))) {
+        if ($siren) {
             $this->companies->siren = $siren;
             $this->companies->update();
-            /** @var ProjectRequestManager $projectRequestManager */
-            $result = $projectRequestManager->checkCompanyRisk($this->projectEntity->getIdCompany(), $this->userEntity->getIdUser(), $this->projectEntity);
 
-            if (is_array($result) && false === empty($result)) {
-                $projectRequestManager->addRejectionProjectStatus($result[0], $this->projectEntity, $this->userEntity->getIdUser());
-            }
-            $this->projects->status = $this->projectEntity->getStatus();
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            // Refresh entity data because it will be used farther in checkProjectRisk
+            $entityManager->refresh($company);
+
+            $projectRequestManager->checkProjectRisk($this->projectEntity, $this->userEntity->getIdUser());
+
+            // Reload the data projects to refresh information that may have been modified via doctrine entity
+            $this->projects->get($this->projects->id_project);
         }
     }
 
