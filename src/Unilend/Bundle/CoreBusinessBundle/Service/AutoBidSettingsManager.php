@@ -466,16 +466,18 @@ class AutoBidSettingsManager
      */
     public function getRateRange(?string $evaluation = null, ?int $periodId = null)
     {
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+        $projectRateSettingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRateSettings');
 
         if ($evaluation === null || $periodId === null) {
-            $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+            $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
         } else {
-            $projectRates      = $projectRateSettings->getSettings($evaluation, $periodId);
-            $projectMinMaxRate = array_shift($projectRates);
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+            $projectRates        = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectMinMaxRate   = array_shift($projectRates);
+
             if (empty($projectMinMaxRate)) {
-                $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+                $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
             }
         }
 

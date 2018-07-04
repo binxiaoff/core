@@ -1,9 +1,11 @@
 <?php
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRateSettings;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
+    TemplateMessage, TemplateMessageProvider
+};
 
 class ProjectRateSettingsManager
 {
@@ -44,7 +46,7 @@ class ProjectRateSettingsManager
         $rateMinOld = '';
         $rateMaxOld = '';
 
-        $existingProjectRateSettings = $projectRateSettings->select('evaluation = "' . $evaluation . '" AND id_period = ' . $periodId . ' AND status != ' . \project_rate_settings::STATUS_ARCHIVED);
+        $existingProjectRateSettings = $projectRateSettings->select('evaluation = "' . $evaluation . '" AND id_period = ' . $periodId . ' AND status != ' . ProjectRateSettings::STATUS_ARCHIVED);
 
         if (empty($existingProjectRateSettings)) {
             $this->createSettings($evaluation, $periodId, $rateMin, $rateMax);
@@ -57,7 +59,7 @@ class ProjectRateSettingsManager
 
                 if ($rateMin != $rateMinOld || $rateMax != $rateMaxOld) {
                     if ($project->exist($activeProjectRateSettings['id_rate'], 'id_rate')) {
-                        $projectRateSettings->status = \project_rate_settings::STATUS_ARCHIVED;
+                        $projectRateSettings->status = ProjectRateSettings::STATUS_ARCHIVED;
                         $projectRateSettings->update();
                         $this->createSettings($evaluation, $periodId, $rateMin, $rateMax);
                     } else {
@@ -72,7 +74,7 @@ class ProjectRateSettingsManager
             if (false === empty($existingProjectRateSettings)) {
                 foreach ($existingProjectRateSettings as $settings) {
                     $projectRateSettings->get($settings['id_rate']);
-                    $projectRateSettings->status = \project_rate_settings::STATUS_ARCHIVED;
+                    $projectRateSettings->status = ProjectRateSettings::STATUS_ARCHIVED;
                     $projectRateSettings->update();
                 }
             }
@@ -109,15 +111,13 @@ class ProjectRateSettingsManager
      * @param int    $periodId
      * @param float  $rateMin
      * @param float  $rateMax
-     *
-     * @return bool
      */
-    private function createSettings($evaluation, $periodId, $rateMin, $rateMax)
+    private function createSettings($evaluation, $periodId, $rateMin, $rateMax): void
     {
         /** @var \project_rate_settings $oAutoBid */
         $projectRateSettings = $this->entityManager->getRepository('project_rate_settings');
 
-        $projectRateSettings->status     = \project_rate_settings::STATUS_ACTIVE;
+        $projectRateSettings->status     = ProjectRateSettings::STATUS_ACTIVE;
         $projectRateSettings->evaluation = $evaluation;
         $projectRateSettings->id_period  = $periodId;
         $projectRateSettings->rate_min   = $rateMin;

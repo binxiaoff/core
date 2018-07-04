@@ -3,12 +3,13 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{
+    EntityRepository, ORMException
+};
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Autobid, ClientSettingType, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType
+};
 
 class AutobidRepository extends EntityRepository
 {
@@ -33,7 +34,7 @@ class AutobidRepository extends EntityRepository
             ->andWhere('pp.status = :projectPeriodActive')
             ->setParameter('projectPeriodActive', \project_period::STATUS_ACTIVE)
             ->andWhere('prs.status = :projectRateSettingActive')
-            ->setParameter('projectRateSettingActive', \project_rate_settings::STATUS_ACTIVE)
+            ->setParameter('projectRateSettingActive', ProjectRateSettings::STATUS_ACTIVE)
             ->andWhere('a.evaluation = :evaluation')
             ->andWhere('prs.evaluation = :evaluation')
             ->setParameter('evaluation', $evaluation)
