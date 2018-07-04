@@ -171,7 +171,7 @@
                                                         <select id="identity-executive-selector" name="executive" class="input-field">
                                                             {% for executive in activeExecutives %}
                                                                 {% set position = executive.position %}
-                                                                {% if executive.companyName is not null %}
+                                                                {% if executive.companyName is not null and executive.position is not empty %}
                                                                     {% set position = 'project-request_step-1-position-of-company'|trans({'%position%': executive.position, '%company%': executive.companyName}) %}
                                                                 {% endif %}
                                                                 <option value="{{ executive.idExecutive|escape('html_attr') }}"

@@ -32,12 +32,12 @@ class InfolegaleExecutivePersonalChangeRepository extends EntityRepository
                 position,
                 code_position AS codePosition,
                 nominated,
-                null as companyName
+                NULL AS companyName
               FROM infolegale_executive_personal_change
               WHERE ended IS NULL
                     AND siren = :siren
-                    and title != :company
-              union
+                    AND title != :company
+              UNION
               SELECT
                 i2.id_executive  AS idExecutive,
                 i2.title,

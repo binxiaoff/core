@@ -14,7 +14,6 @@ final class Version20180703091613 extends AbstractMigration
      */
     public function up(Schema $schema) : void
     {
-
         $this->abortIf($this->connection->getDatabasePlatform()->getName() != "mysql");
         $this->addSql('INSERT IGNORE INTO translations (locale, section, name, translation, added, updated) VALUES (\'fr_FR\', \'project-request\', \'step-1-position-of-company\', \'%position% de %company%\', NOW(), NOW())');
 
