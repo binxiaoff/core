@@ -51,7 +51,7 @@ EOF
         ];
 
         /** @var Clients[] $clients */
-        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
+        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck, true);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
@@ -62,9 +62,6 @@ EOF
             $clientStatusHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
 
             foreach ($clients as $client) {
-                if ($client->getUsPerson()) {
-                    continue;
-                }
                 $attachments = $client->getAttachments();
                 foreach ($attachments as $attachment) {
                     if (false === in_array($attachment->getType()->getId(), $attachmentTypeToValidate)) {
