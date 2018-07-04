@@ -491,47 +491,52 @@ class remboursementController extends bootstrap
     {
         $this->autoFireView = false;
         $this->hideDecoration();
+        $errors = [];
 
-        $error = [];
         if ($this->request->isXmlHttpRequest() && $this->request->isMethod(\Symfony\Component\HttpFoundation\Request::METHOD_POST)) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
-            $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
+            $switch        = $this->request->request->getBoolean('switch');
+            $projectId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
 
-            $switch = $this->request->request->getBoolean('switch');
-
-            if (
-                null !== $switch
-                && false === empty($this->params[0])
-                && false !== filter_var($this->params[0], FILTER_VALIDATE_INT)
-                && $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find(filter_var($this->params[0], FILTER_VALIDATE_INT))) {
-                try {
-                    if ($switch) {
-                        $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
-                    } else {
-                        $projectRepaymentTaskManager->disableAutomaticRepayment($project, $this->userEntity);
-                    }
-                } catch (Exception $exception) {
-                    $error[] = $exception->getMessage();
-                    $this->get('logger')->error($exception->getMessage(), [
-                        'class'    => __CLASS__,
-                        'function' => __FUNCTION__,
-                        'file'     => $exception->getFile(),
-                        'line'     => $exception->getLine()
-                    ]);
-                }
-            } else {
-                $error[] = 'paramètres invalides.';
+            if (null === $switch || empty($this->params[0]) || false === $projectId) {
+                $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
             }
-        } else {
-            $error[] = 'paramètres ou requête incorrects';
+
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+
+            if (null === $project) {
+                $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
+            }
+
+            if (ProjectsStatus::PROBLEME == $project->getStatus()) {
+                $this->sendAjaxResponse(false, null, ['Un projet en statut problème ne peut pas être mis en remboursement automatique']);
+            }
+
+            try {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager $projectRepaymentTaskManager */
+                $projectRepaymentTaskManager = $this->get('unilend.service_repayment.project_repayment_task_manager');
+
+                if ($switch) {
+                    $projectRepaymentTaskManager->enableAutomaticRepayment($project, $this->userEntity);
+                } else {
+                    $projectRepaymentTaskManager->disableAutomaticRepayment($project, $this->userEntity);
+                }
+
+                $this->sendAjaxResponse(true);
+            } catch (Exception $exception) {
+                $errors[] = $exception->getMessage();
+                $this->get('logger')->error($exception->getMessage(), [
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__,
+                    'file'       => $exception->getFile(),
+                    'line'       => $exception->getLine(),
+                    'id_project' => $project->getIdProject()
+                ]);
+            }
         }
 
-        echo json_encode([
-            'success' => empty($error),
-            'errors'  => $error
-        ]);
+        $this->sendAjaxResponse(false, $errors, ['paramètres ou requête incorrects']);
     }
 
     /**
