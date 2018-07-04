@@ -15,17 +15,16 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, GreenpointAttachment, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientDataHistoryManager, LocationManager, NewsletterManager
+    LocationManager, NewsletterManager
 };
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
@@ -369,48 +368,46 @@ class LenderProfileController extends Controller
 
     /**
      * @param array $templateData
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
     private function addNotificationSettingsTemplate(array &$templateData): void
     {
-        /** @var \clients_gestion_notifications $notificationSettings */
-        $notificationSettings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications');
-        $notificationSetting  = $notificationSettings->getNotifs($this->getUser()->getClientId());
+        $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $this->get('unilend.service.notification_manager')->checkNotificationSettingsAndCreateDefaultIfMissing($client);
 
-        if (empty($notificationSetting)) {
-            $this->get('unilend.service.notification_manager')->generateDefaultNotificationSettings($this->getUser()->getClientId());
-            $notificationSetting = $notificationSettings->getNotifs($this->getUser()->getClientId());
-        }
+        $settings = $this->get('unilend.service.entity_manager')->getRepository('clients_gestion_notifications')->getNotifs($client->getIdClient());
 
         $templateData['notification_settings']['immediate'] = [
-            ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_BID_PLACED                    => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => $notificationSetting[ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => $notificationSetting[ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_REPAYMENT                     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT          => $notificationSetting[ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT            => $notificationSetting[ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
-            ClientsGestionTypeNotif::TYPE_DEBIT                         => $notificationSetting[ClientsGestionTypeNotif::TYPE_DEBIT][\clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => $settings[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BID_PLACED                    => $settings[ClientsGestionTypeNotif::TYPE_BID_PLACED][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => $settings[ClientsGestionTypeNotif::TYPE_BID_REJECTED][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => $settings[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => $settings[ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => $settings[ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT                     => $settings[ClientsGestionTypeNotif::TYPE_REPAYMENT][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT          => $settings[ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT            => $settings[ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
+            ClientsGestionTypeNotif::TYPE_DEBIT                         => $settings[ClientsGestionTypeNotif::TYPE_DEBIT][ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE],
         ];
 
         $templateData['notification_settings']['daily'] = [
-            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            ClientsGestionTypeNotif::TYPE_BID_PLACED    => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_PLACED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            ClientsGestionTypeNotif::TYPE_BID_REJECTED  => $notificationSetting[ClientsGestionTypeNotif::TYPE_BID_REJECTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY],
-            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_DAILY]
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $settings[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_BID_PLACED    => $settings[ClientsGestionTypeNotif::TYPE_BID_PLACED][ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_BID_REJECTED  => $settings[ClientsGestionTypeNotif::TYPE_BID_REJECTED][ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $settings[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $settings[ClientsGestionTypeNotif::TYPE_REPAYMENT][ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY]
         ];
 
         $templateData['notification_settings']['weekly'] = [
-            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $notificationSetting[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY],
-            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY]
+            ClientsGestionTypeNotif::TYPE_NEW_PROJECT   => $settings[ClientsGestionTypeNotif::TYPE_NEW_PROJECT][ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY],
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $settings[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $settings[ClientsGestionTypeNotif::TYPE_REPAYMENT][ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY]
         ];
 
         $templateData['notification_settings']['monthly'] = [
-            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $notificationSetting[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY],
-            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $notificationSetting[ClientsGestionTypeNotif::TYPE_REPAYMENT][\clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY]
+            ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED => $settings[ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED][ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY],
+            ClientsGestionTypeNotif::TYPE_REPAYMENT     => $settings[ClientsGestionTypeNotif::TYPE_REPAYMENT][ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY]
         ];
     }
 
@@ -512,25 +509,25 @@ class LenderProfileController extends Controller
 
         switch ($sendingPeriod) {
             case 'immediate':
-                $type = \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE;
+                $type = ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE;
                 if (false === in_array($typeId, $immediateTypes, true)) {
                     return $this->json('ko');
                 }
                 break;
             case 'daily':
-                $type = \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY;
+                $type = ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY;
                 if (false === in_array($typeId, $dailyTypes, true)) {
                     return $this->json('ko');
                 }
                 break;
             case 'weekly':
-                $type = \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY;
+                $type = ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY;
                 if (false === in_array($typeId, $weeklyTypes, true)) {
                     return $this->json('ko');
                 }
                 break;
             case 'monthly':
-                $type = \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY;
+                $type = ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY;
                 if (false === in_array($typeId, $monthlyTypes, true)) {
                     return $this->json('ko');
                 }
@@ -542,15 +539,21 @@ class LenderProfileController extends Controller
         try {
             $entityManager                  = $this->get('doctrine.orm.entity_manager');
             $notificationSettingsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionNotifications');
-            $notificationSettings           = $notificationSettingsRepository->findOneBy([
-                'idClient' => $this->getUser()->getClientId(),
-                'idNotif'  => $typeId
+            $client                         = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+            $settingType                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($typeId);
+            $notificationSetting            = $notificationSettingsRepository->findOneBy([
+                'idClient' => $client->getIdClient(),
+                'idNotif'  => $settingType->getidClientGestionTypeNotif()
             ]);
 
-            $notificationSettings->{'set' . ucfirst($type)}($active);
+            if (null === $notificationSetting) {
+                $notificationSetting = $this->get('unilend.service.notification_manager')->createMissingNotificationSettingWithDefaultValue($settingType, $client);
+            }
 
-            $entityManager->flush($notificationSettings);
-        } catch (OptimisticLockException $exception) {
+            $notificationSetting->{'set' . ucfirst($type)}($active);
+
+            $entityManager->flush($notificationSetting);
+        } catch (\Exception $exception) {
             $this->get('logger')->error('Could not update lender notifications. Error: ' . $exception->getMessage(), [
                 'id_client' => $this->getUser()->getClientId(),
                 'class'     => __CLASS__,
@@ -579,25 +582,101 @@ class LenderProfileController extends Controller
 
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $client            = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $bankAccountForm   = $this->getBankAccountForm($client);
+        $mainAddressForm   = $client->isNaturalPerson() ? $this->getMainAddressForm($client) : null;
 
         $template = [
             'attachmentTypes' => $attachmentManager->getAllTypesForLender(),
-            'attachmentsList' => '',
-            'bankForm'        => null
+            'attachmentsList' => $this->getAttachmentList($client),
+            'bankForm'        => null === $bankAccountForm ? null : $bankAccountForm->createView(),
+            'mainAddressForm' => null === $mainAddressForm ? null : $mainAddressForm->createView()
         ];
 
-        $ribAttachment   = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneClientAttachmentByType($this->getUser()->getClientId(), AttachmentType::RIB);
-        $bankAccount     = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->getUser()->getClientId());
+        return $this->render('lender_profile/lender_completeness.html.twig', $template);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return FormInterface|null
+     */
+    private function getBankAccountForm(Clients $client): ?FormInterface
+    {
+        $entityManager   = $this->get('doctrine.orm.entity_manager');
+
+        try {
+            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        } catch (NonUniqueResultException $exception) {
+            $this->get('logger')->error('Client has more than one last modified bank account', [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'id_client' => $client->getIdClient()
+            ]);
+
+            return null;
+        }
+
+        $iban = $bankAccount ? $bankAccount->getIban() : '';
+        $bic  = $bankAccount ? $bankAccount->getBic() : '';
+
         $bankAccountForm = $this->createFormBuilder()
             ->add('bankAccount', BankAccountType::class)
             ->getForm();
 
-        $bankAccountForm->get('bankAccount')->get('iban')->setData($bankAccount->getIban());
-        $bankAccountForm->get('bankAccount')->get('bic')->setData($bankAccount->getBic());
-        $template['bankForm'] = $bankAccountForm->createView();
+        $bankAccountForm->get('bankAccount')->get('iban')->setData($iban);
+        $bankAccountForm->get('bankAccount')->get('bic')->setData($bic);
 
+        return $bankAccountForm;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return null|FormInterface
+     */
+    private function getMainAddressForm(Clients $client): ?FormInterface
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $formManager   = $this->get('unilend.frontbundle.service.form_manager');
+
+        try {
+            $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+        } catch (NonUniqueResultException $exception) {
+            $this->get('logger')->error('Client has more than one last modified main address', [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'id_client' => $client->getIdClient()
+            ]);
+
+            return null;
+        }
+
+        if (null === $lastModifiedMainAddress) {
+            $this->get('logger')->error('Client has no main address', [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'id_client' => $client->getIdClient()
+            ]);
+
+            return null;
+        }
+
+        return $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return string
+     */
+    private function getAttachmentList(Clients $client): string
+    {
+        $attachmentsList     = '';
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
         $completenessRequest = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory')->findOneBy(
-            ['idClient' => $this->getUser()->getClientId(), 'idStatus' => ClientsStatus::STATUS_COMPLETENESS],
+            ['idClient' => $client->getIdClient(), 'idStatus' => ClientsStatus::STATUS_COMPLETENESS],
             ['added' => 'DESC', 'id' => 'DESC']
         );
 
@@ -606,17 +685,11 @@ class LenderProfileController extends Controller
             $domElement->loadHTML($completenessRequest->getContent());
             $list = $domElement->getElementsByTagName('ul');
             if ($list->length > 0 && $list->item(0)->childNodes->length > 0) {
-                $template['attachmentsList'] = $list->item(0)->C14N();
+                $attachmentsList = $list->item(0)->C14N();
             }
-        } elseif (
-            null !== $ribAttachment
-            && $ribAttachment->getGreenpointAttachment() instanceof GreenpointAttachment
-            && $ribAttachment->getGreenpointAttachment()->getValidationStatus() < 8
-        ) {
-            $template['attachmentsList'] = '<ul><li>' . $ribAttachment->getType()->getLabel() . '</li></ul>';
         }
 
-        return $this->render('lender_profile/lender_completeness.html.twig', $template);
+        return $attachmentsList;
     }
 
     /**
@@ -635,13 +708,17 @@ class LenderProfileController extends Controller
         }
 
         $translator            = $this->get('translator');
-        $isFileUploaded        = false;
-        $error                 = '';
-        $files                 = $request->request->get('files', []);
-        $client                = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
+        $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $client                = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->getUser()->getClientId());
         $unattachedClient      = clone $client;
-        $newAttachments        = [];
+        $company               = null;
+        $unattachedCompany     = null;
+        $isFileUploaded        = false;
         $isBankAccountModified = false;
+        $isMainAddressModified = false;
+        $newAttachments        = [];
+        $files                 = $request->request->get('files', []);
+        $modifiedAddressType   = '';
 
         foreach ($request->files->all() as $fileName => $file) {
             if ($file instanceof UploadedFile && false === empty($files[$fileName])) {
@@ -650,35 +727,113 @@ class LenderProfileController extends Controller
                     $isFileUploaded   = true;
 
                     if (AttachmentType::RIB === $document->getType()->getId()) {
-                        $form = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
-                        $iban = $form['bankAccount']['iban'];
-                        $bic  = $form['bankAccount']['bic'];
+                        $this->handleCompletenessRib($request, $client, $document);
+                        $isBankAccountModified = true;
+                    }
 
-                        if (in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
-                            $bankAccountManager = $this->get('unilend.service.bank_account_manager');
-                            $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
-                            $isBankAccountModified = true;
-                        } else {
-                            $error = $translator->trans('lender-subscription_documents-iban-not-european-error-message');
-                        }
+                    if (AttachmentType::JUSTIFICATIF_DOMICILE === $document->getType()->getId()) {
+                        $this->handleCompletenessHousingCertificate($request, $client, $document);
+                        $isMainAddressModified = true;
+                        $modifiedAddressType   = AddressType::TYPE_MAIN_ADDRESS;
                     }
                 } catch (\Exception $exception) {
-                    $error = $translator->trans('lender-profile_completeness-form-error-message');
+                    $this->get('logger')->error('An exception occurred during handling of completeness form. Message: ' . $exception->getMessage(), [
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'id_client' => $client->getIdClient()
+                    ]);
+                    $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-form-error-message'));
                 }
             }
         }
-        $this->get('unilend.service.client_status_manager')
-            ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, null, null, false, $isBankAccountModified, $newAttachments);
 
-        if (empty($error) && $isFileUploaded) {
-            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, '', $isBankAccountModified);
+        if ($isFileUploaded && empty($this->get('session')->getFlashBag()->peek('completenessError'))) {
+            if (false === $client->isNaturalPerson()) {
+                $company           = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                $unattachedCompany = clone $company;
+            }
 
+            $this->get('unilend.service.client_status_manager')
+                ->changeClientStatusTriggeredByClientAction($client, $unattachedClient, $company, $unattachedCompany, $isMainAddressModified, $isBankAccountModified, $newAttachments);
+
+            $this->get(ClientDataHistoryManager::class)->sendLenderProfileModificationEmail($client, [], [], $newAttachments, $modifiedAddressType, $isBankAccountModified);
+
+            /** currently this message is not displayed because of the redirection. RUN-3054 */
             $this->addFlash('completenessSuccess', $translator->trans('lender-profile_completeness-form-success-message'));
-        } elseif (false === empty($error)) {
-            $this->addFlash('completenessError', $error);
         }
 
         return $this->redirectToRoute('lender_completeness');
+    }
+
+    /**
+     * @param Request    $request
+     * @param Clients    $client
+     * @param Attachment $document
+     *
+     * @throws \Exception
+     */
+    private function handleCompletenessRib(Request $request, Clients $client, Attachment $document): void
+    {
+        $translator = $this->get('translator');
+        $form       = $request->request->get('form', ['bankAccount' => ['bic' => '', 'iban' => '']]);
+        $iban       = $form['bankAccount']['iban'];
+        $bic        = $form['bankAccount']['bic'];
+
+        if (empty($iban) || empty($bic)) {
+            $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-bank-account-data-is-empty'));
+            return;
+        }
+
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+            $this->addFlash('completenessError', $translator->trans('lender-subscription_documents-iban-not-european-error-message'));
+            return;
+        }
+
+        $bankAccountManager = $this->get('unilend.service.bank_account_manager');
+        $bankAccountManager->saveBankInformation($client, $bic, $iban, $document);
+    }
+
+    /**
+     * @param Request    $request
+     * @param Clients    $client
+     * @param Attachment $document
+     *
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
+     * @throws \Exception
+     */
+    private function handleCompletenessHousingCertificate(Request $request, Clients $client, Attachment $document): void
+    {
+        if (false === $client->isNaturalPerson()) {
+            $this->get('logger')->error('Lender legal entity uploaded a housing certificate which is only used for natural person. ', [
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'id_client' => $client->getIdClient()
+            ]);
+            return;
+        }
+
+        $translator    = $this->get('translator');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $addressForm   = $request->request->get('main_address');
+        $address       = $addressForm['address'] ?? '';
+        $zip           = $addressForm['zip'] ?? '';
+        $city          = $addressForm['city'] ?? '';
+        $countryId     = $addressForm['idCountry'] ?? '';
+
+        if (empty($address) || empty($zip) || empty($city) || empty($countryId)) {
+            $this->addFlash('completenessError', $translator->trans('lender-profile_completeness-address-data-is-empty'));
+            return;
+        }
+
+        $addressManager = $this->get('unilend.service.address_manager');
+        $addressManager->saveClientAddress($address, $zip, $city, $countryId, $client, AddressType::TYPE_MAIN_ADDRESS);
+
+        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+            ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+        $addressManager->linkAttachmentToAddress($lastModifiedAddress, $document);
     }
 
     /**

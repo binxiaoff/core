@@ -8,7 +8,8 @@ use Symfony\Component\{
     Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, Clients, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType
+    Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Loans, Notifications, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir,
+    Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{
@@ -741,7 +742,7 @@ class MailerManager
         /** @var \client_settings $oClientSettings */
         $oClientSettings = $this->entityManagerSimulator->getRepository('client_settings');
 
-        if ($oClientSettings->get($idClient, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
+        if ($oClientSettings->get($idClient, 'id_type = ' . ClientSettingType::TYPE_AUTOBID_SWITCH . ' AND id_client')) {
             $oActivationTime = new \DateTime($oClientSettings->added);
         } else {
             $oActivationTime = new \DateTime();

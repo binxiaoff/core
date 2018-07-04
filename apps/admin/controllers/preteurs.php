@@ -1019,57 +1019,57 @@ class preteursController extends bootstrap
             }
 
             $this->aClientsNotifications = $clientNotifications->getNotifs($this->clients->id_client);
-            $this->aNotificationPeriode  = \clients_gestion_notifications::getAllPeriod();
+            $this->aNotificationPeriode  = ClientsGestionNotifications::ALL_PERIOD;
 
             $this->aInfosNotifications['vos-offres-et-vos-projets']['title']           = 'Offres et Projets';
             $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications']   = [
                 ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => [
                     'title'           => 'Annonce des nouveaux projets',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_BID_PLACED                    => [
                     'title'           => 'Offres réalisées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => [
                     'title'           => 'Offres refusées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => [
                     'title'           => 'Offres acceptées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => [
                     'title'           => 'Problème sur un projet',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
                     'title'           => 'Autolend : offre réalisée ou rejetée',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1078,11 +1078,11 @@ class preteursController extends bootstrap
                 ClientsGestionTypeNotif::TYPE_REPAYMENT => [
                     'title'           => 'Remboursement(s)',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1091,22 +1091,22 @@ class preteursController extends bootstrap
                 ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT => [
                     'title'           => 'Alimentation de votre compte par virement',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT   => [
                     'title'           => 'Alimentation de votre compte par carte bancaire',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_DEBIT                => [
                     'title'           => 'retrait',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1395,7 +1395,7 @@ class preteursController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager $clientSettingsManager */
             $clientSettingsManager = $this->get('unilend.service.client_settings_manager');
-            $clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_BETA_TESTER, $value);
+            $clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_BETA_TESTER, $value);
 
             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $client->getIdClient());
             die;

@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientsHistoryActions, ClientsStatus, Projects, WalletType
+    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, Projects, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
@@ -394,7 +394,7 @@ class AutolendController extends Controller
     {
         $client = $this->getClient();
 
-        if (\client_settings::AUTO_BID_ON == $clientSettings->getSetting($client->getIdClient(), \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+        if (\client_settings::AUTO_BID_ON == $clientSettings->getSetting($client->getIdClient(), ClientSettingType::TYPE_AUTOBID_SWITCH)) {
             $autoBidSettingsManager->off($client);
             $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_OFF, $request);
             return 'update_off_success';

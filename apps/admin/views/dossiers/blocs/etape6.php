@@ -5,9 +5,13 @@
     <?php
         $isRiskUser = $this->get('unilend.service.back_office_user_manager')->isUserGroupRisk($this->userEntity);
         $isEditable = $this->projects->status == \projects_status::ANALYSIS_REVIEW && $isRiskUser;
+        $moyenne    = '';
+
+        if ($this->projects_notes->id_project_notes) {
+            $moyenne = round($this->projects_notes->performance_financiere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1);
+        }
     ?>
     <div id="content_etape6">
-        <?php $moyenne  = round($this->projects_notes->performance_financiere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <a class="tab_title" id="section-risk-analysis" href="#section-risk-analysis">6. Analyse risque</a>
         <div class="tab_content<?php if ($isRiskUser) : ?> expand<?php endif; ?>" id="etape6">
             <table class="form tableNotes" style="width: 100%;">

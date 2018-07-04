@@ -250,3 +250,83 @@ $doc.on('ready', function () {
   checkLegalEntityStatus()
   checkEntityExternalCounsel()
 })
+
+    function updateNotificationSettings() {
+        $('#form-alerts input[type="checkbox"]').on('change', function () {
+            var switcher = $(this);
+            var inputName = switcher.attr('name').split('-');
+            var period = inputName[0];
+            var typeId = inputName[1];
+            $.ajax({
+                // Setup AJAX
+                url: $('#form-alerts').attr('action'),
+                method: $('#form-alerts').attr('method'),
+                global: false,
+                dataType: 'json',
+                data: {
+                    period: period,
+                    type_id: typeId,
+                    active: switcher.is(':checked')
+                },
+                // Event: received server response
+                success: function (data) {
+                    if (data == 'ko') {
+                        switcher.prop('checked', !switcher.is(':checked'));
+                    }
+                },
+                // Event: server error
+                error: function () {
+                    switcher.prop('checked', !switcher.is(':checked'));
+                }
+            })
+        })
+    }
+
+    updateNotificationSettings()
+
+    $doc.on('change', '#form-lender-completeness select[name^="files["]', function () {
+        var ribDocumentId          = $('#document-id-rib').val()
+        var $bankAccount           = $('#completeness-bank-account')
+        var housingCertificateType = $('#document-id-housing-certificate').val()
+        var $mainAddress           = $('#completeness-main-address')
+
+        if (ribDocumentId === $(this).val()) {
+            $bankAccount.collapse('show')
+            $bankAccount.removeClass('disabled')
+        } else {
+            hideDetails(ribDocumentId, $bankAccount)
+        }
+
+        if (housingCertificateType === $(this).val()) {
+            $mainAddress.collapse('show')
+            $mainAddress.removeClass('disabled')
+        } else {
+            hideDetails(housingCertificateType, $mainAddress)
+        }
+    })
+
+    $doc.on('FileAttach:removed', '.file-upload-extra .ui-fileattach', function (event) {
+        var ribDocumentId          = $('#document-id-rib').val()
+        var $bankAccount           = $('#completeness-bank-account')
+        var housingCertificateType = $('#document-id-housing-certificate').val()
+        var $mainAddress           = $('#completeness-main-address')
+        hideDetails(ribDocumentId, $bankAccount)
+        hideDetails(housingCertificateType, $mainAddress)
+
+    })
+
+    function hideDetails(documentId, $dataSection) {
+        var documentSelected = false
+        var $extraFiles  = $('.form-extrafiles-list');
+        $extraFiles.find('select[name^="files["]').each(function () {
+            if (documentId === $(this).find(':selected').val()) {
+                documentSelected = true
+                return
+            }
+        })
+        if (false === documentSelected) {
+            $dataSection.collapse('hide')
+            $dataSection.addClass('disabled')
+        }
+    }
+})

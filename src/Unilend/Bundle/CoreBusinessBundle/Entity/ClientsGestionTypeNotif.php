@@ -22,6 +22,26 @@ class ClientsGestionTypeNotif
     const TYPE_DEBIT                         = 8;
     const TYPE_PROJECT_PROBLEM               = 9;
     const TYPE_AUTOBID_ACCEPTED_REJECTED_BID = 13;
+
+    const TYPES_WITH_DEFAULT_SETTING_IMMEDIATE = [
+        self::TYPE_NEW_PROJECT,
+        self::TYPE_BID_REJECTED,
+        self::TYPE_BANK_TRANSFER_CREDIT,
+        self::TYPE_CREDIT_CARD_CREDIT,
+        self::TYPE_DEBIT
+    ];
+
+    const TYPES_WITH_DEFAULT_SETTING_DAILY = [
+        self::TYPE_BID_PLACED,
+        self::TYPE_LOAN_ACCEPTED,
+        self::TYPE_REPAYMENT
+    ];
+
+    const TYPES_WITH_DEFAULT_SETTING_WEEKLY = [
+        self::TYPE_NEW_PROJECT,
+        self::TYPE_LOAN_ACCEPTED
+    ];
+
     /**
      * @var string
      *
