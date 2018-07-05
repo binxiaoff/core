@@ -8,9 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Bids
  *
  * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
- * @ORM\Entity
- * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Bids
 {
@@ -56,7 +55,7 @@ class Bids
     /**
      * @var integer
      *
-     * @ORM\Column(name="ordre", type="integer", nullable=false)
+     * @ORM\Column(name="ordre", type="integer", nullable=true)
      */
     private $ordre;
 
@@ -77,7 +76,7 @@ class Bids
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -95,7 +94,7 @@ class Bids
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id")
+     *   @ORM\JoinColumn(name="id_lender_account", referencedColumnName="id", nullable=false)
      * })
      */
     private $idLenderAccount;
@@ -103,11 +102,11 @@ class Bids
     /**
      * Set Project
      *
-     * @param Projects $project
+     * @param Projects|null $project
      *
      * @return Bids
      */
-    public function setProject(Projects $project = null)
+    public function setProject(?Projects $project): Bids
     {
         $this->idProject = $project;
 
@@ -117,9 +116,9 @@ class Bids
     /**
      * Get Project
      *
-     * @return Projects
+     * @return Projects|null
      */
-    public function getProject()
+    public function getProject(): ?Projects
     {
         return $this->idProject;
     }
@@ -127,11 +126,11 @@ class Bids
     /**
      * Set Autobid
      *
-     * @param Autobid $autobid
+     * @param Autobid|null $autobid
      *
      * @return Bids
      */
-    public function setAutobid(Autobid $autobid = null)
+    public function setAutobid(?Autobid $autobid): Bids
     {
         $this->idAutobid = $autobid;
 
@@ -141,9 +140,9 @@ class Bids
     /**
      * Get Autobid
      *
-     * @return Autobid
+     * @return Autobid|null
      */
-    public function getAutobid()
+    public function getAutobid(): ?Autobid
     {
         return $this->idAutobid;
     }
@@ -151,11 +150,11 @@ class Bids
     /**
      * Set idLenderAccount
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLenderAccount
+     * @param Wallet $idLenderAccount
      *
      * @return Bids
      */
-    public function setIdLenderAccount(Wallet $idLenderAccount)
+    public function setIdLenderAccount(Wallet $idLenderAccount): Bids
     {
         $this->idLenderAccount = $idLenderAccount;
 
@@ -165,9 +164,9 @@ class Bids
     /**
      * Get idLenderAccount
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return Wallet
      */
-    public function getIdLenderAccount()
+    public function getIdLenderAccount(): Wallet
     {
         return $this->idLenderAccount;
     }
@@ -175,11 +174,11 @@ class Bids
     /**
      * Set amount
      *
-     * @param integer $amount
+     * @param int $amount
      *
      * @return Bids
      */
-    public function setAmount($amount)
+    public function setAmount(int $amount): Bids
     {
         $this->amount = $amount;
 
@@ -189,9 +188,9 @@ class Bids
     /**
      * Get amount
      *
-     * @return integer
+     * @return int
      */
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->amount;
     }
@@ -203,7 +202,7 @@ class Bids
      *
      * @return Bids
      */
-    public function setRate($rate)
+    public function setRate(float $rate): Bids
     {
         $this->rate = $rate;
 
@@ -215,7 +214,7 @@ class Bids
      *
      * @return float
      */
-    public function getRate()
+    public function getRate(): float
     {
         return $this->rate;
     }
@@ -223,11 +222,11 @@ class Bids
     /**
      * Set ordre
      *
-     * @param integer $ordre
+     * @param int|null $ordre
      *
      * @return Bids
      */
-    public function setOrdre($ordre)
+    public function setOrdre(?int $ordre): Bids
     {
         $this->ordre = $ordre;
 
@@ -237,9 +236,9 @@ class Bids
     /**
      * Get ordre
      *
-     * @return integer
+     * @return int|null
      */
-    public function getOrdre()
+    public function getOrdre(): ?int
     {
         return $this->ordre;
     }
@@ -247,11 +246,11 @@ class Bids
     /**
      * Set status
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return Bids
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Bids
     {
         $this->status = $status;
 
@@ -261,9 +260,9 @@ class Bids
     /**
      * Get status
      *
-     * @return integer
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -275,7 +274,7 @@ class Bids
      *
      * @return Bids
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Bids
     {
         $this->added = $added;
 
@@ -287,7 +286,7 @@ class Bids
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -295,11 +294,11 @@ class Bids
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return Bids
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): Bids
     {
         $this->updated = $updated;
 
@@ -309,9 +308,9 @@ class Bids
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -319,9 +318,9 @@ class Bids
     /**
      * Get idBid
      *
-     * @return integer
+     * @return int
      */
-    public function getIdBid()
+    public function getIdBid(): int
     {
         return $this->idBid;
     }
@@ -329,7 +328,7 @@ class Bids
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -339,7 +338,7 @@ class Bids
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }
