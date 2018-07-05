@@ -219,4 +219,39 @@ class LoansRepository extends EntityRepository
 
         return $loansBasicInformation;
     }
+
+    /**
+     * @param Projects $project
+     *
+     * @return array
+     */
+    public function getProjectLoans(Projects $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder
+            ->select('
+                l.idLoan,
+                ROUND(l.amount / 100) AS amount,
+                l.rate,
+                uc.label AS contractType,
+                ROUND(e.montant / 100, 2) AS monthlyRepayment,
+                c.idClient,
+                c.hash AS clientHash,
+                c.prenom AS firstName,
+                c.nom AS lastName,
+                co.name AS companyName,
+                IDENTITY(t.idClientOrigin) AS idClientOrigin'
+            )
+            ->innerJoin('UnilendCoreBusinessBundle:UnderlyingContract', 'uc', Join::WITH, 'l.idTypeContract = uc.idContract')
+            ->innerJoin('UnilendCoreBusinessBundle:Echeanciers', 'e', Join::WITH, 'l.idLoan = e.idLoan AND e.ordre = 1')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'l.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'c.idClient = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idClientOwner = w.idClient')
+            ->leftJoin('UnilendCoreBusinessBundle:LoanTransfer', 'lt', Join::WITH, 'l.idLoan = lt.idLoan')
+            ->leftJoin('UnilendCoreBusinessBundle:Transfer', 't', Join::WITH, 'lt.idTransfer = t.idTransfer')
+            ->where('l.idProject = :project')
+            ->setParameter('project', $project);
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
 }

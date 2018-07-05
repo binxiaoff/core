@@ -295,28 +295,31 @@ EOF
             $unpaidSchedule = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
                 ->findOneBy(['idProject' => $projectId, 'statusEmprunteur' => [EcheanciersEmprunteur::STATUS_PENDING, EcheanciersEmprunteur::STATUS_PARTIALLY_PAID]], ['ordre' => 'ASC']);
 
-            /** @var Prelevements $bankDirectDebit */
-            $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
-                ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $unpaidSchedule->getOrdre()]);
-            if ($unpaidSchedule && $bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
-                $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
-                $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
+            if ($unpaidSchedule) {
+                /** @var Prelevements $bankDirectDebit */
+                $bankDirectDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Prelevements')
+                    ->findOneBy(['idProject' => $projectId, 'numPrelevement' => $unpaidSchedule->getOrdre()]);
 
-                $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+                if ($bankDirectDebit && false !== strpos($motif, $bankDirectDebit->getMotif())) {
+                    $operationManager      = $this->getContainer()->get('unilend.service.operation_manager');
+                    $projectPaymentManager = $this->getContainer()->get('unilend.service_repayment.project_payment_manager');
 
-                if ($project instanceof Projects) {
-                    $reception
-                        ->setIdProject($project)
-                        ->setIdClient($project->getIdCompany()->getIdClientOwner())
-                        ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
-                        ->setAssignmentDate(new \DateTime());
-                    $entityManager->flush();
+                    $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
 
-                    $operationManager->provisionBorrowerWallet($reception);
+                    if ($project instanceof Projects) {
+                        $reception
+                            ->setIdProject($project)
+                            ->setIdClient($project->getIdCompany()->getIdClientOwner())
+                            ->setStatusBo(Receptions::STATUS_ASSIGNED_AUTO)
+                            ->setAssignmentDate(new \DateTime());
+                        $entityManager->flush();
 
-                    if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
-                        $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
-                        $projectPaymentManager->pay($reception, $user);
+                        $operationManager->provisionBorrowerWallet($reception);
+
+                        if ($project->getStatus() === ProjectsStatus::REMBOURSEMENT) {
+                            $user = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_CRON);
+                            $projectPaymentManager->pay($reception, $user);
+                        }
                     }
                 }
             }

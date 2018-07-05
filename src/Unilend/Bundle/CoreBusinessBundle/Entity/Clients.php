@@ -513,7 +513,7 @@ class Clients
      */
     public function setSlug($slug)
     {
-        $this->slug = $slug;
+        $this->slug = \URLify::filter($slug);
 
         return $this;
     }

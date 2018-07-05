@@ -1,5 +1,8 @@
 <?php
 
+use Box\Spout\{
+    Common\Type, Writer\Style\StyleBuilder, Writer\WriterFactory
+};
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
@@ -578,10 +581,9 @@ class sfpmeiController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
             $attachmentManager = $this->get('unilend.service.attachment_manager');
 
-            $this->aAttachments                   = $this->projectEntity->getAttachments();
-            $this->aAttachmentTypes               = $attachmentManager->getAllTypesForProjects();
-            $this->attachmentTypesForCompleteness = $attachmentManager->getAllTypesForProjects(false);
-            $this->lastBalanceSheet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
+            $this->aAttachments     = $this->projectEntity->getAttachments();
+            $this->aAttachmentTypes = $attachmentManager->getAllTypesForProjects();
+            $this->lastBalanceSheet = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL
             ]);
@@ -937,74 +939,37 @@ class sfpmeiController extends bootstrap
 
     /**
      * @param int $queryId
-     */
-    private function exportResult($queryId)
-    {
-        $oDocument = $this->exportDocument($queryId);
-
-        // As long as we use $this->queries in order to name file, headers must be sent after calling $this->export()
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=' . $this->bdd->generateSlug($this->queries->name) . '.csv');
-        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Expires: 0');
-
-        /** @var \PHPExcel_Writer_CSV $oWriter */
-        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
-        $oWriter->setUseBOM(true);
-        $oWriter->setDelimiter(';');
-        $oWriter->save('php://output');
-    }
-
-    /**
-     * @param int $queryId
      *
-     * @return PHPExcel
-     *
-     * @throws PHPExcel_Exception
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Common\Exception\InvalidArgumentException
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
      */
-    private function exportDocument($queryId)
+    private function exportResult(int $queryId): void
     {
+        $this->hideDecoration();
+        $this->autoFireview = false;
+
         $this->executeQuery($queryId);
 
-        PHPExcel_Settings::setCacheStorageMethod(
-            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-            ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-        );
-
-        $oDocument    = new PHPExcel();
-        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
-
         if (is_array($this->result) && count($this->result) > 0) {
-            $aHeaders       = array_keys($this->result[0]);
-            $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
-            $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
-                ->applyFromArray([
-                    'fill' => [
-                        'type'  => PHPExcel_Style_Fill::FILL_SOLID,
-                        'color' => ['rgb' => '2672A2']
-                    ],
-                    'font' => [
-                        'bold'  => true,
-                        'color' => ['rgb' => 'FFFFFF']
-                    ]
-                ])
-                ->getAlignment()
-                ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+            $filename = $this->bdd->generateSlug($this->queries->name) . '.xlsx';
+            $writer   = WriterFactory::create(Type::XLSX);
 
-            foreach ($aHeaders as $iIndex => $sColumnName) {
-                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName)
-                    ->getColumnDimension(PHPExcel_Cell::stringFromColumnIndex($iIndex))
-                    ->setAutoSize(true);
-            }
+            $titleStyle = (new StyleBuilder())
+                ->setFontBold()
+                ->setFontColor(\Box\Spout\Writer\Style\Color::WHITE)
+                ->setBackgroundColor('2672A2')
+                ->build();
 
-            foreach ($this->result as $iRowIndex => $aRow) {
-                $iColIndex = 0;
-                foreach ($aRow as $sCellValue) {
-                    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
-                }
-            }
+            $writer
+                ->openToBrowser($filename)
+                ->addRowWithStyle([$this->queries->name], $titleStyle)
+                ->addRow(array_keys($this->result[0]))
+                ->addRows($this->result)
+                ->close();
         }
 
-        return $oDocument;
+        die;
     }
 }

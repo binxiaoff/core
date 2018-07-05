@@ -150,19 +150,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
         cursor: pointer;
     }
 
-    .div-2-columns {
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex: 1;
-        -ms-flex: 1;
-        flex: 1;
-    }
-
-    .div-left-pos, .div-right-pos {
-        margin: 2px;
-        min-width: 50%;
-    }
-
     .btn-small {
         border-color: transparent;
         font-size: 11px;
@@ -214,13 +201,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 </style>
 
 <script>
-    function deleteWordingli(id) {
-        var id_delete = id;
-        var id_input = id.replace("delete", "input");
-        $("#" + id_delete).remove();
-        $("#" + id_input).remove();
-    }
-
     $(function () {
         $('.tooltip').tooltip();
 
@@ -284,24 +264,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             size: <?= $this->nb_lignes ?>
         })
         <?php endif; ?>
-
-        $('body').on('change', '#partner', function () {
-            var partnerId = $(this).find('option:selected').val()
-
-            if (partnerId !== '') {
-                $.ajax({
-                    type: 'POST',
-                    url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + partnerId,
-                    dataType: 'json',
-                    success: function (products) {
-                        $('#product').find('option').remove().end().append('<option value=""></option>')
-                        $.each(products, function (index, product) {
-                            $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
-                        })
-                    }
-                })
-            }
-        })
 
         $(document).click(function (event) {
             var $clicked = $(event.target)
@@ -411,38 +373,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             }
         });
 
-        $(".add_wording").click(function (e) {
-            e.preventDefault();
-            var id = $(this).attr("id");
-            var content = $(".content-" + id).html();
-            if ($("#input-" + id).length == 0) {
-                var champ = "<input class=\"input_li\" type=\"text\" value=\"" + content + "\" name=\"input-" + id + "\" id=\"input-" + id + "\">";
-                var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-' + id + '"><img src="' + add_surl + '/images/admin/delete.png" ></a>';
-                $('.content_li_wording').append(champ + clickdelete);
-            }
-        });
-
-        $("#completude_preview").click(function () {
-            var content = $("#content_email_completude").val();
-            var list = '';
-            $(".input_li").each(function () {
-                list = list + "<li>" + $(this).val() + "</li>";
-            });
-
-            $.post(
-                add_url + "/ajax/session_project_completude",
-                {
-                    id_project: "<?= $this->projects->id_project ?>",
-                    content: content,
-                    list: list
-                }
-            ).done(function (data) {
-                if (data != 'nok') {
-                    $("#send_completeness").get(0).click();
-                }
-            });
-        });
-
         <?php if (ProjectsStatus::NOT_ELIGIBLE != $this->projects->status) : ?>
         $('#commercial').change(function () {
             if ($(this).val() > 0 && $('#current_commercial').val() == 0) {
@@ -471,6 +401,19 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
             $clientSubmitterSelect.val('').html('<option value="0"></option>')
 
             var $select = $(this)
+            if ($select.val() !== '') {
+                $.ajax({
+                    type: 'POST',
+                    url: '<?= $this->lurl ?>/dossiers/partner_products/<?= $this->projects->id_project ?>/' + $select.val(),
+                    dataType: 'json',
+                    success: function (products) {
+                        $('#product').find('option').remove().end().append('<option value=""></option>')
+                        $.each(products, function (index, product) {
+                            $('#product').append('<option value="' + product.id + '">' + product.label + '</option>')
+                        })
+                    }
+                })
+            }
             if ($select.val() === '<?= \Unilend\Bundle\CoreBusinessBundle\Entity\Partner::PARTNER_UNILEND_ID ?>') {
                 return false
             }

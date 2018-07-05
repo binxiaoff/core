@@ -2,20 +2,16 @@
 
 namespace Unilend\Bundle\WSClientBundle\Service;
 
+use GuzzleHttp\{
+    Client, ClientInterface
+};
 use JMS\Serializer\Serializer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\WsExternalResource;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\AnnouncementDetailsCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\DirectorAnnouncementCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ExecutiveCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\HomonymCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\Identity;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\MandateCollection;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\ScoreDetails;
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
+    AnnouncementCollection, AnnouncementDetailsCollection, DirectorAnnouncementCollection, ExecutiveCollection, HomonymCollection, Identity, MandateCollection, ScoreDetails
+};
 
 class InfolegaleManager
 {
@@ -104,7 +100,10 @@ class InfolegaleManager
      */
     public function getScore($siren)
     {
-        if (null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))) {
+        if (
+            null !== ($result = $this->sendRequest(self::RESOURCE_COMPANY_SCORE, ['siren' => $siren]))
+            && false === empty($result->scoreInfo[0])
+        ) {
             return $this->serializer->deserialize($result->scoreInfo[0]->asXML(), ScoreDetails::class, 'xml');
         }
 
@@ -149,11 +148,11 @@ class InfolegaleManager
     }
 
     /**
-     * @param int[] $announcementsId
+     * @param string[] $announcementsId
      *
      * @return AnnouncementDetailsCollection|null
      */
-    public function getAnnouncementsDetails(array $announcementsId)
+    public function getAnnouncementsDetails(array $announcementsId): ?AnnouncementDetailsCollection
     {
         if (null !== ($result = $this->sendRequest(self::RESOURCE_ANNOUNCEMENTS_DETAILS, ['adsId' => $announcementsId]))) {
             return $this->serializer->deserialize($result->asXML(), AnnouncementDetailsCollection::class, 'xml');
