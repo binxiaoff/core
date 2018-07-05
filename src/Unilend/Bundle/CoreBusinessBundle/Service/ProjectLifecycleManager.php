@@ -316,7 +316,7 @@ class ProjectLifecycleManager
                 $iOffset += $iLimit;
                 foreach ($autoBidSettings as $autoBidSetting) {
                     try {
-                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max'], false);
+                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max']);
                     } catch (\Exception $exception) {
                         continue;
                     }

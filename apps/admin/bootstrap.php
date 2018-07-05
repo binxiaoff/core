@@ -239,6 +239,11 @@ class bootstrap extends Controller
                     'zone'  => Zones::ZONE_LABEL_RISK
                 ],
                 [
+                    'title' => 'Données externes entreprises',
+                    'uri'   => 'emprunteurs/donnees_externes',
+                    'zone'  => Zones::ZONE_LABEL_RISK
+                ],
+                [
                     'title' => 'Dépôt liste projets',
                     'uri'   => 'projets/depot_liste',
                     'zone'  => Zones::ZONE_LABEL_RISK
