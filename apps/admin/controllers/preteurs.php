@@ -1577,7 +1577,7 @@ class preteursController extends bootstrap
         ) {
             try {
                 $lenderBids = $bids->getBidsByLenderAndDates($wallet);
-                $header     = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+                $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
                 $filename   = 'bids_client_' . $wallet->getIdClient()->getIdClient() . '.xlsx';
 
                 $writer = WriterFactory::create(Type::XLSX);
