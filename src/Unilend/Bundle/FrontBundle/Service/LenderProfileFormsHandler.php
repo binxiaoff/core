@@ -823,6 +823,8 @@ class LenderProfileFormsHandler
                 $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
             }
 
+            $client->setPersonalDataUpdated();
+
             $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
         }
     }
@@ -908,6 +910,8 @@ class LenderProfileFormsHandler
                 $bic  = $bankForm->get('bic')->getData();
                 $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
             }
+
+            $client->setPersonalDataUpdated();
 
             $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments, $modifiedAddressType, $isBankAccountModified);
         }

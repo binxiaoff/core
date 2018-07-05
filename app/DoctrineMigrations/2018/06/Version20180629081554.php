@@ -27,7 +27,6 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added, upda
   ('fr_FR', 'lender-data-update', 'confirm-button', 'Confirmer', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'save-button', 'Enregistrer', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'cancel-button', 'Annuler l''édition', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'finish-later', 'Je finirai la mise à jour de mes données lors de ma prochaine connection.', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-section-title', 'Votre pièce d''identité', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-number', 'Passeport / Carte Nationale d''identité', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-expiration-date', 'Valide jusqu''au', NOW(), NOW()),

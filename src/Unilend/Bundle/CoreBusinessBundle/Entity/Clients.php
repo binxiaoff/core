@@ -1525,6 +1525,10 @@ class Clients
      */
     public function setPersonalDataUpdated(?\DateTime $personalDataUpdated = null): Clients
     {
+        if (null === $personalDataUpdated) {
+            $personalDataUpdated = new \DateTime();
+        }
+
         $this->personalDataUpdated = $personalDataUpdated;
 
         return $this;
