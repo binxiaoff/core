@@ -285,6 +285,8 @@
 
 // Shorthand for disabled
 @mixin disabled-state {
+  &.disabled,
+  &:disabled,
   &[disabled] {
     @content;
   }

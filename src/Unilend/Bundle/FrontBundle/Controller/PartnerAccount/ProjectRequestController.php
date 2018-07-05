@@ -61,11 +61,12 @@ class ProjectRequestController extends Controller
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $entityManager         = $this->get('doctrine.orm.entity_manager');
 
-        $formData = $request->request->get('simulator');
-        $amount   = $formData['amount'] ?? null;
-        $reason   = $formData['motive'] ?? null;
-        $duration = $formData['duration'] ?? null;
-        $siren    = $projectRequestManager->validateSiren($formData['siren']);
+        $formData    = $request->request->get('simulator');
+        $amount      = $formData['amount'] ?? null;
+        $reason      = $formData['motive'] ?? null;
+        $duration    = $formData['duration'] ?? null;
+        $siren       = $projectRequestManager->validateSiren($formData['siren']);
+        $companyName = $formData['company_name'] ?? null;
 
         try {
             if (empty($formData) || false === is_array($formData) || empty($formData['amount']) || empty($formData['motive']) || empty($formData['duration'])) {
@@ -90,7 +91,7 @@ class ProjectRequestController extends Controller
 
             /** @var Clients $submitter */
             $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
-            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, null, null, $duration, $reason);
+            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, $companyName, null, $duration, $reason);
             $project
                 ->setIdClientSubmitter($submitter)
                 ->setIdCompanySubmitter($partnerUser->getCompany());
@@ -328,10 +329,8 @@ class ProjectRequestController extends Controller
             return $project;
         }
 
-        $errors     = [];
-        $submitBtn  = $request->request->get('submit');
-        $checkEmpty = $submitBtn !== null;
-
+        $errors      = [];
+        $submit      = false === $request->request->has('save');
         $title       = $request->request->get('title');
         $lastName    = $request->request->get('lastName');
         $firstName   = $request->request->get('firstName');
@@ -339,41 +338,42 @@ class ProjectRequestController extends Controller
         $mobile      = $request->request->filter('mobile');
         $function    = $request->request->get('function');
         $description = $request->request->get('description');
+        $documents   = $request->files->get('documents');
 
-        if (
-            $checkEmpty && empty($title)
-            || false === empty($title) && false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
-            $errors['contact']['title'] = true;
-        }
-        if ($checkEmpty && empty($lastName)) {
-            $errors['contact']['lastName'] = true;
-        }
-        if ($checkEmpty && empty($firstName)) {
-            $errors['contact']['firstName'] = true;
-        }
-        if ($checkEmpty && empty($email)) {
-            $errors['contact']['email'] = true;
-        }
-        if ($checkEmpty && empty($mobile) || false === empty($mobile) && false === Loader::loadLib('ficelle')->isMobilePhoneNumber($mobile)) {
-            $errors['contact']['mobile'] = true;
-        }
-        if ($checkEmpty && empty($function)) {
-            $errors['contact']['function'] = true;
-        }
-        if ($checkEmpty && empty($description)) {
-            $errors['project']['description'] = true;
-        }
-
-        $documents                   = $request->files->get('documents');
-        $entityManager               = $this->get('doctrine.orm.entity_manager');
-        $partnerAttachmentRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var PartnerProjectAttachment[] $partnerAttachments */
-        $partnerAttachments = $partnerAttachmentRepository->findBy(['idPartner' => $this->getUser()->getPartner()]);
+        $partnerAttachments = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()]);
+        if ($submit) {
+            if (empty($title) || false === empty($title) && false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
+                $errors['contact']['title'] = true;
+            }
+            if (empty($lastName)) {
+                $errors['contact']['lastName'] = true;
+            }
+            if (empty($firstName)) {
+                $errors['contact']['firstName'] = true;
+            }
+            if (empty($email)) {
+                $errors['contact']['email'] = true;
+            }
+            if (empty($mobile) || false === empty($mobile) && false === Loader::loadLib('ficelle')->isMobilePhoneNumber($mobile)) {
+                $errors['contact']['mobile'] = true;
+            }
+            if (empty($function)) {
+                $errors['contact']['function'] = true;
+            }
+            if (empty($description)) {
+                $errors['project']['description'] = true;
+            }
 
-        if ($checkEmpty) {
             foreach ($partnerAttachments as $partnerAttachment) {
-                if ($partnerAttachment->getMandatory() && (false === isset($documents[$partnerAttachment->getAttachmentType()
-                                ->getId()]) || false === ($documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile))) {
+                if (
+                    $partnerAttachment->getMandatory()
+                    && (
+                        false === isset($documents[$partnerAttachment->getAttachmentType()->getId()])
+                        || false === ($documents[$partnerAttachment->getAttachmentType()->getId()] instanceof UploadedFile)
+                    )
+                ) {
                     $errors['documents'][$partnerAttachment->getAttachmentType()->getId()] = true;
                 }
             }
@@ -453,7 +453,7 @@ class ProjectRequestController extends Controller
             $entityManager->flush($project);
         }
 
-        if (null === $submitBtn) {
+        if (false === $submit) {
             return $this->redirectToRoute('partner_project_request_details', ['hash' => $hash]);
         } elseif (false === in_array($project->getStatus(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::COMPLETE_REQUEST])) {
             try {

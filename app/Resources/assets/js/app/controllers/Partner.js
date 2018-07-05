@@ -117,7 +117,7 @@ $doc.on('change keyup', '#cost-simulator-form input, #cost-simulator-form select
     var rate = Utility.convertStringToFloat($('#simulator-rate').val()),
       duration = Utility.convertStringToFloat($('#simulator-duration').val()),
       amount = Utility.convertStringToFloat($('#simulator-amount').val()),
-      fundsCommission = Utility.convertStringToFloat($('#simulator-funds-commission').val()),
+      fundsCommission = Utility.convertStringToFloat($('#funds-commission').val()),
       repaymentCommission = Utility.convertStringToFloat($('#repayment-commission').val()),
       vatRate = Utility.convertStringToFloat($('#vat-rate').val()),
       releasedFundsLabel = $('#released-funds'),
@@ -138,7 +138,7 @@ $doc.on('change keyup', '#cost-simulator-form input, #cost-simulator-form select
     if (rate && duration && amount && fundsCommission) {
       rate = rate / 100
 
-      releasedFunds = amount * (1 - (fundsCommission / 100 * vatRate / 100))
+      releasedFunds = amount * (1 - (fundsCommission / 100 * (1 + vatRate / 100)))
       releasedFundsLabel.html(__.formatNumber(Math.round(releasedFunds * 100) / 100), undefined, 2)
 
       monthlyPayment = Utility.pmt(rate / 12, duration, -amount)
