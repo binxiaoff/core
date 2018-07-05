@@ -134,9 +134,12 @@ if (executiveSelector.length) {
     if ('M' === selectedExecutive.data('executiveTitle')) {
       titleField.filter('[value="M."]').prop('checked', true)
       titleField.filter('[value=Mme]').prop('checked', false)
-    } else {
+    } else if ('Mme' === selectedExecutive.data('executiveTitle')) {
       titleField.filter('[value="M."]').prop('checked', false)
       titleField.filter('[value=Mme]').prop('checked', true)
+    } else {
+      titleField.filter('[value="M."]').prop('checked', false)
+      titleField.filter('[value=Mme]').prop('checked', false)
     }
 
     if (0 === executiveSelector.length || '' === executiveSelector.val()) {
