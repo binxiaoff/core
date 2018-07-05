@@ -870,7 +870,7 @@ class dossiersController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
-            // Refresh entity data because it will be used farther in checkProjectRisk
+            // Refresh entity data because it will be used further in checkProjectRisk
             $entityManager->refresh($company);
 
             $projectRequestManager->checkProjectRisk($this->projectEntity, $this->userEntity->getIdUser());
