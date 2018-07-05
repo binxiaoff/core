@@ -170,12 +170,16 @@
                                                     <div class="form-field col-lg-9 col-md-9">
                                                         <select id="identity-executive-selector" name="executive" class="input-field">
                                                             {% for executive in activeExecutives %}
+                                                                {% set position = executive.position %}
+                                                                {% if executive.companyName is not null and executive.position is not empty %}
+                                                                    {% set position = 'project-request_step-1-position-of-company'|trans({'%position%': executive.position, '%company%': executive.companyName}) %}
+                                                                {% endif %}
                                                                 <option value="{{ executive.idExecutive|escape('html_attr') }}"
                                                                         {% if (executive.lastName|trim ~ executive.firstName|trim)|lower == (form.values.contact.lastName ~ form.values.contact.firstName)|lower %} selected{% endif %}
                                                                         data-executive-title="{{ executive.title|trim|escape('html_attr') }}"
                                                                         data-executive-last-name="{{ executive.lastName|trim|escape('html_attr') }}"
                                                                         data-executive-first-name="{{ executive.firstName|trim|escape('html_attr') }}"
-                                                                        data-executive-function="{{ executive.position|trim|escape('html_attr') }}">
+                                                                        data-executive-function="{{ position|trim|escape('html_attr') }}">
                                                                     {{ executive.title }}{% if 'M' == executive.title %}.{% endif %} {{ executive.lastName|trim }} {{ executive.firstName|trim }}
                                                                 </option>
                                                             {% endfor %}

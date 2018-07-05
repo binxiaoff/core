@@ -699,7 +699,8 @@ class preteursController extends bootstrap
             ClientsStatus::STATUS_MODIFICATION,
             ClientsStatus::STATUS_COMPLETENESS_REPLY,
             ClientsStatus::STATUS_COMPLETENESS,
-            ClientsStatus::STATUS_COMPLETENESS_REMINDER
+            ClientsStatus::STATUS_COMPLETENESS_REMINDER,
+            ClientsStatus::STATUS_SUSPENDED
         ];
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */

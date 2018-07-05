@@ -624,15 +624,7 @@ class CIPManager
      */
     public function isCIPValidationNeeded(Bids $bid): bool
     {
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
-        $project->get($bid->getProject()->getIdProject());
-
-        /** @var \product $product */
-        $product = $this->entityManagerSimulator->getRepository('product');
-        $product->get($project->id_product);
-
-        $productContracts = $this->productManager->getAvailableContracts($product);
+        $productContracts = $this->productManager->getAvailableContracts($bid->getProject()->getIdProduct());
 
         if (false === in_array(UnderlyingContract::CONTRACT_MINIBON, array_column($productContracts, 'label'))) {
             return false;
@@ -646,7 +638,7 @@ class CIPManager
 
         $thresholdAmount = $this->getContractThresholdAmount();
         $lenderBids      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')
-            ->getSumByWalletAndProjectAndStatus($wallet, $project->id_project, [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
+            ->getSumByWalletAndProjectAndStatus($wallet, $bid->getProject()->getIdProject(), [Bids::STATUS_PENDING, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID]);
         $totalAmount     = bcdiv($bid->getAmount(), 100, 2);
         $totalAmount     = bcadd($totalAmount, (string) $lenderBids, 2);
 
