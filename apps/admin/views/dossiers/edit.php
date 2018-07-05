@@ -566,8 +566,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             </td>
                         </tr>
                         <tr>
-                            <th>SIREN</th>
-                            <td><?= $this->companies->siren ?><?php if ($this->isTakeover) : ?> - <?= $this->companies->name ?><?php endif; ?></td>
+                            <?php if ($this->isSirenEditable) : ?>
+                                <th><label for="siren">SIREN</label></th>
+                                <td><input type="text" name="siren" id="siren" class="input_moy"></td>
+                            <?php else : ?>
+                                <th>SIREN</th>
+                                <td><?= $this->companies->siren ?><?php if ($this->isTakeover) : ?> - <?= $this->companies->name ?><?php endif; ?></td>
+                            <?php endif; ?>
                         </tr>
                         <?php if ($this->isTakeover) : ?>
                             <tr>
