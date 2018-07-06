@@ -57,6 +57,7 @@ twig:
 
 doctrine:
     dbal:
+        default_connection: default
         connections:
             default:
                 driver:        "%database_driver%"
@@ -65,6 +66,23 @@ doctrine:
                 dbname:        "%database_name%"
                 user:          "%database_user%"
                 password:      "%database_password%"
+                charset:       utf8mb4
+                wrapper_class: "%dbal_wrapper_class%"
+                driver_class:  "%dbal_driver_class%"
+                default_table_options:
+                    charset: utf8mb4
+                    collate: utf8mb4_unicode_ci
+                mapping_types:
+                    enum: string
+                options:
+                    x_reconnect_attempts: 3
+            console:
+                driver:        "%database_driver%"
+                host:          "%database_host%"
+                port:          "%database_port%"
+                dbname:        "%database_name%"
+                user:          "%database_user_console%"
+                password:      "%database_password_console%"
                 charset:       utf8mb4
                 wrapper_class: "%dbal_wrapper_class%"
                 driver_class:  "%dbal_driver_class%"

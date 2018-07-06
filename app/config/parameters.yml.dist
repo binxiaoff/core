@@ -7,6 +7,8 @@ parameters:
     database_name:                  unilend
     database_user:                  unilend
     database_password:              myPassw0rd
+    database_user_console:          unilend
+    database_password_console:      myPassw0rd
     database_ssl_key:               ~
     database_ssl_cert:              ~
     database_ssl_ca:                ~

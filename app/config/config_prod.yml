@@ -30,3 +30,8 @@ doctrine:
                     !php/const:PDO::MYSQL_ATTR_SSL_KEY: %database_ssl_key%
                     !php/const:PDO::MYSQL_ATTR_SSL_CERT: %database_ssl_cert%
                     !php/const:PDO::MYSQL_ATTR_SSL_CA: %database_ssl_ca%
+            console:
+                options:
+                    !php/const:PDO::MYSQL_ATTR_SSL_KEY: %database_ssl_key%
+                    !php/const:PDO::MYSQL_ATTR_SSL_CERT: %database_ssl_cert%
+                    !php/const:PDO::MYSQL_ATTR_SSL_CA: %database_ssl_ca%
