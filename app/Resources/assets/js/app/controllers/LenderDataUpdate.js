@@ -2,6 +2,7 @@ var $ = require('jquery')
 var Utility = require('Utility')
 var $doc = $(document)
 var CacheForm = require('CacheForm')
+var __ = require('__')
 
 $doc.on('ready', function () {
   // Only apply this controller logic if this element is within the DOM
@@ -12,6 +13,7 @@ $doc.on('ready', function () {
   var $form = $('form.form-data-update-info-edit[data-cacheform]')
   var formIsEdited = false
   var progressBarStep = 1
+  var TRANS_DOCUMENT_MODIFIED = 'Vous venez de modifier votre document. ce document sera prochainement validé par nos équipes.'
 
   // Clear FormValidation messages when the panel is hidden
   $doc.on('hidden.bs.collapse', '.form-data-update-info-edit [data-formvalidation]', function (event) {
@@ -67,6 +69,7 @@ $doc.on('ready', function () {
       return false
     }
 
+    var hasUploadFile = false
     $inputs.each(function (index, input) {
       var $input = $(input)
       var text = '';
@@ -76,7 +79,7 @@ $doc.on('ready', function () {
         elementId = $input.parent('div, li').data('impacted-element-id')
       }
 
-      if (elementId) {
+      if (elementId || 'file' === $input.getType()) {
         switch ($input.getType()) {
           case 'radio':
             var checkedOption = $('input[name="' + $input.attr('name') + '"]:checked')
@@ -85,6 +88,12 @@ $doc.on('ready', function () {
 
           case 'select':
             text = $input.find(':selected').text()
+            break
+
+          case 'file':
+            if ($input.closest('.ui-fileattach-item').attr('title')) {
+              hasUploadFile = true || hasUploadFile
+            }
             break
 
           default:
@@ -101,6 +110,14 @@ $doc.on('ready', function () {
     // I've removed the data-toggle/data-target from the save button and are managing the show/hide of the panel here
     $viewArea.collapse('show')
     $editArea.collapse('hide')
+
+    if (hasUploadFile) {
+      var translation = 'identityDocumentModified';
+      if ('data-update-kbis-doc-view' === $viewArea.attr('id')) {
+        translation = 'kbisDocumentModified';
+      }
+      $viewArea.find('.document-information-area').html('<p>' + __.__(TRANS_DOCUMENT_MODIFIED, translation) + '</p>')
+    }
   })
 
   // Show the upload identity documents panel if the users have modified their personal info and hide the cancel button in the the upload panel

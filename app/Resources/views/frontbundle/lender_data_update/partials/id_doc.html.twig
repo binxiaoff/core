@@ -1,23 +1,25 @@
 <section id="data-update-id-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if identityDocument is not null %} in {% endif %}">
-    {% if identityDocumentDetails is not null %}
-        <dl class="list-2col">
-            <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
-            <dd>{{ identityDocumentDetails.getIdentityDocumentNumber() }}</dd>
-            <dt>{% trans %}  lender-data-update_id-doc-expiration-date {% endtrans %}</dt>
-            <dd>{{ identityDocumentDetails.getIdentityExpirationDate()|localizeddate('short', 'none') }}</dd>
-        </dl>
-        {% if identityDocumentDetails.getIdentityExpirationDate() < date() %}
-            {% trans %} lender-data-update_id-doc-expired {% endtrans %}
-        {% else %}
-            {% trans %} lender-data-update_id-doc-validated {% endtrans %}
+    <div class="document-information-area">
+        {% if identityDocumentDetails is not null %}
+            <dl class="list-2col">
+                <dt>{% trans %} lender-data-update_id-doc-number {% endtrans %}</dt>
+                <dd>{{ identityDocumentDetails.getIdentityDocumentNumber() }}</dd>
+                <dt>{% trans %}  lender-data-update_id-doc-expiration-date {% endtrans %}</dt>
+                <dd>{{ identityDocumentDetails.getIdentityExpirationDate()|localizeddate('short', 'none') }}</dd>
+            </dl>
+            {% if identityDocumentDetails.getIdentityExpirationDate() < date() %}
+                {% trans %} lender-data-update_id-doc-expired {% endtrans %}
+            {% else %}
+                {% trans %} lender-data-update_id-doc-validated {% endtrans %}
+            {% endif %}
+        {% elseif identityDocument is not null %}
+            <dl class="list-2col">
+                <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
+                <dd>{{ identityDocument.getAdded()|localizeddate('short', 'none') }}</dd>
+            </dl>
+            {% trans %} lender-data-update_id-doc-non-checked {% endtrans %}
         {% endif %}
-    {% elseif identityDocument is not null %}
-        <dl class="list-2col">
-            <dt>{% trans %} lender-data-update_id-doc-last-upload-date {% endtrans %}</dt>
-            <dd>{{ identityDocument.getAdded()|localizeddate('short', 'none') }}</dd>
-        </dl>
-        {% trans %} lender-data-update_id-doc-non-checked {% endtrans %}
-    {% endif %}
+    </div>
     <div class="btn-controls">
         <button data-target="#data-update-id-doc-edit" role="button" data-toggle="collapse" data-parent="#data-update-id-doc-section" class="btn-default"
                 aria-controls="#data-update-id-doc-edit" aria-expanded="false" type="button">
@@ -77,10 +79,6 @@
                              data-fileattach-maxfiles="1"
                              data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-delegation-of-authority {% endtrans %}"
                              data-fileattach-fileremove="false">
-                            {% if companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path is defined %}
-                                <input type="file" name="delegation-of-authority"
-                                       value="{{ companyOtherAttachments[constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::DELEGATION_POUVOIR')].path }}"/>
-                            {% endif %}
                         </div><!-- /.ui-fileattach -->
                     </div><!-- /.form-field -->
                 </div><!-- /.legal-entity-status-not-1 -->

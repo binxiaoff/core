@@ -31,7 +31,7 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added, upda
   ('fr_FR', 'lender-data-update', 'id-doc-number', 'Passeport / Carte Nationale d''identité', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-expiration-date', 'Valide jusqu''au', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-last-upload-date', 'Date du dernier téléchargement de votre justificatif d''identité', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'id-doc-validated', '<p>Vous avez changé d''étqt-civil (par exemple : mariage) ?</p><p>Merci de mettre à jour votre nom d''usage. Un justificatif (carte nationale d''identité ou passsport est nécessaire) pour valider ce changement.', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'id-doc-validated', '<p>Vous avez changé d''état-civil (par exemple : mariage) ?</p><p>Merci de mettre à jour votre nom d''usage. Un justificatif (carte nationale d''identité ou passsport est nécessaire) pour valider ce changement.', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-expired', 'Votre justificatif d''identité n''est plus valable. Merci de nous transmettre la copie d''un justificatif d''identité en cours de validité.', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'id-doc-non-checked', '<p>Si cette pièce d''identité n''est plus valable ou qu''elle est expirée, merci de mettre à jour ce document.</p><p>Si ce document est toujours valable, cliquez sur "Continuer".</p>', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'telephone-section-title', 'Vos coordonnées téléphoniques', NOW(), NOW()),
@@ -55,7 +55,9 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added, upda
   ('fr_FR', 'lender-data-update', 'legal-representative-section-title', 'Identité du représentant légal de %company_name%', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'kbis-doc-section-title', 'Extrait de Kbis de %company_name%', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'kbis-doc-description', '<p>Date du dernier téléchargement de votre justificatif : %upload_date%</p><p>Si des changements sont intervenus depuis cette date, merci de nous transmettre la copie d''un nouvel extrait de Kbis', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-end-page-instruction', 'Merci d''avoir confirmé les informations de %company_name%. Conformément à la règlementation en vigueur nous vous demanderons à nouveau de confirmer ces données d''ici quelques mois.', NOW(), NOW())
+  ('fr_FR', 'lender-data-update', 'legal-entity-end-page-instruction', 'Merci d''avoir confirmé les informations de %company_name%. Conformément à la règlementation en vigueur nous vous demanderons à nouveau de confirmer ces données d''ici quelques mois.', NOW(), NOW()),
+  ('fr_FR', 'utility', 'kbis-document-modified', 'Vous venez de modifier votre extrait de Kbis, ce document sera prochainement validé par nos équipes.', NOW(), NOW()),
+  ('fr_FR', 'utility', 'identity-document-modified', 'Vous venez de modifier votre justificatif d''identité, ce document sera prochainement validé par nos équipes.', NOW(), NOW())
 TRANSLATIONS;
 
         $this->addSql($insertTranslations);
