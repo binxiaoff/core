@@ -362,7 +362,7 @@ class BidManager
                 $this->logger->warning('Lender\'s balance not enough for a bid', [
                     'project_id' => $bid->getProject()->getIdProject(),
                     'lender_id'  => $bid->getIdLenderAccount()->getId(),
-                    'amount'     => $bid->getAmount() / 100,
+                    'amount'     => $bidAmount,
                     'rate'       => $bid->getRate(),
                     'balance'    => $balance
                 ]);
