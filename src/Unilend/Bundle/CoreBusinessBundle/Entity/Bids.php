@@ -7,7 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Bids
  *
- * @ORM\Table(name="bids", indexes={@ORM\Index(name="id_lender_account", columns={"id_lender_account"}), @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}), @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})})
+ * @ORM\Table(name="bids", indexes={
+ *     @ORM\Index(name="id_lender_account", columns={"id_lender_account"}),
+ *     @ORM\Index(name="idprojectstatus", columns={"id_project", "status"}),
+ *     @ORM\Index(name="idx_id_autobid", columns={"id_autobid"})
+ * })
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository")
  * @ORM\HasLifecycleCallbacks
  */
@@ -23,7 +27,7 @@ class Bids
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project")
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
      * })
      */
     private $idProject;
@@ -102,11 +106,11 @@ class Bids
     /**
      * Set Project
      *
-     * @param Projects|null $project
+     * @param Projects $project
      *
      * @return Bids
      */
-    public function setProject(?Projects $project): Bids
+    public function setProject(Projects $project): Bids
     {
         $this->idProject = $project;
 
@@ -116,9 +120,9 @@ class Bids
     /**
      * Get Project
      *
-     * @return Projects|null
+     * @return Projects
      */
-    public function getProject(): ?Projects
+    public function getProject(): Projects
     {
         return $this->idProject;
     }
