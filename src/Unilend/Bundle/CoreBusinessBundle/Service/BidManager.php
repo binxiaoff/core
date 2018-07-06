@@ -7,7 +7,7 @@ use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -115,19 +115,22 @@ class BidManager
             ->setStatus(Bids::STATUS_PENDING)
             ->setAutobid($autoBidSetting);
 
-        $this->checkMinimumAmount($bid);
-        $this->checkRate($bid);
-        $this->checkProjectStatus($bid);
-        $this->checkProjectDates($bid);
-        $this->checkWalletType($bid);
-        $this->checkLenderCanBid($bid);
-        $this->checkLenderBalance($bid);
+        if (false === $autoBidSetting instanceof Autobid) {
+            $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
+            $bidNb++;
+            $bid->setOrdre($bidNb);
+
+            $this->checkMinimumAmount($bid);
+            $this->checkRate($bid);
+            $this->checkProjectStatus($bid);
+            $this->checkProjectDates($bid);
+            $this->checkWalletType($bid);
+            $this->checkLenderCanBid($bid);
+            $this->checkLenderBalance($bid);
+        }
+
         $this->checkBidEligibility($bid);
         $this->checkCip($bid);
-
-        $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
-        $bidNb++;
-        $bid->setOrdre($bidNb);
 
         $this->entityManager->persist($bid);
         $walletBalanceHistory = $this->walletManager->engageBalance($wallet, $amount, $bid);

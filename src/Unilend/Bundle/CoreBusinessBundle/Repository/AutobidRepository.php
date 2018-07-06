@@ -8,7 +8,7 @@ use Doctrine\ORM\{
 };
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, ClientSettingType, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType
+    Autobid, ClientSettingType, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType
 };
 
 class AutobidRepository extends EntityRepository
@@ -133,5 +133,47 @@ class AutobidRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getScalarResult();
+    }
+
+    /**
+     * @param Projects $project
+     * @param float    $rate
+     * @param int      $period
+     *
+     * @return Autobid[]
+     */
+    public function getAutobidsForProject(Projects $project, float $rate, int $period): array
+    {
+        // $rate and $period may be retrieved in the same query
+        // For testing and performance purpose, we don't do that yet
+        $queryBuilder = $this->createQueryBuilder('a');
+        $queryBuilder
+            ->select('a')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'a.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id AND wt.label = :walletType')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientSettings', 'cs', Join::WITH, 'w.idClient = cs.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientSettingType', 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
+            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.idProject = :project')
+            ->where('a.status = :bidStatus')
+            ->andWhere('a.evaluation = :evaluation')
+            ->andWhere('a.idPeriod = :period')
+            ->andWhere('a.rateMin <= :rate')
+            ->andWhere('w.availableBalance >= a.amount')
+            ->andWhere('csh.idStatus = :clientStatus')
+            ->andWhere('cs.value = 1')
+            ->andWhere('b.idBid IS NULL')
+            ->setParameter('walletType', WalletType::LENDER)
+            ->setParameter('settingType', ClientSettingType::LABEL_AUTOBID_SWICTH)
+            ->setParameter('project', $project->getIdProject())
+            ->setParameter('bidStatus', Autobid::STATUS_ACTIVE)
+            ->setParameter('evaluation', $project->getRisk())
+            ->setParameter('period', $period)
+            ->setParameter('rate', $rate)
+            ->setParameter('clientStatus', ClientsStatus::STATUS_VALIDATED)
+            ->orderBy('a.idAutobid', 'ASC');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

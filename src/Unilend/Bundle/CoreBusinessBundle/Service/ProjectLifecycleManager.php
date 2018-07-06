@@ -286,46 +286,45 @@ class ProjectLifecycleManager
      */
     public function autoBid(\projects $project): void
     {
-        if ($project->status == \projects_status::A_FUNDER) {
+        if ($project->status == ProjectsStatus::A_FUNDER) {
+            $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
             $this->bidAllAutoBid($project);
-        } elseif ($project->status == \projects_status::EN_FUNDING) {
+        } elseif ($project->status == ProjectsStatus::EN_FUNDING) {
             $this->reBidAutoBid($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         }
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
+     *
      */
-    private function bidAllAutoBid(\projects $project): void
+    private function bidAllAutoBid(Projects $project): void
     {
+        $globalSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Auto-bid global switch']);
+
+        if (null === $globalSetting || empty($globalSetting->getValue())) {
+            return;
+        }
+
         $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
         /** @var \project_period $projectPeriods */
         $projectPeriods = $this->entityManagerSimulator->getRepository('project_period');
-        $projectEntity  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
 
-        if ($projectPeriods->getPeriod($project->period)) {
-            $rateRange = $this->bidManager->getProjectRateRange($project);
-            $iOffset   = 0;
-            $iLimit    = 100;
-            while ($autoBidSettings = $autoBidRepository->findBy(
-                ['evaluation' => $project->risk, 'idPeriod' => $projectPeriods->id_period, 'status' => Autobid::STATUS_ACTIVE],
-                ['idAutobid' => 'ASC'],
-                $iLimit,
-                $iOffset
-            )) {
-                $iOffset += $iLimit;
-                foreach ($autoBidSettings as $autoBidSetting) {
-                    try {
-                        $this->bidManager->bidByAutoBidSettings($autoBidSetting, $projectEntity, $rateRange['rate_max']);
-                    } catch (\Exception $exception) {
-                        continue;
-                    }
+        if ($projectPeriods->getPeriod($project->getPeriod())) {
+            $rateRange       = $this->bidManager->getProjectRateRange($project);
+            $autoBidSettings = $autoBidRepository->getAutobidsForProject($project, $rateRange['rate_max'], $projectPeriods->id_period);
+
+            foreach ($autoBidSettings as $autoBidSetting) {
+                try {
+                    $this->bidManager->bid($autoBidSetting->getIdLender(), $project, $autoBidSetting->getAmount(), $rateRange['rate_max'], $autoBidSetting, false);
+                } catch (\Exception $exception) {
+                    continue;
                 }
             }
 
             /** @var \bids $oBid */
             $oBid = $this->entityManagerSimulator->getRepository('bids');
-            $oBid->shuffleAutoBidOrder($project->id_project);
+            $oBid->shuffleAutoBidOrder($project->getIdProject());
         }
     }
 
@@ -618,7 +617,7 @@ class ProjectLifecycleManager
     {
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, \projects_status::FUNDING_KO, $project);
+        $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDING_KO, $project);
 
         $criteria     = ['idProject' => $project->id_project];
         $bids         = $bidRepository->findBy($criteria, ['rate' => 'ASC', 'ordre' => 'ASC']);
@@ -686,7 +685,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $oRepaymentSchedule */
         $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->status == \projects_status::FUNDE) {
+        if ($project->status == ProjectsStatus::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $project->id_project);
 
             $iLoanNbTotal   = count($lLoans);
@@ -747,7 +746,7 @@ class ProjectLifecycleManager
         /** @var \echeanciers $repaymentScheduleEntity */
         $repaymentScheduleEntity = $this->entityManagerSimulator->getRepository('echeanciers');
 
-        if ($project->status == \projects_status::FUNDE) {
+        if ($project->status == ProjectsStatus::FUNDE) {
             $loans               = $loanEntity->select('id_project = ' . $project->id_project);
             $loansCount          = count($loans);
             $processedLoansCount = 0;
