@@ -240,40 +240,30 @@ class sfpmeiController extends bootstrap
                 $this->hideDecoration();
                 $this->autoFireView = false;
 
-                PHPExcel_Settings::setCacheStorageMethod(
-                    PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-                    ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-                );
+                try {
+                    $lenderBids = $this->bids->getBidsByLenderAndDates($this->wallet);
+                    $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+                    $filename   = 'bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.xlsx';
 
-                $document    = new PHPExcel();
-                $activeSheet = $document->setActiveSheetIndex(0);
-                $header      = ['ID projet', 'ID bid', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
-                $lenderBids  = $this->bids->getBidsByLenderAndDates($this->wallet);
+                    $writer = WriterFactory::create(Type::XLSX);
+                    $writer
+                        ->openToBrowser($filename)
+                        ->addRow($header)
+                        ->addRows($lenderBids)
+                        ->close();
 
-                foreach ($header as $index => $columnName) {
-                    $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+                    die;
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error('Un  exception occurred during export of lender bids for client ' . $this->wallet->getIdClient()->getIdClient() . '. Message: ' . $exception->getMessage(), [
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'id_client' => $this->wallet->getIdClient()->getIdClient()
+                    ]);
+
+                    echo 'Une erreur est survenue. ';
                 }
-
-                foreach ($lenderBids as $rowIndex => $row) {
-                    $colIndex = 0;
-                    foreach ($row as $cellValue) {
-                        if (6 === $colIndex) {
-                            $cellValue = number_format($cellValue, 1, ',', '');
-                        }
-                        $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
-                    }
-                }
-
-                header('Content-Type: text/csv');
-                header('Content-Disposition: attachment;filename=bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.csv');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Expires: 0');
-
-                /** @var \PHPExcel_Writer_CSV $writer */
-                $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
-                $writer->setUseBOM(true);
-                $writer->setDelimiter(';');
-                $writer->save('php://output');
                 break;
             default:
                 $this->dataHistory   = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->wallet->getIdClient());
