@@ -747,9 +747,7 @@ class DebtCollectionMissionManager
             $this->entityManager->getConnection()->beginTransaction();
 
             if ($currentMission) {
-                $currentMission->setArchived(new \DateTime())
-                    ->setIdUserArchiving($user);
-                $this->entityManager->flush($currentMission);
+                $this->endMission($currentMission, $user);
             }
 
             $newMission = new DebtCollectionMission();
@@ -821,5 +819,30 @@ class DebtCollectionMissionManager
 
             return false;
         }
+    }
+
+    /**
+     * @param DebtCollectionMission $debtCollectionMission
+     * @param Users                 $user
+     *
+     * @return bool
+     */
+    public function endMission(DebtCollectionMission $debtCollectionMission, Users $user)
+    {
+        $debtCollectionMission->setArchived(new \DateTime())->setIdUserArchiving($user);
+        try {
+            $this->entityManager->flush($debtCollectionMission);
+        } catch (\Exception $exception) {
+            $this->logger->error('Error occured when archiving the debt collection mission (ID: ' . $debtCollectionMission->getId() . '). Error: ' . $exception->getMessage(), [
+                'class'    => __CLASS__,
+                'function' => __FUNCTION__,
+                'file'     => $exception->getFile(),
+                'line'     => $exception->getLine(),
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

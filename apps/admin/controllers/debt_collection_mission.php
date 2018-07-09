@@ -103,10 +103,9 @@ class debt_collection_missionController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
             $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');
-            $user                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find($_SESSION['user']['id_user']);
 
             if (empty($errors)) {
-                $newMission = $debtCollectionManager->newMission($project, $debtCollector, $debtCollectionType, $feesRate, $user);
+                $newMission = $debtCollectionManager->newMission($project, $debtCollector, $debtCollectionType, $feesRate, $this->userEntity);
 
                 if (false === $newMission) {
                     $errors[] = 'Erreur à la création de la mission de recouvrement.';
@@ -126,8 +125,42 @@ class debt_collection_missionController extends bootstrap
             return;
         }
 
-        header('Location: ' . $this->url);
+        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
         die;
+    }
+
+    public function _terminate()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity) && $this->request->isMethod(Request::METHOD_POST)) {
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager           = $this->get('doctrine.orm.entity_manager');
+            $debtCollectionMissionId = filter_var($this->params[0], FILTER_VALIDATE_INT);;
+            $errors                  = [];
+
+            if (null === ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($debtCollectionMissionId))) {
+                $errors[] = 'La mission de recouvrement n\'existe pas.';
+            }
+
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager $debtCollectionManager */
+            $debtCollectionManager = $this->get('unilend.service.debt_collection_mission_manager');
+
+            if (empty($errors)) {
+                if (false === $debtCollectionManager->endMission($debtCollectionMission, $this->userEntity)) {
+                    $errors[] = 'Une erreur est survenue. Vous ne pouvez pas archiver cette mission de recouvrement.';
+                }
+            }
+
+            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
+            return;
+        }
+
+        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
+        return;
     }
 
     public function _addCharge()
@@ -202,7 +235,7 @@ class debt_collection_missionController extends bootstrap
             return;
         }
 
-        header('Location: ' . $this->url);
+        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
         die;
     }
 }
