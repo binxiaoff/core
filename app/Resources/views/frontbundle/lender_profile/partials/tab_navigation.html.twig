@@ -14,7 +14,7 @@
             <a href="{{ path('lender_profile_notifications') }}" >{% trans %} lender-profile_tab-title-4 {% endtrans %}</a>
         </li>
         {% if isCIPActive|default(false) %}
-            <li role="presentation" class="{% if app.request.attributes.get('_route') in ['cip_index', 'cip_continue_questionnaire', 'cip_start_questionnaire'] %}active{% endif %}">
+            <li role="presentation" class="{% if app.request.attributes.get('_route') in ['cip_index', 'cip_continue_questionnaire'] %}active{% endif %}">
                 <a href="{{ path('cip_index') }}">{% trans %} lender-profile_tab-title-cip {% endtrans %}</a>
             </li>
         {% endif %}
