@@ -26,6 +26,12 @@ $doc.on('ready', function () {
     $(this).find('button[type="reset"]').removeClass('hidden')
   })
 
+  // Show the continue button in funds origins section when the panel is hidden
+  $doc.on('hidden.bs.collapse', '#data-update-funds-origin-edit', function (event) {
+    $(this).find('button[type="reset"]').removeClass('hidden')
+    $('#data-update-funds-origin-view').find('button.data-update-continue-btn').removeClass('hidden')
+  })
+
   // Update the progress bar length
   $doc.on(Utility.clickEvent, '.data-update-continue-btn', function () {
     progressBarStep = progressBarStep + 1

@@ -57,7 +57,9 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added, upda
   ('fr_FR', 'lender-data-update', 'kbis-doc-description', '<p>Date du dernier téléchargement de votre justificatif : %upload_date%</p><p>Si des changements sont intervenus depuis cette date, merci de nous transmettre la copie d''un nouvel extrait de Kbis', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'legal-entity-end-page-instruction', 'Merci d''avoir confirmé les informations de %company_name%. Conformément à la règlementation en vigueur nous vous demanderons à nouveau de confirmer ces données d''ici quelques mois.', NOW(), NOW()),
   ('fr_FR', 'utility', 'kbis-document-modified', 'Vous venez de modifier votre extrait de Kbis, ce document sera prochainement validé par nos équipes.', NOW(), NOW()),
-  ('fr_FR', 'utility', 'identity-document-modified', 'Vous venez de modifier votre justificatif d''identité, ce document sera prochainement validé par nos équipes.', NOW(), NOW())
+  ('fr_FR', 'utility', 'identity-document-modified', 'Vous venez de modifier votre justificatif d''identité, ce document sera prochainement validé par nos équipes.', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'funds-origin-not-filled', 'Cliquez sur "Modifier" pour indiquer l''origine des fonds que vous déposez chez Unilend.', NOW(), NOW())
+
 TRANSLATIONS;
 
         $this->addSql($insertTranslations);
