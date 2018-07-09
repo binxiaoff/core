@@ -32,7 +32,7 @@ class AutobidRepository extends EntityRepository
             ->andWhere('a.status = :autobidSettingActive')
             ->setParameter('autobidSettingActive', Autobid::STATUS_ACTIVE)
             ->andWhere('pp.status = :projectPeriodActive')
-            ->setParameter('projectPeriodActive', \project_period::STATUS_ACTIVE)
+            ->setParameter('projectPeriodActive', ProjectPeriod::STATUS_ACTIVE)
             ->andWhere('prs.status = :projectRateSettingActive')
             ->setParameter('projectRateSettingActive', ProjectRateSettings::STATUS_ACTIVE)
             ->andWhere('a.evaluation = :evaluation')
@@ -102,7 +102,7 @@ class AutobidRepository extends EntityRepository
             )
             ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'pp', Join::WITH, 'pp.idPeriod = a.idPeriod AND pp.status = :pp_status')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = a.idLender')
-            ->setParameter('pp_status', \project_period::STATUS_ACTIVE);
+            ->setParameter('pp_status', ProjectPeriod::STATUS_ACTIVE);
 
         if ($lenderId !== null) {
             $queryBuilder->andWhere('a.idLender = :id_lender');
@@ -137,18 +137,16 @@ class AutobidRepository extends EntityRepository
 
     /**
      * @param Projects $project
-     * @param float    $rate
-     * @param int      $period
      *
      * @return Autobid[]
      */
-    public function getAutobidsForProject(Projects $project, float $rate, int $period): array
+    public function getAutobidsForProject(Projects $project): array
     {
-        // $rate and $period may be retrieved in the same query
-        // For testing and performance purpose, we don't do that yet
         $queryBuilder = $this->createQueryBuilder('a');
         $queryBuilder
             ->select('a')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'p', Join::WITH, 'a.idPeriod = p.idPeriod')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRateSettings', 'prs', Join::WITH, 'a.rateMin <= prs.rateMax')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'a.idLender = w.id')
             ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id AND wt.label = :walletType')
             ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'w.idClient = c.idClient')
@@ -157,21 +155,25 @@ class AutobidRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:ClientSettingType', 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
             ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.idProject = :project')
             ->where('a.status = :bidStatus')
+            ->andWhere('p.status = :periodStatus')
+            ->andWhere('p.min <= :projectDuration')
+            ->andWhere('p.max >= :projectDuration')
+            ->andWhere('prs.idRate = :rateId')
             ->andWhere('a.evaluation = :evaluation')
-            ->andWhere('a.idPeriod = :period')
-            ->andWhere('a.rateMin <= :rate')
             ->andWhere('w.availableBalance >= a.amount')
             ->andWhere('csh.idStatus = :clientStatus')
-            ->andWhere('cs.value = 1')
+            ->andWhere('cs.value = :clientSetting')
             ->andWhere('b.idBid IS NULL')
             ->setParameter('walletType', WalletType::LENDER)
             ->setParameter('settingType', ClientSettingType::LABEL_AUTOBID_SWICTH)
             ->setParameter('project', $project->getIdProject())
             ->setParameter('bidStatus', Autobid::STATUS_ACTIVE)
+            ->setParameter('periodStatus', ProjectPeriod::STATUS_ACTIVE)
+            ->setParameter('projectDuration', $project->getPeriod())
+            ->setParameter('rateId', $project->getIdRate())
             ->setParameter('evaluation', $project->getRisk())
-            ->setParameter('period', $period)
-            ->setParameter('rate', $rate)
             ->setParameter('clientStatus', ClientsStatus::STATUS_VALIDATED)
+            ->setParameter('clientSetting', ClientSettingType::TYPE_AUTOBID_SWITCH)
             ->orderBy('a.idAutobid', 'ASC');
 
         return $queryBuilder->getQuery()->getResult();

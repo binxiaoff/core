@@ -306,26 +306,21 @@ class ProjectLifecycleManager
             return;
         }
 
+        $rateRange         = $this->bidManager->getProjectRateRange($project);
         $autoBidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Autobid');
-        /** @var \project_period $projectPeriods */
-        $projectPeriods = $this->entityManagerSimulator->getRepository('project_period');
+        $autoBidSettings   = $autoBidRepository->getAutobidsForProject($project);
 
-        if ($projectPeriods->getPeriod($project->getPeriod())) {
-            $rateRange       = $this->bidManager->getProjectRateRange($project);
-            $autoBidSettings = $autoBidRepository->getAutobidsForProject($project, $rateRange['rate_max'], $projectPeriods->id_period);
-
-            foreach ($autoBidSettings as $autoBidSetting) {
-                try {
-                    $this->bidManager->bid($autoBidSetting->getIdLender(), $project, $autoBidSetting->getAmount(), $rateRange['rate_max'], $autoBidSetting, false);
-                } catch (\Exception $exception) {
-                    continue;
-                }
+        foreach ($autoBidSettings as $autoBidSetting) {
+            try {
+                $this->bidManager->bid($autoBidSetting->getIdLender(), $project, $autoBidSetting->getAmount(), $rateRange['rate_max'], $autoBidSetting, false);
+            } catch (\Exception $exception) {
+                continue;
             }
-
-            /** @var \bids $oBid */
-            $oBid = $this->entityManagerSimulator->getRepository('bids');
-            $oBid->shuffleAutoBidOrder($project->getIdProject());
         }
+
+        /** @var \bids $bid */
+        $bid = $this->entityManagerSimulator->getRepository('bids');
+        $bid->shuffleAutoBidOrder($project->getIdProject());
     }
 
     /**
