@@ -243,9 +243,9 @@ class sfpmeiController extends bootstrap
                 try {
                     $lenderBids = $this->bids->getBidsByLenderAndDates($this->wallet);
                     $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
-                    $filename   = 'bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.xlsx';
+                    $filename   = 'bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.csv';
 
-                    $writer = WriterFactory::create(Type::XLSX);
+                    $writer = WriterFactory::create(Type::CSV);
                     $writer
                         ->openToBrowser($filename)
                         ->addRow($header)
@@ -867,11 +867,17 @@ class sfpmeiController extends bootstrap
 
         if (isset($this->params[0], $this->params[1]) && in_array($this->params[1], $allowedQueries)) {
             switch ($this->params[0]) {
+                case 'xls':
+                    $this->hideDecoration();
+                    $this->autoFireview = false;
+
+                    $this->exportResultAsXls($this->params[1]);
+                    break;
                 case 'csv':
                     $this->hideDecoration();
                     $this->autoFireview = false;
 
-                    $this->exportResult($this->params[1]);
+                    $this->exportResultAsCsv($this->params[1]);
                     break;
                 case 'html':
                 default:
@@ -935,7 +941,7 @@ class sfpmeiController extends bootstrap
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
      */
-    private function exportResult(int $queryId): void
+    private function exportResultAsXls(int $queryId): void
     {
         $this->hideDecoration();
         $this->autoFireview = false;
@@ -955,6 +961,35 @@ class sfpmeiController extends bootstrap
             $writer
                 ->openToBrowser($filename)
                 ->addRowWithStyle([$this->queries->name], $titleStyle)
+                ->addRow(array_keys($this->result[0]))
+                ->addRows($this->result)
+                ->close();
+        }
+
+        die;
+    }
+
+    /**
+     * @param int $queryId
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Common\Exception\InvalidArgumentException
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
+     */
+    private function exportResultAsCsv(int $queryId): void
+    {
+        $this->hideDecoration();
+        $this->autoFireview = false;
+
+        $this->executeQuery($queryId);
+
+        if (is_array($this->result) && count($this->result) > 0) {
+            $filename = $this->bdd->generateSlug($this->queries->name) . '.csv';
+            $writer   = WriterFactory::create(Type::CSV);
+
+            $writer
+                ->openToBrowser($filename)
                 ->addRow(array_keys($this->result[0]))
                 ->addRows($this->result)
                 ->close();
