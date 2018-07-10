@@ -131,14 +131,13 @@ class CIPManager
      * @throws \Exception
      *
      */
-    private function hasEvaluation(Clients $client)
+    private function hasEvaluation(Clients $client): bool
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-
+        $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $evaluation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderEvaluation')->findOneBy(['idLender' => $wallet]);
 
         return null !== $evaluation;
@@ -151,7 +150,7 @@ class CIPManager
      * @throws \Exception
      *
      */
-    public function needReevaluation(Clients $client)
+    public function needReevaluation(Clients $client): bool
     {
         return false === $this->hasValidEvaluation($client) && true === $this->hasEvaluation($client);
     }
