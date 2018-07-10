@@ -54,13 +54,13 @@ class LenderDataUpdateController extends Controller
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
 
-        $client                = $this->getClient();
-        $unattachedClient      = clone $client;
-        $company               = null;
-        $unattachedCompany     = null;
-        $bankAccount           = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
-        $identityDocumentType  = AttachmentType::CNI_PASSPORTE;
-        $formErrors            = [];
+        $client               = $this->getClient();
+        $unattachedClient     = clone $client;
+        $company              = null;
+        $unattachedCompany    = null;
+        $bankAccount          = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $identityDocumentType = AttachmentType::CNI_PASSPORTE;
+        $formErrors           = [];
 
         $formBuilder = $this->createFormBuilder()
             ->add('bankAccount', BankAccountType::class)
@@ -190,9 +190,9 @@ class LenderDataUpdateController extends Controller
     public function endAction(): Response
     {
         try {
-            $hasValidEvaluation = $this->get('unilend.service.cip_manager')->hasValidEvaluation($this->getClient());
+            $needCipEvaluation = $this->get('unilend.service.cip_manager')->needReevaluation($this->getClient());
         } catch (\Exception $exception) {
-            $hasValidEvaluation = false;
+            $needCipEvaluation = false;
             $this->get('logger')->error('Could not get lender CIP evaluation information. Error: ' . $exception->getMessage(), [
                 'id_client' => $this->getClient()->getIdClient(),
                 'class'     => __CLASS__,
@@ -209,9 +209,9 @@ class LenderDataUpdateController extends Controller
         }
 
         return $this->render('lender_data_update/end.html.twig', [
-            'hasValidCipEvaluation' => $hasValidEvaluation,
-            'client'                => $client,
-            'company'               => $company,
+            'needCipEvaluation' => $needCipEvaluation,
+            'client'            => $client,
+            'company'           => $company,
         ]);
     }
 

@@ -43,6 +43,7 @@
             <argument type="service" id="security.csrf.token_manager"/>
             <argument type="service" id="unilend.service.google_recaptcha_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
+            <argument type="service" id="unilend.service.cip_manager"/>
             <argument type="service" id="logger"/>
         </service>
 

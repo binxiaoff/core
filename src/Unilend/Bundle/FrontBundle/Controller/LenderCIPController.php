@@ -18,7 +18,7 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 
 class LenderCIPController extends Controller
 {
-    const TOTAL_QUESTIONNAIRE_STEPS = 10;
+    const TOTAL_QUESTIONNAIRE_STEPS = 9;
 
     /**
      * @Route("/conseil-cip", name="cip_index")
@@ -54,40 +54,6 @@ class LenderCIPController extends Controller
     }
 
     /**
-     * @Route("/conseil-cip/commencer/{start}", name="cip_start_questionnaire", defaults={"start"=null})
-     * @Security("has_role('ROLE_LENDER')")
-     *
-     * @param string|null $start
-     *
-     * @return Response
-     */
-    public function startQuestionnaireAction(?string $start = null): Response
-    {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
-            return $this->redirectToRoute('home');
-        }
-
-        $client     = $this->getClient();
-        $cipManager = $this->get('unilend.service.cip_manager');
-        $evaluation = $cipManager->getCurrentEvaluation($client);
-
-        if (null !== $evaluation && count($cipManager->getAnswersByType($evaluation)) > 0) {
-            return $this->redirectToRoute('cip_continue_questionnaire');
-        }
-
-        if (null !== $start) {
-            $cipManager->startEvaluation($client);
-            return $this->redirectToRoute('cip_continue_questionnaire');
-        }
-
-        return $this->render('lender_cip/start.html.twig', [
-            'isCIPActive'  => true,
-            'current_step' => 1,
-            'total_steps'  => self::TOTAL_QUESTIONNAIRE_STEPS
-        ]);
-    }
-
-    /**
      * @Route("/conseil-cip/questionnaire", name="cip_continue_questionnaire")
      * @Security("has_role('ROLE_LENDER')")
      *
@@ -109,7 +75,7 @@ class LenderCIPController extends Controller
         ];
 
         if (null === $evaluation || false === $cipManager->isEvaluationStarted($evaluation)) {
-            return $this->redirectToRoute('cip_start_questionnaire');
+            $evaluation = $cipManager->startEvaluation($client);
         }
 
         $lastQuestion = $cipManager->getLastQuestion($evaluation);
@@ -127,7 +93,7 @@ class LenderCIPController extends Controller
             $template['clientHash']      = $this->getUser()->getHash();
             return $this->render('lender_cip/advice.html.twig', $template);
         } else {
-            $template['current_step'] = $lastQuestion->order + 1;
+            $template['current_step'] = $lastQuestion->order;
             $template['answers']      = $answers;
             $template['question']     = [
                 'id'   => $lastQuestion->id_lender_questionnaire_question,
@@ -179,7 +145,7 @@ class LenderCIPController extends Controller
 
         if (null === $evaluation) {
             // @todo error message
-            return $this->redirectToRoute('cip_start_questionnaire');
+            return $this->redirectToRoute('cip_continue_questionnaire');
         }
 
         if ('values' === $request->query->get('reset')) {
@@ -303,7 +269,7 @@ class LenderCIPController extends Controller
         $cipManager = $this->get('unilend.service.cip_manager');
         $cipManager->endLenderEvaluation($this->getClient());
 
-        return $this->redirectToRoute('cip_start_questionnaire');
+        return $this->redirectToRoute('cip_continue_questionnaire');
     }
 
     /**

@@ -29,7 +29,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsHistory, ClientsStatus, LoginLog
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    GoogleRecaptchaManager, LenderManager
+    CIPManager, GoogleRecaptchaManager, LenderManager
 };
 use Unilend\Bundle\FrontBundle\Security\User\{
     BaseUser, UserLender
@@ -56,6 +56,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     private $googleRecaptchaManager;
     /** @var LenderManager */
     private $lenderManager;
+    /** @var CIPManager */
+    private $cipManager;
     /** @var LoggerInterface */
     private $logger;
 
@@ -67,6 +69,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
      * @param CsrfTokenManagerInterface              $csrfTokenManager
      * @param GoogleRecaptchaManager                 $googleRecaptchaManager
      * @param LenderManager                          $lenderManager
+     * @param CIPManager                             $cipManager
      * @param LoggerInterface                        $logger
      */
     public function __construct(
@@ -77,6 +80,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         CsrfTokenManagerInterface $csrfTokenManager,
         GoogleRecaptchaManager $googleRecaptchaManager,
         LenderManager $lenderManager,
+        CIPManager $cipManager,
         LoggerInterface $logger
     )
     {
@@ -87,6 +91,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $this->csrfTokenManager        = $csrfTokenManager;
         $this->googleRecaptchaManager  = $googleRecaptchaManager;
         $this->lenderManager           = $lenderManager;
+        $this->cipManager              = $cipManager;
         $this->logger                  = $logger;
     }
 
@@ -222,10 +227,13 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         try {
             $needUpdatePersonalData = $this->lenderManager->needUpdatePersonalData($client);
+            $needCipEvaluation      = $this->cipManager->needReevaluation($client);
         } catch (\InvalidArgumentException $exception) {
             $needUpdatePersonalData = false;
+            $needCipEvaluation      = false;
         } catch (\Exception $exception) {
             $needUpdatePersonalData = false;
+            $needCipEvaluation      = false;
 
             $this->logger->error('An error occurs when calling LenderManager::needUpdatePersonalData() Error : ' . $exception->getMessage(), [
                 'class'     => __CLASS__,
@@ -238,6 +246,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
         if ($needUpdatePersonalData) {
             $targetPath = $this->router->generate('lender_data_update_start');
+        } elseif ($needCipEvaluation) {
+            $targetPath = $this->router->generate('cip_index');
         } else {
             $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
         }
