@@ -10,12 +10,12 @@
         <dt>{% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}</dt>
         <dd>
             <span id="data-update-info-company-client-status-output">{{ "lender-profile_information-tab-identity-section-company-client-status-#{ company.statusClient }" | trans }} </span>
-            <span id="data-update-info-company-status-conseil-externe-entreprise-output" class="legal-entity-status-3 collapse {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %} in {% endif %}">
+            <span id="data-update-info-company-status-conseil-externe-entreprise-output" class="legal-entity-status-3 collapse {% if company.statusClient == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_CONSULTANT') %}in{% endif %}">
                 {% if company.statusConseilExterneEntreprise != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}
                     {{ externalCounselList[company.statusConseilExterneEntreprise]|default() }}
                 {% endif %}
             </span>
-        <span id="data-update-info-company-specify-externe-conseil-output" class="legal-entity-status-other-field collapse {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %} in {% endif %}">
+        <span id="data-update-info-company-specify-externe-conseil-output" class="legal-entity-status-other-field collapse {% if company.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %}">
              {{ company.preciserConseilExterneEntreprise }}
         </span>
         </dd>
@@ -32,7 +32,7 @@
     </dl>
 
     <section role="tabpanel"
-             class="legal-entity-status-not-1 collapse {% if company.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
+             class="legal-entity-status-not-1 collapse {% if company.statusClient != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
         <h5>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h5>
         <dl class="list-2col">
             <dt>{% trans %} common_title {% endtrans %}</dt>
@@ -75,7 +75,7 @@
             <div class="field-label">
                 <label>
                     {% trans %} common_title {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -96,7 +96,7 @@
             <div class="field-label">
                 <label>
                     {% trans %} lender-profile_information-tab-identity-section-company-client-status-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -111,13 +111,13 @@
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
-    {# Show if company_client_status is 3 #}
-    <div class="legal-entity-status-3 collapse {% if form.company.vars.value.statusConseilExterneEntreprise is not null %} in {% endif %}">
+    {# Show if company_client_status is Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER #}
+    <div class="legal-entity-status-3 collapse {% if form.company.vars.value.statusConseilExterneEntreprise is not null %}in{% endif %}">
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6 {% if form.company.statusConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-client-status">
                     {% trans %} lender-profile_information-tab-identity-section-company-external-counsel-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.statusConseilExterneEntreprise, {
                     'id': 'form-data-update-info-company-client-status',
@@ -133,10 +133,10 @@
             </div><!-- /.form-field -->
 
             <div class="col-lg-6 col-md-6">
-                <div class="legal-entity-status-other-field form-field collapse {% if form.company.vars.value.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %} in {% endif %} {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
+                <div class="legal-entity-status-other-field form-field collapse {% if form.company.vars.value.statusConseilExterneEntreprise == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_EXTERNAL_COUNSEL_OTHER') %}in{% endif %} {% if form.company.preciserConseilExterneEntreprise.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                     <label for="form-data-update-info-company-client-status-other">
                         {% trans %} lender-profile_information-tab-identity-section-company-other-external-counsel-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(form.company.preciserConseilExterneEntreprise, {
                         'id': 'form-data-update-info-company-client-status-other',
@@ -156,7 +156,7 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.client.nom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-company-client-name">{% trans %} common_name {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.client.nom, {
                 'id': 'form-data-update-info-company-client-name',
                 'required': false,
@@ -173,7 +173,7 @@
         <div class="form-field col-lg-6 col-md-6 {% if form.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-company-client-first-name">
                 {% trans %} common_firstname {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.prenom, {
                 'id': 'form-data-update-info-company-client-first-name',
@@ -213,7 +213,7 @@
         <div class="form-field col-lg-6 col-md-6 {% if form.client.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-company-client-telephone">
                 {% trans %} common_mobile-phone {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.mobile, {
                 'id': 'form-data-update-info-company-client-telephone',
@@ -232,7 +232,7 @@
         <div class="form-field col-lg-6 col-md-6">
             <label for="form-data-update-info-company-client-email {% if form.client.email.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 {% trans %} common_email {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.email, {
                 'id': 'form-data-update-info-company-client-email',
@@ -247,8 +247,8 @@
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
-    {# Show if company_client_status is not 1 #}
-    <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient > constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %} in {% endif %}">
+    {# Show if company_client_status is not Companies::CLIENT_STATUS_MANAGER #}
+    <div class="legal-entity-status-not-1 collapse {% if form.company.vars.value.statusClient != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Companies::CLIENT_STATUS_MANAGER') %}in{% endif %}">
         <h3>{% trans %} lender-profile_information-tab-identity-section-company-director-title {% endtrans %}</h3>
 
         <div class="row">
@@ -256,7 +256,7 @@
                 <div class="field-label">
                     <label>
                         {% trans %} common_title {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                        <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                 </div>
 
@@ -278,7 +278,7 @@
             <div class="form-field col-lg-6 col-md-6 {% if form.company.nomDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-director-name">
                     {% trans %} common_name {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.nomDirigeant, {
                     'id': 'form-data-update-info-company-director-name',
@@ -295,7 +295,7 @@
             <div class="form-field col-lg-6 col-md-6 {% if form.company.prenomDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-director-first-name">
                     {% trans %} common_firstname {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.prenomDirigeant, {
                     'id': 'form-data-update-info-company-director-first-name',
@@ -314,7 +314,7 @@
             <div class="form-field col-lg-6 col-md-6 {% if form.company.fonctionDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-director-function">
                     {% trans %} common_position {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.fonctionDirigeant, {
                     'id': 'form-data-update-info-company-director-function',
@@ -335,7 +335,7 @@
             <div class="form-field col-lg-6 col-md-6 {% if form.company.phoneDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-director-telephone">
                     {% trans %} common_phone {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.phoneDirigeant, {
                     'id': 'form-data-update-info-company-director-telephone',
@@ -353,7 +353,7 @@
             <div class="form-field col-lg-6 col-md-6 {% if form.company.emailDirigeant.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-data-update-info-company-director-email">
                     {% trans %} common_email {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(form.company.emailDirigeant, {
                     'id': 'form-data-update-info-company-director-email',
@@ -370,9 +370,9 @@
     </div><!-- /.legal-entity-status-not-1 -->
 
     <div class="btn-controls">
-        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-info-section"
-                aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
                 aria-controls="#data-update-info-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-info-section"
+        aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
     </div>
 </section><!-- /.data-update-info-edit -->

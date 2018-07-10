@@ -311,7 +311,6 @@ $doc.on('ready', function () {
     var $mainAddress           = $('#completeness-main-address')
     hideDetails(ribDocumentId, $bankAccount)
     hideDetails(housingCertificateType, $mainAddress)
-
   })
 
   function hideDetails(documentId, $dataSection) {

@@ -1,9 +1,9 @@
 <section id="data-update-telephone-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} common_mobile-phone {% endtrans %}</dt>
-        <dd id="data-update-phone-mobile-output">{{ client.getMobile() }}</dd>
+        <dd id="data-update-phone-mobile-output">{{ client.mobile }}</dd>
         <dt>{% trans %} common_landline {% endtrans %}</dt>
-        <dd id="data-update-phone-telephone-output">{{ client.getTelephone() }}</dd>
+        <dd id="data-update-phone-telephone-output">{{ client.telephone }}</dd>
     </dl>
     {% trans %} lender-data-update_telephone-description {% endtrans %}
     <div class="btn-controls">
@@ -24,7 +24,7 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.phone.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-phone-mobile">{% trans %} common_mobile-phone {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group">
                 {{ form_widget(form.phone.mobile, {
                     'id': 'form-profile-phone-mobile',
@@ -56,9 +56,9 @@
     </div>
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-telephone-section"
-                aria-controls="#data-update-telephone-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-telephone-view" data-parent="#data-update-telephone-section"
                 aria-controls="#data-update-telephone-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-telephone-section"
+        aria-controls="#data-update-telephone-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
     </div>
 </section><!-- /.data-update-telephone-edit -->

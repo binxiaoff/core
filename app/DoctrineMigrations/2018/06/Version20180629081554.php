@@ -48,18 +48,18 @@ INSERT IGNORE INTO translations (locale, section, name, translation, added, upda
   ('fr_FR', 'lender-data-update', 'legal-entity-start-page-instruction', '<p>Bonjour %firstName%,</p><p>Afin de conserver un compte prêteur à jour, merci de vous assurer que les informations dont nous disposons correspondent à la situation actuelle de %company_name% dont vous êtes le représentant légal.</p><p>Unilend garantit à l''ensemble de ses prêteurs la sécurité et la confidentialité de leurs données personnelles qui ne sont jamais communiquées à des tiers non habilités.</p>', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'legal-entity-start-button', 'Vérifier les informations du compte de %company_name%', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'legal-entity-identity-section-title', 'Raison sociale', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-main-address-section-title', 'Adresse fiscale de %company_name%', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-bank-account-section-title', 'Informations bancaires de %company_name%', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-bank-account-description', 'C''est le compte bancaire vers le quel vous retirez l''argent disponible sur le compte Unilend de %company_name%', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-funds-origin-section-title', 'Origine des fonds de %company_name%', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-representative-section-title', 'Identité du représentant légal de %company_name%', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'kbis-doc-section-title', 'Extrait de Kbis de %company_name%', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-entity-main-address-section-title', 'Adresse fiscale de <span class="company-name">%company_name%</span>', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-entity-bank-account-section-title', 'Informations bancaires de <span class="company-name">%company_name%</span>', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-entity-bank-account-description', 'C''est le compte bancaire vers le quel vous retirez l''argent disponible sur le compte Unilend de <span class="company-name">%company_name%</span>', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-entity-funds-origin-section-title', 'Origine des fonds de <span class="company-name">%company_name%</span>', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-representative-section-title', 'Identité du représentant légal de <span class="company-name">%company_name%</span>', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'kbis-doc-section-title', 'Extrait de Kbis de <span class="company-name">%company_name%</span>', NOW(), NOW()),
   ('fr_FR', 'lender-data-update', 'kbis-doc-description', '<p>Date du dernier téléchargement de votre justificatif : %upload_date%</p><p>Si des changements sont intervenus depuis cette date, merci de nous transmettre la copie d''un nouvel extrait de Kbis', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'legal-entity-end-page-instruction', 'Merci d''avoir confirmé les informations de %company_name%. Conformément à la règlementation en vigueur nous vous demanderons à nouveau de confirmer ces données d''ici quelques mois.', NOW(), NOW()),
+  ('fr_FR', 'lender-data-update', 'legal-entity-end-page-instruction', 'Merci d''avoir confirmé les informations de <span class="company-name">%company_name%</span>. Conformément à la règlementation en vigueur nous vous demanderons à nouveau de confirmer ces données d''ici quelques mois.', NOW(), NOW()),
   ('fr_FR', 'utility', 'kbis-document-modified', 'Vous venez de modifier votre extrait de Kbis, ce document sera prochainement validé par nos équipes.', NOW(), NOW()),
   ('fr_FR', 'utility', 'identity-document-modified', 'Vous venez de modifier votre justificatif d''identité, ce document sera prochainement validé par nos équipes.', NOW(), NOW()),
-  ('fr_FR', 'lender-data-update', 'funds-origin-not-filled', 'Cliquez sur "Modifier" pour indiquer l''origine des fonds que vous déposez chez Unilend.', NOW(), NOW())
-
+  ('fr_FR', 'lender-data-update', 'funds-origin-not-filled', 'Cliquez sur "Modifier" pour indiquer l''origine des fonds que vous déposez chez Unilend.', NOW(), NOW()),
+  ('fr_FR', 'common', 'loading', 'Chargement...', NOW(), NOW())
 TRANSLATIONS;
 
         $this->addSql($insertTranslations);
@@ -83,5 +83,6 @@ TRANSLATIONSTODELETE;
 
         $this->addSql($deleteTranslations);
         $this->addSql('DELETE FROM translations WHERE section = \'lender-profile\' AND name = \'tab-title-data-update\'');
+        $this->addSql('DELETE FROM translations WHERE section = \'common\' AND name = \'loading\'');
     }
 }

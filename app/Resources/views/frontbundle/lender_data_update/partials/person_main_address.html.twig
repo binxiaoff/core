@@ -52,7 +52,7 @@
     <div class="row">
         <div class="form-field {% if form.main_address.address.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-address-street">{% trans %} lender-profile_information-tab-fiscal-address-section-address-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.main_address.address, {
                 'attr': {
@@ -68,7 +68,7 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.main_address.zip.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-address-code">{% trans %} lender-profile_information-tab-fiscal-address-section-zip-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="input-group set-right">
                 {{ form_widget(form.main_address.zip, {
@@ -92,7 +92,7 @@
         </div><!-- /.form-field -->
         <div class="form-field col-lg-6 col-md-6 {% if form.main_address.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-address-ville">{% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group set-right">
                 {{ form_widget(form.main_address.city, {
                     'id': 'form-profile-address-ville',
@@ -109,7 +109,7 @@
                 }) }}
                 {{ form_errors(form.main_address.city) }}
                 <div class="btn-group">
-                    <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                    <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
                 </div>
             </div><!-- /.input-group -->
         </div><!-- /.form-field -->
@@ -118,7 +118,7 @@
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.main_address.idCountry.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-profile-address-pays">{% trans %} lender-profile_information-tab-fiscal-address-section-country-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.main_address.idCountry, {
                 'id': 'form-profile-address-pays',
                 'attr': {
@@ -137,10 +137,10 @@
     </div>
 
     {# Show if country changes from France #}
-    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\PaysV2::COUNTRY_FRANCE') %} in {% endif %}">
+    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\PaysV2::COUNTRY_FRANCE') %}in{% endif %}">
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="custom-input-file" id="form-profile-info-file-tax-certificate"
                  data-formvalidation-input
@@ -158,7 +158,7 @@
     <div id="form-profile-info-domicile-files-field" class="row">
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-location-certificate {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="custom-input-file" id="form-profile-info-file-domicile"
                  data-formvalidation-input
@@ -183,10 +183,10 @@
     </div>
 
     {# Show if housed by third person is checked #}
-    <div id="upload-housed-by-third-person" class="row collapse {% if isHousedByThirdPerson == true %} in {% endif %}">
+    <div id="upload-housed-by-third-person" class="row collapse {% if isHousedByThirdPerson == true %}in{% endif %}">
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-housed-by-third-person-declaration {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="custom-input-file" id="form-profile-info-file-housed-by-third-person-declaration"
                  data-formvalidation-input
@@ -201,7 +201,7 @@
 
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-id-third-person-housing {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             <div class="form-field file-identity-side-a">
                 <div class="custom-input-file" id="form-profile-info-file-id-third-person-housing"
@@ -218,9 +218,9 @@
     </div><!-- /#upload-housed-by-third-person -->
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-main-address-section"
-                aria-controls="#data-update-main-address-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-main-address-view" data-parent="#data-update-main-address-section"
                 aria-controls="#data-update-main-address-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-main-address-section"
+        aria-controls="#data-update-main-address-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
     </div>
 </section><!-- /.profile-address-edit -->

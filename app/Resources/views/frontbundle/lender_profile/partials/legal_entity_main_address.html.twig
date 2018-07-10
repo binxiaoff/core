@@ -71,7 +71,7 @@
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->
-            
+
             <div class="form-field col-lg-6 col-md-6 {% if forms.mainAddress.city.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
                 <label for="form-profile-address-ville">
                     {% trans %} lender-profile_information-tab-fiscal-address-section-city-label {% endtrans %}
@@ -93,7 +93,7 @@
                     }) }}
                     {{ form_errors(forms.mainAddress.city) }}
                     <div class="btn-group">
-                        <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">Loading...</span></span>
+                        <span id="spinner-profile-address-city" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
                     </div>
                 </div><!-- /.input-group -->
             </div><!-- /.form-field -->

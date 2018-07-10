@@ -29,7 +29,9 @@
     <div id="data-update-legal-entity-identity-edit-notifications"></div>
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.company.name.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-            <label for="form-data-update-legal-entity-identity-company-name">{% trans %} lender-profile_information-tab-identity-section-company-name-label {% endtrans %}</label>
+            <label for="form-data-update-legal-entity-identity-company-name">
+                {% trans %} lender-profile_information-tab-identity-section-company-name-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.company.name, {
                 'id': 'form-data-update-legal-entity-identity-company-name',
                 'required': false,
@@ -45,7 +47,7 @@
 
         <div class="form-field col-lg-6 col-md-6 {% if form.company.forme.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-legal-entity-identity-company-legal-form">{% trans %} lender-profile_information-tab-identity-section-company-legal-form-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.company.forme, {
                 'id': 'form-data-update-legal-entity-identity-company-legal-form',
                 'required': false,
@@ -62,7 +64,8 @@
 
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.company.capital.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-            <label for="form-data-update-legal-entity-identity-company-social-capital">{% trans %} lender-profile_information-tab-identity-section-company-social-capital-label {% endtrans %}</label>
+            <label for="form-data-update-legal-entity-identity-company-social-capital">{% trans %} lender-profile_information-tab-identity-section-company-social-capital-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.company.capital, {
                 'id': 'form-data-update-legal-entity-identity-company-social-capital',
                 'required': false,
@@ -76,15 +79,15 @@
             {{ form_errors(form.company.capital) }}
         </div><!-- /.form-field -->
         <div class="form-field col-lg-6 col-md-6">
-            <label for="form-data-update-legal-entity-identity-company-siren">{% trans %} lender-profile_information-tab-identity-section-company-siren-label {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+            <label for="form-data-update-legal-entity-identity-company-siren">{% trans %} lender-profile_information-tab-identity-section-company-siren-label {% endtrans %}</label>
             <span id="form-data-update-legal-entity-identity-company-siren" >{{ company.siren }}</span>
         </div><!-- /.form-field -->
     </div><!-- /.row -->
 
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if form.company.phone.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-            <label for="form-data-update-legal-entity-identity-company-phone">{% trans %} lender-profile_information-tab-identity-section-company-phone-label {% endtrans %}</label>
+            <label for="form-data-update-legal-entity-identity-company-phone">{% trans %} lender-profile_information-tab-identity-section-company-phone-label {% endtrans %}
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.company.phone, {
                 'id': 'form-data-update-legal-entity-identity-company-phone',
                 'required': false,
@@ -102,9 +105,9 @@
     </div><!-- /.row -->
 
     <div class="btn-controls">
-        <button class="btn-primary lender-data-update-save-btn" id="lender-data-update-legal-entity-identity-save-btn" role="button" data-parent="#data-update-legal-entity-identity-section"
-                aria-controls="#data-update-legal-entity-identity-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-legal-entity-identity-view" data-parent="#data-update-legal-entity-identity-section"
                 aria-controls="#data-update-legal-entity-identity-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button class="btn-primary lender-data-update-save-btn" id="lender-data-update-legal-entity-identity-save-btn" role="button" data-parent="#data-update-legal-entity-identity-section"
+        aria-controls="#data-update-legal-entity-identity-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
     </div>
 </section><!-- /.data-update-legal-entity-identity-edit -->

@@ -33,7 +33,7 @@
         <div class="col-lg-6 col-md-6 form-field form-field-multi">
             <div class="field-label">
                 <label>{% trans %} common_title {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
             </div>
             <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
@@ -52,7 +52,7 @@
     <div class="row">
         <div class="col-lg-6 col-md-6 form-field {% if form.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-prenom">{% trans %} common_used-name {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.nomUsage, {
                 'id': 'form-data-update-info-nomUsage',
@@ -68,7 +68,7 @@
     <div class="row row-multi-col-computer">
         <div class="col-lg-6 col-md-6 form-field {% if form.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
             <label for="form-data-update-info-prenom">{% trans %} common_firstname {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             {{ form_widget(form.client.prenom, {
                 'id': 'form-data-update-info-prenom',
                 'attr': {
@@ -85,7 +85,7 @@
     <div class="row">
         <div class="col-lg-6 col-md-6 form-field">
             <label for="form-data-update-info-nationalite">{% trans %} common_nationality {% endtrans %}
-                <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
             </label>
             {{ form_widget(form.client.idNationalite, {
                 'id': 'form-data-update-info-nationalite',
@@ -101,9 +101,9 @@
     </div><!-- /.row -->
 
     <div class="btn-controls">
-        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-info-section"
-                aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
         <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-info-view" data-parent="#data-update-info-section"
                 aria-controls="#data-update-info-view" aria-expanded="false" type="reset">{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button id="lender-data-update-identity-save-btn" class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-info-section"
+        aria-controls="#data-update-info-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
     </div>
 </section><!-- /.data-update-info-edit -->

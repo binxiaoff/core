@@ -193,4 +193,9 @@ $doc.on('ready', function () {
   $(window).on('beforeunload', function () {
     $form.uiCacheForm('clear')
   })
+
+  // Synchronise the company names shown in the form
+  $doc.on('hidden.bs.collapse', '#data-update-legal-entity-identity-edit', function (event) {
+    $('#data-update-section span.company-name').html($('#form-data-update-legal-entity-identity-company-name').val())
+  })
 })
