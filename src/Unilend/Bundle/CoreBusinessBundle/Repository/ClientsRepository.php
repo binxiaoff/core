@@ -531,9 +531,10 @@ class ClientsRepository extends EntityRepository
         }
 
         $query = '
-            SELECT c.*
+            SELECT c.*, cs.label
             FROM clients c
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN clients_status cs ON csh.id_status = cs.id
             WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
               AND ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.prenom' . $replaceCharacters . ' LIKE :firstName
               AND c.naissance = :birthday
