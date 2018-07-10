@@ -246,7 +246,7 @@ class ClientDataHistoryManager
      * @param string[]     $clientChanges
      * @param string[]     $companyChanges
      * @param Attachment[] $modifiedAttachments
-     * @param string       $modifiedAddressType
+     * @param string|null  $modifiedAddressType
      * @param bool         $isBankAccountChanged
      */
     public function sendLenderProfileModificationEmail(
@@ -254,7 +254,7 @@ class ClientDataHistoryManager
         array $clientChanges,
         array $companyChanges,
         array $modifiedAttachments,
-        string $modifiedAddressType,
+        ?string $modifiedAddressType,
         bool $isBankAccountChanged
     ): void
     {
@@ -355,11 +355,11 @@ class ClientDataHistoryManager
      * If several fields have the same translation, it will be displayed only once. This can be used to group the message for the fields.
      * Ex. for all the fields in company, we only want to say "your company information is modified"(without details). In order to do that we need to define the same translation for all the fields in "company" entity
      *
-     * @param Clients $client
-     * @param array   $clientChanges
-     * @param array   $companyChanges
-     * @param string  $modifiedAddressType
-     * @param bool    $isBankAccountChanged
+     * @param Clients     $client
+     * @param array       $clientChanges
+     * @param array       $companyChanges
+     * @param string|null $modifiedAddressType
+     * @param bool        $isBankAccountChanged
      *
      * @return string[]
      */
@@ -367,7 +367,7 @@ class ClientDataHistoryManager
         Clients $client,
         array $clientChanges,
         array $companyChanges,
-        string $modifiedAddressType,
+        ?string $modifiedAddressType,
         bool $isBankAccountChanged
     ): array
     {

@@ -274,6 +274,12 @@ class Clients
 
     /**
      * @var \DateTime
+     * @ORM\Column(name="personal_data_updated", type="datetime", nullable=true)
+     */
+    private $personalDataUpdated;
+
+    /**
+     * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
      */
@@ -1500,6 +1506,30 @@ class Clients
     public function setIdPostalAddress(?ClientAddress $idPostalAddress): Clients
     {
         $this->idPostalAddress = $idPostalAddress;
+
+        return $this;
+    }
+
+    /**
+     * @return \DateTime|null
+     */
+    public function getPersonalDataUpdated(): ?\DateTime
+    {
+        return $this->personalDataUpdated;
+    }
+
+    /**
+     * @param \DateTime|null $personalDataUpdated
+     *
+     * @return Clients
+     */
+    public function setPersonalDataUpdated(?\DateTime $personalDataUpdated = null): Clients
+    {
+        if (null === $personalDataUpdated) {
+            $personalDataUpdated = new \DateTime();
+        }
+
+        $this->personalDataUpdated = $personalDataUpdated;
 
         return $this;
     }

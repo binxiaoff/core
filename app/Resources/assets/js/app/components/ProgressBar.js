@@ -211,7 +211,7 @@ ProgressBar.prototype.setCurrent = function (newCurrent, skipUpdate) {
   // })
 
   // Update attributes
-  self.$elem.attr('data-progressbar-current', self.track.current)
+  self.$elem.data('progressbar-current', self.track.current)
   self.$elem.attr('data-progressbar-percent', Math.floor(self.track.percent))
 
   // Updates by default, unless skipped

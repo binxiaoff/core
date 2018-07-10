@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, PaysV2, Users, WalletType
+    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, PaysV2, Users, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager
@@ -134,7 +134,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -268,7 +268,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -297,24 +297,18 @@ class LenderProfileFormsHandler
             return true;
         }
 
-        $this->checkPersonAddressForm($form, $type);
+        $this->checkAddressForm($form, $type);
 
         $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
 
         if ($this->isFormValid($form)) {
-            if (AddressType::TYPE_MAIN_ADDRESS === $type) {
-                $modifiedAddressType = AddressType::TYPE_MAIN_ADDRESS;
-            } else {
-                $modifiedAddressType = AddressType::TYPE_POSTAL_ADDRESS;
-            }
-
             $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
 
             if ($form->has('noUsPerson')) {
                 $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
             }
 
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $type);
 
             return true;
         }
@@ -326,7 +320,7 @@ class LenderProfileFormsHandler
      * @param FormInterface $form
      * @param string        $type
      */
-    private function checkPersonAddressForm(FormInterface $form, string $type): void
+    private function checkAddressForm(FormInterface $form, string $type): void
     {
         if (AddressType::TYPE_POSTAL_ADDRESS === $type) {
             return;
@@ -341,19 +335,19 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param FormInterface      $form
-     * @param null|ClientAddress $clientAddress
+     * @param FormInterface                     $form
+     * @param ClientAddress|CompanyAddress|null $address
      *
      * @return bool
      */
-    private function isAddressModified(FormInterface $form, ?ClientAddress $clientAddress): bool
+    private function isAddressModified(FormInterface $form, $address): bool
     {
         if (
-            null === $clientAddress
-            || $clientAddress->getAddress() !== $form->get('address')->getData()
-            || $clientAddress->getZip() !== $form->get('zip')->getData()
-            || $clientAddress->getCity() !== $form->get('city')->getData()
-            || $clientAddress->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
+            null === $address
+            || $address->getAddress() !== $form->get('address')->getData()
+            || $address->getZip() !== $form->get('zip')->getData()
+            || $address->getCity() !== $form->get('city')->getData()
+            || $address->getIdCountry()->getIdPays() !== $form->get('idCountry')->getData()
         ) {
             return true;
         }
@@ -397,7 +391,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading attachment type id: ' . $attachmentTypeId . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -466,54 +460,26 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Companies     $company
-     * @param FormInterface $form
-     * @param string        $addressType
+     * @param Companies           $company
+     * @param FormInterface       $form
+     * @param string              $addressType
+     * @param CompanyAddress|null $companyAddress
      *
      * @return bool
      * @throws \Exception
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function handleCompanyAddress(Companies $company, FormInterface $form, string $addressType): bool
+    public function handleCompanyAddress(Companies $company, FormInterface $form, string $addressType, ?CompanyAddress $companyAddress): bool
     {
-        $zip       = $form->get('zip')->getData();
-        $countryId = $form->get('idCountry')->getData();
-
-        switch ($addressType) {
-            case AddressType::TYPE_MAIN_ADDRESS:
-                if (
-                    (empty($zip) || empty($countryId))
-                    || (PaysV2::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip]))
-                ) {
-                    $form->get('zip')->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
-                }
-                break;
-            case AddressType::TYPE_POSTAL_ADDRESS:
-                break;
-            default:
-                $this->logger->error('Unknown address type requested. The type: "' . $addressType . '" is not supported in lender profile', [
-                    'class'    => __CLASS__,
-                    'function' => __FUNCTION__
-                ]);
-                return false;
+        $addressModified = $this->isAddressModified($form, $companyAddress);
+        if (false === $addressModified) {
+            return true;
         }
 
+        $this->checkAddressForm($form, $addressType);
+
         if ($form->isValid()) {
-            if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
-                $this->addressManager->companyPostalAddressSameAsMainAddress($company);
-            } elseif (
-                false === $form->has('samePostalAddress')
-                || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
-            ) {
-                $this->addressManager->saveCompanyAddress(
-                    $form->get('address')->getData(),
-                    $form->get('zip')->getData(),
-                    $form->get('city')->getData(),
-                    $form->get('idCountry')->getData(),
-                    $company,
-                    $addressType
-                );
-            }
+            $this->saveCompanyAddress($company, $form, $addressType);
 
             $this->saveAndNotifyChanges($company->getIdClientOwner(), $company->getIdClientOwner(), null, null, [], $addressType);
 
@@ -524,19 +490,45 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Clients          $client
-     * @param Clients          $unattachedClient
-     * @param FormInterface    $form
-     * @param FileBag          $fileBag
-     * @param null|BankAccount $unattachedBankAccount
+     * @param Companies     $company
+     * @param FormInterface $form
+     * @param string        $addressType
+     *
+     * @throws \Exception
+     */
+    private function saveCompanyAddress(Companies $company, FormInterface $form, string $addressType)
+    {
+        if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
+            $this->addressManager->companyPostalAddressSameAsMainAddress($company);
+        } elseif (
+            false === $form->has('samePostalAddress')
+            || $form->has('samePostalAddress') && empty($form->get('samePostalAddress')->getData())
+        ) {
+            $this->addressManager->saveCompanyAddress(
+                $form->get('address')->getData(),
+                $form->get('zip')->getData(),
+                $form->get('city')->getData(),
+                $form->get('idCountry')->getData(),
+                $company,
+                $addressType
+            );
+        }
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
      *
      * @return bool
      * @throws \Exception
      */
-    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): bool
+    public function handleBankDetailsForm(Clients $client, Clients $unattachedClient, FormInterface $form, FileBag $fileBag): bool
     {
         $this->checkBankDetailsForm($form);
-        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $unattachedBankAccount);
+        $bankAccount         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountDocument = $this->uploadBankDocument($client, $form, $fileBag, $bankAccount);
 
         if ($this->isFormValid($form)) {
             $newAttachments      = [];
@@ -578,13 +570,9 @@ class LenderProfileFormsHandler
      */
     private function uploadBankDocument(Clients $client, FormInterface $form, FileBag $fileBag, ?BankAccount $unattachedBankAccount): ?Attachment
     {
-        $iban                = $form->get('iban')->getData();
-        $bic                 = $form->get('bic')->getData();
         $bankAccountDocument = null;
-        if (
-            null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
-            || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
-        ) {
+
+        if ($this->isBankAccountModified($form, $unattachedBankAccount)) {
             $file = $fileBag->get('iban-certificate');
 
             if (false === $file instanceof UploadedFile) {
@@ -597,7 +585,7 @@ class LenderProfileFormsHandler
                     $this->logger->error('An error occurred while uploading IBAN attachment type id: ' . AttachmentType::RIB . '. Error message: ' . $exception->getMessage(), [
                         'id_client' => $client->getIdClient(),
                         'class'     => __CLASS__,
-                        'method'    => __METHOD__,
+                        'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine()
                     ]);
@@ -662,7 +650,7 @@ class LenderProfileFormsHandler
      * @param Companies|null $modifiedCompany
      * @param Companies|null $unattachedCompany
      * @param array          $newAttachments
-     * @param string         $modifiedAddressType
+     * @param string|null    $modifiedAddressType
      * @param bool           $isBankAccountModified
      *
      * @throws OptimisticLockException
@@ -674,7 +662,7 @@ class LenderProfileFormsHandler
         ?Companies $modifiedCompany = null,
         ?Companies $unattachedCompany = null,
         array $newAttachments = [],
-        string $modifiedAddressType = '',
+        ?string $modifiedAddressType,
         bool $isBankAccountModified = false
     ): void
     {
@@ -689,7 +677,8 @@ class LenderProfileFormsHandler
         }
         $isAddressModified = in_array($modifiedAddressType, [AddressType::TYPE_MAIN_ADDRESS, AddressType::TYPE_POSTAL_ADDRESS]);
 
-        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified, $newAttachments);
+        $this->clientStatusManager->changeClientStatusTriggeredByClientAction($modifiedClient, $unattachedClient, $modifiedCompany, $unattachedCompany, $isAddressModified, $isBankAccountModified,
+            $newAttachments);
         $this->clientDataHistoryManager->sendLenderProfileModificationEmail($modifiedClient, $clientChanges, $companyChanges, $newAttachments, $modifiedAddressType, $isBankAccountModified);
     }
 
@@ -774,5 +763,157 @@ class LenderProfileFormsHandler
         }
 
         return $attachment;
+    }
+
+    /**
+     * @param Clients       $client
+     * @param Clients       $unattachedClient
+     * @param ClientAddress $clientAddress
+     * @param string        $addressType
+     * @param FormInterface $form
+     * @param FileBag       $fileBag
+     *
+     * @throws \Exception
+     */
+    public function handleAllPersonalData(
+        Clients $client,
+        Clients $unattachedClient,
+        ClientAddress $clientAddress,
+        string $addressType,
+        FormInterface $form,
+        FileBag $fileBag
+    ): void
+    {
+        $clientForm          = $form->get('client');
+        $addressForm         = $form->get($addressType);
+        $bankForm            = $form->get('bankAccount');
+        $modifiedAddressType = null;
+
+        // Identity
+        $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+
+        // Address
+        $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
+        if ($isAddressModified) {
+            $this->checkAddressForm($addressForm, $addressType);
+            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType), $newAttachments);
+            $modifiedAddressType = $addressType;
+        }
+
+        //Bank Account
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
+            $this->checkBankDetailsForm($bankForm);
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
+        }
+
+        if ($form->isValid()) {
+            if ($isAddressModified) {
+                $this->savePersonAddress($client, $addressForm, $addressType, $clientAddress, $newAttachments);
+            }
+
+            $addressForm->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
+
+            if ($isBankAccountModified) {
+                $iban = $bankForm->get('iban')->getData();
+                $bic  = $bankForm->get('bic')->getData();
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
+            }
+
+            $client->setPersonalDataUpdated();
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, $modifiedAddressType, $isBankAccountModified);
+        }
+    }
+
+    /**
+     * @param FormInterface    $bankForm
+     * @param BankAccount|null $unattachedBankAccount
+     *
+     * @return bool
+     */
+    private function isBankAccountModified(FormInterface $bankForm, ?BankAccount $unattachedBankAccount): bool
+    {
+        $iban = $bankForm->get('iban')->getData();
+        $bic  = $bankForm->get('bic')->getData();
+
+        if (
+            null === $unattachedBankAccount && (false === empty($iban) || false === empty($bic))
+            || null !== $unattachedBankAccount && ($unattachedBankAccount->getIban() !== $iban || $unattachedBankAccount->getBic() !== $bic)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param Clients        $client
+     * @param Clients        $unattachedClient
+     * @param Companies      $company
+     * @param Companies      $unattachedCompany
+     * @param CompanyAddress $companyAddress
+     * @param string         $addressType
+     * @param FormInterface  $form
+     * @param FileBag        $fileBag
+     *
+     * @throws \Exception
+     */
+    public function handleAllLegalEntityData(
+        Clients $client,
+        Clients $unattachedClient,
+        Companies $company,
+        Companies $unattachedCompany,
+        CompanyAddress $companyAddress,
+        string $addressType,
+        FormInterface $form,
+        FileBag $fileBag
+    ): void
+    {
+        $companyForm         = $form->get('company');
+        $addressForm         = $form->get($addressType);
+        $bankForm            = $form->get('bankAccount');
+        $modifiedAddressType = null;
+
+        // Identity
+        $this->checkCompanyIdentityForm($company, $companyForm);
+
+        $newAttachments = $this->uploadCompanyIdentityDocuments($client, $company, $companyForm, $fileBag);
+
+        // Address
+        $isAddressModified = $this->isAddressModified($addressForm, $companyAddress);
+        if ($isAddressModified) {
+            $this->checkAddressForm($addressForm, $addressType);
+            $modifiedAddressType = $addressType;
+        }
+
+        //Bank Account
+        $isBankAccountModified = false;
+        $bankAccount           = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+        $bankAccountAttachment = $this->uploadBankDocument($client, $bankForm, $fileBag, $bankAccount);
+        if ($bankAccountAttachment) {
+            $this->checkBankDetailsForm($bankForm);
+            $newAttachments[AttachmentType::RIB] = $bankAccountAttachment;
+            $isBankAccountModified               = true;
+        }
+
+        if ($form->isValid()) {
+            if ($isAddressModified) {
+                $this->saveCompanyAddress($company, $addressForm, $addressType);
+            }
+
+            if ($isBankAccountModified) {
+                $iban = $bankForm->get('iban')->getData();
+                $bic  = $bankForm->get('bic')->getData();
+                $this->bankAccountManager->saveBankInformation($client, $bic, $iban, $newAttachments[AttachmentType::RIB]);
+            }
+
+            $client->setPersonalDataUpdated();
+
+            $this->saveAndNotifyChanges($client, $unattachedClient, $company, $unattachedCompany, $newAttachments, $modifiedAddressType, $isBankAccountModified);
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Twig;
 
-use Cache\Adapter\Memcache\MemcacheCachePool;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Asset\Packages;
 use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
@@ -22,7 +22,7 @@ class FrontBundleExtension extends \Twig_Extension
     private $translationManager;
     /** @var EntityManager */
     private $entityManager;
-    /** @var MemcacheCachePool */
+    /** @var CacheItemPoolInterface */
     private $cachePool;
     /** @var LocationManager */
     private $locationManager;
@@ -35,7 +35,7 @@ class FrontBundleExtension extends \Twig_Extension
         StatisticsManager $statisticsManager,
         TranslationManager $translationManager,
         EntityManager $entityManager,
-        MemcacheCachePool $cachePool,
+        CacheItemPoolInterface $cachePool,
         LocationManager $locationManager
     )
     {

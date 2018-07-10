@@ -1,9 +1,9 @@
 <section id="profile-info-edit" role="tabpanel" class="profile-info-edit collapse {{ identityFormCollapse }}">
     {{ form_start(forms.identity, {
-        'multipart' : true,
-            'attr' : {
-            'class' : 'form-profile form-profile-info-edit',
-            'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-info-notifications'
+        'multipart': true,
+            'attr': {
+            'class': 'form-profile form-profile-info-edit',
+            'data-formvalidation data-formvalidation-notificationselem': '#form-profile-info-notifications'
         }})
     }}
         <div class="row">
@@ -11,11 +11,13 @@
                 <div class="field-label">
                     <label>
                         {% trans %} lender-profile_information-tab-identity-section-client-type-label {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
                 </div>
                 <ul class="list-input-values">
                     <li>
-                        <label><input type="radio" name="client_type" value="person" checked="checked"/>
+                        <label>
+                            <input type="radio" name="client_type" value="person" checked="checked"/>
                             {% trans %} lender-profile_information-tab-identity-section-client-type-person-label {% endtrans %}
                         </label>
                     </li>
@@ -27,13 +29,16 @@
             <div class="form-field form-field-multi">
                 <div class="field-label">
                     <label>{% trans %} common_title {% endtrans %}
-                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                        <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                    </label>
                 </div>
                 <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
-                    {{ form_widget(forms.identity.client.civilite, {'attr' : {
-                        'class' : '',
-                        'required' : false
-                    }}) }}
+                    {{ form_widget(forms.identity.client.civilite, {
+                        'required': false,
+                        'attr': {
+                            'class': ''
+                        }
+                    }) }}
                     {{ form_errors(forms.identity.client.civilite) }}
                 </ul>
             </div><!-- /.form-field -->
@@ -45,31 +50,36 @@
                 <span id="form-profile-info-nom" >{{ client.nom }}</span>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.prenom.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-                <label for="form-profile-info-prenom">{% trans %} common_firstname {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
-                    {{ form_widget(forms.identity.client.prenom, {
-                        'id' : 'form-profile-info-prenom',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
-                        }})
-                    }}
-                    {{ form_errors(forms.identity.client.prenom) }}
+                <label for="form-profile-info-prenom">
+                    {% trans %} common_firstname {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
+                {{ form_widget(forms.identity.client.prenom, {
+                    'id': 'form-profile-info-prenom',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
+                    }
+                }) }}
+                {{ form_errors(forms.identity.client.prenom) }}
             </div><!-- /.form-field -->
         </div><!-- /.row -->
 
         <div class="row row-multi-col-computer">
             <div class="form-field col-lg-6 col-md-6 {% if forms.identity.client.nomUsage.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
-                <label for="form-profile-info-prenom">{% trans %} common_used-name {% endtrans %}
+                <label for="form-profile-info-prenom">
+                    {% trans %} common_used-name {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.identity.client.nomUsage, {
-                    'id' : 'form-profile-info-prenom',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'false'
-                    }})
-                }}
+                    'id': 'form-profile-info-prenom',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
+                    }
+                }) }}
                 {{ form_errors(forms.identity.client.nomUsage) }}
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
@@ -82,16 +92,18 @@
                 <span id="profile-info-dob-output">{{ client.naissance|date('d/m/Y') }}</span>
             </div><!-- /.form-field -->
             <div class="form-field col-lg-6 col-md-6">
-                <label for="form-profile-info-nationalite">{% trans %} common_nationality {% endtrans %}
+                <label for="form-profile-info-nationalite">
+                    {% trans %} common_nationality {% endtrans %}
                     <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                 </label>
                 {{ form_widget(forms.identity.client.idNationalite, {
-                    'id' : 'form-profile-info-nationalite',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true'
-                    }})
-                }}
+                    'id': 'form-profile-info-nationalite',
+                    'required': false,
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true'
+                    }
+                }) }}
                 {{ form_errors(forms.identity.client.idNationalite) }}
             </div><!-- /.form-field -->
         </div><!-- /.row -->
@@ -114,8 +126,10 @@
 
         <div class="row">
             <div id="form-profile-info-identity-files-field" class="form-field">
-                <label>{% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
-                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
+                <label>
+                    {% trans %} lender-profile_information-tab-identity-section-ID-documents-label {% endtrans %}
+                    <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
+                </label>
 
                 <div class="form-field file-identity-side-a">
                     <div class="custom-input-file" id="form-profile-info-file-identite-cni-1"
@@ -155,5 +169,5 @@
             <input type="hidden" name="person_identity_form" value="true" />
             <button type="reset" role="button" data-toggle="collapse" data-target="#profile-info-view" data-parent="#profile-info-section" class="btn-default" aria-controls="#profile-info-view">{% trans %} lender-profile_information-tab-identity-cancel-modifications-button {% endtrans %}</button>
         </div>
-    {{ form_end(forms.identity)}}
+    {{ form_end(forms.identity) }}
 </section><!-- /.profile-info-edit -->
