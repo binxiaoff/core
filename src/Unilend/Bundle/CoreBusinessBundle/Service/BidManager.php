@@ -7,7 +7,7 @@ use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
