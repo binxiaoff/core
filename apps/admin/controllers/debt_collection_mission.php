@@ -121,12 +121,10 @@ class debt_collection_missionController extends bootstrap
                 }
             }
 
-            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
-            return;
+            $this->sendAjaxResponse(empty($errors), null, $errors);
         }
 
-        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
-        die;
+        $this->sendAjaxResponse(false, null, ['Paramètres ou requête incorrects']);
     }
 
     public function _terminate()
@@ -139,7 +137,7 @@ class debt_collection_missionController extends bootstrap
         if (false === empty($this->params[0]) && $userManager->isGrantedRisk($this->userEntity) && $this->request->isMethod(Request::METHOD_POST)) {
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager           = $this->get('doctrine.orm.entity_manager');
-            $debtCollectionMissionId = filter_var($this->params[0], FILTER_VALIDATE_INT);;
+            $debtCollectionMissionId = filter_var($this->params[0], FILTER_VALIDATE_INT);
             $errors                  = [];
 
             if (null === ($debtCollectionMission = $entityManager->getRepository('UnilendCoreBusinessBundle:DebtCollectionMission')->find($debtCollectionMissionId))) {
@@ -155,12 +153,10 @@ class debt_collection_missionController extends bootstrap
                 }
             }
 
-            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
-            return;
+            $this->sendAjaxResponse(empty($errors), null, $errors);
         }
 
-        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
-        return;
+        $this->sendAjaxResponse(false, null, ['Paramètres ou requête incorrects']);
     }
 
     public function _addCharge()
@@ -231,11 +227,9 @@ class debt_collection_missionController extends bootstrap
                 $entityManager->flush($newCharge);
             }
 
-            echo json_encode(['error' => $errors, 'success' => empty($errors)]);
-            return;
+            $this->sendAjaxResponse(empty($errors), null, $errors);
         }
 
-        echo json_encode(['error' => ['Paramètres ou requête incorrects'], 'success' => false]);
-        die;
+        $this->sendAjaxResponse(false, null, ['Paramètres ou requête incorrects']);
     }
 }

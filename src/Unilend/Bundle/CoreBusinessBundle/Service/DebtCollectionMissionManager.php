@@ -827,9 +827,10 @@ class DebtCollectionMissionManager
      *
      * @return bool
      */
-    public function endMission(DebtCollectionMission $debtCollectionMission, Users $user)
+    public function endMission(DebtCollectionMission $debtCollectionMission, Users $user): bool
     {
         $debtCollectionMission->setArchived(new \DateTime())->setIdUserArchiving($user);
+
         try {
             $this->entityManager->flush($debtCollectionMission);
         } catch (\Exception $exception) {

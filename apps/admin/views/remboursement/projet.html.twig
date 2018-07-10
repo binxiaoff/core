@@ -140,7 +140,7 @@
             .done(function (data) {
               if (data.success === false) {
                 var errorMessage = ''
-                data.errors.forEach(function (element) {
+                data.error.forEach(function (element) {
                   errorMessage += element
                 })
                 alert(errorMessage)
@@ -168,7 +168,7 @@
               .done(function (data) {
                 if (data.success === false) {
                   var errorMessage = ''
-                  data.errors.forEach(function (element) {
+                  data.error.forEach(function (element) {
                     errorMessage += element
                   })
                   alert(errorMessage)
