@@ -103,8 +103,27 @@ class LenderValidationManager
      */
     public function validateClient(Clients $client, Users $user, array &$duplicatedAccounts = [], ?int $idBankAccount = null, ?int $idAddress = null): bool
     {
-        if (false === $this->closeDuplicatedAccounts($client, $user, $duplicatedAccounts)) {
-            return false;
+        if ($client->isNaturalPerson()) {
+            try {
+                $duplicates         = $this->getDuplicatedAccounts($client);
+                $duplicatedAccounts = $duplicates;
+
+                if (0 < count($duplicates) && in_array($user->getIdUser(), [Users::USER_ID_FRONT, Users::USER_ID_CRON])) {
+                    return false;
+                } elseif (0 < count($duplicates)) {
+                    $this->closeDuplicatedAccounts($client, $user, $duplicates);
+                }
+            } catch (DBALException $exception) {
+                $this->logger->error('Unable to find lender duplicates. Exception: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__
+                ]);
+
+                return false;
+            }
         }
 
         if (null !== $idBankAccount) {
@@ -170,50 +189,35 @@ class LenderValidationManager
 
     /**
      * @param Clients $client
-     * @param Users   $user
-     * @param array   $duplicatedAccounts
      *
-     * @return array|bool
+     * @return array
+     * @throws DBALException
      */
-    private function closeDuplicatedAccounts(Clients $client, Users $user, array &$duplicatedAccounts)
+    private function getDuplicatedAccounts(Clients $client): array
     {
-        if (false === $client->isNaturalPerson()) {
-            return true;
+        $existingClient = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')
+            ->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
+        $existingClient = array_column($existingClient, 'id_client', 'id_client');
+
+        if (isset($existingClient[$client->getIdClient()])) {
+            unset($existingClient[$client->getIdClient()]);
         }
 
-        try {
-            $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $existingClient   = $clientRepository->getDuplicatesByName($client->getNom(), $client->getPrenom(), $client->getNaissance());
-            $existingClient   = array_column($existingClient, 'id_client', 'id_client');
+        return $existingClient;
+    }
 
-            if (isset($existingClient[$client->getIdClient()])) {
-                unset($existingClient[$client->getIdClient()]);
-            }
+    /**
+     * @param Clients $client
+     * @param Users   $user
+     * @param array   $duplicates
+     */
+    private function closeDuplicatedAccounts(Clients $client, Users $user, array $duplicates): void
+    {
+        $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
-            $duplicatedAccounts = $existingClient;
-
-            if (0 < count($existingClient) && in_array($user->getIdUser(), [Users::USER_ID_FRONT, Users::USER_ID_CRON])) {
-                return false;
-            } elseif (0 < count($existingClient)) {
-                $clientRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
-                foreach ($existingClient as $idClient) {
-                    $clientToClose = $clientRepository->find($idClient);
-                    $this->clientStatusManager->addClientStatus($clientToClose, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $client->getIdClient());
-                }
-            }
-
-            return true;
-        } catch (DBALException $exception) {
-            $this->logger->error('Unable to find lender duplicates. Exception: ' . $exception->getMessage(), [
-                'id_client' => $client->getIdClient(),
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__
-            ]);
-
-            return false;
+        foreach ($duplicates as $idClient) {
+            $clientToClose = $clientRepository->find($idClient);
+            $this->clientStatusManager->addClientStatus($clientToClose, $user->getIdUser(), ClientsStatus::STATUS_CLOSED_BY_UNILEND, 'Doublon avec client ID : ' . $client->getIdClient());
         }
     }
 

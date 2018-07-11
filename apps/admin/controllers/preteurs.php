@@ -645,11 +645,12 @@ class preteursController extends bootstrap
         $this->autoFireView = false;
 
         $_SESSION['freeow']['title'] = 'Validation client';
-        $idClient                    = $this->request->request->get('id_client_to_validate');
+        $idClient                    = $this->request->request->getInt('id_client_to_validate');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
 
-        if (null !== ($client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient))) {
+        if (null !== $client) {
             $addressId     = null;
             $bankAccountId = null;
 
