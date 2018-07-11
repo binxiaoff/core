@@ -15,9 +15,9 @@
                     <div class="panel-content">
                         {% if client.isNaturalPerson %}
                             {% trans %} lender-data-update_end-page-instruction {% endtrans %}
-                            % if needCipEvaluation %}
-                            {% trans %} lender-data-update_end-page-instruction-cip-expired {% endtrans %}
-                        {% endif %}
+                            {% if needCipEvaluation %}
+                                {% trans %} lender-data-update_end-page-instruction-cip-expired {% endtrans %}
+                            {% endif %}
                         {% else %}
                             {% trans with {'%company_name%': company.name} %} lender-data-update_legal-entity-end-page-instruction {% endtrans %}
                             {% if needCipEvaluation %}
