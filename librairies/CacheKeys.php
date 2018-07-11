@@ -18,9 +18,8 @@ class CacheKeys
     /**
      * constant for list and count projects
      */
-    const LIST_PROJECTS               = 'List_Counter_Projects';
-    const AVG_RATE_PROJECTS           = 'projects_getAvgRate';
-    const BID_ACCEPTATION_POSSIBILITY = 'bids_getAcceptationPossibilityRounded';
+    const LIST_PROJECTS     = 'List_Counter_Projects';
+    const AVG_RATE_PROJECTS = 'projects_getAvgRate';
 
     /**
      * constant for product

@@ -7,12 +7,10 @@ use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    Product\ProductManager, Simulator\EntityManager as EntityManagerSimulator
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
 
 /**
@@ -32,8 +30,6 @@ class BidManager
     private $autoBidSettingsManager;
     /** @var LenderManager */
     private $lenderManager;
-    /** @var EntityManagerSimulator */
-    private $entityManagerSimulator;
     /** @var ProductManager */
     private $productManager;
     /** @var CIPManager */
@@ -48,7 +44,6 @@ class BidManager
     private $cachePool;
 
     /**
-     * @param EntityManagerSimulator $entityManagerSimulator
      * @param NotificationManager    $notificationManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param LenderManager          $lenderManager
@@ -61,7 +56,6 @@ class BidManager
      *
      */
     public function __construct(
-        EntityManagerSimulator $entityManagerSimulator,
         NotificationManager $notificationManager,
         AutoBidSettingsManager $autoBidSettingsManager,
         LenderManager $lenderManager,
@@ -73,7 +67,6 @@ class BidManager
         CacheItemPoolInterface $cachePool
     )
     {
-        $this->entityManagerSimulator = $entityManagerSimulator;
         $this->notificationManager    = $notificationManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->lenderManager          = $lenderManager;

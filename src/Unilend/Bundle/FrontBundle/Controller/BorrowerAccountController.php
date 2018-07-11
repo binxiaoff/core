@@ -751,73 +751,65 @@ class BorrowerAccountController extends Controller
     /**
      * @return array
      */
-    private function getProjectsFunding()
+    private function getProjectsFunding(): array
     {
-        /** @var \bids $bids */
-        $bids = $this->get('unilend.service.entity_manager')->getRepository('bids');
-        /** @var \projects $projects */
-        $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $projectsFunding = $this->getCompany()->getProjectsForCompany(null, [\projects_status::EN_FUNDING]);
+        $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $bidRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $projectsFunding   = $this->getCompany()->getProjectsForCompany(null, [ProjectsStatus::EN_FUNDING]);
 
-        foreach ($projectsFunding as $key => $project) {
-            $projects->get($project['id_project']);
-
-            $projectsFunding[$key] = $projectsFunding[$key] + [
-                    'average_ir'       => round($projects->getAverageInterestRate(), 2),
-                    'funding_progress' => min(100, round((1 - ($project['amount'] - $bids->getSoldeBid($project['id_project'])) / $project['amount']) * 100, 1)),
-                    'ended'            => \DateTime::createFromFormat('Y-m-d H:i:s', $project['date_retrait'])
+        foreach ($projectsFunding as $index => $projectTable) {
+            $project                 = $projectRepository->find($projectTable['id_project']);
+            $fundingPercentage       = round((1 - ($project->getAmount() - $bidRepository->getProjectTotalAmount($project)) / $project->getAmount()) * 100, 1);
+            $projectsFunding[$index] = $projectsFunding[$index] + [
+                    'average_ir'       => round($projectRepository->getAverageInterestRate($project), 2),
+                    'funding_progress' => min(100, $fundingPercentage),
+                    'ended'            => $project->getDateRetrait()
                 ];
         }
+
         return $projectsFunding;
     }
 
     /**
      * @return array
      */
-    private function getProjectsPostFunding()
+    private function getProjectsPostFunding(): array
     {
-        $statusPostFunding = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
+        $entityManager               = $this->get('doctrine.orm.entity_manager');
+        $projectRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
+        $projectManager              = $this->get('unilend.service.project_manager');
 
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $projectManager = $this->get('unilend.service.project_manager');
-
-        /** @var \projects $projects */
-        $projects            = $this->get('unilend.service.entity_manager')->getRepository('projects');
+        $statusPostFunding   = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
         $projectsPostFunding = $this->getCompany()->getProjectsForCompany(null, $statusPostFunding);
-        /** @var \echeanciers_emprunteur $repaymentSchedule */
-        $repaymentSchedule = $this->get('unilend.service.entity_manager')->getRepository('echeanciers_emprunteur');
 
-        foreach ($projectsPostFunding as $index => $project) {
-            $projects->get($project['id_project']);
-            $projectEntity = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project['id_project']);
+        foreach ($projectsPostFunding as $index => $projectTable) {
+            $project = $projectRepository->find($projectTable['id_project']);
 
-            $nextRepayment = [
-                'montant'                  => 0,
-                'commission'               => 0,
-                'tva'                      => 0,
-                'date_echeance_emprunteur' => date('Y-m-d H:i:s'),
-            ];
+            $nextRepayment    = null;
+            $monthlyPayment   = 0;
+            $nextMaturityDate = new \DateTime();
+            $remainingAmounts = $projectManager->getRemainingAmounts($project);
 
-            if (false === in_array($project['status'], [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
-                $repayment = $repaymentSchedule->select(
-                    'id_project = ' . $project['id_project'] . ' AND status_emprunteur = ' . EcheanciersEmprunteur::STATUS_PENDING,
-                    'date_echeance_emprunteur ASC',
-                    '',
-                    1
+            if (false === in_array($project->getStatus(), [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
+                $nextRepayment = $repaymentScheduleRepository->findOneBy(
+                    ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
+                    ['dateEcheanceEmprunteur' => 'ASC']
                 );
-                if (false === empty($repayment[0])) {
-                    $nextRepayment = $repayment[0];
+
+                if ($nextRepayment instanceof EcheanciersEmprunteur) {
+                    $monthlyPayment   = bcdiv(bcadd($nextRepayment->getAmount(), bcadd($nextRepayment->getCommission(), $nextRepayment->getTva(), 4), 4), 100, 4);
+                    $nextMaturityDate = $nextRepayment->getDateEcheanceEmprunteur();
                 }
             }
 
-            $remainingAmounts = $projectManager->getRemainingAmounts($projectEntity);
-
             $projectsPostFunding[$index] = $projectsPostFunding[$index] + [
-                    'average_ir'         => round($projects->getAverageInterestRate(), 2),
+                    'average_ir'         => round($projectRepository->getAverageInterestRate($project), 2),
                     'remaining_capital'  => $remainingAmounts['capital'],
-                    'monthly_payment'    => ($nextRepayment['montant'] + $nextRepayment['commission'] + $nextRepayment['tva']) / 100,
-                    'next_maturity_date' => \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment['date_echeance_emprunteur']),
-                    'ended'              => $projectManager->getProjectEndDate($projects)
+                    'monthly_payment'    => $monthlyPayment,
+                    'next_maturity_date' => $nextMaturityDate,
+                    'ended'              => $projectManager->getProjectEndDate($project)
                 ];
         }
 

@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class RepaymentType
 {
+    const REPAYMENT_TYPE_AMORTIZATION = 'amortization_schedule';
+    const REPAYMENT_TYPE_DEFERRED     = 'deferred_schedule';
+
     /**
      * @var string
      *

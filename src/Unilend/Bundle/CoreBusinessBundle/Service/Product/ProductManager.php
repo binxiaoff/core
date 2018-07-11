@@ -126,26 +126,26 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients|null       $client When it's null, it's an anonymous client (logout)
-     * @param Projects|\projects $project
+     * @param Clients|null $client When it's null, it's an anonymous client (logout)
+     * @param Projects     $project
      *
-     * @return mixed
+     * @return array
      */
-    public function checkClientEligibility(Clients $client = null, $project)
+    public function checkClientEligibility(Clients $client = null, Projects $project): array
     {
-        $project = $this->convertProject($project);
-
         return $this->clientValidator->validate($client, $project);
     }
 
     /**
-     * @param Clients   $client
-     * @param \projects $project
+     * @param Clients            $client
+     * @param Projects|\projects $project
      *
      * @return bool
      */
-    public function isClientEligible(Clients $client = null, \projects $project)
+    public function isClientEligible(Clients $client = null, $project): bool
     {
+        $project = $this->convertProject($project);
+
         return 0 === count($this->checkClientEligibility($client, $project));
     }
 
