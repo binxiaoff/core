@@ -463,4 +463,44 @@ class LenderOperationsManager
 
         return $writer;
     }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     * @throws \Exception
+     */
+    public function getTotalProvisionAmount(Wallet $wallet): float
+    {
+        if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
+            throw new \Exception('Wallet is not a Lender wallet');
+        }
+
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        return round(bcsub(
+            $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]),
+            $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION_CANCEL])
+            , 4), 2);
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     * @throws \Exception
+     */
+    public function getTotalWithdrawalAmount(Wallet $wallet): float
+    {
+        if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
+            throw new \Exception('Wallet is not a Lender wallet');
+        }
+
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        return round(bcsub(
+            $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]),
+            $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW_CANCEL])
+            , 4), 2);
+    }
 }
