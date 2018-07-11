@@ -115,19 +115,21 @@ class BidManager
             ->setStatus(Bids::STATUS_PENDING)
             ->setAutobid($autoBidSetting);
 
-        $this->checkMinimumAmount($bid);
-        $this->checkRate($bid);
-        $this->checkProjectStatus($bid);
-        $this->checkProjectDates($bid);
-        $this->checkWalletType($bid);
-        $this->checkLenderCanBid($bid);
+        if (false === $autoBidSetting instanceof Autobid) {
+            $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
+            $bidNb++;
+            $bid->setOrdre($bidNb);
+
+            $this->checkMinimumAmount($bid);
+            $this->checkRate($bid);
+            $this->checkProjectStatus($bid);
+            $this->checkProjectDates($bid);
+            $this->checkLenderCanBid($bid);
+        }
+
         $this->checkLenderBalance($bid);
         $this->checkBidEligibility($bid);
         $this->checkCip($bid);
-
-        $bidNb = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $project]);
-        $bidNb++;
-        $bid->setOrdre($bidNb);
 
         $this->entityManager->persist($bid);
         $walletBalanceHistory = $this->walletManager->engageBalance($wallet, $amount, $bid);
@@ -289,27 +291,6 @@ class BidManager
      *
      * @throws BidException
      */
-    private function checkWalletType(Bids $bid): void
-    {
-        if (WalletType::LENDER !== $bid->getIdLenderAccount()->getIdType()->getLabel()) {
-            if ($this->logger instanceof LoggerInterface) {
-                $this->logger->warning('Wallet is no Lender', [
-                    'project_id' => $bid->getProject()->getIdProject(),
-                    'lender_id'  => $bid->getIdLenderAccount()->getId(),
-                    'amount'     => $bid->getAmount() / 100,
-                    'rate'       => $bid->getRate()
-                ]);
-            }
-
-            throw new BidException('bids-invalid-lender');
-        }
-    }
-
-    /**
-     * @param Bids $bid
-     *
-     * @throws BidException
-     */
     private function checkLenderCanBid(Bids $bid): void
     {
         if (false === $this->lenderManager->canBid($bid->getIdLenderAccount()->getIdClient())) {
@@ -395,32 +376,6 @@ class BidManager
 
             throw new BidException('bids-cip-validation-needed');
         }
-    }
-
-    /**
-     * @param Autobid  $autoBid
-     * @param Projects $project
-     * @param float    $rate
-     *
-     * @return bool|Bids
-     * @throws \Psr\Cache\InvalidArgumentException
-     * @throws \Exception
-     */
-    public function bidByAutoBidSettings(Autobid $autoBid, Projects $project, float $rate)
-    {
-        $biddenAutobid = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->findOneBy(['idProject' => $project, 'idAutobid' => $autoBid]);
-        if (
-            null === $biddenAutobid
-            && bccomp($autoBid->getRateMin(), $rate, 1) <= 0
-            && WalletType::LENDER === $autoBid->getIdLender()->getIdType()->getLabel()
-            && bccomp($autoBid->getIdLender()->getAvailableBalance(), $autoBid->getAmount()) >= 0
-            && $this->autoBidSettingsManager->isOn($autoBid->getIdLender()->getIdClient())
-            && $this->autoBidSettingsManager->isQualified($autoBid->getIdLender()->getIdClient())
-        ) {
-            return $this->bid($autoBid->getIdLender(), $project, $autoBid->getAmount(), $rate, $autoBid, false);
-        }
-
-        return false;
     }
 
     /**

@@ -1,5 +1,8 @@
 <?php
 
+use Doctrine\DBAL\Connection;
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
+
 class project_rate_settings extends project_rate_settings_crud
 {
     public function __construct($bdd, $params = '')
@@ -65,7 +68,7 @@ class project_rate_settings extends project_rate_settings_crud
             ->select('*')
             ->from('project_rate_settings','prs')
             ->innerJoin('prs', 'project_period', 'pp', 'pp.id_period = prs.id_period and pp.status = :pp_status')
-            ->setParameter('pp_status', project_period::STATUS_ACTIVE);
+            ->setParameter('pp_status', ProjectPeriod::STATUS_ACTIVE);
 
         if ($evaluation !== null) {
             $queryBuilder->andWhere('prs.evaluation = :evaluation');
@@ -77,7 +80,7 @@ class project_rate_settings extends project_rate_settings_crud
         }
         if (is_array($status) && false === empty($status)) {
             $queryBuilder->andWhere('prs.status in (:status)');
-            $queryBuilder->setParameter('status', $status, \Doctrine\DBAL\Connection::PARAM_STR_ARRAY);
+            $queryBuilder->setParameter('status', $status, Connection::PARAM_STR_ARRAY);
         }
 
         if (is_array($order) && false === empty($order)) {
