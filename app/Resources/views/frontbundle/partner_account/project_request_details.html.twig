@@ -102,13 +102,15 @@
                                         <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-female {% endtrans %}
                                                 </label>
                                             </li>
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-male {% endtrans %}
                                                 </label>
                                             </li>
