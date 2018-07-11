@@ -13,6 +13,11 @@ var $borrowerReasonInput = $('select[data-borrower-reason-input]')
 
 // Continue only if select is in DOM
 if ($borrowerReasonInput.length) {
+  // Dev sanity check
+  if (!borrowerEsim) {
+    console.error('Missing `borrowerEsim` variable declaration');
+  }
+
   // Default labels in case can't get from DB
   var TRANS_SIREN_LABEL_DEFAULT = 'SIREN'
   var TRANS_SIREN_LABEL_MOTIVE_9 = 'SIREN de la cible'
@@ -23,8 +28,53 @@ if ($borrowerReasonInput.length) {
   var $borrowerSirenLabel = $('label[data-borrower-siren-label]')
   var $borrowerCompanyName = $('[data-borrower-company-name]')
   var $borrowerCompanyNameInput = $borrowerCompanyName.find('input')
+  var toggleType = $borrowerCompanyName.attr('data-borrower-company-name') || 'show'
 
-  /** Change the `data-borrower-*` inputs depending on the reason */
+  /**
+   * Toggle the company name.
+   *
+   * @param {Boolean} setState
+   * @param {Boolean} isRequired
+   */
+  function toggleCompanyName(setState, isRequired) {
+    switch (toggleType) {
+      case 'disable':
+        if (setState) {
+          $borrowerCompanyName.removeClass('disabled')
+          $borrowerCompanyNameInput
+            .prop('disabled', false)
+        } else {
+          $borrowerCompanyName.addClass('disabled')
+          $borrowerCompanyNameInput
+            .prop('disabled', true)
+        }
+        break
+
+      case 'show':
+      default:
+        if (setState) {
+          $borrowerCompanyName.show()
+        } else {
+          $borrowerCompanyName.hide()
+        }
+        break
+    }
+
+    // Set required status of the input field
+    if (isRequired === true) {
+      $borrowerCompanyNameInput
+        .attr('data-formvalidation-required', true)
+    } else if (isRequired === false) {
+      $borrowerCompanyNameInput
+        .attr('data-formvalidation-required', false)
+    }
+  }
+
+  /**
+   * Change the `data-borrower-*` inputs depending on the reason.
+   *
+   * @param {Number} reasonValue
+   */
   function handleBorrowingReason(reasonValue) {
     if (!reasonValue) {
       reasonValue = $borrowerReasonInput.first().val()
@@ -38,32 +88,27 @@ if ($borrowerReasonInput.length) {
         $borrowerSirenLabel.find('.field-required').hide()
         $borrowerSirenInput
           .removeAttr('data-formvalidation-required')
-        $borrowerCompanyNameInput
-          .attr('data-formvalidation-required', true)
+        toggleCompanyName(true, true)
         break
 
       // Rachat de parts sociale
       case borrowerEsim.idMotiveShareBuyBack:
-        $borrowerCompanyName.hide()
         $borrowerCompanyNameInput.val('')
         $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_9, 'targetSirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
-        $borrowerCompanyNameInput
-          .removeAttr('data-formvalidation-required')
+        toggleCompanyName(false, false)
         break
 
       // Everything else
       default:
-        $borrowerCompanyName.hide()
         $borrowerCompanyNameInput.val('')
         $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
         $borrowerSirenInput
           .attr('data-formvalidation-required', true)
-        $borrowerCompanyNameInput
-          .removeAttr('data-formvalidation-required')
+        toggleCompanyName(false, false)
         break
     }
   }
@@ -89,9 +134,12 @@ if (executiveSelector.length) {
     if ('M' === selectedExecutive.data('executiveTitle')) {
       titleField.filter('[value="M."]').prop('checked', true)
       titleField.filter('[value=Mme]').prop('checked', false)
-    } else {
+    } else if ('Mme' === selectedExecutive.data('executiveTitle')) {
       titleField.filter('[value="M."]').prop('checked', false)
       titleField.filter('[value=Mme]').prop('checked', true)
+    } else {
+      titleField.filter('[value="M."]').prop('checked', false)
+      titleField.filter('[value=Mme]').prop('checked', false)
     }
 
     if (0 === executiveSelector.length || '' === executiveSelector.val()) {

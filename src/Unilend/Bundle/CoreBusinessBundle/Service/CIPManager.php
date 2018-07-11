@@ -125,6 +125,37 @@ class CIPManager
     }
 
     /**
+     * @param Clients $client
+     *
+     * @return bool
+     * @throws \Exception
+     *
+     */
+    private function hasEvaluation(Clients $client): bool
+    {
+        if (false === $client->isLender()) {
+            throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        $wallet     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $evaluation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:LenderEvaluation')->findOneBy(['idLender' => $wallet]);
+
+        return null !== $evaluation;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     * @throws \Exception
+     *
+     */
+    public function needReevaluation(Clients $client): bool
+    {
+        return false === $this->hasValidEvaluation($client) && true === $this->hasEvaluation($client);
+    }
+
+    /**
      * @param \lender_evaluation $evaluation
      *
      * @return bool
@@ -177,9 +208,10 @@ class CIPManager
     /**
      * @param Clients $client
      *
+     * @return \lender_evaluation|null
      * @throws \Exception
      */
-    public function startEvaluation(Clients $client)
+    public function startEvaluation(Clients $client): ?\lender_evaluation
     {
         if (false === $client->isLender()) {
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
@@ -202,6 +234,8 @@ class CIPManager
             $answer->id_lender_questionnaire_question = $questions['id_lender_questionnaire_question'];
             $answer->create();
         }
+
+        return $evaluation;
     }
 
     /**

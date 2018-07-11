@@ -44,8 +44,24 @@ class project_rate_settings extends project_rate_settings_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `project_rate_settings` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getSettings($evaluation = null, $periodId = null, $status = array(self::STATUS_ACTIVE), $order = ['pp.min' => 'ASC', 'prs.evaluation' => 'DESC'], $limit = null, $offset = null)
-    {
+    /**
+     * @param null  $evaluation
+     * @param null  $periodId
+     * @param array $status
+     * @param array $order
+     * @param null  $limit
+     * @param null  $offset
+     *
+     * @return array
+     */
+    public function getSettings(
+        $evaluation = null,
+        $periodId = null,
+        $status = [\Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRateSettings::STATUS_ACTIVE],
+        $order = ['pp.min' => 'ASC', 'prs.evaluation' => 'DESC'],
+        $limit = null,
+        $offset = null
+    ) {
         $queryBuilder = $this->bdd->createQueryBuilder();
 
         $queryBuilder
@@ -80,6 +96,7 @@ class project_rate_settings extends project_rate_settings_crud
             $queryBuilder->setFirstResult($offset);
         }
         $statement = $queryBuilder->execute();
+
         return $statement->fetchAll();
     }
 }

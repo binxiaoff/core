@@ -1,3 +1,18 @@
+<link href="<?= $this->lurl ?>/oneui/css/font-awesome.css" type="text/css" rel="stylesheet">
+<style>
+    @font-face {
+        font-family: 'FontAwesome';
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot');
+        src: url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff2') format('woff2'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.woff') format('woff'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.ttf') format('truetype'),
+        url('<?= $this->lurl ?>/oneui/fonts/fontawesome-webfont.svg#fontawesomeregular') format('svg');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
+
 <div id="contenu">
     <div class="container-fluid">
         <div class="row">
@@ -10,7 +25,7 @@
                 <thead>
                 <tr>
                     <th>Nom</th>
-                    <th>&nbsp;</th>
+                    <th colspan="3">&nbsp;</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -19,10 +34,17 @@
                         <td><?= $query['name'] ?></td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/sfpmei/exports/html/<?= $query['id_query'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Export">
+                                <span class="fa fa-table"></span>
                             </a>
+                        </td>
+                        <td>
+                            <a href="<?= $this->lurl ?>/sfpmei/exports/xls/<?= $query['id_query'] ?>">
+                                <span class="fa fa-file-excel-o"></span>
+                            </a>
+                        </td>
+                        <td>
                             <a href="<?= $this->lurl ?>/sfpmei/exports/csv/<?= $query['id_query'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Export CSV">
+                                <span class="fa fa-file"></span>
                             </a>
                         </td>
                     </tr>
