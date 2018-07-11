@@ -28,6 +28,7 @@ class LenderOperationsManager
     const PROVISION_TYPES = [
         OperationType::LENDER_PROVISION,
         OperationType::LENDER_TRANSFER,
+        OperationType::LENDER_WITHDRAW_CANCEL
     ];
 
     const WITHDRAW_TYPES = [
@@ -58,6 +59,7 @@ class LenderOperationsManager
         OperationType::LENDER_PROVISION_CANCEL,
         OperationType::LENDER_TRANSFER,
         OperationType::LENDER_WITHDRAW,
+        OperationType::LENDER_WITHDRAW_CANCEL,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE,

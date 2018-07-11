@@ -23,6 +23,7 @@ class OperationType
     const LENDER_PROVISION                             = 'lender_provision';
     const LENDER_PROVISION_CANCEL                      = 'lender_provision_cancel';
     const LENDER_WITHDRAW                              = 'lender_withdraw';
+    const LENDER_WITHDRAW_CANCEL                       = 'lender_withdraw_cancel';
     const LENDER_TRANSFER                              = 'lender_transfer';
     const TAX_FR_CONTRIBUTIONS_ADDITIONNELLES          = 'tax_fr_contributions_additionnelles';
     const TAX_FR_CONTRIBUTIONS_ADDITIONNELLES_WITHDRAW = 'tax_fr_contributions_additionnelles_withdraw';
