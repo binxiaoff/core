@@ -517,7 +517,11 @@ class MainController extends Controller
         $user             = $this->getUser();
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
 
-        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY') && null !== $client = $clientRepository->find($user->getClientId())) {
+        if (
+            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+            && null !== $client = $clientRepository->find($user->getClientId())
+        ) {
             $dateAccept   = '';
             $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->getIdClient() . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
 
@@ -527,13 +531,13 @@ class MainController extends Controller
             /** @var \settings $settings */
             $settings = $entityManagerSimulator->getRepository('settings');
             $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
-            $sNewTermsOfServiceDate = $settings->value;
+            $newTermsOfServiceDate = $settings->value;
 
             $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
 
             /** @var \loans $oLoans */
             $loans      = $entityManagerSimulator->getRepository('loans');
-            $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+            $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate . '"');
 
             if ($client->isNaturalPerson()) {
                 $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];

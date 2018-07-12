@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Partner, Projects, ProjectsStatus, Users, UsersTypes, Zones
+    BorrowingMotive, Partner, ProjectsStatus, Users, UsersTypes, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
@@ -243,10 +243,14 @@ class dashboardController extends bootstrap
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider $messageProvider */
         $messageProvider = $this->get('unilend.swiftmailer.message_provider');
-        /** @var Projects[] $projects */
-        $projects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findBy(['status' => ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION]);
+        /** @var \projects $project */
+        $project           = $this->loadData('projects');
+        $projects          = $project->getImpossibleEvaluationProjects();
+        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
-        foreach ($projects as $project) {
+        foreach ($projects as $projectData) {
+            $project = $projectRepository->find($projectData['id_project']);
+
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
                 $status = empty($project->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
                 $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
@@ -395,6 +399,8 @@ class dashboardController extends bootstrap
             'statusCashFlowCount'                 => $statusCashFlowCount,
             'statusAcquisitionCount'              => $statusAcquisitionCount,
             'statusPartnerCount'                  => $statusPartnerCount,
+            'dateLastMonth'                       => $lastDayOfLastMonth,
+            'dateTwoMonthsAgo'                    => $lastDayOfTwoMonthAgo
         ]);
     }
 

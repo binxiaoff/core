@@ -16,12 +16,11 @@
 
 <section id="profile-phone-edit" role="tabpanel" class="profile-phone-edit collapse {{ phoneFormCollapse }}">
     {{ form_start(forms.phone, {
-        'attr' : {
-            'class' : 'form-profile form-profile-phone-edit',
-            'data-formvalidation' : true,
-            'data-formvalidation-notificationselem' : '#form-profile-phone-notifications'
-        }})
-    }}
+        'attr': {
+            'class': 'form-profile form-profile-phone-edit',
+            'data-formvalidation data-formvalidation-notificationselem': '#form-profile-phone-notifications'
+        }
+    }) }}
 
     <div class="row row-multi-col-computer">
         <div class="form-field col-lg-6 col-md-6 {% if forms.phone.mobile.vars.errors|length > 0 %}ui-formvalidation-error{% endif %}">
@@ -29,13 +28,13 @@
                 <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span></label>
             <div class="input-group">
                 {{ form_widget(forms.phone.mobile, {
-                    'id' : 'form-profile-phone-mobile',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-required' : 'true',
-                        'data-formvalidation-type' : 'telephone'
-                    }})
-                }}
+                    'id': 'form-profile-phone-mobile',
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-required': 'true',
+                        'data-formvalidation-type': 'telephone'
+                    }
+                }) }}
                 {{ form_errors(forms.phone.mobile) }}
             </div>
         </div><!-- /.form-field -->
@@ -44,12 +43,12 @@
             <label for="form-profile-security-identification-telephone">{% trans %} common_landline {% endtrans %}</label>
             <div class="input-group">
                 {{ form_widget(forms.phone.telephone, {
-                    'id' : 'form-profile-phone-telephone',
-                    'attr' : {
-                        'class' : 'input-field',
-                        'data-formvalidation-input data-formvalidation-type' : 'telephone'
-                    }})
-                }}
+                    'id': 'form-profile-phone-telephone',
+                    'attr': {
+                        'class': 'input-field',
+                        'data-formvalidation-input data-formvalidation-type': 'telephone'
+                    }
+                }) }}
                 {{ form_errors(forms.phone.telephone) }}
             </div>
         </div><!-- /.form-field -->

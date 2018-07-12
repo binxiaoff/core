@@ -47,7 +47,7 @@ class SimulatorController extends Controller
             'fundingDurations'    => $fundingDurations,
             'minAmount'           => $projectManager->getMinProjectAmount(),
             'maxAmount'           => $projectManager->getMaxProjectAmount(),
-            'minFundsCommission'  => $partnerProduct->getCommissionRateFunds(),
+            'fundsCommission'     => $partnerProduct->getCommissionRateFunds(),
             'repaymentCommission' => $partnerProduct->getCommissionRateRepayment(),
             'vatRate'             => $vatRate,
             'ratesByPeriod'       => $ratesByPeriod,

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsGestionMailsNotif, ClientsGestionTypeNotif, WalletBalanceHistory, WalletType
+    Clients, ClientsGestionMailsNotif, ClientsGestionNotifications, ClientsGestionTypeNotif, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
@@ -159,48 +159,73 @@ class NotificationManager
     }
 
     /**
-     * @param int $clientId
+     * @param Clients $client
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function generateDefaultNotificationSettings(int $clientId)
+    public function generateDefaultNotificationSettings(Clients $client)
     {
-        $clientsGestionTypeNotifRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif');
-        /** @var \clients_gestion_notifications $clientNotificationSettings */
-        $clientNotificationSettings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
+        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
 
-        foreach ($clientsGestionTypeNotifRepository->findAll() as $notificationType) {
-            $idNotificationType = $notificationType->getIdClientGestionTypeNotif();
-
-            if ($clientNotificationSettings->exist(['id_client' => $clientId, 'id_notif' => $idNotificationType])) {
-                continue;
-            }
-
-            $defaultImmediate = [
-                ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-                ClientsGestionTypeNotif::TYPE_BID_REJECTED,
-                ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT,
-                ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT,
-                ClientsGestionTypeNotif::TYPE_DEBIT
-            ];
-
-            $defaultDaily = [
-                ClientsGestionTypeNotif::TYPE_BID_PLACED,
-                ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
-                ClientsGestionTypeNotif::TYPE_REPAYMENT
-            ];
-
-            $defaultWeekly = [
-                ClientsGestionTypeNotif::TYPE_NEW_PROJECT,
-                ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED
-            ];
-
-            $clientNotificationSettings->id_client     = $clientId;
-            $clientNotificationSettings->id_notif      = $idNotificationType;
-            $clientNotificationSettings->immediatement = in_array($idNotificationType, $defaultImmediate) ? 1 : 0;
-            $clientNotificationSettings->quotidienne   = in_array($idNotificationType, $defaultDaily) ? 1 : 0;
-            $clientNotificationSettings->hebdomadaire  = in_array($idNotificationType, $defaultWeekly) ? 1 : 0;
-            $clientNotificationSettings->mensuelle     = 0;
-            $clientNotificationSettings->create();
+        /** @var ClientsGestionTypeNotif $type */
+        foreach ($allTypes as $type) {
+            $this->createMissingNotificationSettingWithDefaultValue($type, $client);
         }
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function checkNotificationSettingsAndCreateDefaultIfMissing(Clients $client): void
+    {
+        $settings = $this->entityManagerSimulator->getRepository('clients_gestion_notifications')->getNotifs($client->getIdClient());
+
+        if (empty($settings)) {
+            $this->generateDefaultNotificationSettings($client);
+            return;
+        }
+
+        $allTypes = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->findAll();
+
+        /** @var ClientsGestionTypeNotif $type */
+        foreach ($allTypes as $type) {
+            if (false === isset($settings[$type->getIdClientGestionTypeNotif()])) {
+                $this->createMissingNotificationSettingWithDefaultValue($type, $client);
+            }
+        }
+    }
+
+    /**
+     * @param ClientsGestionTypeNotif $type
+     * @param Clients                 $client
+     *
+     * @return ClientsGestionNotifications
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function createMissingNotificationSettingWithDefaultValue(ClientsGestionTypeNotif $type, Clients $client): ClientsGestionNotifications
+    {
+        $immediateSetting = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_IMMEDIATE) ? 1 : 0;
+        $dailySetting     = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_DAILY) ? 1 : 0;
+        $weeklySetting    = in_array($type->getIdClientGestionTypeNotif(), ClientsGestionTypeNotif::TYPES_WITH_DEFAULT_SETTING_WEEKLY) ? 1 : 0;
+        $monthlySetting   = 0;
+        $onlyNotification = 0;
+
+        $setting = new ClientsGestionNotifications();
+        $setting
+            ->setIdClient($client->getIdClient())
+            ->setIdNotif($type->getIdClientGestionTypeNotif())
+            ->setImmediatement($immediateSetting)
+            ->setQuotidienne($dailySetting)
+            ->setHebdomadaire($weeklySetting)
+            ->setMensuelle($monthlySetting)
+            ->setUniquementNotif($onlyNotification);
+
+        $this->entityManager->persist($setting);
+        $this->entityManager->flush($setting);
+
+        return $setting;
     }
 
     /**

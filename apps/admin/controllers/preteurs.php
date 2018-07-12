@@ -1,7 +1,10 @@
 <?php
 
+use Box\Spout\{
+    Common\Type, Writer\WriterFactory
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -467,7 +470,7 @@ class preteursController extends bootstrap
             if (isset($_POST['send_edit_preteur'])) {
                 if ($this->client->isNaturalPerson()) {
                     $birthCountry = $this->request->request->getInt('id_pays_naissance');
-                    $type         = (false !== $birthCountry && $birthCountry == \nationalites_v2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
+                    $type         = (false !== $birthCountry && $birthCountry == \Unilend\Bundle\CoreBusinessBundle\Entity\NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
                     $email        = $this->request->request->filter('email', FILTER_VALIDATE_EMAIL);
                     $birthday     = $this->request->request->filter('naissance', FILTER_SANITIZE_STRING);
 
@@ -679,7 +682,7 @@ class preteursController extends bootstrap
         $lendersImpositionHistory = $this->loadData('lenders_imposition_history');
         try {
             $aResult = $lendersImpositionHistory->getTaxationHistory($lenderId);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId]);
@@ -699,7 +702,8 @@ class preteursController extends bootstrap
             ClientsStatus::STATUS_MODIFICATION,
             ClientsStatus::STATUS_COMPLETENESS_REPLY,
             ClientsStatus::STATUS_COMPLETENESS,
-            ClientsStatus::STATUS_COMPLETENESS_REMINDER
+            ClientsStatus::STATUS_COMPLETENESS_REMINDER,
+            ClientsStatus::STATUS_SUSPENDED
         ];
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1019,57 +1023,57 @@ class preteursController extends bootstrap
             }
 
             $this->aClientsNotifications = $clientNotifications->getNotifs($this->clients->id_client);
-            $this->aNotificationPeriode  = \clients_gestion_notifications::getAllPeriod();
+            $this->aNotificationPeriode  = ClientsGestionNotifications::ALL_PERIOD;
 
             $this->aInfosNotifications['vos-offres-et-vos-projets']['title']           = 'Offres et Projets';
             $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications']   = [
                 ClientsGestionTypeNotif::TYPE_NEW_PROJECT                   => [
                     'title'           => 'Annonce des nouveaux projets',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_BID_PLACED                    => [
                     'title'           => 'Offres réalisées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_BID_REJECTED                  => [
                     'title'           => 'Offres refusées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED                 => [
                     'title'           => 'Offres acceptées',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_PROJECT_PROBLEM               => [
                     'title'           => 'Problème sur un projet',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => [
                     'title'           => 'Autolend : offre réalisée ou rejetée',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1078,11 +1082,11 @@ class preteursController extends bootstrap
                 ClientsGestionTypeNotif::TYPE_REPAYMENT => [
                     'title'           => 'Remboursement(s)',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_DAILY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_WEEKLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_MONTHLY,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1091,22 +1095,22 @@ class preteursController extends bootstrap
                 ClientsGestionTypeNotif::TYPE_BANK_TRANSFER_CREDIT => [
                     'title'           => 'Alimentation de votre compte par virement',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_CREDIT_CARD_CREDIT   => [
                     'title'           => 'Alimentation de votre compte par carte bancaire',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ],
                 ClientsGestionTypeNotif::TYPE_DEBIT                => [
                     'title'           => 'retrait',
                     'available_types' => [
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                        \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_IMMEDIATE,
+                        ClientsGestionNotifications::TYPE_NOTIFICATION_NO_MAIL
                     ]
                 ]
             ];
@@ -1395,7 +1399,7 @@ class preteursController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientSettingsManager $clientSettingsManager */
             $clientSettingsManager = $this->get('unilend.service.client_settings_manager');
-            $clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_BETA_TESTER, $value);
+            $clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_BETA_TESTER, $value);
 
             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $client->getIdClient());
             die;
@@ -1572,41 +1576,30 @@ class preteursController extends bootstrap
             && is_numeric($this->params[0])
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $lenderBids = $bids->getBidsByLenderAndDates($wallet);
+            try {
+                $lenderBids = $bids->getBidsByLenderAndDates($wallet);
+                $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+                $filename   = 'bids_client_' . $wallet->getIdClient()->getIdClient() . '.xlsx';
 
-            PHPExcel_Settings::setCacheStorageMethod(
-                PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-                ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-            );
+                $writer = WriterFactory::create(Type::XLSX);
+                $writer
+                    ->openToBrowser($filename)
+                    ->addRow($header)
+                    ->addRows($lenderBids)
+                    ->close();
 
-            $header      = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
-            $document    = new PHPExcel();
-            $activeSheet = $document->setActiveSheetIndex(0);
+                die;
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('Un  exception occurred during export of lender bids for client ' . $this->params[0] . '. Message: ' . $exception->getMessage(), [
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'id_client' => $this->params[0]
+                ]);
 
-            foreach ($header as $index => $columnName) {
-                $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+                echo 'Une erreur est survenue. ';
             }
-
-            foreach ($lenderBids as $rowIndex => $row) {
-                $colIndex = 0;
-                foreach ($row as $cellValue) {
-                    if (6 === $colIndex) {
-                        $cellValue = number_format($cellValue, 1, ',', '');
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
-                }
-            }
-
-            header('Content-Type: text/csv');
-            header('Content-Disposition: attachment;filename=bids_client_' . $wallet->getIdClient()->getIdClient() . '.csv');
-            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-            header('Expires: 0');
-
-            /** @var \PHPExcel_Writer_CSV $writer */
-            $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
-            $writer->setUseBOM(true);
-            $writer->setDelimiter(';');
-            $writer->save('php://output');
         }
     }
 

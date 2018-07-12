@@ -8,10 +8,13 @@ use Doctrine\ORM\Mapping as ORM;
  * ProjectRateSettings
  *
  * @ORM\Table(name="project_rate_settings", indexes={@ORM\Index(name="idx_project_rate_settings_eval_period_status", columns={"status", "evaluation", "id_period"}), @ORM\Index(name="project_rate_settings_project_period_id_period", columns={"id_period"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ProjectRateSettingsRepository")
  */
 class ProjectRateSettings
 {
+    const STATUS_ACTIVE   = 1;
+    const STATUS_ARCHIVED = 2;
+
     /**
      * @var string
      *

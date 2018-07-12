@@ -22,6 +22,11 @@ class BulkCompanyCheckManager
     const INPUT_FILE_ERROR_CREATION_PATH     = 'project_creation/input/errors/';
     const OUTPUT_FILE_CREATION_PATH          = 'project_creation/output/';
 
+    const INPUT_FILE_PENDING_DATA_RETRIEVAL_PATH   = 'company_data/input/pending/';
+    const INPUT_FILE_PROCESSED_DATA_RETRIEVAL_PATH = 'company_data/input/processed/';
+    const INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH     = 'company_data/input/errors/';
+    const OUTPUT_FILE_DATA_RETRIEVAL_PATH          = 'company_data/output/';
+
     /** @var string */
     private $baseDir;
     /** @var Filesystem */
@@ -40,7 +45,13 @@ class BulkCompanyCheckManager
      * @param LoggerInterface $logger
      * @param SlackManager    $slackManager
      */
-    public function __construct($baseDir, Filesystem $filesystem, EntityManager $entityManager, LoggerInterface $logger, SlackManager $slackManager)
+    public function __construct(
+        $baseDir,
+        Filesystem $filesystem,
+        EntityManager $entityManager,
+        LoggerInterface $logger,
+        SlackManager $slackManager
+    )
     {
         $this->baseDir       = $baseDir;
         $this->fileSystem    = $filesystem;
@@ -52,7 +63,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getEligibilityInputPendingDir()
+    public function getEligibilityInputPendingDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_PENDING_ELIGIBILITY_PATH;
     }
@@ -60,7 +71,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getEligibilityInputProcessedDir()
+    public function getEligibilityInputProcessedDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_PROCESSED_ELIGIBILITY_PATH;
     }
@@ -68,7 +79,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getEligibilityInputErrorDir()
+    public function getEligibilityInputErrorDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_ERROR_ELIGIBILITY_PATH;
     }
@@ -76,7 +87,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getEligibilityOutputDir()
+    public function getEligibilityOutputDir(): string
     {
         return $this->baseDir . self::OUTPUT_FILE_ELIGIBILITY_PATH;
     }
@@ -84,7 +95,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getProjectCreationInputPendingDir()
+    public function getProjectCreationInputPendingDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_PENDING_CREATION_PATH;
     }
@@ -92,7 +103,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getProjectCreationInputProcessedDir()
+    public function getProjectCreationInputProcessedDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_PROCESSED_CREATION_PATH;
     }
@@ -100,7 +111,7 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getProjectCreationInputErrorDir()
+    public function getProjectCreationInputErrorDir(): string
     {
         return $this->baseDir . self::INPUT_FILE_ERROR_CREATION_PATH;
     }
@@ -108,9 +119,41 @@ class BulkCompanyCheckManager
     /**
      * @return string
      */
-    public function getProjectCreationOutputDir()
+    public function getProjectCreationOutputDir(): string
     {
         return $this->baseDir . self::OUTPUT_FILE_CREATION_PATH;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCompanyDataInputPendingDir(): string
+    {
+        return $this->baseDir . self::INPUT_FILE_PENDING_DATA_RETRIEVAL_PATH;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCompanyDataInputProcessedDir(): string
+    {
+        return $this->baseDir . self::INPUT_FILE_PROCESSED_DATA_RETRIEVAL_PATH;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCompanyDataInputErrorDir(): string
+    {
+        return $this->baseDir . self::INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCompanyDataOutputDir(): string
+    {
+        return $this->baseDir . self::OUTPUT_FILE_DATA_RETRIEVAL_PATH;
     }
 
     /**
@@ -121,7 +164,7 @@ class BulkCompanyCheckManager
      * @return File
      * @throws FileException
      */
-    public function uploadFile($path, UploadedFile $file, Users $user)
+    public function uploadFile($path, UploadedFile $file, Users $user): File
     {
         if (false === is_dir($path)) {
             $this->fileSystem->mkdir($path);
@@ -141,7 +184,7 @@ class BulkCompanyCheckManager
      *
      * @return null|Users
      */
-    public function getUploadUser($fileName)
+    public function getUploadUser($fileName): ?Users
     {
         $fileNameParts = explode('_', $fileName);
 
@@ -155,7 +198,7 @@ class BulkCompanyCheckManager
     /**
      * @return array
      */
-    public function getSirenListForEligibilityCheck()
+    public function getSirenListForEligibilityCheck(): array
     {
         $now          = new \DateTime();
         $inputDir     = $this->getEligibilityInputPendingDir();
@@ -172,12 +215,29 @@ class BulkCompanyCheckManager
     /**
      * @return array
      */
-    public function getSirenListForProjectCreation()
+    public function getSirenListForProjectCreation(): array
     {
         $now          = new \DateTime();
         $inputDir     = $this->getProjectCreationInputPendingDir();
         $processedDir = $this->getProjectCreationInputProcessedDir();
         $errorDir     = $this->getProjectCreationInputErrorDir();
+
+        return $this->getSirenList(
+            $inputDir,
+            $processedDir . $now->format('Y-m') . DIRECTORY_SEPARATOR,
+            $errorDir . $now->format('Y-m') . DIRECTORY_SEPARATOR
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getSirenListForCompanyDataRetrieval(): array
+    {
+        $now          = new \DateTime();
+        $inputDir     = $this->getCompanyDataInputPendingDir();
+        $processedDir = $this->getCompanyDataInputProcessedDir();
+        $errorDir     = $this->getCompanyDataInputErrorDir();
 
         return $this->getSirenList(
             $inputDir,
@@ -193,7 +253,7 @@ class BulkCompanyCheckManager
      *
      * @return array
      */
-    private function getSirenList($inputDir, $processedDir, $errorDir)
+    private function getSirenList($inputDir, $processedDir, $errorDir): array
     {
         $now       = new \DateTime();
         $sirenList = [];

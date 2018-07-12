@@ -26,13 +26,28 @@
                                 <fieldset class="form-project-details-fieldset first">
                                     <div class="row columns-with-space">
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>{% trans %} partner-project-details_summary-company-field-label {% endtrans %}</dt>
+                                            <dt>
+                                                {% if project.idBorrowingMotive == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
+                                                    {% trans %} partner-project-details_summary-franchiser-company-field-label {% endtrans %}
+                                                {% else %}
+                                                    {% trans %} partner-project-details_summary-company-field-label {% endtrans %}
+                                                {% endif %}
+                                            </dt>
                                             <dd><strong class="ui-simulator-output-company">{{ project.idCompany.name }}</strong></dd>
                                         </dl>
-                                        <dl class="col-sm-4 col-md-6 col-lg-6">
-                                            <dt>{% trans %} partner-project-details_summary-siren-field-label {% endtrans %}</dt>
-                                            <dd><strong class="ui-simulator-output-siren">{{ project.idCompany.siren }}</strong></dd>
-                                        </dl>
+                                        {% if project.idCompany.siren is not empty %}
+                                            <dl class="col-sm-4 col-md-6 col-lg-6">
+                                                <dt>
+
+                                                    {% if project.idBorrowingMotive == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
+                                                        {% trans %} partner-project-details_summary-franchiser-siren-field-label {% endtrans %}
+                                                    {% else %}
+                                                        {% trans %} partner-project-details_summary-siren-field-label {% endtrans %}
+                                                    {% endif %}
+                                                </dt>
+                                                <dd><strong class="ui-simulator-output-siren">{{ project.idCompany.siren }}</strong></dd>
+                                            </dl>
+                                        {% endif %}
                                         <dl class="col-sm-4 col-md-6 col-lg-6">
                                             <dt>{% trans %} partner-project-details_summary-amount-field-label {% endtrans %}</dt>
                                             <dd><strong class="ui-simulator-output-cost">{{ project.amount|localizednumber }}&nbsp;€</strong></dd>
@@ -87,13 +102,15 @@
                                         <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-female {% endtrans %}
                                                 </label>
                                             </li>
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-male {% endtrans %}
                                                 </label>
                                             </li>
@@ -264,9 +281,7 @@
             <div class="modal-body text-align-center">
                 <p><label for="prospect-abandon-motif">{% trans %} partner-project-request_popup-abandon-message {% endtrans %}</label></p>
                 <div class="form-field">
-                    {# @todo find a way to add select2 like solution to be able to choose more than one reason at time #}
-                    <select name="reason" id="prospect-abandon-motif" class="input-field">
-                        <option value="">{% trans %} partner-project-request_simulator-abandon-motif-select {% endtrans %}</option>
+                    <select multiple name="reason[]" id="prospect-abandon-motif" class="input-field select2">
                         {% for abandonReason in abandonReasons %}
                             <option value="{{ abandonReason.idAbandon|escape('html_attr') }}">{{ abandonReason.reason|capitalize }}</option>
                         {% endfor %}

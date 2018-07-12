@@ -11,9 +11,9 @@
     <!-- Shell -->
     <div class="shell">
         <div>
-            <h1>Certificat d’inscription au registre des Bons de caisse au sens de l’article L 223-6 du Code monétaire et financier</h1>
+            <h1>Certificat d’inscription au registre des Minibons au sens de l’article L 223-6 du Code monétaire et financier</h1>
             <hr/>
-            <h3>CERTIFICAT D’INSCRIPTION AU REGISTRE DES BONS DE CAISSE #<?= $this->oLoans->id_loan ?></h3>
+            <h3>CERTIFICAT D’INSCRIPTION AU REGISTRE DES MINIBONS #<?= $this->oLoans->id_loan ?></h3>
             <h5>Désignation de l’Emprunteur</h5>
             <div class="list">
                 <ul>
@@ -145,7 +145,7 @@
                     <?php endif; ?>
                 </ul>
             </div>
-            <h5>Caractéristiques du Bon de caisse</h5>
+            <h5>Caractéristiques du Minibon</h5>
             <div class="list">
                 <ul>
                     <li>
@@ -190,10 +190,10 @@
                         <div class="cl">&nbsp;</div>
                     </li>
                     <li>&nbsp;</li>
-                    <li>Le Bon de caisse émis est nominatif.</li>
-                    <li>Le Bon de caisse est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur </li>
+                    <li>Le Minibon émis est nominatif.</li>
+                    <li>Le Minibon est cessible à la condition pour le cessionnaire d’avoir préalablement ouvert un compte Unilend prêteur </li>
                     <li>L’Emetteur certifie avoir établi le bilan de son troisième exercice social.</li>
-                    <li>La signature des Bons de Caisse engage l’Emetteur, en contrepartie des sommes remises ce jour</li>
+                    <li>La signature du Minibon engage l’Emetteur, en contrepartie des sommes remises ce jour</li>
                     <li>
                         <div class="col-long">à rembourser aux Prêteurs la somme de</div>
                         <div class="col-small"><?= $this->ficelle->formatNumber($this->oLoans->amount / 100, 0) ?>&nbsp;&euro;</div>
@@ -226,28 +226,31 @@
 
         <!-- Page Break -->
         <div class="pageBreakBefore">
-            <p>Le Bon de caisse objet du présent certificat est émis selon les dispositions légales prévues aux articles L.226-3 à L.226-13 et D 223-1 à D 223-4 du code monétaire et financier. Unilend est conseiller en investissements participatifs, enregistré à l’ORIAS sous le numéro 15006955, dont le siège est au 6, rue du général Clergerie, 75116 Paris, dont le téléphone est le 01.82.28.51.20. et dont le site Internet est accessible à l’adresse www.unilend.fr</p>
+            <p>Le Minibon objet du présent certificat est émis selon les dispositions légales prévues aux articles L.226-3 à L.226-13 et D 223-1 à D 223-4 du code monétaire et financier. Unilend est conseiller en investissements participatifs, enregistré à l’ORIAS sous le numéro 15006955, dont le siège est au 6, rue du général Clergerie, 75116 Paris, dont le téléphone est le 01.82.28.51.20. et dont le site Internet est accessible à l’adresse www.unilend.fr</p>
             <h3>CONDITIONS D’EXIGIBILITE ANTICIPEE</h3>
-            <p>L’Emetteur sera tenu de rembourser immédiatement au Prêteur l’ensemble des sommes dues au titre du Bon de caisse en cas de survenance de l’un quelconque des événements prévus ci-dessous.</p>
+            <p>L’Emetteur sera tenu de rembourser immédiatement au Prêteur l’ensemble des sommes dues au titre du Minibon en cas de survenance de l’un quelconque des événements prévus ci-dessous.</p>
             <p>Constitue un Cas d’Exigibilité Anticipée :</p>
             <ol type="a">
                 <li>l’exercice par le Bénéficiaire de son droit de rétractation ;</li>
-                <li>le non-paiement par l’Emetteur de six remboursements mensuels dus au titre du Bon de caisse ;</li>
+                <li>le non-paiement par l’Emetteur de sept remboursements mensuels dus au titre du Minibon ;</li>
                 <li>le non-respect par l’Emetteur de l’utilisation des fonds au projet de financement telle que prévue dans la présentation du projet au prêteur ;</li>
                 <li>l’inexactitude de l’une quelconque des informations et déclarations relatives notamment à la situation financière de l’Emetteur ;</li>
                 <li>la non-certification des comptes de l’Emetteur par le Commissaire aux Comptes ;</li>
                 <li>le non-respect par l’Emetteur de l’un quelconque de ses engagements au titre des Conditions Générales de Vente  Bénéficiaire</li>
             </ol>
             <p>L’Emprunteur est tenu dans les 8 jours de la survenance d’un Cas d’Exigibilité Anticipée d’en informer Unilend, lequel a reçu mandat du Prêteur en cas de défaut de paiement comme en cas de survenance d’un Cas d’Exigibilité Anticipée de mandater tout Recouvreur.</p>
-            <p>En cas de survenance d’un Cas d’Exigibilité Anticipé, toutes les sommes dues par l’Emetteur en exécution du Bon de caisse deviendront exigibles de plein droit sans qu’il soit besoin de mise en demeure préalable de quelque nature que ce soit. L’Emetteur devra alors payer immédiatement tous montants dus (principal et intérêt courus) au titre du Bon de caisse sans préjudice de tout autre dommage et intérêt qui pourrait être dû au Prêteur.</p>
+            <p>En cas de survenance d’un Cas d’Exigibilité Anticipé, toutes les sommes dues par l’Emetteur en exécution du Minibon deviendront exigibles de plein droit sans qu’il soit besoin de mise en demeure préalable de quelque nature que ce soit. L’Emetteur devra alors payer immédiatement tous montants dus (principal et intérêt courus) au titre du Minibon sans préjudice de tout autre dommage et intérêt qui pourrait être dû au Prêteur.</p>
             <h3>REMBOURSEMENT ANTICIPE</h3>
-            <p>A chaque date d’échéance, l’Emetteur pourra rembourser par anticipation, sans pénalité, l’intégralité des sommes restant dues au titre du Bon de caisse. En cas de remboursement anticipé, l’Emetteur ne sera pas tenu au paiement non courus à la date de remboursement anticipé.</p>
+            <p>A chaque date d’échéance, l’Emetteur pourra rembourser par anticipation, sans pénalité, l’intégralité des sommes restant dues au titre du Minibon. En cas de remboursement anticipé, l’Emetteur ne sera pas tenu au paiement non courus à la date de remboursement anticipé.</p>
+            <h3>CESSION</h3>
+            <p>Préalablement à toute cession, l’acquéreur devra impérativement ouvrir un Compte Unilend Prêteur et accepter les Conditions Générale de Vente Unilend Prêteur en vigueur.</p>
+            <p>En cas de cession, Unilend se réserve le droit de facturer des frais au cédant et à l’acquéreur.</p>
         </div>
         <!-- End Page Break -->
 
         <!-- Page Break -->
         <div class="pageBreakBefore">
-            <h3>ECHEANCIER DES REMBOURSEMENTS DU BON DE CAISSE</h3>
+            <h3>ECHEANCIER DES REMBOURSEMENTS DU MINIBON</h3>
 
             <div class="dates-table">
                 <table width="100%" cellspacing="0" cellpadding="0">

@@ -70,7 +70,7 @@ class GreenpointAttachment
     private $idAttachment;
 
     /**
-     * @var GreenpointAttachment
+     * @var GreenpointAttachmentDetail
      *
      * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachmentDetail", mappedBy="idGreenpointAttachment")
      */
@@ -251,7 +251,7 @@ class GreenpointAttachment
     /**
      * Get greenpointAttachmentDetail
      *
-     * @return GreenpointAttachment
+     * @return GreenpointAttachmentDetail
      */
     public function getGreenpointAttachmentDetail()
     {

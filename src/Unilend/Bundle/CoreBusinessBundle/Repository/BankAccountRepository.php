@@ -3,10 +3,9 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    BankAccount, Clients
+};
 
 class BankAccountRepository extends EntityRepository
 {
@@ -14,8 +13,9 @@ class BankAccountRepository extends EntityRepository
      * @param Clients|integer $idClient
      *
      * @return BankAccount|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getLastModifiedBankAccount($idClient)
+    public function getLastModifiedBankAccount($idClient): ?BankAccount
     {
         $cb = $this->createQueryBuilder('ba');
         $cb->select('ba', 'COALESCE(ba.updated, ba.datePending) AS HIDDEN dateOrder')
@@ -32,8 +32,9 @@ class BankAccountRepository extends EntityRepository
      * @param Clients|integer $idClient
      *
      * @return BankAccount|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function getClientValidatedBankAccount($idClient)
+    public function getClientValidatedBankAccount($idClient): ?BankAccount
     {
         $qb = $this->createQueryBuilder('ba');
         $qb->where('ba.idClient = :idClient')

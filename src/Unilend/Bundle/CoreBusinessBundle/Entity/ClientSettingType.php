@@ -12,6 +12,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ClientSettingType
 {
+    // @todo migrate to label and remove these constants
+    const TYPE_AUTOBID_SWITCH = 1;
+    const TYPE_BETA_TESTER    = 2;
+
+    const LABEL_AUTOBID_SWICTH = 'autobid_switch';
+
     /**
      * @var string
      *

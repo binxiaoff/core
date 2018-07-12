@@ -255,16 +255,20 @@ abstract class ProductManager
     abstract public function getAvailableProducts();
 
     /**
-     * @param \product $product
+     * @param \product|int $product
      *
      * @return array
      */
-    public function getAvailableContracts(\product $product)
+    public function getAvailableContracts($product)
     {
+        if ($product instanceof \product) {
+            $product = $product->id_product;
+        }
+
         /** @var \product_underlying_contract $productContract */
         $productContract = $this->entityManagerSimulator->getRepository('product_underlying_contract');
 
-        return $productContract->getUnderlyingContractsByProduct($product->id_product);
+        return $productContract->getUnderlyingContractsByProduct($product);
     }
 
     /**

@@ -5,7 +5,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientSettingType
+};
 
 class ClientManager
 {
@@ -45,12 +47,15 @@ class ClientManager
     public function isBetaTester(Clients $client): bool
     {
         try {
-            return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_BETA_TESTER);
+            return (bool) $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_BETA_TESTER);
         } catch (InvalidArgumentException $exception) {
-            $this->logger->warning(
-                'Invalid argument exception while retrieving beta tester status: ' . $exception->getMessage(),
-                ['id_client' => $client->getIdClient(), 'file' => $exception->getFile(), 'line' => $exception->getLine()]
-            );
+            $this->logger->warning('Invalid argument exception while retrieving beta tester status: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
             return false;
         }
     }

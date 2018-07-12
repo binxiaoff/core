@@ -38,7 +38,8 @@ EOF
         $statusToCheck            = [
             ClientsStatus::STATUS_TO_BE_CHECKED,
             ClientsStatus::STATUS_COMPLETENESS_REPLY,
-            ClientsStatus::STATUS_MODIFICATION
+            ClientsStatus::STATUS_MODIFICATION,
+            ClientsStatus::STATUS_SUSPENDED
         ];
         $attachmentTypeToValidate = [
             AttachmentType::CNI_PASSPORTE,
@@ -50,7 +51,7 @@ EOF
         ];
 
         /** @var Clients[] $clients */
-        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck);
+        $clients = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus($statusToCheck, true);
 
         if (false === empty($clients)) {
             /** @var greenPoint $oGreenPoint */
