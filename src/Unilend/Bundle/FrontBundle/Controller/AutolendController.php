@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, Projects, WalletType
+    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
