@@ -422,6 +422,7 @@ class BidManager
                 && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0
                 && WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()
                 && ClientsStatus::STATUS_VALIDATED === $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId()
+                // @todo do not check
             ) { // check status instead of LenderManager::canBid() because of the performance issue.
                 if (self::MODE_REBID_AUTO_BID_CREATE === $mode) {
                     $iBidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
