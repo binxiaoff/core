@@ -1055,7 +1055,7 @@ FormValidation.prototype.rules = {
           // @debug
           // console.log('test integer', testValue)
 
-          if (isNaN(testValue) || !Number.isInteger(testValue)) {
+          if (isNaN(testValue) || typeof testValue !== 'number' || testValue % 1 !== 0) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Field accepts only integers', 'error-field-input-type-integer')
