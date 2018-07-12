@@ -221,7 +221,7 @@ class LenderOperationsController extends Controller
         $activeSheet->setCellValue('L1', 'Note');
 
         $lenderLoans               = $entityManagerSimulator->getRepository('loans')->getSumLoansByProject($wallet->getId(), 'debut ASC, p.title ASC');
-        $lenderLoansDisplayManager = $this->get('unilend.frontbundle.service.lender_loans_display_manager');
+        $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         try {
             foreach ($lenderLoansDisplayManager->formatLenderLoansForExport($lenderLoans) as $rowIndex => $projectLoans) {
@@ -380,7 +380,7 @@ class LenderOperationsController extends Controller
                 'line'      => $exception->getLine()
             ]);
         }
-        $lenderLoansDisplayManager = $this->get('unilend.frontbundle.service.lender_loans_display_manager');
+        $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         return $lenderLoansDisplayManager->formatLenderLoansData($wallet, $lenderLoans, $statusFilter);
     }
@@ -848,7 +848,7 @@ class LenderOperationsController extends Controller
             ->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
         /** @var \loans $loans */
         $loans                     = $this->get('unilend.service.entity_manager')->getRepository('loans');
-        $lenderLoansDisplayManager = $this->get('unilend.frontbundle.service.lender_loans_display_manager');
+        $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
 
         try {
             $lenderLoans = $loans->getSumLoansByProject($wallet->getId(), 'debut DESC, p.title ASC');

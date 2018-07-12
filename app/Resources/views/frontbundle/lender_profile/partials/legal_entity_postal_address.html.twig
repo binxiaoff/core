@@ -20,10 +20,10 @@
 
 <section id="profile-correspondence-edit" role="tabpanel" class="profile-correspondence-edit collapse">
     {{ form_start(forms.postalAddress, {
-        'id' : 'form-profile-correspondence-edit',
-        'attr' : {
-            'class' : 'form-profile form-profile-correspondence-edit',
-            'data-formvalidation data-formvalidation-notificationselem' : '#form-profile-correspondence-notifications'
+        'id': 'form-profile-correspondence-edit',
+        'attr': {
+            'class': 'form-profile form-profile-correspondence-edit',
+            'data-formvalidation data-formvalidation-notificationselem': '#form-profile-correspondence-notifications'
         }
     }) }}
      <div class="row">
@@ -41,12 +41,13 @@
                         <span class="field-required">*<span class="sr-only"> {% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.postalAddress.address, {
-                        'id' : 'form-profile-correspondence-street',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : 'true'
-                        }})
-                    }}
+                        'id': 'form-profile-correspondence-street',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
+                        }
+                    }) }}
                     {{ form_errors(forms.postalAddress.address) }}
                 </div><!-- /.form-field -->
             </div>
@@ -58,17 +59,17 @@
                     </label>
                     <div class="input-group set-right">
                         {{ form_widget(forms.postalAddress.zip, {
-                            'id' : 'form-profile-correspondence-code',
-                            'attr' : {
-                                'class' : 'input-field',
-                                'data-formvalidation-input data-formvalidation-required' : 'true',
-                                'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
-                                'data-autocomplete-address-countryelem' : '#form-profile-correspondence-pays',
-                                'data-autocomplete-address-cityelem' : '#form-profile-correspondence-ville',
-                                'data-autocomplete-address-zipelem' : '#form-profile-correspondence-code',
-                                'data-has-spinner' : '#spinner-profile-correspondence-code'
-                            }})
-                        }}
+                            'id': 'form-profile-correspondence-code',
+                            'attr': {
+                                'class': 'input-field',
+                                'data-formvalidation-input data-formvalidation-required': 'true',
+                                'data-autocomplete-address data-autocomplete-ajaxurl': path('lender_profile_ajax_zip'),
+                                'data-autocomplete-address-countryelem': '#form-profile-correspondence-pays',
+                                'data-autocomplete-address-cityelem': '#form-profile-correspondence-ville',
+                                'data-autocomplete-address-zipelem': '#form-profile-correspondence-code',
+                                'data-has-spinner': '#spinner-profile-correspondence-code'
+                            }
+                        }) }}
                         {{ form_errors(forms.postalAddress.zip) }}
                         <div class="btn-group">
                             <span id="spinner-profile-correspondence-code" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
@@ -81,17 +82,18 @@
                     </label>
                     <div class="input-group set-right">
                         {{ form_widget(forms.postalAddress.city, {
-                            'id' : 'form-profile-correspondence-ville',
-                            'attr' : {
-                                'class' : 'input-field',
-                                'data-formvalidation-input data-formvalidation-required' : 'true',
-                                'data-autocomplete-address data-autocomplete-ajaxurl' : path('lender_profile_ajax_zip'),
-                                'data-autocomplete-address-countryelem' : '#form-profile-correspondence-pays',
-                                'data-autocomplete-address-cityelem' : '#form-profile-correspondence-ville',
-                                'data-autocomplete-address-zipelem' : '#form-profile-correspondence-code',
-                                'data-has-spinner' : '#spinner-profile-correspondence-city'
-                            }})
-                        }}
+                            'id': 'form-profile-correspondence-ville',
+                            'required': false,
+                            'attr': {
+                                'class': 'input-field',
+                                'data-formvalidation-input data-formvalidation-required': 'true',
+                                'data-autocomplete-address data-autocomplete-ajaxurl': path('lender_profile_ajax_zip'),
+                                'data-autocomplete-address-countryelem': '#form-profile-correspondence-pays',
+                                'data-autocomplete-address-cityelem': '#form-profile-correspondence-ville',
+                                'data-autocomplete-address-zipelem': '#form-profile-correspondence-code',
+                                'data-has-spinner': '#spinner-profile-correspondence-city'
+                            }
+                        }) }}
                         {{ form_errors(forms.postalAddress.city) }}
                         <div class="btn-group">
                             <span id="spinner-profile-correspondence-city" class="ui-is-spinner"><span class="sr-only">{% trans %} common_loading {% endtrans %}</span></span>
@@ -105,12 +107,13 @@
                     <label for="form-profile-correspondence-pays">{% trans %} lender-profile_information-tab-postal-address-section-country-label {% endtrans %} <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
                     </label>
                     {{ form_widget(forms.postalAddress.idCountry, {
-                        'id' : 'form-profile-correspondence-pays',
-                        'attr' : {
-                            'class' : 'input-field',
-                            'data-formvalidation-input data-formvalidation-required' : true
-                        }})
-                    }}
+                        'id': 'form-profile-correspondence-pays',
+                        'required': false,
+                        'attr': {
+                            'class': 'input-field',
+                            'data-formvalidation-input data-formvalidation-required': 'true'
+                        }
+                    }) }}
                     {{ form_errors(forms.postalAddress.idCountry) }}
                 </div><!-- /.form-field -->
             </div>

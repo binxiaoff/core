@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType
+    Autobid, Clients, ClientSettingType, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\{
     Contract\ContractManager, ProductManager
@@ -96,7 +96,7 @@ class AutoBidSettingsManager
         }
 
         if ($this->isQualified($client) && $this->lenderManager->canBid($client)) {
-            $this->clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON);
+            $this->clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH, \client_settings::AUTO_BID_ON);
 
             if ($notifyLender) {
                 $notification = $this->notificationManager->createNotification(Notifications::TYPE_AUTOBID_FIRST_ACTIVATION, $client->getIdClient());
@@ -117,7 +117,7 @@ class AutoBidSettingsManager
             throw new \Exception('Client ' . $client->getIdClient() . ' is not a Lender');
         }
 
-        $this->clientSettingsManager->saveClientSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF);
+        $this->clientSettingsManager->saveClientSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH, \client_settings::AUTO_BID_OFF);
     }
 
     /**
@@ -408,7 +408,7 @@ class AutoBidSettingsManager
      * @param Clients $client
      *
      * @return bool
-     * @throws \Exception
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function isOn(Clients $client): bool
     {
@@ -416,7 +416,7 @@ class AutoBidSettingsManager
             return false;
         }
 
-        return (bool) $this->clientSettingsManager->getSetting($client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        return (bool) $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
     }
 
     /**
@@ -434,7 +434,7 @@ class AutoBidSettingsManager
         /** @var \client_settings $oClientSettings */
         $oClientSettings = $this->entityManagerSimulator->getRepository('client_settings');
 
-        if ($oClientSettings->get($client->getIdClient(), 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
+        if ($oClientSettings->get($client->getIdClient(), 'id_type = ' . ClientSettingType::TYPE_AUTOBID_SWITCH . ' AND id_client')) {
             $oActivationTime = new \DateTime($oClientSettings->added);
         } else {
             $oActivationTime = new \DateTime();
@@ -466,16 +466,18 @@ class AutoBidSettingsManager
      */
     public function getRateRange(?string $evaluation = null, ?int $periodId = null)
     {
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+        $projectRateSettingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRateSettings');
 
         if ($evaluation === null || $periodId === null) {
-            $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+            $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
         } else {
-            $projectRates      = $projectRateSettings->getSettings($evaluation, $periodId);
-            $projectMinMaxRate = array_shift($projectRates);
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+            $projectRates        = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectMinMaxRate   = array_shift($projectRates);
+
             if (empty($projectMinMaxRate)) {
-                $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+                $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
             }
         }
 

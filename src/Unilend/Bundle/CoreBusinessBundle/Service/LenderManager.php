@@ -1,10 +1,11 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, ClientsStatus, VigilanceRule, WalletType
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -42,7 +43,7 @@ class LenderManager
         return (
             $client->isLender()
             && ClientsStatus::STATUS_VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
-       );
+        );
     }
 
     /**
@@ -108,7 +109,7 @@ class LenderManager
         $transfersWithLenderInvolved = $transfer->select('id_client_origin = ' . $client->getIdClient() . ' OR id_client_receiver = ' . $client->getIdClient());
         foreach ($transfersWithLenderInvolved as $transfer) {
             if ($loanTransfer->exist($transfer['id_transfer'], 'id_transfer')) {
-               return true;
+                return true;
             }
         }
         return false;
@@ -116,6 +117,7 @@ class LenderManager
 
     /**
      * Retrieve pattern that lender must use in bank transfer label
+     *
      * @param Clients $client
      *
      * @return string
@@ -151,8 +153,65 @@ class LenderManager
         $remainingDueCapital         = round(bcdiv($lostAmount, 100, 3), 2);
         $sumOfLoans                  = $loansRepository->sumLoansOfProjectsInRepayment($wallet);
 
-        $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null ;
+        $lossRate = $sumOfLoans > 0 ? bcmul(round(bcdiv($remainingDueCapital, $sumOfLoans, 3), 2), 100) : null;
 
         return $lossRate;
+    }
+
+    /**
+     * @param int $clientType
+     *
+     * @return array
+     */
+    public function getFundsOrigins(int $clientType): array
+    {
+        switch ($clientType) {
+            case Clients::TYPE_PERSON:
+            case Clients::TYPE_PERSON_FOREIGNER:
+                $settingName = 'Liste deroulante origine des fonds';
+                break;
+            default:
+                $settingName = 'Liste deroulante origine des fonds societe';
+                break;
+        }
+
+        $fundsOriginList = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => $settingName])
+            ->getValue();
+        $fundsOriginList = explode(';', $fundsOriginList);
+
+        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return bool
+     */
+    public function needUpdatePersonalData(Clients $client): bool
+    {
+        if (false === $client->isLender()) {
+            throw new \InvalidArgumentException('Client ' . $client->getIdClient() . ' is not a Lender');
+        }
+
+        $clientVigilanceStatus = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientVigilanceStatusHistory')->findOneBy(['client' => $client], ['added' => 'DESC', 'id' => 'DESC']);
+
+        $currentVigilanceStatus = VigilanceRule::VIGILANCE_STATUS_LOW;
+        if ($clientVigilanceStatus) {
+            $currentVigilanceStatus = $clientVigilanceStatus->getVigilanceStatus();
+        }
+
+        $personalDataUpdated = $client->getPersonalDataUpdated() ?? $client->getAdded();
+        $interval            = $personalDataUpdated->diff(new \DateTime());
+        $intervalInMonths     = $interval->y * 12 + $interval->m;
+
+        if (VigilanceRule::VIGILANCE_STATUS_HIGH === $currentVigilanceStatus) {
+            $needUpdatePersonalData = $intervalInMonths >= 6;
+        } else {
+            $needUpdatePersonalData = $intervalInMonths >= 12;
+        }
+
+        return $needUpdatePersonalData;
     }
 }

@@ -18,7 +18,7 @@
             {% if not evaluation %}
                 <div class="row">
                     <p>{% trans %} lender-evaluation_index-no-ongoing-evaluation-text {% endtrans %}</p>
-                    <a href="{{ path('cip_start_questionnaire') }}" class="btn-primary fright">{% trans %} lender-evaluation_questionnaire-start-button {% endtrans %}</a>
+                    <a href="{{ path('cip_continue_questionnaire') }}" class="btn-primary fright">{% trans %} lender-evaluation_questionnaire-start-button {% endtrans %}</a>
                 </div>
             {% elseif advices is not defined %}
                 <div class="row">

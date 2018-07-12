@@ -1405,6 +1405,7 @@ class projects extends projects_crud
             ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
             ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
             ->where('p.status = :status')
+            ->andWhere('co.siren IS NOT NULL AND co.siren != ""')
             ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
             ->addOrderBy('creation', 'ASC')
             ->addOrderBy('amount', 'DESC')

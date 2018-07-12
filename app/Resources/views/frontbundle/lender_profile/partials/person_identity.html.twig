@@ -38,7 +38,7 @@
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate }) }}" data-toggle="tooltip">
                                     <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate}) }}</span>
                                 </span>
-                    {%  else  %}
+                    {% else %}
                         <span id="form-profile-info-file-identite-cni-2-output" class="file-justificatif file-identity-side-b"
                               title="{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate}) }}" data-toggle="tooltip">
                                     <span class="sr-only">{{ "lender-profile_lender-attachment-provided-label-type-#{ attachment.getType().id }"|trans({'%date%' : attachmentDate})}}</span>
