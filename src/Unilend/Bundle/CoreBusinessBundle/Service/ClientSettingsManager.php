@@ -7,6 +7,7 @@ use Psr\Cache\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\librairies\CacheKeys;
 
 /**
  * Class ClientSettingsManager
@@ -14,8 +15,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  */
 class ClientSettingsManager
 {
-    const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var CacheItemPoolInterface */
@@ -70,7 +69,7 @@ class ClientSettingsManager
      * @param Clients $client
      * @param int     $settingType
      *
-     * @return string
+     * @return string|null
      */
     public function getSetting(Clients $client, int $settingType): ?string
     {
@@ -78,7 +77,7 @@ class ClientSettingsManager
         $clientSettings = $this->entityManagerSimulator->getRepository('client_settings');
 
         try {
-            $cachedItem = $this->cachePool->getItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
+            $cachedItem = $this->cachePool->getItem(CacheKeys::GET_CLIENT_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
         } catch (InvalidArgumentException $exception) {
             return null;
         }
@@ -90,7 +89,7 @@ class ClientSettingsManager
         $value = $clientSettings->getSetting($client->getIdClient(), $settingType);
         $cachedItem
             ->set($value)
-            ->expiresAfter(1800);
+            ->expiresAfter(CacheKeys::MEDIUM_TIME);
 
         $this->cachePool->save($cachedItem);
 
@@ -99,12 +98,12 @@ class ClientSettingsManager
 
     /**
      * @param Clients $client
-     * @param         $settingType
+     * @param int     $settingType
      *
      * @throws InvalidArgumentException
      */
-    private function flushSettingCache(Clients $client, $settingType)
+    private function flushSettingCache(Clients $client, int $settingType): void
     {
-        $this->cachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
+        $this->cachePool->deleteItem(CacheKeys::GET_CLIENT_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
     }
 }

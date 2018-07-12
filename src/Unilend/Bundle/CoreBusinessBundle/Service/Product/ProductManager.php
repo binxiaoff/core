@@ -3,48 +3,35 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\{
+    BidValidator, ClientValidator, LenderValidator, ProjectValidator
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 abstract class ProductManager
 {
     /** @var EntityManagerSimulator */
     protected $entityManagerSimulator;
-
     /** @var ProjectValidator */
     protected $projectValidator;
-
     /** @var BidValidator */
     protected $bidValidator;
-
     /** @var ClientValidator */
     protected $clientValidator;
-
     /** @var LenderValidator */
     protected $lenderValidator;
-
     /** @var ProductAttributeManager */
     protected $productAttributeManager;
-
     /** @var ContractManager */
     protected $contractManager;
-
     /** @var  EntityManager */
     protected $entityManager;
 
     /**
-     * ProductManager constructor.
-     *
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param ProjectValidator        $projectValidator
      * @param BidValidator            $bidValidator
@@ -126,23 +113,23 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients|null $client When it's null, it's an anonymous client (logout)
+     * @param Clients|null $client null corresponds to an anonymous client (logged out)
      * @param Projects     $project
      *
      * @return array
      */
-    public function checkClientEligibility(Clients $client = null, Projects $project): array
+    public function checkClientEligibility(?Clients $client = null, Projects $project): array
     {
         return $this->clientValidator->validate($client, $project);
     }
 
     /**
-     * @param Clients            $client
+     * @param Clients|null       $client
      * @param Projects|\projects $project
      *
      * @return bool
      */
-    public function isClientEligible(Clients $client = null, $project): bool
+    public function isClientEligible(?Clients $client = null, $project): bool
     {
         $project = $this->convertProject($project);
 

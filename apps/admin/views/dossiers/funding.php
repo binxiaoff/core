@@ -84,7 +84,7 @@ use Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository;
                     $montantBas  += $b['amount'];
                 }
 
-                $tauxMoyen = $montantHaut / $montantBas;
+                $tauxMoyen   = $montantHaut / $montantBas;
                 $pourcentage = $soldeBid / $p['amount'] * 100;
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>

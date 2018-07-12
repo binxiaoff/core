@@ -402,6 +402,17 @@ class MailerManager
             ]);
         }
 
+        if (null === $project->getIdCompany()) {
+            $companyName = '';
+            $this->oLogger->error('No company found for project ' . $project->getIdProject(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+        } else {
+            $companyName = $project->getIdCompany()->getName();
+        }
+
         foreach ($lenders as $lender) {
             /** @var Wallet $wallet */
             $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['id_lender']);
@@ -455,7 +466,7 @@ class MailerManager
 
                 $keywords = [
                     'firstName'            => $wallet->getIdClient()->getPrenom(),
-                    'companyName'          => $project->getIdCompany()->getName(),
+                    'companyName'          => $companyName,
                     'bidWording'           => $offers,
                     'doesWording'          => $does,
                     'loanWording'          => $loansText,

@@ -10,14 +10,20 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
 
 class ProjectsPrePublishCommand extends ContainerAwareCommand
 {
-    protected function configure()
+    /**
+     * @inheritdoc
+     */
+    protected function configure(): void
     {
         $this
             ->setName('projects:pre_publish')
             ->setDescription('Check projects that are going to be published in the next 15 minutes');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @inheritdoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $logger                  = $this->getContainer()->get('monolog.logger.console');
         $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');

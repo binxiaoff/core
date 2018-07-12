@@ -247,14 +247,15 @@ class ProjectLifecycleManager
 
         if ($logCheck) {
             $log = new BidsLogs();
-            $log->setDebut($logStart);
-            $log->setFin(new \DateTime());
-            $log->setIdProject($project);
-            $log->setRateMax($bidRepository->getProjectMaxRate($project));
-            $log->setNbBidsKo($rejectedBids);
-            $log->setNbBidsEncours($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING]));
-            $log->setTotalBids($bidRepository->countBy(['idProject' => $project]));
-            $log->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]));
+            $log
+                ->setDebut($logStart)
+                ->setFin(new \DateTime())
+                ->setIdProject($project)
+                ->setRateMax($bidRepository->getProjectMaxRate($project))
+                ->setNbBidsKo($rejectedBids)
+                ->setNbBidsEncours($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING]))
+                ->setTotalBids($bidRepository->countBy(['idProject' => $project]))
+                ->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]));
 
             $this->entityManager->persist($log);
             $this->entityManager->flush($log);
@@ -1100,11 +1101,12 @@ class ProjectLifecycleManager
                             $keywords['customAutolendContent'] = '';
                         }
                     }
+
                     if (null !== $mailType) {
                         try {
                             $this
                                 ->notificationManager
-                                ->createEmailNotification(null, ClientsGestionTypeNotif::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), null, $project->getIdProject(), null, true, $project->getDatePublication());
+                                ->createEmailNotification(ClientsGestionTypeNotif::TYPE_NEW_PROJECT, $wallet->getIdClient()->getIdClient(), null, null, $project->getIdProject(), null, true, $project->getDatePublication());
                         } catch (OptimisticLockException $exception) {
                             $this->logger->warning('Could not insert the new project email notification for client ' . $wallet->getIdClient()->getIdClient() . '. Exception: ' . $exception->getMessage(), [
                                 'id_project' => $project->getIdProject(),

@@ -7,7 +7,7 @@ use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
+    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, ClientsStatus, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
@@ -405,14 +405,10 @@ class BidManager
      */
     public function reBidAutoBidOrReject(Bids $bid, string $currentRate, int $mode, bool $sendNotification = true): void
     {
-        /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
-        $autobid = $bid->getAutobid();
-
-        if ($autobid instanceof Autobid && false === empty($bid->getIdBid()) && $project->get($bid->getProject()->getIdProject())) {
+        if ($bid->getAutobid() instanceof Autobid && false === empty($bid->getIdBid()) && null !== $bid->getProject()) {
             if (
-                bccomp($currentRate, $this->getProjectRateRange($project)['rate_min'], 1) >= 0
-                && bccomp($currentRate, $autobid->getRateMin(), 1) >= 0
+                bccomp($currentRate, $this->getProjectRateRange($bid->getProject())['rate_min'], 1) >= 0
+                && bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0
                 && WalletType::LENDER === $bid->getIdLenderAccount()->getIdType()->getLabel()
                 && ClientsStatus::STATUS_VALIDATED === $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId()
             ) { // check status instead of LenderManager::canBid() because of the performance issue.

@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
+
 class project_period extends project_period_crud
 {
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -59,7 +61,7 @@ class project_period extends project_period_crud
         return $aDuration;
     }
 
-    public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
+    public function getPeriod($iDuration, $iStatus = ProjectPeriod::STATUS_ACTIVE)
     {
         $rQuery = $this->bdd->query('SELECT * FROM `project_period` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
         $period = $this->bdd->fetch_assoc($rQuery);

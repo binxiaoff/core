@@ -15,7 +15,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
     /**
      * @inheritdoc
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('projects:funding')
@@ -25,7 +25,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
     /**
      * @inheritdoc
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         ini_set('memory_limit', '1G');
 

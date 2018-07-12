@@ -63,4 +63,6 @@ class CacheKeys
      * const for Altares Identity Address Log
      */
     const ALTARES_IDENTITY_ADDRESS_LOG = 'altares_identity_address_log';
+
+    const GET_CLIENT_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 }
