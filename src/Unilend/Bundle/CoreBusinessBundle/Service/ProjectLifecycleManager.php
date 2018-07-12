@@ -218,13 +218,11 @@ class ProjectLifecycleManager
      */
     public function checkBids(\projects $project, bool $sendNotification): void
     {
-        $rejectedBids         = 0;
-        $cumulativeBidsAmount = 0;
-        $logCheck             = false;
-        $logStart             = new \DateTime();
-        $bidRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $totalBidsAmount      = $bidRepository->getProjectTotalAmount($project);
-        $projectAmount        = $project->getAmount();
+        /** @var \bids $legacyBid */
+        $legacyBid = $this->entityManagerSimulator->getRepository('bids');
+        /** @var \bids_logs $oBidLog */
+        $oBidLog       = $this->entityManagerSimulator->getRepository('bids_logs');
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
         $aLogContext      = [];
         $bBidsLogs        = false;
