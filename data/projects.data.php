@@ -1390,35 +1390,6 @@ class projects extends projects_crud
     }
 
     /**
-     * @return array
-     */
-    public function getImpossibleEvaluationProjects()
-    {
-        $statement = $this->bdd->createQueryBuilder()
-            ->select('p.id_project,
-                p.amount AS amount,
-                p.period AS duration,
-                co.siren AS siren,
-                p.added AS creation
-            ')
-            ->from('projects', 'p')
-            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
-            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
-            ->where('p.status = :status')
-            ->andWhere('co.siren IS NOT NULL AND co.siren != ""')
-            ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
-            ->addOrderBy('creation', 'ASC')
-            ->addOrderBy('amount', 'DESC')
-            ->addOrderBy('duration', 'DESC')
-            ->execute();
-
-        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-
-        return $projects;
-    }
-
-    /**
      * @param array $status
      * @return \Doctrine\DBAL\Query\QueryBuilder
      */

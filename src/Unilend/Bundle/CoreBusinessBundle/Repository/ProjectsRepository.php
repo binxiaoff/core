@@ -11,17 +11,7 @@ use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients,
-    Companies,
-    CompanyStatus,
-    Echeanciers,
-    EcheanciersEmprunteur,
-    Factures,
-    OperationType,
-    Partner,
-    Projects,
-    ProjectsStatus,
-    UnilendStats
+    Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager;
@@ -1514,5 +1504,22 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
 
         return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
+    }
+
+    /**
+     * @return Projects[]
+     */
+    public function findImpossibleEvaluationProjects(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->where('p.status = :status')
+            ->andWhere('c.siren IS NOT NULL AND c.siren != \'\'')
+            ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
+            ->addOrderBy('p.added', 'ASC')
+            ->addOrderBy('p.amount', 'DESC')
+            ->addOrderBy('p.period', 'DESC');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

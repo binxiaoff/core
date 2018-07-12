@@ -211,12 +211,12 @@
                 <tbody>
                 <?php foreach ($this->impossibleEvaluationProjects as $project) : ?>
                     <?php $i = 0; ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project['id_project'] ?>">
-                        <td><?= $project['id_project'] ?></td>
-                        <td><?= $project['siren'] ?></td>
-                        <td style="text-align: right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
-                        <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
-                        <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
+                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project->getIdProject() ?>">
+                        <td><?= $project->getIdProject() ?></td>
+                        <td><?= $project->getIdCompany()->getSiren() ?></td>
+                        <td style="text-align: right"><?= $this->ficelle->formatNumber($project->getAmount(), 0) ?>&nbsp;€</td>
+                        <td><?php if (false === empty($project->getPeriod())) : ?><?= $project->getPeriod() ?> mois<?php endif; ?></td>
+                        <td><?= $project->getAdded()->format('d/m/Y - H\hi') ?></td>
                     </tr>
                     <?php ++$i; ?>
                 <?php endforeach; ?>
