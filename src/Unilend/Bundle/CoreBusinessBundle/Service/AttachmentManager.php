@@ -129,6 +129,8 @@ class AttachmentManager
 
     /**
      * @param Attachment $attachment
+     *
+     * @throws FileNotFoundException
      */
     public function output(Attachment $attachment): void
     {

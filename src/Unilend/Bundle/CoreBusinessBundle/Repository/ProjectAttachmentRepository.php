@@ -4,9 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAttachment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    AttachmentType, ProjectAttachment, Projects
+};
 
 class ProjectAttachmentRepository extends EntityRepository
 {
@@ -40,7 +40,7 @@ class ProjectAttachmentRepository extends EntityRepository
     {
         $queryBuilder = $this->getEntityManager()->createQueryBuilder();
         $queryBuilder
-            ->select('cat.id AS categoryId, cat.name AS categoryName, pat.id AS typeId, pat.name AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
+            ->select('cat.id AS categoryId, cat.name AS categoryName, pat.name AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
             ->from('UnilendCoreBusinessBundle:Attachment', 'a')
             ->innerJoin('UnilendCoreBusinessBundle:AttachmentType', 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
             ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
@@ -52,6 +52,23 @@ class ProjectAttachmentRepository extends EntityRepository
             ->addOrderBy('a.added', 'ASC')
             ->setParameter(':project', $project);
 
-        return $queryBuilder->getQuery()->getResult();
+        $attachments = $queryBuilder->getQuery()->getResult();
+
+        $queryBuilder = $this->getEntityManager()->createQueryBuilder();
+        $queryBuilder
+            ->select('-1 AS categoryId, \'Legacy\' AS categoryName, at.label AS typeName, a.id AS attachmentId, a.path, a.originalName, at.downloadable')
+            ->from('UnilendCoreBusinessBundle:Attachment', 'a')
+            ->innerJoin('UnilendCoreBusinessBundle:AttachmentType', 'at', Join::WITH, $queryBuilder->expr()->eq('a.idType', 'at.id'))
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectAttachment', 'pa', Join::WITH, $queryBuilder->expr()->eq('pa.idAttachment', 'a.id'))
+            ->leftJoin('UnilendCoreBusinessBundle:ProjectAttachmentType', 'pat', Join::WITH, $queryBuilder->expr()->eq('pat.idType', 'a.idType'))
+            ->where($queryBuilder->expr()->eq('pa.idProject', ':project'))
+            ->andWhere($queryBuilder->expr()->isNull('pat.id'))
+            ->orderBy('at.label', 'ASC')
+            ->addOrderBy('a.added', 'ASC')
+            ->setParameter(':project', $project);
+
+        $legacy = $queryBuilder->getQuery()->getResult();
+
+        return array_merge($attachments, $legacy);
     }
 }

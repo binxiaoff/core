@@ -39,12 +39,12 @@ class viewerController extends bootstrap
                 $hasCategories      = false;
                 $attachments        = [];
                 $attachmentEntities = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findBy([
-                    'idClient' => $entityId
+                    'idClient' => $entityId,
+                    'archived' => null
                 ]);
 
                 foreach ($attachmentEntities as $attachment) {
                     $attachments[] = [
-                        'typeId'       => $attachment->getType()->getId(),
                         'typeName'     => $attachment->getType()->getLabel(),
                         'attachmentId' => $attachment->getId(),
                         'path'         => $attachment->getPath(),
@@ -52,6 +52,10 @@ class viewerController extends bootstrap
                         'downloadable' => $attachment->getType()->getDownloadable()
                     ];
                 }
+
+                usort($attachments, function ($first, $second) {
+                    return strcmp($first['typeName'], $second['typeName']);
+                });
                 break;
             default:
                 header('Location: ' . $this->lurl);
