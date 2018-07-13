@@ -818,50 +818,50 @@ class ProjectLifecycleManager
      */
     private function createAmortizationPaymentSchedule(Projects $project): void
     {
-        /** @var \echeanciers_emprunteur $oPaymentSchedule */
-        $oPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
-        /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
+        /** @var \echeanciers $repaymentSchedule */
+        $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
+
         /** @var \tax_type $taxType */
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
-
         $taxRate = $taxType->getTaxRateByCountry('fr');
-        $fVAT    = $taxRate[TaxType::TYPE_VAT] / 100;
+        $vatRate = $taxRate[TaxType::TYPE_VAT] / 100;
 
-        $fAmount           = $project->getAmount();
-        $iMonthNb          = $project->getPeriod();
-        $aCommission       = \repayment::getRepaymentCommission($fAmount, $iMonthNb, round(bcdiv($project->getCommissionRateRepayment(), 100, 4), 2), $fVAT);
-        $aPaymentList      = $oRepaymentSchedule->getMonthlyScheduleByProject($project->getIdProject());
-        $iPaymentsNbTotal  = count($aPaymentList);
-        $iTreatedPaymentNb = 0;
+        $amount                  = $project->getAmount();
+        $loanDuration            = $project->getPeriod();
+        $commission              = \repayment::getRepaymentCommission($amount, $loanDuration, round(bcdiv($project->getCommissionRateRepayment(), 100, 4), 2), $vatRate);
+        $lenderRepaymentsSummary = $repaymentSchedule->getMonthlyScheduleByProject($project->getIdProject());
+        $paymentsCount           = count($lenderRepaymentsSummary);
+        $processedPayments       = 0;
 
         if ($this->logger instanceof LoggerInterface) {
-            $this->logger->debug($iPaymentsNbTotal . ' borrower repayments in total (project ' . $project->getIdProject() . ')', [
+            $this->logger->debug($paymentsCount . ' borrower repayments in total (project ' . $project->getIdProject() . ')', [
                 'id_project' => $project->getIdProject(),
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__
             ]);
         }
 
-        foreach ($aPaymentList as $iIndex => $aPayment) {
-            $sPaymentDate = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $iIndex);
-            $sPaymentDate = $this->workingDay->display_jours_ouvres($sPaymentDate, 6);
-            $sPaymentDate = date('Y-m-d H:i', $sPaymentDate) . ':00';
+        foreach ($lenderRepaymentsSummary as $order => $lenderRepaymentSummary) {
+            $paymentDate = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $order);
+            $paymentDate = $this->workingDay->display_jours_ouvres($paymentDate, 6);
+            $paymentDate = date('Y-m-d H:i', $paymentDate) . ':00';
 
-            $oPaymentSchedule->id_project               = $project->getIdProject();
-            $oPaymentSchedule->ordre                    = $iIndex;
-            $oPaymentSchedule->montant                  = bcmul($aPayment['montant'], 100);
-            $oPaymentSchedule->capital                  = bcmul($aPayment['capital'], 100);
-            $oPaymentSchedule->interets                 = bcmul($aPayment['interets'], 100);
-            $oPaymentSchedule->commission               = bcmul($aCommission['commission_monthly'], 100);
-            $oPaymentSchedule->tva                      = bcmul($aCommission['vat_amount_monthly'], 100);
-            $oPaymentSchedule->date_echeance_emprunteur = $sPaymentDate;
-            $oPaymentSchedule->create();
+            /** @var \echeanciers_emprunteur $paymentSchedule */
+            $paymentSchedule                           = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
+            $paymentSchedule->id_project               = $project->getIdProject();
+            $paymentSchedule->ordre                    = $order;
+            $paymentSchedule->montant                  = bcmul($lenderRepaymentSummary['montant'], 100);
+            $paymentSchedule->capital                  = bcmul($lenderRepaymentSummary['capital'], 100);
+            $paymentSchedule->interets                 = bcmul($lenderRepaymentSummary['interets'], 100);
+            $paymentSchedule->commission               = bcmul($commission['commission_monthly'], 100);
+            $paymentSchedule->tva                      = bcmul($commission['vat_amount_monthly'], 100);
+            $paymentSchedule->date_echeance_emprunteur = $paymentDate;
+            $paymentSchedule->create();
 
-            $iTreatedPaymentNb++;
+            $processedPayments++;
 
             if ($this->logger instanceof LoggerInterface) {
-                $this->logger->info('Borrower repayment ' . $oPaymentSchedule->id_echeancier_emprunteur . ' created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'treated (project ' . $project->getIdProject() . ')', [
+                $this->logger->info('Borrower repayment ' . $paymentSchedule->id_echeancier_emprunteur . ' created. ' . $processedPayments . '/' . $paymentsCount . 'treated (project ' . $project->getIdProject() . ')', [
                     'id_project' => $project->getIdProject(),
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__
@@ -875,13 +875,11 @@ class ProjectLifecycleManager
      */
     private function createDeferredPaymentSchedule(Projects $project): void
     {
-        /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
-        $borrowerPaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $lenderRepaymentSchedule */
         $lenderRepaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
+
         /** @var \tax_type $taxType */
         $taxType = $this->entityManagerSimulator->getRepository('tax_type');
-
         $taxRate = $taxType->getTaxRateByCountry('fr');
         $vatRate = $taxRate[TaxType::TYPE_VAT] / 100;
 
@@ -903,6 +901,8 @@ class ProjectLifecycleManager
         }
 
         foreach ($lenderRepaymentsSummary as $order => $lenderRepaymentSummary) {
+            /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
+            $borrowerPaymentSchedule                           = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
             $borrowerPaymentSchedule->id_project               = $project->getIdProject();
             $borrowerPaymentSchedule->ordre                    = $order;
             $borrowerPaymentSchedule->montant                  = bcmul($lenderRepaymentSummary['montant'], 100);

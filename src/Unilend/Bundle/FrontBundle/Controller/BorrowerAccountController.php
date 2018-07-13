@@ -799,7 +799,7 @@ class BorrowerAccountController extends Controller
                 );
 
                 if ($nextRepayment instanceof EcheanciersEmprunteur) {
-                    $monthlyPayment   = bcdiv(bcadd($nextRepayment->getAmount(), bcadd($nextRepayment->getCommission(), $nextRepayment->getTva(), 4), 4), 100, 4);
+                    $monthlyPayment   = bcdiv(bcadd($nextRepayment->getCapital(), bcadd($nextRepayment->getInterets(), bcadd($nextRepayment->getCommission(), $nextRepayment->getTva(), 4), 4), 4), 100, 4);
                     $nextMaturityDate = $nextRepayment->getDateEcheanceEmprunteur();
                 }
             }

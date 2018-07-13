@@ -187,6 +187,7 @@ class MailerManager
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__
             ]);
+            return;
         }
 
         $borrower = $project->getIdCompany()->getIdClientOwner();
@@ -658,9 +659,6 @@ class MailerManager
      */
     public function sendProjectFinishedToStaff(Projects $project): void
     {
-        /** @var \loans $loan */
-        $loan = $this->entityManagerSimulator->getRepository('loans');
-
         try {
             $totalBidsAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
         } catch (ORMException $exception) {
@@ -674,22 +672,20 @@ class MailerManager
             return;
         }
 
-        if ($totalBidsAmount > $project->getAmount()) {
-            $totalBidsAmount = $project->getAmount();
-        }
-
         $averageInterestRate = $project->getInterestRate();
         if (empty($averageInterestRate)) {
             $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
         }
 
-        $keywords          = [
+        $lendersCount    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project);
+        $totalBidsAmount = min($totalBidsAmount, $project->getAmount());
+        $keywords        = [
             '$surl'         => $this->sSUrl,
             '$url'          => $this->sFUrl,
             '$id_projet'    => $project->getIdProject(),
             '$title_projet' => $project->getTitle(),
-            '$nbPeteurs'    => $loan->getNbPreteurs($project->getIdProject()),
+            '$nbPeteurs'    => $lendersCount,
             '$montant_pret' => $project->getAmount(),
             '$montant'      => $totalBidsAmount,
             '$taux_moyen'   => $this->oFicelle->formatNumber($averageInterestRate, 1)
