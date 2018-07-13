@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\CommandBundle\Command;
+namespace Unilend\Bundle\CommandBundle\Command\Dev;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
