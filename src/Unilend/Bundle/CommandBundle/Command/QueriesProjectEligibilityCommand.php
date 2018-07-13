@@ -10,15 +10,15 @@ use Symfony\Component\Console\{
     Input\InputInterface, Output\OutputInterface
 };
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyRating, Projects
+    CompanyRating, Projects
 };
 
 class QueriesProjectEligibilityCommand extends ContainerAwareCommand
 {
     /**
-     * @see Command
+     * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('queries:project_eligibility')
@@ -28,33 +28,33 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $filePath = $this->getContainer()->getParameter('path.protected') . '/queries/' . 'projects_eligibility.xlsx';
         $header   = $header = [
-            'id_project',
-            'date dépôt',
-            'raison sociale',
-            'siren',
-            'date_creation',
-            'source',
-            'partenaire',
-            'prescripteur',
-            'motif exprimé',
-            'montant',
-            'durée',
-            'prescore',
-            'score Altares',
-            'trafficLight Euler',
-            'grade Euler',
-            'score Infolegale',
+            'ID projet',
+            'Date de dépôt',
+            'Raison sociale',
+            'SIREN',
+            'Date de creation',
+            'Source',
+            'Partenaire',
+            'Prescripteur',
+            'Motif exprimé',
+            'Montant',
+            'Durée',
+            'Prescore',
+            'Score Altares',
+            'TrafficLight Euler',
+            'Grade Euler',
+            'Score Infolegale',
             'CA',
             'FP',
             'REX',
             'RCS',
             'NAF',
-            'statut projet',
-            'tronc commun'
+            'Statut projet',
+            'Tronc commun'
         ];
 
         try {
@@ -77,54 +77,46 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
     {
         $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
         $assessmentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
-        $companyRatingHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
         $companyRatingRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
+        $borrowingMotiveRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive');
+        $projectNotesRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes');
+        $advisorRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs');
+        $clientRepository               = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
+        $indexedProjectStatus           = $this->getContainer()->get('unilend.service.project_status_manager')->getIndexedProjectStatus();
+        $ratingTypes                    = [
+            CompanyRating::TYPE_ALTARES_SCORE_20,
+            CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT,
+            CompanyRating::TYPE_EULER_HERMES_GRADE,
+            CompanyRating::TYPE_INFOLEGALE_SCORE
+        ];
         $extraction                     = [];
 
         $evaluatedProjects = $assessmentRepository->getEvaluatedProjects();
 
         /** @var Projects $project */
         foreach ($evaluatedProjects as $project) {
-            /** @var Companies $company */
             $company              = $project->getIdCompany();
-            $motivation           = $project->getIdBorrowingMotive() ? $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($project->getIdBorrowingMotive()) : null;
-            $status               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-            $projectNote          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
-            $companyRatingHistory = $companyRatingHistoryRepository->findOneBy(['idCompany' => $company->getIdCompany()]);
-            $scoreAltares         = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_ALTARES_SCORE_20
-            ]);
-            $trafficLightEuler    = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT
-            ]);
-            $gradeEuler           = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_EULER_HERMES_GRADE
-            ]);
-            $scoreInfolegale      = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_INFOLEGALE_SCORE
-            ]);
+            $motivation           = $project->getIdBorrowingMotive() ? $borrowingMotiveRepository->find($project->getIdBorrowingMotive()) : null;
+            $projectNote          = $projectNotesRepository->findOneBy(['idProject' => $project]);
+            $ratings              = $companyRatingRepository->getRatingsByTypeAndHistory($project->getIdCompanyRatingHistory(), $ratingTypes);
 
             $source = '';
-            if ($company->getIdClientOwner() && false == $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
+            if ($company->getIdClientOwner() && false === $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
                 $source = $company->getIdClientOwner()->getSource();
             }
 
             $partner = '';
-            if ($project->getIdPartner()) {
+            if ($project->getIdPartner() && $project->getIdPartner()->getIdCompany()) {
                 $partner = $project->getIdPartner()->getIdCompany()->getName();
             }
 
-            $adviserName = 'Non';
+            $advisorName = 'Non';
             if ($project->getIdPrescripteur()) {
-                $adviser = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
-                if ($adviser) {
-                    $adviserClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($adviser->getIdClient());
-                    if ($adviserClient) {
-                        $adviserName = $adviserClient->getPrenom() . ' ' . $adviserClient->getNom();
+                $advisor = $advisorRepository->find($project->getIdPrescripteur());
+                if ($advisor) {
+                    $advisorClient = $clientRepository->find($advisor->getIdClient());
+                    if ($advisorClient) {
+                        $advisorName = $advisorClient->getPrenom() . ' ' . $advisorClient->getNom();
                     }
                 }
             }
@@ -134,7 +126,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
-            $row = [
+            $extraction[] = [
                 'id projet'        => $project->getIdProject(),
                 'added'            => $project->getAdded()->format('d/m/Y'),
                 'company_name'     => $company->getName(),
@@ -142,25 +134,23 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 'date_creation'    => $company->getDateCreation() ? $company->getDateCreation()->format('d/m/Y') : '',
                 'source'           => $source,
                 'partner'          => $partner,
-                'adviser'          => $adviserName,
+                'advisor'          => $advisorName,
                 'motivation'       => $motivation ? $motivation->getMotive() : '',
                 'amount'           => $project->getAmount(),
                 'duration'         => $project->getPeriod(),
-                'prescore'         => $projectNote ? ($projectNote->getPreScoring() ? $projectNote->getPreScoring() : 'PAS DE DONNEE') : 'Pas de donnée',
-                'score_altares'    => $scoreAltares ? $scoreAltares->getValue() : 'Pas de donnée',
-                'traffic_light'    => $trafficLightEuler ? $trafficLightEuler->getValue() : 'Pas de donnée',
-                'grade_euler'      => $gradeEuler ? $gradeEuler->getValue() : 'Pas de donnée',
-                'score_infolegale' => $scoreInfolegale ? $scoreInfolegale->getValue() : 'Pas de donnée',
+                'prescore'         => $projectNote && $projectNote->getPreScoring() ? $projectNote->getPreScoring() : 'Pas de donnée',
+                'score_altares'    => $ratings[CompanyRating::TYPE_ALTARES_SCORE_20] ?? 'Pas de donnée',
+                'traffic_light'    => $ratings[CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT] ?? 'Pas de donnée',
+                'grade_euler'      => $ratings[CompanyRating::TYPE_EULER_HERMES_GRADE] ?? 'Pas de donnée',
+                'score_infolegale' => $ratings[CompanyRating::TYPE_INFOLEGALE_SCORE] ?? 'Pas de donnée',
                 'turnover'         => $project->getCaDeclaraClient(),
                 'own_funds'        => $project->getFondsPropresDeclaraClient(),
                 'operation_income' => $project->getResultatExploitationDeclaraClient(),
                 'is_rcs'           => empty($company->getRcs()) ? 'Non' : 'Oui',
                 'naf'              => $company->getCodeNaf(),
-                'status'           => $status ? $status->getLabel() : '',
+                'status'           => isset($indexedProjectStatus[$project->getStatus()]) ?? '',
                 'common_check'     => $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel()
             ];
-
-            $extraction[] = $row;
         }
 
         return $extraction;
@@ -184,7 +174,5 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             ->addRow($header)
             ->addRows($data)
             ->close();
-
-        die;
     }
 }
