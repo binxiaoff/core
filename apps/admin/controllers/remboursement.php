@@ -497,9 +497,14 @@ class remboursementController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
             $switch        = $this->request->request->getBoolean('switch');
-            $projectId     = filter_var($this->params[0], FILTER_VALIDATE_INT);
 
-            if (null === $switch || empty($this->params[0]) || false === $projectId) {
+            if (null === $switch || empty($this->params[0])) {
+                $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
+            }
+
+            $projectId = filter_var($this->params[0], FILTER_VALIDATE_INT);
+
+            if (false === $projectId) {
                 $this->sendAjaxResponse(false, null, ['paramètres invalides.']);
             }
 
