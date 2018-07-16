@@ -665,7 +665,9 @@ class LenderProfileController extends Controller
             return null;
         }
 
-        return $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+        $formBuilder = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+
+        return $formBuilder->getForm();
     }
 
     /**
