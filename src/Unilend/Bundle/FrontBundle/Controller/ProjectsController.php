@@ -534,7 +534,7 @@ class ProjectsController extends Controller
 
             $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
             $bidAmount = floor($post['amount']); // the cents is not allowed
-            $rate      = $post['interest'];
+            $rate      = empty($post['interest']) ? 0.0 : (float) $post['interest'];
 
             if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-invalid-security-token')]);
