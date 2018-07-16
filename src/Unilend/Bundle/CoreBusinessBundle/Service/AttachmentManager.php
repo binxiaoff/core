@@ -20,14 +20,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class AttachmentManager
 {
-    const PHPOFFICE_TEMPORARY_DIR = '/tmp/phpoffice';
-
     /** @var EntityManager */
     private $entityManager;
     /** @var Filesystem */
     private $filesystem;
     /** @var string */
     private $uploadRootDirectory;
+    /** @var string */
+    private $tmpDirectory;
     /** @var string */
     private $rootDirectory;
     /** @var LoggerInterface */
@@ -39,14 +39,16 @@ class AttachmentManager
      * @param EntityManager   $entityManager
      * @param Filesystem      $filesystem
      * @param string          $uploadRootDirectory
+     * @param string          $tmpDirectory
      * @param string          $rootDirectory
      * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $rootDirectory, LoggerInterface $logger)
+    public function __construct(EntityManager $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDirectory, LoggerInterface $logger)
     {
         $this->entityManager       = $entityManager;
         $this->filesystem          = $filesystem;
         $this->uploadRootDirectory = $uploadRootDirectory;
+        $this->tmpDirectory        = $tmpDirectory;
         $this->rootDirectory       = $rootDirectory;
         $this->logger              = $logger;
     }
@@ -196,8 +198,17 @@ class AttachmentManager
             \PhpOffice\PhpWord\Settings::setPdfRendererPath($this->rootDirectory . '/../vendor/dompdf/dompdf');
             \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
 
+            switch (pathinfo($attachment->getOriginalName(), PATHINFO_EXTENSION)) {
+                case 'doc':
+                    $format = 'MsDoc';
+                    break;
+                case 'docx':
+                default:
+                    $format = 'Word2007';
+            }
+
             $path     = $this->getFullPath($attachment);
-            $document = PhpWordIOFactory::load($path);
+            $document = PhpWordIOFactory::load($path, $format);
 
             /** @var PhpWordDomPDF $writer */
             $writer = PhpWordIOFactory::createWriter($document, 'PDF');
@@ -221,15 +232,11 @@ class AttachmentManager
     private function outputOffice(Attachment $attachment, $writer): void
     {
         try {
-            if (false === $this->filesystem->exists(self::PHPOFFICE_TEMPORARY_DIR)) {
-                $this->filesystem->mkdir(self::PHPOFFICE_TEMPORARY_DIR);
-            }
-
-            $temporaryPath = self::PHPOFFICE_TEMPORARY_DIR . '/' . uniqid() . '.pdf';
+            $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
             $path          = $this->getFullPath($attachment);
 
             /** @var PhpSpreadsheetMpdf|PhpWordDomPDF $writer */
-            $writer->setTempDir(self::PHPOFFICE_TEMPORARY_DIR);
+            $writer->setTempDir($this->tmpDirectory);
             $writer->save($temporaryPath);
 
             $fileName = pathinfo($path, PATHINFO_FILENAME) . '.pdf';
