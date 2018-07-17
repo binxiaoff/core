@@ -291,7 +291,7 @@ class SponsorshipManager
      */
     public function cancelSponsorReward(Sponsorship $sponsorship): bool
     {
-        $sponsorWallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
+        $sponsorWallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($sponsorship->getIdClientSponsor(), WalletType::LENDER);
         $rewardCancelSubType = $this->entityManager->getRepository('UnilendCoreBusinessBundle:OperationSubType')
             ->findOneBy(['label' => OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR]);
 
@@ -300,7 +300,7 @@ class SponsorshipManager
                 'idSponsorship'  => $sponsorship->getId(),
                 'idSubType'      => $rewardCancelSubType
             ])
-            && 0 < $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship)
+            && 0 === bccomp($sponsorship->getIdCampaign()->getAmountSponsor(), $this->getUnusedSponsorRewardAmountFromSponsorship($sponsorship), 2)
             && $sponsorWallet->getCommittedBalance() < $sponsorship->getIdCampaign()->getAmountSponsor()
             && $sponsorWallet->getAvailableBalance() > $sponsorship->getIdCampaign()->getAmountSponsor()
         ) {
@@ -326,7 +326,7 @@ class SponsorshipManager
         if (
             null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation')
                 ->findOneBy(['idWalletDebtor' => $sponseeWallet, 'idSponsorship' => $sponsorship->getId(), 'idSubType' => $rewardCancelSubType])
-            && 0 < $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee())
+            && 0 === bccomp($sponsorship->getIdCampaign()->getAmountSponsor(), $this->getUnusedSponseeRewardAmount($sponsorship->getIdClientSponsee()), 2)
             && $sponseeWallet->getCommittedBalance() < $sponsorship->getIdCampaign()->getAmountSponsor()
             && $sponseeWallet->getAvailableBalance() > $sponsorship->getIdCampaign()->getAmountSponsor()
         ){
