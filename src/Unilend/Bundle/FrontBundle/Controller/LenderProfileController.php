@@ -2,6 +2,7 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
     Method, Security
@@ -15,16 +16,17 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
+    AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    LocationManager, NewsletterManager
+    ClientDataHistoryManager, LocationManager, NewsletterManager
 };
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
     BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
 };
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
+use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
 {
@@ -60,12 +62,12 @@ class LenderProfileController extends Controller
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
-            $mainAddressForm     = $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+            $mainAddressForm     = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
             $mainAddressForm
                 ->add('noUsPerson', CheckboxType::class, ['data' => true !== $client->getUsPerson(), 'required' => false])
                 ->add('housedByThirdPerson', CheckboxType::class, ['required' => false]);
 
-            $postalAddressForm = $formManager->getClientAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $postalAddressForm = $formManager->getClientAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
@@ -79,8 +81,8 @@ class LenderProfileController extends Controller
                 ->add('company', CompanyIdentityType::class, ['data' => $company]);
             $identityFormBuilder->get('company')->remove('siren');
 
-            $mainAddressForm   = $formManager->getCompanyAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
-            $postalAddressForm = $formManager->getCompanyAddressForm($postalAddress, AddressType::TYPE_POSTAL_ADDRESS);
+            $mainAddressForm   = $formManager->getCompanyAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
+            $postalAddressForm = $formManager->getCompanyAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         }
@@ -110,7 +112,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $mainAddressForm, $request->files, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $mainAddressForm, AddressType::TYPE_MAIN_ADDRESS, $lastModifiedMainAddress);
                 }
 
                 if ($isValid) {
@@ -123,7 +125,7 @@ class LenderProfileController extends Controller
                 if ($client->isNaturalPerson()) {
                     $isValid = $formHandler->handlePersonAddress($client, $unattachedClient, $postalAddressForm, $request->files, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 } else {
-                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS);
+                    $isValid = $formHandler->handleCompanyAddress($company, $postalAddressForm, AddressType::TYPE_POSTAL_ADDRESS, $postalAddress);
                 }
 
                 if ($isValid) {
@@ -219,7 +221,7 @@ class LenderProfileController extends Controller
         if (
             $form->isSubmitted() &&
             $form->isValid() &&
-            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files, $bankAccount)
+            $formHandler->handleBankDetailsForm($client, $unattachedClient, $form->get('bankAccount'), $request->files)
         ) {
             $this->addFlash('bankInfoUpdateSuccess', $this->get('translator')->trans('lender-profile_fiscal-tab-bank-info-update-ok'));
             return $this->redirectToRoute('lender_profile_fiscal_information');
@@ -250,7 +252,7 @@ class LenderProfileController extends Controller
                     'documents'   => $ifuRepository->findBy(['idClient' => $client->getIdClient(), 'statut' => Ifu::STATUS_ACTIVE], ['annee' => 'DESC']),
                     'amounts'     => $this->getFiscalBalanceAndOwedCapital($client),
                     'rib'         => $bankAccount ? $bankAccount->getAttachment() : '',
-                    'fundsOrigin' => $this->getFundsOrigin($client->getType())
+                    'fundsOrigin' => $this->get('unilend.service.lender_manager')->getFundsOrigins($client->getType())
                 ]
             ],
         ];
@@ -663,7 +665,9 @@ class LenderProfileController extends Controller
             return null;
         }
 
-        return $formManager->getClientAddressForm($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+        $formBuilder = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+
+        return $formBuilder->getForm();
     }
 
     /**
@@ -965,32 +969,6 @@ class LenderProfileController extends Controller
             'balance'     => null !== $history ? bcadd($history->getAvailableBalance(), $history->getCommittedBalance(), 2) : 0,
             'owedCapital' => $operationRepository->getRemainingDueCapitalAtDate($client->getIdClient(), $lastYear)
         ];
-    }
-
-    /**
-     * @param int $clientType
-     *
-     * @return array
-     */
-    private function getFundsOrigin(int $clientType): array
-    {
-        switch ($clientType) {
-            case Clients::TYPE_PERSON:
-            case Clients::TYPE_PERSON_FOREIGNER:
-                $settingName = 'Liste deroulante origine des fonds';
-                break;
-            default:
-                $settingName = 'Liste deroulante origine des fonds societe';
-                break;
-        }
-
-        $fundsOriginList = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => $settingName])
-            ->getValue();
-        $fundsOriginList = explode(';', $fundsOriginList);
-
-        return array_combine(range(1, count($fundsOriginList)), array_values($fundsOriginList));
     }
 
     /**

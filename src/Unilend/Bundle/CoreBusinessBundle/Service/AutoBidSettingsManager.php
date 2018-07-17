@@ -17,8 +17,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  */
 class AutoBidSettingsManager
 {
-    const AUTOBID_TERMS_OF_SALES = 53;
-
     /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
     /** @var EntityManager */
@@ -131,13 +129,6 @@ class AutoBidSettingsManager
             return false;
         }
 
-        $autobidGlobalSetting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => 'Auto-bid global switch']);
-
-        if (null === $autobidGlobalSetting) {
-            return false;
-        }
-
         foreach ($this->productManager->getAvailableProducts(true) as $product) {
             $autobidContracts = $this->productManager->getAutobidEligibleContracts($product);
             foreach ($autobidContracts as $contract) {
@@ -145,13 +136,6 @@ class AutoBidSettingsManager
                     return true;
                 }
             }
-        }
-
-        if (
-            $autobidGlobalSetting->getValue() && $this->termsOfSaleManager->isAcceptedVersion($client, self::AUTOBID_TERMS_OF_SALES)
-            || $this->clientManager->isBetaTester($client)
-        ) {
-            return true;
         }
 
         return false;
@@ -305,7 +289,7 @@ class AutoBidSettingsManager
         $this->entityManager->getConnection()->beginTransaction();
 
         try {
-            foreach ($projectPeriodRepository->findBy(['status' => \project_period::STATUS_ACTIVE]) as $projectPeriod) {
+            foreach ($projectPeriodRepository->findBy(['status' => ProjectPeriod::STATUS_ACTIVE]) as $projectPeriod) {
                 foreach ($riskEvaluations as $riskEvaluation) {
                     $this->saveSetting($client, $riskEvaluation, $projectPeriod, $rate, $amount);
                     $this->activateDeactivateSetting($client, $riskEvaluation, $projectPeriod->getIdPeriod(), Autobid::STATUS_ACTIVE);
@@ -408,7 +392,6 @@ class AutoBidSettingsManager
      * @param Clients $client
      *
      * @return bool
-     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function isOn(Clients $client): bool
     {
@@ -416,7 +399,13 @@ class AutoBidSettingsManager
             return false;
         }
 
-        return (bool) $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
+        $setting = $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
+
+        if (null === $setting) {
+            return false;
+        }
+
+        return (bool) $setting;
     }
 
     /**
@@ -466,16 +455,18 @@ class AutoBidSettingsManager
      */
     public function getRateRange(?string $evaluation = null, ?int $periodId = null)
     {
-        /** @var \project_rate_settings $projectRateSettings */
-        $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+        $projectRateSettingsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRateSettings');
 
         if ($evaluation === null || $periodId === null) {
-            $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+            $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
         } else {
-            $projectRates      = $projectRateSettings->getSettings($evaluation, $periodId);
-            $projectMinMaxRate = array_shift($projectRates);
+            /** @var \project_rate_settings $projectRateSettings */
+            $projectRateSettings = $this->entityManagerSimulator->getRepository('project_rate_settings');
+            $projectRates        = $projectRateSettings->getSettings($evaluation, $periodId);
+            $projectMinMaxRate   = array_shift($projectRates);
+
             if (empty($projectMinMaxRate)) {
-                $projectMinMaxRate = $projectRateSettings->getGlobalMinMaxRate();
+                $projectMinMaxRate = $projectRateSettingsRepository->getGlobalMinMaxRate();
             }
         }
 

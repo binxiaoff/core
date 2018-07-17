@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, Projects, WalletType
+    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, WalletType
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
@@ -261,7 +261,7 @@ class AutolendController extends Controller
             return ['error' => [$translator->trans('autolend_error-message-advanced-settings-failed')]];
         }
 
-        foreach ($projectPeriodRepository->findBy(['status' => \project_period::STATUS_ACTIVE]) as $period) {
+        foreach ($projectPeriodRepository->findBy(['status' => ProjectPeriod::STATUS_ACTIVE]) as $period) {
             $autoBidPeriods[] = $period->getIdPeriod();
         }
 
@@ -425,7 +425,7 @@ class AutolendController extends Controller
 
         foreach ($projectPeriods as $period) {
             foreach ($availableRisks as $risk) {
-                $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . \project_rate_settings::STATUS_ACTIVE);
+                $rateSetting = $projectRateSettings->select('id_period = ' . $period['id_period'] . ' AND evaluation = "' . $risk . '" AND status = ' . ProjectRateSettings::STATUS_ACTIVE);
                 $key         = $period['min'] . $risk;
 
                 if (false === array_key_exists($key, $autobidUserSettings)) {

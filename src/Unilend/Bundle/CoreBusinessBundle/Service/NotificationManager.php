@@ -74,7 +74,7 @@ class NotificationManager
                 $sent = false;
             }
 
-            $this->createEmailNotification($notification->id_notification, $mailType, $clientId, $walletBalanceHistory, $projectId, $loanId, $sent);
+            $this->createEmailNotification($mailType, $clientId, $notification->id_notification, $walletBalanceHistory, $projectId, $loanId, $sent);
         }
     }
 
@@ -108,9 +108,9 @@ class NotificationManager
     }
 
     /**
-     * @param int|null                  $notificationId
      * @param int                       $mailType
      * @param int                       $clientId
+     * @param int|null                  $notificationId
      * @param WalletBalanceHistory|null $walletBalanceHistory
      * @param int|null                  $projectId
      * @param int|null                  $loanId
@@ -121,15 +121,15 @@ class NotificationManager
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function createEmailNotification(
-        int $notificationId = null,
         int $mailType,
         int $clientId,
-        WalletBalanceHistory $walletBalanceHistory = null,
-        int $projectId = null,
-        int $loanId = null,
+        ?int $notificationId = null,
+        ?WalletBalanceHistory $walletBalanceHistory = null,
+        ?int $projectId = null,
+        ?int $loanId = null,
         bool $sent = false,
-        \DateTime $notificationDate = null
-    ) : ClientsGestionMailsNotif
+        ?\DateTime $notificationDate = null
+    ): ClientsGestionMailsNotif
     {
         $emailNotification = new ClientsGestionMailsNotif();
         $emailNotification

@@ -1,7 +1,10 @@
 <?php
 
+use Box\Spout\{
+    Common\Type, Writer\WriterFactory
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
+    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\{
@@ -209,7 +212,7 @@ class preteursController extends bootstrap
             }
 
             $this->solde        = $wallet->getAvailableBalance();
-            $this->soldeRetrait = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]);
+            $this->soldeRetrait = $lenderOperationsManager->getTotalWithdrawalAmount($wallet);
 
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');
@@ -679,7 +682,7 @@ class preteursController extends bootstrap
         $lendersImpositionHistory = $this->loadData('lenders_imposition_history');
         try {
             $aResult = $lendersImpositionHistory->getTaxationHistory($lenderId);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             /** @var \Psr\Log\LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->error('Could not get lender taxation history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId]);
@@ -699,7 +702,8 @@ class preteursController extends bootstrap
             ClientsStatus::STATUS_MODIFICATION,
             ClientsStatus::STATUS_COMPLETENESS_REPLY,
             ClientsStatus::STATUS_COMPLETENESS,
-            ClientsStatus::STATUS_COMPLETENESS_REMINDER
+            ClientsStatus::STATUS_COMPLETENESS_REMINDER,
+            ClientsStatus::STATUS_SUSPENDED
         ];
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
@@ -1572,41 +1576,30 @@ class preteursController extends bootstrap
             && is_numeric($this->params[0])
             && null !== $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->params[0], WalletType::LENDER)
         ) {
-            $lenderBids = $bids->getBidsByLenderAndDates($wallet);
+            try {
+                $lenderBids = $bids->getBidsByLenderAndDates($wallet);
+                $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+                $filename   = 'bids_client_' . $wallet->getIdClient()->getIdClient() . '.xlsx';
 
-            PHPExcel_Settings::setCacheStorageMethod(
-                PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-                ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-            );
+                $writer = WriterFactory::create(Type::XLSX);
+                $writer
+                    ->openToBrowser($filename)
+                    ->addRow($header)
+                    ->addRows($lenderBids)
+                    ->close();
 
-            $header      = ['Id projet', 'Id bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
-            $document    = new PHPExcel();
-            $activeSheet = $document->setActiveSheetIndex(0);
+                die;
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('Un  exception occurred during export of lender bids for client ' . $this->params[0] . '. Message: ' . $exception->getMessage(), [
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'id_client' => $this->params[0]
+                ]);
 
-            foreach ($header as $index => $columnName) {
-                $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+                echo 'Une erreur est survenue. ';
             }
-
-            foreach ($lenderBids as $rowIndex => $row) {
-                $colIndex = 0;
-                foreach ($row as $cellValue) {
-                    if (6 === $colIndex) {
-                        $cellValue = number_format($cellValue, 1, ',', '');
-                    }
-                    $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
-                }
-            }
-
-            header('Content-Type: text/csv');
-            header('Content-Disposition: attachment;filename=bids_client_' . $wallet->getIdClient()->getIdClient() . '.csv');
-            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-            header('Expires: 0');
-
-            /** @var \PHPExcel_Writer_CSV $writer */
-            $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
-            $writer->setUseBOM(true);
-            $writer->setDelimiter(';');
-            $writer->save('php://output');
         }
     }
 

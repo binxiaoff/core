@@ -171,10 +171,11 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param array $status
+     * @param bool  $excludeUsPerson
      *
      * @return Clients[]
      */
-    public function getLendersInStatus(array $status)
+    public function getLendersInStatus(array $status, bool $excludeUsPerson): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
@@ -185,6 +186,10 @@ class ClientsRepository extends EntityRepository
             ->andWhere('wt.label = :lender')
             ->setParameter('status', $status, Connection::PARAM_INT_ARRAY)
             ->setParameter('lender', WalletType::LENDER);
+
+        if ($excludeUsPerson) {
+            $queryBuilder->andWhere('c.usPerson IS NULL OR c.usPerson = 0');
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }

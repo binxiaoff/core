@@ -48,7 +48,6 @@ class LenderDashboardController extends Controller
         $entityManager               = $this->get('doctrine.orm.entity_manager');
         $walletRepository            = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
-        $operationRepository         = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
 
         /** @var Wallet $wallet */
         $wallet          = $walletRepository->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
@@ -122,7 +121,22 @@ class LenderDashboardController extends Controller
         $quarterAxisData        = $this->getQuarterAxis($lenderRepaymentsData);
         $yearAxisData           = $this->getYearAxis($repaymentDateRange);
 
-        $depositedAmount  = bcsub($operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]), $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]), 2);
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
+        try {
+            $provisionAmount = $lenderOperationsManager->getTotalProvisionAmount($wallet);
+            $withdrawAmount  = $lenderOperationsManager->getTotalWithdrawalAmount($wallet);
+            $depositedAmount = round(bcsub($provisionAmount, $withdrawAmount, 4), 2);
+        } catch (\Exception $exception) {
+            $depositedAmount = 0;
+            $this->get('logger')->error('An error occurred when try to get lender deposite amount. Error: ' . $exception->getMessage(), [
+                'id_wallet' => $wallet->getId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
         $irrData          = $this->getIRRDetailsForUserLevelWidget();
         $hasBids          = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countByClientInPeriod($wallet->getAdded(), new \DateTime('NOW'), $wallet->getIdClient()->getIdClient());
         $hasAcceptedLoans = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);

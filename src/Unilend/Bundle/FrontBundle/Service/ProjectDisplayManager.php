@@ -182,15 +182,16 @@ class ProjectDisplayManager
      */
     public function getProjectData(\projects $project, BaseUser $user = null)
     {
-        /** @var \bids $bids */
-        $bids = $this->entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManagerSimulator->getRepository('projects_status_history');
+        /** @var \bids $bids */
+        $bids          = $this->entityManagerSimulator->getRepository('bids');
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
 
-        $projectData   = $this->getBaseData($project);
-        $alreadyFunded = $bids->getSoldeBid($project->id_project);
+        $projectData         = $this->getBaseData($project);
+        $alreadyFunded       = $bidRepository->getProjectTotalAmount($project->id_project);
         $projectRateSettings = $this->bidManager->getProjectRateRange($project);
 
         $projectData['minRate']      = (float) $projectRateSettings['rate_min'];
@@ -200,7 +201,7 @@ class ProjectDisplayManager
         if ($alreadyFunded >= $project->amount) {
             $projectData['costFunded']    = $project->amount;
             $projectData['percentFunded'] = 100;
-            $projectData['maxValidRate']  = $bids->getProjectMaxRate($project);
+            $projectData['maxValidRate']  = $bidRepository->getProjectMaxRate($project->id_project);
         } else {
             $projectData['costFunded']    = $alreadyFunded;
             $projectData['percentFunded'] = bcdiv(bcmul($alreadyFunded, 100), $project->amount, 1);

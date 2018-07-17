@@ -534,7 +534,7 @@ class ProjectsController extends Controller
 
             $wallet    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
             $bidAmount = floor($post['amount']); // the cents is not allowed
-            $rate      = $post['interest'];
+            $rate      = empty($post['interest']) ? 0.0 : (float) $post['interest'];
 
             if ($request->getSession()->get('bidToken') !== $post['bidToken']) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-invalid-security-token')]);
@@ -635,14 +635,8 @@ class ProjectsController extends Controller
         /** @var BaseUser $user */
         $user = $this->getUser();
 
-        $template['canSeeAutobid'] = false;
-
         if ($user instanceof UserLender) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-            $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
             $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
-
-            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($wallet->getIdClient());
 
             array_walk($template['bids'], function(&$bid) use ($wallet) {
                 if ($bid['lenderId'] == $wallet->getId()) {

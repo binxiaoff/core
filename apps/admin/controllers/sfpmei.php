@@ -190,6 +190,8 @@ class sfpmeiController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
         if (
             empty($this->params[0])
@@ -240,40 +242,30 @@ class sfpmeiController extends bootstrap
                 $this->hideDecoration();
                 $this->autoFireView = false;
 
-                PHPExcel_Settings::setCacheStorageMethod(
-                    PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
-                    ['memoryCacheSize' => '2048MB', 'cacheTime' => 1200]
-                );
+                try {
+                    $lenderBids = $this->bids->getBidsByLenderAndDates($this->wallet);
+                    $header     = ['ID projet', 'ID bid', 'Client', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
+                    $filename   = 'bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.csv';
 
-                $document    = new PHPExcel();
-                $activeSheet = $document->setActiveSheetIndex(0);
-                $header      = ['ID projet', 'ID bid', 'Date bid', 'Statut bid', 'Montant', 'Taux'];
-                $lenderBids  = $this->bids->getBidsByLenderAndDates($this->wallet);
+                    $writer = WriterFactory::create(Type::CSV);
+                    $writer
+                        ->openToBrowser($filename)
+                        ->addRow($header)
+                        ->addRows($lenderBids)
+                        ->close();
 
-                foreach ($header as $index => $columnName) {
-                    $activeSheet->setCellValueByColumnAndRow($index, 1, $columnName);
+                    die;
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error('Un  exception occurred during export of lender bids for client ' . $this->wallet->getIdClient()->getIdClient() . '. Message: ' . $exception->getMessage(), [
+                        'class'     => __CLASS__,
+                        'function'  => __FUNCTION__,
+                        'file'      => $exception->getFile(),
+                        'line'      => $exception->getLine(),
+                        'id_client' => $this->wallet->getIdClient()->getIdClient()
+                    ]);
+
+                    echo 'Une erreur est survenue. ';
                 }
-
-                foreach ($lenderBids as $rowIndex => $row) {
-                    $colIndex = 0;
-                    foreach ($row as $cellValue) {
-                        if (6 === $colIndex) {
-                            $cellValue = number_format($cellValue, 1, ',', '');
-                        }
-                        $activeSheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex + 2, $cellValue);
-                    }
-                }
-
-                header('Content-Type: text/csv');
-                header('Content-Disposition: attachment;filename=bids_client_' . $this->wallet->getIdClient()->getIdClient() . '.csv');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Expires: 0');
-
-                /** @var \PHPExcel_Writer_CSV $writer */
-                $writer = PHPExcel_IOFactory::createWriter($document, 'CSV');
-                $writer->setUseBOM(true);
-                $writer->setDelimiter(';');
-                $writer->save('php://output');
                 break;
             default:
                 $this->dataHistory   = $this->get(ClientDataHistoryManager::class)->getDataHistory($this->wallet->getIdClient());
@@ -297,8 +289,8 @@ class sfpmeiController extends bootstrap
                 }
                 $this->availableBalance               = $this->wallet->getAvailableBalance();
                 $this->firstDepositAmount             = null === $firstProvision ? 0 : $firstProvision->getAmount();
-                $this->totalDepositsAmount            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
-                $this->totalWithdrawsAmount           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_WITHDRAW]);
+                $this->totalDepositsAmount            = $lenderOperationsManager->getTotalProvisionAmount($this->wallet);
+                $this->totalWithdrawsAmount           = $lenderOperationsManager->getTotalWithdrawalAmount($this->wallet);
                 $this->totalRepaymentsAmount          = $this->echeanciers->getRepaidAmount(['id_lender' => $this->wallet->getId()]);
                 $this->totalGrowthInterestsAmount     = $this->echeanciers->getRepaidInterests(['id_lender' => $this->wallet->getId()]);
                 $this->totalRepaymentsNextMonthAmount = $this->echeanciers->getNextRepaymentAmountInDateRange($this->wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
@@ -877,11 +869,17 @@ class sfpmeiController extends bootstrap
 
         if (isset($this->params[0], $this->params[1]) && in_array($this->params[1], $allowedQueries)) {
             switch ($this->params[0]) {
+                case 'xls':
+                    $this->hideDecoration();
+                    $this->autoFireview = false;
+
+                    $this->exportResultAsXls($this->params[1]);
+                    break;
                 case 'csv':
                     $this->hideDecoration();
                     $this->autoFireview = false;
 
-                    $this->exportResult($this->params[1]);
+                    $this->exportResultAsCsv($this->params[1]);
                     break;
                 case 'html':
                 default:
@@ -945,7 +943,7 @@ class sfpmeiController extends bootstrap
      * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
      * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
      */
-    private function exportResult(int $queryId): void
+    private function exportResultAsXls(int $queryId): void
     {
         $this->hideDecoration();
         $this->autoFireview = false;
@@ -965,6 +963,35 @@ class sfpmeiController extends bootstrap
             $writer
                 ->openToBrowser($filename)
                 ->addRowWithStyle([$this->queries->name], $titleStyle)
+                ->addRow(array_keys($this->result[0]))
+                ->addRows($this->result)
+                ->close();
+        }
+
+        die;
+    }
+
+    /**
+     * @param int $queryId
+     *
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Common\Exception\InvalidArgumentException
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @throws \Box\Spout\Writer\Exception\WriterNotOpenedException
+     */
+    private function exportResultAsCsv(int $queryId): void
+    {
+        $this->hideDecoration();
+        $this->autoFireview = false;
+
+        $this->executeQuery($queryId);
+
+        if (is_array($this->result) && count($this->result) > 0) {
+            $filename = $this->bdd->generateSlug($this->queries->name) . '.csv';
+            $writer   = WriterFactory::create(Type::CSV);
+
+            $writer
+                ->openToBrowser($filename)
                 ->addRow(array_keys($this->result[0]))
                 ->addRows($this->result)
                 ->close();

@@ -1,0 +1,51 @@
+<section id="data-update-kbis-doc-view" role="tabpanel" class="lender-data-update-view collapse {% if kbis is not null %}in{% endif %}">
+    <div class="document-information-area">
+        {% if kbis is not null %}
+            {% trans with { '%upload_date%': kbis.added|localizeddate('short', 'none') } %} lender-data-update_kbis-doc-description {% endtrans %}
+        {% endif %}
+    </div>
+    <div class="btn-controls">
+        <button data-target="#data-update-kbis-doc-edit" role="button" data-toggle="collapse" data-parent="#data-update-kbis-doc-section" class="btn-default"
+                aria-controls="#data-update-kbis-doc-edit" aria-expanded="false" type="button">
+            <span class="icon fa-pencil-u32"></span>
+            <span class="label">{% trans %} lender-data-update_modify-button {% endtrans %}</span>
+        </button>
+        <button data-target="#panel-data-update-bank-account" role="button" data-toggle="collapse" data-parent="#data-update-section" class="btn-primary data-update-continue-btn"
+                aria-controls="#panel-data-update-bank-account" aria-expanded="false" type="button">
+            <span class="label">{% trans %} lender-data-update_continue-button {% endtrans %}</span>
+        </button>
+    </div>
+</section>
+
+<section id="data-update-kbis-doc-edit" role="tabpanel" class="lender-data-update-edit collapse {% if kbis is null %}in{% endif %}" data-formvalidation
+         data-formvalidation-notificationselem="#data-update-kbis-doc-edit-notifications">
+    <div id="data-update-kbis-doc-edit-notifications"></div>
+    <div class="row">
+        <div class="form-field">
+            <label>
+                {% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}
+                <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>
+            </label>
+
+            <div class="form-field file-domicile">
+                <div class="custom-input-file" id="form-profile-info-file-company-registration"
+                     data-formvalidation-input
+                     data-formvalidation-required='input[type="file"][name="company-registration"]'
+                     data-fileattach
+                     data-fileattach-inputname="company-registration"
+                     data-fileattach-maxfiles="1"
+                     data-fileattach-emptyfilelabel="{% trans %} lender-profile_information-tab-identity-section-company-registration {% endtrans %}"
+                     data-fileattach-fileremove="false">
+                </div><!-- /.ui-fileattach -->
+            </div><!-- /.form-field -->
+        </div><!-- /.form-field -->
+    </div><!-- /.row -->
+
+    <div class="btn-controls">
+        <button class="btn-default" role="button" data-toggle="collapse" data-target="#data-update-kbis-doc-view" data-parent="#data-update-kbis-doc-section"
+                aria-controls="#data-update-kbis-doc-view" aria-expanded="false" type="reset"
+                {% if kbis is null %}disabled{% endif %}>{% trans %} lender-data-update_cancel-button {% endtrans %}</button>
+        <button class="btn-primary lender-data-update-save-btn" role="button" data-parent="#data-update-kbis-doc-section"
+                aria-controls="#data-update-kbis-doc-view" aria-expanded="false" type="button">{% trans %} lender-data-update_save-button {% endtrans %}</button>
+    </div>
+</section><!-- /.data-update-kbis-doc-edit -->

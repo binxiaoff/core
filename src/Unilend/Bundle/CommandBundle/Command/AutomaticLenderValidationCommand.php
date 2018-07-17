@@ -2,18 +2,16 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\{
     InputInterface
 };
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Users, VigilanceRule
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
 
 class AutomaticLenderValidationCommand extends ContainerAwareCommand
 {
-
     protected function configure()
     {
         $this
@@ -23,6 +21,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        /** @var EntityManager $entityManager */
         $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
         $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
         $lenderValidationManager = $this->getContainer()->get('unilend.service.lender_validation_manager');
@@ -33,12 +32,7 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
         $userRepository   = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
 
         try {
-            $clientsToValidate = $clientDataClass->getClientsToAutoValidate(
-                [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
-                [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE]
-            );
-
-            foreach ($clientsToValidate as $clientData) {
+            foreach ($clientDataClass->getClientsToAutoValidate() as $clientData) {
                 $duplicates = [];
                 $client     = $clientRepository->find($clientData['id_client']);
                 $user       = $userRepository->find(Users::USER_ID_CRON);
@@ -46,14 +40,18 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
 
                 if (true !== $validation) {
                     $this->getContainer()->get('unilend.service.slack_manager')
-                        ->sendMessage('La validation automatique a détectée un client en double. Le client ' . $client->getIdClient() . ' est un doublon de ' . implode(', ', $duplicates), '#team-marketing');
+                        ->sendMessage('La validation automatique a détecté un client en double. Le client ' . $client->getIdClient() . ' est un doublon de ' . implode(', ', $duplicates), '#team-marketing');
                     continue;
                 }
             }
         } catch (\Exception $exception) {
             $logger = $this->getContainer()->get('monolog.logger.console');
-            $logger->error('Could not validate the lender. Exception message: ' . $exception->getMessage(),
-                ['class' => __CLASS__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'id_client' => isset($client) ? $client->getIdClient() : '']);
+            $logger->error('Could not validate the lender. Exception message: ' . $exception->getMessage(), [
+                'class'     => __CLASS__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine(),
+                'id_client' => isset($client) ? $client->getIdClient() : ''
+            ]);
         }
     }
 }

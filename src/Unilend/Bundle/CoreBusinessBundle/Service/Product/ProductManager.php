@@ -3,48 +3,35 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Product;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Product;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProductAttributeType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContract;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, Product, ProductAttributeType, Projects, UnderlyingContract
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\BidValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ClientValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\LenderValidator;
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\ProjectValidator;
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\Validator\{
+    BidValidator, ClientValidator, LenderValidator, ProjectValidator
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 abstract class ProductManager
 {
     /** @var EntityManagerSimulator */
     protected $entityManagerSimulator;
-
     /** @var ProjectValidator */
     protected $projectValidator;
-
     /** @var BidValidator */
     protected $bidValidator;
-
     /** @var ClientValidator */
     protected $clientValidator;
-
     /** @var LenderValidator */
     protected $lenderValidator;
-
     /** @var ProductAttributeManager */
     protected $productAttributeManager;
-
     /** @var ContractManager */
     protected $contractManager;
-
     /** @var  EntityManager */
     protected $entityManager;
 
     /**
-     * ProductManager constructor.
-     *
      * @param EntityManagerSimulator  $entityManagerSimulator
      * @param ProjectValidator        $projectValidator
      * @param BidValidator            $bidValidator
@@ -126,26 +113,26 @@ abstract class ProductManager
     }
 
     /**
-     * @param Clients|null       $client When it's null, it's an anonymous client (logout)
-     * @param Projects|\projects $project
+     * @param Clients|null $client null corresponds to an anonymous client (logged out)
+     * @param Projects     $project
      *
-     * @return mixed
+     * @return array
      */
-    public function checkClientEligibility(Clients $client = null, $project)
+    public function checkClientEligibility(?Clients $client = null, Projects $project): array
     {
-        $project = $this->convertProject($project);
-
         return $this->clientValidator->validate($client, $project);
     }
 
     /**
-     * @param Clients   $client
-     * @param \projects $project
+     * @param Clients|null       $client
+     * @param Projects|\projects $project
      *
      * @return bool
      */
-    public function isClientEligible(Clients $client = null, \projects $project)
+    public function isClientEligible(?Clients $client = null, $project): bool
     {
+        $project = $this->convertProject($project);
+
         return 0 === count($this->checkClientEligibility($client, $project));
     }
 
@@ -255,16 +242,20 @@ abstract class ProductManager
     abstract public function getAvailableProducts();
 
     /**
-     * @param \product $product
+     * @param \product|int $product
      *
      * @return array
      */
-    public function getAvailableContracts(\product $product)
+    public function getAvailableContracts($product)
     {
+        if ($product instanceof \product) {
+            $product = $product->id_product;
+        }
+
         /** @var \product_underlying_contract $productContract */
         $productContract = $this->entityManagerSimulator->getRepository('product_underlying_contract');
 
-        return $productContract->getUnderlyingContractsByProduct($product->id_product);
+        return $productContract->getUnderlyingContractsByProduct($product);
     }
 
     /**

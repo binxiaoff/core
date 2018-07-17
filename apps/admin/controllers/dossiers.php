@@ -2,11 +2,10 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Companies, CompanyAddress, Echeanciers, Loans, MailTemplates, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects,
-    ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
+    AddressType, BorrowingMotive, Companies, CompanyAddress, Echeanciers, Loans, Partner, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ProjectManager, TermsOfSaleManager, WireTransferOutManager
+    BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager
 };
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
@@ -102,7 +101,7 @@ class dossiersController extends bootstrap
 
         $this->iCountProjects = isset($this->lProjects) && is_array($this->lProjects) ? array_shift($this->lProjects) : null;
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $backOfficeUserManager */
+        /** @var BackOfficeUserManager $backOfficeUserManager */
         $backOfficeUserManager    = $this->get('unilend.service.back_office_user_manager');
         $this->isRiskUser         = $backOfficeUserManager->isUserGroupRisk($this->userEntity);
         $this->hasRepaymentAccess = $backOfficeUserManager->isGrantedZone($this->userEntity, Zones::ZONE_LABEL_REPAYMENT);
@@ -155,7 +154,7 @@ class dossiersController extends bootstrap
         $beneficialOwnerManager = $this->get('unilend.service.beneficial_owner_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
         $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         $this->beneficialOwnerDeclaration = null;
@@ -200,6 +199,7 @@ class dossiersController extends bootstrap
                     'line'       => $exception->getLine()
                 ]);
             }
+            $this->isSirenEditable = $this->canEditSiren();
 
             if (
                 $this->projects->status <= ProjectsStatus::COMMERCIAL_REVIEW
@@ -253,7 +253,7 @@ class dossiersController extends bootstrap
             $this->longitude = null === $this->companyMainAddress ? 0 : (float) $this->companyMainAddress->getLongitude();
 
             $this->aAnnualAccountsDates = [];
-            $userRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
+            $userRepository             = $entityManager->getRepository('UnilendCoreBusinessBundle:Users');
             /** @var \Doctrine\Common\Collections\ArrayCollection analysts */
             $this->analysts = $userManager->getAnalysts();
             if (false === empty($this->projects->id_analyste) && $currentAnalyst = $userRepository->find($this->projects->id_analyste)) {
@@ -267,9 +267,9 @@ class dossiersController extends bootstrap
                     $this->salesPersons[] = $currentSalesPerson;
                 }
             }
-           $this->projectComments      = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
+            $this->projectComments    = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsComments')
                 ->findBy(['idProject' => $this->projects->id_project], ['added' => 'DESC']);
-            $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
+            $this->aAllAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             $this->possibleProjectStatus = $projectStatusManager->getPossibleStatus($this->projectEntity);
             if ($this->projectEntity->getStatus()) {
@@ -651,6 +651,14 @@ class dossiersController extends bootstrap
                     $projectStatusManager->addProjectStatus($this->userEntity, $_POST['status'], $this->projects);
                 }
 
+                if ($this->isSirenEditable) {
+                    // Save any changes made until now and refresh objects data
+                    $this->projects->update();
+                    $this->companies->update();
+
+                    $this->setFranchiseeSiren();
+                }
+
                 $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec succès';
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -743,7 +751,7 @@ class dossiersController extends bootstrap
                 $headquarters->setName('Siège');
                 $this->agencies[] = $headquarters;
             }
-            usort($this->agencies, function($first, $second) {
+            usort($this->agencies, function ($first, $second) {
                 return strcasecmp($first->getName(), $second->getName());
             });
 
@@ -762,7 +770,7 @@ class dossiersController extends bootstrap
             ) {
                 $this->submitters[] = $this->projectEntity->getIdClientSubmitter();
             }
-            usort($this->submitters, function($first, $second) {
+            usort($this->submitters, function ($first, $second) {
                 return strcasecmp($first->getPrenom(), $second->getPrenom());
             });
 
@@ -830,6 +838,48 @@ class dossiersController extends bootstrap
         }
     }
 
+    /**
+     * @return bool
+     */
+    private function canEditSiren(): bool
+    {
+        /** @var BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        if (
+            empty($this->companies->siren)
+            && BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION == $this->projects->id_borrowing_motive
+            && ($userManager->isGrantedRisk($this->userEntity) || $userManager->isGrantedSales($this->userEntity))
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function setFranchiseeSiren(): void
+    {
+        /** @var ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $siren                 = $projectRequestManager->validateSiren($this->request->request->get('siren', ''));
+
+        if ($siren) {
+            $this->companies->siren = $siren;
+            $this->companies->update();
+
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->companies->id_company);
+            // Refresh entity data because it will be used further in checkProjectRisk
+            $entityManager->refresh($company);
+
+            $projectRequestManager->checkProjectRisk($this->projectEntity, $this->userEntity->getIdUser());
+
+            // Reload the data projects to refresh information that may have been modified via doctrine entity
+            $this->projects->get($this->projects->id_project);
+        }
+    }
+
     private function transferFunds(Projects $project)
     {
         if ($project->getStatus() >= ProjectsStatus::REMBOURSEMENT) {
@@ -851,7 +901,7 @@ class dossiersController extends bootstrap
      */
     private function isFundsCommissionRateEditable()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         return (
@@ -1324,7 +1374,7 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager $partnerManager */
         $partnerManager = $this->get('unilend.service.partner_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
         /** @var \clients clients */
@@ -1373,7 +1423,7 @@ class dossiersController extends bootstrap
                 $project = $projectRequestManager->newProject($this->userEntity, $defaultPartner, ProjectsStatus::INCOMPLETE_REQUEST, null, $this->params[1]);
                 $this->users_history->histo(7, 'dossier create', $this->userEntity->getIdUser(), serialize(['id_project' => $project->getIdProject()]));
 
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+                /** @var ProjectRequestManager $projectRequestManager */
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
                 $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser());
 
@@ -2421,7 +2471,7 @@ class dossiersController extends bootstrap
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->projects->id_target_company);
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager $projectRequestManager */
+        /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $eligibility           = $projectRequestManager->checkCompanyRisk($company, $_SESSION['user']['id_user']);
 
@@ -2819,7 +2869,7 @@ class dossiersController extends bootstrap
     {
         $projectId = $this->request->request->getInt('project-id');
         $includeUnilendCommission =  $this->request->request->getboolean('include-unilend-commission');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
@@ -2846,7 +2896,7 @@ class dossiersController extends bootstrap
 
     public function _projets_avec_retard()
     {
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
 
         if (

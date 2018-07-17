@@ -49,8 +49,6 @@ EOF
         $loan = $entityManagerSimulator->getRepository('loans');
         /** @var \projects $project */
         $project = $entityManagerSimulator->getRepository('projects');
-        /** load for class constants */
-        $entityManagerSimulator->getRepository('projects_status');
 
         $status = [
             ProjectsStatus::REMBOURSEMENT,

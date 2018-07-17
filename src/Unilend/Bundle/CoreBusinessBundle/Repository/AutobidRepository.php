@@ -3,12 +3,13 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\ORMException;
+use Doctrine\ORM\{
+    EntityRepository, ORMException
+};
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Autobid;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectPeriod;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Autobid, ClientSettingType, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, Wallet, WalletType
+};
 
 class AutobidRepository extends EntityRepository
 {
@@ -31,9 +32,9 @@ class AutobidRepository extends EntityRepository
             ->andWhere('a.status = :autobidSettingActive')
             ->setParameter('autobidSettingActive', Autobid::STATUS_ACTIVE)
             ->andWhere('pp.status = :projectPeriodActive')
-            ->setParameter('projectPeriodActive', \project_period::STATUS_ACTIVE)
+            ->setParameter('projectPeriodActive', ProjectPeriod::STATUS_ACTIVE)
             ->andWhere('prs.status = :projectRateSettingActive')
-            ->setParameter('projectRateSettingActive', \project_rate_settings::STATUS_ACTIVE)
+            ->setParameter('projectRateSettingActive', ProjectRateSettings::STATUS_ACTIVE)
             ->andWhere('a.evaluation = :evaluation')
             ->andWhere('prs.evaluation = :evaluation')
             ->setParameter('evaluation', $evaluation)
@@ -101,7 +102,7 @@ class AutobidRepository extends EntityRepository
             )
             ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'pp', Join::WITH, 'pp.idPeriod = a.idPeriod AND pp.status = :pp_status')
             ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'w.id = a.idLender')
-            ->setParameter('pp_status', \project_period::STATUS_ACTIVE);
+            ->setParameter('pp_status', ProjectPeriod::STATUS_ACTIVE);
 
         if ($lenderId !== null) {
             $queryBuilder->andWhere('a.idLender = :id_lender');
@@ -132,5 +133,49 @@ class AutobidRepository extends EntityRepository
         }
 
         return $queryBuilder->getQuery()->getScalarResult();
+    }
+
+    /**
+     * @param Projects $project
+     *
+     * @return Autobid[]
+     */
+    public function getAutobidsForProject(Projects $project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('a');
+        $queryBuilder
+            ->select('a')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectPeriod', 'p', Join::WITH, 'a.idPeriod = p.idPeriod')
+            ->innerJoin('UnilendCoreBusinessBundle:ProjectRateSettings', 'prs', Join::WITH, 'a.rateMin <= prs.rateMax')
+            ->innerJoin('UnilendCoreBusinessBundle:Wallet', 'w', Join::WITH, 'a.idLender = w.id')
+            ->innerJoin('UnilendCoreBusinessBundle:WalletType', 'wt', Join::WITH, 'w.idType = wt.id AND wt.label = :walletType')
+            ->innerJoin('UnilendCoreBusinessBundle:Clients', 'c', Join::WITH, 'w.idClient = c.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientSettings', 'cs', Join::WITH, 'w.idClient = cs.idClient')
+            ->innerJoin('UnilendCoreBusinessBundle:ClientSettingType', 'cst', Join::WITH, 'cs.idType = cst.idType AND cst.label = :settingType')
+            ->leftJoin('UnilendCoreBusinessBundle:Bids', 'b', Join::WITH, 'a.idAutobid = b.idAutobid AND b.idProject = :project')
+            ->where('a.status = :bidStatus')
+            ->andWhere('p.status = :periodStatus')
+            ->andWhere('p.min <= :projectDuration')
+            ->andWhere('p.max >= :projectDuration')
+            ->andWhere('prs.idRate = :rateId')
+            ->andWhere('a.evaluation = :evaluation')
+            ->andWhere('w.availableBalance >= a.amount')
+            ->andWhere('csh.idStatus = :clientStatus')
+            ->andWhere('cs.value = :clientSetting')
+            ->andWhere('b.idBid IS NULL')
+            ->setParameter('walletType', WalletType::LENDER)
+            ->setParameter('settingType', ClientSettingType::LABEL_AUTOBID_SWICTH)
+            ->setParameter('project', $project->getIdProject())
+            ->setParameter('bidStatus', Autobid::STATUS_ACTIVE)
+            ->setParameter('periodStatus', ProjectPeriod::STATUS_ACTIVE)
+            ->setParameter('projectDuration', $project->getPeriod())
+            ->setParameter('rateId', $project->getIdRate())
+            ->setParameter('evaluation', $project->getRisk())
+            ->setParameter('clientStatus', ClientsStatus::STATUS_VALIDATED)
+            ->setParameter('clientSetting', ClientSettingType::TYPE_AUTOBID_SWITCH)
+            ->orderBy('a.idAutobid', 'ASC');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }
