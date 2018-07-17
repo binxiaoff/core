@@ -11,6 +11,10 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class ClientStatusManager
 {
+    const CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE = [
+        'nomUsage'
+    ];
+
     /** @var NotificationManager */
     private $notificationManager;
     /** @var AutoBidSettingsManager */
@@ -82,43 +86,23 @@ class ClientStatusManager
     ): void
     {
         if (false === $modifiedClient->isLender()) {
-            $this->logger->error('Could not update client status. This method expects the client to be a lender', [
-                'id_client' => $modifiedClient->getIdClient(),
-                'class'     => __CLASS__,
-                'method'    => __METHOD__
-            ]);
-
-            return;
+            throw new \InvalidArgumentException('Could not update client status. This method expects the client to be a lender');
         }
 
-        if (ClientsStatus::STATUS_SUSPENDED === $modifiedClient->getIdClientStatusHistory()->getIdStatus()->getId()) {
-            return;
-        }
+        $companyChangeSet = $this->getCompanyChangeSet($modifiedCompany, $unattachedCompany);
+        $clientChangeSet  = $this->getClientChangeSet($modifiedClient, $unattachedClient);
 
         $isSuspendByAttachments = $this->checkIfSuspendByAttachments($newAttachments);
-        $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient, $unattachedClient);
-        $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($modifiedCompany, $unattachedCompany) : null;
+        $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient, $clientChangeSet);
+        $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($companyChangeSet) : null;
         $isSuspendByAddress     = $this->checkIfSuspendByClientAddress($modifiedClient, $isAddressModified);
 
-        try {
-            $companyChangeSet = $this->getModifiedFields($unattachedCompany, $modifiedCompany);
-        } catch (\Exception $exception) {
-            $companyChangeSet = [];
-            $this->logger->error('Could not determine modified company fields. Error: ' . $exception->getMessage(), [
-                'id_client' => $modifiedClient->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
-            ]);
+        if (false === $this->clientStatusNeedsToBeChanged($modifiedClient, $clientChangeSet, $isSuspendByAttachments, $isSuspendByClientData, $isSuspendByCompanyData, $isSuspendByAddress, $isBankAccountModified)) {
+            return;
         }
 
         if ($isSuspendByAttachments || $isSuspendByClientData || $isSuspendByCompanyData || $isSuspendByAddress) {
             $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED, $this->formatArrayToUnorderedList($companyChangeSet));
-            return;
-        }
-
-        if (null === $isSuspendByAttachments && null === $isSuspendByClientData && null === $isSuspendByCompanyData && null === $isSuspendByAddress && false === $isBankAccountModified) {
             return;
         }
 
@@ -141,7 +125,46 @@ class ClientStatusManager
                 break;
         }
 
-        $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, $status, $this->formatArrayToUnorderedList(array_keys($companyChangeSet)));
+        $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, $status, $this->formatArrayToUnorderedList($companyChangeSet));
+    }
+
+    /**
+     * @param Clients   $client
+     * @param array     $clientChangeSet
+     * @param bool|null $isSuspendByAttachments
+     * @param bool|null $isSuspendByClientData
+     * @param bool|null $isSuspendByCompanyData
+     * @param bool|null $isSuspendByAddress
+     * @param bool      $isBankAccountModified
+     *
+     * @return bool
+     */
+    private function clientStatusNeedsToBeChanged(
+        Clients $client,
+        array $clientChangeSet,
+        ?bool $isSuspendByAttachments,
+        ?bool $isSuspendByClientData,
+        ?bool $isSuspendByCompanyData,
+        ?bool $isSuspendByAddress,
+        bool $isBankAccountModified
+    ): bool
+    {
+        if (ClientsStatus::STATUS_SUSPENDED === $client->getIdClientStatusHistory()->getIdStatus()->getId()) {
+            return false;
+        }
+
+        if (null === $isSuspendByAttachments && null === $isSuspendByClientData && null === $isSuspendByCompanyData && null === $isSuspendByAddress && false === $isBankAccountModified) {
+            return false;
+        }
+
+        if (
+            count($clientChangeSet) === count(self::CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE)
+            && 1 === count(array_intersect($clientChangeSet, self::CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE))
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -240,22 +263,21 @@ class ClientStatusManager
     }
 
     /**
-     * @param Clients $client
-     * @param Clients $unattachedClient
+     * @param array $clientChangeSet
      *
      * @return bool|null
      */
-    private function checkIfSuspendByClientData(Clients $client, Clients $unattachedClient): ?bool
+    private function checkIfSuspendByClientData(Clients $client, array $clientChangeSet): ?bool
     {
         if ($client->getUsPerson() || NationalitesV2::NATIONALITY_OTHER === $client->getIdNationalite()) {
             return true;
         }
 
+        $suspend = null;
         if ($client->isNaturalPerson()) {
             $clientModifiableFields = [
                 'civilite',
                 'prenom',
-                'nomUsage',
                 'idNationalite'
             ];
         } else {
@@ -267,20 +289,6 @@ class ClientStatusManager
             ];
         }
 
-        $suspend = null;
-        try {
-            $clientChangeSet = $this->getModifiedFields($unattachedClient, $client);
-        } catch (\Exception $exception) {
-            $clientChangeSet = [];
-            $this->logger->error('Could not determine modified client fields. Error: ' . $exception->getMessage(), [
-                'id_client' => $client->getIdClient(),
-                'class'     => __CLASS__,
-                'function'  => __FUNCTION__,
-                'file'      => $exception->getFile(),
-                'line'      => $exception->getLine()
-            ]);
-        }
-
         if (0 < count(array_intersect($clientChangeSet, $clientModifiableFields))) {
             $suspend = false;
         }
@@ -289,12 +297,11 @@ class ClientStatusManager
     }
 
     /**
-     * @param Companies $company
-     * @param Companies $unattachedCompany
+     * @param array $companyChangeSet
      *
      * @return bool|null
      */
-    private function checkIfSuspendByCompanyData(Companies $company, Companies $unattachedCompany): ?bool
+    private function checkIfSuspendByCompanyData(array $companyChangeSet): ?bool
     {
         $suspend                 = null;
         $companyModifiableFields = [
@@ -309,19 +316,6 @@ class ClientStatusManager
             'fonctionDirigeant',
             'phoneDirigeant'
         ];
-
-        try {
-            $companyChangeSet = $this->getModifiedFields($unattachedCompany, $company);
-        } catch (\Exception $exception) {
-            $companyChangeSet = [];
-            $this->logger->error('Could not determine modified company fields. Error: ' . $exception->getMessage(), [
-                'id_company' => $company->getIdCompany(),
-                'class'      => __CLASS__,
-                'function'   => __FUNCTION__,
-                'file'       => $exception->getFile(),
-                'line'       => $exception->getLine()
-            ]);
-        }
 
         if (0 < count(array_intersect($companyChangeSet, $companyModifiableFields))) {
             $suspend = false;
@@ -375,13 +369,60 @@ class ClientStatusManager
     }
 
     /**
+     * @param Companies|null $company
+     * @param Companies|null $unattachedCompany
+     *
+     * @return array
+     */
+    public function getCompanyChangeSet(?Companies $company, ?Companies $unattachedCompany)
+    {
+        try {
+            $companyChangeSet = $this->getModifiedFields($unattachedCompany, $company);
+        } catch (\Exception $exception) {
+            $this->logger->error('Could not determine modified company fields. Error: ' . $exception->getMessage(), [
+                'id_company' => $company->getIdCompany(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
+            ]);
+        }
+
+        return $companyChangeSet;
+    }
+
+    /**
+     * @param Clients $client
+     * @param Clients $unattachedClient
+     *
+     * @return array
+     */
+    public function getClientChangeSet(Clients $client, Clients $unattachedClient)
+    {
+        try {
+            $clientChangeSet = $this->getModifiedFields($unattachedClient, $client);
+        } catch (\Exception $exception) {
+            $clientChangeSet = [];
+            $this->logger->error('Could not determine modified client fields. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        return $clientChangeSet;
+    }
+
+    /**
      * @param $unattachedObject
      * @param $modifiedObject
      *
      * @return array
      * @throws \Exception
      */
-    public function getModifiedFields($unattachedObject, $modifiedObject): array
+    private function getModifiedFields($unattachedObject, $modifiedObject): array
     {
         if (null === $unattachedObject || null === $modifiedObject) {
             return [];
