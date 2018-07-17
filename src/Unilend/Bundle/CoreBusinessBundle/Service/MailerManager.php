@@ -2,7 +2,9 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\{
+    EntityManager, ORMException
+};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{
     Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface
@@ -132,13 +134,13 @@ class MailerManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    public function sendFundFailedToLender(\projects $project): void
+    public function sendFundFailedToLender(Projects $project): void
     {
         $bids = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Bids')
-            ->findBy(['idProject' => $project->id_project], ['rate' => 'ASC', 'added' => 'ASC']);
+            ->findBy(['idProject' => $project], ['rate' => 'ASC', 'added' => 'ASC']);
 
         foreach ($bids as $bid) {
             $wallet       = $bid->getIdLenderAccount();
@@ -161,53 +163,66 @@ class MailerManager
                     $message->setTo($wallet->getIdClient()->getEmail());
                     $this->mailer->send($message);
                 } catch (\Exception $exception){
-                    $this->oLogger->warning(
-                        'Could not send email: preteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
-                        ['id_mail_template' => $message->getTemplateId(), 'id_client' => $wallet->getIdClient()->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                    );
+                    $this->oLogger->warning('Could not send email "preteur-dossier-funding-ko". Exception: ' . $exception->getMessage(), [
+                        'id_mail_template' => $message->getTemplateId(),
+                        'id_client'        => $wallet->getIdClient()->getIdClient(),
+                        'class'            => __CLASS__,
+                        'function'         => __FUNCTION__,
+                        'file'             => $exception->getFile(),
+                        'line'             => $exception->getLine()
+                    ]);
                 }
             }
         }
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    public function sendFundedToBorrower(\projects $project): void
+    public function sendFundedToBorrower(Projects $project): void
     {
-        /** @var Clients $borrower */
-        $borrower = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->find($project->id_company)
-            ->getIdClientOwner();
+        if (null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
+            $this->oLogger->error('Cannot send funded project email to borrower for project ' . $project->getIdProject() . ': no borrower set for project', [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+            return;
+        }
+
+        $borrower = $project->getIdCompany()->getIdClientOwner();
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info(
-                'Project funded - sending email to borrower (project ' . $project->id_project . ')',
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project)
-            );
+            $this->oLogger->info('Project funded - sending email to borrower (project ' . $project->getIdProject() . ')',[
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
         }
 
         $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
 
         if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
-            $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
+            $currentDate = new \DateTime();
+            $interval    = $project->getDateRetrait()->diff($currentDate);
 
-            if ($inter['mois'] > 0) {
-                $remainingDuration = $inter['mois'] . ' mois';
-            } elseif ($inter['jours'] > 0) {
-                $remainingDuration = $inter['jours'] . ' jours';
-            } elseif ($inter['heures'] > 0 && $inter['minutes'] >= 120) {
-                $remainingDuration = $inter['heures'] . ' heures';
-            } elseif ($inter['minutes'] > 0 && $inter['minutes'] < 120) {
-                $remainingDuration = $inter['minutes'] . ' min';
+            if ($interval->m > 0) {
+                $remainingDuration = $interval->m . ' mois';
+            } elseif ($interval->d > 0) {
+                $remainingDuration = $interval->d . ' jours';
+            } elseif ($interval->h > 0 && $interval->i >= 120) {
+                $remainingDuration = $interval->h . ' heures';
+            } elseif ($interval->i > 0 && $interval->i < 120) {
+                $remainingDuration = $interval->i . ' min';
             } else {
-                $remainingDuration = $inter['secondes'] . ' secondes';
+                $remainingDuration = $interval->s . ' secondes';
             }
 
-            $keywords = [
+            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $averageInterestRate = $projectRepository->getAverageInterestRate($project);
+            $keywords            = [
                 'firstName'         => $borrower->getPrenom(),
-                'averageRate'       => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
+                'averageRate'       => $this->oFicelle->formatNumber($averageInterestRate, 1),
                 'remainingDuration' => $remainingDuration,
             ];
 
@@ -217,31 +232,25 @@ class MailerManager
                 $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception){
-                $this->oLogger->warning(
-                    'Could not send email: emprunteur-dossier-funde - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->oLogger->warning('Could not send email "emprunteur-dossier-funde". Exception: ' . $exception->getMessage(), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $borrower->getIdClient(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__,
+                    'file'             => $exception->getFile(),
+                    'line'             => $exception->getLine()
+                ]);
             }
         }
     }
 
     /**
-     * @param \projects|Projects $project
+     * @param Projects $project
      *
      * @return bool
      */
-    public function sendFundedAndFinishedToBorrower($project)
+    public function sendFundedAndFinishedToBorrower(Projects $project)
     {
-        if ($project instanceof Projects) {
-            $projectData = $this->entityManagerSimulator->getRepository('projects');
-            $projectData->get($project->getIdProject());
-        }
-
-        if ($project instanceof \projects) {
-            $projectData = clone $project;
-            $project     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectData->id_project);
-        }
-
         /** @var \clients $borrower */
         $borrower = $this->entityManagerSimulator->getRepository('clients');
         $borrower->get($project->getIdCompany()->getIdClientOwner()->getIdClient(), 'id_client');
@@ -276,37 +285,50 @@ class MailerManager
             }
         }
 
+        $averageInterestRate = $project->getInterestRate();
+        if (empty($averageInterestRate)) {
+            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
+        }
+
         $keywords = [
             'firstName'      => $borrower->prenom,
             'companyName'    => $project->getIdCompany()->getName(),
             'projectAmount'  => $this->oFicelle->formatNumber($project->getAmount(), 0),
-            'averageRate'    => $this->oFicelle->formatNumber($projectData->getAverageInterestRate(), 1),
+            'averageRate'    => $this->oFicelle->formatNumber($averageInterestRate, 1),
             'monthlyPayment' => $this->oFicelle->formatNumber($monthlyPayment),
             'signatureLink'  => $this->sFUrl . '/pdf/projet/' . $borrower->hash . '/' . $project->getIdProject(),
             'documentsList'  => $documents
         ];
 
-        /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $keywords);
 
         try {
             $message->setTo($borrower->email);
             return $this->mailer->send($message) > 0;
-        } catch (\Exception $exception){
-            $this->oLogger->warning(
-                'Could not send email: emprunteur-dossier-funde-et-termine - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->id_client, 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+        } catch (\Exception $exception) {
+            $this->oLogger->warning('Could not send email: emprunteur-dossier-funde-et-termine - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'id_client'        => $borrower->id_client,
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
             return false;
         }
     }
 
-    public function sendFundedToStaff(\projects $project)
+    /**
+     * @param Projects $project
+     *
+     * @throws \Exception
+     */
+    public function sendFundedToStaff(Projects $project): void
     {
         /** @var \bids $bid */
-        $bid = $this->entityManagerSimulator->getRepository('bids');
-
-        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->date_retrait);
+        $bid   = $this->entityManagerSimulator->getRepository('bids');
+        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->getDateRetrait()->format('Y-m-d H:i:s'));
 
         if ($inter['mois'] > 0) {
             $remainingDuration = $inter['mois'] . ' mois';
@@ -320,16 +342,17 @@ class MailerManager
             $remainingDuration = $inter['secondes'] . ' secondes';
         }
 
-        $keywords = [
+        $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
+        $keywords            = [
             '$surl'         => $this->sSUrl,
-            '$id_projet'    => $project->id_project,
-            '$title_projet' => $project->title,
-            '$nbPeteurs'    => $bid->countLendersOnProject($project->id_project),
-            '$tx'           => $this->oFicelle->formatNumber($project->getAverageInterestRate(), 1),
+            '$id_projet'    => $project->getIdProject(),
+            '$title_projet' => $project->getTitle(),
+            '$nbPeteurs'    => $bid->countLendersOnProject($project->getIdProject()),
+            '$tx'           => $this->oFicelle->formatNumber($averageInterestRate, 1),
             '$periode'      => $remainingDuration
         ];
 
-        /** @var TemplateMessage $message */
         $message   = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
         $recipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet funde a 100'])->getValue();
 
@@ -337,22 +360,24 @@ class MailerManager
             $message->setTo(explode(';', str_replace(' ', '', $recipient)));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->oLogger->warning(
-                'Could not send email : notification-projet-funde-a-100 - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $recipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->oLogger->warning('Could not send email "notification-projet-funde-a-100" - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'email address'    => explode(';', str_replace(' ', '', $recipient)),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
         }
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    public function sendBidAccepted(\projects $project): void
+    public function sendBidAccepted(Projects $project): void
     {
         /** @var \loans $loanData */
         $loanData = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \companies $oCompany */
-        $company = $this->entityManagerSimulator->getRepository('companies');
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $this->entityManagerSimulator->getRepository('echeanciers');
         /** @var \accepted_bids $acceptedBid */
@@ -366,15 +391,27 @@ class MailerManager
             $contractLabel[$contractType['id_contract']] = $this->translator->trans('contract-type-label_' . $contractType['label']);
         }
 
-        $lenders          = $loanData->getProjectLoansByLender($project->id_project);
+        $lenders          = $loanData->getProjectLoansByLender($project->getIdProject());
         $nbLenders        = count($lenders);
         $nbTreatedLenders = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info(
-                $nbLenders . ' lenders to send email (project ' . $project->id_project . ')',
-                ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
-            );
+            $this->oLogger->info($nbLenders . ' lenders to send email (project ' . $project->getIdProject() . ')', [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+        }
+
+        if (null === $project->getIdCompany()) {
+            $companyName = '';
+            $this->oLogger->error('No company found for project ' . $project->getIdProject(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+        } else {
+            $companyName = $project->getIdCompany()->getName();
         }
 
         foreach ($lenders as $lender) {
@@ -383,17 +420,16 @@ class MailerManager
             $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
             if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
-                $company->get($project->id_company, 'id_company');
-                $loansOfLender          = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
+                $loansOfLender          = $loanData->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $wallet->getId(), '`id_type_contract` DESC');
                 $numberOfLoansForLender = count($loansOfLender);
-                $numberOfAcceptedBids   = $acceptedBid->getDistinctBidsForLenderAndProject($wallet->getId(), $project->id_project);
+                $numberOfAcceptedBids   = $acceptedBid->getDistinctBidsForLenderAndProject($wallet->getId(), $project->getIdProject());
                 $loansDetails           = '';
                 $multiBidsDisclaimer    = '';
                 $multiBidsExplanation   = '';
 
                 if ($wallet->getIdClient()->isNaturalPerson()) {
                     $contract->get(UnderlyingContract::CONTRACT_IFP, 'label');
-                    $loanIFP               = $loanData->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
+                    $loanIFP               = $loanData->select('id_project = ' . $project->getIdProject() . ' AND id_lender = ' . $wallet->getId() . ' AND id_type_contract = ' . $contract->id_contract);
                     $numberOfBidsInLoanIFP = $acceptedBid->counter('id_loan = ' . $loanIFP[0]['id_loan']);
 
                     if ($numberOfBidsInLoanIFP > 1) {
@@ -423,7 +459,7 @@ class MailerManager
                     $loansDetails .= '<tr>
                                            <td class="td text-center">' . $this->oFicelle->formatNumber($loan['amount'] / 100, 0) . '&nbsp;€</td>
                                            <td class="td text-center">' . $this->oFicelle->formatNumber($loan['rate']) . '&nbsp;%</td>
-                                           <td class="td text-center">' . $project->period . ' mois</td>
+                                           <td class="td text-center">' . $project->getPeriod() . ' mois</td>
                                            <td class="td text-center">' . $this->oFicelle->formatNumber($firstPayment['montant'] / 100) . '&nbsp;€</td>
                                            <td class="td text-center">' . $contractType . '</td>
                                       </tr>';
@@ -431,7 +467,7 @@ class MailerManager
 
                 $keywords = [
                     'firstName'            => $wallet->getIdClient()->getPrenom(),
-                    'companyName'          => $company->name,
+                    'companyName'          => $companyName,
                     'bidWording'           => $offers,
                     'doesWording'          => $does,
                     'loanWording'          => $loansText,
@@ -459,26 +495,28 @@ class MailerManager
             $nbTreatedLenders++;
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info(
-                    'Loan notification emails sent to ' . $nbTreatedLenders . '/' . $nbLenders . ' lenders  (project ' . $project->id_project . ')',
-                    ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project]
-                );
+                $this->oLogger->info('Loan notification emails sent to ' . $nbTreatedLenders . '/' . $nbLenders . ' lenders  (project ' . $project->getIdProject() . ')', [
+                    'id_project' => $project->getIdProject(),
+                    'class'      => __CLASS__,
+                    'function'   => __FUNCTION__
+                ]);
             }
         }
     }
 
     /**
      * @param \notifications $notification
+     *
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function sendBidRejected(\notifications $notification): void
     {
-        /** @var \bids $bids */
-        $bids = $this->entityManagerSimulator->getRepository('bids');
         /** @var \projects $project */
-        $project = $this->entityManagerSimulator->getRepository('projects');
-        /** @var Bids $bid */
-        $bid          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->find($notification->id_bid);
-        $clientStatus = $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+        $project       = $this->entityManagerSimulator->getRepository('projects');
+        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bid           = $bidRepository->find($notification->id_bid);
+        $clientStatus  = $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
         if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
             /**
@@ -520,7 +558,7 @@ class MailerManager
                     $keyWords     += [
                         'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
                     ];
-                } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
+                } elseif ($bidRepository->getProjectMaxRate($project->id_project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-autobid-ko';
                     $keyWords     += [
                         'bidRemainingTime' => $interval,
@@ -549,7 +587,7 @@ class MailerManager
                         'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug(),
                         'projectsListLink' => $this->sFUrl . '/projects-a-financer'
                     ];
-                } elseif ($bids->getProjectMaxRate($project) > $projectRates['rate_min']) {
+                } elseif ($bidRepository->getProjectMaxRate($project->id_project) > $projectRates['rate_min']) {
                     $mailTemplate = 'preteur-bid-ko';
                     $keyWords     += [
                         'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
@@ -578,16 +616,19 @@ class MailerManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      */
-    public function sendFundFailedToBorrower(\projects $project): void
+    public function sendFundFailedToBorrower(Projects $project): void
     {
-        /** @var Clients $borrower */
-        $borrower = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->find($project->id_company)
-            ->getIdClientOwner();
+        if (null === $project->getIdCompany() || null === $project->getIdCompany()->getIdClientOwner()) {
+            $this->oLogger->error('Could not send email funding KO email for project ' . $project->getIdProject() . '. Unknown company or client', [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__
+            ]);
+        }
 
+        $borrower     = $project->getIdCompany()->getIdClientOwner();
         $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
 
         if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
@@ -601,58 +642,70 @@ class MailerManager
                 $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
             } catch (\Exception $exception){
-                $this->oLogger->warning(
-                    'Could not send email: emprunteur-dossier-funding-ko - Exception: ' . $exception->getMessage(),
-                    ['id_mail_template' => $message->getTemplateId(), 'id_client' => $borrower->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]
-                );
+                $this->oLogger->warning('Could not send email "emprunteur-dossier-funding-ko". Exception: ' . $exception->getMessage(), [
+                    'id_mail_template' => $message->getTemplateId(),
+                    'id_client'        => $borrower->getIdClient(),
+                    'class'            => __CLASS__,
+                    'function'         => __FUNCTION__,
+                    'file'             => $exception->getFile(),
+                    'line'             => $exception->getLine()
+                ]);
             }
         }
     }
 
-    public function sendProjectFinishedToStaff(\projects $oProject)
+    /**
+     * @param Projects $project
+     */
+    public function sendProjectFinishedToStaff(Projects $project): void
     {
-        /** @var \loans $loan */
-        $loan = $this->entityManagerSimulator->getRepository('loans');
-        /** @var \companies $oCompany */
-        $oCompany = $this->entityManagerSimulator->getRepository('companies');
-        /** @var \clients $oClient */
-        $oClient = $this->entityManagerSimulator->getRepository('clients');
-        /** @var \bids $oBid */
-        $oBid = $this->entityManagerSimulator->getRepository('bids');
-
-        $oCompany->get($oProject->id_company, 'id_company');
-        $oClient->get($oCompany->id_client_owner, 'id_client');
-
-        $sRecipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet fini'])->getValue();
-
-        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
-        // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
-        if ($iBidTotal > $oProject->amount) {
-            $iBidTotal = $oProject->amount;
+        try {
+            $totalBidsAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
+        } catch (ORMException $exception) {
+            $this->oLogger->error('Cannot calculate bids total amount for sending finished project email to staff. Exception: ' . $exception->getMessage(), [
+                'id_project' => $project->getIdProject(),
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine()
+            ]);
+            return;
         }
 
-        $keywords = [
+        $averageInterestRate = $project->getInterestRate();
+        if (empty($averageInterestRate)) {
+            $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+            $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
+        }
+
+        $lendersCount    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getLenderNumber($project);
+        $totalBidsAmount = min($totalBidsAmount, $project->getAmount());
+        $keywords        = [
             '$surl'         => $this->sSUrl,
             '$url'          => $this->sFUrl,
-            '$id_projet'    => $oProject->id_project,
-            '$title_projet' => $oProject->title,
-            '$nbPeteurs'    => $loan->getNbPreteurs($oProject->id_project),
-            '$montant_pret' => $oProject->amount,
-            '$montant'      => $iBidTotal,
-            '$taux_moyen'   => $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1)
+            '$id_projet'    => $project->getIdProject(),
+            '$title_projet' => $project->getTitle(),
+            '$nbPeteurs'    => $lendersCount,
+            '$montant_pret' => $project->getAmount(),
+            '$montant'      => $totalBidsAmount,
+            '$taux_moyen'   => $this->oFicelle->formatNumber($averageInterestRate, 1)
         ];
 
-        /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-projet-fini', $keywords, false);
+        $recipient = $this->settingsRepository->findOneBy(['type' => 'Adresse notification projet fini'])->getValue();
+        $message   = $this->messageProvider->newMessage('notification-projet-fini', $keywords, false);
 
         try {
-            $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
+            $message->setTo(explode(';', str_replace(' ', '', $recipient)));
             $this->mailer->send($message);
         } catch (\Exception $exception) {
-            $this->oLogger->warning(
-                'Could not send email: notification-projet-fini - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', str_replace(' ', '', $sRecipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->oLogger->warning('Could not send email "notification-projet-fini". Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'email address'    => explode(';', str_replace(' ', '', $recipient)),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
         }
     }
 

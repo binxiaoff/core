@@ -60,54 +60,6 @@ class dates
         return $d[2] . '/' . $d[1] . '/' . $d[0];
     }
 
-    public function formatDateMysqltoShortFR($date)
-    {
-        $d = explode(' ', $date);
-        $d = explode('-', $d[0]);
-
-        $date_fr = $d[2] . '/' . $d[1] . '/' . $d[0];
-        return $date_fr;
-    }
-
-    /**
-     * Convertit une date SQL au format fr en supprimant l'heure
-     **/
-    public function formatDateMysqltoFr_HourOut($date)
-    {
-        $d = explode(' ', $date);
-        $d = explode('-', $d[0]);
-        return $d[2] . '/' . $d[1] . '/' . $d[0];
-    }
-
-    /**
-     * Convertit une date SQL au format fr avec le mois et le jour de la semaine correspondant au format alphabetique
-     * @param string $date
-     * @param string $ln
-     * @return string
-     */
-    public function formatDateComplete($date, $ln = 'fr')
-    {
-        $d   = explode('-', $date);
-        $d1  = explode(' ', $d[2]);
-        $m   = (int) ($d[1]);
-        $day = (int) ($d1[0]);
-        $j   = date('w', mktime(0, 0, 0, $m, $day, $d[0]));
-
-        return $this->tableauJours[$ln][$j] . ' ' . $day . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
-    }
-
-    /**
-     * Convertit une date SQL en timestamp
-     **/
-    public function formatDateMySqlToTimeStamp($datetime)
-    {
-        list($date, $time) = explode(' ', $datetime);
-        list($year, $month, $day) = explode('-', $date);
-        list($hour, $minute, $second) = explode(':', $time);
-
-        return mktime($hour, $minute, $second, $month, $day, $year);
-    }
-
     //-----------------------------------------------------------------------------------------
     // RETOUR DE VALEUR -----------------------------------------------------------------------
     //-----------------------------------------------------------------------------------------
@@ -160,35 +112,6 @@ class dates
         else {
             return true;
         }
-    }
-
-    /**
-     * retourne le dernier jour du mois don�e dans une ann�e donn�
-     */
-    public function nb_jour_dans_mois($mois, $annee)
-    {
-        switch ($mois) {
-            case 1:
-            case 3:
-            case 5:
-            case 7:
-            case 8:
-            case 10:
-            case 12:
-                return 31;
-            case 4:
-            case 6:
-            case 9:
-            case 11:
-                return 30;
-            case 2:
-                if (($annee % 4) == 0) {
-                    return 29;
-                } else {
-                    return 28;
-                }
-        }
-        return 31;
     }
 
     public function intervalDates($date1, $date2)

@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
+use Unilend\Bundle\CoreBusinessBundle\Repository\BidsRepository;
 
 ?>
 <script type="text/javascript">
@@ -69,27 +70,30 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
             <tbody>
             <?php
             $i = 1;
+            /** @var BidsRepository $bidRepository */
+            $bidRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Bids');
             foreach ($this->lProjects as $p) {
                 $this->companies->get($p['id_company'], 'id_company');
 
-                $soldeBid = $this->bids->getSoldeBid($p['id_project']);
-
                 $montantHaut = 0;
                 $montantBas  = 0;
+                $soldeBid    = $bidRepository->getProjectTotalAmount($p['id_project']);
+
                 foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = ' . Bids::STATUS_PENDING) as $b) {
-                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                    $montantBas += ($b['amount'] / 100);
+                    $montantHaut += $b['rate'] * $b['amount'];
+                    $montantBas  += $b['amount'];
                 }
-                $tauxMoyen = ($montantHaut / $montantBas);
-                $pourcentage = (($soldeBid / $p['amount']) * 100);
+
+                $tauxMoyen   = $montantHaut / $montantBas;
+                $pourcentage = $soldeBid / $p['amount'] * 100;
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><?= $p['id_project'] ?></td>
-                    <td><?= $this->companies->name ?></td>
-                    <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
-                    <td><?= $this->ficelle->formatNumber($soldeBid, 1) ?> €</td>
+                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>"><?= $p['id_project'] ?></a></td>
+                    <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->companies->id_client_owner ?>"><?= $this->companies->name ?></a></td>
+                    <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($soldeBid, 0) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($pourcentage, 1) ?> %</td>
-                    <td><?= $this->ficelle->formatNumber($tauxMoyen, 1) ?> %</td>
+                    <td><?= $this->ficelle->formatNumber($tauxMoyen, 2) ?> %</td>
                     <td align="center">
                         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>

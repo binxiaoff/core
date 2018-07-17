@@ -2,14 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Factures;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Virements;
+use Doctrine\ORM\{
+    EntityManager, NonUniqueResultException, NoResultException
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, CompanyStatus, Factures, Loans, Projects, TaxType, Virements
+};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -29,27 +27,31 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects|\projects $project
      *
      * @return \DateTime
      */
-    public function getProjectEndDate(\projects $project)
+    public function getProjectEndDate($project): \DateTime
     {
-        return $project->date_fin != '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
+        if ($project instanceof \projects) {
+            return $project->date_fin !== '0000-00-00 00:00:00' ? new \DateTime($project->date_fin) : new \DateTime($project->date_retrait);
+        }
+
+        return $project->getDateFin() ?? $project->getDateRetrait();
     }
 
     /**
-     * @param \projects $oProject
+     * @param Projects $project
      *
      * @return bool
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function isFunded(\projects $oProject)
+    public function isFunded(Projects $project): bool
     {
-        /** @var \bids $oBid */
-        $oBid      = $this->entityManagerSimulator->getRepository('bids');
-        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+        $totalBidsAmount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->getProjectTotalAmount($project);
 
-        if ($iBidTotal >= $oProject->amount) {
+        if (bccomp($totalBidsAmount, $project->getAmount()) >= 0) {
             return true;
         }
 
@@ -198,18 +200,20 @@ class ProjectManager
     }
 
     /**
-     * @param \projects $project
+     * @param Projects $project
      *
      * @return bool
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function isRateMinReached(\projects $project)
+    public function isRateMinReached(Projects $project)
     {
-        $rateRange = $this->bidManager->getProjectRateRange($project);
-        /** @var \bids $bid */
-        $bid             = $this->entityManagerSimulator->getRepository('bids');
-        $totalBidRateMin = $bid->getSoldeBid($project->id_project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]);
+        $rateRange       = $this->bidManager->getProjectRateRange($project);
+        $totalBidRateMin = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Bids')
+            ->getProjectTotalAmount($project, $rateRange['rate_min'], [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED]);
 
-        return $totalBidRateMin >= $project->amount;
+        return bccomp($totalBidRateMin, $project->getAmount()) >= 0;
     }
 
     /**
@@ -342,8 +346,8 @@ class ProjectManager
      * @param Loans $loan
      *
      * @return array
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function getCreditorClaimAmounts(Loans $loan)
     {

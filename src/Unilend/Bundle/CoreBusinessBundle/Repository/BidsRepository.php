@@ -2,12 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Bids;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\{
+    EntityRepository, NonUniqueResultException, NoResultException, Query\Expr\Join
+};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Bids, Clients, Projects, Wallet
+};
 
 class BidsRepository extends EntityRepository
 {
@@ -15,8 +16,8 @@ class BidsRepository extends EntityRepository
      * @param array $criteria
      *
      * @return mixed
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function countBy(array $criteria = [])
     {
@@ -39,8 +40,8 @@ class BidsRepository extends EntityRepository
      * @param int|Clients $clientId
      *
      * @return integer
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function countByClientInPeriod(\DateTime $from, \DateTime $to, $clientId)
     {
@@ -59,8 +60,8 @@ class BidsRepository extends EntityRepository
      * @param \DateTime $date
      *
      * @return integer
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function getManualBidCountByDateAndWallet(Wallet $wallet, \DateTime $date)
     {
@@ -81,8 +82,8 @@ class BidsRepository extends EntityRepository
      * @param array        $status
      *
      * @return integer
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function getSumByWalletAndProjectAndStatus($wallet, $project, array $status)
     {
@@ -103,8 +104,8 @@ class BidsRepository extends EntityRepository
      * @param int        $status
      *
      * @return mixed
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     public function getSumBidsForLenderAndStatus($wallet, int $status)
     {
@@ -123,7 +124,7 @@ class BidsRepository extends EntityRepository
      * @param Projects|int $project
      *
      * @return Bids|null
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     public function findFirstAutoBidByLenderAndProject($lenderWallet, $project)
     {
@@ -161,5 +162,55 @@ class BidsRepository extends EntityRepository
             ->setParameters(['project' => $project, 'status' => $status]);
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return float|null
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function getProjectMaxRate($project): ?float
+    {
+        $queryBuilder = $this->createQueryBuilder('b');
+        $queryBuilder
+            ->select('MAX(b.rate)')
+            ->where('b.idProject = :project')
+            ->andWhere('b.status = :status')
+            ->setParameter('project', $project)
+            ->setParameter('status', Bids::STATUS_PENDING);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * @param Projects|int $project
+     * @param float|null   $rate
+     * @param array        $status
+     *
+     * @return float
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     */
+    public function getProjectTotalAmount($project, ?float $rate = null, array $status = []): float
+    {
+        $queryBuilder = $this->createQueryBuilder('b');
+        $queryBuilder
+            ->select('IFNULL(SUM(b.amount) / 100, 0)')
+            ->where('b.idProject = :project')
+            ->setParameter('project', $project);
+
+        if (false === empty($rate)) {
+            $queryBuilder->andWhere('ROUND(b.rate, 1) = ROUND(:rate, 1)');
+            $queryBuilder->setParameter('rate', $rate);
+        }
+
+        if (false === empty($status)) {
+            $queryBuilder->andWhere('b.status IN (:status)');
+            $queryBuilder->setParameter('status', $status, Connection::PARAM_STR_ARRAY);
+        }
+
+        return (float) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
