@@ -80,7 +80,7 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('walletType', $walletType);
 
         if (WalletType::LENDER === $walletType->getLabel()) {
-            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL]);
+            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL, OperationType::LENDER_WITHDRAW_CANCEL]);
         }
 
         if (null !== $limit) {
@@ -148,7 +148,7 @@ class ReceptionsRepository extends EntityRepository
             ->setParameter('walletType', $walletType);
 
         if (WalletType::LENDER === $walletType->getLabel()) {
-            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL]);
+            $queryBuilder->setParameter('provisionOrReject', [OperationType::LENDER_PROVISION, OperationType::LENDER_PROVISION_CANCEL, OperationType::LENDER_WITHDRAW_CANCEL]);
         }
 
         if (false === empty($search)) {

@@ -190,6 +190,8 @@ class sfpmeiController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var LenderOperationsManager $lenderOperationsManager */
+        $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
         if (
             empty($this->params[0])
@@ -287,8 +289,8 @@ class sfpmeiController extends bootstrap
                 }
                 $this->availableBalance               = $this->wallet->getAvailableBalance();
                 $this->firstDepositAmount             = null === $firstProvision ? 0 : $firstProvision->getAmount();
-                $this->totalDepositsAmount            = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumCreditOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_PROVISION]);;
-                $this->totalWithdrawsAmount           = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($this->wallet, [OperationType::LENDER_WITHDRAW]);
+                $this->totalDepositsAmount            = $lenderOperationsManager->getTotalProvisionAmount($this->wallet);
+                $this->totalWithdrawsAmount           = $lenderOperationsManager->getTotalWithdrawalAmount($this->wallet);
                 $this->totalRepaymentsAmount          = $this->echeanciers->getRepaidAmount(['id_lender' => $this->wallet->getId()]);
                 $this->totalGrowthInterestsAmount     = $this->echeanciers->getRepaidInterests(['id_lender' => $this->wallet->getId()]);
                 $this->totalRepaymentsNextMonthAmount = $this->echeanciers->getNextRepaymentAmountInDateRange($this->wallet->getId(), (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'), (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'));
