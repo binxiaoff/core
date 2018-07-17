@@ -117,7 +117,7 @@ class LenderOperationsManager
     public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = null)
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            throw new \Exception('Wallet is not a Lender wallet');
+            throw new \Exception('Wallet is not a lender wallet');
         }
 
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
@@ -473,7 +473,7 @@ class LenderOperationsManager
     public function getTotalProvisionAmount(Wallet $wallet): float
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            throw new \Exception('Wallet is not a Lender wallet');
+            throw new \Exception('Wallet is not a lender wallet');
         }
 
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
@@ -493,7 +493,7 @@ class LenderOperationsManager
     public function getTotalWithdrawalAmount(Wallet $wallet): float
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            throw new \Exception('Wallet is not a Lender wallet');
+            throw new \Exception('Wallet is not a lender wallet');
         }
 
         $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
