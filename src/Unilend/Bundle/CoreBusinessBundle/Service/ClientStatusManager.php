@@ -6,15 +6,11 @@ use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, ClientsStatus, ClientsStatusHistory, Companies, NationalitesV2, PaysV2, Users, WalletType
+    AddressType, Attachment, AttachmentType, Clients, ClientsStatus, ClientsStatusHistory, Companies, CompanyAddress, NationalitesV2, PaysV2, Users, WalletType
 };
 
 class ClientStatusManager
 {
-    const CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE = [
-        'nomUsage'
-    ];
-
     /** @var NotificationManager */
     private $notificationManager;
     /** @var AutoBidSettingsManager */
@@ -92,16 +88,11 @@ class ClientStatusManager
         $companyChangeSet = $this->getCompanyChangeSet($modifiedCompany, $unattachedCompany);
         $clientChangeSet  = $this->getClientChangeSet($modifiedClient, $unattachedClient);
 
-        $isSuspendByAttachments = $this->checkIfSuspendByAttachments($newAttachments);
-        $isSuspendByClientData  = $this->checkIfSuspendByClientData($modifiedClient, $clientChangeSet);
-        $isSuspendByCompanyData = $modifiedCompany ? $this->checkIfSuspendByCompanyData($companyChangeSet) : null;
-        $isSuspendByAddress     = $this->checkIfSuspendByClientAddress($modifiedClient, $isAddressModified);
-
-        if (false === $this->clientStatusNeedsToBeChanged($modifiedClient, $clientChangeSet, $isSuspendByAttachments, $isSuspendByClientData, $isSuspendByCompanyData, $isSuspendByAddress, $isBankAccountModified)) {
+        if (false === $this->clientStatusNeedsToBeChanged($modifiedClient, $clientChangeSet, $companyChangeSet, $newAttachments, $isAddressModified, $isBankAccountModified)) {
             return;
         }
 
-        if ($isSuspendByAttachments || $isSuspendByClientData || $isSuspendByCompanyData || $isSuspendByAddress) {
+        if ($this->clientNeedsToBeSuspended($modifiedClient, $newAttachments, $isAddressModified)) {
             $this->addClientStatus($modifiedClient, Users::USER_ID_FRONT, ClientsStatus::STATUS_SUSPENDED, $this->formatArrayToUnorderedList($companyChangeSet));
             return;
         }
@@ -129,42 +120,51 @@ class ClientStatusManager
     }
 
     /**
-     * @param Clients   $client
-     * @param array     $clientChangeSet
-     * @param bool|null $isSuspendByAttachments
-     * @param bool|null $isSuspendByClientData
-     * @param bool|null $isSuspendByCompanyData
-     * @param bool|null $isSuspendByAddress
-     * @param bool      $isBankAccountModified
+     * @param Clients $modifiedClient
+     * @param array   $clientChangeSet
+     * @param array   $companyChangeSet
+     * @param array   $newAttachments
+     * @param bool    $isAddressModified
+     * @param bool    $isBankAccountModified
      *
      * @return bool
      */
     private function clientStatusNeedsToBeChanged(
-        Clients $client,
+        Clients $modifiedClient,
         array $clientChangeSet,
-        ?bool $isSuspendByAttachments,
-        ?bool $isSuspendByClientData,
-        ?bool $isSuspendByCompanyData,
-        ?bool $isSuspendByAddress,
+        array $companyChangeSet,
+        array $newAttachments,
+        bool $isAddressModified,
         bool $isBankAccountModified
     ): bool
     {
-        if (ClientsStatus::STATUS_SUSPENDED === $client->getIdClientStatusHistory()->getIdStatus()->getId()) {
+        if (ClientsStatus::STATUS_SUSPENDED === $modifiedClient->getIdClientStatusHistory()->getIdStatus()->getId()) {
             return false;
         }
 
-        if (null === $isSuspendByAttachments && null === $isSuspendByClientData && null === $isSuspendByCompanyData && null === $isSuspendByAddress && false === $isBankAccountModified) {
-            return false;
-        }
+        $needsTobeChangedByAttachments = $this->needsToBeChangedByAttachments($newAttachments);
+        $needsTobeChangedByClientData  = $this->needsToBeChangedByClientData($modifiedClient, $clientChangeSet);
+        $needsTobeChangedByCompanyData = $this->needsToBeChangedByCompanyData($companyChangeSet);
+        $needsTobeChangedByAddress     = $this->needsToBeChangedByMainAddress($modifiedClient, $isAddressModified);
 
-        if (
-            count($clientChangeSet) === count(self::CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE)
-            && 1 === count(array_intersect($clientChangeSet, self::CLIENT_FIELDS_NOT_TRIGGERING_STATUS_CHANGE))
-        ) {
-            return false;
-        }
+        return $needsTobeChangedByAttachments || $needsTobeChangedByClientData || $needsTobeChangedByCompanyData || $needsTobeChangedByAddress || $isBankAccountModified;
+    }
 
-        return true;
+    /**
+     * @param Clients    $modifiedClient
+     * @param array      $newAttachments
+     * @param array|null $companyChangeSet
+     * @param bool       $isAddressModified
+     *
+     * @return bool
+     */
+    private function clientNeedsToBeSuspended(Clients $modifiedClient, array $newAttachments, bool $isAddressModified): bool
+    {
+        $needsTobeChangedByAttachments = $this->needsToBeSuspendedByAttachments($newAttachments);
+        $needsTobeChangedByClientData  = $this->needsToBeSuspendedByClientData($modifiedClient);
+        $needsTobeChangedByAddress     = $this->needsToBeSuspendedByMainAddress($modifiedClient, $isAddressModified);
+
+        return $needsTobeChangedByAttachments || $needsTobeChangedByClientData || $needsTobeChangedByAddress;
     }
 
     /**
@@ -241,39 +241,45 @@ class ClientStatusManager
     }
 
     /**
-     * @param array   $newAttachments
+     * @param array $newAttachments
      *
-     * @return bool|null
-     *
-     * true suspends the client, false passes on to next status, null does nothing
+     * @return bool
      */
-    private function checkIfSuspendByAttachments(array $newAttachments): ?bool
+    private function needsToBeChangedByAttachments(array $newAttachments): bool
     {
-        $suspend         = null;
-        $attachmentTypes = $this->getAttachmentTypes($newAttachments);
+        if (0 < count($newAttachments)) {
+            return true;
+        }
 
-        $hasUploadedIdentityAttachments = 0 < count(array_intersect([AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_DIRIGEANT, AttachmentType::CNI_PASSPORTE_VERSO], $attachmentTypes));
-        if ($hasUploadedIdentityAttachments) {
+        return false;
+    }
+
+    /**
+     * @param array $newAttachments
+     *
+     * @return bool
+     */
+    private function needsToBeSuspendedByAttachments(array $newAttachments): bool
+    {
+        $suspend                 = false;
+        $attachmentTypes         = $this->getAttachmentTypes($newAttachments);
+        $identityAttachmentTypes = [AttachmentType::CNI_PASSPORTE, AttachmentType::CNI_PASSPORTE_DIRIGEANT, AttachmentType::CNI_PASSPORTE_VERSO];
+
+        if (0 < count(array_intersect($identityAttachmentTypes, $attachmentTypes))) {
             $suspend = true;
-        } elseif (0 < count($newAttachments)) {
-            $suspend = false;
         }
 
         return $suspend;
     }
 
     /**
-     * @param array $clientChangeSet
+     * @param Clients $client
+     * @param array   $clientChangeSet
      *
-     * @return bool|null
+     * @return bool
      */
-    private function checkIfSuspendByClientData(Clients $client, array $clientChangeSet): ?bool
+    private function needsToBeChangedByClientData(Clients $client, array $clientChangeSet): bool
     {
-        if ($client->getUsPerson() || NationalitesV2::NATIONALITY_OTHER === $client->getIdNationalite()) {
-            return true;
-        }
-
-        $suspend = null;
         if ($client->isNaturalPerson()) {
             $clientModifiableFields = [
                 'civilite',
@@ -290,20 +296,37 @@ class ClientStatusManager
         }
 
         if (0 < count(array_intersect($clientChangeSet, $clientModifiableFields))) {
-            $suspend = false;
+            return true;
         }
 
-        return $suspend;
+        return false;
     }
 
     /**
-     * @param array $companyChangeSet
+     * @param Clients $client
      *
-     * @return bool|null
+     * @return bool
      */
-    private function checkIfSuspendByCompanyData(array $companyChangeSet): ?bool
+    private function needsToBeSuspendedByClientData(Clients $client): bool
     {
-        $suspend                 = null;
+        if ($client->getUsPerson() || NationalitesV2::NATIONALITY_OTHER === $client->getIdNationalite()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array|null $companyChangeSet
+     *
+     * @return bool
+     */
+    private function needsToBeChangedByCompanyData(?array $companyChangeSet): bool
+    {
+        if (empty($companyChangeSet)) {
+            return false;
+        }
+
         $companyModifiableFields = [
             'name',
             'forme',
@@ -318,41 +341,26 @@ class ClientStatusManager
         ];
 
         if (0 < count(array_intersect($companyChangeSet, $companyModifiableFields))) {
-            $suspend = false;
+            return true;
         }
 
-        return $suspend;
+        return false;
     }
 
     /**
      * @param Clients $client
      * @param bool    $addressModification
      *
-     * @return bool|null
+     * @return bool
      */
-    private function checkIfSuspendByClientAddress(Clients $client, bool $addressModification): ?bool
+    private function needsToBeChangedByMainAddress(Clients $client, bool $addressModification): bool
     {
-        $suspend = null;
+        $needsToBeChanged = false;
 
         if ($addressModification) {
             try {
-                if ($client->isNaturalPerson()) {
-                    $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
-                    $pendingMainAddress      = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-                } else {
-                    $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-                    if ($company) {
-                        $companyAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
-                        $pendingMainAddress       = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-                    } else {
-                        throw new \Exception('Lender is a legal entity but no attached company found.');
-                    }
-                }
-
-                if ($pendingMainAddress && in_array($pendingMainAddress->getIdCountry()->getIdPays(), [PaysV2::COUNTRY_USA, PaysV2::COUNTRY_ERITREA])) {
-                    $suspend = true;
-                } elseif ($pendingMainAddress) {
-                    $suspend = false;
+                if ($this->getPendingMainAddress($client)) {
+                    $needsToBeChanged = true;
                 }
             } catch (\Exception $exception) {
                 $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
@@ -365,7 +373,61 @@ class ClientStatusManager
             }
         }
 
-        return $suspend;
+        return $needsToBeChanged;
+    }
+
+    /**
+     * @param Clients $client
+     * @param bool    $addressModification
+     *
+     * @return bool
+     */
+    private function needsToBeSuspendedByMainAddress(Clients $client, bool $addressModification): bool
+    {
+        $needsToBeSuspended = false;
+
+        if ($addressModification) {
+            try {
+                $pendingMainAddress = $this->getPendingMainAddress($client);
+                if ($pendingMainAddress & in_array($pendingMainAddress->getIdCountry()->getIdPays(), [PaysV2::COUNTRY_USA, PaysV2::COUNTRY_ERITREA])) {
+                    $needsToBeSuspended = true;
+                }
+            } catch (\Exception $exception) {
+                $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
+        }
+
+        return $needsToBeSuspended;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return null|CompanyAddress
+     * @throws \Exception
+     */
+    private function getPendingMainAddress(Clients $client)
+    {
+        if ($client->isNaturalPerson()) {
+            $clientAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress');
+            $pendingMainAddress      = $clientAddressRepository->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+        } else {
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            if ($company) {
+                $companyAddressRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress');
+                $pendingMainAddress       = $companyAddressRepository->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+            } else {
+                throw new \Exception('Lender is a legal entity but no attached company found.');
+            }
+        }
+
+        return $pendingMainAddress;
     }
 
     /**
@@ -374,7 +436,7 @@ class ClientStatusManager
      *
      * @return array
      */
-    public function getCompanyChangeSet(?Companies $company, ?Companies $unattachedCompany)
+    public function getCompanyChangeSet(?Companies $company, ?Companies $unattachedCompany): array
     {
         try {
             $companyChangeSet = $this->getModifiedFields($unattachedCompany, $company);
