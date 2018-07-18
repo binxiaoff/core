@@ -16,7 +16,7 @@ trait ClientChecker
      *
      * @return bool
      */
-    public function isEligibleForClientId(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForClientId(?Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager): bool
     {
         if (null === $client) {
             return true; // Impossible to check
@@ -38,7 +38,7 @@ trait ClientChecker
      *
      * @return bool
      */
-    public function isEligibleForClientType(Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager)
+    public function isEligibleForClientType(?Clients $client = null, Product $product, ProductAttributeManager $productAttributeManager): bool
     {
         if (null === $client) {
             return true; // Impossible to check

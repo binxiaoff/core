@@ -8,8 +8,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\UnderlyingContractAttributeType;
 
 class LenderValidator extends ClientValidator
 {
-
-    public function validate(Clients $client = null, Projects $project)
+    /**
+     * @param Clients|null $client
+     * @param Projects     $project
+     *
+     * @return array
+     */
+    public function validate(?Clients $client = null, Projects $project): array
     {
         $violations = parent::validate($client, $project);
         $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());

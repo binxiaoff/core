@@ -28,6 +28,7 @@ class LenderOperationsManager
     const PROVISION_TYPES = [
         OperationType::LENDER_PROVISION,
         OperationType::LENDER_TRANSFER,
+        OperationType::LENDER_WITHDRAW_CANCEL
     ];
 
     const WITHDRAW_TYPES = [
@@ -58,6 +59,7 @@ class LenderOperationsManager
         OperationType::LENDER_PROVISION_CANCEL,
         OperationType::LENDER_TRANSFER,
         OperationType::LENDER_WITHDRAW,
+        OperationType::LENDER_WITHDRAW_CANCEL,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSOR,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_CANCEL_SPONSORSHIP_REWARD_SPONSOR,
         OperationSubType::UNILEND_PROMOTIONAL_OPERATION_SPONSORSHIP_REWARD_SPONSEE,
@@ -115,7 +117,7 @@ class LenderOperationsManager
     public function getLenderOperations(Wallet $wallet, \DateTime $start, \DateTime $end, $idProject = null, array $operations = null)
     {
         if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
-            throw new \Exception('Wallet is not a Lender wallet');
+            throw new \Exception('Wallet is not a lender wallet');
         }
 
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
@@ -460,5 +462,45 @@ class LenderOperationsManager
         }
 
         return $writer;
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     * @throws \Exception
+     */
+    public function getTotalProvisionAmount(Wallet $wallet): float
+    {
+        if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
+            throw new \Exception('Wallet is not a lender wallet');
+        }
+
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        return round(bcsub(
+            $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION]),
+            $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_PROVISION_CANCEL])
+            , 4), 2);
+    }
+
+    /**
+     * @param Wallet $wallet
+     *
+     * @return float
+     * @throws \Exception
+     */
+    public function getTotalWithdrawalAmount(Wallet $wallet): float
+    {
+        if (WalletType::LENDER !== $wallet->getIdType()->getLabel()) {
+            throw new \Exception('Wallet is not a lender wallet');
+        }
+
+        $operationRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
+
+        return round(bcsub(
+            $operationRepository->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]),
+            $operationRepository->sumCreditOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW_CANCEL])
+            , 4), 2);
     }
 }

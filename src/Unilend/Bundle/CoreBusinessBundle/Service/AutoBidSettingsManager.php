@@ -392,7 +392,6 @@ class AutoBidSettingsManager
      * @param Clients $client
      *
      * @return bool
-     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function isOn(Clients $client): bool
     {
@@ -400,7 +399,13 @@ class AutoBidSettingsManager
             return false;
         }
 
-        return (bool) $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
+        $setting = $this->clientSettingsManager->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
+
+        if (null === $setting) {
+            return false;
+        }
+
+        return (bool) $setting;
     }
 
     /**
