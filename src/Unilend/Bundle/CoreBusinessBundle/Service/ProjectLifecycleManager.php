@@ -209,19 +209,22 @@ class ProjectLifecycleManager
      * @param Projects $project
      * @param bool     $sendNotification
      *
+     * @return int[]
+     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    public function checkBids(Projects $project, bool $sendNotification): void
+    public function checkBids(Projects $project, bool $sendNotification): array
     {
-        $rejectedBids         = 0;
-        $cumulativeBidsAmount = 0;
-        $logCheck             = false;
-        $logStart             = new \DateTime();
-        $bidRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $totalBidsAmount      = $bidRepository->getProjectTotalAmount($project);
-        $projectAmount        = $project->getAmount();
+        $temporarilyRejectedBids  = 0;
+        $definitivelyRejectedBids = 0;
+        $cumulativeBidsAmount     = 0;
+        $logCheck                 = false;
+        $logStart                 = new \DateTime();
+        $bidRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $totalBidsAmount          = $bidRepository->getProjectTotalAmount($project);
+        $projectAmount            = $project->getAmount();
 
         if ($totalBidsAmount >= $projectAmount) {
             $bids = $bidRepository->findBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
@@ -234,13 +237,15 @@ class ProjectLifecycleManager
 
                     if (null === $bid->getAutobid()) {
                         $this->bidManager->reject($bid, $sendNotification);
+
+                        ++$definitivelyRejectedBids;
                     } else {
                         // For a autobid, we don't send reject bid, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID);
                         $this->entityManager->flush($bid);
-                    }
 
-                    $rejectedBids++;
+                        ++$temporarilyRejectedBids;
+                    }
                 }
             }
         }
@@ -252,7 +257,7 @@ class ProjectLifecycleManager
                 ->setFin(new \DateTime())
                 ->setIdProject($project)
                 ->setRateMax($bidRepository->getProjectMaxRate($project))
-                ->setNbBidsKo($rejectedBids)
+                ->setNbBidsKo($definitivelyRejectedBids + $temporarilyRejectedBids)
                 ->setNbBidsEncours($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING]))
                 ->setTotalBids($bidRepository->countBy(['idProject' => $project]))
                 ->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]));
@@ -260,6 +265,11 @@ class ProjectLifecycleManager
             $this->entityManager->persist($log);
             $this->entityManager->flush($log);
         }
+
+        return [
+            'definitivelyRejected' => $definitivelyRejectedBids,
+            'temporarilyRejected'  => $temporarilyRejectedBids
+        ];
     }
 
     /**
@@ -328,11 +338,17 @@ class ProjectLifecycleManager
             ->getValue();
 
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $bidOrder      = $bidRepository->countBy(['idProject' => $project]);
         $currentRate   = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
+        $minimumRate   = $this->bidManager->getProjectRateRange($project)['rate_min'];
 
-        while ($autoBids = $bidRepository->getAutoBids($project->getIdProject(), Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
+        while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($autoBids as $autoBid) {
-                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $mode, $sendNotification);
+                if (bccomp($currentRate, $minimumRate, 1) >= 0) {
+                    $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $mode, $sendNotification);
+                } else {
+                    $this->bidManager->reject($autoBid, $sendNotification);
+                }
             }
         }
     }
@@ -348,12 +364,9 @@ class ProjectLifecycleManager
      */
     private function reBidAutoBidDeeply(Projects $project, int $mode, bool $sendNotification): void
     {
-        $this->checkBids($project, $sendNotification);
+        $rejectedBids = $this->checkBids($project, $sendNotification);
 
-        $bidRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $temporarilyRefusedAutoBid = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID, 1);
-
-        if (false === empty($temporarilyRefusedAutoBid)) {
+        if (false === empty($rejectedBids['temporarilyRejected'])) {
             $this->reBidAutoBid($project, $mode, $sendNotification);
             $this->reBidAutoBidDeeply($project, $mode, $sendNotification);
         }
