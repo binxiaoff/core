@@ -103,29 +103,6 @@ class LenderValidationManager
      */
     public function validateClient(Clients $client, Users $user, array &$duplicatedAccounts = [], ?int $idBankAccount = null, ?int $idAddress = null): bool
     {
-        if ($client->isNaturalPerson()) {
-            try {
-                $duplicates         = $this->getDuplicatedAccounts($client);
-                $duplicatedAccounts = $duplicates;
-
-                if (0 < count($duplicates) && in_array($user->getIdUser(), [Users::USER_ID_FRONT, Users::USER_ID_CRON])) {
-                    return false;
-                } elseif (0 < count($duplicates)) {
-                    $this->closeDuplicatedAccounts($client, $user, $duplicates);
-                }
-            } catch (DBALException $exception) {
-                $this->logger->error('Unable to find lender duplicates. Exception: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__
-                ]);
-
-                return false;
-            }
-        }
-
         if (null !== $idBankAccount) {
             /** @var BankAccount $currentBankAccount */
             $bankAccount = $this->entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->find($idBankAccount);
@@ -146,6 +123,29 @@ class LenderValidationManager
                 if (null === $address) {
                     throw new \InvalidArgumentException('CompanyAddress could not be found with id: ' . $idAddress);
                 }
+            }
+        }
+
+        if ($client->isNaturalPerson()) {
+            try {
+                $duplicates         = $this->getDuplicatedAccounts($client);
+                $duplicatedAccounts = $duplicates;
+
+                if (0 < count($duplicates) && in_array($user->getIdUser(), [Users::USER_ID_FRONT, Users::USER_ID_CRON])) {
+                    return false;
+                } elseif (0 < count($duplicates)) {
+                    $this->closeDuplicatedAccounts($client, $user, $duplicates);
+                }
+            } catch (DBALException $exception) {
+                $this->logger->error('Unable to find lender duplicates. Exception: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__
+                ]);
+
+                return false;
             }
         }
 
