@@ -317,11 +317,11 @@ class ClientStatusManager
     }
 
     /**
-     * @param array|null $companyChangeSet
+     * @param array $companyChangeSet
      *
      * @return bool
      */
-    private function needsToBeChangedByCompanyData(?array $companyChangeSet): bool
+    private function needsToBeChangedByCompanyData(array $companyChangeSet): bool
     {
         if (empty($companyChangeSet)) {
             return false;
@@ -355,25 +355,25 @@ class ClientStatusManager
      */
     private function needsToBeChangedByMainAddress(Clients $client, bool $addressModification): bool
     {
-        $needsToBeChanged = false;
-
-        if ($addressModification) {
-            try {
-                if ($this->getPendingMainAddress($client)) {
-                    $needsToBeChanged = true;
-                }
-            } catch (\Exception $exception) {
-                $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
-                ]);
-            }
+        if (false === $addressModification) {
+            return false;
         }
 
-        return $needsToBeChanged;
+        try {
+            if ($this->getPendingMainAddress($client)) {
+                return true;
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        return false;
     }
 
     /**
@@ -384,26 +384,26 @@ class ClientStatusManager
      */
     private function needsToBeSuspendedByMainAddress(Clients $client, bool $addressModification): bool
     {
-        $needsToBeSuspended = false;
-
-        if ($addressModification) {
-            try {
-                $pendingMainAddress = $this->getPendingMainAddress($client);
-                if ($pendingMainAddress & in_array($pendingMainAddress->getIdCountry()->getIdPays(), [PaysV2::COUNTRY_USA, PaysV2::COUNTRY_ERITREA])) {
-                    $needsToBeSuspended = true;
-                }
-            } catch (\Exception $exception) {
-                $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
-                    'id_client' => $client->getIdClient(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine()
-                ]);
-            }
+        if (false === $addressModification) {
+            return false;
         }
 
-        return $needsToBeSuspended;
+        try {
+            $pendingMainAddress = $this->getPendingMainAddress($client);
+            if ($pendingMainAddress & in_array($pendingMainAddress->getIdCountry()->getIdPays(), [PaysV2::COUNTRY_USA, PaysV2::COUNTRY_ERITREA])) {
+                return true;
+            }
+        } catch (\Exception $exception) {
+            $this->logger->error('Could not get address information. Error: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
+        }
+
+        return false;
     }
 
     /**
