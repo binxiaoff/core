@@ -53,7 +53,7 @@ class societeController extends bootstrap
         unset($formattedRatings['dates']);
 
         $projectsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $allProjects        = $projectsRepository->findProjectsBySiren($company->getSiren());
+        $allProjects        = $projectsRepository->findBySiren($company->getSiren());
         $formattedProjects  = $this->formatProjectData($allProjects);
 
         $this->render(null, [

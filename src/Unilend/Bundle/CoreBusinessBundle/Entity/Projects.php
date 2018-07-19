@@ -1496,9 +1496,9 @@ class Projects
     /**
      * Get interestRate
      *
-     * @return float
+     * @return float|null
      */
-    public function getInterestRate()
+    public function getInterestRate(): ?float
     {
         return $this->interestRate;
     }

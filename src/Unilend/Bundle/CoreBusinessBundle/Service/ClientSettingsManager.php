@@ -1,9 +1,13 @@
 <?php
+
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\{
+    CacheItemPoolInterface, InvalidArgumentException
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\librairies\CacheKeys;
 
 /**
  * Class ClientSettingsManager
@@ -11,15 +15,12 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityM
  */
 class ClientSettingsManager
 {
-    const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
-
-    /** @var CacheItemPoolInterface  */
-    private $cachePool;
-    /** @var EntityManagerSimulator  */
+    /** @var EntityManagerSimulator */
     private $entityManagerSimulator;
+    /** @var CacheItemPoolInterface */
+    private $cachePool;
 
     /**
-     * ClientSettingsManager constructor.
      * @param EntityManagerSimulator $entityManagerSimulator
      * @param CacheItemPoolInterface $cachePool
      */
@@ -35,7 +36,7 @@ class ClientSettingsManager
      * @param string  $value
      *
      * @return bool
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function saveClientSetting(Clients $client, $settingType, $value)
     {
@@ -68,35 +69,41 @@ class ClientSettingsManager
      * @param Clients $client
      * @param int     $settingType
      *
-     * @return string
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @return string|null
      */
-    public function getSetting(Clients $client, $settingType)
+    public function getSetting(Clients $client, int $settingType): ?string
     {
         /** @var \client_settings $clientSettings */
         $clientSettings = $this->entityManagerSimulator->getRepository('client_settings');
-        $cachedItem     = $this->cachePool->getItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
 
-        if (false === $cachedItem->isHit()) {
-            $value = $clientSettings->getSetting($client->getIdClient(), $settingType);
-            $cachedItem->set($value)
-                        ->expiresAfter(1800);
-            $this->cachePool->save($cachedItem);
-        } else {
-            $value = $cachedItem->get();
+        try {
+            $cachedItem = $this->cachePool->getItem(CacheKeys::GET_CLIENT_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
+        } catch (InvalidArgumentException $exception) {
+            return null;
         }
+
+        if ($cachedItem->isHit()) {
+            return $cachedItem->get();
+        }
+
+        $value = $clientSettings->getSetting($client->getIdClient(), $settingType);
+        $cachedItem
+            ->set($value)
+            ->expiresAfter(CacheKeys::MEDIUM_TIME);
+
+        $this->cachePool->save($cachedItem);
 
         return $value;
     }
 
     /**
      * @param Clients $client
-     * @param         $settingType
+     * @param int     $settingType
      *
-     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
-    private function flushSettingCache(Clients $client, $settingType)
+    private function flushSettingCache(Clients $client, int $settingType): void
     {
-        $this->cachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
+        $this->cachePool->deleteItem(CacheKeys::GET_CLIENT_SETTING . '_' . $client->getIdClient() . '_' . $settingType);
     }
 }

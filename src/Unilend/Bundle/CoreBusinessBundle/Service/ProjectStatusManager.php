@@ -480,4 +480,17 @@ class ProjectStatusManager
             'exception'          => $exceptionInfo
         ]);
     }
+
+    /**
+     * @return array
+     */
+    public function getIndexedProjectStatus(): array
+    {
+        $indexedStatus = [];
+        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findAll() as $status) {
+            $indexedStatus[$status->getStatus()] = $status->getLabel();
+        }
+
+        return $indexedStatus;
+    }
 }

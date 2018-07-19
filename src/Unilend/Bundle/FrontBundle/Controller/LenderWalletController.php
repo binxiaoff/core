@@ -266,7 +266,7 @@ class LenderWalletController extends Controller
                 ]);
 
                 try {
-                    $clientMailNotification = $notificationManager->createEmailNotification($notification->id_notification, ClientsGestionTypeNotif::TYPE_DEBIT, $client->getIdClient(), $walletBalanceHistory, null, null, false, new \DateTime());
+                    $clientMailNotification = $notificationManager->createEmailNotification(ClientsGestionTypeNotif::TYPE_DEBIT, $client->getIdClient(), $notification->id_notification, $walletBalanceHistory, null, null, false, new \DateTime());
                 } catch (\Exception $exception) {
                     $clientMailNotification = null;
                     $logger->error('Could not create client email notification on withdrawal operation for client: ' . $client->getIdClient() . ' Error: ' . $exception->getMessage(), [

@@ -212,7 +212,7 @@ class preteursController extends bootstrap
             }
 
             $this->solde        = $wallet->getAvailableBalance();
-            $this->soldeRetrait = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]);
+            $this->soldeRetrait = $lenderOperationsManager->getTotalWithdrawalAmount($wallet);
 
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');

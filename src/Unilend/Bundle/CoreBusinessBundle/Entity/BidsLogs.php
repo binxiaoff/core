@@ -13,9 +13,12 @@ use Doctrine\ORM\Mapping as ORM;
 class BidsLogs
 {
     /**
-     * @var integer
+     * @var Projects
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Projects")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id_project", referencedColumnName="id_project", nullable=false)
+     * })
      */
     private $idProject;
 
@@ -34,28 +37,28 @@ class BidsLogs
     private $fin;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="nb_bids_encours", type="integer", nullable=false)
      */
     private $nbBidsEncours;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="nb_bids_ko", type="integer", nullable=false)
      */
     private $nbBidsKo;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="total_bids_ko", type="integer", nullable=false)
      */
     private $totalBidsKo;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="total_bids", type="integer", nullable=false)
      */
@@ -69,21 +72,7 @@ class BidsLogs
     private $rateMax;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="added", type="datetime", nullable=false)
-     */
-    private $added;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
-     */
-    private $updated;
-
-    /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_bid_log", type="integer")
      * @ORM\Id
@@ -96,11 +85,11 @@ class BidsLogs
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param Projects $idProject
      *
      * @return BidsLogs
      */
-    public function setIdProject($idProject)
+    public function setIdProject(Projects $idProject): BidsLogs
     {
         $this->idProject = $idProject;
 
@@ -110,9 +99,9 @@ class BidsLogs
     /**
      * Get idProject
      *
-     * @return integer
+     * @return Projects
      */
-    public function getIdProject()
+    public function getIdProject(): Projects
     {
         return $this->idProject;
     }
@@ -124,7 +113,7 @@ class BidsLogs
      *
      * @return BidsLogs
      */
-    public function setDebut($debut)
+    public function setDebut(\DateTime $debut): BidsLogs
     {
         $this->debut = $debut;
 
@@ -136,7 +125,7 @@ class BidsLogs
      *
      * @return \DateTime
      */
-    public function getDebut()
+    public function getDebut(): \DateTime
     {
         return $this->debut;
     }
@@ -148,7 +137,7 @@ class BidsLogs
      *
      * @return BidsLogs
      */
-    public function setFin($fin)
+    public function setFin(\DateTime $fin): BidsLogs
     {
         $this->fin = $fin;
 
@@ -160,7 +149,7 @@ class BidsLogs
      *
      * @return \DateTime
      */
-    public function getFin()
+    public function getFin(): \DateTime
     {
         return $this->fin;
     }
@@ -168,11 +157,11 @@ class BidsLogs
     /**
      * Set nbBidsEncours
      *
-     * @param integer $nbBidsEncours
+     * @param int $nbBidsEncours
      *
      * @return BidsLogs
      */
-    public function setNbBidsEncours($nbBidsEncours)
+    public function setNbBidsEncours(int $nbBidsEncours): BidsLogs
     {
         $this->nbBidsEncours = $nbBidsEncours;
 
@@ -182,9 +171,9 @@ class BidsLogs
     /**
      * Get nbBidsEncours
      *
-     * @return integer
+     * @return int
      */
-    public function getNbBidsEncours()
+    public function getNbBidsEncours(): int
     {
         return $this->nbBidsEncours;
     }
@@ -192,11 +181,11 @@ class BidsLogs
     /**
      * Set nbBidsKo
      *
-     * @param integer $nbBidsKo
+     * @param int $nbBidsKo
      *
      * @return BidsLogs
      */
-    public function setNbBidsKo($nbBidsKo)
+    public function setNbBidsKo(int $nbBidsKo): BidsLogs
     {
         $this->nbBidsKo = $nbBidsKo;
 
@@ -206,9 +195,9 @@ class BidsLogs
     /**
      * Get nbBidsKo
      *
-     * @return integer
+     * @return int
      */
-    public function getNbBidsKo()
+    public function getNbBidsKo(): int
     {
         return $this->nbBidsKo;
     }
@@ -216,11 +205,11 @@ class BidsLogs
     /**
      * Set totalBidsKo
      *
-     * @param integer $totalBidsKo
+     * @param int $totalBidsKo
      *
      * @return BidsLogs
      */
-    public function setTotalBidsKo($totalBidsKo)
+    public function setTotalBidsKo(int $totalBidsKo): BidsLogs
     {
         $this->totalBidsKo = $totalBidsKo;
 
@@ -230,9 +219,9 @@ class BidsLogs
     /**
      * Get totalBidsKo
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalBidsKo()
+    public function getTotalBidsKo(): int
     {
         return $this->totalBidsKo;
     }
@@ -240,11 +229,11 @@ class BidsLogs
     /**
      * Set totalBids
      *
-     * @param integer $totalBids
+     * @param int $totalBids
      *
      * @return BidsLogs
      */
-    public function setTotalBids($totalBids)
+    public function setTotalBids(int $totalBids): BidsLogs
     {
         $this->totalBids = $totalBids;
 
@@ -254,9 +243,9 @@ class BidsLogs
     /**
      * Get totalBids
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalBids()
+    public function getTotalBids(): int
     {
         return $this->totalBids;
     }
@@ -268,7 +257,7 @@ class BidsLogs
      *
      * @return BidsLogs
      */
-    public function setRateMax($rateMax)
+    public function setRateMax(float $rateMax): BidsLogs
     {
         $this->rateMax = $rateMax;
 
@@ -280,65 +269,17 @@ class BidsLogs
      *
      * @return float
      */
-    public function getRateMax()
+    public function getRateMax(): float
     {
         return $this->rateMax;
     }
 
     /**
-     * Set added
-     *
-     * @param \DateTime $added
-     *
-     * @return BidsLogs
-     */
-    public function setAdded($added)
-    {
-        $this->added = $added;
-
-        return $this;
-    }
-
-    /**
-     * Get added
-     *
-     * @return \DateTime
-     */
-    public function getAdded()
-    {
-        return $this->added;
-    }
-
-    /**
-     * Set updated
-     *
-     * @param \DateTime $updated
-     *
-     * @return BidsLogs
-     */
-    public function setUpdated($updated)
-    {
-        $this->updated = $updated;
-
-        return $this;
-    }
-
-    /**
-     * Get updated
-     *
-     * @return \DateTime
-     */
-    public function getUpdated()
-    {
-        return $this->updated;
-    }
-
-    /**
      * Get idBidLog
      *
-     * @return integer
+     * @return int
      */
-    public function getIdBidLog()
+    public function getIdBidLog(): int
     {
         return $this->idBidLog;
     }

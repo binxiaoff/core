@@ -50,15 +50,15 @@ class LenderAutoEvaluationController extends Controller
 
         $answers               = $this->get('session')->get('answers', []);
         $submittedQuestionType = filter_var($request->request->get('question'), FILTER_SANITIZE_STRING);
-        $nextTypeValue         = self::VALUE_TOTAL_ESTATE_THRESHOLD;
+        $nextTypeValue         = self::TYPE_VALUE_TOTAL_ESTATE;
         $currentStep           = $step;
 
         if ($request->request->has('estate-answer')) {
             $estateAmount = $request->request->getInt('estate-answer');
-            $answers      = array_merge($answers, [self::VALUE_TOTAL_ESTATE_THRESHOLD => $estateAmount]);
+            $answers      = array_merge($answers, [self::TYPE_VALUE_TOTAL_ESTATE => $estateAmount]);
         }
 
-        if (self::VALUE_TOTAL_ESTATE_THRESHOLD === $submittedQuestionType) {
+        if (self::TYPE_VALUE_TOTAL_ESTATE === $submittedQuestionType) {
             $nextTypeValue = self::TYPE_VALUE_YEARLY_EARNINGS;
             $currentStep   = 2;
         }

@@ -542,7 +542,7 @@ class LenderProfileFormsHandler
                 $newAttachments      = [$bankAccountDocument];
             }
 
-            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, '', $bankAccountModified);
+            $this->saveAndNotifyChanges($client, $unattachedClient, null, null, $newAttachments, null, $bankAccountModified);
 
             return true;
         }
@@ -662,7 +662,7 @@ class LenderProfileFormsHandler
         ?Companies $modifiedCompany = null,
         ?Companies $unattachedCompany = null,
         array $newAttachments = [],
-        ?string $modifiedAddressType,
+        ?string $modifiedAddressType = null,
         bool $isBankAccountModified = false
     ): void
     {

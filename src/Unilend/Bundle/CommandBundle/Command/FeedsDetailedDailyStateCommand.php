@@ -192,6 +192,7 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
 
         $outgoingMovements = array_merge([
             OperationType::LENDER_WITHDRAW,
+            OperationType::LENDER_WITHDRAW_CANCEL,
             OperationType::BORROWER_WITHDRAW,
             OperationType::UNILEND_WITHDRAW,
             OperationType::DEBT_COLLECTOR_WITHDRAW
@@ -719,6 +720,8 @@ class FeedsDetailedDailyStateCommand extends ContainerAwareCommand
             $crdsWithdraw                    = empty($line[OperationType::TAX_FR_CRDS_WITHDRAW]) ? 0 : $line[OperationType::TAX_FR_CRDS_WITHDRAW];
             $totalTaxWithdraw                = round(bcadd(bcadd(bcadd(bcadd(bcadd(bcadd($statutoryContributionsWithdraw, $incomeTaxWithdraw, 8), $csgWithdraw, 8), $socialDeductionsWithdraw, 8), $additionalContributionsWithdraw, 8), $solidarityDeductionsWithdraw, 8), $crdsWithdraw, 8), 2);
             $lenderWithdraw                  = empty($line[OperationType::LENDER_WITHDRAW]) ? 0 : $line[OperationType::LENDER_WITHDRAW];
+            $lenderWithdrawCancel            = empty($line[OperationType::LENDER_WITHDRAW_CANCEL]) ? 0 : $line[OperationType::LENDER_WITHDRAW_CANCEL];
+            $lenderWithdraw                  = round(bcsub($lenderWithdraw, $lenderWithdrawCancel, 4), 2);
             $unilendWithdraw                 = empty($line[OperationType::UNILEND_WITHDRAW]) ? 0 : $line[OperationType::UNILEND_WITHDRAW];
             $debtCollectorWithdraw           = empty($line[OperationType::DEBT_COLLECTOR_WITHDRAW]) ? 0 : $line[OperationType::DEBT_COLLECTOR_WITHDRAW];
             $borrowerWithdrawProject         = empty($line[OperationType::BORROWER_WITHDRAW]) ? 0 : $line[OperationType::BORROWER_WITHDRAW];
