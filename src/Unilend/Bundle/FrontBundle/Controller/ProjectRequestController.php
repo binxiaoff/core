@@ -405,7 +405,7 @@ class ProjectRequestController extends Controller
         }
 
         $project->setPeriod($duration);
-        $project->setComments($request->request->get('project')['description']);
+        $project->setComments($description);
 
         $entityManager->flush($project);
 

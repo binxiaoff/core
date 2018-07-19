@@ -4,17 +4,18 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\AbstractQuery;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\ORM\Query\ResultSetMappingBuilder;
+use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\ORM\{
+    AbstractQuery, EntityRepository, Query\Expr\Join, Query\ResultSetMappingBuilder
+};
 use PDO;
 use Psr\Log\InvalidArgumentException;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
+    Bids, Clients, Companies, CompanyStatus, Echeanciers, EcheanciersEmprunteur, Factures, OperationType, Partner, Projects, ProjectsStatus, UnilendStats
 };
-use Unilend\Bundle\CoreBusinessBundle\Service\DebtCollectionMissionManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{
+    DebtCollectionMissionManager, ProjectCloseOutNettingManager
+};
 use Unilend\librairies\CacheKeys;
 
 class ProjectsRepository extends EntityRepository
@@ -302,14 +303,15 @@ class ProjectsRepository extends EntityRepository
      *
      * @return Projects[]
      */
-    public function findBySiren($siren)
+    public function findBySiren(string $siren): array
     {
-        $qb = $this->createQueryBuilder('p');
-        $qb->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'p.idCompany = c.idCompany')
             ->where('c.siren = :siren')
             ->setParameter('siren', $siren);
 
-        return $qb->getQuery()->getResult();
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
@@ -1116,21 +1118,6 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param string $siren
-     *
-     * @return mixed
-     */
-    public function findProjectsBySiren($siren)
-    {
-        $queryBuilder = $this->createQueryBuilder('p')
-            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'co', Join::WITH, 'co.idCompany = p.idCompany')
-            ->where('co.siren = :siren')
-            ->setParameter('siren', $siren);
-
-        return $queryBuilder->getQuery()->getResult();
-    }
-
-    /**
      * @return array
      */
     public function getProjectsInDebt()
@@ -1256,7 +1243,7 @@ class ProjectsRepository extends EntityRepository
      *
      * @return Projects[]
      */
-    public function findSubmitterProjectsByStatus($submitter, int $status) : array
+    public function findSubmitterProjectsByStatus($submitter, int $status): array
     {
         $rsm = new ResultSetMappingBuilder($this->getEntityManager());
         $rsm->addRootEntityFromClassMetadata('UnilendCoreBusinessBundle:Projects', 'p');
@@ -1504,6 +1491,108 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', [ProjectsStatus::REMBOURSEMENT, ProjectsStatus::PROBLEME]);
 
         return array_column($queryBuilder->getQuery()->getArrayResult(), 'idProject');
+    }
+
+    /**
+     * @param int|null $limit
+     *
+     * @return Projects[]
+     */
+    public function findPrePublish(?int $limit = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p');
+        $queryBuilder
+            ->where('p.status = :status')
+            ->andWhere('p.datePublication <= :publicationDate')
+            ->setParameter('status', ProjectsStatus::A_FUNDER)
+            ->setParameter('publicationDate', new \DateTime('- 15 minutes'));
+
+        if ($limit) {
+            $queryBuilder->setMaxResults($limit);
+        }
+
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    /**
+     * @param Projects $project
+     * @param bool     $cache
+     *
+     * @return float
+     */
+    public function getAverageInterestRate(Projects $project, bool $cache = true): float
+    {
+        // @todo when Doctrine migration is over, null check should be enough
+        if (null !== $project->getInterestRate() && false === empty($project->getInterestRate())) {
+            return $project->getInterestRate();
+        }
+
+        $queryCacheProfile = null;
+        $queryBuilder      = $this->getEntityManager()->getConnection()->createQueryBuilder();
+        $queryBuilder
+            ->select('SUM(t.amount * t.rate) / SUM(t.amount)')
+            ->where('t.id_project = :projectId')
+            ->setParameter('projectId', $project->getIdProject());
+
+        switch ($project->getStatus()) {
+            case ProjectsStatus::FUNDE:
+            case ProjectsStatus::REMBOURSEMENT:
+            case ProjectsStatus::REMBOURSE:
+            case ProjectsStatus::PROBLEME:
+            case ProjectsStatus::REMBOURSEMENT_ANTICIPE:
+            case ProjectsStatus::LOSS:
+                $queryBuilder
+                    ->from('loans', 't');
+                break;
+            case ProjectsStatus::PRET_REFUSE:
+            case ProjectsStatus::EN_FUNDING:
+            case ProjectsStatus::AUTO_BID_PLACED:
+            case ProjectsStatus::BID_TERMINATED:
+            case ProjectsStatus::A_FUNDER:
+                $queryBuilder
+                    ->from('bids', 't')
+                    ->andWhere('t.status IN (:status)')
+                    ->setParameter('status', [Bids::STATUS_PENDING, Bids::STATUS_ACCEPTED], \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+                break;
+            case ProjectsStatus::FUNDING_KO:
+                $queryBuilder
+                    ->from('bids', 't');
+                break;
+            default:
+                trigger_error('Unknown project status: ' . $project->getStatus() . ' Could not calculate amounts', E_USER_WARNING);
+                return 0.0;
+        }
+
+        if ($project->getStatus() >= ProjectsStatus::PRET_REFUSE) {
+            trigger_error('Interest rate should be saved in DB for project ' . $project->getIdProject(), E_USER_WARNING);
+        }
+
+        if ($cache && $project->getStatus() !== ProjectsStatus::A_FUNDER) {
+            $cacheTime         = CacheKeys::VERY_SHORT_TIME;
+            $cacheKey          = md5(__METHOD__);
+            $queryCacheProfile = new QueryCacheProfile($cacheTime, $cacheKey);
+        }
+
+        try {
+            $statement = $this->getEntityManager()->getConnection()->executeQuery(
+                $queryBuilder->getSQL(),
+                $queryBuilder->getParameters(),
+                $queryBuilder->getParameterTypes(),
+                $queryCacheProfile
+            );
+
+            if ($statement instanceof ResultStatement) {
+                $result = $statement->fetchAll(PDO::FETCH_COLUMN);
+                $statement->closeCursor();
+
+                if (is_array($result) && false === empty($result)) {
+                    return (float) $result[0];
+                }
+            }
+        } catch (\Exception $exception) {
+        }
+
+        return 0.0;
     }
 
     /**

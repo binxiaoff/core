@@ -24,8 +24,6 @@ class ClientValidator
     protected $entityManager;
 
     /**
-     * ClientValidator constructor.
-     *
      * @param ProductAttributeManager $productAttributeManager
      * @param ContractManager         $contractManager
      * @param EntityManager           $entityManager
@@ -47,7 +45,7 @@ class ClientValidator
      *
      * @return array
      */
-    public function validate(Clients $client = null, Projects $project)
+    public function validate(?Clients $client = null, Projects $project): array
     {
         $violations = [];
         $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());

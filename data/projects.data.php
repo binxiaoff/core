@@ -440,6 +440,8 @@ class projects extends projects_crud
     }
 
     /**
+     * @deprecated Use ProjectsRepository::getAverageInterestRate instead
+     *
      * @param bool $cache
      *
      * @return float
