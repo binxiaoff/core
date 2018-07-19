@@ -237,11 +237,12 @@ class dashboardController extends bootstrap
 
         foreach ($projectRepository->findImpossibleEvaluationProjects() as $project) {
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
-                if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner()) {
-                    $status = empty($project->getIdCompany()->getIdClientOwner()->getTelephone()) ? ProjectsStatus::INCOMPLETE_REQUEST : ProjectsStatus::COMPLETE_REQUEST;
-                } else {
-                    $status = ProjectsStatus::INCOMPLETE_REQUEST;
+                $status = ProjectsStatus::INCOMPLETE_REQUEST;
+
+                if ($project->getIdCompany() && $project->getIdCompany()->getIdClientOwner() && false === empty($project->getIdCompany()->getIdClientOwner()->getTelephone())) {
+                    $status = ProjectsStatus::COMPLETE_REQUEST;
                 }
+
                 try {
                     $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
                 } catch (\Doctrine\ORM\OptimisticLockException $exception) {
@@ -259,11 +260,7 @@ class dashboardController extends bootstrap
             }
 
             if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
-                $company = $project->getIdCompany();
-
-                if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
-                    $this->sendProjectRejectionEmail($project, $messageProvider, $logger);
-                }
+                $this->sendProjectRejectionEmail($project, $messageProvider);
             }
         }
 
@@ -274,9 +271,8 @@ class dashboardController extends bootstrap
     /**
      * @param Projects                 $project
      * @param TemplateMessageProvider  $messageProvider
-     * @param \Psr\Log\LoggerInterface $logger
      */
-    private function sendProjectRejectionEmail(Projects $project, TemplateMessageProvider $messageProvider, \Psr\Log\LoggerInterface $logger): void
+    private function sendProjectRejectionEmail(Projects $project, TemplateMessageProvider $messageProvider): void
     {
         $company = $project->getIdCompany();
 
@@ -289,7 +285,7 @@ class dashboardController extends bootstrap
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
             } catch (\Exception $exception) {
-                $logger->warning('Could not send email: "emprunteur-dossier-rejete" on project: ' . $project->getIdProject() . ' - Exception: ' . $exception->getMessage(), [
+                $this->get('logger')->warning('Could not send email: "emprunteur-dossier-rejete" on project: ' . $project->getIdProject() . ' - Exception: ' . $exception->getMessage(), [
                     'id_client'        => $company->getIdClientOwner()->getIdClient(),
                     'id_mail_template' => $message->getTemplateId(),
                     'class'            => __CLASS__,

@@ -213,7 +213,7 @@
                     <?php $i = 0; ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> data-project="<?= $project->getIdProject() ?>">
                         <td><?= $project->getIdProject() ?></td>
-                        <td><?= $project->getIdCompany()->getSiren() ?></td>
+                        <td><?php if ($project->getIdCompany()) : ?><?= $project->getIdCompany()->getSiren() ?><?php endif; ?></td>
                         <td style="text-align: right"><?= $this->ficelle->formatNumber($project->getAmount(), 0) ?>&nbsp;€</td>
                         <td><?php if (false === empty($project->getPeriod())) : ?><?= $project->getPeriod() ?> mois<?php endif; ?></td>
                         <td><?= $project->getAdded()->format('d/m/Y - H\hi') ?></td>
