@@ -553,21 +553,21 @@ class MailerManager
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                 ];
 
-                if ($endDate <= $now) {
+                if (0 === bccomp($bid->getRate(), $projectRates['rate_min'], 1)) {
+                    $mailTemplate = 'preteur-autobid-ko-minimum-rate';
+                    $keyWords     += [
+                        'autolendLink' => $this->sFUrl . '/profile/autolend#parametrage',
+                    ];
+                } elseif ($endDate <= $now) {
                     $mailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                     $keyWords     += [
                         'projectLink' => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
                     ];
-                } elseif ($bidRepository->getProjectMaxRate($project->id_project) > $projectRates['rate_min']) {
+                } else {
                     $mailTemplate = 'preteur-autobid-ko';
                     $keyWords     += [
                         'bidRemainingTime' => $interval,
                         'projectLink'      => $this->sFUrl . '/projects/detail/' . $bid->getProject()->getSlug()
-                    ];
-                } else {
-                    $mailTemplate = 'preteur-autobid-ko-minimum-rate';
-                    $keyWords     += [
-                        'autolendLink' => $this->sFUrl . '/profile/autolend#parametrage',
                     ];
                 }
             } else {
@@ -600,7 +600,7 @@ class MailerManager
                     ];
                 }
             }
-
+var_dump($mailTemplate);
             $message = $this->messageProvider->newMessage($mailTemplate, $keyWords);
 
             try {

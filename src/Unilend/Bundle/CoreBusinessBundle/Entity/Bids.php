@@ -52,7 +52,7 @@ class Bids
     /**
      * @var float
      *
-     * @ORM\Column(name="rate", type="float", precision=10, scale=0, nullable=false)
+     * @ORM\Column(name="rate", type="float", precision=3, scale=1, nullable=false)
      */
     private $rate;
 
