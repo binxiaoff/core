@@ -1,10 +1,10 @@
 <section id="data-update-bank-account-view" role="tabpanel" class="lender-data-update-view collapse in">
     <dl class="list-2col">
         <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-iban {% endtrans %}</dt>
-        <dd id="data-update-bank-account-iban-output">{{ bankAccount.getIban() }}</dd>
+        <dd id="data-update-bank-account-iban-output">{% if bankAccount is not null %}{{ bankAccount.getIban() }}{% endif %}</dd>
         <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-bic {% endtrans %}</dt>
-        <dd id="data-update-bank-account-bic-output">{{ bankAccount.getBic() }}</dd>
-        {% if bankAccount.getAttachment() is not null %}
+        <dd id="data-update-bank-account-bic-output">{% if bankAccount is not null %}{{ bankAccount.getBic() }}{% endif %}</dd>
+        {% if bankAccount is not null and bankAccount.getAttachment() is not null %}
             {% set ribDate = bankAccount.getAttachment().getUpdated()|default(bankAccount.getAttachment().getAdded())|localizeddate('short', 'none') %}
             {% set ribProvidedTranslation = "lender-profile_lender-attachment-provided-label-type-#{constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\AttachmentType::RIB')}" | transchoice(ribDate, {'%date%': ribDate}) %}
             <dt>{% trans %} lender-profile_fiscal-tab-bank-info-section-documents {% endtrans %}</dt>
