@@ -434,7 +434,9 @@
         <br>
         <label class="css-input switch switch-sm switch-primary">
             <input type="checkbox"
-                   name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}><span></span>
+                   name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}
+                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}disabled{% endif %}>
+            <span></span>
             Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>
