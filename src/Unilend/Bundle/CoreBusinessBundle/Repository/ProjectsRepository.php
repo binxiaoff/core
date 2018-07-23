@@ -1594,4 +1594,21 @@ class ProjectsRepository extends EntityRepository
 
         return 0.0;
     }
+
+    /**
+     * @return Projects[]
+     */
+    public function findImpossibleEvaluationProjects(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->innerJoin('UnilendCoreBusinessBundle:Companies', 'c', Join::WITH, 'c.idCompany = p.idCompany')
+            ->where('p.status = :status')
+            ->andWhere('c.siren IS NOT NULL AND c.siren != \'\'')
+            ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
+            ->addOrderBy('p.added', 'ASC')
+            ->addOrderBy('p.amount', 'DESC')
+            ->addOrderBy('p.period', 'DESC');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
