@@ -600,7 +600,7 @@ class MailerManager
                     ];
                 }
             }
-var_dump($mailTemplate);
+
             $message = $this->messageProvider->newMessage($mailTemplate, $keyWords);
 
             try {
