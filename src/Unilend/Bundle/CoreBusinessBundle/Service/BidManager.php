@@ -397,15 +397,15 @@ class BidManager
     /**
      * @param Bids     $bid
      * @param string   $currentRate
+     * @param int|null $bidOrder
      * @param int      $mode
      * @param bool     $sendNotification
-     * @param int|null $bidOrder
      *
      * @throws OptimisticLockException
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, int $mode, bool $sendNotification = true, ?int &$bidOrder = null): void
+    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, ?int $bidOrder, int $mode, bool $sendNotification = true): void
     {
         $minimumProjectRate = (string) $this->getProjectRateRange($bid->getProject())['rate_min'];
 
@@ -418,14 +418,12 @@ class BidManager
                     $bidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
                 }
 
-                ++$bidOrder;
-
                 $bid->setStatus(Bids::STATUS_REJECTED);
 
                 $newBid = clone $bid;
                 $newBid
-                    ->setOrdre($bidOrder)
                     ->setRate($currentRate)
+                    ->setOrdre($bidOrder)
                     ->setStatus(Bids::STATUS_PENDING)
                     ->setAdded(new \DateTime('NOW'));
 

@@ -347,7 +347,11 @@ class ProjectLifecycleManager
 
         while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($autoBids as $autoBid) {
-                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $mode, $sendNotification, $bidOrder);
+                if (null !== $bidOrder) {
+                    ++$bidOrder;
+                }
+
+                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $mode, $sendNotification);
             }
         }
     }
