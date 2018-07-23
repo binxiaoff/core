@@ -164,7 +164,7 @@ class ProjectLifecycleManager
             $this->markAsFunded($project);
         }
 
-        $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
+        $this->reBidAutoBidDeeply($project, false);
 
         $currentDate      = new \DateTime();
         $projectEndDate   = $this->projectManager->getProjectEndDate($project);
@@ -286,7 +286,7 @@ class ProjectLifecycleManager
                 $this->bidAllAutoBid($project);
                 break;
             case ProjectsStatus::EN_FUNDING:
-                $this->reBidAutoBid($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
+                $this->reBidAutoBid($project, true);
                 break;
         }
     }
@@ -324,54 +324,55 @@ class ProjectLifecycleManager
 
     /**
      * @param Projects $project
-     * @param int      $mode
      * @param bool     $sendNotification
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    private function reBidAutoBid(Projects $project, int $mode, bool $sendNotification): void
+    private function reBidAutoBid(Projects $project, bool $sendNotification): void
     {
         $rateStep = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
             ->findOneBy(['type' => Settings::TYPE_AUTOBID_STEP])
             ->getValue();
 
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $currentRate   = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
-        $bidOrder      = null;
+        $bidRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $currentRate        = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
+        $bidOrder           = null;
+        $preCalculatedOrder = false;
 
         if (ProjectsStatus::A_FUNDER === $project->getStatus()) {
-            $bidOrder = $bidRepository->countBy(['idProject' => $project]);
+            $preCalculatedOrder = true;
+            $bidOrder           = $bidRepository->countBy(['idProject' => $project]);
+            $bidOrder++;
         }
 
         while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($autoBids as $autoBid) {
-                if (null !== $bidOrder) {
-                    ++$bidOrder;
-                }
+                $bid = $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $sendNotification);
 
-                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $mode, $sendNotification);
+                if ($preCalculatedOrder && Bids::STATUS_PENDING === $bid->getStatus()) {
+                    $bidOrder = $bid->getOrdre() + 1;
+                }
             }
         }
     }
 
     /**
      * @param Projects $project
-     * @param int      $mode
      * @param bool     $sendNotification
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    private function reBidAutoBidDeeply(Projects $project, int $mode, bool $sendNotification): void
+    private function reBidAutoBidDeeply(Projects $project, bool $sendNotification): void
     {
         $rejectedBids = $this->checkBids($project, $sendNotification);
 
         if (false === empty($rejectedBids['temporarilyRejected'])) {
-            $this->reBidAutoBid($project, $mode, $sendNotification);
-            $this->reBidAutoBidDeeply($project, $mode, $sendNotification);
+            $this->reBidAutoBid($project, $sendNotification);
+            $this->reBidAutoBidDeeply($project, $sendNotification);
         }
     }
 
@@ -386,7 +387,7 @@ class ProjectLifecycleManager
     public function buildLoans(Projects $project): void
     {
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::BID_TERMINATED, $project);
-        $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
+        $this->reBidAutoBidDeeply($project, true);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDE, $project);
         $this->acceptBids($project);
 

@@ -21,9 +21,6 @@ use Unilend\librairies\CacheKeys;
  */
 class BidManager
 {
-    const MODE_REBID_AUTO_BID_CREATE = 1;
-    const MODE_REBID_AUTO_BID_UPDATE = 2;
-
     /** @var LoggerInterface */
     private $logger;
     /** @var NotificationManager */
@@ -398,14 +395,14 @@ class BidManager
      * @param Bids     $bid
      * @param string   $currentRate
      * @param int|null $bidOrder
-     * @param int      $mode
      * @param bool     $sendNotification
      *
+     * @return Bids
      * @throws OptimisticLockException
      * @throws NoResultException
      * @throws NonUniqueResultException
      */
-    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, ?int $bidOrder, int $mode, bool $sendNotification = true): void
+    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, ?int $bidOrder, bool $sendNotification = true): Bids
     {
         $minimumProjectRate = (string) $this->getProjectRateRange($bid->getProject())['rate_min'];
 
@@ -413,32 +410,29 @@ class BidManager
             bccomp($currentRate, $minimumProjectRate, 1) >= 0
             && bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0
         ) {
-            if (self::MODE_REBID_AUTO_BID_CREATE === $mode) {
-                if (null === $bidOrder) {
-                    $bidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
-                }
-
-                $bid->setStatus(Bids::STATUS_REJECTED);
-
-                $newBid = clone $bid;
-                $newBid
-                    ->setRate($currentRate)
-                    ->setOrdre($bidOrder)
-                    ->setStatus(Bids::STATUS_PENDING)
-                    ->setAdded(new \DateTime('NOW'));
-
-                $this->entityManager->persist($newBid);
-                $this->entityManager->flush([$bid, $newBid]);
-            } else {
-                $bid
-                    ->setRate($currentRate)
-                    ->setStatus(Bids::STATUS_PENDING);
-
-                $this->entityManager->flush($bid);
+            if (null === $bidOrder) {
+                $bidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
+                $bidOrder++;
             }
+
+            $bid->setStatus(Bids::STATUS_REJECTED);
+
+            $newBid = clone $bid;
+            $newBid
+                ->setRate($currentRate)
+                ->setOrdre($bidOrder)
+                ->setStatus(Bids::STATUS_PENDING)
+                ->setAdded(new \DateTime('NOW'));
+
+            $this->entityManager->persist($newBid);
+            $this->entityManager->flush([$bid, $newBid]);
+
+            return $newBid;
         } else {
             $this->reject($bid, $sendNotification);
         }
+
+        return $bid;
     }
 
     /**
