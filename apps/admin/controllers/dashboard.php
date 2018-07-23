@@ -229,11 +229,7 @@ class dashboardController extends bootstrap
         $projectStatusManager = $this->get('unilend.service.project_status_manager');
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        /** @var TemplateMessageProvider $messageProvider */
-        $messageProvider   = $this->get('unilend.swiftmailer.message_provider');
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        /** @var \Psr\Log\LoggerInterface $logger */
-        $logger = $this->get('logger');
+        $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         foreach ($projectRepository->findImpossibleEvaluationProjects() as $project) {
             if (null === $projectRequestManager->checkProjectRisk($project, $this->userEntity->getIdUser())) {
@@ -246,7 +242,7 @@ class dashboardController extends bootstrap
                 try {
                     $projectStatusManager->addProjectStatus($this->userEntity, $status, $project);
                 } catch (\Doctrine\ORM\OptimisticLockException $exception) {
-                    $logger->error('Could not update project status into ' . $status . ' - Error message: ' . $exception->getMessage(), [
+                    $this->get('logger')->error('Could not update project status into ' . $status . ' - Error message: ' . $exception->getMessage(), [
                         'id_project' => $project->getIdProject(),
                         'file'       => $exception->getFile(),
                         'line'       => $exception->getLine(),
@@ -260,7 +256,7 @@ class dashboardController extends bootstrap
             }
 
             if ($project->getStatus() === ProjectsStatus::NOT_ELIGIBLE) {
-                $this->sendProjectRejectionEmail($project, $messageProvider);
+                $this->sendProjectRejectionEmail($project);
             }
         }
 
@@ -270,13 +266,14 @@ class dashboardController extends bootstrap
 
     /**
      * @param Projects                 $project
-     * @param TemplateMessageProvider  $messageProvider
      */
-    private function sendProjectRejectionEmail(Projects $project, TemplateMessageProvider $messageProvider): void
+    private function sendProjectRejectionEmail(Projects $project): void
     {
         $company = $project->getIdCompany();
 
         if (null !== $company && null !== $company->getIdClientOwner() && false === empty($company->getIdClientOwner()->getEmail())) {
+            /** @var TemplateMessageProvider $messageProvider */
+            $messageProvider = $this->get('unilend.swiftmailer.message_provider');
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $messageProvider->newMessage('emprunteur-dossier-rejete', ['firstName' => $company->getIdClientOwner()->getPrenom()]);
 
