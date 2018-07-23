@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\{
-    EntityManager, OptimisticLockException
+    EntityManager, NonUniqueResultException, NoResultException, OptimisticLockException
 };
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
@@ -353,8 +353,8 @@ class BidManager
      *
      * @throws \Exception
      * @throws BidException
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
     private function checkCip(Bids $bid): void
     {
@@ -395,18 +395,29 @@ class BidManager
     }
 
     /**
-     * @param Bids  $bid
-     * @param float $currentRate
-     * @param int   $bidOrder
-     * @param int   $mode
-     * @param bool  $sendNotification
+     * @param Bids     $bid
+     * @param string   $currentRate
+     * @param int      $mode
+     * @param bool     $sendNotification
+     * @param int|null $bidOrder
      *
      * @throws OptimisticLockException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
      */
-    public function reBidAutoBidOrReject(Bids $bid, float $currentRate, int &$bidOrder, int $mode, bool $sendNotification = true): void
+    public function reBidAutoBidOrReject(Bids $bid, string $currentRate, int $mode, bool $sendNotification = true, ?int &$bidOrder = null): void
     {
-        if (bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0) {
+        $minimumProjectRate = (string) $this->getProjectRateRange($bid->getProject())['rate_min'];
+
+        if (
+            bccomp($currentRate, $minimumProjectRate, 1) >= 0
+            && bccomp($currentRate, $bid->getAutobid()->getRateMin(), 1) >= 0
+        ) {
             if (self::MODE_REBID_AUTO_BID_CREATE === $mode) {
+                if (null === $bidOrder) {
+                    $bidOrder = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countBy(['idProject' => $bid->getProject()->getIdProject()]);
+                }
+
                 ++$bidOrder;
 
                 $bid->setStatus(Bids::STATUS_REJECTED);

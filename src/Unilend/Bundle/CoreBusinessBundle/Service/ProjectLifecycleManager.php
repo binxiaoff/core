@@ -338,17 +338,16 @@ class ProjectLifecycleManager
             ->getValue();
 
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $bidOrder      = $bidRepository->countBy(['idProject' => $project]);
         $currentRate   = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
-        $minimumRate   = $this->bidManager->getProjectRateRange($project)['rate_min'];
+        $bidOrder      = null;
+
+        if (ProjectsStatus::A_FUNDER === $project->getStatus()) {
+            $bidOrder = $bidRepository->countBy(['idProject' => $project]);
+        }
 
         while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($autoBids as $autoBid) {
-                if (bccomp($currentRate, $minimumRate, 1) >= 0) {
-                    $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $mode, $sendNotification);
-                } else {
-                    $this->bidManager->reject($autoBid, $sendNotification);
-                }
+                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $mode, $sendNotification, $bidOrder);
             }
         }
     }
