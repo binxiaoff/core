@@ -243,6 +243,11 @@ unilend_translation:
             path: "%kernel.cache_dir%/translations"
 
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
     twig.extension.text:
         class: Twig_Extensions_Extension_Text
         tags:
