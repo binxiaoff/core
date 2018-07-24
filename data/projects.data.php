@@ -1423,8 +1423,6 @@ class projects extends projects_crud
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->where('p.status IN (:commercialStatus)')
-            ->andWhere('co.siren != \'\'')
-            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'DESC')
