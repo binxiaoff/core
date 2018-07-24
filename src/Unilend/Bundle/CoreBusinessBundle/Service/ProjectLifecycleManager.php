@@ -15,9 +15,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 use Unilend\Bundle\CoreBusinessBundle\Repository\WalletRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\Contract\ContractAttributeManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
-use Unilend\core\Loader;
 
 class ProjectLifecycleManager
 {
@@ -39,10 +39,6 @@ class ProjectLifecycleManager
     private $productManager;
     /** @var ContractAttributeManager */
     private $contractAttributeManager;
-    /** @var \dates */
-    private $datesManager;
-    /** @var \jours_ouvres */
-    private $workingDay;
     /** @var LoggerInterface */
     private $logger;
     /** @var ProjectStatusManager */
@@ -67,28 +63,31 @@ class ProjectLifecycleManager
     private $currencyFormatter;
     /** @var CIPManager */
     private $cipManager;
+    /** @var ProjectRepaymentScheduleManager */
+    private $projectRepaymentScheduleManager;
 
     /**
-     * @param EntityManagerSimulator     $entityManagerSimulator
-     * @param EntityManager              $entityManager
-     * @param BidManager                 $bidManager
-     * @param LoanManager                $loanManager
-     * @param NotificationManager        $notificationManager
-     * @param MailerManager              $mailerManager
-     * @param ProjectRateSettingsManager $projectRateSettingsManager
-     * @param ProductManager             $productManager
-     * @param ContractAttributeManager   $contractAttributeManager
-     * @param ProjectStatusManager       $projectStatusManager
-     * @param ProjectManager             $projectManager
-     * @param AutoBidSettingsManager     $autobidSettingsManager
-     * @param TranslatorInterface        $translator
-     * @param TemplateMessageProvider    $messageProvider
-     * @param \Swift_Mailer              $mailer
-     * @param RouterInterface            $router
-     * @param string                     $frontUrl
-     * @param \NumberFormatter           $numberFormatter
-     * @param \NumberFormatter           $currencyFormatter
-     * @param CIPManager                 $cipManager
+     * @param EntityManagerSimulator          $entityManagerSimulator
+     * @param EntityManager                   $entityManager
+     * @param BidManager                      $bidManager
+     * @param LoanManager                     $loanManager
+     * @param NotificationManager             $notificationManager
+     * @param MailerManager                   $mailerManager
+     * @param ProjectRateSettingsManager      $projectRateSettingsManager
+     * @param ProductManager                  $productManager
+     * @param ContractAttributeManager        $contractAttributeManager
+     * @param ProjectStatusManager            $projectStatusManager
+     * @param ProjectManager                  $projectManager
+     * @param AutoBidSettingsManager          $autobidSettingsManager
+     * @param TranslatorInterface             $translator
+     * @param TemplateMessageProvider         $messageProvider
+     * @param \Swift_Mailer                   $mailer
+     * @param RouterInterface                 $router
+     * @param string                          $frontUrl
+     * @param \NumberFormatter                $numberFormatter
+     * @param \NumberFormatter                $currencyFormatter
+     * @param CIPManager                      $cipManager
+     * @param ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
      *
      */
     public function __construct(
@@ -111,32 +110,31 @@ class ProjectLifecycleManager
         string $frontUrl,
         \NumberFormatter $numberFormatter,
         \NumberFormatter $currencyFormatter,
-        CIPManager $cipManager
+        CIPManager $cipManager,
+        ProjectRepaymentScheduleManager $projectRepaymentScheduleManager
     )
     {
-        $this->entityManagerSimulator     = $entityManagerSimulator;
-        $this->entityManager              = $entityManager;
-        $this->bidManager                 = $bidManager;
-        $this->loanManager                = $loanManager;
-        $this->notificationManager        = $notificationManager;
-        $this->mailerManager              = $mailerManager;
-        $this->projectRateSettingsManager = $projectRateSettingsManager;
-        $this->productManager             = $productManager;
-        $this->contractAttributeManager   = $contractAttributeManager;
-        $this->projectStatusManager       = $projectStatusManager;
-        $this->projectManager             = $projectManager;
-        $this->autobidSettingsManager     = $autobidSettingsManager;
-        $this->translator                 = $translator;
-        $this->messageProvider            = $messageProvider;
-        $this->mailer                     = $mailer;
-        $this->router                     = $router;
-        $this->frontUrl                   = $frontUrl;
-        $this->numberFormatter            = $numberFormatter;
-        $this->currencyFormatter          = $currencyFormatter;
-        $this->cipManager                 = $cipManager;
-
-        $this->datesManager = Loader::loadLib('dates');
-        $this->workingDay   = Loader::loadLib('jours_ouvres');
+        $this->entityManagerSimulator          = $entityManagerSimulator;
+        $this->entityManager                   = $entityManager;
+        $this->bidManager                      = $bidManager;
+        $this->loanManager                     = $loanManager;
+        $this->notificationManager             = $notificationManager;
+        $this->mailerManager                   = $mailerManager;
+        $this->projectRateSettingsManager      = $projectRateSettingsManager;
+        $this->productManager                  = $productManager;
+        $this->contractAttributeManager        = $contractAttributeManager;
+        $this->projectStatusManager            = $projectStatusManager;
+        $this->projectManager                  = $projectManager;
+        $this->autobidSettingsManager          = $autobidSettingsManager;
+        $this->translator                      = $translator;
+        $this->messageProvider                 = $messageProvider;
+        $this->mailer                          = $mailer;
+        $this->router                          = $router;
+        $this->frontUrl                        = $frontUrl;
+        $this->numberFormatter                 = $numberFormatter;
+        $this->currencyFormatter               = $currencyFormatter;
+        $this->cipManager                      = $cipManager;
+        $this->projectRepaymentScheduleManager = $projectRepaymentScheduleManager;
     }
 
     /**
@@ -683,12 +681,8 @@ class ProjectLifecycleManager
 
                 $aRepaymentSchedule = [];
                 foreach ($oLoan->getRepaymentSchedule() as $k => $e) {
-                    $dateEcheance = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $k);
-                    $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
-
-                    $dateEcheance_emprunteur = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $k);
-                    $dateEcheance_emprunteur = $this->workingDay->display_jours_ouvres($dateEcheance_emprunteur, 6);
-                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
+                    $lenderRepaymentDate = $this->projectRepaymentScheduleManager->generateLenderMonthlyAmortizationDate($project->getDateFin(), $k);
+                    $borrowerPaymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $k);
 
                     $aRepaymentSchedule[] = [
                         'id_lender'                => $l['id_lender'],
@@ -698,8 +692,8 @@ class ProjectLifecycleManager
                         'montant'                  => bcmul($e['repayment'], 100),
                         'capital'                  => bcmul($e['capital'], 100),
                         'interets'                 => bcmul($e['interest'], 100),
-                        'date_echeance'            => $dateEcheance,
-                        'date_echeance_emprunteur' => $dateEcheance_emprunteur,
+                        'date_echeance'            => $lenderRepaymentDate->format('Y-m-d H:i:00'),
+                        'date_echeance_emprunteur' => $borrowerPaymentDate->format('Y-m-d H:i:00'),
                         'added'                    => date('Y-m-d H:i:s'),
                         'updated'                  => date('Y-m-d H:i:s')
                     ];
@@ -748,12 +742,8 @@ class ProjectLifecycleManager
                 $repayments = [];
                 // @todo raw deferred duration = 12
                 foreach ($loanEntity->getDeferredRepaymentSchedule(12) as $order => $repayment) {
-                    $lenderRepaymentDate = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $order);
-                    $lenderRepaymentDate = date('Y-m-d H:i:00', $lenderRepaymentDate);
-
-                    $borrowerPaymentDate = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $order);
-                    $borrowerPaymentDate = $this->workingDay->display_jours_ouvres($borrowerPaymentDate, 6);
-                    $borrowerPaymentDate = date('Y-m-d H:i:00', $borrowerPaymentDate);
+                    $lenderRepaymentDate = $this->projectRepaymentScheduleManager->generateLenderMonthlyAmortizationDate($project->getDateFin(), $order);
+                    $borrowerPaymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $order);
 
                     $repayments[] = [
                         'id_lender'                => $loan['id_lender'],
@@ -763,8 +753,8 @@ class ProjectLifecycleManager
                         'montant'                  => bcmul($repayment['repayment'], 100),
                         'capital'                  => bcmul($repayment['capital'], 100),
                         'interets'                 => bcmul($repayment['interest'], 100),
-                        'date_echeance'            => $lenderRepaymentDate,
-                        'date_echeance_emprunteur' => $borrowerPaymentDate,
+                        'date_echeance'            => $lenderRepaymentDate->format('Y-m-d H:i:00'),
+                        'date_echeance_emprunteur' => $borrowerPaymentDate->format('Y-m-d H:i:00'),
                         'added'                    => date('Y-m-d H:i:s'),
                         'updated'                  => date('Y-m-d H:i:s')
                     ];
@@ -842,10 +832,7 @@ class ProjectLifecycleManager
         }
 
         foreach ($lenderRepaymentsSummary as $order => $lenderRepaymentSummary) {
-            $paymentDate = $this->datesManager->dateAddMoisJoursV3($project->getDateFin()->format('Y-m-d H:i:s'), $order);
-            $paymentDate = $this->workingDay->display_jours_ouvres($paymentDate, 6);
-            $paymentDate = date('Y-m-d H:i', $paymentDate) . ':00';
-
+            $paymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $order);
             /** @var \echeanciers_emprunteur $paymentSchedule */
             $paymentSchedule                           = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
             $paymentSchedule->id_project               = $project->getIdProject();
@@ -855,7 +842,7 @@ class ProjectLifecycleManager
             $paymentSchedule->interets                 = bcmul($lenderRepaymentSummary['interets'], 100);
             $paymentSchedule->commission               = bcmul($commission['commission_monthly'], 100);
             $paymentSchedule->tva                      = bcmul($commission['vat_amount_monthly'], 100);
-            $paymentSchedule->date_echeance_emprunteur = $paymentDate;
+            $paymentSchedule->date_echeance_emprunteur = $paymentDate->format('Y-m-d H:i:00');
             $paymentSchedule->create();
 
             $processedPayments++;
@@ -901,6 +888,7 @@ class ProjectLifecycleManager
         }
 
         foreach ($lenderRepaymentsSummary as $order => $lenderRepaymentSummary) {
+            $paymentDate = $this->projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($project->getDateFin(), $order);
             /** @var \echeanciers_emprunteur $borrowerPaymentSchedule */
             $borrowerPaymentSchedule                           = $this->entityManagerSimulator->getRepository('echeanciers_emprunteur');
             $borrowerPaymentSchedule->id_project               = $project->getIdProject();
@@ -910,7 +898,7 @@ class ProjectLifecycleManager
             $borrowerPaymentSchedule->interets                 = bcmul($lenderRepaymentSummary['interets'], 100);
             $borrowerPaymentSchedule->commission               = bcmul($commission['commission_monthly'], 100);
             $borrowerPaymentSchedule->tva                      = bcmul($commission['vat_amount_monthly'], 100);
-            $borrowerPaymentSchedule->date_echeance_emprunteur = $lenderRepaymentSummary['date_echeance_emprunteur'];
+            $borrowerPaymentSchedule->date_echeance_emprunteur = $paymentDate->format('Y-m-d H:i:00');
             $borrowerPaymentSchedule->create();
 
             $processedPayments++;
