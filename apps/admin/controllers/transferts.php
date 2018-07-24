@@ -814,7 +814,7 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['id_rib'] = $bankAccountAttachment->getId();
             }
 
-            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachments($aProject['id_project'], AttachmentType::KBIS);
+            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($aProject['id_project'], AttachmentType::KBIS);
 
             $this->aProjects[$index]['kbis']    = '';
             $this->aProjects[$index]['id_kbis'] = '';

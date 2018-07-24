@@ -183,7 +183,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                     </div>
                     <div class="col-md-5">
                         <a class="thickbox btn-primary" href="<?= $this->lurl ?>/client_atypical_operation/process_detection_box/add/<?= $this->client->getIdClient() ?>">
-                            Ajouter
+                            Ajouter une opération atypique
                         </a>
                     </div>
                 </div>
