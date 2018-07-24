@@ -118,7 +118,8 @@ class DataWriter
             $assessment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringAssessment')
                 ->findOneBy(['idRiskDataMonitoringType' => $type, 'idRiskDataMonitoringCallLog' => $callLog]);
             $rule        = $type->getIdProjectEligibilityRule()->getDescription();
-            $result      = '1' === $assessment->getValue() ? 'ok' : 'echouée, ' . $this->projectStatusManager->getStatusReasonText(null, $assessment->getValue(), 'rejection')[0];
+            $reason      = $this->projectStatusManager->getStatusReasonTextByLabel($assessment->getValue(), 'rejection');
+            $result      = '1' === $assessment->getValue() ? 'ok' : 'echouée, ' . (false === empty($reason['description'])) ? implode(' - ', $reason) : $reason['reason'];
             $memoContent .= '<li>' . $rule . ' :<strong> ' . $result . '</strong></li>';
         }
 

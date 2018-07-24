@@ -21,7 +21,8 @@ var Memo = function($trigger) {
     self.track = {
         open: false,
         projectId: $trigger.data('memo-project-id'),
-        submitUrl: $trigger.data('memo-onsubmit')
+        submitUrl: $trigger.data('memo-onsubmit'),
+        startupFocus: $trigger.data('memo') !== '#abandon-project-memo'
     }
 
     var existingHmtl = self.$elem.html()
@@ -72,8 +73,18 @@ Memo.prototype.open = function () {
             toolbar: 'Basic',
             removePlugins: 'elementspath',
             resize_enabled: false,
-            startupFocus: true
+            startupFocus: self.track.startupFocus
         })
+        // Set focus on abandon reason select instead of memo textarea
+        var $abandonReason = $('#reason')
+        if ($abandonReason.length) {
+            var $select2 = $abandonReason.select2({
+                width: 'resolve',
+                dropdownParent: $('#abandon-project-memo')
+            })
+            $select2.select2('open')
+        }
+
         self.track.open = true
     })
 }
@@ -131,7 +142,7 @@ Memo.prototype.close = function() {
 
 /* Elements Jquery */
 $(document).ready(function() {
-    $('.thickbox').colorbox()
+    $('.thickbox').colorbox({fixed: true})
 
     // Load colorbox in iframe mode
     $('.colorbox-iframe').colorbox({

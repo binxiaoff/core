@@ -141,52 +141,60 @@ class ProjectStatusManager
     }
 
     /**
-     * @param Projects|\projects|null $project
-     * @param string|null             $reasonLabel
-     * @param string|null             $type
+     * @param Projects $project
      *
      * @return array
      */
-    public function getStatusReasonText($project = null, ?string $reasonLabel = null, ?string $type = null): array
+    public function getStatusReasonTextByProject(Projects $project)
     {
-        if (null !== $project) {
-            if ($project instanceof \projects) {
-                /** @var Projects $project */
-                $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
-                    ->find($project->id_project);
-            }
-            $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
-                ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
+        $reasonText        = [];
+        $reasonDescription = [];
 
-            switch ($project->getStatus()) {
-                case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
-                    return [$this->getWsCallFailureReasonTranslation($lastProjectStatusHistory->getContent())];
-                default:
-                    $reasonText = [];
-                    /** @var ProjectStatusHistoryReason[] $rejectionReasons */
-                    $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
-                    if (count($rejectionReasons) > 0) {
-                        foreach ($rejectionReasons as $reason) {
-                            $reasonText[] = $reason->getIdRejectionReason()->getReason();
-                        }
+        $lastProjectStatusHistory = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findOneBy(['idProject' => $project], ['added' => 'DESC', 'idProjectStatusHistory' => 'DESC']);
 
-                        return $reasonText;
-                    }
-                    /** @var ProjectStatusHistoryReason[] $abandonReasons */
-                    $abandonReasons = $lastProjectStatusHistory->getAbandonReasons();
-                    if (count($abandonReasons) > 0) {
-                        foreach ($abandonReasons as $reason) {
-                            $reasonText[] = $reason->getIdAbandonReason()->getReason();
-                        }
+        switch ($project->getStatus()) {
+            case ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION:
+                $reasonText[] = $this->getWsCallFailureReasonTranslation($lastProjectStatusHistory->getContent());
+                break;
+            case ProjectsStatus::ABANDONED:
+                /** @var ProjectStatusHistoryReason[] $abandonReasons */
+                $abandonReasons = $lastProjectStatusHistory->getAbandonReasons();
+                foreach ($abandonReasons as $reason) {
+                    $reasonText[$reason->getIdAbandonReason()->getIdAbandon()]        = $reason->getIdAbandonReason()->getReason();
+                    $reasonDescription[$reason->getIdAbandonReason()->getIdAbandon()] = $reason->getIdAbandonReason()->getDescription();
+                }
+                break;
+            default:
+                /** @var ProjectStatusHistoryReason[] $rejectionReasons */
+                $rejectionReasons = $lastProjectStatusHistory->getRejectionReasons();
 
-                        return $reasonText;
-                    }
-            }
-        } elseif (
+                foreach ($rejectionReasons as $reason) {
+                    $reasonText[$reason->getIdRejectionReason()->getIdRejection()]        = $reason->getIdRejectionReason()->getReason();
+                    $reasonDescription[$reason->getIdRejectionReason()->getIdRejection()] = $reason->getIdRejectionReason()->getDescription();
+                }
+                break;
+        }
+
+        return ['reason' => $reasonText, 'description' => $reasonDescription];
+    }
+
+    /**
+     * @param string|null $reasonLabel
+     * @param string|null $type
+     *
+     * @return array
+     */
+    public function getStatusReasonTextByLabel(?string $reasonLabel = null, ?string $type = null): array
+    {
+        $reasonText        = null;
+        $reasonDescription = null;
+
+        if (
             null !== $reasonLabel
             && ProjectsStatus::UNEXPECTED_RESPONSE === substr($reasonLabel, 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE))
         ) {
-            return [$this->getWsCallFailureReasonTranslation($reasonLabel)];
+            $reasonText = $this->getWsCallFailureReasonTranslation($reasonLabel);
         } elseif (null !== $reasonLabel) {
             $reason = null;
             switch ($type) {
@@ -194,13 +202,17 @@ class ProjectStatusManager
                     $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findOneBy(['label' => $reasonLabel]);
                     break;
                 case 'abandon':
-                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRejectionReason')->findOneBy(['label' => $reasonLabel]);
+                    $reason = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')->findOneBy(['label' => $reasonLabel]);
                     break;
             }
-            return null !== $reason ? [$reason->getReason()] : [];
+
+            if (null !== $reason) {
+                $reasonText        = $reason->getReason();
+                $reasonDescription = $reason->getDescription();
+            }
         }
 
-        return [''];
+        return ['reason' => $reasonText, 'description' => $reasonDescription];
     }
 
     /**

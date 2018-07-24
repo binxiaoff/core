@@ -218,7 +218,7 @@ class dossiersController extends bootstrap
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
-            $this->statusReasonText = $projectStatusManager->getStatusReasonText($this->projectEntity);
+            $this->statusReasonText = $projectStatusManager->getStatusReasonTextByProject($this->projectEntity);
             $this->hasAdvisor       = false;
 
             $this->canBeDeclined = $projectCloseOutNettingManager->canBeDeclined($this->projectEntity);

@@ -93,7 +93,8 @@
                         <th class="e-raison header">Raison Sociale</th>
                         <th class="e-remaining-capital">CRD</th>
                         <th class="e-statut header">Statut</th>
-                        <th class="e-change header">Raison de non éligibilité</th>
+                        <th class="header">Raison de non éligibilité</th>
+                        <th class="header">Description</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -113,7 +114,8 @@
                                 <td class="e-statut">
                                     <?= $project['label'] ?>
                                 </td>
-                                <td class="value"><?= $project['value']?></td>
+                                <td class="value"><?= ucfirst($project['value']['reason']) ?></td>
+                                <td class="value"><?= ucfirst($project['value']['description']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endforeach; ?>
