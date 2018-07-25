@@ -2,8 +2,8 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification,
-    ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
+    AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason,
+    ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysDetector
@@ -1673,9 +1673,11 @@ class dossiersController extends bootstrap
             /** @var WorkingDaysDetector $workingDayDetector */
             $workingDayDetector = $this->get(WorkingDaysDetector::class);
 
-            $nextRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . Echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $workingDayDetector->nextWorkingDay(new \DateTime('today midnight'),
-                    5)
-                    ->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+            $nextRepayment = $repaymentSchedule->select(
+                'id_project = ' . $this->projects->id_project
+                . ' AND status = ' . Echeanciers::STATUS_PENDING
+                . ' AND date_echeance >= "' . $workingDayDetector->nextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
+            );
 
             if (false === empty($nextRepayment)) {
                 $this->earlyRepaymentLimitDate    = $workingDayDetector->previousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
