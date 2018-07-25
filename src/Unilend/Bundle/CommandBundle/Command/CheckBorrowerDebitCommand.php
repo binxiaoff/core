@@ -2,11 +2,12 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\{
+    Input\InputInterface, Output\OutputInterface
+};
 use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class CheckBorrowerDebitCommand extends ContainerAwareCommand
 {
@@ -25,52 +26,56 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var \echeanciers $echeanciers */
-        $echeanciers = $entityManagerSimulator->getRepository('echeanciers');
-        /** @var \projects $projects */
-        $projects = $entityManagerSimulator->getRepository('projects');
-        /** @var \settings $settings */
-        $settings = $entityManagerSimulator->getRepository('settings');
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $payment       = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
 
-        $liste      = $echeanciers->selectEcheanciersByprojetEtOrdre();
-        $liste_remb = '';
-        foreach ($liste as $l) {
-            $projects->get($l['id_project'], 'id_project');
-            $liste_remb .= '
+        $debitList     = '';
+        $borrowerDebit = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findTodayBorrowerDebit();
+        $scheme        = $this->getContainer()->getParameter('router.request_context.scheme');
+        $host          = $this->getContainer()->getParameter('url.host_admin');
+        $projectUrl    = $scheme . '://' . $host . '/dossiers/edit/';
+
+        foreach ($borrowerDebit as $repayment) {
+            $project                      = $repayment->getIdLoan()->getProject();
+            $borrowerPayment              = $payment->findOneBy(['ordre' => $repayment->getOrdre(), 'idProject' => $project]);
+            $borrowerEffectivePaymentDate = '00-00-0000';
+
+            if ($borrowerPayment->getDateEcheanceEmprunteurReel() instanceof \DateTime && $borrowerPayment->getDateEcheanceEmprunteurReel()->getTimestamp() > 0) {
+                $borrowerEffectivePaymentDate = $borrowerPayment->getDateEcheanceEmprunteurReel()->format('d-m-Y');
+            }
+            $debitList .= '
                 <tr>
-                    <td>' . $l['id_project'] . '</td>
-                    <td>' . $projects->title . '</td>
-                    <td>' . $l['ordre'] . '</td>
-                    <td>' . $l['date_echeance'] . '</td>
-
-                    <td>' . $l['date_echeance_emprunteur'] . '</td>
-                    <td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-                    <td>' . ((int) $l['status_emprunteur'] === Echeanciers::STATUS_REPAID ? 'Oui' : 'Non') . '</td>
+                    <td><a href="' . $projectUrl . $project->getIdProject() . '">' . $project->getIdProject() . '</a></td>
+                    <td>' . $project->getTitle() . '</td>
+                    <td>' . $repayment->getOrdre() . '</td>
+                    <td style="white-space: nowrap">' . $repayment->getDateEcheance()->format('d-m-Y') . '</td>
+                    <td style="white-space: nowrap">' . $borrowerPayment->getDateEcheanceEmprunteur()->format('d-m-Y') . '</td>
+                    <td style="white-space: nowrap">' . $borrowerEffectivePaymentDate . '</td>
+                    <td>' . ($borrowerPayment->getStatusEmprunteur() === Echeanciers::STATUS_REPAID ? 'Oui' : 'Non') . '</td>
                 </tr>';
         }
 
-        $varMail = array(
-            '$surl'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default'),
-            '$liste_remb' => $liste_remb
-        );
-
-        $settings->get('Adresse notification check remb preteurs', 'type');
-        $recipient = $settings->value;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
-
         try {
+            $recipient = '';
+            $setting   = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse notification check remb preteurs']);
+            if ($setting) {
+                $recipient = $setting->getValue();
+            }
+            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')
+                ->newMessage('notification-prelevement-emprunteur', ['debitList' => $debitList]);
             $message->setTo(explode(';', trim($recipient)));
             $mailer = $this->getContainer()->get('mailer');
             $mailer->send($message);
         } catch (\Exception $exception) {
-            $this->getContainer()->get('monolog.logger.console')->warning(
-                'Could not send email : notification-prelevement-emprunteur - Exception: ' . $exception->getMessage(),
-                ['id_mail_template' => $message->getTemplateId(), 'email address' => explode(';', trim($recipient)), 'class' => __CLASS__, 'function' => __FUNCTION__]
-            );
+            $this->getContainer()->get('monolog.logger.console')->warning('Could not send email : notification-prelevement-emprunteur - Exception: ' . $exception->getMessage(), [
+                'id_mail_template' => $message->getTemplateId(),
+                'email_address'    => explode(';', trim($recipient)),
+                'class'            => __CLASS__,
+                'function'         => __FUNCTION__,
+                'file'             => $exception->getFile(),
+                'line'             => $exception->getLine()
+            ]);
         }
     }
 }

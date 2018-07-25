@@ -632,4 +632,22 @@ class EcheanciersRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
+
+    /**
+     * @return Echeanciers[]
+     */
+    public function findTodayBorrowerDebit(): array
+    {
+        $today = new \DateTime('today midnight');
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->where('e.dateEcheance BETWEEN :startDate AND :endDate')
+            ->andWhere('e.status = :pending')
+            ->setParameter('startDate', $today)
+            ->setParameter('endDate', (clone $today)->setTime(23, 59, 59))
+            ->setParameter('pending', Echeanciers::STATUS_PENDING)
+            ->groupBy('e.idProject, e.ordre');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
