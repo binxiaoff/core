@@ -65,7 +65,7 @@ class ConsoleEventListener
      *
      * @return string
      */
-    private function formatMemory($bytes): string
+    private function formatMemory(int $bytes): string
     {
         return round($bytes / 1000 / 1000, 2) . 'MB';
     }
@@ -75,7 +75,7 @@ class ConsoleEventListener
      *
      * @return string
      */
-    private function formatDuration($microseconds): string
+    private function formatDuration(int $microseconds): string
     {
         return round($microseconds / 1000, 2) . 's';
     }
