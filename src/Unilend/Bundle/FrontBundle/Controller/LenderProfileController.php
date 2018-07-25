@@ -62,12 +62,9 @@ class LenderProfileController extends Controller
 
             $identityFormBuilder = $this->createFormBuilder()
                 ->add('client', PersonProfileType::class, ['data' => $client]);
-            $mainAddressForm     = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
-            $mainAddressForm
-                ->add('noUsPerson', CheckboxType::class, ['data' => true !== $client->getUsPerson(), 'required' => false])
-                ->add('housedByThirdPerson', CheckboxType::class, ['required' => false]);
+            $mainAddressForm     = $formManager->getClientAddressFormBuilder($client, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS)->getForm();
 
-            $postalAddressForm = $formManager->getClientAddressFormBuilder($postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
+            $postalAddressForm = $formManager->getClientAddressFormBuilder($client, $postalAddress, AddressType::TYPE_POSTAL_ADDRESS)->getForm();
             $hasPostalAddress  = null === $postalAddress;
             $postalAddressForm->add('samePostalAddress', CheckboxType::class, ['data' => $hasPostalAddress, 'required' => false]);
         } else {
@@ -665,7 +662,7 @@ class LenderProfileController extends Controller
             return null;
         }
 
-        $formBuilder = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
+        $formBuilder = $formManager->getClientAddressFormBuilder($client, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
 
         return $formBuilder->getForm();
     }
