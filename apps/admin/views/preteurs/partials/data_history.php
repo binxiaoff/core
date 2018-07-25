@@ -78,14 +78,14 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             case 'attachment':
                                 $separatorPosition = strpos($dataHistory['name'], '_');
                                 $action            = substr($dataHistory['name'], 0, $separatorPosition);
-                                $attachementType   = substr($dataHistory['name'], $separatorPosition + 1);
+                                $attachmentType    = substr($dataHistory['name'], $separatorPosition + 1);
 
                                 switch ($action) {
                                     case 'upload':
-                                        echo 'Chargement ' . $attachementType;
+                                        echo 'Chargement ' . $attachmentType;
                                         break;
                                     case 'archival':
-                                        echo 'Archivage ' . $attachementType;
+                                        echo 'Archivage ' . $attachmentType;
                                         break;
                                 }
                                 break;
@@ -117,9 +117,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                     break;
                                 case 'attachment':
                                     if ($dataHistory[$historyValue] instanceof Attachment) {
-                                        $attachement = $dataHistory[$historyValue];
-                                        echo '<a href="/attachment/download/id/' . $attachement->getId() . '/file/' . urlencode($attachement->getPath()) . '">' .
-                                            ($attachement->getOriginalName() ?? $attachement->getPath()) .
+                                        $attachment = $dataHistory[$historyValue];
+                                        echo '<a href="/viewer/client/' . $attachment->getClient()->getIdClient() . '/' . $attachment->getId() . '" target="_blank">' .
+                                            ($attachment->getOriginalName() ?? $attachment->getPath()) .
                                             ' <img src="' . $this->surl . '/images/admin/attach.png" alt="">' .
                                             '</a>';
                                     }

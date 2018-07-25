@@ -3962,13 +3962,13 @@ var FileAttachmentAnnotationElement = function FileAttachmentAnnotationElementCl
       this.container.appendChild(trigger);
       return this.container;
     },
-    _download: function FileAttachmentAnnotationElement_download() {
+    _download: function () {} /* function FileAttachmentAnnotationElement_download() {
       if (!this.downloadManager) {
         (0, _util.warn)('Download cannot be started due to unavailable download manager');
         return;
       }
       this.downloadManager.downloadData(this.content, this.filename, '');
-    }
+    } */
   });
   return FileAttachmentAnnotationElement;
 }();

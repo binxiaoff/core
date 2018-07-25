@@ -654,7 +654,6 @@ class LenderProfileFormsHandler
      * @param bool           $isBankAccountModified
      *
      * @throws OptimisticLockException
-     * @throws \Exception
      */
     private function saveAndNotifyChanges(
         Clients $modifiedClient,
@@ -669,8 +668,8 @@ class LenderProfileFormsHandler
         if ($modifiedCompany) {
             $this->entityManager->flush($modifiedCompany);
         }
-        $clientChanges  = $this->clientStatusManager->getModifiedFields($modifiedClient, $unattachedClient);
-        $companyChanges = $this->clientStatusManager->getModifiedFields($modifiedCompany, $unattachedCompany);
+        $clientChanges  = $this->clientStatusManager->getClientChangeSet($modifiedClient, $unattachedClient);
+        $companyChanges = $this->clientStatusManager->getCompanyChangeSet($modifiedCompany, $unattachedCompany);
 
         if (0 < count($clientChanges)) {
             $this->logAndSaveClientChanges($modifiedClient);
