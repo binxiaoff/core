@@ -64,11 +64,11 @@ class WalletRepository extends EntityRepository
               LEFT JOIN operation_type ot ON o.id_type = ot.id
               INNER JOIN wallet w ON w.id = wbh.id_wallet
               INNER JOIN wallet_type wt ON wt.id = w.id_type
-              INNER JOIN clients c on w.id_client = c.id_client
+              INNER JOIN clients c ON w.id_client = c.id_client
             WHERE wt.label = :lender
-                  AND w.available_balance >= :minAvailableBalance
-                  AND c.lastlogin < :inactiveSince
-                  AND (ot.label IN (:operationType) OR wbh.id_bid IS NOT NULL AND wbh.id_autobid IS NULL)
+              AND w.available_balance >= :minAvailableBalance
+              AND c.lastlogin < :inactiveSince
+              AND (ot.label IN (:operationType) OR wbh.id_bid IS NOT NULL AND wbh.id_autobid IS NULL)
             GROUP BY w.id
             HAVING lastOperationDate < :inactiveSince';
 
