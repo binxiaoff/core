@@ -169,10 +169,11 @@ class BulkCompanyCheckManager
         if (false === is_dir($path)) {
             $this->fileSystem->mkdir($path);
         }
-        $fileName = $user->getIdUser() . '_' . $file->getClientOriginalName();
+        $originalFileName = \URLify::transliterate($file->getClientOriginalName());
+        $fileName         = $user->getIdUser() . '_' . $originalFileName;
 
         if ($this->fileSystem->exists($path . $fileName)) {
-            $fileName = $user->getIdUser() . '_' . str_replace('.' . $file->getClientOriginalExtension(), '', $file->getClientOriginalName())
+            $fileName = $user->getIdUser() . '_' . str_replace('.' . $file->getClientOriginalExtension(), '', $originalFileName)
                 . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
         }
 
