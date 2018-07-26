@@ -1,8 +1,11 @@
 services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
     Unilend\Bundle\CommandBundle\Command\:
         resource:  '../../Command'
-        tags: ['console.command']
-        public: true
 
     ekino.new_relic.console:
         class: Ekino\Bundle\NewRelicBundle\NewRelic\NewRelic
