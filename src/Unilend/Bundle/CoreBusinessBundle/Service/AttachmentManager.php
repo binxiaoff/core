@@ -176,6 +176,7 @@ class AttachmentManager
 
             /** @var PhpSpreadsheetMpdf $writer */
             $writer = PhpSpreadsheetIOFactory::createWriter($document, 'Mpdf');
+            $writer->writeAllSheets();
             $this->outputOffice($attachment, $writer);
         } catch (PhpSpreadsheetException $exception) {
             $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
