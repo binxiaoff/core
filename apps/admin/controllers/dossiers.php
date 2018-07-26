@@ -1670,17 +1670,17 @@ class dossiersController extends bootstrap
             }
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var WorkingDaysDetector $workingDayDetector */
-            $workingDayDetector = $this->get(WorkingDaysDetector::class);
+            /** @var WorkingDaysDetector $workingDaysDetector */
+            $workingDaysDetector = $this->get(WorkingDaysDetector::class);
 
             $nextRepayment = $repaymentSchedule->select(
                 'id_project = ' . $this->projects->id_project
                 . ' AND status = ' . Echeanciers::STATUS_PENDING
-                . ' AND date_echeance >= "' . $workingDayDetector->nextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
+                . ' AND date_echeance >= "' . $workingDaysDetector->nextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
             );
 
             if (false === empty($nextRepayment)) {
-                $this->earlyRepaymentLimitDate    = $workingDayDetector->previousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
+                $this->earlyRepaymentLimitDate    = $workingDaysDetector->previousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
                 $this->borrowerOwedCapital        = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')

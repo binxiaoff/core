@@ -689,13 +689,13 @@ class pdfController extends bootstrap
                 $borrowerRepaymentDate = $projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($repaymentBaseDate, $order);
 
                 if (
-                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== substr($lenderRepaymentDate->format('Y-m-d H:i:s'), 0, 10)
-                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate->format('Y-m-d H:i:s'), 0, 10)
+                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== $lenderRepaymentDate->format('Y-m-d')
+                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== $borrowerRepaymentDate->format('Y-m-d')
                 ) {
                     $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate->format('Y-m-d H:i:00'), $borrowerRepaymentDate->format('Y-m-d H:i:00'));
                 }
 
-                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate->format('Y-m-d H:i:s'), 0, 10)) {
+                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== $borrowerRepaymentDate->format('Y-m-d')) {
                     $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate->format('Y-m-d H:i:00'));
                 }
             }

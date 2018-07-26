@@ -14,9 +14,15 @@ class ProjectRepaymentScheduleManager
     /** @var WorkingDaysDetector */
     private $workingDaysDetector;
 
+    /**
+     * ProjectRepaymentScheduleManager constructor.
+     *
+     * @param EntityManager       $entityManager
+     * @param WorkingDaysDetector $workingDaysDetector
+     */
     public function __construct(EntityManager $entityManager, WorkingDaysDetector $workingDaysDetector)
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager       = $entityManager;
         $this->workingDaysDetector = $workingDaysDetector;
     }
 
@@ -55,8 +61,7 @@ class ProjectRepaymentScheduleManager
     {
         $lenderRepaymentDate = $this->generateLenderMonthlyAmortizationDate($fundedDate, $sequence);
 
-        $daysOffsetSetting = $this
-            ->entityManager
+        $daysOffsetSetting = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Settings')
             ->findOneBy(['type' => 'Nombre jours avant remboursement pour envoyer une demande de prelevement']);
 

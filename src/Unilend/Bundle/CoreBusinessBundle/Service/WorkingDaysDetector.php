@@ -11,6 +11,11 @@ class WorkingDaysDetector
     /** @var LoggerInterface */
     private $logger;
 
+    /**
+     * WorkingDaysDetector constructor.
+     *
+     * @param LoggerInterface $logger
+     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
@@ -27,14 +32,15 @@ class WorkingDaysDetector
         try {
             return Yasumi::nextWorkingDay(France::class, $startDate, $workingDays);
         } catch (\Exception $exception) {
-            $this->logger->critical('Failed to get the next working day. The alternative solution is applied. The generation of project schedule may be wrong. Error : ' . $exception->getMessage(), [
+            $this->logger->critical('Failed to get the next working day. The alternative solution is applied. Error : ' . $exception->getMessage(), [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine(),
                 'trace'    => $exception->getTraceAsString()
             ]);
-            return $startDate->modify($workingDays * 2 . 'day');
+            $date = clone $startDate;
+            return $date->modify($workingDays * 2 . 'day');
         }
     }
 
@@ -49,14 +55,15 @@ class WorkingDaysDetector
         try {
             return Yasumi::prevWorkingDay(France::class, $startDate, $workingDays);
         } catch (\Exception $exception) {
-            $this->logger->critical('Failed to get the next working day. The alternative solution is applied. The generation of project schedule may be wrong. Error : ' . $exception->getMessage(), [
+            $this->logger->critical('Failed to get the previous working day. The alternative solution is applied. Error : ' . $exception->getMessage(), [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'file'     => $exception->getFile(),
                 'line'     => $exception->getLine(),
                 'trace'    => $exception->getTraceAsString()
             ]);
-            return $startDate->modify(-1 * $workingDays * 2 . 'day');
+            $date = clone $startDate;
+            return $date->modify(-2 * $workingDays . 'day');
         }
     }
 }
