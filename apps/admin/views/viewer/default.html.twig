@@ -167,7 +167,7 @@
                     }
 
                     // Determine if PDF or image
-                    if (/\.(pdf|doc|docx|xls|xlsx|csv)$/i.test(fileUrl)) {
+                    if (/\.(pdf|xls|xlsx|csv)$/i.test(fileUrl)) {
                         this.renderPdf(fileUrl, index)
                     } else if (/\.(jpe?g|png|gif|bmp)$/i.test(fileUrl)) {
                         this.renderImg(fileUrl, index)

@@ -5,7 +5,7 @@
         Dropzone.prototype.defaultOptions.dictFallbackMessage = 'Votre navigateur ne supporte pas les chargements par drag & drop'
         Dropzone.prototype.defaultOptions.dictFallbackText = 'Veuillez utiliser le formulaire ci-dessous pour charger vos fichiers.'
         Dropzone.prototype.defaultOptions.dictFileTooBig = 'Taille du fichier trop importante ({{filesize}} Mo). Taille max : {{maxFilesize}} Mo.'
-        Dropzone.prototype.defaultOptions.dictInvalidFileType = 'Vous ne pouvez pas charger ce type de fichier. Formats pris en charge : PDF, JPEG, PNG, DOC, XLS'
+        Dropzone.prototype.defaultOptions.dictInvalidFileType = 'Vous ne pouvez pas charger ce type de fichier. Formats pris en charge : PDF, JPEG, PNG, XLS'
         Dropzone.prototype.defaultOptions.dictResponseError = 'Le serveur a répondu avec un code {{statusCode}}.'
         Dropzone.prototype.defaultOptions.dictCancelUpload = 'Annuler le chargement'
         Dropzone.prototype.defaultOptions.dictCancelUploadConfirmation = 'Voulez-vous vraiment annuler le chargement ?'
@@ -20,7 +20,7 @@
                 var myDropzone = new Dropzone('#' + $form.attr('id'), {
                     uploadMultiple: true,
                     maxFiles: $form.data('dz-maxfiles'),
-                    acceptedFiles: '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx'
+                    acceptedFiles: '.pdf,.jpg,.jpeg,.png,.xls,.xlsx'
                 })
 
                 myDropzone.on('success', function (file, response) {
