@@ -17,10 +17,15 @@
             <div class="block-content block-content-full">
                 <div class="from-group">
                     <form class="validate" enctype="multipart/form-data" action="/projets/depot_liste" method="post">
-                        <label>Fichier Excel (SIREN)</label>
-                        <input class="form-control required" type="file" name="siren_list">
+                        <label for="siren_list">Fichier Excel (SIREN)</label>
+                        <input class="form-control required" type="file" name="siren_list" id="siren_list">
                         <button type="submit" class="btn btn-primary push-10-t">Charger le fichier</button>
                     </form>
+                    <p class="text-muted">
+                        <small>
+                            <i class="fa fa-info-circle fa-2"></i> {% trans with {'%nameLength%' : constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\BulkCompanyCheckManager::MAXIMUM_INPUT_FILE_NAME_LENGTH')} %} upload-sire-file-page_file-name-length-message {% endtrans %}
+                        </small>
+                    </p>
                 </div>
                 {% if success is not empty %}
                     <div class="alert alert-success push-10-t">

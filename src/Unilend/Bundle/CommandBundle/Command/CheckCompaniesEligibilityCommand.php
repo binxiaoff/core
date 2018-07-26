@@ -143,7 +143,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 }
 
                 $fileInfo       = pathinfo($fileName);
-                $outputFileName = $fileInfo['filename'] . '_output_' . $now->getTimestamp() . '.xlsx';
+                $outputFileName = $fileInfo['filename'] . '-' . $now->getTimestamp() . '.xlsx';
 
                 if (false === is_dir($outputFilePath)) {
                     $fileSystem->mkdir($outputFilePath);
@@ -152,7 +152,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 /** @var \PHPExcel_Writer_Excel2007 $writer */
                 $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
                 $writer->save($outputFilePath . $outputFileName);
-                $message = 'Le fichier: *' . $fileName . '* a bien été traité. Vous trouverez le détail dans le fichier de sortie: *' . $outputFileName . '*';
+                $message = 'Le fichier: *' . $fileName . '* a bien été traité.';
             } catch (\Exception $exception) {
                 $logger->warning(
                     'Error while processing siren list of file : ' . $fileName . ' Error: ' . $exception->getMessage(),
@@ -169,7 +169,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     $templateMessage->setTo($user->getEmail());
 
                     if (isset($outputFileName) && $fileSystem->exists($outputFilePath . $outputFileName)) {
-                        $attachment = \Swift_Attachment::fromPath($outputFilePath . $outputFileName);
+                        $attachment = \Swift_Attachment::fromPath($outputFilePath . $outputFileName)->setFilename(str_replace($user->getIdUser() . '_', '', $fileName));
                         $templateMessage->attach($attachment);
                         $logger->info('Checking companies eligibility. Attachment file info: ', [
                             'file_name'       => $outputFileName,

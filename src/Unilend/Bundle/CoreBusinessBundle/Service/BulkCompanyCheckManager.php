@@ -27,6 +27,8 @@ class BulkCompanyCheckManager
     const INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH     = 'company_data/input/errors/';
     const OUTPUT_FILE_DATA_RETRIEVAL_PATH          = 'company_data/output/';
 
+    const MAXIMUM_INPUT_FILE_NAME_LENGTH = 40;
+
     /** @var string */
     private $baseDir;
     /** @var Filesystem */
@@ -166,6 +168,9 @@ class BulkCompanyCheckManager
      */
     public function uploadFile($path, UploadedFile $file, Users $user): File
     {
+        if (self::MAXIMUM_INPUT_FILE_NAME_LENGTH < strlen($file->getClientOriginalName())) {
+            throw new FileException('File name length exceeds ' . self::MAXIMUM_INPUT_FILE_NAME_LENGTH . ' characters');
+        }
         if (false === is_dir($path)) {
             $this->fileSystem->mkdir($path);
         }
