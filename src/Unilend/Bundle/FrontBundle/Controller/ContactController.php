@@ -7,12 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
@@ -21,35 +18,29 @@ class ContactController extends Controller
     /**
      * @Route("/contact", name="contact")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request                     $request
+     * @param UserInterface|Clients|unill $client
+     *
+     * @return Response
      */
-    public function contactAction(Request $request)
+    public function contactAction(Request $request, ?UserInterface $client)
     {
         $template = $this->get('session')->get('searchResult', ['query' => '', 'results' => '']);
 
         $this->get('session')->remove('searchResult');
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
-
-        if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
-            /** @var \clients $client */
-            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            $client->get($user->getClientId());
-
-            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower || $user instanceof UserPartner) {
-                /** @var \companies $company */
-                $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-                $company->get($client->id_client, 'id_client_owner');
+        if ($client instanceof Clients) {
+            if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $client->isBorrower() || $client->isPartner()) {
+                $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             }
 
             $template['formData'] = [
-                'firstname' => $client->prenom,
-                'lastname'  => $client->nom,
-                'phone'     => $client->mobile,
-                'email'     => $client->email,
-                'company'   => isset($company) ? $company->name : '',
-                'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower ? 3 : ($user instanceof UserPartner ? 4 : ''))
+                'firstname' => $client->getPrenom(),
+                'lastname'  => $client->getNom(),
+                'phone'     => $client->getMobile(),
+                'email'     => $client->getEmail(),
+                'company'   => empty($company) ? '' : $company->getName(),
+                'role'      => $client->isLender() ? 2 : ($client->isBorrower() ? 3 : ($client->isPartner() ? 4 : ''))
             ];
         }
 
@@ -79,17 +70,19 @@ class ContactController extends Controller
      * @Route("/contact/search/{query}", name="contact_search_result")
      * @Method({"GET"})
      *
-     * @param  string $query
+     * @param  string                     $query
+     * @param  UserInterface|Clients|null $client
+     *
      * @return Response
      */
-    public function resultAction($query)
+    public function resultAction(string $query, ?UserInterface $client)
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
         $results = $search->search($query);
 
         if (false === empty($results['projects'])) {
-            if (null === $this->getUser()) {
+            if (false === $client instanceof Clients) {
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -98,7 +91,7 @@ class ContactController extends Controller
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
 
-                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $this->getUser())) {
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
                         unset($results['projects'][$index]);
                     }
                 }

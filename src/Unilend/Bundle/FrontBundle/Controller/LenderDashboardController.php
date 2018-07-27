@@ -9,8 +9,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{
     JsonResponse, Request, Response
 };
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType
+    Bids, Clients, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType
 };
 
 class LenderDashboardController extends Controller
@@ -23,15 +24,17 @@ class LenderDashboardController extends Controller
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param UserInterface|Clients $client
+     *
      * @return Response
      */
-    public function indexAction(): Response
+    public function indexAction(UserInterface $client): Response
     {
-        if (ClientsStatus::STATUS_CREATION === $this->getUser()->getClientStatus()) {
-            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $this->getUser()->getHash()]);
+        if (ClientsStatus::STATUS_CREATION === $client->getIdClientStatusHistory()->getId()) {
+            return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
         }
 
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -50,7 +53,7 @@ class LenderDashboardController extends Controller
         $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
 
         /** @var Wallet $wallet */
-        $wallet          = $walletRepository->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet          = $walletRepository->getWalletByType($client, WalletType::LENDER);
         $products        = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($wallet->getIdClient());
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -137,7 +140,7 @@ class LenderDashboardController extends Controller
             ]);
         }
 
-        $irrData          = $this->getIRRDetailsForUserLevelWidget();
+        $irrData          = $this->getIRRDetailsForUserLevelWidget($client);
         $hasBids          = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Bids')->countByClientInPeriod($wallet->getAdded(), new \DateTime('NOW'), $wallet->getIdClient()->getIdClient());
         $hasAcceptedLoans = 0 < $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeSince($wallet, [OperationType::LENDER_LOAN]);
 
@@ -146,7 +149,7 @@ class LenderDashboardController extends Controller
         return $this->render(
             'lender_dashboard/index.html.twig',
             [
-                'dashboardPanels'   => $this->getDashboardPreferences(),
+                'dashboardPanels'   => $this->getDashboardPreferences($client),
                 'lenderDetails' => [
                     'numberOfLoans'             => $loansRepository->getDefinitelyAcceptedLoansCount($wallet),
                     'companiesLenderInvestedIn' => $irrData['companiesLenderInvestedIn'],
@@ -213,13 +216,14 @@ class LenderDashboardController extends Controller
      * @Route("/synthese/preferences", name="save_panel_preferences")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return JsonResponse
      */
-    public function saveUserDisplayPreferencesAction(Request $request): JsonResponse
+    public function saveUserDisplayPreferencesAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json(['error' => 1, 'msg' => '']);
         }
 
@@ -228,7 +232,7 @@ class LenderDashboardController extends Controller
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
-        $wallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $pageName = 'lender_dashboard';
         $postData = $request->request->get('panels');
         $result   = ['error' => 1, 'msg' => ''];
@@ -284,16 +288,18 @@ class LenderDashboardController extends Controller
     }
 
     /**
+     * @param Clients $client
+     *
      * @return array
      */
-    private function getDashboardPreferences(): array
+    private function getDashboardPreferences(Clients $client): array
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         /** @var \lender_panel_preference $panelPreferences */
         $panelPreferences = $entityManagerSimulator->getRepository('lender_panel_preference');
 
-        $wallet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet               = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $pageName             = 'lender_dashboard';
         $panelPreferencesData = [
             'account'    => ['order' => 0, 'id' => 'account', 'hidden' => false],
@@ -518,18 +524,20 @@ class LenderDashboardController extends Controller
     }
 
     /**
+     * @param Clients $client
+     *
      * @return array
      *
      * @throws \Doctrine\DBAL\Cache\CacheException
      * @throws \Exception
      */
-    private function getIRRDetailsForUserLevelWidget(): array
+    private function getIRRDetailsForUserLevelWidget(Clients $client): array
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $lenderManager = $this->get('unilend.service.lender_manager');
 
         /** @var Wallet $wallet */
-        $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet                    = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $hasLossRate               = false;
         $widgetValue               = 0;
         $irrHasBeenCalculated      = false;

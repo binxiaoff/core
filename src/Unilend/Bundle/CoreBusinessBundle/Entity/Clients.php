@@ -7,6 +7,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Hashids\Hashids;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
+use Symfony\Component\Security\Core\User\EquatableInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * Clients
@@ -15,7 +19,7 @@ use Ramsey\Uuid\Uuid;
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Clients
+class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
 {
     const TYPE_PERSON                 = 1;
     const TYPE_LEGAL_ENTITY           = 2;
@@ -37,6 +41,13 @@ class Clients
     const ORIGIN_WELCOME_OFFER      = 1;
     const ORIGIN_WELCOME_OFFER_HOME = 2;
     const ORIGIN_WELCOME_OFFER_LP   = 3;
+
+    const ROLE_USER            = 'ROLE_USER';
+    const ROLE_LENDER          = 'ROLE_LENDER';
+    const ROLE_BORROWER        = 'ROLE_BORROWER';
+    const ROLE_PARTNER_DEFAULT = 'ROLE_PARTNER';
+    const ROLE_PARTNER_ADMIN   = 'ROLE_PARTNER_ADMIN';
+    const ROLE_PARTNER_USER    = 'ROLE_PARTNER_USER';
 
     /**
      * @var string
@@ -351,6 +362,18 @@ class Clients
      * @ORM\JoinColumn(name="id_postal_address", referencedColumnName="id")
      */
     private $idPostalAddress;
+
+    /**
+     * @var CompanyClient|null
+     *
+     * @ORM\OneToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient", mappedBy="idClient")
+     */
+    private $companyClient;
+
+    /**
+     * @var string|null
+     */
+    private $encoderName;
 
     /**
      * Clients constructor.
@@ -1426,6 +1449,7 @@ class Clients
     }
 
     //@todo once sponsor codes are repaired this method should be private
+
     /**
      * @return null|string
      */
@@ -1533,4 +1557,142 @@ class Clients
 
         return $this;
     }
+
+    /**
+     * @return CompanyClient|null
+     */
+    public function getCompanyClient(): ?CompanyClient
+    {
+        return $this->companyClient;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAccountNonExpired(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isCredentialsNonExpired(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEnabled(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAccountNonLocked(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LOGIN);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getEncoderName(): ?string
+    {
+        if ('default' === $this->encoderName) { // For backwards compatibility that the user who has already MD5 encoded password
+            return null;
+        }
+
+        if (1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
+            return 'md5';
+        }
+
+        return null; // use the default encoder
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEqualTo(UserInterface $user): bool
+    {
+        if (false === $user instanceof Clients) {
+            return false;
+        }
+
+        if ($this->getHash() !== $user->getHash()) {
+            return false;
+        }
+
+        if ($this->getPassword() !== $user->getPassword()) {
+            if ($this->getUsername() !== $user->getUsername()) {
+                return false;
+            }
+        }
+
+        if ($this->getUsername() !== $user->getUsername()) {
+            if ($this->getPassword() !== $user->getPassword()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getRoles(): array
+    {
+        $roles = [self::ROLE_USER];
+
+        if ($this->isLender()) {
+            $roles[] = self::ROLE_LENDER;
+        }
+
+        if ($this->isBorrower()) {
+            $roles[] = self::ROLE_BORROWER;
+        }
+
+        if ($this->isPartner() && null !== $this->getCompanyClient()) {
+            $roles[] = self::ROLE_PARTNER_DEFAULT;
+            $roles[] = $this->getCompanyClient()->getRole();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSalt(): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUsername(): string
+    {
+        return $this->getEmail();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function eraseCredentials(): void
+    {
+        // Not yet Implemented
+    }
+
+    /**
+     * For backwards compatibility that the user who has already MD5 encoded password
+     */
+    public function useDefaultEncoder(): void
+    {
+        $this->encoderName = 'default';
+    }
+
 }

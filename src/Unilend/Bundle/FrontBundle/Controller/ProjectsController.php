@@ -22,9 +22,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{
     BidManager, CIPManager
 };
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
-use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
-};
 use Unilend\Bundle\FrontBundle\Service\{
     LenderAccountDisplayManager, ProjectDisplayManager
 };
@@ -137,20 +134,18 @@ class ProjectsController extends Controller
     {
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $translator            = $this->get('translator');
-        $authorizationChecker  = $this->get('security.authorization_checker');
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $clientRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $productRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Product');
         $projectRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         $template      = [];
-        $user          = $this->getUser();
+        $client        = $this->getUser();
         $pagination    = $this->getPaginationStartAndLimit($page);
         $limit         = $pagination['limit'];
         $start         = $pagination['start'];
         $sort          = [];
         $sortDirection = strtoupper($sortDirection);
-        $client        = null;
 
         if (
             in_array($sortType, [\projects::SORT_FIELD_SECTOR, \projects::SORT_FIELD_AMOUNT, \projects::SORT_FIELD_RATE, \projects::SORT_FIELD_RISK, \projects::SORT_FIELD_END])
@@ -159,25 +154,16 @@ class ProjectsController extends Controller
             $sort = [$sortType => $sortDirection];
         }
 
-        if (
-            $authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY')
-            && $authorizationChecker->isGranted('ROLE_LENDER')
-            && $user instanceof UserLender
-        ) {
-            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-        }
-
         $template['projects'] = $projectDisplayManager->getProjectsList([], $sort, $start, $limit, $client);
 
-        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $user, $projectRepository) {
-            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $user)) {
+        array_walk($template['projects'], function(&$project) use ($translator, $projectDisplayManager, $client, $projectRepository) {
+            if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($projectRepository->find($project['projectId']), $client)) {
                 $project['title'] = $translator->trans('company-sector_sector-' . $project['company']['sectorId']);
             }
         });
 
         /** @var \projects $projects */
         $projects        = $this->get('unilend.service.entity_manager')->getRepository('projects');
-        $client          = $user ? $clientRepository->find($user->getClientId()) : null;
         $products        = $productRepository->findAvailableProductsByClient($client);
         $productIds      = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -204,7 +190,7 @@ class ProjectsController extends Controller
     {
         /** @var ProjectDisplayManager $projectDisplayManager */
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
-        $clientId              = $this->getUser() instanceof BaseUser ? $this->getUser()->getClientId() : null;
+        $clientId              = $this->getUser() instanceof Clients ? $this->getUser()->getIdClient() : null;
 
         $totalNumberProjects = $projectDisplayManager->getTotalNumberOfDisplayedProjects($clientId);
         $totalPages          = ceil($totalNumberProjects / $limit);
@@ -632,11 +618,11 @@ class ProjectsController extends Controller
             $oCachePool->save($oCachedItem);
         }
 
-        /** @var BaseUser $user */
-        $user = $this->getUser();
+        /** @var Clients $client */
+        $client = $this->getUser();
 
-        if ($user instanceof UserLender) {
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
+        if ($client->isLender()) {
+            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
             array_walk($template['bids'], function(&$bid) use ($wallet) {
                 if ($bid['lenderId'] == $wallet->getId()) {

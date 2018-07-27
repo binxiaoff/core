@@ -2,14 +2,15 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\PartnerContactType;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
 class ContactController extends Controller
 {
@@ -17,11 +18,12 @@ class ContactController extends Controller
      * @Route("partenaire/contact", name="partner_contact")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return Response
      */
-    public function contactAction(Request $request)
+    public function contactAction(Request $request, UserInterface $client)
     {
         $contactForm = $this->createForm(PartnerContactType::class);
         $contactForm->handleRequest($request);
@@ -45,15 +47,12 @@ class ContactController extends Controller
             }
 
             if (false === $error) {
-                /** @var UserPartner $user */
-                $user               = $this->getUser();
                 $filePath           = '';
                 $file               = $request->files->get('attachment');
-                $client             = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
                 $settingsRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings');
                 $keywords           = [
                     '[staticUrl]' => $this->get('assets.packages')->getUrl(''),
-                    '[partner]'   => $user->getPartner()->getIdCompany()->getName(),
+                    '[partner]'   => $this->get('unilend.service.partner_manager')->getPartner($client)->getIdCompany()->getName(),
                     '[firstname]' => $client->getPrenom(),
                     '[lastname]'  => $client->getNom(),
                     '[email]'     => $formData['email'],

@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    OperationSubType, OperationType, Receptions, TaxType, WalletType
+    Clients, OperationSubType, OperationType, Receptions, TaxType, Wallet, WalletType
 };
 
 class BorrowerOperationsManager
@@ -40,7 +40,7 @@ class BorrowerOperationsManager
     }
 
     /**
-     * @param \clients  $client
+     * @param Wallet    $wallet
      * @param \DateTime $start
      * @param \DateTime $end
      * @param array     $projectsIds
@@ -49,9 +49,8 @@ class BorrowerOperationsManager
      * @return array
      * @throws \Exception
      */
-    public function getBorrowerOperations(\clients $client, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
+    public function getBorrowerOperations(Wallet $wallet, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
     {
-        $wallet                         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::BORROWER);
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);

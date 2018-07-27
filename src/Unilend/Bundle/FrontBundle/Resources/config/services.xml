@@ -82,6 +82,7 @@
             <argument type="service" id="security.token_storage"/>
             <argument type="service" id="request_stack"/>
             <argument type="service" id="google_tag_manager"/>
+            <argument type="service" id="unilend.service.partner_manager"/>
         </service>
 
         <service id="unilend.frontbundle.notification_display_manager" class="Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager">

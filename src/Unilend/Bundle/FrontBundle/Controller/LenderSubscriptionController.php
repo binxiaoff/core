@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType
 };
@@ -38,13 +39,14 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/etape1", name="lender_subscription_personal_information")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function personalInformationAction(Request $request): Response
+    public function personalInformationAction(Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request);
+        $response = $this->checkProgressAndRedirect($request, null, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -563,15 +565,15 @@ class LenderSubscriptionController extends Controller
      *
      * @param string  $clientHash
      * @param Request $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
-     * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function documentsAction(string $clientHash, Request $request): Response
+    public function documentsAction(string $clientHash, Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -818,12 +820,13 @@ class LenderSubscriptionController extends Controller
      *
      * @param string  $clientHash
      * @param Request $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function moneyDepositAction(string $clientHash, Request $request): Response
+    public function moneyDepositAction(string $clientHash, Request $request, ?UserInterface $client): Response
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -848,14 +851,15 @@ class LenderSubscriptionController extends Controller
      * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("POST")
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function moneyDepositFormAction(string $clientHash, Request $request): RedirectResponse
+    public function moneyDepositFormAction(string $clientHash, Request $request, ?UserInterface $client): RedirectResponse
     {
-        $response = $this->checkProgressAndRedirect($request, $clientHash);
+        $response = $this->checkProgressAndRedirect($request, $clientHash, $client);
         if ($response instanceof RedirectResponse) {
             return $response;
         }
@@ -1069,14 +1073,14 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @param Request     $request
-     * @param string|null $clientHash
+     * @param Request      $request
+     * @param string|null  $clientHash
+     * @param Clients|null $client
      *
      * @return RedirectResponse|null
      */
-    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null): ?RedirectResponse
+    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null, ?Clients $client): ?RedirectResponse
     {
-        $client               = null;
         $redirectPath         = null;
         $currentPath          = $request->getPathInfo();
         $authorizationChecker = $this->get('security.authorization_checker');
@@ -1090,15 +1094,11 @@ class LenderSubscriptionController extends Controller
             if ($authorizationChecker->isGranted(UserPartner::ROLE_DEFAULT)) {
                 return $this->redirectToRoute('partner_home');
             }
-
-            if ($authorizationChecker->isGranted('ROLE_LENDER')) {
-                $client = $clientRepository->find($this->getUser()->getClientId());
-            }
         } elseif (null !== $clientHash) {
             $client = $clientRepository->findOneBy(['hash' => $clientHash]);
         }
 
-        if ($client) {
+        if ($client instanceof Clients && $client->isLender()) {
             switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 case ClientsStatus::STATUS_CREATION:
                 case ClientsStatus::STATUS_TO_BE_CHECKED:

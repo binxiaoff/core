@@ -12,9 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
-use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
-};
 use Unilend\librairies\CacheKeys;
 
 class ProjectDisplayManager
@@ -176,11 +173,11 @@ class ProjectDisplayManager
 
     /**
      * @param \projects     $project
-     * @param BaseUser|null $user
+     * @param Clients|null  $client
      *
      * @return array
      */
-    public function getProjectData(\projects $project, BaseUser $user = null)
+    public function getProjectData(\projects $project, ?Clients $client = null): array
     {
         /** @var \loans $loans */
         $loans = $this->entityManagerSimulator->getRepository('loans');
@@ -208,7 +205,6 @@ class ProjectDisplayManager
             $projectData['maxValidRate']  = $projectRateSettings['rate_max'];
         }
 
-        $client       = $user ? $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId()) : null;
         $products     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient($client);
         $productIds   = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -442,19 +438,14 @@ class ProjectDisplayManager
      * @todo replace $clientId with Clients instance when client status has been saved in Clients  (TECH-274)
      *
      * @param Projects      $project
-     * @param BaseUser|null $user
+     * @param Clients|null  $client
      *
      * @return string
      */
-    public function getVisibility(Projects $project, BaseUser $user = null)
+    public function getVisibility(Projects $project, ?Clients $client = null): string
     {
         if ($project->getStatus() < ProjectsStatus::EN_FUNDING) {
             return self::VISIBILITY_NONE;
-        }
-
-        $client = null;
-        if (null !== $user) {
-            $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
         }
 
         $violations = $this->productManager->checkClientEligibility($client, $project);
@@ -464,8 +455,8 @@ class ProjectDisplayManager
         }
 
         if (null !== $client) {
-            if ($user instanceof UserLender) {
-                if (in_array($user->getClientStatus(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
+            if ($client->isLender()) {
+                if (in_array($client->getIdClientStatusHistory()->getId(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

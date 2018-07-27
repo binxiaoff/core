@@ -31,7 +31,7 @@ class LenderWalletController extends Controller
      */
     public function depositAction(): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -56,7 +56,7 @@ class LenderWalletController extends Controller
      */
     public function depositResultAction(string $paymentToken): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -85,7 +85,7 @@ class LenderWalletController extends Controller
      */
     public function depositResultErrorAction(): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -103,7 +103,7 @@ class LenderWalletController extends Controller
      */
     public function withdrawalAction(Request $request): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_WITHDRAW)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -189,7 +189,7 @@ class LenderWalletController extends Controller
         $client        = $this->getClient();
         $wallet        = $this->getWallet();
 
-        if ($client) {
+        if ($client instanceof Clients) {
             /** @var BankAccount $bankAccount */
             $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
             $amount      = $post['amount'];
@@ -298,7 +298,7 @@ class LenderWalletController extends Controller
      */
     public function depositMoneyAction(Request $request): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -350,7 +350,7 @@ class LenderWalletController extends Controller
      */
     public function paymentAction(Request $request): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === in_array($this->getUser()->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 

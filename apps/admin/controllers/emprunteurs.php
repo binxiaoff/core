@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, Zones
+    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, WalletType, Zones
 };
 
 class emprunteursController extends bootstrap
@@ -208,7 +208,7 @@ class emprunteursController extends bootstrap
             $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
             $start                     = new \DateTime('First day of january this year');
             $end                       = new \DateTime('NOW');
-            $this->operations          = $borrowerOperationsManager->getBorrowerOperations($this->clients, $start, $end);
+            $this->operations          = $borrowerOperationsManager->getBorrowerOperations($borrowerWallet, $start, $end);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager companyManager */
             $this->companyManager        = $this->get('unilend.service.company_manager');
             $companyStatusRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyStatus');
@@ -292,17 +292,17 @@ class emprunteursController extends bootstrap
             $this->translator = $this->get('translator');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerOperationsManager $borrowerOperationsManager */
             $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
+            /** @var \Doctrine\ORM\EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
 
             $year     = filter_var($_POST['year'], FILTER_VALIDATE_INT);
             $idClient = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
-            /** @var \clients $clientData */
-            $clientData = $this->loadData('clients');
-            $clientData->get($idClient);
+            $borrowerWallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($idClient, WalletType::BORROWER);
             $start = new \DateTime();
             $start->setDate($year, 1, 1);
             $end = new \DateTime();
             $end->setDate($year, 12, 31);
-            $this->operations = $borrowerOperationsManager->getBorrowerOperations($clientData, $start, $end);
+            $this->operations = $borrowerOperationsManager->getBorrowerOperations($borrowerWallet, $start, $end);
         }
         $this->setView('../emprunteurs/operations');
     }

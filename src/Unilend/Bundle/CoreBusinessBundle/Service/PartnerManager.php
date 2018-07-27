@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class PartnerManager
@@ -45,5 +46,25 @@ class PartnerManager
         }
 
         return $bankAccounts;
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return null|Partner
+     */
+    public function getPartner(Clients $client): ?Partner
+    {
+        if (false === $client->isPartner() || $client->getCompanyClient()) {
+            return null;
+        }
+
+        $rootCompany = $client->getCompanyClient()->getIdCompany();
+
+        while ($rootCompany->getIdParentCompany() && $rootCompany->getIdParentCompany()->getIdCompany()) {
+            $rootCompany = $rootCompany->getIdParentCompany();
+        }
+
+        return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['idCompany' => $rootCompany->getIdCompany()]);
     }
 }

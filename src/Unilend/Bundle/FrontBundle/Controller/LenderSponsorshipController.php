@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\{
     Request, Response
 };
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Clients, ClientsStatus
 };
@@ -24,13 +25,14 @@ class LenderSponsorshipController extends Controller
      * @Route("/parrainage", name="lender_sponsorship")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return Response
      */
-    public function sponsorshipAction(Request $request): Response
+    public function sponsorshipAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -44,14 +46,13 @@ class LenderSponsorshipController extends Controller
                 ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine()]
             );
         }
-        $isBlacklisted = $sponsorshipManager->isClientCurrentlyBlacklisted($this->getClient());
+        $isBlacklisted = $sponsorshipManager->isClientCurrentlyBlacklisted($client);
 
         if (empty($currentSponsorshipCampaign) || $isBlacklisted) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
         $translator  = $this->get('translator');
-        $client      = $this->getClient();
         $sponsorLink = $this->generateUrl('lender_sponsorship_redirect', ['sponsorCode' => $client->getSponsorCode()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         if ($request->isMethod(Request::METHOD_POST)) {
@@ -99,18 +100,5 @@ class LenderSponsorshipController extends Controller
             'utm_campaign' => SponsorshipManager::UTM_CAMPAIGN,
             'sponsor'      => $sponsorCode
         ]);
-    }
-
-    /**
-     * @return Clients
-     */
-    private function getClient(): Clients
-    {
-        /** @var UserLender $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        $client   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->find($clientId);
-
-        return $client;
     }
 }

@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{
     JsonResponse, Request, Response, StreamedResponse
 };
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType
@@ -23,13 +24,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations", name="lender_operations")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return Response
      */
-    public function indexAction(Request $request): Response
+    public function indexAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -37,7 +39,7 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
-        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $filters                = $this->getOperationFilters($request);
         $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
@@ -48,8 +50,8 @@ class LenderOperationsController extends Controller
         return $this->render(
             'lender_operations/index.html.twig',
             [
-                'clientId'               => $wallet->getIdClient()->getIdClient(),
-                'hash'                   => $this->getUser()->getHash(),
+                'clientId'               => $client->getIdClient(),
+                'hash'                   => $client->getHash(),
                 'lenderOperations'       => $lenderOperations,
                 'projectsFundedByLender' => $projectsFundedByLender,
                 'loansStatusFilter'      => LenderLoansDisplayManager::LOAN_STATUS_FILTER,
@@ -65,13 +67,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations/filterLoans", name="filter_loans")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return JsonResponse
      */
-    public function filterLoansAction(Request $request): JsonResponse
+    public function filterLoansAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -79,7 +82,7 @@ class LenderOperationsController extends Controller
         }
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet        = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $loans         = $this->commonLoans($request, $wallet);
 
         return $this->json([
@@ -95,13 +98,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations/filterOperations", name="filter_operations")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $client
      *
      * @return JsonResponse
      */
-    public function filterOperationsAction(Request $request): JsonResponse
+    public function filterOperationsAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -110,7 +114,7 @@ class LenderOperationsController extends Controller
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $filters                 = $this->getOperationFilters($request);
         $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations        = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
@@ -120,8 +124,8 @@ class LenderOperationsController extends Controller
             'target'   => 'operations',
             'template' => $this->render('lender_operations/my_operations.html.twig',
                 [
-                    'clientId'               => $this->getUser()->getClientId(),
-                    'hash'                   => $this->getUser()->getHash(),
+                    'clientId'               => $client->getIdClient(),
+                    'hash'                   => $client->getHash(),
                     'projectsFundedByLender' => $projectsFundedByLender,
                     'lenderOperations'       => $lenderOperations,
                     'currentFilters'         => $filters
@@ -134,11 +138,13 @@ class LenderOperationsController extends Controller
      * @Route("/operations/exportOperationsCsv", name="export_operations_csv_legacy")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param UserInterface|Clients $client
+     *
      * @return Response
      */
-    public function exportOperationsExcelAction(): Response
+    public function exportOperationsExcelAction(UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -150,7 +156,7 @@ class LenderOperationsController extends Controller
 
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
-        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $filters                 = $session->get('lenderOperationsFilters');
         $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $fileName                = 'operations_' . date('Y-m-d_His') . '.xlsx';
@@ -171,18 +177,20 @@ class LenderOperationsController extends Controller
      * @Route("/operations/exportLoansCsv", name="export_loans_csv_legacy")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param UserInterface $client
+     *
      * @return Response
      */
-    public function exportLoansExcelAction(): Response
+    public function exportLoansExcelAction(UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
 
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         /** @var \echeanciers $repaymentSchedule */
         $repaymentSchedule = $entityManagerSimulator->getRepository('echeanciers');
 
@@ -197,7 +205,7 @@ class LenderOperationsController extends Controller
             $activeSheet = $phpExcel->setActiveSheetIndex(0);
         } catch (\PHPExcel_Exception $exception) {
             $this->get('logger')->error('Could not set PHPExcel active sheet. Error: ' . $exception->getMessage(), [
-                'id_client' => $wallet->getIdClient(),
+                'id_client' => $client->getIdClient(),
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
@@ -306,10 +314,10 @@ class LenderOperationsController extends Controller
         } catch (\PHPExcel_Reader_Exception $exception) {
             $this->get('logger')->error('Could not save Excel file content. Error: ' . $exception->getMessage(), [
                 'id_client' => $wallet->getIdClient(),
-                'class' => __CLASS__,
-                'function' => __FUNCTION__,
-                'file' => $exception->getFile(),
-                'line' => $exception->getLine()
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
             ]);
 
             return $this->redirectToRoute('lender_operations');
@@ -448,7 +456,7 @@ class LenderOperationsController extends Controller
                 break;
         }
 
-        $filters['id_client'] = $this->getUser()->getClientId();
+        $filters['id_client'] = $client->getIdClient();
         $filters['start']     = $filters['startDate']->format('d/m/Y');
         $filters['end']       = $filters['endDate']->format('d/m/Y');
 
@@ -466,23 +474,24 @@ class LenderOperationsController extends Controller
      * @Method("GET")
      *
      * @param int $projectId
+     * @param UserInterface|Clients $client
      *
      * @return JsonResponse
      */
-    public function loadProjectNotificationsAction(int $projectId): JsonResponse
+    public function loadProjectNotificationsAction(int $projectId, UserInterface $client): JsonResponse
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json(['tpl' => '']);
         }
 
         try {
-            $data = $this->getProjectInformation($projectId);
+            $data = $this->getProjectInformation($projectId, $client);
             $code = Response::HTTP_OK;
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
             $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(),
-                ['id_client' => $this->getUser()->getClientId(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+                ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
         }
 
         return $this->json(
@@ -494,11 +503,12 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @param int $projectId
+     * @param int     $projectId
+     * @param Clients $client
      *
      * @return array
      */
-    private function getProjectInformation(int $projectId): array
+    private function getProjectInformation(int $projectId, Clients $client): array
     {
         $entityManager   = $this->get('doctrine.orm.entity_manager');
         $translator      = $this->get('translator');
@@ -506,7 +516,7 @@ class LenderOperationsController extends Controller
 
         $operationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $project             = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+        $wallet              = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         $data = [];
 
@@ -706,7 +716,7 @@ class LenderOperationsController extends Controller
         }
 
         foreach ($data as $index => $row) {
-            $data[$index]['status'] = ($row['datetime'] > $this->getUser()->getLastLoginDate()) ? 'unread' : 'read';
+            $data[$index]['status'] = ($row['datetime'] > $client->getLastlogin()) ? 'unread' : 'read';
         }
         return $data;
     }
@@ -769,11 +779,13 @@ class LenderOperationsController extends Controller
      * @Route("/operations/pdf", name="lender_operations_pdf")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param UserInterface|Clients $client
+     *
      * @return Response
      */
-    public function downloadOperationPdfAction(): Response
+    public function downloadOperationPdfAction(UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -786,16 +798,14 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         /** @var Wallet $wallet */
-        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
-            ->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
-        $client = $wallet->getIdClient();
+        $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
 
         if (false === $client->isNaturalPerson()) {
             $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         }
 
-        $filters          = $session->get('lenderOperationsFilters');
-        $operations       = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
+        $filters    = $session->get('lenderOperationsFilters');
+        $operations = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         try {
             $lenderOperations = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
         } catch (\Exception $exception) {
@@ -810,8 +820,8 @@ class LenderOperationsController extends Controller
             ]);
         }
 
-        $fileName         = 'vos_operations_' . date('Y-m-d') . '.pdf';
-        $pdfContent       = $this->renderView('pdf/lender_operations.html.twig', [
+        $fileName   = 'vos_operations_' . date('Y-m-d') . '.pdf';
+        $pdfContent = $this->renderView('pdf/lender_operations.html.twig', [
             'lenderOperations'  => $lenderOperations,
             'client'            => $client,
             'lenderAddress'     => $this->getLenderAddress($client),
@@ -835,17 +845,19 @@ class LenderOperationsController extends Controller
      * @Route("/prets/pdf", name="lender_loans_pdf")
      * @Security("has_role('ROLE_LENDER')")
      *
+     * @param UserInterface|Clients $client
+     *
      * @return Response
      */
-    public function downloadLoansPdfAction(): Response
+    public function downloadLoansPdfAction(UserInterface $client): Response
     {
-        if (false === in_array($this->getUser()->getClientStatus(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
         /** @var Wallet $wallet */
         $wallet = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')
-            ->getWalletByType($this->getUser()->getClientId(), WalletType::LENDER);
+            ->getWalletByType($client, WalletType::LENDER);
         /** @var \loans $loans */
         $loans                     = $this->get('unilend.service.entity_manager')->getRepository('loans');
         $lenderLoansDisplayManager = $this->get(LenderLoansDisplayManager::class);
