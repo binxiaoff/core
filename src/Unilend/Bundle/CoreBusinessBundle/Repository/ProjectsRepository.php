@@ -1505,7 +1505,7 @@ class ProjectsRepository extends EntityRepository
             ->where('p.status = :status')
             ->andWhere('p.datePublication <= :publicationDate')
             ->setParameter('status', ProjectsStatus::A_FUNDER)
-            ->setParameter('publicationDate', new \DateTime('- 15 minutes'));
+            ->setParameter('publicationDate', new \DateTime('+ 15 minutes'));
 
         if ($limit) {
             $queryBuilder->setMaxResults($limit);
