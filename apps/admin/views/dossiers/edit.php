@@ -957,7 +957,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                 in_array(UnderlyingContract::CONTRACT_MINIBON, $this->availableContracts)
                                 && false === isset($this->projectAttachmentsByType[AttachmentType::DEBTS_STATEMENT])
                             ) {
-                                $blockingPublishingError[] = 'Veuillez charger l\'état des créances (nécessaire au DIRS)';
+                                $blockingPublishingError[] = 'Veuillez charger l\'état des engagements (nécessaire au DIRS)';
                             }
 
                             if (false === $this->isProductUsable) {
