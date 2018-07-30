@@ -125,7 +125,7 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
                 }
             }
 
-            $outputFileName = 'Donnees-externes-siren_' . (new \DateTime())->format('d-m-Y_H-i-s') . '.csv';
+            $outputFileName = 'Donnees-externes-siren_' . (new \DateTime())->format('Ymd_His') . '.csv';
 
             if (false === is_dir($outputFilePath)) {
                 $fileSystem->mkdir($outputFilePath);

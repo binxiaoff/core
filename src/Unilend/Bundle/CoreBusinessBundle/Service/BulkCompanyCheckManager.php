@@ -27,8 +27,6 @@ class BulkCompanyCheckManager
     const INPUT_FILE_ERROR_DATA_RETRIEVAL_PATH     = 'company_data/input/errors/';
     const OUTPUT_FILE_DATA_RETRIEVAL_PATH          = 'company_data/output/';
 
-    const MAXIMUM_INPUT_FILE_NAME_LENGTH = 40;
-
     /** @var string */
     private $baseDir;
     /** @var Filesystem */
@@ -175,8 +173,7 @@ class BulkCompanyCheckManager
         $fileName         = $user->getIdUser() . '_' . $originalFileName;
 
         if ($this->fileSystem->exists($path . $fileName)) {
-            $fileName = $user->getIdUser() . '_' . str_replace('.' . $file->getClientOriginalExtension(), '', $originalFileName)
-                . '-' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $fileName = $user->getIdUser() . '_' . pathinfo($originalFileName, PATHINFO_FILENAME) . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
         }
 
         return $file->move($path, $fileName);

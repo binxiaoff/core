@@ -142,7 +142,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     $rowIndex++;
                 }
 
-                $outputFileName = 'Eligibilite-siren_' . (new \DateTime())->format('d-m-Y_H-i-s') . '.xlsx';
+                $outputFileName = 'Eligibilite-siren_' . (new \DateTime())->format('Ymd_His') . '.xlsx';
 
                 if (false === is_dir($outputFilePath)) {
                     $fileSystem->mkdir($outputFilePath);
@@ -151,7 +151,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                 /** @var \PHPExcel_Writer_Excel2007 $writer */
                 $writer = \PHPExcel_IOFactory::createWriter($excel, 'Excel2007');
                 $writer->save($outputFilePath . $outputFileName);
-                $message = 'Le fichier: *' . $fileName . '* a bien été traité.  Vous trouverez le détail dans le fichier de sortie: *' . $outputFileName . '*';
+                $message = 'Le fichier: *' . $fileName . '* a bien été traité. Vous trouverez le détail dans le fichier de sortie: *' . $outputFileName . '*';
             } catch (\Exception $exception) {
                 $logger->warning(
                     'Error while processing siren list of file : ' . $fileName . ' Error: ' . $exception->getMessage(),

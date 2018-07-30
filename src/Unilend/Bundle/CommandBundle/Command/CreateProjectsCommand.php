@@ -84,7 +84,7 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     $rowIndex++;
                 }
 
-                $outputFileName = 'Creation-projets_' . (new \DateTime())->format('d-m-Y_H-i-s') . '.xlsx';
+                $outputFileName = 'Creation-projets_' . (new \DateTime())->format('Ymd_His') . '.xlsx';
 
                 if (false === is_dir($outputFilePath)) {
                     $fileSystem->mkdir($outputFilePath);
