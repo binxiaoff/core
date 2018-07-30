@@ -2,17 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Unilend\Bundle\FrontBundle\Security\User\{BaseUser, UserBorrower, UserLender, UserPartner};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
@@ -21,9 +16,11 @@ class ContactController extends Controller
     /**
      * @Route("/contact", name="contact")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function contactAction(Request $request)
+    public function contactAction(Request $request): Response
     {
         $template = $this->get('session')->get('searchResult', ['query' => '', 'results' => '']);
 
@@ -65,24 +62,24 @@ class ContactController extends Controller
     }
 
     /**
-     * @Route("/contact/search", name="contact_search")
-     * @Method({"POST"})
+     * @Route("/contact/search", name="contact_search", methods={"POST"})
+     * @param Request $request
      *
      * @return Response
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): Response
     {
         return $this->redirectToRoute('contact_search_result', ['query' => urlencode($request->request->get('search'))]);
     }
 
     /**
-     * @Route("/contact/search/{query}", name="contact_search_result")
-     * @Method({"GET"})
+     * @Route("/contact/search/{query}", name="contact_search_result", methods={"GET"})
      *
-     * @param  string $query
+     * @param string $query
+     *
      * @return Response
      */
-    public function resultAction($query)
+    public function resultAction(string $query): Response
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
@@ -117,7 +114,10 @@ class ContactController extends Controller
         return $this->redirectToRoute('contact');
     }
 
-    private function contactForm($post)
+    /**
+     * @param array $post
+     */
+    private function contactForm(array $post): void
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');

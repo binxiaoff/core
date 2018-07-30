@@ -3,17 +3,21 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
-};
+use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive,
+    Clients,
+    ClientsStatus,
+    Companies,
+    PartnerProjectAttachment,
+    ProjectAbandonReason,
+    ProjectRejectionReason,
+    Projects,
+    ProjectsStatus,
+    Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
@@ -21,15 +25,14 @@ use Unilend\core\Loader;
 class ProjectRequestController extends Controller
 {
     /**
-     * @Route("partenaire/depot", name="partner_project_request")
-     * @Method("GET")
+     * @Route("partenaire/depot", name="partner_project_request", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function projectRequestAction(Request $request)
+    public function projectRequestAction(Request $request): Response
     {
         $projectManager = $this->get('unilend.service.project_manager');
 
@@ -47,15 +50,14 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot", name="partner_project_request_form")
-     * @Method("POST")
+     * @Route("partenaire/depot", name="partner_project_request_form", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
      *
      * @return RedirectResponse
      */
-    public function projectRequestFormAction(Request $request)
+    public function projectRequestFormAction(Request $request): Response
     {
         $translator            = $this->get('translator');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -140,15 +142,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility", requirements={"hash":"[a-z0-9-]{32,36}"})
-     * @Method("GET")
+     * @Route("partenaire/depot/eligibilite/{hash}", name="partner_project_request_eligibility",
+     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string $hash
      *
      * @return Response
      */
-    public function projectRequestEligibilityAction($hash)
+    public function projectRequestEligibilityAction(string $hash): Response
     {
         $project = $this->checkProjectHash($hash);
 
@@ -199,8 +201,8 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details", requirements={"hash":"[a-z0-9-]{32,36}"})
-     * @Method("GET")
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details",
+     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string  $hash
@@ -208,7 +210,7 @@ class ProjectRequestController extends Controller
      *
      * @return Response
      */
-    public function projectRequestDetailsAction($hash, Request $request)
+    public function projectRequestDetailsAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash($hash);
 
@@ -311,8 +313,8 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form", requirements={"hash":"[a-z0-9-]{32,36}"})
-     * @Method("POST")
+     * @Route("partenaire/depot/details/{hash}", name="partner_project_request_details_form",
+     *     requirements={"hash":"[a-z0-9-]{32,36}"}, methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param string  $hash
@@ -321,7 +323,7 @@ class ProjectRequestController extends Controller
      * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectRequestDetailsFormAction($hash, Request $request)
+    public function projectRequestDetailsFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash($hash);
 
@@ -476,15 +478,14 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/eligibilite", name="partner_project_request_submit")
-     * @Method("POST")
+     * @Route("partenaire/depot/eligibilite", name="partner_project_request_submit", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function projectRequestSubmitAction(Request $request)
+    public function projectRequestSubmitAction(Request $request): Response
     {
         $hash = $request->request->get('hash');
 
@@ -511,15 +512,14 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("partenaire/depot/abandon", name="partner_project_request_abandon")
-     * @Method("POST")
+     * @Route("partenaire/depot/abandon", name="partner_project_request_abandon", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function projectRequestAbandon(Request $request)
+    public function projectRequestAbandon(Request $request): Response
     {
         $hash = $request->request->get('hash');
 
@@ -556,7 +556,7 @@ class ProjectRequestController extends Controller
      *
      * @return Response
      */
-    public function projectRequestEndAction($hash)
+    public function projectRequestEndAction(string $hash): Response
     {
         $project = $this->checkProjectHash($hash);
 

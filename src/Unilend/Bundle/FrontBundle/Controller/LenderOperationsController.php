@@ -2,17 +2,23 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response, StreamedResponse
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedResponse};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType,
+    ClientAddress,
+    Clients,
+    ClientsStatus,
+    CompanyAddress,
+    CompanyStatus,
+    Notifications,
+    OperationSubType,
+    OperationType,
+    Projects,
+    Wallet,
+    WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
 use Unilend\core\Loader;
@@ -461,9 +467,9 @@ class LenderOperationsController extends Controller
     }
 
     /**
-     * @Route("/operations/projectNotifications/{projectId}", name="lender_loans_notifications", requirements={"projectId": "\d+"})
+     * @Route("/operations/projectNotifications/{projectId}", name="lender_loans_notifications",
+     *     requirements={"projectId": "\d+"}, methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
-     * @Method("GET")
      *
      * @param int $projectId
      *

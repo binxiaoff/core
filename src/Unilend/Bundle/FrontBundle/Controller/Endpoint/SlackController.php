@@ -4,12 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\{
-    HttpFoundation\JsonResponse, HttpFoundation\Request, HttpKernel\Exception\NotFoundHttpException, Routing\Annotation\Route
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectRejectionReason, ProjectsStatus, Users
-};
+use Symfony\Component\{HttpFoundation\JsonResponse, HttpFoundation\Request, HttpKernel\Exception\NotFoundHttpException, Routing\Annotation\Route};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectRejectionReason, ProjectsStatus, Users};
 
 class SlackController extends Controller
 {
@@ -20,7 +16,7 @@ class SlackController extends Controller
      *
      * @return JsonResponse
      */
-    public function commandAction(Request $request)
+    public function commandAction(Request $request): JsonResponse
     {
         if (
             $request->request->getAlnum('token') !== $this->getParameter('slack.command_token')
@@ -55,7 +51,7 @@ class SlackController extends Controller
      *
      * @return JsonResponse
      */
-    private function sirenCheckerCommand($siren, Request $request)
+    private function sirenCheckerCommand(string $siren, Request $request): JsonResponse
     {
         if (empty($request->request->get('user_name')) || empty($request->request->get('response_url'))) {
             return new JsonResponse([
