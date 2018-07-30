@@ -1,13 +1,15 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Bridge;
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\{
+    Input\InputInterface, Input\InputOption, Output\OutputInterface
+};
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Filesystem\LockHandler;
+use Symfony\Component\Lock\{
+    Factory, Lock, Store\SemaphoreStore
+};
 
 class Application extends FrameworkBundleApplication
 {
@@ -38,18 +40,22 @@ class Application extends FrameworkBundleApplication
 
         $this->setDispatcher($container->get('event_dispatcher'));
 
-        if (! $input->hasParameterOption(array('--multi-process', '-m'), false)) {
-            $lock = new LockHandler($this->getCommandName($input));
-            if (! $lock->lock()) {
+        if (false === $input->hasParameterOption(['--multi-process', '-m'], false)) {
+            $semaphoreStore = new SemaphoreStore();
+            $factory        = new Factory($semaphoreStore);
+            $lock           = $factory->createLock($this->getCommandName($input));
+
+            if (false === $lock->acquire()) {
                 $container->get('monolog.logger.console')->warning('The command ' . $this->getCommandName($input) . ' is already running in another process.');
                 $output->writeln('The command ' . $this->getCommandName($input) . ' is already running in another process.');
+
                 return 0;
             }
         }
 
         $return = parent::doRun($input, $output);
 
-        if (isset($lock) && $lock instanceof LockHandler) {
+        if (isset($lock) && $lock instanceof Lock) {
             $lock->release();
         }
 
