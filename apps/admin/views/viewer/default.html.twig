@@ -150,12 +150,12 @@
                     pdfViewer: '{{ app.adminUrl }}/oneui/js/plugins/pdfjs/web/viewer.html'
                 },
                 compare: false,
-                render: function (fileUrl, index, downloadable) {
+                render: function (fileUrl, index, downloadUrl) {
                     var $viewer = this.$elem.find('.docview-viewer').eq(index)
                     var $downloadLink = this.$elem.find('.docview-download-link').eq(index)
 
-                    if (downloadable) {
-                        $downloadLink.removeClass('hidden').attr('href', fileUrl)
+                    if (downloadUrl) {
+                        $downloadLink.removeClass('hidden').attr('href', downloadUrl)
                     } else {
                         $downloadLink.addClass('hidden').attr('href', '')
                     }
@@ -272,8 +272,8 @@
             $doc.on('Docview:init change', '.docview-switcher', function () {
                 var index = $(this).closest('.docview').first().find('.docview-switcher').index(this)
                 var fileUrl = $(this).val()
-                var downloadable = $(this).find(':selected').data('downloadable')
-                Docview.render(fileUrl, index, downloadable)
+                var downloadUrl = $(this).find(':selected').data('download')
+                Docview.render(fileUrl, index, downloadUrl)
             })
 
             // Toggle compare
@@ -326,7 +326,9 @@
                                     {% endif %}
                                     {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}" data-downloadable="{{ document.downloadable }}"{% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/view/{{ document.path|url_encode }}"
+                                        {% if document.downloadable %}data-download="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}"{% endif %}
+                                        {% if document.attachmentId == currentDocumentId %} selected="selected"{% endif %}>
                                     {{ document.typeName }}
                                 </option>
                             {% endfor %}
@@ -359,7 +361,8 @@
                                     {% endif %}
                                     {% set categoryId = document.categoryId %}
                                 {% endif %}
-                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}" data-downloadable="{{ document.downloadable }}">
+                                <option value="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/view/{{ document.path|url_encode }}"
+                                        {% if document.downloadable %}data-download="{{ app.adminUrl }}/attachment/download/id/{{ document.attachmentId }}/file/{{ document.path|url_encode }}"{% endif %}>
                                     {{ document.typeName }}
                                 </option>
                             {% endfor %}
