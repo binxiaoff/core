@@ -168,9 +168,6 @@ class BulkCompanyCheckManager
      */
     public function uploadFile($path, UploadedFile $file, Users $user): File
     {
-        if (self::MAXIMUM_INPUT_FILE_NAME_LENGTH < strlen($file->getClientOriginalName())) {
-            throw new FileException('File name length exceeds ' . self::MAXIMUM_INPUT_FILE_NAME_LENGTH . ' characters');
-        }
         if (false === is_dir($path)) {
             $this->fileSystem->mkdir($path);
         }

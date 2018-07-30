@@ -32,15 +32,10 @@
                     <div class="col-md-3">
                         <div class="from-group">
                             <form class="validate" enctype="multipart/form-data" method="post">
-                                <label for="siren_list">{% trans %} upload-siren-file-page_file-input-label {% endtrans %}</label>
-                                <input class="form-control required" type="file" name="siren_list" id="siren_list">
+                                <label for="siren-list">{% trans %} upload-siren-file-page_file-input-label {% endtrans %}</label>
+                                <input class="form-control required" type="file" name="siren_list" id="siren-list">
                                 <button type="submit" class="btn btn-primary push-10-t">{% trans %} upload-siren-file-page_file-upload-button {% endtrans %}</button>
                             </form>
-                            <p class="text-muted">
-                                <small>
-                                    <i class="fa fa-info-circle fa-2"></i> {% trans with {'%nameLength%' : constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Service\\BulkCompanyCheckManager::MAXIMUM_INPUT_FILE_NAME_LENGTH')} %} upload-sire-file-page_file-name-length-message {% endtrans %}
-                                </small>
-                            </p>
                         </div>
                     </div>
                 </div>

@@ -2,18 +2,12 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Box\Spout\{
-    Common\Type, Writer\CSV\Writer, Writer\WriterFactory
-};
+use Box\Spout\{Common\Type, Writer\CSV\Writer, Writer\WriterFactory};
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Symfony\Component\Filesystem\Filesystem;
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BulkCompanyCheckManager, Eligibility\Validator\CompanyValidator, ProjectRequestManager, SlackManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BulkCompanyCheckManager, Eligibility\Validator\CompanyValidator, ProjectRequestManager, SlackManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\Bundle\WSClientBundle\Service\AltaresManager;
 
@@ -131,8 +125,7 @@ class RetrieveCompanyExternalDataCommand extends ContainerAwareCommand
                 }
             }
 
-            $fileInfo       = pathinfo($fileName);
-            $outputFileName = $fileInfo['filename'] . '_output_' . time() . '.csv';
+            $outputFileName = 'Donnees-externes-siren_' . (new \DateTime())->format('d-m-Y_H-i-s') . '.csv';
 
             if (false === is_dir($outputFilePath)) {
                 $fileSystem->mkdir($outputFilePath);
