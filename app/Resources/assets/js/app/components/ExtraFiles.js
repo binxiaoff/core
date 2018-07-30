@@ -74,7 +74,7 @@ ExtraFiles.prototype.templates = {
     </select>\
   </div>\
   <div class="col-lg-6 col-md-6">\
-    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png tiff doc docx" data-formvalidation-required=\'input[type="file"][name="file[__NUM__]"]\'></div>\
+    <div class="custom-input-file" id="form-extrafile" data-fileattach data-fileattach-inputname="extra__NUM__" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx" data-formvalidation-required=\'input[type="file"][name="file[__NUM__]"]\'></div>\
   </div>\
 </div>'
 }

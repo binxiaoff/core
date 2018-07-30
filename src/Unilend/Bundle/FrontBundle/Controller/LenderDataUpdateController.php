@@ -73,8 +73,7 @@ class LenderDataUpdateController extends Controller
 
         if ($client->isNaturalPerson()) {
             $lastModifiedMainAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            $addressForm             = $formManager->getClientAddressFormBuilder($lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
-            $addressForm->get('noUsPerson')->setData(false === $client->getUsPerson());
+            $addressForm             = $formManager->getClientAddressFormBuilder($client, $lastModifiedMainAddress, AddressType::TYPE_MAIN_ADDRESS);
             $formBuilder
                 ->add('client', PersonProfileType::class, ['data' => $client])
                 ->add('phone', PersonPhoneType::class, ['data' => $client]);

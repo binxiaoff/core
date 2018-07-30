@@ -61,7 +61,7 @@
                         <td><?= $greenpointFinalStatus ?></td>
                         <td class="<?= $greenpointColor?>"><?= $greenpointLabel ?></td>
                         <td class="text-center">
-                            <a href="<?= $this->lurl ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                            <a href="<?= $this->lurl ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $attachment->getId() ?>" target="_blank">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir le document">
                             </a>
                         </td>
@@ -106,7 +106,7 @@
                             <tr>
                                 <th><?= $transferAttachment->getAttachment()->getType()->getLabel() ?></th>
                                 <td class="text-center">
-                                    <a href="<?= $this->lurl ?>/attachment/download/id/<?= $transferAttachment->getAttachment()->getId() ?>/file/<?= urlencode($transferAttachment->getAttachment()->getPath()) ?>">
+                                    <a href="<?= $this->lurl ?>/viewer/client/<?= $this->clients->id_client ?>/<?= $transferAttachment->getAttachment()->getId() ?>" target="_blank">
                                         <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir le document">
                                     </a>
                                 </td>

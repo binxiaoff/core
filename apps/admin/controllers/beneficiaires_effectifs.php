@@ -549,7 +549,7 @@ class beneficiaires_effectifsController extends bootstrap
             'birth_place'      => $owner->getIdClient()->getVilleNaissance(),
             'birth_country'    => $owner->getIdClient()->getIdPaysNaissance(),
             'country'          => $clientAddress->getIdPaysFiscal(),
-            'id_card_passport' => '<a href="' . $this->lurl . '/attachment/download/id/' . $passport->getId() . '/file/' . urlencode($passport->getPath()) . '" target="_blank">' . $passport->getOriginalName() . '</a>'
+            'id_card_passport' => '<a href="' . $this->lurl . '/viewer/client/' . $owner->getIdClient()->getIdClient() . '/' . $passport->getId() . '" target="_blank">' . $passport->getOriginalName() . '</a>'
         ];
 
         if ($formatForView) {

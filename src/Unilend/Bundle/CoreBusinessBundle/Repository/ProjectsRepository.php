@@ -83,11 +83,12 @@ class ProjectsRepository extends EntityRepository
     }
 
     /**
-     * @param array $companies
+     * @param array    $companies
+     * @param int|null $submitter
      *
      * @return Projects[]
      */
-    public function getPartnerProspects(array $companies)
+    public function getPartnerProspects(array $companies, ?int $submitter = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -109,15 +110,22 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('noAutoEvaluationStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
             ->orderBy('p.added', 'DESC');
 
+        if ($submitter) {
+            $queryBuilder
+                ->andWhere('p.idClientSubmitter = :submitter')
+                ->setParameter('submitter', $submitter);
+        }
+
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param array $companies
+     * @param array    $companies
+     * @param int|null $submitter
      *
      * @return Projects[]
      */
-    public function getPartnerProjects(array $companies)
+    public function getPartnerProjects(array $companies, ?int $submitter = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -141,15 +149,22 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('noAutoEvaluationStatus', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION)
             ->orderBy('p.added', 'DESC');
 
+        if ($submitter) {
+            $queryBuilder
+                ->andWhere('p.idClientSubmitter = :submitter')
+                ->setParameter('submitter', $submitter);
+        }
+
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param array $companies
+     * @param array    $companies
+     * @param int|null $submitter
      *
      * @return Projects[]
      */
-    public function getPartnerAbandoned(array $companies)
+    public function getPartnerAbandoned(array $companies, ?int $submitter = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -159,15 +174,22 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('projectStatus', [ProjectsStatus::ABANDONED])
             ->orderBy('p.added', 'DESC');
 
+        if ($submitter) {
+            $queryBuilder
+                ->andWhere('p.idClientSubmitter = :submitter')
+                ->setParameter('submitter', $submitter);
+        }
+
         return $queryBuilder->getQuery()->getResult();
     }
 
     /**
-     * @param array $companies
+     * @param array    $companies
+     * @param int|null $submitter
      *
      * @return Projects[]
      */
-    public function getPartnerRejected(array $companies)
+    public function getPartnerRejected(array $companies, ?int $submitter = null): array
     {
         $queryBuilder = $this->createQueryBuilder('p');
         $queryBuilder
@@ -176,6 +198,12 @@ class ProjectsRepository extends EntityRepository
             ->setParameter('userCompanies', $companies)
             ->setParameter('projectStatus', [ProjectsStatus::COMMERCIAL_REJECTION, ProjectsStatus::ANALYSIS_REJECTION, ProjectsStatus::COMITY_REJECTION])
             ->orderBy('p.added', 'DESC');
+
+        if ($submitter) {
+            $queryBuilder
+                ->andWhere('p.idClientSubmitter = :submitter')
+                ->setParameter('submitter', $submitter);
+        }
 
         return $queryBuilder->getQuery()->getResult();
     }
@@ -1505,7 +1533,7 @@ class ProjectsRepository extends EntityRepository
             ->where('p.status = :status')
             ->andWhere('p.datePublication <= :publicationDate')
             ->setParameter('status', ProjectsStatus::A_FUNDER)
-            ->setParameter('publicationDate', new \DateTime('- 15 minutes'));
+            ->setParameter('publicationDate', new \DateTime('+ 15 minutes'));
 
         if ($limit) {
             $queryBuilder->setMaxResults($limit);

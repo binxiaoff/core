@@ -27,15 +27,22 @@ class ProjectsListController extends Controller
      */
     public function projectsListAction()
     {
+        /** @var UserPartner $user */
+        $user          = $this->getUser();
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $companies     = $this->getUserCompanies();
+        $submitter     = null;
+
+        if (false === in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
+            $submitter = $user->getClientId();
+        }
 
         /** @var ProjectsRepository $projectRepository */
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $prospects         = $projectRepository->getPartnerProspects($companies);
-        $borrowers         = $projectRepository->getPartnerProjects($companies);
-        $abandoned         = $projectRepository->getPartnerAbandoned($companies);
-        $rejected          = $projectRepository->getPartnerRejected($companies);
+        $prospects         = $projectRepository->getPartnerProspects($companies, $submitter);
+        $borrowers         = $projectRepository->getPartnerProjects($companies, $submitter);
+        $abandoned         = $projectRepository->getPartnerAbandoned($companies, $submitter);
+        $rejected          = $projectRepository->getPartnerRejected($companies, $submitter);
 
         $incompleteProjects = [];
         $completeProjects   = [];
