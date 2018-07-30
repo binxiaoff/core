@@ -45,7 +45,7 @@ class ClientValidator
      *
      * @return array
      */
-    public function validate(?Clients $client = null, Projects $project): array
+    public function validate(?Clients $client, Projects $project): array
     {
         $violations = [];
         $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());
