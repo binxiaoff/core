@@ -6,9 +6,6 @@ use Doctrine\ORM\EntityManager;
 use PhpOffice\PhpSpreadsheet\{
     Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf
 };
-use PhpOffice\PhpWord\{
-    Exception\Exception as PhpWordException, IOFactory as PhpWordIOFactory, Writer\PDF\DomPDF as PhpWordDomPDF
-};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\{
     Exception\FileNotFoundException, Filesystem
@@ -150,10 +147,6 @@ class AttachmentManager
             case 'xlsx':
                 $this->outputExcel($attachment);
                 break;
-            case 'doc':
-            case 'docx':
-                $this->outputWord($attachment);
-                break;
             default:
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/octet-stream');
@@ -171,71 +164,13 @@ class AttachmentManager
     private function outputExcel(Attachment $attachment): void
     {
         try {
-            $path     = $this->getFullPath($attachment);
-            $document = PhpSpreadsheetIOFactory::load($path);
+            $path          = $this->getFullPath($attachment);
+            $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
+            $document      = PhpSpreadsheetIOFactory::load($path);
 
             /** @var PhpSpreadsheetMpdf $writer */
             $writer = PhpSpreadsheetIOFactory::createWriter($document, 'Mpdf');
-            $this->outputOffice($attachment, $writer);
-        } catch (PhpSpreadsheetException $exception) {
-            $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
-                'id_attachment' => $attachment->getId(),
-                'id_client'     => $attachment->getClient()->getIdClient(),
-                'class'         => __CLASS__,
-                'function'      => __FUNCTION__,
-                'file'          => $exception->getFile(),
-                'line'          => $exception->getLine()
-            ]);
-        }
-    }
-
-    /**
-     * @param Attachment $attachment
-     */
-    private function outputWord(Attachment $attachment): void
-    {
-        try {
-            \PhpOffice\PhpWord\Settings::setPdfRendererPath($this->rootDirectory . '/../vendor/dompdf/dompdf');
-            \PhpOffice\PhpWord\Settings::setPdfRendererName('DomPDF');
-
-            switch (pathinfo($attachment->getOriginalName(), PATHINFO_EXTENSION)) {
-                case 'doc':
-                    $format = 'MsDoc';
-                    break;
-                case 'docx':
-                default:
-                    $format = 'Word2007';
-            }
-
-            $path     = $this->getFullPath($attachment);
-            $document = PhpWordIOFactory::load($path, $format);
-
-            /** @var PhpWordDomPDF $writer */
-            $writer = PhpWordIOFactory::createWriter($document, 'PDF');
-            $this->outputOffice($attachment, $writer);
-        } catch (PhpWordException $exception) {
-            $this->logger->error('Unable to load Word file to PDF. Message: ' . $exception->getMessage(), [
-                'id_attachment' => $attachment->getId(),
-                'id_client'     => $attachment->getClient()->getIdClient(),
-                'class'         => __CLASS__,
-                'function'      => __FUNCTION__,
-                'file'          => $exception->getFile(),
-                'line'          => $exception->getLine()
-            ]);
-        }
-    }
-
-    /**
-     * @param Attachment                       $attachment
-     * @param PhpSpreadsheetMpdf|PhpWordDomPDF $writer
-     */
-    private function outputOffice(Attachment $attachment, $writer): void
-    {
-        try {
-            $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
-            $path          = $this->getFullPath($attachment);
-
-            /** @var PhpSpreadsheetMpdf|PhpWordDomPDF $writer */
+            $writer->writeAllSheets();
             $writer->setTempDir($this->tmpDirectory);
             $writer->save($temporaryPath);
 
@@ -250,8 +185,8 @@ class AttachmentManager
             readfile($temporaryPath);
 
             $this->filesystem->remove($temporaryPath);
-        } catch (\Exception $exception) {
-            $this->logger->error('Unable to convert Office file to PDF. Message: ' . $exception->getMessage(), [
+        } catch (PhpSpreadsheetException $exception) {
+            $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
                 'id_attachment' => $attachment->getId(),
                 'id_client'     => $attachment->getClient()->getIdClient(),
                 'class'         => __CLASS__,

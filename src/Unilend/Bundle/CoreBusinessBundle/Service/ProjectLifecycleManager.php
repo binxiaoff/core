@@ -952,7 +952,7 @@ class ProjectLifecycleManager
     {
         if (empty($project->getDateFunded())) {
             $funded    = new \DateTime();
-            $published = new \DateTime($project->getDatePublication());
+            $published = $project->getDatePublication();
 
             if ($funded < $published) {
                 $funded = $published;
