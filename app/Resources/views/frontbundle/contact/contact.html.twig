@@ -16,7 +16,7 @@
             <h2 class="h4">{% trans %} contact_search-section-title {% endtrans %}</h2>
         </div>
         <div class="col-lg-6 col-md-6">
-            {% if query is not empty %}
+            {% if query is defined and query is not empty %}
                 <h3>{% trans with {'%query%' : query} %} contact_search-results-search-repeat {% endtrans %}</h3>
 
                 {% for category, categoryResults in results %}
