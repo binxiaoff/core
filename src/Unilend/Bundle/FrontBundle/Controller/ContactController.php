@@ -49,9 +49,9 @@ class ContactController extends Controller
     /**
      * @Route("/contact/search/{query}", name="contact_search_result")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function contactSearchResultAction(Request $request, string $query)
+    public function contactSearchResultAction(Request $request, string $query): Response
     {
         /** @var BaseUser $user */
         $user              = $this->getUser();
@@ -112,7 +112,7 @@ class ContactController extends Controller
 
     /**
      * @param string        $query
-     * @param null|BaseUser $user
+     * @param BaseUser|null $user
      *
      * @return array
      */
