@@ -4,7 +4,7 @@
         <div id="popup-content">
             <h1>Choisissez le prêteur à valider</h1>
             <p>Des comptes avec le même nom, prénom et date de naissance ont été trouvés.</p>
-            <p>Séléctionez le compte à valider. Les autres comptes seront cloturés.</p>
+            <p>Séléctionnez le compte à valider. Les autres comptes seront clôturés.</p>
             <hr>
             <div class="margin-10-l">
                 <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur" id="form-validate-lender">

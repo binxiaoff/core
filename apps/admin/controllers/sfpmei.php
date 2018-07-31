@@ -570,11 +570,7 @@ class sfpmeiController extends bootstrap
             $this->needs = $needs;
             $this->xerfi = $this->loadData('xerfi');
 
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-            $attachmentManager = $this->get('unilend.service.attachment_manager');
-
-            $this->aAttachments     = $this->projectEntity->getAttachments();
-            $this->aAttachmentTypes = $attachmentManager->getAllTypesForProjects();
+            $this->attachments      = $this->projectEntity->getAttachments();
             $this->lastBalanceSheet = $entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->findOneBy([
                 'idClient' => $this->projectEntity->getIdCompany()->getIdClientOwner(),
                 'idType'   => \Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType::DERNIERE_LIASSE_FISCAL

@@ -69,6 +69,13 @@ class AttachmentType
     private $label;
 
     /**
+     * @var bool
+     *
+     * @ORM\Column(name="downloadable", type="boolean", nullable=false)
+     */
+    private $downloadable;
+
+    /**
      * @var integer
      *
      * @ORM\Column(name="id", type="integer")
@@ -86,7 +93,7 @@ class AttachmentType
      *
      * @return AttachmentType
      */
-    public function setLabel($label)
+    public function setLabel(string $label): AttachmentType
     {
         $this->label = $label;
 
@@ -98,17 +105,41 @@ class AttachmentType
      *
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->label;
     }
 
     /**
+     * Set downloadable
+     *
+     * @param bool $downloadable
+     *
+     * @return AttachmentType
+     */
+    public function setDownloadable(bool $downloadable): AttachmentType
+    {
+        $this->downloadable = $downloadable;
+
+        return $this;
+    }
+
+    /**
+     * Get downloadable
+     *
+     * @return bool
+     */
+    public function getDownloadable(): bool
+    {
+        return $this->downloadable;
+    }
+
+    /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }

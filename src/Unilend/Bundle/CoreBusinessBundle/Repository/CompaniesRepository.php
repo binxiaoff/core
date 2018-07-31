@@ -36,13 +36,13 @@ class CompaniesRepository extends EntityRepository
     }
 
     /**
-     * @param string      $siren
+     * @param string|null $siren
      * @param string|null $provider
      * @param bool        $ongoing
      *
      * @return array
      */
-    public function getMonitoredCompaniesBySiren(string $siren, ?string $provider = null, bool $ongoing = true): array
+    public function getMonitoredCompaniesBySiren(?string $siren, ?string $provider = null, bool $ongoing = true): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder

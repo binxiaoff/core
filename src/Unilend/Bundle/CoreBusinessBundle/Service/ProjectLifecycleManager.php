@@ -164,7 +164,7 @@ class ProjectLifecycleManager
             $this->markAsFunded($project);
         }
 
-        $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
+        $this->reBidAutoBidDeeply($project, false);
 
         $currentDate      = new \DateTime();
         $projectEndDate   = $this->projectManager->getProjectEndDate($project);
@@ -209,19 +209,22 @@ class ProjectLifecycleManager
      * @param Projects $project
      * @param bool     $sendNotification
      *
+     * @return int[]
+     *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    public function checkBids(Projects $project, bool $sendNotification): void
+    public function checkBids(Projects $project, bool $sendNotification): array
     {
-        $rejectedBids         = 0;
-        $cumulativeBidsAmount = 0;
-        $logCheck             = false;
-        $logStart             = new \DateTime();
-        $bidRepository        = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $totalBidsAmount      = $bidRepository->getProjectTotalAmount($project);
-        $projectAmount        = $project->getAmount();
+        $temporarilyRejectedBids  = 0;
+        $definitivelyRejectedBids = 0;
+        $cumulativeBidsAmount     = 0;
+        $logCheck                 = false;
+        $logStart                 = new \DateTime();
+        $bidRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $totalBidsAmount          = $bidRepository->getProjectTotalAmount($project);
+        $projectAmount            = $project->getAmount();
 
         if ($totalBidsAmount >= $projectAmount) {
             $bids = $bidRepository->findBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING], ['rate' => 'ASC', 'ordre' => 'ASC']);
@@ -234,13 +237,15 @@ class ProjectLifecycleManager
 
                     if (null === $bid->getAutobid()) {
                         $this->bidManager->reject($bid, $sendNotification);
+
+                        ++$definitivelyRejectedBids;
                     } else {
                         // For a autobid, we don't send reject bid, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $bid->setStatus(Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID);
                         $this->entityManager->flush($bid);
-                    }
 
-                    $rejectedBids++;
+                        ++$temporarilyRejectedBids;
+                    }
                 }
             }
         }
@@ -252,7 +257,7 @@ class ProjectLifecycleManager
                 ->setFin(new \DateTime())
                 ->setIdProject($project)
                 ->setRateMax($bidRepository->getProjectMaxRate($project))
-                ->setNbBidsKo($rejectedBids)
+                ->setNbBidsKo($definitivelyRejectedBids + $temporarilyRejectedBids)
                 ->setNbBidsEncours($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_PENDING]))
                 ->setTotalBids($bidRepository->countBy(['idProject' => $project]))
                 ->setTotalBidsKo($bidRepository->countBy(['idProject' => $project, 'status' => Bids::STATUS_REJECTED]));
@@ -260,6 +265,11 @@ class ProjectLifecycleManager
             $this->entityManager->persist($log);
             $this->entityManager->flush($log);
         }
+
+        return [
+            'definitivelyRejected' => $definitivelyRejectedBids,
+            'temporarilyRejected'  => $temporarilyRejectedBids
+        ];
     }
 
     /**
@@ -276,7 +286,7 @@ class ProjectLifecycleManager
                 $this->bidAllAutoBid($project);
                 break;
             case ProjectsStatus::EN_FUNDING:
-                $this->reBidAutoBid($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
+                $this->reBidAutoBid($project, true);
                 break;
         }
     }
@@ -314,48 +324,55 @@ class ProjectLifecycleManager
 
     /**
      * @param Projects $project
-     * @param int      $mode
      * @param bool     $sendNotification
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    private function reBidAutoBid(Projects $project, int $mode, bool $sendNotification): void
+    private function reBidAutoBid(Projects $project, bool $sendNotification): void
     {
         $rateStep = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
             ->findOneBy(['type' => Settings::TYPE_AUTOBID_STEP])
             ->getValue();
 
-        $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $currentRate   = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
+        $bidRepository      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
+        $currentRate        = bcsub($bidRepository->getProjectMaxRate($project), $rateStep, 1);
+        $bidOrder           = null;
+        $preCalculatedOrder = false;
 
-        while ($autoBids = $bidRepository->getAutoBids($project->getIdProject(), Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
+        if (ProjectsStatus::A_FUNDER === $project->getStatus()) {
+            $preCalculatedOrder = true;
+            $bidOrder           = $bidRepository->countBy(['idProject' => $project]);
+            $bidOrder++;
+        }
+
+        while ($autoBids = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID)) {
             foreach ($autoBids as $autoBid) {
-                $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $mode, $sendNotification);
+                $bid = $this->bidManager->reBidAutoBidOrReject($autoBid, $currentRate, $bidOrder, $sendNotification);
+
+                if ($preCalculatedOrder && Bids::STATUS_PENDING === $bid->getStatus()) {
+                    $bidOrder = $bid->getOrdre() + 1;
+                }
             }
         }
     }
 
     /**
      * @param Projects $project
-     * @param int      $mode
      * @param bool     $sendNotification
      *
      * @throws NoResultException
      * @throws NonUniqueResultException
      * @throws OptimisticLockException
      */
-    private function reBidAutoBidDeeply(Projects $project, int $mode, bool $sendNotification): void
+    private function reBidAutoBidDeeply(Projects $project, bool $sendNotification): void
     {
-        $this->checkBids($project, $sendNotification);
+        $rejectedBids = $this->checkBids($project, $sendNotification);
 
-        $bidRepository             = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $temporarilyRefusedAutoBid = $bidRepository->getAutoBids($project, Bids::STATUS_TEMPORARILY_REJECTED_AUTOBID, 1);
-
-        if (false === empty($temporarilyRefusedAutoBid)) {
-            $this->reBidAutoBid($project, $mode, $sendNotification);
-            $this->reBidAutoBidDeeply($project, $mode, $sendNotification);
+        if (false === empty($rejectedBids['temporarilyRejected'])) {
+            $this->reBidAutoBid($project, $sendNotification);
+            $this->reBidAutoBidDeeply($project, $sendNotification);
         }
     }
 
@@ -370,7 +387,7 @@ class ProjectLifecycleManager
     public function buildLoans(Projects $project): void
     {
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::BID_TERMINATED, $project);
-        $this->reBidAutoBidDeeply($project, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
+        $this->reBidAutoBidDeeply($project, true);
         $this->projectStatusManager->addProjectStatus(Users::USER_ID_CRON, ProjectsStatus::FUNDE, $project);
         $this->acceptBids($project);
 
@@ -935,7 +952,7 @@ class ProjectLifecycleManager
     {
         if (empty($project->getDateFunded())) {
             $funded    = new \DateTime();
-            $published = new \DateTime($project->getDatePublication());
+            $published = $project->getDatePublication();
 
             if ($funded < $published) {
                 $funded = $published;

@@ -15,13 +15,13 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 <?php endif; ?>
 
 <?php if (ClientsStatus::STATUS_VALIDATED !== $clientStatus && in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
-    <?php if (1 <= count($this->duplicateAccounts)) : ?>
+    <?php if (1 < count($this->duplicateAccounts)) : ?>
         <?php $this->fireView('partials/duplicated_accounts_popup'); ?>
     <?php endif; ?>
     <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur">
         <div class="row">
             <div class="form-group col-md-6">
-                <?php if (1 <= count($this->duplicateAccounts)) : ?>
+                <?php if (1 < count($this->duplicateAccounts)) : ?>
                     <a id="show_duplicated" class="btn-primary">Valider le prêteur</a>
                 <?php else : ?>
                     <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur" name="valider_preteur">

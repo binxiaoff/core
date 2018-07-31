@@ -632,4 +632,21 @@ class EcheanciersRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
     }
+
+    /**
+     * @return Echeanciers[]
+     */
+    public function findScheduledToday(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->where('e.dateEcheance BETWEEN :startDate AND :endDate')
+            ->andWhere('e.status = :pendingStatus')
+            ->setParameter('startDate', new \DateTime('today midnight'))
+            ->setParameter('endDate', new \DateTime('today 23:59:59'))
+            ->setParameter('pendingStatus', Echeanciers::STATUS_PENDING)
+            ->groupBy('e.idProject, e.ordre');
+
+        return $queryBuilder->getQuery()->getResult();
+    }
 }
