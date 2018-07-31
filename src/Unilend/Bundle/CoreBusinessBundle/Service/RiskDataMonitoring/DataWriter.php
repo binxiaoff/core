@@ -4,9 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, CompanyRatingHistory, ProjectEligibilityRuleSet, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog, RiskDataMonitoringType, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, CompanyRatingHistory, ProjectEligibilityRuleSet, ProjectsComments, RiskDataMonitoring, RiskDataMonitoringAssessment, RiskDataMonitoringCallLog, RiskDataMonitoringType, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager;
 
 class DataWriter
@@ -118,7 +116,7 @@ class DataWriter
             $assessment  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringAssessment')
                 ->findOneBy(['idRiskDataMonitoringType' => $type, 'idRiskDataMonitoringCallLog' => $callLog]);
             $rule        = $type->getIdProjectEligibilityRule()->getDescription();
-            $reason      = $this->projectStatusManager->getStatusReasonTextByLabel($assessment->getValue(), 'rejection');
+            $reason      = $this->projectStatusManager->getStatusReasonByLabel($assessment->getValue(), 'rejection');
             $result      = '1' === $assessment->getValue() ? 'ok' : 'echouée, ' . (false === empty($reason['description'])) ? implode(' - ', $reason) : $reason['reason'];
             $memoContent .= '<li>' . $rule . ' :<strong> ' . $result . '</strong></li>';
         }

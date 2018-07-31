@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
 
 ?>
 <link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/dropzonejs/dropzone.min.css">
@@ -937,9 +935,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                     <?php $index = 0; ?>
                                     <?php foreach ($this->statusReasonText['reason'] as $idReason => $reason) : ?>
                                         <?php $index++ ?>
-                                        <?= ucfirst($reason) ?>
+                                        <?= $reason ?>
                                         <?php if (false === empty($this->statusReasonText['description'][$idReason])) : ?>
-                                            <img src="<?= $this->surl ?>/images/admin/info.png" alt="Description" title="<?= ucfirst(htmlentities($this->statusReasonText['description'][$idReason])) ?>" class="tooltip">
+                                            <img src="<?= $this->surl ?>/images/admin/info.png" alt="<?= htmlentities($this->statusReasonText['description'][$idReason]) ?>" title="<?= htmlentities($this->statusReasonText['description'][$idReason]) ?>" class="tooltip">
                                         <?php endif; ?>
                                         <?= $index < count($this->statusReasonText['reason']) ? '<br>' : '' ?>
                                     <?php endforeach; ?>

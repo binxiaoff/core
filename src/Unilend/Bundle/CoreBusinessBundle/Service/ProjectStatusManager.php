@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, ProjectsStatusHistory, ProjectStatusHistoryReason, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentTaskManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Service\UniversignManager;
@@ -145,7 +143,7 @@ class ProjectStatusManager
      *
      * @return array
      */
-    public function getStatusReasonTextByProject(Projects $project)
+    public function getStatusReasonByProject(Projects $project): array
     {
         $reasonText        = [];
         $reasonDescription = [];
@@ -185,7 +183,7 @@ class ProjectStatusManager
      *
      * @return array
      */
-    public function getStatusReasonTextByLabel(?string $reasonLabel = null, ?string $type = null): array
+    public function getStatusReasonByLabel(?string $reasonLabel = null, ?string $type = null): array
     {
         $reasonText        = null;
         $reasonDescription = null;
