@@ -8,16 +8,7 @@ use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline,
-    BankAccount,
-    Clients,
-    ClientsGestionMailsNotif,
-    ClientsGestionTypeNotif,
-    ClientsHistoryActions,
-    ClientsStatus,
-    Notifications,
-    Wallet,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType};
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;

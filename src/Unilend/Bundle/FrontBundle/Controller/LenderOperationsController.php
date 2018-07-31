@@ -7,18 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedResponse};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType,
-    ClientAddress,
-    Clients,
-    ClientsStatus,
-    CompanyAddress,
-    CompanyStatus,
-    Notifications,
-    OperationSubType,
-    OperationType,
-    Projects,
-    Wallet,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
 use Unilend\core\Loader;

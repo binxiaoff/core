@@ -8,20 +8,7 @@ use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, R
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType,
-    Attachment,
-    AttachmentType,
-    Backpayline,
-    Clients,
-    ClientsHistory,
-    ClientsHistoryActions,
-    ClientsStatus,
-    Companies,
-    NationalitesV2,
-    OffresBienvenues,
-    PaysV2,
-    Users,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};

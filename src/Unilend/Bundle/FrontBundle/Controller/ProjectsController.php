@@ -10,18 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType,
-    Bids,
-    Clients,
-    ClientsHistoryActions,
-    ClientsStatus,
-    Loans,
-    Product,
-    Projects,
-    ProjectsStatus,
-    UnderlyingContract,
-    UnderlyingContractAttributeType,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CIPManager};
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;

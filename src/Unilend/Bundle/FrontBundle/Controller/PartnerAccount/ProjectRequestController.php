@@ -8,16 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive,
-    Clients,
-    ClientsStatus,
-    Companies,
-    PartnerProjectAttachment,
-    ProjectAbandonReason,
-    ProjectRejectionReason,
-    Projects,
-    ProjectsStatus,
-    Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
