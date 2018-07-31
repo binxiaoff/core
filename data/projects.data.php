@@ -440,6 +440,8 @@ class projects extends projects_crud
     }
 
     /**
+     * @deprecated Use ProjectsRepository::getAverageInterestRate instead
+     *
      * @param bool $cache
      *
      * @return float
@@ -1390,35 +1392,6 @@ class projects extends projects_crud
     }
 
     /**
-     * @return array
-     */
-    public function getImpossibleEvaluationProjects()
-    {
-        $statement = $this->bdd->createQueryBuilder()
-            ->select('p.id_project,
-                p.amount AS amount,
-                p.period AS duration,
-                co.siren AS siren,
-                p.added AS creation
-            ')
-            ->from('projects', 'p')
-            ->innerJoin('p', 'companies', 'co', 'p.id_company = co.id_company')
-            ->innerJoin('p', 'projects_status', 'ps', 'p.status = ps.status')
-            ->where('p.status = :status')
-            ->andWhere('co.siren IS NOT NULL AND co.siren != ""')
-            ->setParameter('status', ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, PDO::PARAM_INT)
-            ->addOrderBy('creation', 'ASC')
-            ->addOrderBy('amount', 'DESC')
-            ->addOrderBy('duration', 'DESC')
-            ->execute();
-
-        $projects = $statement->fetchAll(\PDO::FETCH_ASSOC);
-        $statement->closeCursor();
-
-        return $projects;
-    }
-
-    /**
      * @param array $status
      * @return \Doctrine\DBAL\Query\QueryBuilder
      */
@@ -1450,8 +1423,6 @@ class projects extends projects_crud
             ->leftJoin('p', 'partner', 'pa', 'p.id_partner = pa.id')
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->where('p.status IN (:commercialStatus)')
-            ->andWhere('co.siren != \'\'')
-            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('commercialStatus', $status, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'DESC')
             ->addOrderBy('priority', 'DESC')

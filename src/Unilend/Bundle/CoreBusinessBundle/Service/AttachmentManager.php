@@ -3,7 +3,13 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\Filesystem\Filesystem;
+use PhpOffice\PhpSpreadsheet\{
+    Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf
+};
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\{
+    Exception\FileNotFoundException, Filesystem
+};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment
@@ -11,27 +17,37 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 
 class AttachmentManager
 {
-    /**  @var EntityManager */
+    /** @var EntityManager */
     private $entityManager;
-
-    /** @var string */
-    private $uploadRootDir;
-
     /** @var Filesystem */
     private $filesystem;
+    /** @var string */
+    private $uploadRootDirectory;
+    /** @var string */
+    private $tmpDirectory;
+    /** @var string */
+    private $rootDirectory;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * AttachmentManager constructor.
      *
-     * @param EntityManager $entityManager
-     * @param Filesystem    $filesystem
-     * @param               $uploadRootDir
+     * @param EntityManager   $entityManager
+     * @param Filesystem      $filesystem
+     * @param string          $uploadRootDirectory
+     * @param string          $tmpDirectory
+     * @param string          $rootDirectory
+     * @param LoggerInterface $logger
      */
-    public function __construct(EntityManager $entityManager, Filesystem $filesystem, $uploadRootDir)
+    public function __construct(EntityManager $entityManager, Filesystem $filesystem, string $uploadRootDirectory, string $tmpDirectory, string $rootDirectory, LoggerInterface $logger)
     {
-        $this->entityManager = $entityManager;
-        $this->filesystem    = $filesystem;
-        $this->uploadRootDir = $uploadRootDir;
+        $this->entityManager       = $entityManager;
+        $this->filesystem          = $filesystem;
+        $this->uploadRootDirectory = $uploadRootDirectory;
+        $this->tmpDirectory        = $tmpDirectory;
+        $this->rootDirectory       = $rootDirectory;
+        $this->logger              = $logger;
     }
 
     /**
@@ -105,9 +121,80 @@ class AttachmentManager
      */
     private function getUploadRootDir()
     {
-        $rootDir = realpath($this->uploadRootDir);
+        $rootDir = realpath($this->uploadRootDirectory);
 
         return substr($rootDir, -1) === DIRECTORY_SEPARATOR ? substr($rootDir, 0, -1) : $rootDir;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @throws FileNotFoundException
+     */
+    public function output(Attachment $attachment): void
+    {
+        $path = $this->getFullPath($attachment);
+
+        if (false === $this->filesystem->exists($path)) {
+            throw new FileNotFoundException(null, 0, null, $path);
+        }
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        switch ($extension) {
+            case 'csv':
+            case 'xls':
+            case 'xlsx':
+                $this->outputExcel($attachment);
+                break;
+            default:
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/octet-stream');
+                header('Content-Disposition: attachment; filename="' . basename($attachment->getPath()) . '";');
+                header('Content-Length: '. filesize($path));
+
+                echo file_get_contents($path);
+                break;
+        }
+    }
+
+    /**
+     * @param Attachment $attachment
+     */
+    private function outputExcel(Attachment $attachment): void
+    {
+        try {
+            $path          = $this->getFullPath($attachment);
+            $temporaryPath = $this->tmpDirectory . '/' . uniqid() . '.pdf';
+            $document      = PhpSpreadsheetIOFactory::load($path);
+
+            /** @var PhpSpreadsheetMpdf $writer */
+            $writer = PhpSpreadsheetIOFactory::createWriter($document, 'Mpdf');
+            $writer->writeAllSheets();
+            $writer->setTempDir($this->tmpDirectory);
+            $writer->save($temporaryPath);
+
+            $fileName = pathinfo($path, PATHINFO_FILENAME) . '.pdf';
+            $fileSize = filesize($temporaryPath);
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Transfer-Encoding: binary');
+            header('Content-Disposition: attachment; filename="' . $fileName . '";');
+            header('Content-Length: ' . $fileSize);
+            readfile($temporaryPath);
+
+            $this->filesystem->remove($temporaryPath);
+        } catch (PhpSpreadsheetException $exception) {
+            $this->logger->error('Unable to convert Excel file to PDF. Message: ' . $exception->getMessage(), [
+                'id_attachment' => $attachment->getId(),
+                'id_client'     => $attachment->getClient()->getIdClient(),
+                'class'         => __CLASS__,
+                'function'      => __FUNCTION__,
+                'file'          => $exception->getFile(),
+                'line'          => $exception->getLine()
+            ]);
+        }
     }
 
     /**
@@ -120,7 +207,7 @@ class AttachmentManager
     public function attachToProject(Attachment $attachment, Projects $project)
     {
         $projectAttachmentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment');
-        $attached                    = $projectAttachmentRepository->getAttachedAttachments($project, $attachment->getType());
+        $attached                    = $projectAttachmentRepository->getAttachedAttachmentsByType($project, $attachment->getType());
         $projectAttachmentType       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachmentType')->findOneBy([
             'idType' => $attachment->getType()
         ]);
@@ -195,61 +282,6 @@ class AttachmentManager
         $destination = $hash[0] . DIRECTORY_SEPARATOR . $hash[1] . DIRECTORY_SEPARATOR . $client->getIdClient();
 
         return $destination;
-    }
-
-    /**
-     * @return AttachmentType[]
-     */
-    public function getAllTypesForProjects(): array
-    {
-        $types = [
-            AttachmentType::KBIS,
-            AttachmentType::RIB,
-            AttachmentType::CNI_PASSPORTE_DIRIGEANT,
-            AttachmentType::CNI_PASSPORTE_VERSO,
-            AttachmentType::DERNIERE_LIASSE_FISCAL,
-            AttachmentType::LIASSE_FISCAL_N_1,
-            AttachmentType::LIASSE_FISCAL_N_2,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N_1,
-            AttachmentType::RELEVE_BANCAIRE_MOIS_N_2,
-            AttachmentType::DEBTS_STATEMENT,
-            AttachmentType::ETAT_PRIVILEGES_NANTISSEMENTS,
-            AttachmentType::CGV,
-            AttachmentType::RAPPORT_CAC,
-            AttachmentType::STATUTS,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_1,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_2,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_3,
-            AttachmentType::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            AttachmentType::DERNIERE_LIASSE_FISCAL_HOLDING,
-            AttachmentType::KBIS_HOLDING,
-            AttachmentType::ETAT_ENDETTEMENT,
-            AttachmentType::PREVISIONNEL,
-            AttachmentType::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            AttachmentType::DERNIERS_COMPTES_CONSOLIDES,
-            AttachmentType::BALANCE_CLIENT,
-            AttachmentType::BALANCE_FOURNISSEUR,
-            AttachmentType::PHOTOS_ACTIVITE,
-            AttachmentType::PRESENTATION_PROJET,
-            AttachmentType::PRESENTATION_ENTRERPISE,
-            AttachmentType::AUTRE1,
-            AttachmentType::AUTRE2,
-            AttachmentType::AUTRE3,
-            AttachmentType::AUTRE4
-        ];
-
-        $sortedTypes = [];
-        /** @var AttachmentType $attachmentType */
-        foreach ($this->entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->findTypesIn($types) as $attachmentType) {
-            $index               = array_search($attachmentType->getId(), $types, true);
-            $sortedTypes[$index] = $attachmentType;
-        }
-        ksort($sortedTypes);
-
-        return $sortedTypes;
     }
 
     /**

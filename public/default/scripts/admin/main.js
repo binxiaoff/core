@@ -133,14 +133,6 @@ Memo.prototype.close = function() {
 $(document).ready(function() {
     $('.thickbox').colorbox()
 
-    // Load colorbox in iframe mode
-    $('.colorbox-iframe').colorbox({
-      // fastIframe: false,
-      iframe: true,
-      initialWidth: 300,
-      initialHeight: 300
-    })
-
     $(document).on('cbox_complete', function () {
       // When colorbox is loading iframe, it doesn't autosize itself correctly
       var $cboxIframe = $('#cboxLoadedContent .cboxIframe')

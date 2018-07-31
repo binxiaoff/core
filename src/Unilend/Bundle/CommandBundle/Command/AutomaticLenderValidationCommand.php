@@ -38,9 +38,11 @@ class AutomaticLenderValidationCommand extends ContainerAwareCommand
                 $user       = $userRepository->find(Users::USER_ID_CRON);
                 $validation = $lenderValidationManager->validateClient($client, $user, $duplicates);
 
-                if (true !== $validation) {
+                if (true !== $validation && false === empty($duplicates)) {
+                    $alertTitle   = 'Validation automatique des prêteurs :';
+                    $alertMessage = 'Le client ' . $client->getIdClient() . ' est un doublon de ' . implode(', ', $duplicates) . '. Vous devez choisir le compte à valider dans le BO.';
                     $this->getContainer()->get('unilend.service.slack_manager')
-                        ->sendMessage('La validation automatique a détecté un client en double. Le client ' . $client->getIdClient() . ' est un doublon de ' . implode(', ', $duplicates), '#team-marketing');
+                        ->sendMessage($alertTitle . "\n> " . $alertMessage, '#team-marketing');
                     continue;
                 }
             }

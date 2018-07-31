@@ -727,10 +727,15 @@ class ajaxController extends bootstrap
                     'function'         => __FUNCTION__
                 ]);
 
-                echo json_encode(['success' => false, 'error' => 'Le projet n\'a pas été rejeté. Le motif est incorrect.']);
+                echo json_encode([
+                    'success' => false,
+                    'error'   => 'Le projet n\'a pas été rejeté. Le motif est incorrect.'
+                ]);
                 return;
             }
         }
+
+        echo json_encode(['success' => true]);
     }
 
     public function _valid_rejete_etape7()

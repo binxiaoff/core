@@ -56,30 +56,21 @@ class WalletRepository extends EntityRepository
     {
         $sql = '
             SELECT
-              a.walletId,
-              GREATEST(a.lastOperationDate, b2.lastOperationDate) AS lastOperationDate,
+              w.id                AS walletId,
+              MAX(wbh.added)      AS lastOperationDate,
               w.available_balance AS availableBalance
-            FROM (
-              SELECT
-                COALESCE(o.id_wallet_creditor, o.id_wallet_debtor) AS walletId,
-                MAX(o.added)                                       AS lastOperationDate
-              FROM operation o
-              INNER JOIN operation_type ot ON o.id_type = ot.id AND ot.label IN (:operationType)
-              GROUP BY walletId
-              HAVING lastOperationDate < :inactiveSince
-            ) a
-            INNER JOIN wallet w ON a.walletId = w.id AND w.available_balance >= :minAvailableBalance
-            INNER JOIN wallet_type wt ON wt.id = w.id_type AND wt.label = :lender
-            INNER JOIN (
-              SELECT
-                b.id_lender_account AS walletId,
-                MAX(b.added)   AS lastOperationDate
-              FROM bids b
-              WHERE b.id_autobid IS NULL
-              GROUP BY b.id_lender_account
-              HAVING lastOperationDate < :inactiveSince
-            ) b2 ON b2.walletId = a.walletId
-            GROUP BY walletId';
+            FROM wallet_balance_history wbh FORCE INDEX(fk_id_wallet_idx)
+              LEFT JOIN operation o ON wbh.id_operation = o.id
+              LEFT JOIN operation_type ot ON o.id_type = ot.id
+              INNER JOIN wallet w ON w.id = wbh.id_wallet
+              INNER JOIN wallet_type wt ON wt.id = w.id_type
+              INNER JOIN clients c ON w.id_client = c.id_client
+            WHERE wt.label = :lender
+              AND w.available_balance >= :minAvailableBalance
+              AND c.lastlogin < :inactiveSince
+              AND (ot.label IN (:operationType) OR wbh.id_bid IS NOT NULL AND wbh.id_autobid IS NULL)
+            GROUP BY w.id
+            HAVING lastOperationDate < :inactiveSince';
 
         $params = [
             'operationType'       => [OperationType::LENDER_WITHDRAW, OperationType::LENDER_PROVISION],

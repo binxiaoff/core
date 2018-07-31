@@ -24,7 +24,7 @@
         </tr>
         <tr>
             <th>Type d'échéancier</th>
-            <td><?= $this->translator->trans('repayment-type-label_' . $this->repaymentType->label) ?></td>
+            <td><?= $this->translator->trans('repayment-type-label_' . $this->repaymentType->getLabel()) ?></td>
         </tr>
         <tr>
             <th>Contrat(s) sous-jacent</th>

@@ -172,13 +172,14 @@ class FormManager
     }
 
     /**
+     * @param Clients            $client
      * @param ClientAddress|null $address
      * @param string             $type
      * @param array              $option
      *
      * @return FormBuilderInterface
      */
-    public function getClientAddressFormBuilder(?ClientAddress $address, string $type, $option = []): FormBuilderInterface
+    public function getClientAddressFormBuilder(Clients $client, ?ClientAddress $address, string $type, $option = []): FormBuilderInterface
     {
         $formBuilder = $this->formFactory->createNamedBuilder($type, ClientAddressType::class, null, $option);
 
@@ -187,12 +188,12 @@ class FormManager
             $formBuilder->get('zip')->setData($address->getZip());
             $formBuilder->get('city')->setData($address->getCity());
             $formBuilder->get('idCountry')->setData($address->getIdCountry()->getIdPays());
+        }
 
-            if ($address->getIdClient()->isLender() && AddressType::TYPE_MAIN_ADDRESS === $type) {
-                $formBuilder
-                    ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
-                    ->add('noUsPerson', CheckboxType::class, ['required' => false]);
-            }
+        if ($client->isLender() && AddressType::TYPE_MAIN_ADDRESS === $type) {
+            $formBuilder
+                ->add('housedByThirdPerson', CheckboxType::class, ['required' => false])
+                ->add('noUsPerson', CheckboxType::class, ['data' => false === $client->getUsPerson(), 'required' => false]);
         }
 
         return $formBuilder;

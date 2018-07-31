@@ -635,14 +635,8 @@ class ProjectsController extends Controller
         /** @var BaseUser $user */
         $user = $this->getUser();
 
-        $template['canSeeAutobid'] = false;
-
         if ($user instanceof UserLender) {
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-            $autoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
             $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($user->getClientId(), WalletType::LENDER);
-
-            $template['canSeeAutobid'] = $autoBidSettingsManager->isQualified($wallet->getIdClient());
 
             array_walk($template['bids'], function(&$bid) use ($wallet) {
                 if ($bid['lenderId'] == $wallet->getId()) {

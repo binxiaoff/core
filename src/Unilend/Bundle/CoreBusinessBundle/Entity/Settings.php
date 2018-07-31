@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Settings
 {
+    const TYPE_AUTOBID_GLOBAL_SWITCH = 'Auto-bid global switch';
+    const TYPE_AUTOBID_STEP          = 'Auto-bid step';
+
     /**
      * @var string
      *

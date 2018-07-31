@@ -20,7 +20,6 @@
         </service>
 
         <service id="unilend.service.bid_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\BidManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
             <argument type="service" id="unilend.service.lender_manager"/>
@@ -328,6 +327,9 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="filesystem"/>
             <argument>%path.protected%attachments</argument>
+            <argument>%path.shared_tmp%</argument>
+            <argument>%kernel.root_dir%</argument>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="currency_formatter" class="NumberFormatter">

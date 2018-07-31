@@ -140,7 +140,7 @@
             .done(function (data) {
               if (data.success === false) {
                 var errorMessage = ''
-                data.errors.forEach(function (element) {
+                data.error.forEach(function (element) {
                   errorMessage += element
                 })
                 alert(errorMessage)
@@ -159,6 +159,28 @@
               spinner.addClass('visibility-hidden')
             })
         }
+
+        $(document).on('click', '.end-mission-link', function (e) {
+          e.preventDefault()
+          if (confirm("Voulez-vous archiver cette mission de recouvrement ?")) {
+            var link = $(this).attr('href')
+            $.post(link)
+              .done(function (data) {
+                if (data.success === false) {
+                  var errorMessage = ''
+                  data.error.forEach(function (element) {
+                    errorMessage += element
+                  })
+                  alert(errorMessage)
+                } else {
+                  location.reload();
+                }
+              })
+              .fail(function () {
+                alert('Une erreur est survenue. Vous ne pouvez pas archiver cette mission de recouvrement.');
+              })
+          }
+        })
       })
     </script>
 {% endblock %}
@@ -379,6 +401,24 @@
             </div>
         </form>
     </div>
+    <div class="modal fade in" id="modal-terminate-debt-collection-mission">
+        <form class="modal-dialog validate" action="/debt_collection_mission/terminate/{{ project.idProject }}" method="post">
+            <div class="modal-content">
+                <div class="block block-themed remove-margin-b">
+                    <div class="block-header bg-primary">
+                        <h5 class="block-title">Archiver la mission de recouvrement</h5>
+                    </div>
+                    <div class="block-content">
+                        <div class="messages">Êtes-vous sûr d'archiver cette mission de recouvrement ?</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-default" type="button" data-dismiss="modal">Annuler</button>
+                    <button class="btn btn-sm btn-primary" type="submit">Valider</button>
+                </div>
+            </div>
+        </form>
+    </div>
 {% endblock %}
 
 {% block pageHeader %}
@@ -393,7 +433,10 @@
         </span>
         <br>
         <label class="css-input switch switch-sm switch-primary">
-            <input type="checkbox" name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}><span></span>
+            <input type="checkbox"
+                   name="auto-repayment"{% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Projects::AUTO_REPAYMENT_ON') == project.rembAuto %} checked{% endif %}
+                    {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::PROBLEME') == project.status %}disabled{% endif %}>
+            <span></span>
             Remboursement automatique <i class="fa fa-spinner fa-spin visibility-hidden" id="auto-repayment-spinner"></i>
         </label>
     </div>

@@ -80,7 +80,7 @@
                     <tr>
                         <th width="25%"><?= $attachment->getType()->getLabel() ?></th>
                         <td width="45%">
-                            <a href="<?= $this->url ?>/attachment/download/id/<?= $attachment->getId() ?>/file/<?= urlencode($attachment->getPath()) ?>">
+                            <a href="<?= $this->url ?>/viewer/client/<?= $this->client->getIdClient() ?>/<?= $attachment->getId() ?>" target="_blank">
                                 <?= $attachment->getPath() ?>
                             </a>
                         </td>

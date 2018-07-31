@@ -102,13 +102,15 @@
                                         <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="Mme"{% if 'Mme' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISS') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-female {% endtrans %}
                                                 </label>
                                             </li>
                                             <li>
                                                 <label>
-                                                    <input type="radio" name="title" value="M."{% if 'M.' == form.values.contact.title %} checked{% endif %}>
+                                                    <input type="radio" name="title" value="{{ constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') }}"
+                                                            {% if constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TITLE_MISTER') == form.values.contact.title %} checked{% endif %}>
                                                     {% trans %} common_title-male {% endtrans %}
                                                 </label>
                                             </li>
@@ -219,7 +221,7 @@
                                                     {% endif %}
                                                 </label>
                                                 <div class="form-field{% if form.errors.documents[attachment.attachmentType.id] is defined %} ui-formvalidation-error{% endif %}">
-                                                    <div class="custom-input-file" id="form-project-details-document-type-{{ attachment.attachmentType.id }}" data-fileattach data-fileattach-inputname="documents[{{ attachment.attachmentType.id }}]" data-fileattach-maxfiles="1" data-fileattach-filetypes="doc docx jpg jpeg odt odf odg pdf png ppt pptx rtf tiff xls xlsx"{% if attachment.mandatory %} data-formvalidation-input data-formvalidation-required='input[type="file"][name="documents[{{ attachment.attachmentType.id }}]"]'{% endif %}></div><!-- /.ui-fileattach -->
+                                                    <div class="custom-input-file" id="form-project-details-document-type-{{ attachment.attachmentType.id }}" data-fileattach data-fileattach-inputname="documents[{{ attachment.attachmentType.id }}]" data-fileattach-maxfiles="1" data-fileattach-filetypes="pdf jpg jpeg png doc docx xls xlsx"{% if attachment.mandatory %} data-formvalidation-input data-formvalidation-required='input[type="file"][name="documents[{{ attachment.attachmentType.id }}]"]'{% endif %}></div><!-- /.ui-fileattach -->
                                                     {% if form.errors.documents[attachment.attachmentType.id] is defined %}
                                                         <ul class="ui-formvalidation-messages">
                                                             <li>{% trans %} form-validation_error-field-required {% endtrans %}</li>

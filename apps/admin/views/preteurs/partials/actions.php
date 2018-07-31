@@ -15,16 +15,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 <?php endif; ?>
 
 <?php if (ClientsStatus::STATUS_VALIDATED !== $clientStatus && in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
-    <form method="post" action="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->client->getIdClient() ?>">
+    <?php if (1 < count($this->duplicateAccounts)) : ?>
+        <?php $this->fireView('partials/duplicated_accounts_popup'); ?>
+    <?php endif; ?>
+    <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur">
         <div class="row">
             <div class="form-group col-md-6">
-                <?php if (null !== $this->currentBankAccount && null === $this->currentBankAccount->getDateValidated()) : ?>
-                    <input type="hidden" value="<?= $this->currentBankAccount->getId() ?>" name="id_bank_account">
+                <?php if (1 < count($this->duplicateAccounts)) : ?>
+                    <a id="show_duplicated" class="btn-primary">Valider le prêteur</a>
+                <?php else : ?>
+                    <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur" name="valider_preteur">
+                    <input type="hidden" name="id_client_to_validate" value="<?= $this->client->getIdClient() ?>">
                 <?php endif; ?>
-                <?php if (null !== $this->lastModifiedAddress && $this->lastModifiedAddress !== $this->client->getIdAddress()) : ?>
-                    <input type="hidden" value="<?= $this->lastModifiedAddress->getId() ?>" name="id_last_modified_main_address" id="id_last_modified_main_address">
-                <?php endif; ?>
-                <input type="submit" id="valider_preteur" class="btn-primary" value="Valider le prêteur" name="valider_preteur">
             </div>
         </div>
     </form>

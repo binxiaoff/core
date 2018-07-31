@@ -23,13 +23,13 @@ class MonitoringManger
     }
 
     /**
-     * @param string $siren
-     * @param string $provider
-     * @param bool   $isOngoing
+     * @param string|null $siren
+     * @param string      $provider
+     * @param bool        $isOngoing
      *
      * @return array
      */
-    public function getMonitoredCompanies(string $siren, string $provider, bool $isOngoing = true): array
+    public function getMonitoredCompanies(?string $siren, string $provider, bool $isOngoing = true): array
     {
         $monitoredCompanies = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->getMonitoredCompaniesBySiren($siren, $provider, $isOngoing);
 
@@ -37,37 +37,40 @@ class MonitoringManger
     }
 
     /**
-     * @param string $siren
-     * @param string $provider
+     * @param string|null $siren
+     * @param string      $provider
      *
      * @return null|RiskDataMonitoring
      */
-    public function getMonitoringForSiren(string $siren, string $provider): ?RiskDataMonitoring
+    public function getMonitoringForSiren(?string $siren, string $provider): ?RiskDataMonitoring
     {
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoring')->findOneBy(['siren' => $siren, 'provider' => $provider, 'end' => null]);
     }
 
     /**
-     * @param $siren
+     * @param string|null $siren
      *
      * @return bool
      * @throws NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function hasMonitoringEvent($siren): bool
+    public function hasMonitoringEvent(?string $siren): bool
     {
-        $countCallLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->getCountCallLogsForSiren($siren);
+        $countCallLogs = 0;
+        if (false === empty($siren)) {
+            $countCallLogs = $this->entityManager->getRepository('UnilendCoreBusinessBundle:RiskDataMonitoringCallLog')->getCountCallLogsForSiren($siren);
+        }
 
         return $countCallLogs > 0;
     }
 
     /**
-     * @param string $siren
-     * @param string $provider
+     * @param string|null $siren
+     * @param string      $provider
      *
      * @return bool
      */
-    public function isSirenMonitored(string $siren, string $provider): bool
+    public function isSirenMonitored(?string $siren, string $provider): bool
     {
         $monitoring = $this->getMonitoringForSiren($siren, $provider);
 

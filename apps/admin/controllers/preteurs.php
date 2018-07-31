@@ -212,7 +212,7 @@ class preteursController extends bootstrap
             }
 
             $this->solde        = $wallet->getAvailableBalance();
-            $this->soldeRetrait = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->sumDebitOperationsByTypeAndYear($wallet, [OperationType::LENDER_WITHDRAW]);
+            $this->soldeRetrait = $lenderOperationsManager->getTotalWithdrawalAmount($wallet);
 
             $start                  = new \DateTime('First day of january this year');
             $end                    = new \DateTime('NOW');
@@ -328,8 +328,6 @@ class preteursController extends bootstrap
         $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
-        $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
         /** @var \Psr\Log\LoggerInterface $logger */
@@ -418,6 +416,19 @@ class preteursController extends bootstrap
 
             $this->setClientVigilanceStatusData();
 
+            try {
+                $this->duplicateAccounts = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getDuplicatesByName($this->client->getNom(), $this->client->getPrenom(), $this->client->getNaissance());
+            } catch (\Doctrine\DBAL\DBALException $exception) {
+                $this->duplicateAccounts = [];
+                $logger->error('An exception occurred while trying to look for a duplicated client accounts. id_client: ' . $this->client->getIdClient() . ' Exception message: ' . $exception->getMessage(), [
+                    'id_client' => $this->client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
+
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest($this->client);
 
@@ -430,38 +441,6 @@ class preteursController extends bootstrap
 
                 unset($_SESSION['content_email_completude'][$this->client->getIdClient()]);
                 $_SESSION['email_completude_confirm'] = true;
-
-                header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
-                die;
-            }
-
-            if (isset($_POST['valider_preteur'])) {
-                $addressId     = null;
-                $bankAccountId = null;
-
-                if (isset($_POST['id_last_modified_main_address'])) {
-                    $addressId = $this->request->request->getInt('id_last_modified_main_address');
-                }
-
-                if (isset($_POST['id_bank_account'])) {
-                    $bankAccountId = $this->request->request->getInt('id_bank_account');
-                }
-
-                try {
-                    $duplicates        = [];
-                    $clientIsValidated = $lenderValidationManager->validateClient($this->client, $this->userEntity, $duplicates, $bankAccountId, $addressId);
-                    if ($clientIsValidated) {
-                        $_SESSION['compte_valide'] = true;
-                    }
-                } catch (\Exception $exception) {
-                    $logger->error('An exception occurred during lender validation process. Lender could not be validated. Message: ' . $exception->getMessage(), [
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'id_client' => $this->client->getIdClient()
-                    ]);
-                }
 
                 header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->client->getIdClient());
                 die;
@@ -657,6 +636,83 @@ class preteursController extends bootstrap
                     );
                 }
             }
+        }
+    }
+
+    public function _valider_preteur()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $_SESSION['freeow']['title'] = 'Validation client';
+        $idClient                    = $this->request->request->getInt('id_client_to_validate');
+        /** @var \Doctrine\ORM\EntityManager $entityManager */
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $client        = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($idClient);
+
+        if (null !== $client) {
+            $addressId     = null;
+            $bankAccountId = null;
+
+            try {
+                if ($client->isNaturalPerson()) {
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                        ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+                } else {
+                    $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+                    $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')
+                        ->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
+                }
+                $addressId = (null !== $lastModifiedAddress) ? $lastModifiedAddress->getId() : null;
+            } catch (\Exception $exception) {
+                $this->get('logger')->error('An exception occurred while getting lender address. Message: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
+
+            try {
+                $currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($client);
+                $bankAccountId      = (null !== $currentBankAccount) ? $currentBankAccount->getId() : null;
+            } catch (\Doctrine\ORM\NonUniqueResultException $exception) {
+                $this->get('logger')->error('An exception occurred while getting lender last modified bank account. Message: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
+
+            try {
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager $lenderValidationManager */
+                $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
+                $duplicates              = [];
+                $clientIsValidated       = $lenderValidationManager->validateClient($client, $this->userEntity, $duplicates, $bankAccountId, $addressId);
+
+                if (false === $clientIsValidated) {
+                    $message = 'Erreur, le client n\'a pas pu être validé.';
+                } else {
+                    $_SESSION['compte_valide'] = true;
+                    $message = 'Le client est validé.';
+                }
+            } catch (\Exception $exception) {
+                $message = 'Erreur, le client n\'a pas pu être validé.';
+                $this->get('logger')->error('An exception occurred during lender validation process. Lender could not be validated. Message: ' . $exception->getMessage(), [
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'id_client' => $client->getIdClient()
+                ]);
+            }
+            $_SESSION['freeow']['message'] = $message;
+
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $client->getIdClient());
+            die;
         }
     }
 

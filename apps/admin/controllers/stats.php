@@ -3,7 +3,7 @@
 use Box\Spout\Common\Type;
 use Box\Spout\Writer\WriterFactory;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, ClientsStatus, CompanyRating, OperationType, Product, ProjectProductAssessment, Projects, WalletType, Zones
+    Bids, ClientsStatus, OperationType, Projects, WalletType, Zones
 };
 use Unilend\Bundle\CoreBusinessBundle\Service\{
     BdfLoansDeclarationManager, IfuManager
@@ -436,181 +436,16 @@ class statsController extends bootstrap
 
     public function _projects_eligibility()
     {
-        /** @var \Doctrine\ORM\EntityManager $entityManager */
-        $entityManager                  = $this->get('doctrine.orm.entity_manager');
-        $assessmentRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectEligibilityAssessment');
-        $companyRatingHistoryRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRatingHistory');
-        $companyRatingRepository        = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyRating');
-        $extraction                     = [];
+        $this->autoFireView = false;
+        $this->hideDecoration();
 
-        $evaluatedProjects = $assessmentRepository->getEvaluatedProjects();
+        $filePath = $this->getParameter('path.protected') . '/queries/projects_eligibility.xlsx';
 
-        $productBLend    = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => Product::PRODUCT_BLEND]);
-        $productIfp      = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_fr']);
-        $productProfLib  = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_liberal_profession_fr']);
-        $productTakeover = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findOneBy(['label' => 'amortization_ifp_takeover_fr']);
-
-        foreach ($evaluatedProjects as $project) {
-            $company              = $project->getIdCompany();
-            $motivation           = $project->getIdBorrowingMotive() ? $entityManager->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->find($project->getIdBorrowingMotive()) : null;
-            $status               = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')->findOneBy(['status' => $project->getStatus()]);
-            $projectNote          = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectsNotes')->findOneBy(['idProject' => $project]);
-            $companyRatingHistory = $companyRatingHistoryRepository->findOneBy(['idCompany' => $company->getIdCompany()]);
-            $scoreAltares         = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_ALTARES_SCORE_20
-            ]);
-            $trafficLightEuler    = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_EULER_HERMES_TRAFFIC_LIGHT
-            ]);
-            $gradeEuler           = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_EULER_HERMES_GRADE
-            ]);
-            $scoreInfolegale      = $companyRatingRepository->findOneBy([
-                'idCompanyRatingHistory' => $companyRatingHistory->getIdCompanyRatingHistory(),
-                'type'                   => CompanyRating::TYPE_INFOLEGALE_SCORE
-            ]);
-
-            $source = '';
-            if ($company->getIdClientOwner() && false == $project->getCreateBo() && false === empty($company->getIdClientOwner()->getSource())) {
-                $source = $company->getIdClientOwner()->getSource();
-            }
-
-            $partner = '';
-            if ($project->getIdPartner()) {
-                $partner = $project->getIdPartner()->getIdCompany()->getName();
-            }
-
-            $adviserName = 'Non';
-            if ($project->getIdPrescripteur()) {
-                $adviser = $entityManager->getRepository('UnilendCoreBusinessBundle:Prescripteurs')->find($project->getIdPrescripteur());
-                if ($adviser) {
-                    $adviserClient = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($adviser->getIdClient());
-                    if ($adviserClient) {
-                        $adviserName = $adviserClient->getPrenom() . ' ' . $adviserClient->getNom();
-                    }
-                }
-            }
-
-            $row = [
-                'id projet'        => $project->getIdProject(),
-                'added'            => $project->getAdded()->format('d/m/Y'),
-                'company_name'     => $company->getName(),
-                'siren'            => $company->getSiren(),
-                'date_creation'    => $company->getDateCreation() ? $company->getDateCreation()->format('d/m/Y') : '',
-                'source'           => $source,
-                'partner'          => $partner,
-                'adviser'          => $adviserName,
-                'motivation'       => $motivation ? $motivation->getMotive() : '',
-                'amount'           => $project->getAmount(),
-                'duration'         => $project->getPeriod(),
-                'prescore'         => $projectNote ? ($projectNote->getPreScoring() ? $projectNote->getPreScoring() : 'PAS DE DONNEE') : 'Pas de donnée',
-                'score_altares'    => $scoreAltares ? $scoreAltares->getValue() : 'Pas de donnée',
-                'traffic_light'    => $trafficLightEuler ? $trafficLightEuler->getValue() : 'Pas de donnée',
-                'grade_euler'      => $gradeEuler ? $gradeEuler->getValue() : 'Pas de donnée',
-                'score_infolegale' => $scoreInfolegale ? $scoreInfolegale->getValue() : 'Pas de donnée',
-                'turnover'         => $project->getCaDeclaraClient(),
-                'own_funds'        => $project->getFondsPropresDeclaraClient(),
-                'operation_income' => $project->getResultatExploitationDeclaraClient(),
-                'is_rcs'           => empty($company->getRcs()) ? 'Non' : 'Oui',
-                'naf'              => $company->getCodeNaf(),
-                'status'           => $status ? $status->getLabel() : '',
-            ];
-
-            $projectEligibilityAssessment = $assessmentRepository->findOneBy(
-                ['idProject' => $project],
-                ['added' => 'DESC', 'id' => 'DESC']
-            );
-
-            $row['common_check']           = $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel();
-            $row['b_lend_check']           = 'Pas d\'évaluation';
-            $row['ifp_product_check']      = 'Pas d\'évaluation';
-            $row['prof_lib_product_check'] = 'Pas d\'évaluation';
-            $row['takeover_product_check'] = 'Pas d\'évaluation';
-            if ('OK' === $row['common_check']) {
-                $productAssessment   = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
-                    'idProject' => $project,
-                    'idProduct' => $productBLend,
-                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
-                ], ['added' => 'DESC']);
-                $row['b_lend_check'] = 'OK';
-                if ($productAssessment) {
-                    $productAttribute = $entityManager->getRepository('UnilendCoreBusinessBundle:ProductAttribute')->findOneBy([
-                        'idProduct' => $productAssessment->getIdProduct(),
-                        'idType'    => $productAssessment->getIdProductAttributeType()
-                    ]);
-
-                    $row['b_lend_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
-                    $row['b_lend_check'] .= $productAttribute->getIdRule() ? ' (' . $productAttribute->getIdRule()->getLabel() . ')' : '';
-                }
-
-                $productAssessment        = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
-                    'idProject' => $project,
-                    'idProduct' => $productIfp,
-                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
-                ], ['added' => 'DESC']);
-                $row['ifp_product_check'] = 'OK';
-                if ($productAssessment) {
-                    $row['ifp_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
-                }
-
-                $productAssessment             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
-                    'idProject' => $project,
-                    'idProduct' => $productProfLib,
-                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
-                ], ['added' => 'DESC']);
-                $row['prof_lib_product_check'] = 'OK';
-                if ($productAssessment) {
-                    $row['prof_lib_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
-                }
-
-                $productAssessment             = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectProductAssessment')->findOneBy([
-                    'idProject' => $project,
-                    'idProduct' => $productTakeover,
-                    'status'    => ProjectProductAssessment::STATUS_CHECK_KO,
-                ], ['added' => 'DESC']);
-                $row['takeover_product_check'] = 'OK';
-                if ($productAssessment) {
-                    $row['takeover_product_check'] = $productAssessment->getIdProductAttributeType()->getLabel();
-                }
-            }
-
-            $extraction[] = $row;
+        if (file_exists($filePath)) {
+            $this->download($filePath);
+        } else {
+            echo "Le fichier n'a pas été généré. ";
         }
-
-        $header = [
-            'id_project',
-            'date dépôt',
-            'raison sociale',
-            'siren',
-            'date_creation',
-            'source',
-            'partenaire',
-            'prescripteur',
-            'motif exprimé',
-            'montant',
-            'durée',
-            'prescore',
-            'score Altares',
-            'trafficLight Euler',
-            'grade Euler',
-            'score Infolegale',
-            'CA',
-            'FP',
-            'REX',
-            'RCS',
-            'NAF',
-            'statut projet',
-            'tronc commun',
-            'b-lend',
-            'produit ifp maison',
-            'prof lib',
-            'reprise et transmission'
-        ];
-
-        $this->export($extraction, 'projects_eligibility-' . date('YmdHi'), $header);
     }
 
     public function _requete_crs_dac()

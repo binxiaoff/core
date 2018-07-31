@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * CompanyRating
  *
  * @ORM\Table(name="company_rating", indexes={@ORM\Index(name="id_company_rating_history", columns={"id_company_rating_history"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyRatingRepository")
  */
 class CompanyRating
 {

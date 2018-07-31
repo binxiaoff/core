@@ -32,13 +32,10 @@ class productController extends bootstrap
             header('Location: /product');
         }
 
-        // repayment type
-        /** @var repayment_type repaymentType */
-        $this->repaymentType = $this->loadData('repayment_type');
         /** @var product_underlying_contract $productContract */
-        $productContract = $this->loadData('product_underlying_contract');
-        $this->contracts = $productContract->getUnderlyingContractsByProduct($this->product->id_product);
-        $this->repaymentType->get($this->product->id_repayment_type);
+        $productContract     = $this->loadData('product_underlying_contract');
+        $this->contracts     = $productContract->getUnderlyingContractsByProduct($this->product->id_product);
+        $this->repaymentType = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:RepaymentType')->find($this->product->id_repayment_type);
 
         // max / min duration
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager $productManager */

@@ -707,9 +707,14 @@ class transfertsController extends bootstrap
 
                     foreach ($loansForBid as $loan) {
                         if (in_array($loan['id_loan'], $lastLoans) === false) {
-                            $notificationManager->createEmailNotification($notification->id_notification, ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
-                                $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(), null, null,
-                                $loan['id_loan']);
+                            $notificationManager->createEmailNotification(
+                                ClientsGestionTypeNotif::TYPE_LOAN_ACCEPTED,
+                                $bidEntity->getIdLenderAccount()->getIdClient()->getIdClient(),
+                                $notification->id_notification,
+                                null,
+                                null,
+                                $loan['id_loan']
+                            );
                             $lastLoans[] = $loan['id_loan'];
                         }
                     }
@@ -809,7 +814,7 @@ class transfertsController extends bootstrap
                 $this->aProjects[$index]['id_rib'] = $bankAccountAttachment->getId();
             }
 
-            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachments($aProject['id_project'], AttachmentType::KBIS);
+            $kbis = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAttachment')->getAttachedAttachmentsByType($aProject['id_project'], AttachmentType::KBIS);
 
             $this->aProjects[$index]['kbis']    = '';
             $this->aProjects[$index]['id_kbis'] = '';
