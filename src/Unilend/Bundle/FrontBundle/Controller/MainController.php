@@ -434,7 +434,7 @@ class MainController extends Controller
     {
         $borrowingReasons = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $sessionHandler   = $request->getSession();
-        $isPartnerFunnel  = $content['tunnel-partenaire'] == 1;
+        $isPartnerFunnel  = isset($content['tunnel-partenaire']) ? $content['tunnel-partenaire'] == 1 : false;
 
         if ($isPartnerFunnel) {
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
@@ -454,7 +454,7 @@ class MainController extends Controller
                     'amount'           => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
                     'siren'            => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
                     'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
-                    'partner'          => $content['partenaire'],
+                    'partner'          => $content['partenaire'] ?? '',
                     'reasons'          => $borrowingReasons,
                     'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
                 ],

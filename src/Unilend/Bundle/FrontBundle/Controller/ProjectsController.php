@@ -124,7 +124,7 @@ class ProjectsController extends Controller
      *
      * @return array
      */
-    public function lenderProjectsAction(int $page, string $sortType, string $sortDirection): Response
+    public function lenderProjectsAction(int $page, string $sortType, string $sortDirection): array
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
     }

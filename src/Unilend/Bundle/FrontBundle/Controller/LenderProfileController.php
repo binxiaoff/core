@@ -9,31 +9,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType,
-    Attachment,
-    AttachmentType,
-    Clients,
-    ClientsGestionNotifications,
-    ClientsGestionTypeNotif,
-    ClientsHistoryActions,
-    ClientsStatus,
-    Ifu,
-    LenderTaxExemption,
-    PaysV2,
-    TaxType,
-    Wallet,
-    WalletBalanceHistory,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType,
-    ClientEmailType,
-    CompanyIdentityType,
-    LegalEntityProfileType,
-    OriginOfFundsType,
-    PersonPhoneType,
-    PersonProfileType,
-    SecurityQuestionType};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
@@ -906,7 +885,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/ifu", name="get_ifu")
+     * @Route("/profile/ifu", name="get_ifu", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
