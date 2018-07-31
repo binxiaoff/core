@@ -31,7 +31,6 @@ final class Version20180711123748RUN3112 extends AbstractMigration
     {
         $this->abortIf($this->connection->getDatabasePlatform()->getName() != 'mysql', 'Migration can only be executed safely on \'mysql\'.');
 
-        $this->addSql('DELETE FROM operation_type WHERE label = \'lender_withdraw_cancel\'');
         $this->addSql('DELETE FROM translations WHERE section = \'lender-operations\' AND name = \'operation-label-lender_withdraw_cancel\'');
     }
 }
