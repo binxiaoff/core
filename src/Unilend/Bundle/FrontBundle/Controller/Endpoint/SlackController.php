@@ -4,12 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use GuzzleHttp\Client;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\{
-    HttpFoundation\JsonResponse, HttpFoundation\Request, HttpKernel\Exception\NotFoundHttpException, Routing\Annotation\Route
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectRejectionReason, ProjectsStatus, Users
-};
+use Symfony\Component\{HttpFoundation\JsonResponse, HttpFoundation\Request, HttpKernel\Exception\NotFoundHttpException, Routing\Annotation\Route};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectRejectionReason, ProjectsStatus, Users};
 
 class SlackController extends Controller
 {
@@ -109,19 +105,19 @@ class SlackController extends Controller
             if (ProjectsStatus::UNEXPECTED_RESPONSE === substr($riskCheck[0], 0, strlen(ProjectsStatus::UNEXPECTED_RESPONSE))) {
                 $eligibility     = 'Vérification impossible';
                 $color           = 'warning';
-                $rejectionReason = $this->get('unilend.service.project_status_manager')->getStatusReasonText(null, $riskCheck[0]);
+                $rejectionReason = $this->get('unilend.service.project_status_manager')->getStatusReasonByLabel($riskCheck[0]);
                 $fields[]        = [
                     'title' => 'WS indisponible',
-                    'value' => $rejectionReason[0],
+                    'value' => false === empty($rejectionReason['description']) ? implode(' - ', $rejectionReason) : $rejectionReason['reason'],
                     'short' => false
                 ];
             } else {
                 $eligibility     = 'Non éligible';
                 $color           = 'danger';
-                $rejectionReason = $this->get('unilend.service.project_status_manager')->getStatusReasonText(null, $riskCheck[0], 'rejection');
+                $rejectionReason = $this->get('unilend.service.project_status_manager')->getStatusReasonByLabel($riskCheck[0], 'rejection');
                 $fields[]        = [
                     'title' => 'Motif de rejet',
-                    'value' => $rejectionReason[0],
+                    'value' => false === empty($rejectionReason['description']) ? implode(' - ', $rejectionReason) : $rejectionReason['reason'],
                     'short' => false
                 ];
             }
