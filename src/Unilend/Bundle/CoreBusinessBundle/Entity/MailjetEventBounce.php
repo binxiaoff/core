@@ -58,7 +58,7 @@ class MailjetEventBounce
     /**
      * @var integer
      *
-     * @ORM\Column(name="custom_id", type="integer", nullable=false)
+     * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
     private $customId;
 
@@ -275,9 +275,9 @@ class MailjetEventBounce
     /**
      * Get customId
      *
-     * @return integer
+     * @return integer|null
      */
-    public function getCustomId()
+    public function getCustomId(): ?int
     {
         return $this->customId;
     }
