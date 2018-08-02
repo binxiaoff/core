@@ -78,11 +78,13 @@ class BackpaylineRepository extends EntityRepository
     /**
      * @return Backpayline[]
      */
-    public function findPaylineTransactionsToApprove()
+    public function findTransactionsToApprove(): array
     {
         $queryBuilder = $this->createQueryBuilder('bp');
-        $queryBuilder->where('bp.code IS NULL')
-            ->andWhere('bp.token IS NOT NULL');
+        $queryBuilder
+            ->where('bp.code IS NULL')
+            ->andWhere('bp.token IS NOT NULL')
+            ->andWhere($queryBuilder->expr()->neq('bp.token', $queryBuilder->expr()->literal('')));
 
         return $queryBuilder->getQuery()->getResult();
     }
