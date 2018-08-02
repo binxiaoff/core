@@ -4,12 +4,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientSettingType, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\Product\{
-    Contract\ContractManager, ProductManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, Notifications, ProjectPeriod, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\Product\{Contract\ContractManager, ProductManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -172,7 +168,7 @@ class AutoBidSettingsManager
         }
 
         if (false === $this->isRateValid($rate)) {
-            throw new \Exception('Error while calling ' . __METHOD__ . ' Interest rate is not valid : ' . $rate);
+            throw new \Exception('Error while calling ' . __METHOD__ . ' Interest rate is not valid: ' . $rate);
         }
 
         /** @var Autobid[] $autobidEntities */
