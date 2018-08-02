@@ -447,14 +447,6 @@ class echeanciers extends echeanciers_crud
         $this->bdd->query($sql);
     }
 
-    // premiere echance emprunteur
-    public function getPremiereEcheancePreteur($projectId, $id_lender)
-    {
-        // premiere echeance
-        $PremiereEcheance = $this->select('ordre = 1 AND id_project = ' . $projectId . ' AND id_lender = ' . $id_lender, '', 0, 1);
-        return $PremiereEcheance[0];
-    }
-
     // on recup la premiere echeance d'un pret d'un preteur
     public function getPremiereEcheancePreteurByLoans($projectId, $id_lender, $id_loan)
     {
