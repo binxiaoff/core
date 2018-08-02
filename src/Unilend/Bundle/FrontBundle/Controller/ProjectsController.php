@@ -4,39 +4,27 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Security, Template
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Security, Template};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BidManager, CIPManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CIPManager};
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
-use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserLender
-};
-use Unilend\Bundle\FrontBundle\Service\{
-    LenderAccountDisplayManager, ProjectDisplayManager
-};
+use Unilend\Bundle\FrontBundle\Security\User\{BaseUser, UserLender};
+use Unilend\Bundle\FrontBundle\Service\{LenderAccountDisplayManager, ProjectDisplayManager};
 use Unilend\core\Loader;
 
 class ProjectsController extends Controller
 {
     /**
-     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list")
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", name="projects_list",
+     *     defaults={"page": "1", "sortType": "end", "sortDirection": "desc"},
+     *     requirements={"page": "\d+"}, methods={"GET"})
      * @Template("projects/list.html.twig")
-     *
-     * @Method("GET")
      *
      * @param int    $page
      * @param string $sortType
@@ -44,30 +32,34 @@ class ProjectsController extends Controller
      *
      * @return array
      */
-    public function projectsListAction($page, $sortType, $sortDirection)
+    public function projectsListAction(int $page, string $sortType, string $sortDirection): array
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
     }
 
     /**
-     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", defaults={"page": "1", "sortType": "end", "sortDirection": "desc"}, requirements={"page": "\d+"}, name="projects_list_json")
+     * @Route("/projets-a-financer/{page}/{sortType}/{sortDirection}", name="projects_list_json",
+     *     defaults={"page": "1", "sortType": "end", "sortDirection": "desc"},
+     *     requirements={"page": "\d+"}, methods={"POST"})
      * @Template("projects/list/map_item_template.html.twig")
      *
-     * @Method("POST")
+     * @param int    $page
+     * @param string $sortType
+     * @param string $sortDirection
+     *
      * @return Response
      */
-    public function projectsListMapListAction($page, $sortType, $sortDirection)
+    public function projectsListMapListAction(int $page, string $sortType, string $sortDirection): array
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
     }
 
     /**
-     * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()")
-     * @Method("POST")
+     * @Route("/projets-list-all", name="projects_list_all", condition="request.isXmlHttpRequest()", methods={"POST"})
      *
      * @return Response
      */
-    public function projectsListAllAction()
+    public function projectsListAllAction(): Response
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $translator            = $this->get('translator');
@@ -121,7 +113,7 @@ class ProjectsController extends Controller
      *
      * @return array
      */
-    public function lenderProjectsAction($page, $sortType, $sortDirection)
+    public function lenderProjectsAction(int $page, string $sortType, string $sortDirection): array
     {
         return $this->getProjectsList($page, $sortType, $sortDirection);
     }
@@ -133,7 +125,7 @@ class ProjectsController extends Controller
      *
      * @return array
      */
-    private function getProjectsList($page, $sortType, $sortDirection)
+    private function getProjectsList(int $page, string $sortType, string $sortDirection): array
     {
         $entityManager         = $this->get('doctrine.orm.entity_manager');
         $translator            = $this->get('translator');
@@ -260,7 +252,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function detailAction($projectSlug, Request $request)
+    public function detailAction(string $projectSlug, Request $request): Response
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
@@ -413,7 +405,7 @@ class ProjectsController extends Controller
      *
      * @return \projects|RedirectResponse
      */
-    private function checkProjectAndRedirect($projectSlug)
+    private function checkProjectAndRedirect(string $projectSlug)
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
@@ -439,14 +431,13 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/monthly_repayment", name="estimate_monthly_repayment")
-     * @Method({"POST"})
+     * @Route("/projects/monthly_repayment", name="estimate_monthly_repayment", methods={"POST"})
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function estimateMonthlyRepaymentAction(Request $request)
+    public function estimateMonthlyRepaymentAction(Request $request): Response
     {
         if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
@@ -495,15 +486,14 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bid/{projectId}", requirements={"projectId": "\d+"}, name="place_bid")
-     * @Method({"POST"})
+     * @Route("/projects/bid/{projectId}", requirements={"projectId": "\d+"}, name="place_bid", methods={"POST"})
      *
      * @param int     $projectId
      * @param Request $request
      *
      * @return RedirectResponse
      */
-    public function placeBidAction($projectId, Request $request)
+    public function placeBidAction(int $projectId, Request $request): RedirectResponse
     {
         if (
             ($post = $request->request->get('invest'))
@@ -586,8 +576,8 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/bids/{projectId}/{rate}", requirements={"projectId": "\d+", "rate": "(?:\d+|\d*\.\d+)"}, name="bids_on_project")
-     * @Method({"POST"})
+     * @Route("/projects/bids/{projectId}/{rate}", name="bids_on_project",
+     *     requirements={"projectId": "\d+", "rate": "(?:\d+|\d*\.\d+)"}, methods={"POST"})
      *
      * @param int     $projectId
      * @param float   $rate
@@ -595,7 +585,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function bidsListAction($projectId, $rate, Request $request)
+    public function bidsListAction(int $projectId, float $rate, Request $request): Response
     {
         if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
@@ -655,7 +645,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function exportIncomeStatementAction($projectId)
+    public function exportIncomeStatementAction(int $projectId): Response
     {
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
@@ -720,7 +710,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function exportBalanceSheetAction($projectId)
+    public function exportBalanceSheetAction(int $projectId): Response
     {
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');
@@ -855,7 +845,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function exportBidsAction($projectId)
+    public function exportBidsAction(int $projectId): Response
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var \projects $project */
@@ -930,16 +920,16 @@ class ProjectsController extends Controller
     }
 
     /**
-     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
+     * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()",
+     *     requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
      *
      * @param string  $projectSlug
      * @param int     $amount
      * @param float   $rate
-     * @param Request $request
      *
      * @return Response
      */
-    public function preCheckBidAction($projectSlug, $amount, $rate, Request $request)
+    public function preCheckBidAction(string $projectSlug, int $amount, float $rate): Response
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         $entityManager          = $this->get('doctrine.orm.entity_manager');
@@ -1133,7 +1123,7 @@ class ProjectsController extends Controller
      *
      * @return Response
      */
-    public function dirsAction($projectSlug)
+    public function dirsAction(string $projectSlug): Response
     {
         $project = $this->checkProjectAndRedirect($projectSlug);
 
