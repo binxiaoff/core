@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventBounce
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventBounce
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventBounce
     private $customCampaign;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -70,14 +70,14 @@ class MailjetEventBounce
     private $payload;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="blocked", type="integer", nullable=false)
      */
     private $blocked;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="hard_bounce", type="integer", nullable=false)
      */
@@ -105,7 +105,7 @@ class MailjetEventBounce
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -117,11 +117,11 @@ class MailjetEventBounce
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventBounce
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventBounce
     {
         $this->time = $time;
 
@@ -131,9 +131,9 @@ class MailjetEventBounce
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -145,7 +145,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventBounce
     {
         $this->email = $email;
 
@@ -157,7 +157,7 @@ class MailjetEventBounce
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -165,11 +165,11 @@ class MailjetEventBounce
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventBounce
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventBounce
     {
         $this->campaignId = $campaignId;
 
@@ -179,9 +179,9 @@ class MailjetEventBounce
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -189,11 +189,11 @@ class MailjetEventBounce
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventBounce
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventBounce
     {
         $this->contactId = $contactId;
 
@@ -203,9 +203,9 @@ class MailjetEventBounce
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -217,7 +217,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventBounce
     {
         $this->customCampaign = $customCampaign;
 
@@ -229,7 +229,7 @@ class MailjetEventBounce
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -237,11 +237,11 @@ class MailjetEventBounce
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventBounce
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventBounce
     {
         $this->messageId = $messageId;
 
@@ -251,9 +251,9 @@ class MailjetEventBounce
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -261,11 +261,11 @@ class MailjetEventBounce
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventBounce
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventBounce
     {
         $this->customId = $customId;
 
@@ -275,7 +275,7 @@ class MailjetEventBounce
     /**
      * Get customId
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getCustomId(): ?int
     {
@@ -289,7 +289,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventBounce
     {
         $this->payload = $payload;
 
@@ -301,7 +301,7 @@ class MailjetEventBounce
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -309,11 +309,11 @@ class MailjetEventBounce
     /**
      * Set blocked
      *
-     * @param integer $blocked
+     * @param int $blocked
      *
      * @return MailjetEventBounce
      */
-    public function setBlocked($blocked)
+    public function setBlocked(int $blocked): MailjetEventBounce
     {
         $this->blocked = $blocked;
 
@@ -323,9 +323,9 @@ class MailjetEventBounce
     /**
      * Get blocked
      *
-     * @return integer
+     * @return int
      */
-    public function getBlocked()
+    public function getBlocked(): int
     {
         return $this->blocked;
     }
@@ -333,11 +333,11 @@ class MailjetEventBounce
     /**
      * Set hardBounce
      *
-     * @param integer $hardBounce
+     * @param int $hardBounce
      *
      * @return MailjetEventBounce
      */
-    public function setHardBounce($hardBounce)
+    public function setHardBounce(int $hardBounce): MailjetEventBounce
     {
         $this->hardBounce = $hardBounce;
 
@@ -347,9 +347,9 @@ class MailjetEventBounce
     /**
      * Get hardBounce
      *
-     * @return integer
+     * @return int
      */
-    public function getHardBounce()
+    public function getHardBounce(): int
     {
         return $this->hardBounce;
     }
@@ -361,7 +361,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setErrorRelatedTo($errorRelatedTo)
+    public function setErrorRelatedTo(string $errorRelatedTo): MailjetEventBounce
     {
         $this->errorRelatedTo = $errorRelatedTo;
 
@@ -373,7 +373,7 @@ class MailjetEventBounce
      *
      * @return string
      */
-    public function getErrorRelatedTo()
+    public function getErrorRelatedTo(): string
     {
         return $this->errorRelatedTo;
     }
@@ -385,7 +385,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setError($error)
+    public function setError(string $error): MailjetEventBounce
     {
         $this->error = $error;
 
@@ -397,7 +397,7 @@ class MailjetEventBounce
      *
      * @return string
      */
-    public function getError()
+    public function getError(): string
     {
         return $this->error;
     }
@@ -409,7 +409,7 @@ class MailjetEventBounce
      *
      * @return MailjetEventBounce
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventBounce
     {
         $this->added = $added;
 
@@ -421,7 +421,7 @@ class MailjetEventBounce
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -429,9 +429,9 @@ class MailjetEventBounce
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -439,7 +439,7 @@ class MailjetEventBounce
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();

@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventSpam
 {
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventSpam
     private $email;
 
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventSpam
     private $customCampaign;
 
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -84,7 +84,7 @@ class MailjetEventSpam
     private $added;
 
     /**
-     * @var integer
+     *@var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -96,11 +96,11 @@ class MailjetEventSpam
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventSpam
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventSpam
     {
         $this->time = $time;
 
@@ -110,9 +110,9 @@ class MailjetEventSpam
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -124,7 +124,7 @@ class MailjetEventSpam
      *
      * @return MailjetEventSpam
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventSpam
     {
         $this->email = $email;
 
@@ -136,7 +136,7 @@ class MailjetEventSpam
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -144,11 +144,11 @@ class MailjetEventSpam
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventSpam
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventSpam
     {
         $this->campaignId = $campaignId;
 
@@ -158,9 +158,9 @@ class MailjetEventSpam
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -168,11 +168,11 @@ class MailjetEventSpam
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventSpam
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventSpam
     {
         $this->contactId = $contactId;
 
@@ -182,9 +182,9 @@ class MailjetEventSpam
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -196,7 +196,7 @@ class MailjetEventSpam
      *
      * @return MailjetEventSpam
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventSpam
     {
         $this->customCampaign = $customCampaign;
 
@@ -208,7 +208,7 @@ class MailjetEventSpam
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -216,11 +216,11 @@ class MailjetEventSpam
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventSpam
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventSpam
     {
         $this->messageId = $messageId;
 
@@ -230,9 +230,9 @@ class MailjetEventSpam
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -240,11 +240,11 @@ class MailjetEventSpam
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventSpam
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventSpam
     {
         $this->customId = $customId;
 
@@ -254,7 +254,7 @@ class MailjetEventSpam
     /**
      * Get customId
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getCustomId(): ?int
     {
@@ -268,7 +268,7 @@ class MailjetEventSpam
      *
      * @return MailjetEventSpam
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventSpam
     {
         $this->payload = $payload;
 
@@ -280,7 +280,7 @@ class MailjetEventSpam
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -292,7 +292,7 @@ class MailjetEventSpam
      *
      * @return MailjetEventSpam
      */
-    public function setSource($source)
+    public function setSource(string $source): MailjetEventSpam
     {
         $this->source = $source;
 
@@ -304,7 +304,7 @@ class MailjetEventSpam
      *
      * @return string
      */
-    public function getSource()
+    public function getSource(): string
     {
         return $this->source;
     }
@@ -316,7 +316,7 @@ class MailjetEventSpam
      *
      * @return MailjetEventSpam
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventSpam
     {
         $this->added = $added;
 
@@ -328,7 +328,7 @@ class MailjetEventSpam
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -336,9 +336,9 @@ class MailjetEventSpam
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -346,7 +346,7 @@ class MailjetEventSpam
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();

@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventClick
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventClick
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventClick
     private $customCampaign;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -84,7 +84,7 @@ class MailjetEventClick
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -97,11 +97,11 @@ class MailjetEventClick
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventClick
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventClick
     {
         $this->time = $time;
 
@@ -111,9 +111,9 @@ class MailjetEventClick
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -125,7 +125,7 @@ class MailjetEventClick
      *
      * @return MailjetEventClick
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventClick
     {
         $this->email = $email;
 
@@ -137,7 +137,7 @@ class MailjetEventClick
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -145,11 +145,11 @@ class MailjetEventClick
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventClick
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventClick
     {
         $this->campaignId = $campaignId;
 
@@ -159,9 +159,9 @@ class MailjetEventClick
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -169,11 +169,11 @@ class MailjetEventClick
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventClick
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventClick
     {
         $this->contactId = $contactId;
 
@@ -183,9 +183,9 @@ class MailjetEventClick
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -197,7 +197,7 @@ class MailjetEventClick
      *
      * @return MailjetEventClick
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventClick
     {
         $this->customCampaign = $customCampaign;
 
@@ -209,7 +209,7 @@ class MailjetEventClick
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -217,11 +217,11 @@ class MailjetEventClick
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventClick
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventClick
     {
         $this->messageId = $messageId;
 
@@ -231,9 +231,9 @@ class MailjetEventClick
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -241,11 +241,11 @@ class MailjetEventClick
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventClick
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventClick
     {
         $this->customId = $customId;
 
@@ -255,7 +255,7 @@ class MailjetEventClick
     /**
      * Get customId
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getCustomId(): ?int
     {
@@ -269,7 +269,7 @@ class MailjetEventClick
      *
      * @return MailjetEventClick
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventClick
     {
         $this->payload = $payload;
 
@@ -281,7 +281,7 @@ class MailjetEventClick
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -293,7 +293,7 @@ class MailjetEventClick
      *
      * @return MailjetEventClick
      */
-    public function setUrl($url)
+    public function setUrl(string $url): MailjetEventClick
     {
         $this->url = $url;
 
@@ -305,7 +305,7 @@ class MailjetEventClick
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -317,7 +317,7 @@ class MailjetEventClick
      *
      * @return MailjetEventClick
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventClick
     {
         $this->added = $added;
 
@@ -329,7 +329,7 @@ class MailjetEventClick
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -337,9 +337,9 @@ class MailjetEventClick
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -347,7 +347,7 @@ class MailjetEventClick
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();

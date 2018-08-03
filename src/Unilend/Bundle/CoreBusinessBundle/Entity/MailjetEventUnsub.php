@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventUnsub
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventUnsub
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventUnsub
     private $customCampaign;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -70,7 +70,7 @@ class MailjetEventUnsub
     private $payload;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="list_id", type="integer", nullable=false)
      */
@@ -105,7 +105,7 @@ class MailjetEventUnsub
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -116,11 +116,11 @@ class MailjetEventUnsub
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventUnsub
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventUnsub
     {
         $this->time = $time;
 
@@ -130,9 +130,9 @@ class MailjetEventUnsub
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -144,7 +144,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventUnsub
     {
         $this->email = $email;
 
@@ -156,7 +156,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -164,11 +164,11 @@ class MailjetEventUnsub
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventUnsub
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventUnsub
     {
         $this->campaignId = $campaignId;
 
@@ -178,9 +178,9 @@ class MailjetEventUnsub
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -188,11 +188,11 @@ class MailjetEventUnsub
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventUnsub
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventUnsub
     {
         $this->contactId = $contactId;
 
@@ -202,9 +202,9 @@ class MailjetEventUnsub
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -216,7 +216,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventUnsub
     {
         $this->customCampaign = $customCampaign;
 
@@ -228,7 +228,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -236,11 +236,11 @@ class MailjetEventUnsub
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventUnsub
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventUnsub
     {
         $this->messageId = $messageId;
 
@@ -250,9 +250,9 @@ class MailjetEventUnsub
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -260,11 +260,11 @@ class MailjetEventUnsub
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventUnsub
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventUnsub
     {
         $this->customId = $customId;
 
@@ -274,7 +274,7 @@ class MailjetEventUnsub
     /**
      * Get customId
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getCustomId(): ?int
     {
@@ -288,7 +288,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventUnsub
     {
         $this->payload = $payload;
 
@@ -300,7 +300,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -308,11 +308,11 @@ class MailjetEventUnsub
     /**
      * Set listId
      *
-     * @param integer $listId
+     * @param int $listId
      *
      * @return MailjetEventUnsub
      */
-    public function setListId($listId)
+    public function setListId(int $listId): MailjetEventUnsub
     {
         $this->listId = $listId;
 
@@ -322,9 +322,9 @@ class MailjetEventUnsub
     /**
      * Get listId
      *
-     * @return integer
+     * @return int
      */
-    public function getListId()
+    public function getListId(): int
     {
         return $this->listId;
     }
@@ -336,7 +336,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setIp($ip)
+    public function setIp(string $ip): MailjetEventUnsub
     {
         $this->ip = $ip;
 
@@ -348,7 +348,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getIp()
+    public function getIp(): string
     {
         return $this->ip;
     }
@@ -360,7 +360,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setGeo($geo)
+    public function setGeo(string $geo): MailjetEventUnsub
     {
         $this->geo = $geo;
 
@@ -372,7 +372,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getGeo()
+    public function getGeo(): string
     {
         return $this->geo;
     }
@@ -384,7 +384,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setAgent($agent)
+    public function setAgent(string $agent): MailjetEventUnsub
     {
         $this->agent = $agent;
 
@@ -396,7 +396,7 @@ class MailjetEventUnsub
      *
      * @return string
      */
-    public function getAgent()
+    public function getAgent(): string
     {
         return $this->agent;
     }
@@ -408,7 +408,7 @@ class MailjetEventUnsub
      *
      * @return MailjetEventUnsub
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventUnsub
     {
         $this->added = $added;
 
@@ -420,7 +420,7 @@ class MailjetEventUnsub
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -428,9 +428,9 @@ class MailjetEventUnsub
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -438,7 +438,7 @@ class MailjetEventUnsub
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
