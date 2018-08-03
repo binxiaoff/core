@@ -404,11 +404,11 @@ class InfolegaleExecutivePersonalChange
     }
 
     /**
-     * @param string $title
+     * @param string|null $title
      *
      * @return InfolegaleExecutivePersonalChange
      */
-    public function setTitle(string $title): InfolegaleExecutivePersonalChange
+    public function setTitle(?string $title): InfolegaleExecutivePersonalChange
     {
         $this->title = $title;
 
