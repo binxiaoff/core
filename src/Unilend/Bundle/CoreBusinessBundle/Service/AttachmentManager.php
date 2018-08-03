@@ -3,17 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use PhpOffice\PhpSpreadsheet\{
-    Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf
-};
+use PhpOffice\PhpSpreadsheet\{Exception as PhpSpreadsheetException, IOFactory as PhpSpreadsheetIOFactory, Writer\Pdf\Mpdf as PhpSpreadsheetMpdf};
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\{
-    Exception\FileNotFoundException, Filesystem
-};
+use Symfony\Component\Filesystem\{Exception\FileNotFoundException, Filesystem};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Clients, ProjectAttachment, Projects, Transfer, TransferAttachment};
 
 class AttachmentManager
 {
@@ -128,10 +122,11 @@ class AttachmentManager
 
     /**
      * @param Attachment $attachment
+     * @param bool       $convert
      *
      * @throws FileNotFoundException
      */
-    public function output(Attachment $attachment): void
+    public function output(Attachment $attachment, bool $convert): void
     {
         $path = $this->getFullPath($attachment);
 
@@ -141,21 +136,24 @@ class AttachmentManager
 
         $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        switch ($extension) {
-            case 'csv':
-            case 'xls':
-            case 'xlsx':
-                $this->outputExcel($attachment);
-                break;
-            default:
-                header('Content-Description: File Transfer');
-                header('Content-Type: application/octet-stream');
-                header('Content-Disposition: attachment; filename="' . basename($attachment->getPath()) . '";');
-                header('Content-Length: '. filesize($path));
-
-                echo file_get_contents($path);
-                break;
+        if ($convert) {
+            switch ($extension) {
+                case 'csv':
+                case 'xls':
+                case 'xlsx':
+                    $this->outputExcel($attachment);
+                    return;
+            }
         }
+
+        $fileName = empty($attachment->getOriginalName()) ? basename($attachment->getPath()) : $attachment->getOriginalName();
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . $fileName . '";');
+        header('Content-Length: '. filesize($path));
+
+        echo file_get_contents($path);
     }
 
     /**
@@ -174,7 +172,8 @@ class AttachmentManager
             $writer->setTempDir($this->tmpDirectory);
             $writer->save($temporaryPath);
 
-            $fileName = pathinfo($path, PATHINFO_FILENAME) . '.pdf';
+            $fileName = empty($attachment->getOriginalName()) ? basename($attachment->getPath()) : $attachment->getOriginalName();
+            $fileName = pathinfo($fileName, PATHINFO_FILENAME) . '.pdf';
             $fileSize = filesize($temporaryPath);
 
             header('Content-Description: File Transfer');

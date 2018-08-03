@@ -532,8 +532,9 @@ class ProjectsController extends Controller
             }
 
             $request->getSession()->remove('bidToken');
-            /** @var BidManager $bidManager */
+
             $bidManager = $this->get('unilend.service.bid_manager');
+
             try {
                 $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
                 $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
@@ -543,7 +544,7 @@ class ProjectsController extends Controller
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (BidException $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
-                    $productManager     = $this->get('unilend.service_product.product_manager');
+                    $productManager = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
                     $product = $entityManagerSimulator->getRepository('product');

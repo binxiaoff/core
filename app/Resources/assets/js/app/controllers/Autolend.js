@@ -571,10 +571,10 @@ $doc
         // Always prevent the form from submitting as we will be processing via AJAX in the confirmed modal event
         event.preventDefault()
 
-        if ($('#hidden-settings-mode-input').attr('value') == 'expert') {
-            $('.cell-input[data-autolendtable-cell]').each(function () {
-                var cellData = getCellInfo($(this).attr('data-autolendtable-cell'))
-                if (cellData.currentRate < cellData.min || cellData.currentRate > cellData.max) {
+        if ($('#hidden-settings-mode-input').attr('value') === 'expert') {
+            $('[data-autolendtable-cell]').each(function () {
+                var cellData = getCellInfo($elem.attr('data-autolendtable-cell'))
+                if (cellData.enable && (cellData.currentRate < cellData.min || cellData.currentRate > cellData.max)) {
                     $dialog = $('#autolend-out-of-range-table-dialog')
                 }
             })

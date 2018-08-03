@@ -14,7 +14,7 @@ class LenderValidator extends ClientValidator
      *
      * @return array
      */
-    public function validate(?Clients $client = null, Projects $project): array
+    public function validate(?Clients $client, Projects $project): array
     {
         $violations = parent::validate($client, $project);
         $product    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product')->find($project->getIdProduct());

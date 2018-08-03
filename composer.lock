@@ -3722,6 +3722,49 @@
             "time": "2018-06-20T06:12:51+00:00"
         },
         {
+            "name": "monext/payline-sdk",
+            "version": "4.53",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PaylineByMonext/payline-php-sdk.git",
+                "reference": "bed6764e8a75068c2700dd1059e7ff4a642a081d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PaylineByMonext/payline-php-sdk/zipball/bed6764e8a75068c2700dd1059e7ff4a642a081d",
+                "reference": "bed6764e8a75068c2700dd1059e7ff4a642a081d",
+                "shasum": ""
+            },
+            "require": {
+                "monolog/monolog": "1.*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Payline\\": "src/Payline"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien SUAREZ",
+                    "email": "fabien.suarez@payline.com",
+                    "homepage": "http://www.payline.com"
+                }
+            ],
+            "description": "Payline library for PHP",
+            "keywords": [
+                "Monext",
+                "Payline",
+                "payment"
+            ],
+            "time": "2018-01-11T11:08:20+00:00"
+        },
+        {
             "name": "mongodb/mongodb",
             "version": "1.4.2",
             "source": {

@@ -12,7 +12,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
+    SecurityQuestionType};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
@@ -529,7 +530,7 @@ class LenderProfileController extends Controller
             $settingType                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($typeId);
             $notificationSetting            = $notificationSettingsRepository->findOneBy([
                 'idClient' => $client->getIdClient(),
-                'idNotif'  => $settingType->getidClientGestionTypeNotif()
+                'idNotif'  => $settingType->getIdClientGestionTypeNotif()
             ]);
 
             if (null === $notificationSetting) {

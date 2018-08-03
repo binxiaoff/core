@@ -863,7 +863,7 @@ class LenderSubscriptionController extends Controller
                 $formManager = $this->get('unilend.frontbundle.service.form_manager');
                 $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->getIdClient(), 'post' => $request->request->all()]), $request->getClientIp());
 
-                if (false !== $redirectUrl) {
+                if (null !== $redirectUrl) {
                     return $this->redirect($redirectUrl);
                 }
             }
@@ -891,8 +891,8 @@ class LenderSubscriptionController extends Controller
             return $this->redirectToRoute('home_lender');
         }
 
-        $token   = $request->get('token');
-        $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
+        $token   = $request->query->filter('token', FILTER_SANITIZE_STRING);
+        $version = $request->query->getInt('version', Backpayline::WS_DEFAULT_VERSION);
 
         if (true === empty($token)) {
             $this->get('logger')->error(
@@ -904,7 +904,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $paylineManager   = $this->get('unilend.service.payline_manager');
-        $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
+        $paidAmountInCent = $paylineManager->handleResponse($token, $version);
 
         if (false !== $paidAmountInCent) {
             $clientHistory = new ClientsHistory();

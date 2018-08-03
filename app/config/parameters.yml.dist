@@ -104,7 +104,8 @@ parameters:
     path.user:                      %path.shared%var/
     path.sftp:                      %path.shared%sftp/
     path.protected:                 %path.shared%protected/
-    path.payline:                   /data/sites/unilend/librairies/payline/
+    path.logs:                      /data/log
+    path.payline:                   %path.logs%/payline
 
     mapbox.token:                   pk.eyJ1IjoidW5pbGVuZCIsImEiOiJjaXJiczA4ejQwMDVvaWZsdzdmMmpnOGRtIn0._IBtG2TUy17m7S6jwVBrcg
 

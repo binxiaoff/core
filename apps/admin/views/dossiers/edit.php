@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
 
 ?>
 <link rel="stylesheet" href="<?= $this->lurl ?>/oneui/js/plugins/dropzonejs/dropzone.min.css">
@@ -523,11 +521,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                 }
             })
         })
-
-        $('#reason').select2({
-            width: 'resolve',
-            dropdownParent: $('#abandon-project-memo')
-        })
     })
 </script>
 <link rel="stylesheet" href="/oneui/js/plugins/select2/select2.min.css">
@@ -935,12 +928,18 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                             </td>
                         </tr>
                         <!-- Rejection/abandon reason -->
-                        <?php if (count($this->statusReasonText) > 1 || false === empty($this->statusReasonText[0])) : ?>
+                        <?php if (false === empty($this->statusReasonText['reason'])) : ?>
                             <tr>
-                                <th><label for="status">Motif(s)</label></th>
+                                <th>Motif(s)</th>
                                 <td>
-                                    <?php foreach ($this->statusReasonText as $reason) : ?>
-                                        <?= $reason ?><br>
+                                    <?php $index = 0; ?>
+                                    <?php foreach ($this->statusReasonText['reason'] as $idReason => $reason) : ?>
+                                        <?php $index++ ?>
+                                        <?= $reason ?>
+                                        <?php if (false === empty($this->statusReasonText['description'][$idReason])) : ?>
+                                            <img src="<?= $this->surl ?>/images/admin/info.png" alt="<?= htmlentities($this->statusReasonText['description'][$idReason]) ?>" title="<?= htmlentities($this->statusReasonText['description'][$idReason]) ?>" class="tooltip">
+                                        <?php endif; ?>
+                                        <?= $index < count($this->statusReasonText['reason']) ? '<br>' : '' ?>
                                     <?php endforeach; ?>
                                 </td>
                             </tr>
