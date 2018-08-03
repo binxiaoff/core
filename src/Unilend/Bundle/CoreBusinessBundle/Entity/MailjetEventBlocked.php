@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventBlocked
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventBlocked
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,14 +49,14 @@ class MailjetEventBlocked
     private $customCampaign;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
@@ -91,7 +91,7 @@ class MailjetEventBlocked
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -103,11 +103,11 @@ class MailjetEventBlocked
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventBlocked
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventBlocked
     {
         $this->time = $time;
 
@@ -117,9 +117,9 @@ class MailjetEventBlocked
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -131,7 +131,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventBlocked
     {
         $this->email = $email;
 
@@ -143,7 +143,7 @@ class MailjetEventBlocked
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -151,11 +151,11 @@ class MailjetEventBlocked
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventBlocked
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventBlocked
     {
         $this->campaignId = $campaignId;
 
@@ -165,9 +165,9 @@ class MailjetEventBlocked
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -175,11 +175,11 @@ class MailjetEventBlocked
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventBlocked
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventBlocked
     {
         $this->contactId = $contactId;
 
@@ -189,9 +189,9 @@ class MailjetEventBlocked
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -203,7 +203,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventBlocked
     {
         $this->customCampaign = $customCampaign;
 
@@ -215,7 +215,7 @@ class MailjetEventBlocked
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -223,11 +223,11 @@ class MailjetEventBlocked
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventBlocked
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventBlocked
     {
         $this->messageId = $messageId;
 
@@ -237,9 +237,9 @@ class MailjetEventBlocked
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -247,11 +247,11 @@ class MailjetEventBlocked
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventBlocked
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventBlocked
     {
         $this->customId = $customId;
 
@@ -261,7 +261,7 @@ class MailjetEventBlocked
     /**
      * Get customId
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getCustomId(): ?int
     {
@@ -275,7 +275,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventBlocked
     {
         $this->payload = $payload;
 
@@ -287,7 +287,7 @@ class MailjetEventBlocked
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -299,7 +299,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setErrorRelatedTo($errorRelatedTo)
+    public function setErrorRelatedTo(string $errorRelatedTo): MailjetEventBlocked
     {
         $this->errorRelatedTo = $errorRelatedTo;
 
@@ -311,7 +311,7 @@ class MailjetEventBlocked
      *
      * @return string
      */
-    public function getErrorRelatedTo()
+    public function getErrorRelatedTo(): string
     {
         return $this->errorRelatedTo;
     }
@@ -323,7 +323,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setError($error)
+    public function setError(string $error): MailjetEventBlocked
     {
         $this->error = $error;
 
@@ -335,7 +335,7 @@ class MailjetEventBlocked
      *
      * @return string
      */
-    public function getError()
+    public function getError(): string
     {
         return $this->error;
     }
@@ -347,7 +347,7 @@ class MailjetEventBlocked
      *
      * @return MailjetEventBlocked
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventBlocked
     {
         $this->added = $added;
 
@@ -359,7 +359,7 @@ class MailjetEventBlocked
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -367,9 +367,9 @@ class MailjetEventBlocked
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -377,7 +377,7 @@ class MailjetEventBlocked
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
