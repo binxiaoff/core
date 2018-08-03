@@ -65,7 +65,7 @@
                             <td><?= $project['name'] ?></td>
                             <td><?= $this->dates->formatDate($project['added'], 'd/m/Y') ?></td>
                             <td><?= empty($project['amount']) ? '' : $this->ficelle->formatNumber($project['amount'], 0) . ' €' ?></td>
-                            <td><?= (in_array($project['period'], [0, 1000000]) ? '' : $project['period'] . ' mois') ?></td>
+                            <td><?= empty($project['period']) ? '' : $project['period'] . ' mois' ?></td>
                             <td><?= $project['label'] ?></td>
                             <td align="center">
                                 <a href="<?= $this->lurl ?>/sfpmei/projet/<?= $project['id_project'] ?>">
