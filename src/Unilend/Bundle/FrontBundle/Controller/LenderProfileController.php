@@ -4,27 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\{
-    Extension\Core\Type\CheckboxType, FormError, FormInterface
-};
-use Symfony\Component\HttpFoundation\{
-    File\UploadedFile, JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInterface};
+use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientDataHistoryManager, LocationManager, NewsletterManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu,
+    LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType, SecurityQuestionType
-};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
+    SecurityQuestionType};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
@@ -832,8 +822,10 @@ class LenderProfileController extends Controller
         $addressManager = $this->get('unilend.service.address_manager');
         $addressManager->saveClientAddress($address, $zip, $city, $countryId, $client, AddressType::TYPE_MAIN_ADDRESS);
 
-        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+        $lastModifiedAddress = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+
         $addressManager->linkAttachmentToAddress($lastModifiedAddress, $document);
     }
 
