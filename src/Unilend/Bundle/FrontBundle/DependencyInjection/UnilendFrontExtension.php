@@ -28,6 +28,9 @@ class UnilendFrontExtension extends Extension
         $loader->load('form.xml');
         $loader->load('event.xml');
 
+        $ymlLoader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $ymlLoader->load('controller.yml');
+
         $this->updateValidatorMappingFiles($container);
     }
 

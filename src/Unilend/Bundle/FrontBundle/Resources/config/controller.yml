@@ -1,0 +1,8 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenpointController:
+        class: Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenpointController
