@@ -822,8 +822,10 @@ class LenderProfileController extends Controller
         $addressManager = $this->get('unilend.service.address_manager');
         $addressManager->saveClientAddress($address, $zip, $city, $countryId, $client, AddressType::TYPE_MAIN_ADDRESS);
 
-        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+        $lastModifiedAddress = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+
         $addressManager->linkAttachmentToAddress($lastModifiedAddress, $document);
     }
 
