@@ -3,33 +3,46 @@
 namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use Doctrine\ORM\EntityManager;
+use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Service\GreenpointManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
+use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\HousingCertificate;
+use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\Identity;
+use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\Rib;
+use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
-class GreenpointController extends Controller
+class GreenPointController extends Controller
 {
     /** @var LoggerInterface  */
     private $logger;
     /** @var EntityManager */
     private $entityManager;
-    /** @var GreenpointManager */
-    private $greenpointManager;
+    /** @var GreenPointValidationManager */
+    private $validationManager;
+    /** @var Serializer */
+    private $serializer;
 
-    public function __construct(Loggerinterface $logger, EntityManager $entityManager, GreenpointManager $greenpointManager)
+    /**
+     * @param LoggerInterface             $logger
+     * @param EntityManager               $entityManager
+     * @param GreenPointValidationManager $validationManager
+     * @param Serializer                  $serializer
+     */
+    public function __construct(Loggerinterface $logger, EntityManager $entityManager, GreenPointValidationManager $validationManager, Serializer $serializer)
     {
         $this->logger            = $logger;
         $this->entityManager     = $entityManager;
-        $this->greenpointManager = $greenpointManager;
+        $this->validationManager = $validationManager;
+        $this->serializer        = $serializer;
     }
 
     /**
      * @Route("/ws/kyc", name="greenpoint_asynchronous_feedback", methods={"POST"})
      */
-    public function greenpointAsynchronousFeedbackAction(Request $request): Response
+    public function greenPointAsynchronousFeedbackAction(Request $request): Response
     {
         if (true !== ($response = $this->checkIp($request))) {
             return $response;
@@ -43,9 +56,9 @@ class GreenpointController extends Controller
         }
 
         $type = $request->request->getInt('type');
-        if (false === in_array($type, [GreenpointManager::TYPE_HOUSING_CERTIFICATE, GreenpointManager::TYPE_HOUSING_CERTIFICATE, GreenpointManager::TYPE_RIB])) {
+        if (false === in_array($type, [GreenPointManager::TYPE_IDENTITY_DOCUMENT, GreenPointManager::TYPE_RIB, GreenPointManager::TYPE_HOUSING_CERTIFICATE])) {
             $this->logger->error(
-                'Greenpoint returned feedback for unknown type', [
+                'GreenPoint returned feedback for unknown type', [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
                 'type'     => $type
@@ -65,13 +78,27 @@ class GreenpointController extends Controller
             return new Response('Data incomplete. Document ID unknown', 400);
         }
 
-        try {
-            $this->greenpointManager->handleAsynchronousFeedback($type, $attachment, $request->request->all());
-            //$this->updateGreenPointKyc($request->request->getInt('dossier'));
+        switch ($type) {
+            case GreenPointManager::TYPE_IDENTITY_DOCUMENT:
+                $identity = $this->serializer->deserialize(json_encode($response), Identity::class, 'json');
+                break;
+            case GreenPointManager::TYPE_RIB:
+                $class = Rib::class;
+                break;
+            case GreenPointManager::TYPE_HOUSING_CERTIFICATE:
+                $class = HousingCertificate::class;
+                break;
+            default:
+                throw new \InvalidArgumentException('Unsupported type');
+        }
 
+        //TODO
+
+        try {
+            $this->validationManager->handleAsynchronousFeedback($type, $attachment, $request->request->all());
         } catch (\Exception $exception) {
             $this->logger->error(
-                'An error occurred during asynchronous greenpoint feedback. Message: ' . $exception->getMessage(), [
+                'An error occurred during asynchronous GreenPoint feedback. Message: ' . $exception->getMessage(), [
                 'class'     => __CLASS__,
                 'function'  => __FUNCTION__,
                 'file'      => $exception->getFile(),
@@ -79,8 +106,6 @@ class GreenpointController extends Controller
                 'id_client' => $attachment->getClient()->getIdClient()
             ]);
         }
-
-
 
         return new Response('success');
     }
@@ -151,41 +176,4 @@ class GreenpointController extends Controller
 
         return $allowedIp;
     }
-
-//    private function updateGreenPointKyc($iClientId)
-//    {
-//        /** @var \greenpoint_kyc $oGreenPointKyc */
-//        $oGreenPointKyc = $this->loadData('greenpoint_kyc');
-//
-//        /** @var greenPoint $oGreenPoint */
-//        $oGreenPoint = new greenPoint($this->getParameter('kernel.environment'));
-//        greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
-//    }
-//
-//    /**
-//     * @param int $iClientId
-//     * @param greenPoint $oGreenPoint
-//     * @param \greenpoint_kyc $oGreenPointKyc
-//     */
-//    public function addCustomer($iClientId, greenPoint $oGreenPoint, \greenpoint_kyc $oGreenPointKyc)
-//    {
-//        $aResult = $oGreenPoint->getCustomer($iClientId);
-//        $aKyc    = json_decode($aResult[0]['RESPONSE'], true);
-//
-//        if (isset($aKyc['resource']['statut_dossier'])) {
-//            if (0 < $oGreenPointKyc->counter('id_client = ' . $iClientId)) {
-//                $oGreenPointKyc->get($iClientId, 'id_client');
-//                $oGreenPointKyc->status      = $aKyc['resource']['statut_dossier'];
-//                $oGreenPointKyc->last_update = $aKyc['resource']['modification'];
-//                $oGreenPointKyc->update();
-//            } else {
-//                $oGreenPointKyc->id_client     = $iClientId;
-//                $oGreenPointKyc->status        = $aKyc['resource']['statut_dossier'];
-//                $oGreenPointKyc->creation_date = $aKyc['resource']['creation'];
-//                $oGreenPointKyc->last_update   = $aKyc['resource']['modification'];
-//                $oGreenPointKyc->create();
-//            }
-//        }
-//    }
-
 }
