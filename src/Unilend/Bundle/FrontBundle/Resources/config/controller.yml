@@ -4,5 +4,5 @@ services:
         autoconfigure: true
         public: false
 
-    Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenpointController:
-        class: Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenpointController
+    Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenPointController:
+        class: Unilend\Bundle\FrontBundle\Controller\Endpoint\GreenPointController

@@ -304,7 +304,6 @@ eight_points_guzzle:
             options:
                 timeout: 16
                 http_errors: false
-
         codinf:
             base_url: "%codinf.url%"
             options:
@@ -321,6 +320,12 @@ eight_points_guzzle:
         google_recaptcha:
             base_url: "%google.recaptcha_url%"
             options:
+                http_errors: false
+        greenpoint:
+            base_url: "%greenpoint.url%"
+            options:
+                headers:
+                    Accept: "application/json"
                 http_errors: false
 
 cl_slack:

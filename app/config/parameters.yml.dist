@@ -72,6 +72,10 @@ parameters:
     ellisphere.password:            ~
     ellisphere.url:                 https://services.data-access-gateway.com/1/rest/
 
+    greenpoint.url:                 'https://id-control.fr/api/'
+    greenpoint.login:               'unilend'
+    greenpoint.password:            'XqLeYkqj3h'
+
     slack.default_channel:          '#it-testing'
 
     # End of parameters managed also by Ansible
