@@ -89,8 +89,8 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
             CompanyRating::TYPE_EULER_HERMES_GRADE,
             CompanyRating::TYPE_INFOLEGALE_SCORE
         ];
-        $extraction                     = [];
 
+        $extraction        = [];
         $evaluatedProjects = $assessmentRepository->getEvaluatedProjects();
 
         /** @var Projects $project */
@@ -148,7 +148,7 @@ class QueriesProjectEligibilityCommand extends ContainerAwareCommand
                 'operation_income' => $project->getResultatExploitationDeclaraClient(),
                 'is_rcs'           => empty($company->getRcs()) ? 'Non' : 'Oui',
                 'naf'              => $company->getCodeNaf(),
-                'status'           => isset($indexedProjectStatus[$project->getStatus()]) ?? '',
+                'status'           => isset($indexedProjectStatus[$project->getStatus()]) ? $indexedProjectStatus[$project->getStatus()] : '',
                 'common_check'     => $projectEligibilityAssessment->getStatus() ? 'OK' : $projectEligibilityAssessment->getIdRule()->getLabel()
             ];
         }

@@ -490,30 +490,6 @@ class echeanciers extends echeanciers_crud
         $this->bdd->query($sql);
     }
 
-    // Utilisé dans cron check remb preteurs (27/04/2015)
-    public function selectEcheanciersByprojetEtOrdre()
-    {
-        $sql = '
-            SELECT id_project,
-                ordre,
-                status,
-                DATE(date_echeance) AS date_echeance,
-                DATE(date_echeance_emprunteur) AS date_echeance_emprunteur,
-                DATE(date_echeance_emprunteur_reel) AS date_echeance_emprunteur_reel,
-                status_emprunteur
-            FROM echeanciers
-            WHERE DATE(date_echeance) = "' . date('Y-m-d') . '"
-                AND status = ' . EcheanciersEntity::STATUS_PENDING . '
-            GROUP BY id_project, ordre';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = [];
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function getRepaymentOfTheDay(\DateTime $date)
     {
         $bind = ['formatedDate' => $date->format('Y-m-d')];

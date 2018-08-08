@@ -1,13 +1,9 @@
 <?php
 
-use Doctrine\ORM\{
-    EntityManager, OptimisticLockException
-};
+use Doctrine\ORM\{EntityManager, OptimisticLockException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Attachment, UsersHistory, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, UsersHistory, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager;
 
 class attachmentController extends bootstrap
@@ -28,6 +24,7 @@ class attachmentController extends bootstrap
         if (isset($this->params[1], $this->params[3]) && false !== filter_var($this->params[1], FILTER_VALIDATE_INT)) {
             $attachmentId = $this->params[1];
             $path         = filter_var($this->params[3], FILTER_SANITIZE_STRING);
+            $convert      = isset($this->params[2]) && 'view' === $this->params[2];
             /** @var Attachment $attachment */
             $attachment = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Attachment')->find($attachmentId);
 
@@ -36,7 +33,7 @@ class attachmentController extends bootstrap
                 $attachmentManager = $this->get('unilend.service.attachment_manager');
 
                 try {
-                    $attachmentManager->output($attachment);
+                    $attachmentManager->output($attachment, $convert);
                     exit;
                 } catch (FileNotFoundException $exception) {
                 }

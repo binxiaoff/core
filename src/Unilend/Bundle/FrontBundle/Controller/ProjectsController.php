@@ -4,27 +4,18 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Security, Template
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Security, Template};
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract,
+    UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BidManager, CIPManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{CIPManager};
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
-use Unilend\Bundle\FrontBundle\Service\{
-    LenderAccountDisplayManager, ProjectDisplayManager
-};
+use Unilend\Bundle\FrontBundle\Service\{LenderAccountDisplayManager, ProjectDisplayManager};
 use Unilend\core\Loader;
 
 class ProjectsController extends Controller
@@ -528,8 +519,9 @@ class ProjectsController extends Controller
             }
 
             $request->getSession()->remove('bidToken');
-            /** @var BidManager $bidManager */
+
             $bidManager = $this->get('unilend.service.bid_manager');
+
             try {
                 $projectEntity  = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
                 $bids           = $bidManager->bid($wallet, $projectEntity, $bidAmount, $rate);
@@ -539,7 +531,7 @@ class ProjectsController extends Controller
                 $request->getSession()->set('bidResult', ['success' => true, 'message' => $translator->trans('project-detail_side-bar-bids-bid-placed-message')]);
             } catch (BidException $exception) {
                 if ('bids-not-eligible' === $exception->getMessage()) {
-                    $productManager     = $this->get('unilend.service_product.product_manager');
+                    $productManager = $this->get('unilend.service_product.product_manager');
 
                     /** @var \product $product */
                     $product = $entityManagerSimulator->getRepository('product');

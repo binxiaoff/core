@@ -4,12 +4,11 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
@@ -25,23 +24,8 @@ class ContactController extends Controller
      */
     public function contactAction(Request $request, ?UserInterface $client)
     {
-        $template = $this->get('session')->get('searchResult', ['query' => '', 'results' => '']);
-
-        $this->get('session')->remove('searchResult');
-
         if ($client instanceof Clients) {
-            if (in_array($client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $client->isBorrower() || $client->isPartner()) {
-                $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-            }
-
-            $template['formData'] = [
-                'firstname' => $client->getPrenom(),
-                'lastname'  => $client->getNom(),
-                'phone'     => $client->getMobile(),
-                'email'     => $client->getEmail(),
-                'company'   => empty($company) ? '' : $company->getName(),
-                'role'      => $client->isLender() ? 2 : ($client->isBorrower() ? 3 : ($client->isPartner() ? 4 : ''))
-            ];
+            $template['formData'] = $this->getContactFormTemplateData($user);
         }
 
         if ($request->request->has('message')) {
@@ -56,6 +40,59 @@ class ContactController extends Controller
     }
 
     /**
+     * @Route("/contact/search/{query}", name="contact_search_result")
+     *
+     * @param Request                     $request
+     * @param string                      $query
+     * @param UserInterface|Clients|unill $client
+     *
+     * @return Response
+     */
+    public function contactSearchResultAction(Request $request, string $query, ?UserInterface $client): Response
+    {
+        $template['query'] = $query;
+
+        if (Request::METHOD_GET === $request->getMethod()) {
+            if (null !== $query) {
+                $template['results'] = $this->getSearchResult($query, $user);
+            }
+        }
+
+        if ($client instanceof Clients) {
+            $template['formData'] = $this->getContactFormTemplateData($client);
+        }
+
+        return $this->render('contact/contact.html.twig', $template);
+    }
+
+    /**
+     * @param Clients $client
+     *
+     * @return array
+     */
+    private function getContactFormTemplateData(Clients $client): array
+    {
+        if (false === $client->isLender() && false === $client->isBorrower() && false === $client->isPartner()) {
+            return [];
+        }
+
+        if (false === $client->isNaturalPerson() || $client->isBorrower() || $client->isPartner()) {
+            $company = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        }
+
+        $formData = [
+            'firstname' => $client->getPrenom(),
+            'lastname'  => $client->getNom(),
+            'phone'     => $client->getMobile(),
+            'email'     => $client->getEmail(),
+            'company'   => empty($company) ? '' : $company->getName(),
+            'role'      => $client->isLender() ? 2 : ($client->isBorrower() ? 3 : ($client->isPartner() ? 4 : ''))
+        ];
+
+        return $formData;
+    }
+
+    /**
      * @Route("/contact/search", name="contact_search")
      * @Method({"POST"})
      *
@@ -66,16 +103,14 @@ class ContactController extends Controller
         return $this->redirectToRoute('contact_search_result', ['query' => urlencode($request->request->get('search'))]);
     }
 
+
     /**
-     * @Route("/contact/search/{query}", name="contact_search_result")
-     * @Method({"GET"})
-     *
      * @param  string                     $query
-     * @param  UserInterface|Clients|null $client
+     * @param  Clients|null $client
      *
-     * @return Response
+     * @return array
      */
-    public function resultAction(string $query, ?UserInterface $client)
+    private function resultAction(string $query, ?Clients $client): array
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
@@ -102,12 +137,7 @@ class ContactController extends Controller
             }
         }
 
-        $this->get('session')->set('searchResult',[
-            'query'   => $query,
-            'results' => $results
-        ]);
-
-        return $this->redirectToRoute('contact');
+        return $results;
     }
 
     private function contactForm($post)

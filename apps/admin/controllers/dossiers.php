@@ -1,13 +1,8 @@
 <?php
 
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification,
-    ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersHistory, UsersTypes, Virements, WalletType, Zones
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
 class dossiersController extends bootstrap
@@ -219,7 +214,7 @@ class dossiersController extends bootstrap
             }
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectStatusManager $projectStatusManager */
             $projectStatusManager   = $this->get('unilend.service.project_status_manager');
-            $this->statusReasonText = $projectStatusManager->getStatusReasonText($this->projectEntity);
+            $this->statusReasonText = $projectStatusManager->getStatusReasonByProject($this->projectEntity);
             $this->hasAdvisor       = false;
 
             $this->canBeDeclined = $projectCloseOutNettingManager->canBeDeclined($this->projectEntity);

@@ -2,18 +2,13 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet,
+    WalletType};
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\core\Loader;
@@ -332,7 +327,7 @@ class LenderWalletController extends Controller
 
             $redirectUrl = $this->get('unilend.service.payline_manager')->pay($amount, $wallet, $successUrl, $cancelUrl);
 
-            if (false !== $redirectUrl) {
+            if (null !== $redirectUrl) {
                 return $this->redirect($redirectUrl);
             }
         }
@@ -355,15 +350,21 @@ class LenderWalletController extends Controller
         }
 
         $logger  = $this->get('logger');
-        $token   = $request->query->get('token');
-        $version = $request->query->get('version', Backpayline::WS_DEFAULT_VERSION);
-        if (true === empty($token)) {
-            $clientId = $this->getUser()->getClientId();
-            $logger->error('Payline token not found, id_client=' . $clientId, ['class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $clientId]);
+        $token   = $request->query->filter('token', FILTER_SANITIZE_STRING);
+        $version = $request->query->getInt('version', Backpayline::WS_DEFAULT_VERSION);
+
+        if (empty($token)) {
+            $logger->error('Payline token not found. Client ID ' . $this->getUser()->getClientId(), [
+                'id_client' => $this->getUser()->getClientId(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__
+            ]);
+
             return $this->redirectToRoute('lender_wallet_deposit');
         }
+
         $paylineManager = $this->get('unilend.service.payline_manager');
-        $paylineManager->handlePaylineReturn($token, $version);
+        $paylineManager->handleResponse($token, $version);
 
         return $this->redirectToRoute('lender_wallet_deposit_result', ['paymentToken' => $token]);
     }

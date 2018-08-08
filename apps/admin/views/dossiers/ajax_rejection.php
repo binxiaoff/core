@@ -71,9 +71,12 @@
     $(document).on('cbox_complete', function () {
         // This will cause the dropdown to be attached to the modal, rather than the body
         // See https://select2.org/troubleshooting/common-problems
-        $('#rejection_reason').select2({
-            dropdownParent: $('#popup')
-        });
+        var $rejectionReason = $('#rejection_reason'),
+            $select2 = $rejectionReason.select2({
+                dropdownParent: $('#popup'),
+            })
+        $select2.select2('open')
+
         <?php if (1 == $this->step) : ?>
             if (CKEDITOR.instances.hasOwnProperty('rejection-comment')) {
                 var editor = CKEDITOR.instances['rejection-comment']
@@ -84,8 +87,7 @@
                 width: '100%',
                 toolbar: 'Basic',
                 removePlugins: 'elementspath',
-                resize_enabled: false,
-                startupFocus: true
+                resize_enabled: false
             })
 
             CKEDITOR.on('instanceReady', function () {
