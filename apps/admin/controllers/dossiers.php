@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysDetector};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
 class dossiersController extends bootstrap
@@ -1665,17 +1665,17 @@ class dossiersController extends bootstrap
             }
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            /** @var WorkingDaysDetector $workingDaysDetector */
-            $workingDaysDetector = $this->get(WorkingDaysDetector::class);
+            /** @var WorkingDaysManager $workingDaysManager */
+            $workingDaysManager = $this->get(WorkingDaysManager::class);
 
             $nextRepayment = $repaymentSchedule->select(
                 'id_project = ' . $this->projects->id_project
                 . ' AND status = ' . Echeanciers::STATUS_PENDING
-                . ' AND date_echeance >= "' . $workingDaysDetector->nextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
+                . ' AND date_echeance >= "' . $workingDaysManager->getNextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
             );
 
             if (false === empty($nextRepayment)) {
-                $this->earlyRepaymentLimitDate    = $workingDaysDetector->previousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
+                $this->earlyRepaymentLimitDate    = $workingDaysManager->getPreviousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
                 $this->borrowerOwedCapital        = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')

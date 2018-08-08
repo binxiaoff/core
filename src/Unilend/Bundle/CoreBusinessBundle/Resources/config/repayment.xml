@@ -41,7 +41,7 @@
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="unilend.service_repayment.project_repayment_notification_sender"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysDetector"/>
+            <argument type="service" id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager"/>
         </service>
 
         <service id="unilend.service_repayment.project_payment_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectPaymentManager">

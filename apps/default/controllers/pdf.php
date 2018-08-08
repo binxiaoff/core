@@ -3,7 +3,7 @@
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
-use Unilend\Bundle\CoreBusinessBundle\Service\{WorkingDaysDetector, Repayment\ProjectRepaymentScheduleManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 
 class pdfController extends bootstrap
 {

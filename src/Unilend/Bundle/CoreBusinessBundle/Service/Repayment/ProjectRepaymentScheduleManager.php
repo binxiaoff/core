@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Repayment;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysDetector;
+use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
 
 class ProjectRepaymentScheduleManager
 {
@@ -11,19 +11,19 @@ class ProjectRepaymentScheduleManager
 
     /** @var EntityManager */
     private $entityManager;
-    /** @var WorkingDaysDetector */
-    private $workingDaysDetector;
+    /** @var WorkingDaysManager */
+    private $workingDaysManager;
 
     /**
      * ProjectRepaymentScheduleManager constructor.
      *
-     * @param EntityManager       $entityManager
-     * @param WorkingDaysDetector $workingDaysDetector
+     * @param EntityManager      $entityManager
+     * @param WorkingDaysManager $workingDaysManager
      */
-    public function __construct(EntityManager $entityManager, WorkingDaysDetector $workingDaysDetector)
+    public function __construct(EntityManager $entityManager, WorkingDaysManager $workingDaysManager)
     {
-        $this->entityManager       = $entityManager;
-        $this->workingDaysDetector = $workingDaysDetector;
+        $this->entityManager      = $entityManager;
+        $this->workingDaysManager = $workingDaysManager;
     }
 
     /**
@@ -71,6 +71,6 @@ class ProjectRepaymentScheduleManager
             $daysOffset = self::WORKING_DAY_DIFF_BETWEEN_BORROWER_AND_LENDER;
         }
 
-        return $this->workingDaysDetector->previousWorkingDay($lenderRepaymentDate, $daysOffset);
+        return $this->workingDaysManager->getPreviousWorkingDay($lenderRepaymentDate, $daysOffset);
     }
 }

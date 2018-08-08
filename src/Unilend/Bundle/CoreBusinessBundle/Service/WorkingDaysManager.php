@@ -6,13 +6,13 @@ use Psr\Log\LoggerInterface;
 use Yasumi\Provider\France;
 use Yasumi\Yasumi;
 
-class WorkingDaysDetector
+class WorkingDaysManager
 {
     /** @var LoggerInterface */
     private $logger;
 
     /**
-     * WorkingDaysDetector constructor.
+     * WorkingDaysManager constructor.
      *
      * @param LoggerInterface $logger
      */
@@ -27,7 +27,7 @@ class WorkingDaysDetector
      *
      * @return \DateTimeInterface
      */
-    public function nextWorkingDay(\DateTime $startDate, int $workingDays = 1): \DateTimeInterface
+    public function getNextWorkingDay(\DateTime $startDate, int $workingDays = 1): \DateTimeInterface
     {
         try {
             return Yasumi::nextWorkingDay(France::class, $startDate, $workingDays);
@@ -50,7 +50,7 @@ class WorkingDaysDetector
      *
      * @return \DateTimeInterface
      */
-    public function previousWorkingDay(\DateTime $startDate, int $workingDays = 1): \DateTimeInterface
+    public function getPreviousWorkingDay(\DateTime $startDate, int $workingDays = 1): \DateTimeInterface
     {
         try {
             return Yasumi::prevWorkingDay(France::class, $startDate, $workingDays);

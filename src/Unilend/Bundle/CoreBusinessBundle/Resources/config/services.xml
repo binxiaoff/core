@@ -562,6 +562,6 @@
             <argument key="$listId">%mailchimp.list_id%</argument>
         </service>
 
-        <service id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysDetector" autowire="true"/>
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager" autowire="true"/>
     </services>
 </container>
