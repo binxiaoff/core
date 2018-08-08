@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1362d6a74f0e9eb03dc73cbf751ba4f3",
+    "content-hash": "d37202387a6e29b56a0d787128a1bbe4",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -69,6 +69,59 @@
                 "mongodb"
             ],
             "time": "2017-09-24T11:32:02+00:00"
+        },
+        {
+            "name": "azuyalabs/yasumi",
+            "version": "1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/azuyalabs/yasumi.git",
+                "reference": "115a3ccd53f45294d3d5f16ca85137cc9826953b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/azuyalabs/yasumi/zipball/115a3ccd53f45294d3d5f16ca85137cc9826953b",
+                "reference": "115a3ccd53f45294d3d5f16ca85137cc9826953b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.6",
+                "fzaninotto/faker": "~1.7",
+                "mikey179/vfsstream": "~1.6",
+                "phpunit/phpunit": "~5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yasumi\\": "src/Yasumi/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sacha Telgenhof",
+                    "email": "me@sachatelgenhof.nl"
+                }
+            ],
+            "description": "Yasumi is an easy PHP Library for calculating national holidays.",
+            "keywords": [
+                "Bank",
+                "calculation",
+                "calendar",
+                "celebration",
+                "date",
+                "holiday",
+                "holidays",
+                "national",
+                "time"
+            ],
+            "time": "2018-02-21T05:23:52+00:00"
         },
         {
             "name": "beberlei/DoctrineExtensions",
