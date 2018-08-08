@@ -1,15 +1,10 @@
 <?php
 
-use Box\Spout\{
-    Common\Type, Writer\WriterFactory
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
-};
+use Box\Spout\{Common\Type, Writer\WriterFactory};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies,
+    LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientAuditer, ClientDataHistoryManager, LenderOperationsManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
 {
@@ -112,8 +107,6 @@ class preteursController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var LenderOperationsManager $lenderOperationsManager */
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         /** @var \Psr\Log\LoggerInterface $logger */
@@ -202,8 +195,10 @@ class preteursController extends bootstrap
             $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
 
-            $this->attachments     = $wallet->getIdClient()->getAttachments();
+            /** @var AttachmentManager $attachmentManager */
+            $attachmentManager     = $this->get('unilend.service.attachment_manager');
             $this->attachmentTypes = $attachmentManager->getAllTypesForLender();
+            $this->attachments     = $wallet->getIdClient()->getAttachments();
 
             $this->exemptionYears         = [];
             $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
@@ -312,28 +307,24 @@ class preteursController extends bootstrap
         $this->loadJs('default/component/add-file-input');
 
         $this->nationalites            = $this->loadData('nationalites_v2');
-        $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->settings                = $this->loadData('settings');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
-        $this->lNatio = $this->nationalites->select();
-        $this->lPays  = $this->pays->select('', 'ordre ASC');
+        $this->lNatio = $this->nationalites->select('', 'ordre ASC');
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->countries = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->findBy([], ['ordre' => 'ASC']);
+
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager       = $this->get('unilend.service.translation_manager');
+        $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
@@ -396,8 +387,10 @@ class preteursController extends bootstrap
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
-            $attachments     = $this->client->getAttachments();
-            $attachmentTypes = $attachmentManager->getAllTypesForLender();
+            /** @var AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            $attachments       = $this->client->getAttachments();
+            $attachmentTypes   = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
 
             $this->currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->client);
@@ -432,6 +425,8 @@ class preteursController extends bootstrap
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest($this->client);
 
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus(
                     $this->client,
                     $this->userEntity->getIdUser(),
@@ -1491,14 +1486,14 @@ class preteursController extends bootstrap
 
         switch ($action) {
             case 'close_lender':
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_LENDER_REQUEST);
 
                 $this->sendEmailClosedAccount($client);
                 break;
             case 'close_unilend':
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_BY_UNILEND);
                 break;
@@ -1564,7 +1559,7 @@ class preteursController extends bootstrap
             $status = $lastTwoStatus[1]->getIdStatus()->getId();
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
         $clientStatusManager->addClientStatus($client, $this->userEntity->getIdUser(), $status, 'Compte remis en ligne par Unilend');
 

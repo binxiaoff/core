@@ -4,11 +4,8 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Asset\Packages;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Service\LocationManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Pays, Projects};
+use Unilend\Bundle\CoreBusinessBundle\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
 
@@ -172,7 +169,7 @@ class FrontBundleExtension extends \Twig_Extension
     public function getCountry($countryId)
     {
         if (empty($countryId)) {
-            $countryId = PaysV2::COUNTRY_FRANCE;
+            $countryId = Pays::COUNTRY_FRANCE;
         }
 
         $countryList = $this->locationManager->getCountries();
@@ -182,9 +179,10 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function getNationality($nationalityId)
     {
-        if (0 == $nationalityId) {
-            $nationalityId = PaysV2::COUNTRY_FRANCE;
+        if (empty($nationalityId)) {
+            $nationalityId = Pays::COUNTRY_FRANCE;
         }
+
         $nationalityList = $this->locationManager->getNationalities();
 
         return $nationalityList[$nationalityId];
@@ -194,18 +192,18 @@ class FrontBundleExtension extends \Twig_Extension
     {
         $cachedItem = $this->cachePool->getItem('monthsList');
 
-        if (false === $cachedItem->isHit()) {
-            /** @var \dates $dates */
-            $dates     = Loader::loadLib('dates');
-            $monthList = $dates->tableauMois['fr'];
-
-            $cachedItem->set($monthList)->expiresAfter(3600);
-            $this->cachePool->save($cachedItem);
-
-            return $monthList;
-        } else {
+        if ($cachedItem->isHit()) {
             return $cachedItem->get();
         }
+
+        /** @var \dates $dates */
+        $dates     = Loader::loadLib('dates');
+        $monthList = $dates->tableauMois['fr'];
+
+        $cachedItem->set($monthList)->expiresAfter(3600);
+        $this->cachePool->save($cachedItem);
+
+        return $monthList;
     }
 
     /**

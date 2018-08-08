@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, Pays, Zones};
 
 class emprunteursController extends bootstrap
 {
@@ -184,7 +182,7 @@ class emprunteursController extends bootstrap
                         $_POST['adresse'],
                         $_POST['cp'],
                         $_POST['ville'],
-                        PaysV2::COUNTRY_FRANCE,
+                        Pays::COUNTRY_FRANCE,
                         $this->companyEntity,
                         AddressType::TYPE_MAIN_ADDRESS
                     );

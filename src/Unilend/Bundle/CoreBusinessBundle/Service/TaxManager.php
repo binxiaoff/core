@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, NationalitesV2, PaysV2, TaxType, UnderlyingContract, Users, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, NationalitesV2, Pays, TaxType, UnderlyingContract, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class TaxManager
@@ -70,9 +68,15 @@ class TaxManager
         $wallet    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $foreigner = 0;
 
-        if ($client->getIdNationalite() === NationalitesV2::NATIONALITY_FRENCH && $client->getIdAddress()->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
+        if (
+            $client->getIdNationalite() === NationalitesV2::NATIONALITY_FRENCH
+            && $client->getIdAddress()->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE
+        ) {
             $foreigner = 1;
-        } elseif ($client->getIdNationalite() !== NationalitesV2::NATIONALITY_FRENCH && $client->getIdAddress()->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) {
+        } elseif (
+            $client->getIdNationalite() !== NationalitesV2::NATIONALITY_FRENCH
+            && $client->getIdAddress()->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE
+        ) {
             $foreigner = 2;
         }
 

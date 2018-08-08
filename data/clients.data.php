@@ -1,9 +1,7 @@
 <?php
 
 use Doctrine\DBAL\Driver\Statement;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, PaysV2, Users, VigilanceRule, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients as ClientEntity, ClientsStatus, GreenpointAttachment, OperationSubType, Pays, Users, VigilanceRule, WalletType};
 
 class clients extends clients_crud
 {
@@ -422,8 +420,8 @@ class clients extends clients_crud
               INNER JOIN companies co on c.id_client = co.id_client_owner
               INNER JOIN projects p ON p.id_company = co.id_company
               LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "') 
-              LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-              LEFT JOIN pays_v2 acountry on ca.id_country = acountry.id_pays
+              LEFT JOIN pays ccountry on c.id_pays_naissance = ccountry.id_pays
+              LEFT JOIN pays acountry on ca.id_country = acountry.id_pays
               LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
             GROUP BY c.id_client";
 
@@ -474,7 +472,7 @@ class clients extends clients_crud
               INNER JOIN wallet_type wt ON w.id_type = wt.id
               INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
               WHERE csh.id_status IN ('. implode(',', ClientsStatus::GRANTED_LOGIN) . ')
-                AND (cliad.id_country = ' . PaysV2::COUNTRY_FRANCE . ' OR coad.id_country = ' . PaysV2::COUNTRY_FRANCE . ')
+                AND (cliad.id_country = ' . Pays::COUNTRY_FRANCE . ' OR coad.id_country = ' . Pays::COUNTRY_FRANCE . ')
             ) AS client_base
             GROUP BY insee_region_code
             HAVING insee_region_code != "0"';
@@ -505,7 +503,7 @@ class clients extends clients_crud
             'clientStatusSuspended'  => ClientsStatus::STATUS_SUSPENDED,
             'idUserFront'            => Users::USER_ID_FRONT,
             'mainAddressType'        => AddressType::TYPE_MAIN_ADDRESS,
-            'idCountryFr'            => PaysV2::COUNTRY_FRANCE
+            'idCountryFr'            => Pays::COUNTRY_FRANCE
         ];
         $type = [
             'statusValid'            => PDO::PARAM_INT,
