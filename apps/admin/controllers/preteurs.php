@@ -769,15 +769,15 @@ class preteursController extends bootstrap
         $this->lPreteurs   = $clientsRepository->getClientsToValidate($statusOrderedByPriority);
 
         if (false === empty($this->lPreteurs)) {
-            /** @var \greenpoint_kyc $oGreenPointKYC */
-            $oGreenPointKYC = $this->loadData('greenpoint_kyc');
+            $greenpointKycRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointKyc');
 
             /** @var array aGreenPointStatus */
             $this->aGreenPointStatus = [];
 
-            foreach ($this->lPreteurs as $aLender) {
-                if ($oGreenPointKYC->get($aLender['id_client'], 'id_client')) {
-                    $this->aGreenPointStatus[$aLender['id_client']] = $oGreenPointKYC->status;
+            foreach ($this->lPreteurs as $lender) {
+                $clientKyc = $greenpointKycRepository->findOneBy(['idClient' => $lender['id_client']]);
+                if (null !== $clientKyc) {
+                    $this->aGreenPointStatus[$lender['id_client']] = $clientKyc->getStatus();
                 }
             }
         }

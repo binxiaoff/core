@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\WSClientBundle\Entity\Greenpoint;
+namespace Unilend\Bundle\WSClientBundle\Entity\GreenPoint;
 
 use JMS\Serializer\Annotation as JMS;
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
@@ -54,7 +54,7 @@ class Identity
      * @JMS\SerializedName("date_naissance")
      * @JMS\Type("DateTime<'d/m/Y'>")
      */
-    private $birthdate;
+    private $birthday;
 
     /**
      * @JMS\SerializedName("lieu_naissancee")
@@ -116,7 +116,9 @@ class Identity
      */
     private $gender;
 
-
+    /**
+     * @return int
+     */
     public function getStatus(): int
     {
         return $this->status;
@@ -136,113 +138,113 @@ class Identity
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getExpirationDate()
+    public function getExpirationDate(): \DateTime
     {
         return $this->expirationDate;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getFirstName()
+    public function getFirstName(): ?string
     {
         return $this->firstName;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime|null
      */
-    public function getBirthdate()
+    public function getBirthday(): ?\DateTime
     {
-        return $this->birthdate;
+        return $this->birthday;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getBirthplace()
+    public function getBirthplace(): ?string
     {
         return $this->birthplace;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getNationality()
+    public function getNationality(): ?string
     {
         return $this->nationality;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getMrz1()
+    public function getMrz1(): ?string
     {
         return $this->mrz1;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getMrz2()
+    public function getMrz2(): ?string
     {
         return $this->mrz2;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getMrz3()
+    public function getMrz3(): ?string
     {
         return $this->mrz3;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getIssuingCountry()
+    public function getIssuingCountry(): ?string
     {
         return $this->issuingCountry;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getIssuingAuthority()
+    public function getIssuingAuthority(): ?string
     {
         return $this->issuingAuthority;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getType()
+    public function getType(): ?string
     {
         return $this->type;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getDocumentNumber()
+    public function getDocumentNumber(): ?string
     {
         return $this->documentNumber;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getGender()
+    public function getGender(): ?string
     {
         return $this->gender;
     }

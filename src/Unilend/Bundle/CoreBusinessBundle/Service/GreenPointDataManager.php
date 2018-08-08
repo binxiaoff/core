@@ -98,8 +98,7 @@ class GreenPointDataManager
     {
         if ($client->isNaturalPerson()) {
             $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-        }
-        else {
+        } else {
             $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
             $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
@@ -129,8 +128,8 @@ class GreenPointDataManager
             'files'    => fopen($this->attachmentManager->getFullPath($attachment), 'r'),
             'dossier'  => $client->getIdClient(),
             'document' => $attachment->getId(),
-            'detail'   => 1,
-            'nom'      => $client->getNom() . $client->getNomUsage() ? '|' . $client->getNomUsage() : '',
+            'detail'   => GreenPointManager::DETAIL_TRUE,
+            'nom'      => $client->getNom() . ($client->getNomUsage() ? '|' . $client->getNomUsage() : ''),
             'prenom'   => $client->getPrenom()
         ];
     }

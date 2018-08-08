@@ -9,9 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
-use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\HousingCertificate;
-use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\Identity;
-use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\Rib;
+use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
 class GreenPointController extends Controller
@@ -78,24 +76,26 @@ class GreenPointController extends Controller
             return new Response('Data incomplete. Document ID unknown', 400);
         }
 
+        $feedback = $request->request->all();
+
         switch ($type) {
             case GreenPointManager::TYPE_IDENTITY_DOCUMENT:
-                $identity = $this->serializer->deserialize(json_encode($response), Identity::class, 'json');
+                $response = $this->serializer->deserialize(json_encode($feedback), Identity::class, 'json');
                 break;
             case GreenPointManager::TYPE_RIB:
-                $class = Rib::class;
+                $response = $this->serializer->deserialize(json_encode($feedback), Rib::class, 'json');
                 break;
             case GreenPointManager::TYPE_HOUSING_CERTIFICATE:
-                $class = HousingCertificate::class;
+                $response = $this->serializer->deserialize(json_encode($feedback), HousingCertificate::class, 'json');
                 break;
             default:
                 throw new \InvalidArgumentException('Unsupported type');
         }
 
-        //TODO
-
         try {
-            $this->validationManager->handleAsynchronousFeedback($type, $attachment, $request->request->all());
+            $this->validationManager->handleAsynchronousFeedback($response, $attachment);
+            $return = GreenPointManager::ASYNCHRONOUS_SUCCESS;
+
         } catch (\Exception $exception) {
             $this->logger->error(
                 'An error occurred during asynchronous GreenPoint feedback. Message: ' . $exception->getMessage(), [
@@ -105,9 +105,10 @@ class GreenPointController extends Controller
                 'line'      => $exception->getLine(),
                 'id_client' => $attachment->getClient()->getIdClient()
             ]);
+            $return = 'Error';
         }
 
-        return new Response('success');
+        return new Response($return);
     }
 
 

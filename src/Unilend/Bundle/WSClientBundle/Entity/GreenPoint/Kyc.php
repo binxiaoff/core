@@ -1,12 +1,11 @@
 <?php
 
-namespace Unilend\Bundle\WSClientBundle\Entity\Greenpoint;
+namespace Unilend\Bundle\WSClientBundle\Entity\GreenPoint;
 
 use JMS\Serializer\Annotation as JMS;
 
 class Kyc
 {
-
     /**
      * @JMS\SerializedName("statut_dossier")
      * @JMS\Type("integer")
@@ -26,25 +25,25 @@ class Kyc
     private $created;
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getLastModified()
+    public function getLastModified(): \DateTime
     {
         return $this->lastModified;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
-    public function getCreated()
+    public function getCreated(): \DateTime
     {
         return $this->created;
     }

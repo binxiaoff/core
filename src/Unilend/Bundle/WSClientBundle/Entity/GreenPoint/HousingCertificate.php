@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\WSClientBundle\Entity\Greenpoint;
+namespace Unilend\Bundle\WSClientBundle\Entity\GreenPoint;
 
 use JMS\Serializer\Annotation as JMS;
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
@@ -59,41 +59,41 @@ class HousingCertificate
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getAddress()
+    public function getAddress(): string
     {
         return $this->address;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getZip()
+    public function getZip(): string
     {
         return $this->zip;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getCity()
+    public function getCity(): string
     {
         return $this->city;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getCountry()
+    public function getCountry(): string
     {
         return $this->country;
     }

@@ -21,6 +21,11 @@ class GreenPointManager
     const TYPE_RIB                 = 2;
     const TYPE_HOUSING_CERTIFICATE = 3;
 
+    const DETAIL_TRUE  = 1;
+    const DETAIL_FALSE = 0;
+
+    const ASYNCHRONOUS_SUCCESS = 1;
+
     const NOT_VERIFIED                   = 0;
     const OUT_OF_BOUNDS                  = 1;
     const FALSIFIED_OR_MINOR             = 2;
@@ -31,6 +36,8 @@ class GreenPointManager
     const EXPIRED                        = 7;
     const CONFORM_COHERENT_NOT_QUALIFIED = 8;
     const CONFORM_COHERENT_QUALIFIED     = 9;
+
+    const SUCCESS_HTTP_STATUS = [200, 201, 202, 204];
 
     /** @var Client */
     private $client;
@@ -75,61 +82,70 @@ class GreenPointManager
         $this->serializer      = $serializer;
     }
 
-
     /**
-     * @param array $data
+     * @param $data
      *
      * @return Identity
+     * @throws \Exception
      */
-    public function checkIdentity(array $data): Identity
+    public function checkIdentity($data): Identity
     {
         $response = $this->postMultipart(self::RESOURCE_CHECK_IDENTITY, $data);
-
         $identity = $this->serializer->deserialize(json_encode($response->resource), Identity::class, 'json');
 
         return $identity;
     }
 
     /**
-     * @param array $data
+     * @param mixed $data
      *
      * @return Rib
+     * @throws \Exception
      */
-    public function checkIban(array $data): Rib
+    public function checkIban($data): Rib
     {
         $response = $this->postMultipart(self::RESOURCE_CHECK_IBAN, $data);
-
-        $rib = $this->serializer->deserialize(json_encode($response->resource), Rib::class, 'json');
+        $rib      = $this->serializer->deserialize(json_encode($response->resource), Rib::class, 'json');
 
         return $rib;
     }
 
     /**
-     * @param array $data
+     * @param mixed $data
      *
      * @return HousingCertificate
+     * @throws \Exception
      */
-    public function checkAddress(array $data): HousingCertificate
+    public function checkAddress($data): HousingCertificate
     {
-        $response = $this->postMultipart(self::RESOURCE_CHECK_ADDRESS, $data);
-
+        $response           = $this->postMultipart(self::RESOURCE_CHECK_ADDRESS, $data);
         $housingCertificate = $this->serializer->deserialize(json_encode($response->resource), HousingCertificate::class, 'json');
 
         return $housingCertificate;
     }
 
+    /**
+     * @param Clients $client
+     *
+     * @return Kyc
+     * @throws \Exception
+     */
     public function getClientKYCStatus(Clients $client): Kyc
     {
         $response = $this->getKyc($client);
-
-        $kycInfo = $this->serializer->deserialize(json_encode($response->resource), Kyc::class, 'json');
+        $kycInfo  = $this->serializer->deserialize(json_encode($response->resource), Kyc::class, 'json');
 
         return $kycInfo;
     }
 
-
-
-    private function postMultipart(string $resourceLabel, array $data)
+    /**
+     * @param string $resourceLabel
+     * @param array  $data
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    private function postMultipart(string $resourceLabel, array $data): array
     {
         if (self::RESOURCE_CHECK_KYC !== $resourceLabel && false === array_key_exists('files', $data)) {
             throw new \InvalidArgumentException('Data for GreenPoint should contain files');
@@ -142,47 +158,61 @@ class GreenPointManager
 
         $response = $this->client->post(
             $wsResource->getResourceName(), [
-              'auth'      => [$this->login, $this->password, 'basic'],
-              'multipart' => $this->formatDataForMultipart($data)
-          ]
+                'auth'      => [$this->login, $this->password, 'basic'],
+                'multipart' => $this->formatDataForMultipart($data)
+            ]
         );
 
         return $this->handleResponse($response);
     }
 
-
+    /**
+     * @param Clients $client
+     *
+     * @return mixed
+     * @throws \Exception
+     */
     private function getKyc(Clients $client)
     {
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_CHECK_KYC);
 
         $response = $this->client->put(
             $wsResource->getResourceName() . '/' . $client->getIdClient(), [
-                                              'auth'    => [$this->login, $this->password, 'basic'],
-                                              'dossier' => $client->getIdClient()
-                                          ]
+                'auth'    => [$this->login, $this->password, 'basic'],
+                'dossier' => $client->getIdClient()
+            ]
         );
 
         return $this->handleResponse($response);
     }
 
-
+    /**
+     * @param ResponseInterface $response
+     *
+     * @return mixed
+     * @throws \Exception
+     */
     private function handleResponse(ResponseInterface $response)
     {
-        if (200 === $response->getStatusCode()){
-            $stream = $response->getBody();
-            $stream->rewind();
-            $content = json_decode($stream->getContents());
-
-            return $content;
+        if (false === in_array($response->getStatusCode(), self::SUCCESS_HTTP_STATUS)){
+            throw new \Exception('GreenPoint returned unexpected response. statusCode: ' . $response->getStatusCode() . ' reasonPhrase: ' . $response->getReasonPhrase());
         }
 
+        $stream = $response->getBody();
+        $stream->rewind();
+        $content = json_decode($stream->getContents());
 
+        return $content;
     }
 
-    private function formatDataForMultipart($data)
+    /**
+     * @param array $data
+     *
+     * @return array
+     */
+    private function formatDataForMultipart(array $data): array
     {
         $multipart = [];
-
         foreach ($data as $name => $content) {
             $multipart[] = [
                 'name'     => $name,
@@ -192,7 +222,4 @@ class GreenPointManager
 
         return $multipart;
     }
-
-
-
 }

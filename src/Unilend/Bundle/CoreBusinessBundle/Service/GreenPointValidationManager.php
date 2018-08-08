@@ -202,26 +202,16 @@ class GreenPointValidationManager
     }
 
     /**
-     * @param int        $type
-     * @param Attachment $attachment
-     * @param array      $data
+     * @param Identity|Rib|HousingCertificate $response
+     * @param Attachment                      $attachment
      *
      * @throws \Exception
      */
-    public function handleAsynchronousFeedback(int $type, Attachment $attachment, array $data): void
+    public function handleAsynchronousFeedback($response, Attachment $attachment): void
     {
+        $this->handleGreenPointResponse($response, $attachment);
 
-
-
-
-
-
-
-        $this->handleGreenPointResponse($data, $attachment);
-
-
-        //$this->updateGreenPointKyc($request->request->getInt('dossier'));
-
+        $this->saveClientKycStatus($attachment->getClient());
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\WSClientBundle\Entity\Greenpoint;
+namespace Unilend\Bundle\WSClientBundle\Entity\GreenPoint;
 
 use JMS\Serializer\Annotation as JMS;
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
@@ -54,36 +54,34 @@ class Rib
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getIban()
+    public function getIban(): string
     {
         return $this->iban;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getBic()
+    public function getBic(): string
     {
         return $this->bic;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
-
-
 }
