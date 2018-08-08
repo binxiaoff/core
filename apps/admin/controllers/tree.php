@@ -102,7 +102,7 @@ class treeController extends bootstrap
         }
 
         $this->lTree     = $this->tree->listChilds(0, [], $this->dLanguage);
-        $this->lTemplate = $this->templates->select('status > 0 AND type = 0', 'name ASC');
+        $this->lTemplate = $this->templates->select('', 'name ASC');
     }
 
     public function _edit()
@@ -215,7 +215,7 @@ class treeController extends bootstrap
             }
 
             $this->lTree     = $this->tree->listChilds(0, [], $this->dLanguage);
-            $this->lTemplate = $this->templates->select('status > 0 AND type = 0', 'name ASC');
+            $this->lTemplate = $this->templates->select('', 'name ASC');
 
             $this->tree->get(['id_tree' => $this->params[0], 'id_langue' => $this->dLanguage]);
         } else {
