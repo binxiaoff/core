@@ -2,12 +2,8 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    WorkingDaysDetector, Repayment\ProjectRepaymentScheduleManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
+use Unilend\Bundle\CoreBusinessBundle\Service\{WorkingDaysDetector, Repayment\ProjectRepaymentScheduleManager};
 
 class pdfController extends bootstrap
 {
@@ -102,11 +98,6 @@ class pdfController extends bootstrap
             case 'claims':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleClaims.css');
-                break;
-            case 'operations':
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style.css');
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style-edit.css');
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleOperations.css');
                 break;
             case 'dec_pret':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/declarationContratPret/print.css');

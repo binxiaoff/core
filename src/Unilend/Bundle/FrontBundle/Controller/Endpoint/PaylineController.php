@@ -13,15 +13,18 @@ class PaylineController extends Controller
     /**
      * @Route("/ws/payment/payline/notify", name="payline_callback")
      *
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function callbackAction(Request $request)
+    public function callbackAction(Request $request): Response
     {
         $token = $request->get('token');
         if (null === $token) {
             return new Response();
         }
 
-        $this->get('unilend.service.payline_manager')->handlePaylineReturn($token, Backpayline::WS_DEFAULT_VERSION);
+        $this->get('unilend.service.payline_manager')->handleResponse($token, Backpayline::WS_DEFAULT_VERSION);
 
         return new Response();
     }

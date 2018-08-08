@@ -2,33 +2,18 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\{
-    FormError, FormInterface
-};
-use Symfony\Component\HttpFoundation\{
-    FileBag, JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\Form\{FormError, FormInterface};
+use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    GoogleRecaptchaManager, NewsletterManager, SponsorshipManager
-};
-use Unilend\Bundle\FrontBundle\Form\{
-    LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson
-};
-use Unilend\Bundle\FrontBundle\Security\{
-    BCryptPasswordEncoder, User\UserPartner
-};
-use Unilend\Bundle\FrontBundle\Service\{
-    DataLayerCollector, SourceManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
+    OffresBienvenues, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
+use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
+use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};
+use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;
 
 class LenderSubscriptionController extends Controller
@@ -880,7 +865,7 @@ class LenderSubscriptionController extends Controller
                 $formManager = $this->get('unilend.frontbundle.service.form_manager');
                 $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->getIdClient(), 'post' => $request->request->all()]), $request->getClientIp());
 
-                if (false !== $redirectUrl) {
+                if (null !== $redirectUrl) {
                     return $this->redirect($redirectUrl);
                 }
             }
@@ -908,8 +893,8 @@ class LenderSubscriptionController extends Controller
             return $this->redirectToRoute('home_lender');
         }
 
-        $token   = $request->get('token');
-        $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
+        $token   = $request->query->filter('token', FILTER_SANITIZE_STRING);
+        $version = $request->query->getInt('version', Backpayline::WS_DEFAULT_VERSION);
 
         if (true === empty($token)) {
             $this->get('logger')->error(
@@ -921,7 +906,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $paylineManager   = $this->get('unilend.service.payline_manager');
-        $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
+        $paidAmountInCent = $paylineManager->handleResponse($token, $version);
 
         if (false !== $paidAmountInCent) {
             $clientHistory = new ClientsHistory();
