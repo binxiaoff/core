@@ -27,27 +27,6 @@ class Templates
     private $slug;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="type", type="integer", nullable=false)
-     */
-    private $type = '0';
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="status", type="integer", nullable=false)
-     */
-    private $status = '0';
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="affichage", type="integer", nullable=false)
-     */
-    private $affichage;
-
-    /**
      * @var \DateTime
      *
      * @ORM\Column(name="added", type="datetime", nullable=false)
@@ -118,78 +97,6 @@ class Templates
     public function getSlug()
     {
         return $this->slug;
-    }
-
-    /**
-     * Set type
-     *
-     * @param integer $type
-     *
-     * @return Templates
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Get type
-     *
-     * @return integer
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Set status
-     *
-     * @param integer $status
-     *
-     * @return Templates
-     */
-    public function setStatus($status)
-    {
-        $this->status = $status;
-
-        return $this;
-    }
-
-    /**
-     * Get status
-     *
-     * @return integer
-     */
-    public function getStatus()
-    {
-        return $this->status;
-    }
-
-    /**
-     * Set affichage
-     *
-     * @param integer $affichage
-     *
-     * @return Templates
-     */
-    public function setAffichage($affichage)
-    {
-        $this->affichage = $affichage;
-
-        return $this;
-    }
-
-    /**
-     * Get affichage
-     *
-     * @return integer
-     */
-    public function getAffichage()
-    {
-        return $this->affichage;
     }
 
     /**
