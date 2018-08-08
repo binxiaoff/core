@@ -398,7 +398,7 @@ GROUP BY p.id_project"
             DROP KEY idx_client_address_pays_id_country,
             DROP FOREIGN KEY fk_client_address_pays_id_country,
             ADD KEY idx_client_address_pays_v2_id_country (id_country),
-            ADD CONSTRAINT fk_client_address_pays_v2_id_country FOREIGN KEY (id_country) REFERENCES pays (id_pays) ON UPDATE CASCADE'
+            ADD CONSTRAINT fk_client_address_pays_v2_id_country FOREIGN KEY (id_country) REFERENCES pays_v2 (id_pays) ON UPDATE CASCADE'
         );
 
         $this->addSql('
@@ -406,7 +406,7 @@ GROUP BY p.id_project"
             DROP KEY idx_company_address_pays_id_country,
             DROP FOREIGN KEY fk_company_address_pays_id_country,
             ADD KEY idx_company_address_pays_v2_id_country (id_country),
-            ADD CONSTRAINT fk_company_address_pays_v2_id_country FOREIGN KEY (id_country) REFERENCES pays (id_pays) ON UPDATE CASCADE'
+            ADD CONSTRAINT fk_company_address_pays_v2_id_country FOREIGN KEY (id_country) REFERENCES pays_v2 (id_pays) ON UPDATE CASCADE'
         );
 
         $this->addSql('
