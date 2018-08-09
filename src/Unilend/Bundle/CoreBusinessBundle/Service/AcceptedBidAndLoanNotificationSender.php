@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionNotifications, ClientsStatus, Loans, Notifications, Projects, Settings, UnderlyingContract, Wallet};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsGestionNotifications, ClientsStatus, Loans, Notifications, Projects, UnderlyingContract, Wallet};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 
 class AcceptedBidAndLoanNotificationSender
@@ -66,6 +66,7 @@ class AcceptedBidAndLoanNotificationSender
         $loanRepository         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
         $acceptedBidsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:AcceptedBids');
         $repaymentRepository    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
+        $walletRepository       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $projectLenders         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans')->getProjectLoanDetailsForEachLender($project);
         $countProjectLenders    = count($projectLenders);
         $countTreatedLenders    = 0;
@@ -81,7 +82,7 @@ class AcceptedBidAndLoanNotificationSender
 
         foreach ($projectLenders as $lender) {
             /** @var Wallet $wallet */
-            $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($lender['idLender']);
+            $wallet = $walletRepository->find($lender['idLender']);
             if (null === $wallet) {
                 continue;
             }

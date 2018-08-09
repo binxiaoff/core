@@ -256,11 +256,11 @@ class LoansRepository extends EntityRepository
     }
 
     /**
-     * @param Projects $project
+     * @param Projects|int $project
      *
      * @return array
      */
-    public function getProjectLoanDetailsForEachLender($project)
+    public function getProjectLoanDetailsForEachLender($project): array
     {
         $queryBuilder = $this->createQueryBuilder('l');
         $queryBuilder
@@ -276,29 +276,5 @@ class LoansRepository extends EntityRepository
             ->setParameter('statusAccepted', Loans::STATUS_ACCEPTED);
 
         return $queryBuilder->getQuery()->getArrayResult();
-    }
-
-    /**
-     * @param Projects|int $project
-     * @param Wallet|int   $wallet
-     *
-     * @return int
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function getLoanCountByLenderAndProject($project, $wallet): int
-    {
-        $queryBuilder = $this->createQueryBuilder('l');
-        $queryBuilder
-            ->select('COUNT(DISTINCT l.idLoan)')
-            ->where('l.idProject = :idProject')
-            ->andWhere('l.status = :statusAccepted')
-            ->andWhere('l.idLender = :wallet')
-            ->groupBy('l.idLender')
-            ->setParameter('idProject', $project)
-            ->setParameter('statusAccepted', Loans::STATUS_ACCEPTED)
-            ->setParameter('wallet', $wallet);
-
-        return $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }
