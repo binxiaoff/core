@@ -13,22 +13,6 @@ class protectedController extends bootstrap
         $this->users->checkAccess();
     }
 
-    public function _templates()
-    {
-        if (file_exists($this->path . 'protected/templates/' . $this->params[0])) {
-            $url = ($this->path . 'protected/templates/' . $this->params[0]);
-
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
-            die();
-        } else {
-            header('location:' . $this->lurl);
-            die;
-        }
-    }
-
     public function _mandats()
     {
         if (file_exists($this->path . 'protected/pdf/mandat/' . $this->params[0])) {

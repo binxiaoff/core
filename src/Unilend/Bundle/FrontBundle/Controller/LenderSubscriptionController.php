@@ -2,33 +2,18 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\{
-    FormError, FormInterface
-};
-use Symfony\Component\HttpFoundation\{
-    FileBag, JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\Form\{FormError, FormInterface};
+use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    GoogleRecaptchaManager, NewsletterManager, SponsorshipManager
-};
-use Unilend\Bundle\FrontBundle\Form\{
-    LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson
-};
-use Unilend\Bundle\FrontBundle\Security\{
-    BCryptPasswordEncoder, User\UserPartner
-};
-use Unilend\Bundle\FrontBundle\Service\{
-    DataLayerCollector, SourceManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
+    OffresBienvenues, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
+use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
+use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};
+use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;
 
 class LenderSubscriptionController extends Controller
@@ -151,12 +136,13 @@ class LenderSubscriptionController extends Controller
     private function handlePersonForm(Clients $client, FormInterface $form, Request $request): bool
     {
         /** @var \ficelle $ficelle */
-        $ficelle        = Loader::loadLib('ficelle');
-        $translator     = $this->get('translator');
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $addressManager = $this->get('unilend.service.address_manager');
+        $ficelle                = Loader::loadLib('ficelle');
+        $translator             = $this->get('translator');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $addressManager         = $this->get('unilend.service.address_manager');
+        $lenderValidatorManager = $this->get('unilend.service.lender_validation_manager');
 
-        if (false === $this->isAtLeastEighteenYearsOld($client->getNaissance())) {
+        if (false === $lenderValidatorManager->validateAge($client->getNaissance())) {
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
@@ -879,7 +865,7 @@ class LenderSubscriptionController extends Controller
                 $formManager = $this->get('unilend.frontbundle.service.form_manager');
                 $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_PROVISION_BY_CREDIT_CARD, serialize(['id_client' => $client->getIdClient(), 'post' => $request->request->all()]), $request->getClientIp());
 
-                if (false !== $redirectUrl) {
+                if (null !== $redirectUrl) {
                     return $this->redirect($redirectUrl);
                 }
             }
@@ -907,8 +893,8 @@ class LenderSubscriptionController extends Controller
             return $this->redirectToRoute('home_lender');
         }
 
-        $token   = $request->get('token');
-        $version = $request->get('version', Backpayline::WS_DEFAULT_VERSION);
+        $token   = $request->query->filter('token', FILTER_SANITIZE_STRING);
+        $version = $request->query->getInt('version', Backpayline::WS_DEFAULT_VERSION);
 
         if (true === empty($token)) {
             $this->get('logger')->error(
@@ -920,7 +906,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $paylineManager   = $this->get('unilend.service.payline_manager');
-        $paidAmountInCent = $paylineManager->handlePaylineReturn($token, $version);
+        $paidAmountInCent = $paylineManager->handleResponse($token, $version);
 
         if (false !== $paidAmountInCent) {
             $clientHistory = new ClientsHistory();
@@ -1277,8 +1263,10 @@ class LenderSubscriptionController extends Controller
             /** @var \dates $dates */
             $dates      = Loader::loadLib('dates');
             $translator = $this->get('translator');
+            $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
+            $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));
 
-            if ($dates->ageplus18($request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'))) {
+            if ($lenderValidationManager->validateAge($birthday)) {
                 return new JsonResponse([
                     'status' => true
                 ]);
@@ -1420,18 +1408,5 @@ class LenderSubscriptionController extends Controller
     {
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->getIdClient());
-    }
-
-    /**
-     * @param \DateTime $birthDay
-     *
-     * @return bool
-     */
-    private function isAtLeastEighteenYearsOld(\DateTime $birthDay): bool
-    {
-        $now      = new \DateTime('NOW');
-        $dateDiff = $birthDay->diff($now);
-
-        return $dateDiff->y >= 18;
     }
 }

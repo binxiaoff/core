@@ -89,28 +89,31 @@ class WireTransferOutRepository extends EntityRepository
      *
      * @return array
      */
-    public function sumWireTransferOutByDay(\DateTime $start, \DateTime $end, $status, $type = null)
+    public function sumWireTransferOutByDay(\DateTime $start, \DateTime $end, int $status, ?int $type = null): array
     {
         $start->setTime(00, 00, 00);
         $end->setTime(23, 59, 59);
 
-        $qb = $this->createQueryBuilder('v');
-        $qb->select('ROUND(SUM(v.montant) / 100, 2) AS amount')
-            ->addSelect('DATE(v.added) AS date')
-            ->where('v.added BETWEEN :start AND :end')
+        $queryBuilder = $this->createQueryBuilder('v');
+        $queryBuilder
+            ->select('ROUND(SUM(v.montant) / 100, 2) AS amount')
+            ->addSelect('DATE(v.addedXml) AS date')
+            ->where('v.addedXml BETWEEN :start AND :end')
             ->andWhere('v.status = :status')
             ->groupBy('date')
-            ->orderBy('DATE(v.added)', 'ASC')
-            ->setParameter('start', $start->format('Y-m-d H:i:s'))
-            ->setParameter('end', $end->format('Y-m-d H:i:s'))
+            ->orderBy('DATE(v.addedXml)', 'ASC')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
             ->setParameter('status', $status);
 
         if (null !== $type) {
-            $qb->andWhere('v.type = :type')
+            $queryBuilder
+                ->andWhere('v.type = :type')
                 ->setParameter('type', $type);
         }
-        $result = $qb->getQuery()->getResult();
-        $sums = [];
+
+        $result = $queryBuilder->getQuery()->getResult();
+        $sums   = [];
         foreach ($result as $row) {
             $sums[$row['date']] = $row['amount'];
         }

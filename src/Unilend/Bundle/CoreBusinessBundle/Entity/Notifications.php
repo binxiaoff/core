@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="notifications", indexes={@ORM\Index(name="id_lender", columns={"id_lender"})})
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\NotificationsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Notifications
 {
@@ -36,35 +37,35 @@ class Notifications
     const STATUS_UNREAD = 0;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="type", type="integer", nullable=false)
      */
     private $type;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_project", type="integer", nullable=false)
+     * @ORM\Column(name="id_project", type="integer", nullable=true)
      */
     private $idProject;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="id_bid", type="integer", nullable=false)
+     * @ORM\Column(name="id_bid", type="integer", nullable=true)
      */
     private $idBid;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="amount", type="integer", nullable=false)
+     * @ORM\Column(name="amount", type="integer", nullable=true)
      */
     private $amount;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="status", type="integer", nullable=false)
      */
@@ -80,12 +81,12 @@ class Notifications
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_notification", type="integer")
      * @ORM\Id
@@ -94,7 +95,7 @@ class Notifications
     private $idNotification;
 
     /**
-     * @var \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @var Wallet
      *
      * @ORM\ManyToOne(targetEntity="Unilend\Bundle\CoreBusinessBundle\Entity\Wallet")
      * @ORM\JoinColumns({
@@ -108,11 +109,11 @@ class Notifications
     /**
      * Set type
      *
-     * @param integer $type
+     * @param int $type
      *
      * @return Notifications
      */
-    public function setType($type)
+    public function setType(int $type): Notifications
     {
         $this->type = $type;
 
@@ -122,9 +123,9 @@ class Notifications
     /**
      * Get type
      *
-     * @return integer
+     * @return int
      */
-    public function getType()
+    public function getType(): int
     {
         return $this->type;
     }
@@ -132,11 +133,11 @@ class Notifications
     /**
      * Set idProject
      *
-     * @param integer $idProject
+     * @param int|null $idProject
      *
      * @return Notifications
      */
-    public function setIdProject($idProject)
+    public function setIdProject(?int $idProject): Notifications
     {
         $this->idProject = $idProject;
 
@@ -146,9 +147,9 @@ class Notifications
     /**
      * Get idProject
      *
-     * @return integer
+     * @return int|null
      */
-    public function getIdProject()
+    public function getIdProject(): ?int
     {
         return $this->idProject;
     }
@@ -156,11 +157,11 @@ class Notifications
     /**
      * Set idBid
      *
-     * @param integer $idBid
+     * @param int|null $idBid
      *
      * @return Notifications
      */
-    public function setIdBid($idBid)
+    public function setIdBid(?int $idBid): Notifications
     {
         $this->idBid = $idBid;
 
@@ -170,9 +171,9 @@ class Notifications
     /**
      * Get idBid
      *
-     * @return integer
+     * @return int|null
      */
-    public function getIdBid()
+    public function getIdBid(): ?int
     {
         return $this->idBid;
     }
@@ -180,11 +181,11 @@ class Notifications
     /**
      * Set amount
      *
-     * @param integer $amount
+     * @param int|null $amount
      *
      * @return Notifications
      */
-    public function setAmount($amount)
+    public function setAmount(?int $amount): Notifications
     {
         $this->amount = $amount;
 
@@ -194,9 +195,9 @@ class Notifications
     /**
      * Get amount
      *
-     * @return integer
+     * @return int|null
      */
-    public function getAmount()
+    public function getAmount(): ?int
     {
         return $this->amount;
     }
@@ -204,11 +205,11 @@ class Notifications
     /**
      * Set status
      *
-     * @param integer $status
+     * @param int $status
      *
      * @return Notifications
      */
-    public function setStatus($status)
+    public function setStatus(int $status): Notifications
     {
         $this->status = $status;
 
@@ -218,9 +219,9 @@ class Notifications
     /**
      * Get status
      *
-     * @return integer
+     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }
@@ -232,7 +233,7 @@ class Notifications
      *
      * @return Notifications
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Notifications
     {
         $this->added = $added;
 
@@ -244,7 +245,7 @@ class Notifications
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -252,11 +253,11 @@ class Notifications
     /**
      * Set updated
      *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return Notifications
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): Notifications
     {
         $this->updated = $updated;
 
@@ -266,9 +267,9 @@ class Notifications
     /**
      * Get updated
      *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
@@ -276,9 +277,9 @@ class Notifications
     /**
      * Get idNotification
      *
-     * @return integer
+     * @return int
      */
-    public function getIdNotification()
+    public function getIdNotification(): int
     {
         return $this->idNotification;
     }
@@ -286,11 +287,11 @@ class Notifications
     /**
      * Set idLender
      *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet $idLender
+     * @param Wallet $idLender
      *
      * @return Notifications
      */
-    public function setIdLender(Wallet $idLender)
+    public function setIdLender(Wallet $idLender): Notifications
     {
         $this->idLender = $idLender;
 
@@ -300,10 +301,38 @@ class Notifications
     /**
      * Get idLender
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Wallet
+     * @return Wallet
      */
-    public function getIdLender()
+    public function getIdLender(): Wallet
     {
         return $this->idLender;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setStatusValue()
+    {
+        if (null === $this->status) {
+            $this->status = self::STATUS_UNREAD;
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }
