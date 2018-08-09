@@ -28,7 +28,11 @@ class ExceptionController extends Controller
         $title      = $translator->trans('error-page_404-title');
         $details    = $translator->trans('error-page_404-details');
 
-        return $this->render('exception/error.html.twig', ['errorPageTitle' => $pageTitle, 'errorTitle' => $title, 'errorDetails' => $details]);
+        return $this->render(
+            'exception/error.html.twig',
+            ['errorPageTitle' => $pageTitle, 'errorTitle' => $title, 'errorDetails' => $details],
+            new Response('', Response::HTTP_NOT_FOUND)
+        );
     }
 
     /**

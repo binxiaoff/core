@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, PaysV2
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, PaysV2};
 
 class AddressManager
 {
@@ -362,7 +360,6 @@ class AddressManager
         $this->entityManager->beginTransaction();
 
         try {
-
             if ($client->isLender()) {
                 $this->saveLenderClientAddress($client, $address, $zip, $city, $country, $addressType);
             } else {
@@ -413,7 +410,6 @@ class AddressManager
                 $this->entityManager->rollback();
                 throw $exception;
             }
-
         }
     }
 
@@ -538,13 +534,12 @@ class AddressManager
      */
     public function linkAttachmentToAddress(ClientAddress $address, Attachment $attachment)
     {
-        $clientAddressAttachement = new ClientAddressAttachment();
-        $clientAddressAttachement
+        $clientAddressAttachment = new ClientAddressAttachment();
+        $clientAddressAttachment
             ->setIdClientAddress($address)
             ->setIdAttachment($attachment);
 
-        $this->entityManager->persist($clientAddressAttachement);
-
-        $this->entityManager->flush($clientAddressAttachement);
+        $this->entityManager->persist($clientAddressAttachment);
+        $this->entityManager->flush($clientAddressAttachment);
     }
 }

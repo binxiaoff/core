@@ -135,12 +135,13 @@ class LenderSubscriptionController extends Controller
     private function handlePersonForm(Clients $client, FormInterface $form, Request $request): bool
     {
         /** @var \ficelle $ficelle */
-        $ficelle        = Loader::loadLib('ficelle');
-        $translator     = $this->get('translator');
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $addressManager = $this->get('unilend.service.address_manager');
+        $ficelle                = Loader::loadLib('ficelle');
+        $translator             = $this->get('translator');
+        $entityManager          = $this->get('doctrine.orm.entity_manager');
+        $addressManager         = $this->get('unilend.service.address_manager');
+        $lenderValidatorManager = $this->get('unilend.service.lender_validation_manager');
 
-        if (false === $this->isAtLeastEighteenYearsOld($client->getNaissance())) {
+        if (false === $lenderValidatorManager->validateAge($client->getNaissance())) {
             $form->get('client')->get('naissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-age')));
         }
 
@@ -1253,8 +1254,10 @@ class LenderSubscriptionController extends Controller
             /** @var \dates $dates */
             $dates      = Loader::loadLib('dates');
             $translator = $this->get('translator');
+            $lenderValidationManager = $this->get('unilend.service.lender_validation_manager');
+            $birthday = \DateTime::createFromFormat('Y-m-d', $request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'));
 
-            if ($dates->ageplus18($request->request->get('year_of_birth') . '-' . $request->request->get('month_of_birth') . '-' . $request->request->get('day_of_birth'))) {
+            if ($lenderValidationManager->validateAge($birthday)) {
                 return new JsonResponse([
                     'status' => true
                 ]);
@@ -1394,18 +1397,5 @@ class LenderSubscriptionController extends Controller
     {
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_CLIENT_EMAIL, $client->getEmail());
         $this->get('session')->set(DataLayerCollector::SESSION_KEY_LENDER_CLIENT_ID, $client->getIdClient());
-    }
-
-    /**
-     * @param \DateTime $birthDay
-     *
-     * @return bool
-     */
-    private function isAtLeastEighteenYearsOld(\DateTime $birthDay): bool
-    {
-        $now      = new \DateTime('NOW');
-        $dateDiff = $birthDay->diff($now);
-
-        return $dateDiff->y >= 18;
     }
 }
