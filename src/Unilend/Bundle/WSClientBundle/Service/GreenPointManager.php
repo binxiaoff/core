@@ -145,7 +145,7 @@ class GreenPointManager
      * @return mixed
      * @throws \Exception
      */
-    private function postMultipart(string $resourceLabel, array $data): array
+    private function postMultipart(string $resourceLabel, array $data)
     {
         if (self::RESOURCE_CHECK_KYC !== $resourceLabel && false === array_key_exists('files', $data)) {
             throw new \InvalidArgumentException('Data for GreenPoint should contain files');

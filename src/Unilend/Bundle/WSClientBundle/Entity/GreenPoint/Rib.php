@@ -46,41 +46,41 @@ class Rib
     private $url;
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getStatusLabel(): string
+    public function getStatusLabel(): ?string
     {
         return self::CONTROL_STATUS_LABEL[$this->status];
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getStatus(): int
+    public function getStatus(): ?int
     {
         return $this->status;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIban(): string
+    public function getIban(): ?string
     {
         return $this->iban;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getBic(): string
+    public function getBic(): ?string
     {
         return $this->bic;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getUrl(): string
+    public function getUrl(): ?string
     {
         return $this->url;
     }

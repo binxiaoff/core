@@ -132,15 +132,18 @@ class Identity
         return self::CONTROL_STATUS_LABEL[$this->status];
     }
 
+    /**
+     * @return int
+     */
     public function getCode(): int
     {
         return $this->code;
     }
 
     /**
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getExpirationDate(): \DateTime
+    public function getExpirationDate(): ?\DateTime
     {
         return $this->expirationDate;
     }

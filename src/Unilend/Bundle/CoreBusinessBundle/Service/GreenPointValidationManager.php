@@ -104,8 +104,6 @@ class GreenPointValidationManager
                 'Attachment file not found (ID ' . $attachment->getId() . ')', [
                 'class'         => __CLASS__,
                 'function'      => __FUNCTION__,
-                'file'          => $exception->getFile(),
-                'line'          => $exception->getLine(),
                 'id_attachment' => $attachment->getId()
             ]);
 

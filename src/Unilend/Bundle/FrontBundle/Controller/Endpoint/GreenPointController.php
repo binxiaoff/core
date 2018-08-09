@@ -23,18 +23,12 @@ class GreenPointController extends Controller
     /** @var Serializer */
     private $serializer;
 
-    /**
-     * @param LoggerInterface             $logger
-     * @param EntityManager               $entityManager
-     * @param GreenPointValidationManager $validationManager
-     * @param Serializer                  $serializer
-     */
-    public function __construct(Loggerinterface $logger, EntityManager $entityManager, GreenPointValidationManager $validationManager, Serializer $serializer)
+    public function __construct()
     {
-        $this->logger            = $logger;
-        $this->entityManager     = $entityManager;
-        $this->validationManager = $validationManager;
-        $this->serializer        = $serializer;
+        $this->logger            = $this->get('logger');
+        $this->entityManager     = $this->get('doctrine.orm.entity_manager');
+        $this->validationManager = $this->get(GreenPointValidationManager::class);
+        $this->serializer        = $this->get('serializer');
     }
 
     /**
