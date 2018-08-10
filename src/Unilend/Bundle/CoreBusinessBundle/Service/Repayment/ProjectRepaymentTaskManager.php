@@ -7,7 +7,7 @@ use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{
     Companies, DebtCollectionMission, Echeanciers, EcheanciersEmprunteur, Loans, ProjectRepaymentDetail, ProjectRepaymentTask, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, Users
 };
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager;
 
 class ProjectRepaymentTaskManager
 {
@@ -20,8 +20,8 @@ class ProjectRepaymentTaskManager
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var \jours_ouvres */
-    private $businessDays;
+    /** @var WorkingDaysManager */
+    private $workingDaysManager;
 
     /**
      * ProjectRepaymentTaskManager constructor.
@@ -29,13 +29,14 @@ class ProjectRepaymentTaskManager
      * @param EntityManager                      $entityManager
      * @param ProjectRepaymentNotificationSender $projectRepaymentNotificationSender
      * @param LoggerInterface                    $logger
+     * @param WorkingDaysManager                 $workingDaysManager
      */
-    public function __construct(EntityManager $entityManager, ProjectRepaymentNotificationSender $projectRepaymentNotificationSender, LoggerInterface $logger)
+    public function __construct(EntityManager $entityManager, ProjectRepaymentNotificationSender $projectRepaymentNotificationSender, LoggerInterface $logger, WorkingDaysManager $workingDaysManager)
     {
         $this->entityManager                      = $entityManager;
         $this->logger                             = $logger;
         $this->projectRepaymentNotificationSender = $projectRepaymentNotificationSender;
-        $this->businessDays                       = Loader::loadLib('jours_ouvres');
+        $this->workingDaysManager                 = $workingDaysManager;
     }
 
     /**
@@ -180,7 +181,7 @@ class ProjectRepaymentTaskManager
     public function planEarlyRepaymentTask(Projects $project, Receptions $reception, Users $user, ?\DateTime $repayOn = null): ProjectRepaymentTask
     {
         if (null === $repayOn) {
-            $limitDate     = $this->getLimitDate(new \DateTime());
+            $limitDate     = $this->workingDaysManager->getNextWorkingDay(new \DateTime(), 5);
             $nextRepayment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers')->findNextPendingScheduleAfter($limitDate, $project);
             $repayOn       = $nextRepayment->getDateEcheance();
         }
@@ -285,7 +286,7 @@ class ProjectRepaymentTaskManager
         /** @var ProjectRepaymentTask[] $readyRepaymentTask */
         $readyRepaymentTask = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectRepaymentTask')->findBy([
             'idProject' => $project,
-            'status' => ProjectRepaymentTask::STATUS_READY
+            'status'    => ProjectRepaymentTask::STATUS_READY
         ]);
 
         foreach ($readyRepaymentTask as $task) {
@@ -507,32 +508,6 @@ class ProjectRepaymentTaskManager
         $amountToRepay = round(bcadd($projectRepaymentTask->getCapital(), $projectRepaymentTask->getInterest(), 4), 2);
 
         return round(bcsub($amountToRepay, $repaidAmount, 4), 2);
-    }
-
-    /**
-     * @param \DateTime $date
-     * @param bool      $countDown
-     *
-     * @return \DateTime
-     */
-    private function getLimitDate(\DateTime $date, $countDown = false)
-    {
-        $interval = new \DateInterval('P1D');
-
-        if ($countDown) {
-            $interval->invert = 1;
-        }
-        $workingDays = 1;
-
-        while ($workingDays <= 5) {
-            $date->add($interval);
-
-            if ($this->businessDays->isHoliday($date->getTimestamp())) {
-                $workingDays++;
-            }
-        }
-
-        return $date;
     }
 
     /**

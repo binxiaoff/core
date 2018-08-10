@@ -1,7 +1,11 @@
 <div id="contenu">
-    <h1>Liste des éléments du template <?= $this->templates->name ?></h1>
-    <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/templates/addElement/<?= $this->templates->id_template ?>" class="btn_link thickbox">Ajouter un élément</a>
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Liste des éléments du template «&nbsp;<?= $this->templates->name ?>&nbsp;»</h1>
+        </div>
+        <div class="col-md-4">
+            <a href="<?= $this->lurl ?>/templates/addElement/<?= $this->templates->id_template ?>" class="btn-primary pull-right thickbox">Ajouter un élément</a>
+        </div>
     </div>
     <?php if (count($this->lElements) > 0) : ?>
         <table class="tablesorter">

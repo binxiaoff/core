@@ -417,12 +417,12 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime    $date
-     * @param Projects|int $project
+     * @param \DateTimeInterface $date
+     * @param Projects|int       $project
      *
      * @return null|Echeanciers
      */
-    public function findNextPendingScheduleAfter(\DateTime $date, $project)
+    public function findNextPendingScheduleAfter(\DateTimeInterface $date, $project)
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->where('e.idProject = :project')
