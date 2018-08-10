@@ -12,9 +12,8 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, GreenpointAttachment, Loans, OperationType, PaysV2, Users, VigilanceRule, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager;
 
 class ClientsRepository extends EntityRepository
 {
@@ -905,5 +904,88 @@ class ClientsRepository extends EntityRepository
             ->getConnection()
             ->executeQuery($query, ['start' => $start->format('Y-m-d'), 'end' => $end->format('Y-m-d')])
             ->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @return array
+     * @throws DBALException
+     */
+    public function getClientsToAutoValidate(): array
+    {
+        $bind = [
+            'statusValid'            => GreenpointAttachment::STATUS_VALIDATION_VALID,
+            'clientStatus'           => [ClientsStatus::STATUS_TO_BE_CHECKED, ClientsStatus::STATUS_COMPLETENESS_REPLY, ClientsStatus::STATUS_MODIFICATION],
+            'attachmentTypeIdentity' => AttachmentType::CNI_PASSPORTE,
+            'attachmentTypeAddress'  => AttachmentType::JUSTIFICATIF_DOMICILE,
+            'attachmentTypeRib'      => AttachmentType::RIB,
+            'vigilanceStatus'        => [VigilanceRule::VIGILANCE_STATUS_HIGH, VigilanceRule::VIGILANCE_STATUS_REFUSE],
+            'lenderWallet'           => WalletType::LENDER,
+            'clientStatusSuspended'  => ClientsStatus::STATUS_SUSPENDED,
+            'idUserFront'            => Users::USER_ID_FRONT,
+            'mainAddressType'        => AddressType::TYPE_MAIN_ADDRESS,
+            'idCountryFr'            => PaysV2::COUNTRY_FRANCE
+        ];
+        $type = [
+            'statusValid'            => PDO::PARAM_INT,
+            'clientStatus'           => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'attachmentTypeIdentity' => PDO::PARAM_INT,
+            'attachmentTypeAddress'  => PDO::PARAM_INT,
+            'attachmentTypeRib'      => PDO::PARAM_INT,
+            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'lenderWallet'           => PDO::PARAM_STR,
+            'clientStatusSuspended'  => PDO::PARAM_INT,
+            'idUserFront'            => PDO::PARAM_INT,
+            'mainAddressType'        => PDO::PARAM_STR,
+            'idCountryFr'            => PDO::PARAM_INT
+        ];
+
+        $query = "
+            SELECT
+              c.id_client,
+              ga_identity.id AS identity_attachment_id,
+              ga_identity.validation_status identity_attachment_status,
+              ga_address.id AS address_attachment_id,
+              ga_address.validation_status address_attachment_status,
+              ga_rib.id AS rib_attachment_id,
+              ga_rib.validation_status rib_attachment_status
+            FROM clients c 
+            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeIdentity AND a.archived IS NULL) ga_identity ON ga_identity.id_client = csh.id_client
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeAddress AND a.archived IS NULL) ga_address ON ga_address.id_client = csh.id_client
+            INNER JOIN (SELECT a.id_client, a.id, ga.validation_status FROM greenpoint_attachment ga INNER JOIN attachment a ON a.id = ga.id_attachment AND ga.validation_status = :statusValid AND a.id_type = :attachmentTypeRib AND a.archived IS NULL) ga_rib ON ga_rib.id_client = csh.id_client
+            INNER JOIN client_address_attachment cadatt ON cadatt.id_attachment = ga_address.id
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND wt.label = :lenderWallet
+            LEFT JOIN (
+              SELECT * 
+              FROM client_vigilance_status_history cvsh
+              WHERE cvsh.id = (
+                SELECT cvsh_max.id
+                FROM client_vigilance_status_history cvsh_max
+                WHERE cvsh.id_client = cvsh_max.id_client
+                ORDER BY cvsh_max.added DESC, cvsh_max.id DESC LIMIT 1
+              )
+            ) last_cvsh ON c.id_client = last_cvsh.id_client AND last_cvsh.vigilance_status IN (:vigilanceStatus)
+            WHERE (
+                csh.id_status IN (:clientStatus)
+                OR csh.id_status = :clientStatusSuspended
+                   AND csh.id_user = :idUserFront
+                   AND (
+                         SELECT id_country
+                         FROM client_address
+                           INNER JOIN address_type at ON client_address.id_type = at.id
+                         WHERE id_client = c.id_client
+                               AND at.label = :mainAddressType
+                         ORDER BY added DESC
+                         LIMIT 1
+                       ) = :idCountryFr
+              )
+              AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < " . LenderValidationManager::MAX_AGE_AUTOMATIC_VALIDATION . "
+              AND last_cvsh.id_client IS NULL";
+
+        return $this->getEntityManager()
+                    ->getConnection()
+                    ->executeQuery($query, $bind, $type)
+                    ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
