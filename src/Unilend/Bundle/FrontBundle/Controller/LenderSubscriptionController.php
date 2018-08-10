@@ -8,12 +8,13 @@ use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
     OffresBienvenues, PaysV2, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
-use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};
+use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;
 
@@ -206,7 +207,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType        = ($client->getIdPaysNaissance() == NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-            $password          = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $password          = $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
             $slug              = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
             $newsletterConsent = $client->getOptin1() ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
 
@@ -298,7 +299,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-            $password   = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
+            $password   = $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
             $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
             $client
@@ -519,7 +520,9 @@ class LenderSubscriptionController extends Controller
             $this->get('session')->set(self::SESSION_NAME_CAPTCHA, true);
         }
 
-        if (false === BCryptPasswordEncoder::isPasswordSafe($client->getPassword())) { // todo: "try" BCryptPasswordEncoder::encodePassword() to check if the password is safe (need TECH-108)
+        try {
+            $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
+        } catch (\Exception $exception) {
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }
     }
@@ -1064,7 +1067,7 @@ class LenderSubscriptionController extends Controller
      *
      * @return RedirectResponse|null
      */
-    private function checkProgressAndRedirect(Request $request, ?string $clientHash = null, ?Clients $client): ?RedirectResponse
+    private function checkProgressAndRedirect(Request $request, ?string $clientHash, ?Clients $client): ?RedirectResponse
     {
         $redirectPath         = null;
         $currentPath          = $request->getPathInfo();
@@ -1076,7 +1079,7 @@ class LenderSubscriptionController extends Controller
                 return $this->redirectToRoute('projects_list');
             }
 
-            if ($authorizationChecker->isGranted(UserPartner::ROLE_DEFAULT)) {
+            if ($authorizationChecker->isGranted(Clients::ROLE_PARTNER_DEFAULT)) {
                 return $this->redirectToRoute('partner_home');
             }
         } elseif (null !== $clientHash) {

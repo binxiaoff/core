@@ -2,19 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Companies, CompanyClient, TemporaryLinksLogin, Users, WalletType
-};
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
-use Unilend\core\Loader;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyClient, TemporaryLinksLogin, Users, WalletType};
 
 class UsersController extends Controller
 {
@@ -23,14 +16,17 @@ class UsersController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
+     * @param UserInterface|Clients $partnerUser
+     *
      * @return Response
      */
-    public function usersAction(): Response
+    public function usersAction(UserInterface $partnerUser): Response
     {
         $template                = ['users' => []];
         $entityManager           = $this->get('doctrine.orm.entity_manager');
+        $partnerManager          = $this->get('unilend.service.partner_manager');
         $companyClientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient');
-        $users                   = $companyClientRepository->findBy(['idCompany' => $this->getUserCompanies()]);
+        $users                   = $companyClientRepository->findBy(['idCompany' => $partnerManager->getUserCompanies($partnerUser)]);
 
         foreach ($users as $user) {
             /** @var Clients $client */
@@ -38,7 +34,7 @@ class UsersController extends Controller
             $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
             $userData     = [
                 'client' => $client,
-                'role'   => $user->getRole() === UserPartner::ROLE_ADMIN ? 'admin' : 'agent',
+                'role'   => $user->getRole() === Clients::ROLE_PARTNER_ADMIN ? 'admin' : 'agent',
                 'entity' => $user->getIdCompany()
             ];
 
@@ -116,11 +112,12 @@ class UsersController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
-     * @param Request $request
+     * @param Request               $request
+     * @param UserInterface|Clients $partnerUser
      *
      * @return Response
      */
-    public function userCreationAction(Request $request)
+    public function userCreationAction(Request $request, UserInterface $partnerUser)
     {
         $session = $request->getSession()->get('partnerUserCreation');
         $errors  = isset($session['errors']) ? $session['errors'] : [];
@@ -129,7 +126,7 @@ class UsersController extends Controller
         $request->getSession()->remove('partnerUserCreation');
 
         $template = [
-            'entities'  => $this->getUserCompanies(),
+            'entities'  => $this->get('unilend.service.partner_manager')->getUserCompanies($partnerUser),
             'form'      => [
                 'errors' => $errors,
                 'values' => [
@@ -206,7 +203,7 @@ class UsersController extends Controller
         $companyClient
             ->setIdCompany($company)
             ->setIdClient($client)
-            ->setRole('admin' === $request->request->get('role') ? UserPartner::ROLE_ADMIN : UserPartner::ROLE_USER);
+            ->setRole('admin' === $request->request->get('role') ? Clients::ROLE_PARTNER_ADMIN : Clients::ROLE_PARTNER_USER);
 
         $entityManager->beginTransaction();
 
@@ -272,13 +269,12 @@ class UsersController extends Controller
                 $formData    = $request->request->get('partner_security', []);
                 $error       = false;
                 $password    = '';
-                $userPartner = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->getEmail());
 
                 try {
                     if (empty($formData['password'])) {
                         throw new \Exception('password empty');
                     }
-                    $password = $this->get('security.password_encoder')->encodePassword($userPartner, $formData['password']);
+                    $password = $this->get('security.password_encoder')->encodePassword($client, $formData['password']);
                 } catch (\Exception $exception) {
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
@@ -317,45 +313,5 @@ class UsersController extends Controller
         }
 
         return $this->render('partner_account/security.html.twig', ['expired' => $isLinkExpired, 'token' => $securityToken]);
-    }
-
-    /**
-     * @return Companies[]
-     */
-    private function getUserCompanies()
-    {
-        /** @var UserPartner $user */
-        $user      = $this->getUser();
-        $companies = [$user->getCompany()];
-
-        if (in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
-            $companies = $this->getCompanyTree($user->getCompany(), $companies);
-        }
-
-        return $companies;
-    }
-
-    /**
-     * @param Companies $rootCompany
-     * @param array     $tree
-     *
-     * @return Companies[]
-     */
-    private function getCompanyTree(Companies $rootCompany, array $tree)
-    {
-        $childCompanies = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->findBy(['idParentCompany' => $rootCompany]);
-
-        foreach ($childCompanies as $company) {
-            $tree[] = $company;
-            $tree = $this->getCompanyTree($company, $tree);
-        }
-
-        usort($tree, function ($first, $second) {
-            return strcasecmp($first->getName(), $second->getName());
-        });
-
-        return $tree;
     }
 }

@@ -25,7 +25,7 @@ class AutolendController extends Controller
      */
     public function autolendAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 

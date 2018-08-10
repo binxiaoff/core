@@ -3,19 +3,14 @@
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
 use Psr\Log\InvalidArgumentException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
-};
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, Companies, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects,
+    ProjectsStatus, Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
@@ -52,14 +47,16 @@ class ProjectRequestController extends Controller
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
+     * @param UserInterface|Clients $partnerUser
      *
      * @return RedirectResponse
      */
-    public function projectRequestFormAction(Request $request)
+    public function projectRequestFormAction(Request $request, UserInterface $partnerUser): RedirectResponse
     {
         $translator            = $this->get('translator');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         $entityManager         = $this->get('doctrine.orm.entity_manager');
+        $partnerManager        = $this->get('unilend.service.partner_manager');
 
         $formData    = $request->request->get('simulator');
         $amount      = $formData['amount'] ?? null;
@@ -86,15 +83,13 @@ class ProjectRequestController extends Controller
 
             /** @var Users $frontUser */
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            /** @var UserPartner $partnerUser */
-            $partnerUser = $this->getUser();
+            /** @var Companies $partnerCompany */
+            $partnerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $partnerUser]);
 
-            /** @var Clients $submitter */
-            $submitter = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($partnerUser->getClientId());
-            $project   = $projectRequestManager->newProject($frontUser, $partnerUser->getPartner(), ProjectsStatus::SIMULATION, $amount, $siren, $siret, $companyName, null, $duration, $reason);
+            $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::SIMULATION, $amount, $siren, $siret, $companyName, null, $duration, $reason);
             $project
-                ->setIdClientSubmitter($submitter)
-                ->setIdCompanySubmitter($partnerUser->getCompany());
+                ->setIdClientSubmitter($partnerUser)
+                ->setIdCompanySubmitter($partnerCompany);
 
             $entityManager->flush($project);
 
@@ -144,13 +139,14 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string $hash
+     * @param string                $hash
+     * @param UserInterface|Clients $partnerUser
      *
      * @return Response
      */
-    public function projectRequestEligibilityAction($hash)
+    public function projectRequestEligibilityAction($hash, UserInterface $partnerUser): Response
     {
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -177,11 +173,12 @@ class ProjectRequestController extends Controller
             $monthlyPaymentBoundaries = $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment());
             $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                 ->findBy(['status' => ProjectRejectionReason::STATUS_ONLINE], ['reason' => 'ASC']);
+            $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
             $template = $template + [
                     'averageFundingDuration' => $projectManager->getAverageFundingDuration($project->getAmount()),
                     'abandonReasons'         => $projectAbandonReasonList,
-                    'prospect'               => false === $this->getUser()->getPartner()->getProspect(),
+                    'prospect'               => false === $partner->getProspect(),
                     'payment'                => [
                         'monthly'   => [
                             'min' => $monthlyPaymentBoundaries['minimum'],
@@ -203,14 +200,15 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string  $hash
-     * @param Request $request
+     * @param string                $hash
+     * @param Request               $request
+     * @param UserInterface|Clients $partnerUser
      *
      * @return Response
      */
-    public function projectRequestDetailsAction($hash, Request $request)
+    public function projectRequestDetailsAction($hash, Request $request, UserInterface $partnerUser): Response
     {
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -227,6 +225,7 @@ class ProjectRequestController extends Controller
         $client                   = $project->getIdCompany()->getIdClientOwner();
         $projectAbandonReasonList = $entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
             ->findBy(['status' => ProjectAbandonReason::STATUS_ONLINE], ['reason' => 'ASC']);
+        $partner                  = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
 
         try {
             $activeExecutives = $this->get('unilend.service.external_data_manager')->getActiveExecutives($project->getIdCompany()->getSiren());
@@ -247,7 +246,7 @@ class ProjectRequestController extends Controller
             'averageFundingDuration'   => $projectManager->getAverageFundingDuration($project->getAmount()),
             'monthlyPaymentBoundaries' => $projectManager->getMonthlyPaymentBoundaries($project->getAmount(), $project->getPeriod(), $project->getCommissionRateRepayment()),
             'abandonReasons'           => $projectAbandonReasonList,
-            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()],
+            'attachments'              => $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner],
                 ['rank' => 'ASC']),
             'activeExecutives'         => $activeExecutives
         ];
@@ -315,15 +314,16 @@ class ProjectRequestController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string  $hash
-     * @param Request $request
+     * @param string                $hash
+     * @param Request               $request
+     * @param UserInterface|Clients $partnerUser
      *
      * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectRequestDetailsFormAction($hash, Request $request)
+    public function projectRequestDetailsFormAction($hash, Request $request, UserInterface $partnerUser): Response
     {
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -341,8 +341,9 @@ class ProjectRequestController extends Controller
         $documents   = $request->files->get('documents');
 
         $entityManager = $this->get('doctrine.orm.entity_manager');
+        $partner       = $this->get('unilend.service.partner_manager')->getPartner($partnerUser);
         /** @var PartnerProjectAttachment[] $partnerAttachments */
-        $partnerAttachments = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $this->getUser()->getPartner()]);
+        $partnerAttachments = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProjectAttachment')->findBy(['idPartner' => $partner]);
         if ($submit) {
             if (empty($title) || false === empty($title) && false === in_array($title, [Clients::TITLE_MISS, Clients::TITLE_MISTER])) {
                 $errors['contact']['title'] = true;
@@ -492,7 +493,7 @@ class ProjectRequestController extends Controller
             return $this->redirect($request->headers->get('referer'));
         }
 
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -527,7 +528,7 @@ class ProjectRequestController extends Controller
             return $this->redirect($request->headers->get('referer'));
         }
 
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -558,7 +559,7 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestEndAction($hash)
     {
-        $project = $this->checkProjectHash($hash);
+        $project = $this->checkProjectHash($partnerUser, $hash);
 
         if ($project instanceof RedirectResponse) {
             return $project;
@@ -587,52 +588,18 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @return Companies[]
-     */
-    private function getUserCompanies()
-    {
-        /** @var UserPartner $user */
-        $user      = $this->getUser();
-        $companies = [$user->getCompany()];
-
-        if (in_array(UserPartner::ROLE_ADMIN, $user->getRoles())) {
-            $companies = $this->getCompanyTree($user->getCompany(), $companies);
-        }
-
-        return $companies;
-    }
-
-    /**
-     * @param Companies $rootCompany
-     * @param array     $tree
-     *
-     * @return Companies[]
-     */
-    private function getCompanyTree(Companies $rootCompany, array $tree)
-    {
-        $childCompanies = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Companies')
-            ->findBy(['idParentCompany' => $rootCompany]);
-
-        foreach ($childCompanies as $company) {
-            $tree[] = $company;
-            $tree   = $this->getCompanyTree($company, $tree);
-        }
-
-        return $tree;
-    }
-
-    /**
-     * @param string $hash
+     * @param Clients $partnerUser
+     * @param string  $hash
      *
      * @return RedirectResponse|Projects
      */
-    private function checkProjectHash($hash)
+    private function checkProjectHash(Clients $partnerUser, $hash)
     {
         $entityManager     = $this->get('doctrine.orm.entity_manager');
+        $partnerManager    = $this->get('unilend.service.partner_manager');
         $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $project           = $projectRepository->findOneBy(['hash' => $hash]);
-        $userCompanies     = $this->getUserCompanies();
+        $userCompanies     = $partnerManager->getUserCompanies($partnerUser);
 
         if (false === ($project instanceof Projects) || false === in_array($project->getIdCompanySubmitter(), $userCompanies)) {
             return $this->redirectToRoute('partner_projects_list');

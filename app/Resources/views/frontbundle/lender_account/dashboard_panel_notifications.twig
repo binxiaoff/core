@@ -1,6 +1,6 @@
 {# Dashboard Panel Notifications #}
-
-{% if app.user.notifications|length > 0 %}
+{% set lenderNotifications = notifications(app.user) %}
+{% if lenderNotifications|length > 0 %}
     {% embed 'lender_account/dashboard_panel.html.twig' %}
         {# Panel classes #}
         {% block panelClassNames %}dashboard-panel-alt dashboard-notifications{% endblock %}
@@ -23,7 +23,7 @@
         {% block panelContent %}
             <div id="profile-notifications" data-usernotificationslist>
                 <ul class="list-notifications">
-                    {% for notification in app.user.notifications %}
+                    {% for notification in lenderNotifications %}
                         <li class="notification notification-type-{{ notification.type|default('message')|escape('html_attr') }} ui-notification-status-{{ notification.status }}" data-notification-id="{{ notification.id|default(notification.datetime|date('U'))|e('html_attr') }}" data-notification-project-id="{{ notification.projectId }}" tabindex="0">
                             <header class="notification-header">
                                 <h5 class="notification-datetime">{{ notification.datetime|localizeddate('medium', 'short') }}</h5>
@@ -49,7 +49,7 @@
 
         {# Panel footer #}
         {% block panelFooter %}
-            {% if app.user.notifications|length > 20 %}
+            {% if lenderNotifications|length > 20 %}
                 <a href="javascript:;" class="ui-usernotifications-loadmore">
                     {% trans %} lender-notifications_more-notifications-link {% endtrans %}
                     <span class="spinner-usernotifications-loadingmore ui-is-spinner"></span>

@@ -4,9 +4,9 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 
 class SearchController extends Controller
@@ -26,17 +26,19 @@ class SearchController extends Controller
      * @Route("/search/{query}", name="search_result")
      * @Method({"GET"})
      *
-     * @param  string $query
+     * @param  string        $query
+     * @param  UserInterface $client
+     *
      * @return Response
      */
-    public function resultAction($query)
+    public function resultAction(string $query, UserInterface $client)
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
         $results = $search->search($query);
 
         if (false === empty($results['projects'])) {
-            if (null === $this->getUser()) {
+            if (null === $client) {
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -45,7 +47,7 @@ class SearchController extends Controller
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
 
-                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $this->getUser())) {
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $client)) {
                         unset($results['projects'][$index]);
                     }
                 }

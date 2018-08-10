@@ -30,7 +30,7 @@ class LenderCIPController extends Controller
      */
     public function indexAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -64,7 +64,7 @@ class LenderCIPController extends Controller
      */
     public function questionnaireAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -136,7 +136,7 @@ class LenderCIPController extends Controller
      */
     public function questionnaireFormAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -229,7 +229,7 @@ class LenderCIPController extends Controller
      */
     public function validateQuestionnaireAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -263,7 +263,7 @@ class LenderCIPController extends Controller
      */
     public function resetQuestionnaireAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -286,7 +286,7 @@ class LenderCIPController extends Controller
         /** @var Clients $client */
         $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 

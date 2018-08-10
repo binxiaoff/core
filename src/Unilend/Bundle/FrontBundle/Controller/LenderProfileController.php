@@ -16,7 +16,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, Locatio
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
     SecurityQuestionType};
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderProfileController extends Controller
@@ -35,7 +34,7 @@ class LenderProfileController extends Controller
      */
     public function personalInformationAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -183,7 +182,7 @@ class LenderProfileController extends Controller
      */
     public function fiscalInformationAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -261,7 +260,7 @@ class LenderProfileController extends Controller
      */
     public function securityAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -336,7 +335,7 @@ class LenderProfileController extends Controller
      */
     public function notificationsAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -408,7 +407,7 @@ class LenderProfileController extends Controller
      */
     public function updateNotificationAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json('ko');
         }
 
@@ -562,7 +561,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -690,7 +689,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessFormAction(Request $request, UserInterface $client): RedirectResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -897,7 +896,7 @@ class LenderProfileController extends Controller
      */
     public function downloadIFUAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -1050,7 +1049,7 @@ class LenderProfileController extends Controller
      */
     public function requestTaxExemptionAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 

@@ -1567,6 +1567,15 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
     }
 
     /**
+     *
+     * @return string
+     */
+    public function getInitials(): string
+    {
+        return substr($this->getPrenom(), 0, 1) . substr($this->getNom(), 0, 1);
+    }
+
+    /**
      * @inheritDoc
      */
     public function isAccountNonExpired(): bool
@@ -1595,7 +1604,7 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
      */
     public function isAccountNonLocked(): bool
     {
-        return in_array($this->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LOGIN);
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN);
     }
 
     /**
@@ -1661,6 +1670,8 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
             $roles[] = self::ROLE_PARTNER_DEFAULT;
             $roles[] = $this->getCompanyClient()->getRole();
         }
+
+        return $roles;
     }
 
     /**

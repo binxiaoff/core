@@ -2,13 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, TaxType};
 
 class SimulatorController extends Controller
 {
@@ -16,17 +14,21 @@ class SimulatorController extends Controller
      * @Route("partenaire/simulateur-cout", name="partner_cost_simulator")
      * @Security("has_role('ROLE_PARTNER')")
      *
+     * @param UserInterface|Clients $partnerUser
+     *
      * @return Response
      */
-    public function simulatorAction()
+    public function simulatorAction(UserInterface $partnerUser)
     {
-        /** @var UserPartner $partnerUser */
-        $partnerUser             = $this->getUser();
-        $partner                 = $partnerUser->getPartner();
+        $partnerManager          = $this->get('unilend.service.partner_manager');
+        $partner                 = $partnerManager->getPartner($partnerUser);
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $projectManager          = $this->get('unilend.service.project_manager');
         $ratesByPeriod           = [];
-        $partnerProduct          = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(['idPartner' => $partner], ['commissionRateFunds' => 'ASC']); // For the moment, all partner products have the same rates
+        $partnerProduct          = $entityManager->getRepository('UnilendCoreBusinessBundle:PartnerProduct')->findOneBy(
+            ['idPartner' => $partner],
+            ['commissionRateFunds' => 'ASC']
+        ); // For the moment, all partner products have the same rates
         $vatRate                 = $entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->find(TaxType::TYPE_VAT)->getRate();
         $fundingDurationsSetting = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Durée des prêts autorisées'])->getValue();
         $fundingDurations        = explode(',', $fundingDurationsSetting);

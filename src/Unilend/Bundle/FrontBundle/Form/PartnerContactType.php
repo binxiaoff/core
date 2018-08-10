@@ -9,11 +9,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class PartnerContactType extends AbstractType
 {
-    /** @var UserPartner */
+    /** @var Clients */
     private $user;
     /** @var EntityManager */
     private $entityManager;
@@ -32,7 +32,7 @@ class PartnerContactType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->user->getClientId());
+        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->user->getIdClient());
         $phone  = $client->getTelephone();
         $email  = $client->getEmail();
 

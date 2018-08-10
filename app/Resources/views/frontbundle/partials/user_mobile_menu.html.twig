@@ -9,14 +9,14 @@
 
         <div class="user-greeting">
             {% trans %} mobile-navigation_greeting {% endtrans %}
-            <div class="user-name">{{ app.user.firstName }}</div>
+            <div class="user-name">{{ app.user.getPrenom() }}</div>
         </div>
 
         <nav class="site-user-nav" role="navigation">
             <ul class="site-user-nav-menu">
                 {% if is_granted('ROLE_LENDER') %}
-                   {% if app.user.clientStatus != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') %}
-                        {% if app.user.notifications|length > 0 %}
+                   {% if app.user.getIdClientStatusHistory().getIdStatus().getId() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') %}
+                        {% if notifications(app.user)|length > 0 %}
                             <li role="presentation" class="user-nav-major user-nav-dashboard ">
                                 <a href="javascript:;" class="ui-open-usernotificationsdrop">
                                     <span class="icon fa-bell-u32"></span>
@@ -35,21 +35,21 @@
                             </a>
                         </li>
 
-                        {% if app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') and app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
+                        {% if app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') and app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
                             <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_deposit_result', 'lender_wallet_deposit_result_error', 'lender_wallet_withdrawal'] %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_deposit') }}">
                                     <span class="icon fa-money-u32"></span>
                                     <span class="label">{% trans %} lender-dashboard-navigation_deposit-withdraw-link {% endtrans %}</span>
                                 </a>
                             </li>
-                        {% elseif app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') %}
+                        {% elseif app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') %}
                             <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') in ['lender_wallet_deposit', 'lender_wallet_deposit_result', 'lender_wallet_deposit_result_error'] %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_deposit') }}">
                                     <span class="icon fa-money-u32"></span>
                                     <span class="label">{% trans %} lender-dashboard-navigation_deposit-link {% endtrans %}</span>
                                 </a>
                             </li>
-                        {% elseif app.user.clientStatus in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
+                        {% elseif app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW') %}
                             <li role="presentation" class="user-nav-major user-nav-balance {% if app.request.attributes.get('_route') == 'lender_wallet_withdrawal' %} active {% else %} complete {% endif %}">
                                 <a href="{{ path('lender_wallet_withdrawal') }}">
                                     <span class="icon fa-money-u32"></span>
@@ -152,7 +152,7 @@
                         </a>
                     </li>
 
-                    {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                    {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                         <li role="presentation" class="user-nav-major user-nav-users{% if app.request.get('_route') == 'partner_users' %} active{% endif %}">
                             <a href="{{ path('partner_users') }}">
                                 <span class="icon fa-profile-u"></span>

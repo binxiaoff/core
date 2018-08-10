@@ -31,7 +31,7 @@ class LenderOperationsController extends Controller
      */
     public function indexAction(Request $request, UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -74,7 +74,7 @@ class LenderOperationsController extends Controller
      */
     public function filterLoansAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -105,7 +105,7 @@ class LenderOperationsController extends Controller
      */
     public function filterOperationsAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -144,7 +144,7 @@ class LenderOperationsController extends Controller
      */
     public function exportOperationsExcelAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -183,7 +183,7 @@ class LenderOperationsController extends Controller
      */
     public function exportLoansExcelAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -480,7 +480,7 @@ class LenderOperationsController extends Controller
      */
     public function loadProjectNotificationsAction(int $projectId, UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json(['tpl' => '']);
         }
 
@@ -785,7 +785,7 @@ class LenderOperationsController extends Controller
      */
     public function downloadOperationPdfAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -851,7 +851,7 @@ class LenderOperationsController extends Controller
      */
     public function downloadLoansPdfAction(UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 

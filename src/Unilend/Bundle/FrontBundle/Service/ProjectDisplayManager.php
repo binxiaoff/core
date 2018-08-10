@@ -414,18 +414,16 @@ class ProjectDisplayManager
     }
 
     /**
-     * @param int|null $clientId
+     * @param Clients|null $client
      *
      * @return int
      */
-    public function getTotalNumberOfDisplayedProjects($clientId = null)
+    public function getTotalNumberOfDisplayedProjects(?Clients $client)
     {
         /** @var \projects $projects */
         $projects          = $this->entityManagerSimulator->getRepository('projects');
-        $clientRepository  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
         $productRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Product');
 
-        $client     = $clientId ? $clientRepository->find($clientId) : null;
         $products   = $productRepository->findAvailableProductsByClient($client);
         $productIds = array_map(function (Product $product) {
             return $product->getIdProduct();
@@ -456,7 +454,7 @@ class ProjectDisplayManager
 
         if (null !== $client) {
             if ($client->isLender()) {
-                if (in_array($client->getIdClientStatusHistory()->getId(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
+                if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_MODIFICATION, ClientsStatus::STATUS_VALIDATED, ClientsStatus::STATUS_SUSPENDED])) {
                     return self::VISIBILITY_FULL;
                 }
 

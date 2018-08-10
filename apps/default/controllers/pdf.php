@@ -714,14 +714,14 @@ class pdfController extends bootstrap
             header('Location: ' . $this->lurl);
             exit;
         }
-        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+
         $user = $token->getUser();
-        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+        if (!$user instanceof Clients) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $clients->get($this->params[0], 'hash') || $user->getClientId() != $clients->id_client && empty($_SESSION['user']['id_user'])) {
+        if (false === $clients->get($this->params[0], 'hash') || $user->getIdClient() != $clients->id_client && empty($_SESSION['user']['id_user'])) {
             header('Location: ' . $this->lurl);
             exit;
         }

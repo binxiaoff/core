@@ -5,6 +5,8 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
+use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
 
 class PartnerManager
@@ -66,5 +68,46 @@ class PartnerManager
         }
 
         return $this->entityManager->getRepository('UnilendCoreBusinessBundle:Partner')->findOneBy(['idCompany' => $rootCompany->getIdCompany()]);
+    }
+
+    /**
+     * @param Clients $partnerUser
+     *
+     * @return Companies[]
+     */
+    public function getUserCompanies(Clients $partnerUser): array
+    {
+        /** @var CompanyClient $partnerRole */
+        $partnerRole = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $partnerUser]);
+        $company     = $partnerRole->getIdCompany();
+        $branches    = [];
+
+        if (in_array(Clients::ROLE_PARTNER_ADMIN, $partnerUser->getRoles())) {
+            $branches = $this->getBranches($company);
+        }
+
+        $companies = array_merge([$company], $branches);
+
+        usort($companies, function ($first, $second) {
+            return strcasecmp($first->getName(), $second->getName());
+        });
+
+        return $companies;
+    }
+
+    /**
+     * @param Companies $rootCompany
+     *
+     * @return Companies[]
+     */
+    private function getBranches(Companies $rootCompany): array
+    {
+        $branches = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findBy(['idParentCompany' => $rootCompany]);
+
+        foreach($branches as $company) {
+            $branches = array_merge($branches, $this->getBranches($company));
+        }
+
+        return $branches;
     }
 }

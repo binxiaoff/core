@@ -14,6 +14,8 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="cache"/>
             <argument type="service" id="unilend.service.location_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
         <service id="unilend.frontbundle.security.password_encoder" class="Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder">
@@ -134,5 +136,7 @@
         <service id="Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager" autowire="true"/>
 
         <service id="Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler" autowire="true"/>
-    </services>
+
+        <service id="Unilend\Bundle\FrontBundle\Twig\UserExtension" autowire="true" autoconfigure="true" />
+</services>
 </container>

@@ -25,7 +25,7 @@ class LenderAccountController extends Controller
             'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($client)
         ];
 
-        if (in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
+        if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
 
             $template['currentSponsorshipCampaign'] = $sponsorshipManager->getCurrentSponsorshipCampaign();

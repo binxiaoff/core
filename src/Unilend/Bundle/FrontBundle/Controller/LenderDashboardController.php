@@ -30,11 +30,11 @@ class LenderDashboardController extends Controller
      */
     public function indexAction(UserInterface $client): Response
     {
-        if (ClientsStatus::STATUS_CREATION === $client->getIdClientStatusHistory()->getId()) {
+        if (ClientsStatus::STATUS_CREATION === $client->getIdClientStatusHistory()->getIdStatus()->getId()) {
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
         }
 
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->redirectToRoute('home');
         }
 
@@ -223,7 +223,7 @@ class LenderDashboardController extends Controller
      */
     public function saveUserDisplayPreferencesAction(Request $request, UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
             return $this->json(['error' => 1, 'msg' => '']);
         }
 

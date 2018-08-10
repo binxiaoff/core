@@ -413,7 +413,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         if ($client->isLender()) {
-            switch ($client->getIdClientStatusHistory()->getId()) {
+            switch ($client->getIdClientStatusHistory()->getIdStatus()->getId()) {
                 case ClientsStatus::STATUS_CREATION:
                     $targetPath = $this->router->generate('lender_subscription_documents', ['clientHash' => $client->getHash()]);
                     break;

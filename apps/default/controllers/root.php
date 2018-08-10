@@ -25,19 +25,14 @@ class rootController extends bootstrap
             header('Location: ' . $this->lurl);
             exit;
         }
-        /** @var \Unilend\Bundle\FrontBundle\Security\User\UserLender $user */
+
         $user = $token->getUser();
-        if (!$user instanceof \Unilend\Bundle\FrontBundle\Security\User\UserLender) {
+        if (!$user instanceof Clients) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        if (false === $this->clients->get($user->getClientId(), 'id_client')) {
-            header('Location: ' . $this->lurl);
-            exit;
-        }
-
-        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getClientStatus()) {
+        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getIdClientStatusHistory()->getIdStatus()->getId()) {
             header('Location: ' . $this->lurl . '/inscription-preteurs');
             exit;
         }
