@@ -509,7 +509,7 @@ class ProjectsController extends Controller
                 return $this->redirectToRoute('home');
             }
 
-            if ($client->getIdClientStatusHistory()->getIdStatus()->getId() !== ClientsStatus::STATUS_VALIDATED) {
+            if (false === $client->isValidated()) {
                 $request->getSession()->set('bidResult', ['error' => true, 'message' => $translator->trans('project-detail_side-bar-bids-user-logged-out')]);
                 return $this->redirectToRoute('project_detail', ['projectSlug' => $project->slug]);
             }

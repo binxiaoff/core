@@ -622,9 +622,7 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if ('activate' === $request->request->get('action') && ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
+        if ('activate' === $request->request->get('action') && false === $companyClient->getIdClient()->isValidated()) {
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
             $duplicates        = $clientsRepository->findGrantedLoginAccountByEmail($companyClient->getIdClient()->getEmail());
 
@@ -677,9 +675,7 @@ class partenairesController extends bootstrap
             return null;
         }
 
-        $clientStatus = $companyClient->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
+        if (false === $companyClient->getIdClient()->isValidated()) {
             $errors[] = 'Cet utilisateur est désactivé. Vous devez d’abord le passer en ligne pour lui envoyer le mail de réinitialisation de mot de passe.';
             return null;
         }

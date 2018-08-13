@@ -196,9 +196,7 @@ class MailerManager
             ]);
         }
 
-        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($borrower->isValidated()) {
             $currentDate = new \DateTime();
             $interval    = $project->getDateRetrait()->diff($currentDate);
 
@@ -622,10 +620,9 @@ class MailerManager
             ]);
         }
 
-        $borrower     = $project->getIdCompany()->getIdClientOwner();
-        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
+        $borrower = $project->getIdCompany()->getIdClientOwner();
 
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($borrower->isValidated()) {
             $keywords = [
                 'firstName' => $borrower->getPrenom()
             ];
@@ -2012,9 +2009,7 @@ class MailerManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($client->isValidated()) {
             /** @var \temporary_links_login $temporaryLink */
             $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
             $keywords      = [

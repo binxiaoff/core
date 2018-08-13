@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, VigilanceRule, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, VigilanceRule, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 /**
@@ -40,10 +38,7 @@ class LenderManager
      */
     public function canBid(Clients $client): bool
     {
-        return (
-            $client->isLender()
-            && ClientsStatus::STATUS_VALIDATED === $client->getIdClientStatusHistory()->getIdStatus()->getId()
-        );
+        return ($client->isLender() && $client->isValidated());
     }
 
     /**

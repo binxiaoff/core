@@ -252,10 +252,9 @@ class UsersController extends Controller
         if ($linkExpires <= $now) {
             $isLinkExpired = true;
         } else {
-            $client       = $temporaryLinks->getIdClient();
-            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+            $client = $temporaryLinks->getIdClient();
 
-            if (null === $client || false === $client->isPartner() || ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
+            if (null === $client || false === $client->isPartner() || false === $client->isValidated()) {
                 return $this->redirectToRoute('home');
             }
 

@@ -35,7 +35,7 @@ class LenderOperationsController extends Controller
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
 
         $wallet                 = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $filters                = $this->getOperationFilters($request);
+        $filters                = $this->getOperationFilters($request, $client);
         $operations             = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations       = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
         $projectsFundedByLender = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
@@ -110,7 +110,7 @@ class LenderOperationsController extends Controller
         $entityManager           = $this->get('doctrine.orm.entity_manager');
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         $wallet                  = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $filters                 = $this->getOperationFilters($request);
+        $filters                 = $this->getOperationFilters($request, $client);
         $operations              = $lenderOperationsManager->getOperationsAccordingToFilter($filters['operation']);
         $lenderOperations        = $lenderOperationsManager->getLenderOperations($wallet, $filters['startDate'], $filters['endDate'], $filters['project'], $operations);
         $projectsFundedByLender  = array_combine(array_column($lenderOperations, 'id_project'), array_column($lenderOperations, 'title'));
@@ -390,11 +390,12 @@ class LenderOperationsController extends Controller
 
     /**
      * @param Request $request
+     * @param Clients $client
      *
      * @return array
      * @throws \Exception
      */
-    private function getOperationFilters(Request $request): array
+    private function getOperationFilters(Request $request, Clients $client): array
     {
         $defaultValues = [
             'start'          => date('d/m/Y', strtotime('-1 month')),

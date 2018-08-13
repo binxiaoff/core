@@ -30,7 +30,7 @@
                 <th>Évaluation CIP</th>
                 <td>
                     <?php if ($this->cipEnabled) : ?>
-                        Oui (<a href="<?= $this->furl ?>/pdf/conseil-cip" target="_blank"> Télécharger le PDF des conseils</a>)
+                        Oui (<a href="<?= $this->furl ?>/pdf/conseil-cip/<?= $this->clients->hash ?>" target="_blank"> Télécharger le PDF des conseils</a>)
                     <?php else : ?>
                         Non
                     <?php endif; ?>
