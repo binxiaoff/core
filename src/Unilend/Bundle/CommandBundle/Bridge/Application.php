@@ -2,14 +2,10 @@
 namespace Unilend\Bundle\CommandBundle\Bridge;
 
 use Symfony\Bundle\FrameworkBundle\Console\Application as FrameworkBundleApplication;
-use Symfony\Component\Console\{
-    Input\InputInterface, Input\InputOption, Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Input\InputOption, Output\OutputInterface};
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Lock\{
-    Factory, Lock, Store\SemaphoreStore
-};
+use Symfony\Component\Lock\{Factory, Lock, Store\SemaphoreStore};
 
 class Application extends FrameworkBundleApplication
 {
