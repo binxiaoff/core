@@ -817,11 +817,10 @@ class ClientsRepository extends EntityRepository
 
     /**
      * @param string $email
-     * @param int[]  $status
      *
      * @return array
      */
-    public function findByEmailAndStatus(string $email, array $status): array
+    public function findGrantedLoginAccountByEmail(string $email): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
@@ -829,7 +828,7 @@ class ClientsRepository extends EntityRepository
             ->where('c.email = :email')
             ->andWhere('csh.idStatus IN (:status)')
             ->setParameter('email', $email, \PDO::PARAM_STR)
-            ->setParameter('status', $status);
+            ->setParameter('status', ClientsStatus::GRANTED_LOGIN);
 
         return $queryBuilder->getQuery()->getResult();
     }

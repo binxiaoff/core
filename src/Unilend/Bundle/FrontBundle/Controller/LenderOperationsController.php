@@ -2,18 +2,13 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response, StreamedResponse
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response, StreamedResponse};
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, ClientAddress, Clients, ClientsStatus, CompanyAddress, CompanyStatus, Notifications, OperationSubType, OperationType, Projects, Wallet,
+    WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\FrontBundle\Service\LenderLoansDisplayManager;
 use Unilend\core\Loader;
@@ -24,14 +19,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations", name="lender_operations")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function indexAction(Request $request, UserInterface $client): Response
+    public function indexAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -67,14 +62,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations/filterLoans", name="filter_loans")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function filterLoansAction(Request $request, UserInterface $client): JsonResponse
+    public function filterLoansAction(Request $request, ?UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -98,14 +93,14 @@ class LenderOperationsController extends Controller
      * @Route("/operations/filterOperations", name="filter_operations")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function filterOperationsAction(Request $request, UserInterface $client): JsonResponse
+    public function filterOperationsAction(Request $request, ?UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->json([
                 'target'   => 'loans .panel-table',
                 'template' => ''
@@ -138,13 +133,13 @@ class LenderOperationsController extends Controller
      * @Route("/operations/exportOperationsCsv", name="export_operations_csv_legacy")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function exportOperationsExcelAction(UserInterface $client): Response
+    public function exportOperationsExcelAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -181,9 +176,9 @@ class LenderOperationsController extends Controller
      *
      * @return Response
      */
-    public function exportLoansExcelAction(UserInterface $client): Response
+    public function exportLoansExcelAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -473,14 +468,14 @@ class LenderOperationsController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      * @Method("GET")
      *
-     * @param int $projectId
-     * @param UserInterface|Clients $client
+     * @param int                        $projectId
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function loadProjectNotificationsAction(int $projectId, UserInterface $client): JsonResponse
+    public function loadProjectNotificationsAction(int $projectId, ?UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->json(['tpl' => '']);
         }
 
@@ -779,13 +774,13 @@ class LenderOperationsController extends Controller
      * @Route("/operations/pdf", name="lender_operations_pdf")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function downloadOperationPdfAction(UserInterface $client): Response
+    public function downloadOperationPdfAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -845,13 +840,13 @@ class LenderOperationsController extends Controller
      * @Route("/prets/pdf", name="lender_loans_pdf")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function downloadLoansPdfAction(UserInterface $client): Response
+    public function downloadLoansPdfAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 

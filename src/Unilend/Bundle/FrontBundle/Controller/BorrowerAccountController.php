@@ -3,26 +3,16 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Template
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Template};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    RedirectResponse, Request, Response, StreamedResponse
-};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response, StreamedResponse};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, Wallet, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BorrowerOperationsManager, ProjectStatusManager
-};
-use Unilend\Bundle\FrontBundle\Form\{
-    BorrowerContactType, SimpleProjectType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 
 class BorrowerAccountController extends Controller
 {
@@ -30,12 +20,12 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return array
      */
-    public function projectsAction(Request $request, UserInterface $client)
+    public function projectsAction(Request $request, ?UserInterface $client)
     {
         $projectsPreFunding  = $this->getProjectsPreFunding($client);
         $projectsFunding     = $this->getProjectsFunding($client);
@@ -53,12 +43,12 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project")
      * @Method("POST")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function closeFundingProjectAction(Request $request, UserInterface $client): RedirectResponse
+    public function closeFundingProjectAction(Request $request, ?UserInterface $client): RedirectResponse
     {
         if ($request->request->get('project')) {
             /** @var \projects $project */
@@ -92,12 +82,12 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/nouvelle-demande", name="borrower_account_new_demand")
      * @Template("borrower_account/new_demand.html.twig")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response|array
      */
-    public function newDemandAction(Request $request, UserInterface $client): Response
+    public function newDemandAction(Request $request, ?UserInterface $client): Response
     {
         $projectForm = $this->createForm(SimpleProjectType::class);
         $projectForm->handleRequest($request);
@@ -161,12 +151,12 @@ class BorrowerAccountController extends Controller
     /**
      * @Route("/espace-emprunteur/operations", name="borrower_account_operations")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function operationsAction(Request $request, UserInterface $client): Response
+    public function operationsAction(Request $request, ?UserInterface $client): Response
     {
         $projectsPostFunding = $this->getProjectsPostFunding();
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
@@ -293,11 +283,11 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/profil", name="borrower_account_profile")
      * @Template("borrower_account/profile.html.twig")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response|array
      */
-    public function profileAction(UserInterface $client): Response
+    public function profileAction(?UserInterface $client): Response
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
@@ -314,12 +304,12 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/contact", name="borrower_account_contact")
      * @Template("borrower_account/contact.html.twig")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response|array
      */
-    public function contactAction(Request $request, UserInterface $client): Response
+    public function contactAction(Request $request, ?UserInterface $client): Response
     {
         $company = $this->getCompany($client);
 
@@ -613,10 +603,9 @@ class BorrowerAccountController extends Controller
 
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var Clients $client */
-            $client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
-            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
 
-            if (false === in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+            if (false === $client->isGrantedLogin()) {
                 $displayForm = false;
                 $translator  = $this->get('translator');
                 $this->addFlash('error', $translator->trans('borrower-profile_security-offline-account'));

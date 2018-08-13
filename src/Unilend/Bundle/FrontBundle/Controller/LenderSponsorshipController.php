@@ -24,14 +24,14 @@ class LenderSponsorshipController extends Controller
      * @Route("/parrainage", name="lender_sponsorship")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function sponsorshipAction(Request $request, UserInterface $client): Response
+    public function sponsorshipAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
+        if (false === $client->isGreantedLenderSponsorship()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 

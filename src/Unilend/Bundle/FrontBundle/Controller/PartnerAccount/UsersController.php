@@ -93,7 +93,7 @@ class UsersController extends Controller
                     $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_DISABLED);
                     break;
                 case 'activate':
-                    $duplicates = $clientRepository->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+                    $duplicates = $clientRepository->findGrantedLoginAccountByEmail($client->getEmail());
 
                     if (empty($duplicates)) {
                         $this->get('unilend.service.client_status_manager')->addClientStatus($client, Users::USER_ID_FRONT, ClientsStatus::STATUS_VALIDATED);
@@ -168,7 +168,7 @@ class UsersController extends Controller
         if (empty($request->request->get('email')) || false === filter_var($request->request->get('email'), FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = true;
         }
-        $duplicates = $clientRepository->findByEmailAndStatus($request->request->get('email'), ClientsStatus::GRANTED_LOGIN);
+        $duplicates = $clientRepository->findGrantedLoginAccountByEmail($request->request->get('email'));
         if (false === empty($duplicates)) {
             $errors['email_existing'] = true;
         }

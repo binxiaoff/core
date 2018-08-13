@@ -22,13 +22,13 @@ class LenderWalletController extends Controller
      * @Route("/alimentation", name="lender_wallet_deposit")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function depositAction(UserInterface $client): Response
+    public function depositAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === $client->isGrantedLenderDeposit()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -49,14 +49,14 @@ class LenderWalletController extends Controller
      * @Route("/alimentation/resultat/{paymentToken}", name="lender_wallet_deposit_result")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param string                $paymentToken
-     * @param UserInterface|Clients $client
+     * @param string                     $paymentToken
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function depositResultAction(string $paymentToken, UserInterface $client): Response
+    public function depositResultAction(string $paymentToken, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === $client->isGrantedLenderDeposit()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -78,13 +78,13 @@ class LenderWalletController extends Controller
      * @Route("/alimentation/erreur", name="lender_wallet_deposit_result_error")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function depositResultErrorAction(UserInterface $client): Response
+    public function depositResultErrorAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === $client->isGrantedLenderDeposit()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -95,15 +95,15 @@ class LenderWalletController extends Controller
      * @Route("/retrait", name="lender_wallet_withdrawal")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @return Response
      */
-    public function withdrawalAction(Request $request, UserInterface $client): Response
+    public function withdrawalAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW)) {
+        if (false === $client->isGrantedLenderWithDraw()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -289,14 +289,14 @@ class LenderWalletController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      * @Method("POST")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse|Response
      */
-    public function depositMoneyAction(Request $request, UserInterface $client): Response
+    public function depositMoneyAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === $client->isGrantedLenderDeposit()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -337,14 +337,14 @@ class LenderWalletController extends Controller
      * @Route("/alimentation/payment", name="wallet_payment")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function paymentAction(Request $request, UserInterface $client): Response
+    public function paymentAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT)) {
+        if (false === $client->isGrantedLenderDeposit()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 

@@ -18,12 +18,12 @@ class ContactController extends Controller
      * @Route("partenaire/contact", name="partner_contact")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function contactAction(Request $request, UserInterface $client)
+    public function contactAction(Request $request, ?UserInterface $client)
     {
         $contactForm = $this->createForm(PartnerContactType::class);
         $contactForm->handleRequest($request);

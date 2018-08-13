@@ -14,7 +14,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, Attachmen
     OffresBienvenues, PaysV2, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
-use Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder;
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
 use Unilend\core\Loader;
 
@@ -514,7 +513,7 @@ class LenderSubscriptionController extends Controller
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN);
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));
@@ -552,8 +551,8 @@ class LenderSubscriptionController extends Controller
     /**
      * @Route("/inscription_preteur/etape2/{clientHash}", name="lender_subscription_documents", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
      * @param UserInterface|Clients|null $client
      *
      * @return Response
@@ -807,8 +806,8 @@ class LenderSubscriptionController extends Controller
      * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
      * @Method("GET")
      *
-     * @param string  $clientHash
-     * @param Request $request
+     * @param string                     $clientHash
+     * @param Request                    $request
      * @param UserInterface|Clients|null $client
      *
      * @return Response

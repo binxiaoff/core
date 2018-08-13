@@ -602,7 +602,7 @@ class LenderProfileFormsHandler
      */
     public function handleEmailForm(Clients $client, Clients $unattachedClient, FormInterface $form): bool
     {
-        if (false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($client->getEmail(), ClientsStatus::GRANTED_LOGIN))) {
+        if (false === empty($this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountByEmail($client->getEmail()))) {
             $form->addError(new FormError($this->translator->trans('lender-profile_security-identification-error-existing-email')));
         }
 

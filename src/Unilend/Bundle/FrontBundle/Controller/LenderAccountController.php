@@ -12,12 +12,12 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
 class LenderAccountController extends Controller
 {
     /**
-     * @param string                $route
-     * @param UserInterface|Clients $client
+     * @param string                     $route
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function lenderMenuAction(string $route, UserInterface $client): Response
+    public function lenderMenuAction(string $route, ?UserInterface $client): Response
     {
 
         $template = [
@@ -25,7 +25,7 @@ class LenderAccountController extends Controller
             'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($client)
         ];
 
-        if (in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP)) {
+        if ($client->isGreantedLenderSponsorship()) {
             $sponsorshipManager = $this->get('unilend.service.sponsorship_manager');
 
             $template['currentSponsorshipCampaign'] = $sponsorshipManager->getCurrentSponsorshipCampaign();

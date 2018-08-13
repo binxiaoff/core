@@ -18,7 +18,7 @@
                     {% include 'partials/site_search.html.twig' %}
 
                     <div class="site-user">
-                        {% if app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT') %}
+                        {% if app.user.isGrantedLenderDeposit() %}
                             <a href="{{ path('lender_wallet_deposit') }}" class="site-user-balance">
                                 <span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span>
                             </a><!-- /.site-user-balance -->
@@ -31,7 +31,7 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
 
-                            {% if app.user.getIdClientStatusHistory().getIdStatus().getId() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') and notifications(app.user)|length > 0 %}
+                            {% if app.user.isGrantedLenderRead() and notifications(app.user)|length > 0 %}
                                 <a href="javascript:;" class="profile-notifications" data-usernotificationsdrop>
                                     <span data-usernotifications-unreadcount></span>
                                 </a><!-- /.profile-notifications -->

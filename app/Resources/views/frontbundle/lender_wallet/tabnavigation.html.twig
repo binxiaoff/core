@@ -1,6 +1,6 @@
 {% if
-    app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_DEPOSIT')
-    and app.user.getIdClientStatusHistory().getIdStatus().getId() in constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::GRANTED_LENDER_WITHDRAW')
+    app.user.isGrantedLenderDeposit()
+    and app.user.isGrantedLenderWithDraw()
 %}
     <div class="dashboard-tabs-nav">
         <ul class="nav nav-dashboard-tabs">

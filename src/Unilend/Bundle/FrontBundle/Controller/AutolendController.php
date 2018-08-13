@@ -17,15 +17,15 @@ class AutolendController extends Controller
      * @Route("/profile/autolend", name="autolend")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      * @throws \Exception
      */
-    public function autolendAction(Request $request, UserInterface $client): Response
+    public function autolendAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 

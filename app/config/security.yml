@@ -20,6 +20,7 @@ security:
             guard:
                 authenticators:
                     - unilend.frontbundle.security.login_authenticator
+            user_checker: Unilend\Bundle\FrontBundle\Security\User\UserChecker
             logout:
                 path: logout
                 target: /

@@ -168,11 +168,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         try {
-            $username = $userProvider->loadUserByUsername($credentials['username']);
+            $user = $userProvider->loadUserByUsername($credentials['username']);
         } catch (UsernameNotFoundException $exception) {
             throw new CustomUserMessageAuthenticationException('login-unknown');
         }
-        return $username;
+        return $user;
     }
 
     /**
@@ -256,7 +256,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         } elseif ($needCipEvaluation) {
             $targetPath = $this->router->generate('cip_index');
         } else {
-            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $user);
+            $targetPath = $this->getUserSpecificTargetPath($request, $providerKey, $client);
         }
 
         $response = new RedirectResponse($targetPath);

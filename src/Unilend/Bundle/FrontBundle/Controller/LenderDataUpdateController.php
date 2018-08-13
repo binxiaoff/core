@@ -2,20 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Route, Security};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
-};
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType};
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 
 class LenderDataUpdateController extends Controller
@@ -24,11 +16,11 @@ class LenderDataUpdateController extends Controller
      * @Route("/profile/mise-a-jour", name="lender_data_update_start")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function startAction(UserInterface $client): Response
+    public function startAction(?UserInterface $client): Response
     {
         $company = null;
 
@@ -46,12 +38,12 @@ class LenderDataUpdateController extends Controller
      * @Route("/profile/mise-a-jour/details", name="lender_data_update_details")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function detailsAction(Request $request, UserInterface $client): Response
+    public function detailsAction(Request $request, ?UserInterface $client): Response
     {
         $entityManager = $this->get('doctrine.orm.entity_manager');
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
@@ -183,12 +175,12 @@ class LenderDataUpdateController extends Controller
      * @Route("/profile/mise-a-jour/fin", name="lender_data_update_end")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function endAction(UserInterface $client): Response
+    public function endAction(?UserInterface $client): Response
     {
         try {
             $needCipEvaluation = $this->get('unilend.service.cip_manager')->needReevaluation($client);

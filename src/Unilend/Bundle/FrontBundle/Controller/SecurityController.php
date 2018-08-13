@@ -110,7 +110,7 @@ class SecurityController extends Controller
 
         $entityManager     = $this->get('doctrine.orm.entity_manager');
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $clients           = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+        $clients           = $clientsRepository->findGrantedLoginAccountByEmail($email);
         $clientsCount      = count($clients);
 
         if (0 === $clientsCount) {

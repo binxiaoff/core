@@ -31,7 +31,7 @@ class SearchController extends Controller
      *
      * @return Response
      */
-    public function resultAction(string $query, UserInterface $client)
+    public function resultAction(string $query, ?UserInterface $client)
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');

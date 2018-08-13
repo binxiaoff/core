@@ -25,16 +25,16 @@ class LenderProfileController extends Controller
      * @Route("/profile/info-perso", name="lender_profile_personal_information")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request       $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    public function personalInformationAction(Request $request, UserInterface $client): Response
+    public function personalInformationAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -174,15 +174,15 @@ class LenderProfileController extends Controller
      * @Route("/profile/info-fiscal", name="lender_profile_fiscal_information")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request       $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      * @throws \Exception
      */
-    public function fiscalInformationAction(Request $request, UserInterface $client): Response
+    public function fiscalInformationAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -251,16 +251,16 @@ class LenderProfileController extends Controller
      * @Route("/profile/securite", name="lender_profile_security")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request       $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function securityAction(Request $request, UserInterface $client): Response
+    public function securityAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -328,14 +328,14 @@ class LenderProfileController extends Controller
      * @Route("/profile/alertes", name="lender_profile_notifications")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function notificationsAction(Request $request, UserInterface $client): Response
+    public function notificationsAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -400,14 +400,14 @@ class LenderProfileController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function updateNotificationAction(Request $request, UserInterface $client): JsonResponse
+    public function updateNotificationAction(Request $request, ?UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->json('ko');
         }
 
@@ -555,11 +555,11 @@ class LenderProfileController extends Controller
      * @Route("/profile/documents", name="lender_completeness")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function lenderCompletenessAction(UserInterface $client): Response
+    public function lenderCompletenessAction(?UserInterface $client): Response
     {
         if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
@@ -682,12 +682,12 @@ class LenderProfileController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function lenderCompletenessFormAction(Request $request, UserInterface $client): RedirectResponse
+    public function lenderCompletenessFormAction(Request $request, ?UserInterface $client): RedirectResponse
     {
         if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
             return $this->redirectToRoute('lender_dashboard');
@@ -889,14 +889,14 @@ class LenderProfileController extends Controller
      * @Route("/profile/ifu", name="get_ifu")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function downloadIFUAction(Request $request, UserInterface $client): Response
+    public function downloadIFUAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -1042,14 +1042,14 @@ class LenderProfileController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function requestTaxExemptionAction(Request $request, UserInterface $client): Response
+    public function requestTaxExemptionAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 

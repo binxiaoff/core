@@ -111,14 +111,14 @@ class ProjectsController extends Controller
      * @Template("lender_account/projects.html.twig")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param int    $page
-     * @param string $sortType
-     * @param string $sortDirection
-     * @param UserInterface|Clients $client
+     * @param int                        $page
+     * @param string                     $sortType
+     * @param string                     $sortDirection
+     * @param UserInterface|Clients|null $client
      *
      * @return array
      */
-    public function lenderProjectsAction($page, $sortType, $sortDirection, UserInterface $client)
+    public function lenderProjectsAction($page, $sortType, $sortDirection, ?UserInterface $client)
     {
         return $this->getProjectsList($page, $sortType, $sortDirection, $client);
     }
@@ -485,13 +485,13 @@ class ProjectsController extends Controller
      * @Method({"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param int     $projectId
-     * @param Request $request
-     * @param UserInterface|Clients $client
+     * @param int                        $projectId
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function placeBidAction($projectId, Request $request, UserInterface $client)
+    public function placeBidAction($projectId, Request $request, ?UserInterface $client)
     {
         if (
             ($post = $request->request->get('invest'))
@@ -917,9 +917,9 @@ class ProjectsController extends Controller
     /**
      * @Route("/projects/pre-check-bid/{projectSlug}/{amount}/{rate}", name="pre_check_bid", condition="request.isXmlHttpRequest()", requirements={"projectSlug": "[a-z0-9-]+", "amount": "\d+", "rate": "\d{1,2}(\.\d|)"})
      *
-     * @param string  $projectSlug
-     * @param int     $amount
-     * @param float   $rate
+     * @param string                     $projectSlug
+     * @param int                        $amount
+     * @param float                      $rate
      * @param UserInterface|Clients|null $client
      *
      * @return Response
@@ -1110,7 +1110,7 @@ class ProjectsController extends Controller
     /**
      * @Route("/var/dirs/{projectSlug}.pdf", name="project_dirs", requirements={"projectSlug": "[a-z0-9-]+"})
      *
-     * @param string $projectSlug
+     * @param string                     $projectSlug
      * @param UserInterface|Clients|null $client
      *
      * @return Response

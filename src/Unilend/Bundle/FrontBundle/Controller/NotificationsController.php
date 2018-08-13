@@ -16,12 +16,12 @@ class NotificationsController extends Controller
      * @Security("has_role('ROLE_LENDER')")
      * @Method("POST")
      *
-     * @param Request $request
+     * @param Request                    $request
      * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function updateAction(Request $request, UserInterface $client): JsonResponse
+    public function updateAction(Request $request, ?UserInterface $client): JsonResponse
     {
         $action = $request->request->get('action');
         $list   = $request->request->get('list');
@@ -69,7 +69,7 @@ class NotificationsController extends Controller
      *
      * @return JsonResponse
      */
-    public function paginationAction(Request $request, UserInterface $client): JsonResponse
+    public function paginationAction(Request $request, ?UserInterface $client): JsonResponse
     {
         $perPage     = $request->query->getInt('perPage');
         $currentPage = $request->query->getInt('currentPage');

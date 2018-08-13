@@ -24,13 +24,13 @@ class LenderCIPController extends Controller
      * @Route("/conseil-cip", name="cip_index")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function indexAction(UserInterface $client): Response
+    public function indexAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -58,13 +58,13 @@ class LenderCIPController extends Controller
      * @Route("/conseil-cip/questionnaire", name="cip_continue_questionnaire")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function questionnaireAction(UserInterface $client): Response
+    public function questionnaireAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -129,14 +129,14 @@ class LenderCIPController extends Controller
      * @Route("/conseil-cip/questionnaire/form", name="cip_form_questionnaire")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function questionnaireFormAction(Request $request, UserInterface $client): Response
+    public function questionnaireFormAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -222,14 +222,14 @@ class LenderCIPController extends Controller
      * @Route("/conseil-cip/valider", name="cip_validate_questionnaire")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function validateQuestionnaireAction(Request $request, UserInterface $client): Response
+    public function validateQuestionnaireAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -257,13 +257,13 @@ class LenderCIPController extends Controller
      * @Route("/conseil-cip/reset", name="cip_reset_questionnaire")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function resetQuestionnaireAction(UserInterface $client): Response
+    public function resetQuestionnaireAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -286,7 +286,7 @@ class LenderCIPController extends Controller
         /** @var Clients $client */
         $client = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 

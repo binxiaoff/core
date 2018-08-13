@@ -61,7 +61,7 @@ class UserProvider implements UserProviderInterface
     public function loadUserByUsername($username): UserInterface
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findByEmailAndStatus($username, ClientsStatus::GRANTED_LOGIN);
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountByEmail($username);
             $usersCount = count($users);
 
             if ($usersCount > 0) {

@@ -24,17 +24,17 @@ class LenderDashboardController extends Controller
      * @Route("synthese", name="lender_dashboard")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param UserInterface|Clients $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function indexAction(UserInterface $client): Response
+    public function indexAction(?UserInterface $client): Response
     {
         if (ClientsStatus::STATUS_CREATION === $client->getIdClientStatusHistory()->getIdStatus()->getId()) {
             return $this->redirectToRoute('lender_subscription_documents', ['clientHash' => $client->getHash()]);
         }
 
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->redirectToRoute('home');
         }
 
@@ -216,14 +216,14 @@ class LenderDashboardController extends Controller
      * @Route("/synthese/preferences", name="save_panel_preferences")
      * @Security("has_role('ROLE_LENDER')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $client
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return JsonResponse
      */
-    public function saveUserDisplayPreferencesAction(Request $request, UserInterface $client): JsonResponse
+    public function saveUserDisplayPreferencesAction(Request $request, ?UserInterface $client): JsonResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ)) {
+        if (false === $client->isGrantedLenderRead()) {
             return $this->json(['error' => 1, 'msg' => '']);
         }
 

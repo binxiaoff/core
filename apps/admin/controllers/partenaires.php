@@ -626,7 +626,7 @@ class partenairesController extends bootstrap
 
         if ('activate' === $request->request->get('action') && ClientsStatus::STATUS_VALIDATED !== $clientStatus) {
             $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-            $duplicates        = $clientsRepository->findByEmailAndStatus($companyClient->getIdClient()->getEmail(), ClientsStatus::GRANTED_LOGIN);
+            $duplicates        = $clientsRepository->findGrantedLoginAccountByEmail($companyClient->getIdClient()->getEmail());
 
             if (count($duplicates)) {
                 $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';
@@ -745,7 +745,7 @@ class partenairesController extends bootstrap
             $errors[] = 'Vous devez renseigner une adresse email valide';
         }
         $clientsRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $duplicates        = $clientsRepository->findByEmailAndStatus($email, ClientsStatus::GRANTED_LOGIN);
+        $duplicates        = $clientsRepository->findGrantedLoginAccountByEmail($email);
 
         if (false === empty($duplicates) && (null === $companyClient->getIdClient() || $companyClient->getIdClient()->getEmail() !== $email)) {
             $errors[] = 'Il existe déjà un compte en ligne avec cette adresse email';

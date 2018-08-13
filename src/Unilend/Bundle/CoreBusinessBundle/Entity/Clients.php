@@ -8,9 +8,7 @@ use Hashids\Hashids;
 use Ramsey\Uuid\Exception\UnsatisfiedDependencyException;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Security\Core\Encoder\EncoderAwareInterface;
-use Symfony\Component\Security\Core\User\AdvancedUserInterface;
-use Symfony\Component\Security\Core\User\EquatableInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\{EquatableInterface, UserInterface};
 
 /**
  * Clients
@@ -19,7 +17,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository")
  * @ORM\HasLifecycleCallbacks
  */
-class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAwareInterface
+class Clients implements UserInterface, EquatableInterface, EncoderAwareInterface
 {
     const TYPE_PERSON                 = 1;
     const TYPE_LEGAL_ENTITY           = 2;
@@ -1576,35 +1574,49 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
     }
 
     /**
-     * @inheritDoc
+     * @return bool
      */
-    public function isAccountNonExpired(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isCredentialsNonExpired(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isEnabled(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isAccountNonLocked(): bool
+    public function isGrantedLogin(): bool
     {
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LOGIN);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLenderRead()
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
+    }
+
+    /**
+     * @return bool
+     *
+     */
+    public function isGrantedLenderDeposit(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_DEPOSIT);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGrantedLenderWithDraw(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGreantedLenderSponsorship(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
+    }
+
+    public function isValidated() : bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_VALIDATED;
     }
 
     /**
@@ -1679,7 +1691,7 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
      */
     public function getSalt(): string
     {
-        return '';
+        return ''; // Since we use the BCrypt password encoder, the salt will be ignore. The auto-generated one is always the best.
     }
 
     /**
@@ -1705,5 +1717,4 @@ class Clients implements AdvancedUserInterface, EquatableInterface, EncoderAware
     {
         $this->encoderName = 'default';
     }
-
 }
