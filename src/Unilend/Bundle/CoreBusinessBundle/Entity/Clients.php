@@ -1660,6 +1660,10 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
             }
         }
 
+        if (false === $user->isGrantedLogin()) {
+            return false; // The client has been changed to a critical status. He/she is no longer the client that we known as he/she was.
+        }
+
         return true;
     }
 
