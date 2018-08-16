@@ -16,11 +16,11 @@ class UsersController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
-     * @param UserInterface|Clients $partnerUser
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function usersAction(UserInterface $partnerUser): Response
+    public function usersAction(?UserInterface $partnerUser): Response
     {
         $template                = ['users' => []];
         $entityManager           = $this->get('doctrine.orm.entity_manager');
@@ -34,7 +34,7 @@ class UsersController extends Controller
             $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
             $userData     = [
                 'client' => $client,
-                'role'   => $user->getRole() === Clients::ROLE_PARTNER_ADMIN ? 'admin' : 'agent',
+                'role'   => in_array(Clients::ROLE_PARTNER_ADMIN, $client->getRoles()) ? 'admin' : 'agent',
                 'entity' => $user->getIdCompany()
             ];
 
@@ -112,12 +112,12 @@ class UsersController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
-     * @param Request               $request
-     * @param UserInterface|Clients $partnerUser
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function userCreationAction(Request $request, UserInterface $partnerUser)
+    public function userCreationAction(Request $request, ?UserInterface $partnerUser)
     {
         $session = $request->getSession()->get('partnerUserCreation');
         $errors  = isset($session['errors']) ? $session['errors'] : [];

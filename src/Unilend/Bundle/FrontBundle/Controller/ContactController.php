@@ -25,7 +25,7 @@ class ContactController extends Controller
     public function contactAction(Request $request, ?UserInterface $client)
     {
         if ($client instanceof Clients) {
-            $template['formData'] = $this->getContactFormTemplateData($user);
+            $template['formData'] = $this->getContactFormTemplateData($client);
         }
 
         if ($request->request->has('message')) {
@@ -54,7 +54,7 @@ class ContactController extends Controller
 
         if (Request::METHOD_GET === $request->getMethod()) {
             if (null !== $query) {
-                $template['results'] = $this->getSearchResult($query, $user);
+                $template['results'] = $this->getSearchResult($query, $client);
             }
         }
 
@@ -110,7 +110,7 @@ class ContactController extends Controller
      *
      * @return array
      */
-    private function resultAction(string $query, ?Clients $client): array
+    private function getSearchResult(string $query, ?Clients $client): array
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');

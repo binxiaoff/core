@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\{
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 

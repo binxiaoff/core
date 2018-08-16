@@ -8,8 +8,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, Companies, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects,
-    ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus,
+    Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\core\Loader;
 
@@ -46,12 +46,12 @@ class ProjectRequestController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $partnerUser
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return RedirectResponse
      */
-    public function projectRequestFormAction(Request $request, UserInterface $partnerUser): RedirectResponse
+    public function projectRequestFormAction(Request $request, ?UserInterface $partnerUser): RedirectResponse
     {
         $translator            = $this->get('translator');
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
@@ -139,12 +139,12 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string                $hash
-     * @param UserInterface|Clients $partnerUser
+     * @param string                     $hash
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestEligibilityAction($hash, UserInterface $partnerUser): Response
+    public function projectRequestEligibilityAction($hash, ?UserInterface $partnerUser): Response
     {
         $project = $this->checkProjectHash($partnerUser, $hash);
 
@@ -200,13 +200,13 @@ class ProjectRequestController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string                $hash
-     * @param Request               $request
-     * @param UserInterface|Clients $partnerUser
+     * @param string                     $hash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestDetailsAction($hash, Request $request, UserInterface $partnerUser): Response
+    public function projectRequestDetailsAction($hash, Request $request, ?UserInterface $partnerUser): Response
     {
         $project = $this->checkProjectHash($partnerUser, $hash);
 
@@ -314,14 +314,14 @@ class ProjectRequestController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string                $hash
-     * @param Request               $request
-     * @param UserInterface|Clients $partnerUser
+     * @param string                     $hash
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function projectRequestDetailsFormAction($hash, Request $request, UserInterface $partnerUser): Response
+    public function projectRequestDetailsFormAction($hash, Request $request, ?UserInterface $partnerUser): Response
     {
         $project = $this->checkProjectHash($partnerUser, $hash);
 
@@ -481,11 +481,12 @@ class ProjectRequestController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestSubmitAction(Request $request)
+    public function projectRequestSubmitAction(Request $request, ?UserInterface $partnerUser)
     {
         $hash = $request->request->get('hash');
 
@@ -553,11 +554,12 @@ class ProjectRequestController extends Controller
      * @Route("partenaire/depot/fin/{hash}", name="partner_project_request_end", requirements={"hash":"[a-z0-9-]{32,36}"})
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param string $hash
+     * @param string                     $hash
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestEndAction($hash)
+    public function projectRequestEndAction(string $hash, ?UserInterface $partnerUser): Response
     {
         $project = $this->checkProjectHash($partnerUser, $hash);
 

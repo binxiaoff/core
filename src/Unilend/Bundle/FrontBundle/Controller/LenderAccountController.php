@@ -5,9 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 
 class LenderAccountController extends Controller
 {

@@ -14,11 +14,11 @@ class StatisticsController extends Controller
      * @Route("partenaire/performance", name="partner_statistics")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param UserInterface|Clients $partnerUser
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function statisticsAction(UserInterface $partnerUser)
+    public function statisticsAction(?UserInterface $partnerUser)
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $partnerManager     = $this->get('unilend.service.partner_manager');

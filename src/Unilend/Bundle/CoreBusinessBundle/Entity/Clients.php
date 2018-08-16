@@ -1614,9 +1614,14 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
     }
 
-    public function isValidated() : bool
+    public function isValidated(): bool
     {
         return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_VALIDATED;
+    }
+
+    public function isInCompleteness(): bool
+    {
+        return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
     }
 
     /**

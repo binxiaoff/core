@@ -207,7 +207,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType        = ($client->getIdPaysNaissance() == NationalitesV2::NATIONALITY_FRENCH) ? Clients::TYPE_PERSON : Clients::TYPE_PERSON_FOREIGNER;
-            $password          = $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
+            $password          = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
             $slug              = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
             $newsletterConsent = $client->getOptin1() ? Clients::NEWSLETTER_OPT_IN_ENROLLED : Clients::NEWSLETTER_OPT_IN_NOT_ENROLLED;
 
@@ -299,7 +299,7 @@ class LenderSubscriptionController extends Controller
 
         if ($isValidCaptcha && $form->isValid()) {
             $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-            $password   = $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
+            $password   = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
             $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
             $client
@@ -521,7 +521,7 @@ class LenderSubscriptionController extends Controller
         }
 
         try {
-            $this->get(UserPasswordEncoderInterface::class)->encodePassword($client, $client->getPassword());
+            $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
         } catch (\Exception $exception) {
             $form->get('client')->get('password')->addError(new FormError($translator->trans('common-validator_password-invalid')));
         }

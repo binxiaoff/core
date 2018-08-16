@@ -561,7 +561,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessAction(?UserInterface $client): Response
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
+        if (false === $client->isInCompleteness()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -689,7 +689,7 @@ class LenderProfileController extends Controller
      */
     public function lenderCompletenessFormAction(Request $request, ?UserInterface $client): RedirectResponse
     {
-        if (false === in_array($client->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER])) {
+        if (false === $client->isInCompleteness()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 

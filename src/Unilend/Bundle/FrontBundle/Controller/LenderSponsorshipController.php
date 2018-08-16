@@ -13,9 +13,7 @@ use Symfony\Component\HttpFoundation\{
 };
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 
 class LenderSponsorshipController extends Controller

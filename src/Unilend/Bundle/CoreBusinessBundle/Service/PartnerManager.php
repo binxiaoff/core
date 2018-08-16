@@ -57,7 +57,7 @@ class PartnerManager
      */
     public function getPartner(Clients $client): ?Partner
     {
-        if (false === $client->isPartner() || $client->getCompanyClient()) {
+        if (false === $client->isPartner() || empty($client->getCompanyClient())) {
             return null;
         }
 

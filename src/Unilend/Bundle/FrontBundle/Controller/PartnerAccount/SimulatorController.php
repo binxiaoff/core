@@ -14,11 +14,11 @@ class SimulatorController extends Controller
      * @Route("partenaire/simulateur-cout", name="partner_cost_simulator")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param UserInterface|Clients $partnerUser
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function simulatorAction(UserInterface $partnerUser)
+    public function simulatorAction(?UserInterface $partnerUser)
     {
         $partnerManager          = $this->get('unilend.service.partner_manager');
         $partner                 = $partnerManager->getPartner($partnerUser);

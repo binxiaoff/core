@@ -128,7 +128,7 @@ class UserExtension extends \Twig_Extension
      */
     public function getPartner(Clients $client): Partner
     {
-        if ($client instanceof Clients && false === $client->isPartner()) {
+        if ($client instanceof Clients && $client->isPartner()) {
             $partner = $this->partnerManager->getPartner($client);
         }
 

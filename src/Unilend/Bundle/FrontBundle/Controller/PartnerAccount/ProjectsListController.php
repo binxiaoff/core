@@ -17,11 +17,11 @@ class ProjectsListController extends Controller
      * @Method("GET")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param UserInterface|Clients $partnerUser
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectsListAction(UserInterface $partnerUser)
+    public function projectsListAction(?UserInterface $partnerUser)
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $partnerManager = $this->get('unilend.service.partner_manager');
@@ -68,12 +68,12 @@ class ProjectsListController extends Controller
      * @Method("POST")
      * @Security("has_role('ROLE_PARTNER')")
      *
-     * @param Request $request
-     * @param UserInterface|Clients $partnerUser
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectRequestDetailsFormAction(Request $request, UserInterface $partnerUser)
+    public function projectRequestDetailsFormAction(Request $request, ?UserInterface $partnerUser)
     {
         $hash = $request->request->getAlnum('hash');
 
