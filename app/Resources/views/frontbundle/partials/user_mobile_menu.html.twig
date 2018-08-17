@@ -16,7 +16,7 @@
             <ul class="site-user-nav-menu">
                 {% if is_granted('ROLE_LENDER') %}
                    {% if app.user.getIdClientStatusHistory().getIdStatus().getId() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') %}
-                        {% if notifications(app.user)|length > 0 %}
+                        {% if lenderNotifications(app.user)|length > 0 %}
                             <li role="presentation" class="user-nav-major user-nav-dashboard ">
                                 <a href="javascript:;" class="ui-open-usernotificationsdrop">
                                     <span class="icon fa-bell-u32"></span>

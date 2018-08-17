@@ -295,7 +295,11 @@ class ProjectManager
     public function getOverdueAmounts(Projects $project): array
     {
         if (null === $project->getCloseOutNettingDate()) {
-            $overdueAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
+            try {
+                $overdueAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getTotalOverdueAmounts($project);
+            } catch (NoResultException $exception) {
+                $overdueAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+            }
         } else {
             $overdueAmounts = $this->getCloseOutNettingRemainingAmounts($project);
         }
@@ -311,7 +315,11 @@ class ProjectManager
     public function getRemainingAmounts(Projects $project): array
     {
         if (null === $project->getCloseOutNettingDate()) {
-            $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+            try {
+                $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+            } catch (NoResultException $exception) {
+                $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+            }
         } else {
             $remainingAmounts = $this->getCloseOutNettingRemainingAmounts($project);
         }

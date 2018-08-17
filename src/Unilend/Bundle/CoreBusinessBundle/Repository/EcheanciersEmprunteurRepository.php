@@ -128,9 +128,10 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      * @param Projects|int   $project
      * @param \DateTime|null $date
      *
-     * @return mixed
+     * @return array
+     * @throws \Doctrine\ORM\NoResultException
      */
-    public function getTotalOverdueAmounts($project, $date = null)
+    public function getTotalOverdueAmounts($project, ?\DateTime $date = null): array
     {
         if (null === $date) {
             $date = new \DateTime();
@@ -151,11 +152,12 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|int $project
+     * @param $project
      *
      * @return array
+     * @throws \Doctrine\ORM\NoResultException
      */
-    public function getRemainingAmountsByProject($project)
+    public function getRemainingAmountsByProject($project): array
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select(

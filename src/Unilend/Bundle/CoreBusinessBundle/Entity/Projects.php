@@ -1520,7 +1520,10 @@ class Projects
      */
     public function getMandates()
     {
-        return $this->mandates;
+        $criteria = Criteria::create();
+        $criteria->orderBy(['updated' => 'DESC']);
+
+        return $this->mandates->matching($criteria);
     }
 
     /**

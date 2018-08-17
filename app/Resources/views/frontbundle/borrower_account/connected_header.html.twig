@@ -24,7 +24,7 @@
                             <div class="profile-name">{% trans with {'%firstName%' : app.user.getPrenom()} %} borrower-header_greeting {% endtrans %}</div>
 
                             <div class="profile-balance">
-                                <span>{% trans with {'%balance%' : balance(app.user)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</span>
+                                <span>{% trans with {'%balance%' : walletBalance(app.user)|localizedcurrency('EUR')} %} header-connected_balance {% endtrans %}</span>
                             </div><!-- /.profile-balance -->
 
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{{ 'borrower-header_logout'|trans }}</span></a>

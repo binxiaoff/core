@@ -111,7 +111,7 @@
         {% block jsFiles %}
             <script type="text/javascript">
                 {% set notifications = [] %}
-                {% set lenderNotifications = notifications(app.user) %}
+                {% set lenderNotifications = lenderNotifications(app.user) %}
                 {% if lenderNotifications is not empty %}
                     {% for notification in lenderNotifications %}
                         {% set notifications = notifications|merge([{

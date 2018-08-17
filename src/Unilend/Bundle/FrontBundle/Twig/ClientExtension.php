@@ -13,7 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
-class UserExtension extends \Twig_Extension
+class ClientExtension extends \Twig_Extension
 {
     /** @var EntityManager */
     private $entityManager;
@@ -58,8 +58,8 @@ class UserExtension extends \Twig_Extension
         return array(
             new \Twig_SimpleFunction('lenderLevel', [$this, 'getLenderDiversificationLevel']),
             new \Twig_SimpleFunction('partner', [$this, 'getPartner']),
-            new \Twig_SimpleFunction('balance', [$this, 'getBalance']),
-            new \Twig_SimpleFunction('notifications', [$this, 'getLenderNotifications'])
+            new \Twig_SimpleFunction('walletBalance', [$this, 'getBalance']),
+            new \Twig_SimpleFunction('lenderNotifications', [$this, 'getLenderNotifications'])
         );
     }
 

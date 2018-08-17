@@ -123,7 +123,7 @@
         <span class="ui-draggable-handle"></span>
     {% endblock %}
     {% block panelContent %}
-        {% set availableBalance = balance(app.user) %}
+        {% set availableBalance = walletBalance(app.user) %}
         {% if lenderDetails.companiesLenderInvestedIn > 0 or availableBalance > 0 %}
             <div class="dashboard-panel-overview">
                 <div class="label">{% trans %} lender-dashboard-account_balance-title {% endtrans %}</div>

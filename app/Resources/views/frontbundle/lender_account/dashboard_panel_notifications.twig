@@ -1,5 +1,5 @@
 {# Dashboard Panel Notifications #}
-{% set lenderNotifications = notifications(app.user) %}
+{% set lenderNotifications = lenderNotifications(app.user) %}
 {% if lenderNotifications|length > 0 %}
     {% embed 'lender_account/dashboard_panel.html.twig' %}
         {# Panel classes #}
