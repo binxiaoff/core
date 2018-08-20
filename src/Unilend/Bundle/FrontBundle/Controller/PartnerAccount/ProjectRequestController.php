@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, Companies, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus,
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BorrowingMotive, Clients, ClientsStatus, CompanyClient, PartnerProjectAttachment, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus,
     Users};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\core\Loader;
@@ -83,8 +83,12 @@ class ProjectRequestController extends Controller
 
             /** @var Users $frontUser */
             $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
-            /** @var Companies $partnerCompany */
-            $partnerCompany = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $partnerUser]);
+            /** @var CompanyClient $partnerRole */
+            $partnerRole    = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyClient')->findOneBy(['idClient' => $partnerUser]);
+            $partnerCompany = null;
+            if ($partnerRole) {
+                $partnerCompany = $partnerRole->getIdCompany();
+            }
 
             $project = $projectRequestManager->newProject($frontUser, $partnerManager->getPartner($partnerUser), ProjectsStatus::SIMULATION, $amount, $siren, $siret, $companyName, null, $duration, $reason);
             $project
