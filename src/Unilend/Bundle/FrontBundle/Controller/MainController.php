@@ -3,32 +3,21 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Doctrine\ORM\{
-    EntityManager, OptimisticLockException
-};
+use Doctrine\ORM\{EntityManager, OptimisticLockException};
 use Psr\Log\LoggerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Sonata\SeoBundle\Seo\SeoPage;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    NewsletterManager, ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, OffresBienvenues, ProjectsStatus, Tree, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{NewsletterManager, ProjectManager, ProjectRequestManager, StatisticsManager, WelcomeOfferManager};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Service\{
-    ContentManager, ProjectDisplayManager, SourceManager, TestimonialManager
-};
+use Unilend\Bundle\FrontBundle\Service\{ContentManager, ProjectDisplayManager, SourceManager, TestimonialManager};
 use Unilend\core\Loader;
 
 class MainController extends Controller
@@ -45,9 +34,10 @@ class MainController extends Controller
 
     /**
      * @Route("/", name="home")
+     *
      * @return Response
      */
-    public function homeAction()
+    public function homeAction(): Response
     {
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
@@ -74,9 +64,10 @@ class MainController extends Controller
 
     /**
      * @Route("/preter", name="home_lender")
+     *
      * @return Response
      */
-    public function homeLenderAction()
+    public function homeLenderAction(): Response
     {
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         $entityManager         = $this->get('doctrine.orm.entity_manager');
@@ -119,9 +110,10 @@ class MainController extends Controller
 
     /**
      * @Route("/emprunter", name="home_borrower")
+     *
      * @return Response
      */
-    public function homeBorrowerAction()
+    public function homeBorrowerAction(): Response
     {
         $projectManager        = $this->get('unilend.service.project_manager');
         $testimonialService    = $this->get('unilend.frontbundle.service.testimonial_manager');
@@ -144,13 +136,13 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/simulateur-projet-etape1", name="project_simulator")
-     * @Method("POST")
+     * @Route("/simulateur-projet-etape1", name="project_simulator", methods={"POST"})
      *
      * @param Request $request
+     *
      * @return Response
      */
-    public function projectSimulatorStepOneAction(Request $request)
+    public function projectSimulatorStepOneAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             $period   = $request->request->getInt('period');
@@ -191,13 +183,13 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/simulateur-projet", name="project_simulator_form")
-     * @Method("POST")
+     * @Route("/simulateur-projet", name="project_simulator_form", methods={"POST"})
      *
      * @param Request $request
+     *
      * @return RedirectResponse
      */
-    public function projectSimulatorStepTwoAction(Request $request)
+    public function projectSimulatorStepTwoAction(Request $request): RedirectResponse
     {
         $formData = $request->request->get('esim');
         $session  = $request->getSession();
@@ -261,9 +253,10 @@ class MainController extends Controller
      * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
      *
      * @param string $type
+     *
      * @return Response
      */
-    public function lenderTermsOfSalesAction($type = '')
+    public function lenderTermsOfSalesAction(string $type = ''): Response
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -295,9 +288,10 @@ class MainController extends Controller
 
     /**
      * @param Request $request
+     *
      * @return Response
      */
-    public function cmsAction(Request $request)
+    public function cmsAction(Request $request): Response
     {
         /** @var EntityManagerSimulator $entityManager */
         $entityManager = $this->get('unilend.service.entity_manager');
@@ -355,9 +349,10 @@ class MainController extends Controller
 
     /**
      * @param array $content
+     *
      * @return Response
      */
-    private function renderCmsBigHeader(array $content)
+    private function renderCmsBigHeader(array $content): Response
     {
         $cms = [
             'title'         => $content['titre'],
@@ -374,9 +369,10 @@ class MainController extends Controller
      * @param array         $content
      * @param EntityManagerSimulator $entityManager
      * @param string|null   $pageId
+     *
      * @return Response
      */
-    private function renderCmsNav(\tree $currentPage, array $content, EntityManagerSimulator $entityManager, $pageId = null)
+    private function renderCmsNav(\tree $currentPage, array $content, EntityManagerSimulator $entityManager, ?string $pageId = null): Response
     {
         /** @var \tree $pages */
         $pages = $entityManager->getRepository('tree');
@@ -434,11 +430,11 @@ class MainController extends Controller
      *
      * @return Response
      */
-    private function renderBorrowerLandingPage(Request $request, array $content, array $complement)
+    private function renderBorrowerLandingPage(Request $request, array $content, array $complement): Response
     {
         $borrowingReasons = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:BorrowingMotive')->findBy([], ['rank' => 'ASC']);
         $sessionHandler   = $request->getSession();
-        $isPartnerFunnel  = $content['tunnel-partenaire'] == 1;
+        $isPartnerFunnel  = isset($content['tunnel-partenaire']) ? $content['tunnel-partenaire'] == 1 : false;
 
         if ($isPartnerFunnel) {
             $sourceManager = $this->get('unilend.frontbundle.service.source_manager');
@@ -458,7 +454,7 @@ class MainController extends Controller
                     'amount'           => empty($sessionHandler->get('projectRequest')['values']['amount']) ? (empty($request->query->getInt('montant')) ? '' : $request->query->get('montant')) : $sessionHandler->get('projectRequest')['values']['amount'],
                     'siren'            => empty($sessionHandler->get('projectRequest')['values']['siren']) ? (empty($request->query->getInt('siren')) ? '' : $request->query->get('siren')) : $sessionHandler->get('projectRequest')['values']['siren'],
                     'email'            => empty($sessionHandler->get('projectRequest')['values']['email']) ? (empty($request->query->get('email')) ? '' : filter_var($request->query->get('email'), FILTER_SANITIZE_EMAIL)) : $sessionHandler->get('projectRequest')['values']['email'],
-                    'partner'          => $content['partenaire'],
+                    'partner'          => $content['partenaire'] ?? '',
                     'reasons'          => $borrowingReasons,
                     'availablePeriods' => $this->get('unilend.service.project_manager')->getPossibleProjectPeriods(),
                 ],
@@ -489,7 +485,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    private function renderTermsOfUse(\tree $tree, $lenderType = '')
+    private function renderTermsOfUse(\tree $tree, string $lenderType = ''): Response
     {
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
         /** @var EntityManager $entityManager */
@@ -669,9 +665,10 @@ class MainController extends Controller
 
     /**
      * @param string $route
+     *
      * @return Response
      */
-    public function footerAction($route)
+    public function footerAction(string $route): Response
     {
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');
@@ -685,7 +682,7 @@ class MainController extends Controller
     /**
      * @return Response
      */
-    public function footerReviewsAction()
+    public function footerReviewsAction(): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -729,7 +726,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function aboutUsAction()
+    public function aboutUsAction(): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -752,10 +749,11 @@ class MainController extends Controller
      * @Route("/statistiques", name="statistics")
      * @Route("/statistiques/{requestedDate}", name="historic_statistics", requirements={"requestedDate": "20[0-9]{2}-[0-9]{2}-[0-9]{2}"})
      *
-     * @param  string $requestedDate
+     * @param string|null $requestedDate
+     *
      * @return Response
      */
-    public function statisticsAction($requestedDate = null)
+    public function statisticsAction(?string $requestedDate = null): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -800,12 +798,11 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/indicateurs-de-performance", name="statistics_fpf")
-     * @Method("GET")
+     * @Route("/indicateurs-de-performance", name="statistics_fpf", methods={"GET"})
      *
      * @return Response
      */
-    public function statisticsFpfAction(Request $request)
+    public function statisticsFpfAction(Request $request): Response
     {
         $now         = new \DateTime('NOW');
         $publishDate = new \DateTime('First day of November 2017');
@@ -867,7 +864,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function lenderFaqAction()
+    public function lenderFaqAction(): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -884,7 +881,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function borrowerFaqAction()
+    public function borrowerFaqAction(): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -902,7 +899,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function siteMapAction()
+    public function siteMapAction(): Response
     {
         /** @var EntityManagerSimulator $entityManagerSimulator */
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -931,7 +928,7 @@ class MainController extends Controller
      *
      * @return JsonResponse|Response
      */
-    public function lastTermsOfServiceAction(Request $request)
+    public function lastTermsOfServiceAction(Request $request): Response
     {
         $entityManager          = $this->get('doctrine.orm.entity_manager');
         $entityManagerSimulator = $this->get('unilend.service.entity_manager');
@@ -1015,7 +1012,7 @@ class MainController extends Controller
      *
      * @return Response
      */
-    public function testimonialAction()
+    public function testimonialAction(): Response
     {
         /** @var TestimonialManager $testimonialService */
         $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
@@ -1042,7 +1039,7 @@ class MainController extends Controller
      *
      * @return array
      */
-    private function getProjectCountForCategoryTreeMap(array $countByCategory)
+    private function getProjectCountForCategoryTreeMap(array $countByCategory): array
     {
         /** @var TranslatorInterface $translator */
         $translator     = $this->get('translator');

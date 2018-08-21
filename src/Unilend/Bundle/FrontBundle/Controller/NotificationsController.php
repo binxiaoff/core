@@ -2,24 +2,18 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Security, Method
-};
-use Symfony\Component\HttpFoundation\{
-    Request, JsonResponse
-};
 use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class NotificationsController extends Controller
 {
     /**
-     * @Route("/notifications/update", name="notifications_update")
+     * @Route("/notifications/update", name="notifications_update", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
-     * @Method("POST")
-     *
      * @param Request $request
      *
      * @return JsonResponse
@@ -65,9 +59,8 @@ class NotificationsController extends Controller
     }
 
     /**
-     * @Route("/notifications/pagination", name="notifications_pagination")
+     * @Route("/notifications/pagination", name="notifications_pagination", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
-     * @Method("GET")
      *
      * @param Request $request
      *

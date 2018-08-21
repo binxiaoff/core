@@ -2,31 +2,28 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsHistoryActions, ClientsStatus, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsHistoryActions, ClientsStatus, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\GoogleRecaptchaManager;
-use Unilend\Bundle\FrontBundle\Security\{
-    BCryptPasswordEncoder, LoginAuthenticator
-};
+use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, LoginAuthenticator};
 
 class SecurityController extends Controller
 {
     /**
      * @Route("/login", name="login")
+     *
+     * @param Request $request
+     *
+     * @return RedirectResponse|Response
      */
-    public function loginAction(Request $request)
+    public function loginAction(Request $request): Response
     {
         if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')) {
             return $this->redirectToRoute('home');
@@ -73,14 +70,13 @@ class SecurityController extends Controller
      * In order not to disclose personal information (existence of account on the platform),
      * success message is always displayed, except for invalid email format or CSRF token
      *
-     * @Route("/pwd", name="pwd_forgotten")
-     * @Method("POST")
+     * @Route("/pwd", name="pwd_forgotten", methods={"POST"})
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function handlePasswordForgottenAction(Request $request) : Response
+    public function handlePasswordForgottenAction(Request $request): Response
     {
         if (false === $request->isXmlHttpRequest()) {
             return new Response('not an ajax request');
@@ -248,7 +244,7 @@ class SecurityController extends Controller
      *
      * @return Response
      */
-    public function passwordForgottenAction(string $securityToken) : Response
+    public function passwordForgottenAction(string $securityToken): Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
@@ -275,15 +271,15 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/nouveau-mot-de-passe/submit/{securityToken}", name="save_new_password", requirements={"securityToken": "[a-z0-9]{32}"})
-     * @Method("POST")
+     * @Route("/nouveau-mot-de-passe/submit/{securityToken}", name="save_new_password",
+     *     requirements={"securityToken": "[a-z0-9]{32}"}, methods={"POST"})
      *
      * @param string  $securityToken
      * @param Request $request
      *
      * @return Response
      */
-    public function changePasswordFormAction(string $securityToken, Request $request) : Response
+    public function changePasswordFormAction(string $securityToken, Request $request): Response
     {
         $entityManager = $this->get('unilend.service.entity_manager');
 
@@ -371,10 +367,13 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/security/ajax/password", name="security_ajax_password")
-     * @Method("POST")
+     * @Route("/security/ajax/password", name="security_ajax_password", methods={"POST"})
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse|Response
      */
-    public function checkPassWordComplexityAction(Request $request)
+    public function checkPassWordComplexityAction(Request $request): Response
     {
         if ($request->isXmlHttpRequest()) {
             /** @var TranslatorInterface $translator */

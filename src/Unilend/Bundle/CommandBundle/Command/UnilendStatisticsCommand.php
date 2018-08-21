@@ -68,8 +68,11 @@ class UnilendStatisticsCommand extends ContainerAwareCommand
         return in_array($today->format('d-m'), $startOfQuarterDays);
     }
 
-
-    private function logException(string $statistic, \Exception $exception)
+    /**
+     * @param string     $statistic
+     * @param \Exception $exception
+     */
+    private function logException(string $statistic, \Exception $exception): void
     {
         $this->getContainer()->get('logger')->error('Could not calculate ' . $statistic . '. Exception: ' . $exception->getMessage(), [
             'file'     => $exception->getFile(),

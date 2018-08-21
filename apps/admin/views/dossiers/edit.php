@@ -1178,7 +1178,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                         <option value=""></option>
                                         <?php foreach ($this->projectAbandonReasonList as $abandonReason) : ?>
                                             <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAbandonReason $abandonReason */ ?>
-                                            <option value="<?= $abandonReason->getIdAbandon() ?>"><?= $abandonReason->getReason() ?></option>
+                                            <option value="<?= $abandonReason->getIdAbandon() ?>" title="<?= htmlentities($abandonReason->getDescription()) ?>" class="tooltip"><?= $abandonReason->getReason() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

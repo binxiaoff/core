@@ -2,19 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment
-};
-use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{
-    BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment};
+use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType};
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler;
 

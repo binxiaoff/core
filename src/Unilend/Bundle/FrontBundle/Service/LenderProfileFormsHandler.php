@@ -5,19 +5,11 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\OptimisticLockException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Form\{
-    FormError, FormInterface
-};
-use Symfony\Component\HttpFoundation\{
-    File\UploadedFile, FileBag
-};
+use Symfony\Component\Form\{FormError, FormInterface};
+use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, PaysV2, Users, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class LenderProfileFormsHandler
@@ -302,7 +294,7 @@ class LenderProfileFormsHandler
         $newAttachments = $this->uploadPersonAddressDocument($client, $form, $fileBag, $type);
 
         if ($this->isFormValid($form)) {
-            $this->savePersonAddress($client, $form, $type, $clientAddress, $newAttachments);
+            $this->savePersonAddress($client, $form, $type, $newAttachments);
 
             if ($form->has('noUsPerson')) {
                 $form->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
@@ -422,16 +414,15 @@ class LenderProfileFormsHandler
     }
 
     /**
-     * @param Clients            $client
-     * @param FormInterface      $form
-     * @param string             $type
-     * @param null|ClientAddress $clientAddress
-     * @param array              $newAttachments
+     * @param Clients       $client
+     * @param FormInterface $form
+     * @param string        $type
+     * @param array         $newAttachments
      *
      * @throws OptimisticLockException
      * @throws \Exception
      */
-    private function savePersonAddress(Clients $client, FormInterface $form, string $type, ?ClientAddress $clientAddress, array $newAttachments)
+    private function savePersonAddress(Clients $client, FormInterface $form, string $type, array $newAttachments): void
     {
         if ($form->has('samePostalAddress') && $form->get('samePostalAddress')->getData()) {
             $this->addressManager->clientPostalAddressSameAsMainAddress($client);
@@ -455,7 +446,11 @@ class LenderProfileFormsHandler
         }
 
         if (AddressType::TYPE_MAIN_ADDRESS === $type && $housingCertificate) {
-            $this->addressManager->linkAttachmentToAddress($clientAddress, $housingCertificate);
+            $lastModifiedAddress = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+                ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+
+            $this->addressManager->linkAttachmentToAddress($lastModifiedAddress, $housingCertificate);
         }
     }
 
@@ -787,15 +782,18 @@ class LenderProfileFormsHandler
         $addressForm         = $form->get($addressType);
         $bankForm            = $form->get('bankAccount');
         $modifiedAddressType = null;
+        $newAttachments      = [];
 
         // Identity
-        $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $identityAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $newAttachments      = $identityAttachments + $newAttachments;
 
         // Address
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
         if ($isAddressModified) {
             $this->checkAddressForm($addressForm, $addressType);
-            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType), $newAttachments);
+            $housingAttachments  = $this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType);
+            $newAttachments      = $housingAttachments + $newAttachments;
             $modifiedAddressType = $addressType;
         }
 
@@ -811,7 +809,7 @@ class LenderProfileFormsHandler
 
         if ($form->isValid()) {
             if ($isAddressModified) {
-                $this->savePersonAddress($client, $addressForm, $addressType, $clientAddress, $newAttachments);
+                $this->savePersonAddress($client, $addressForm, $addressType, $newAttachments);
             }
 
             $addressForm->get('noUsPerson')->getData() ? $client->setUsPerson(false) : $client->setUsPerson(true);
