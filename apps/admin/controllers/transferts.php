@@ -612,6 +612,8 @@ class transfertsController extends bootstrap
             $projectStatusManager = $this->get('unilend.service.project_status_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
             $mailerManager = $this->get('unilend.service.email_manager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender $acceptedLoanNotificationSender */
+            $acceptedLoanNotificationSender = $this->get(\Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender::class);
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $notificationManager */
             $notificationManager = $this->get('unilend.service.notification_manager');
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\OperationManager $operationManager */
@@ -720,7 +722,7 @@ class transfertsController extends bootstrap
                     }
                 }
 
-                $mailerManager->sendLoanAccepted($project);
+                $acceptedLoanNotificationSender->sendLoanAccepted($project);
                 $mailerManager->sendBorrowerBill($project);
 
                 $_SESSION['freeow']['title']   = 'Déblocage des fonds';

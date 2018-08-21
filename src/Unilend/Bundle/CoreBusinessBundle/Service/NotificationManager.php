@@ -247,4 +247,21 @@ class NotificationManager
         }
     }
 
+    /**
+     * Method placed here in order to reduce use of EntityManagerSimulator
+     * in new code (which will reduce migration cost)
+     *
+     * @param int    $clientId
+     * @param string $type
+     * @param string $frequency
+     *
+     * @return bool
+     */
+    public function getNotif(int $clientId, string $type, string $frequency): bool
+    {
+        /** @var \clients_gestion_notifications $clientNotifications */
+        $clientNotifications = $this->entityManagerSimulator->getRepository('clients_gestion_notifications');
+
+        return $clientNotifications->getNotif($clientId, $type, $frequency);
+    }
 }

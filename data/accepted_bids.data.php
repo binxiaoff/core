@@ -106,18 +106,5 @@ class accepted_bids extends accepted_bids_crud
         return $result;
     }
 
-    public function getDistinctBidsForLenderAndProject($iLenderId, $iProjectId)
-    {
-        $sql = 'SELECT
-                    COUNT(ab.id_bid)
-                FROM
-                    accepted_bids ab
-                    INNER JOIN loans l ON l.id_loan = ab.id_loan
-                WHERE
-                    l.id_lender = ' . $iLenderId . '
-                     AND l.id_project = ' . $iProjectId;
 
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
-    }
 }
