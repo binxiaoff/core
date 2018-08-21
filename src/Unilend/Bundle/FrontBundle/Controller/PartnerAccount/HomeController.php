@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Route, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends Controller
 {
@@ -14,7 +15,7 @@ class HomeController extends Controller
      *
      * @return Response
      */
-    public function homeAction()
+    public function homeAction(): Response
     {
         return $this->render('/partner_account/home.html.twig');
     }

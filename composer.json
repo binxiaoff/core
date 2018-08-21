@@ -30,7 +30,7 @@
     "phpxmlrpc/phpxmlrpc": "^4.3",
     "phpoffice/phpexcel": "1.8.*",
     "mailjet/mailjet-apiv3-php": "^1.1",
-    "symfony/symfony": "3.3.*",
+    "symfony/symfony": "3.4.*",
     "symfony/swiftmailer-bundle": "^3.1",
     "symfony/monolog-bundle": "^3.1",
     "doctrine/doctrine-bundle": "^1.8",
@@ -38,7 +38,7 @@
     "cache/adapter-bundle": "^1.1",
     "cache/memcache-adapter": "^1.0",
     "sensio/distribution-bundle": "^5.0",
-    "sensio/framework-extra-bundle": "^5.1",
+    "sensio/framework-extra-bundle": "^5.2",
     "incenteev/composer-parameter-handler": "^2.0",
     "facile-it/doctrine-mysql-come-back": "^1.6",
     "symfony-cmf/routing-bundle": "^2.0",
@@ -46,7 +46,7 @@
     "xynnn/google-tag-manager-bundle": "^2.0",
     "sonata-project/seo-bundle": "^2.0",
     "ekino/newrelic-bundle": "^1.4",
-    "sonata-project/cache-bundle": "^2.3",
+    "sonata-project/cache-bundle": "^2.4",
     "knplabs/mailjet-api-php": "v2.x-dev",
     "knplabs/knp-mailjet-bundle": "v2.x-dev",
     "cleentfaar/slack-bundle": "^0.20.1",
@@ -68,7 +68,6 @@
     "azuyalabs/yasumi": "^1.8"
   },
   "require-dev": {
-    "sensio/generator-bundle": "^3.0"
   },
   "scripts": {
     "symfony-scripts": [

@@ -18,7 +18,7 @@ class ExceptionController extends Controller
      *
      * @return Response
      */
-    public function error404Action() : Response
+    public function error404Action(): Response
     {
         $seoPage = $this->container->get('sonata.seo.page');
         $seoPage->addMeta('name', 'robots', 'noindex');
@@ -42,7 +42,7 @@ class ExceptionController extends Controller
      *
      * @return Response
      */
-    public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null) : Response
+    public function showAction(Request $request, FlattenException $exception, DebugLoggerInterface $logger = null): Response
     {
         if ($logger instanceof LoggerInterface) {
             try {
@@ -90,7 +90,7 @@ class ExceptionController extends Controller
      *
      * @return string
      */
-    private function getAndCleanOutputBuffering(int $startObLevel) : string
+    private function getAndCleanOutputBuffering(int $startObLevel): string
     {
         if (ob_get_level() <= $startObLevel) {
             return '';
@@ -108,7 +108,7 @@ class ExceptionController extends Controller
      *
      * @return string
      */
-    private function findTemplate(Request $request, string $format, bool $showException) : string
+    private function findTemplate(Request $request, string $format, bool $showException): string
     {
         $name = $showException ? 'exception' : 'error';
         if ($showException && 'html' == $format) {
@@ -132,7 +132,7 @@ class ExceptionController extends Controller
      *
      * @return bool
      */
-    private function templateExists(string $template) : bool
+    private function templateExists(string $template): bool
     {
         $template = (string) $template;
 

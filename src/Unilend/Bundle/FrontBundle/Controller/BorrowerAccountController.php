@@ -3,25 +3,15 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Template
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    RedirectResponse, Request, Response, StreamedResponse
-};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response, StreamedResponse};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    BorrowerOperationsManager, ProjectStatusManager
-};
-use Unilend\Bundle\FrontBundle\Form\{
-    BorrowerContactType, SimpleProjectType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 
 class BorrowerAccountController extends Controller
@@ -34,7 +24,7 @@ class BorrowerAccountController extends Controller
      *
      * @return array
      */
-    public function projectsAction(Request $request)
+    public function projectsAction(Request $request): array
     {
         $projectsPreFunding  = $this->getProjectsPreFunding();
         $projectsFunding     = $this->getProjectsFunding();
@@ -49,14 +39,13 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project")
-     * @Method("POST")
+     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project", methods={"POST"})
      *
      * @param Request $request
      *
      * @return RedirectResponse
      */
-    public function closeFundingProjectAction(Request $request)
+    public function closeFundingProjectAction(Request $request): RedirectResponse
     {
         if ($request->request->get('project')) {
             /** @var \projects $project */
@@ -162,7 +151,7 @@ class BorrowerAccountController extends Controller
      *
      * @return Response
      */
-    public function operationsAction(Request $request)
+    public function operationsAction(Request $request): Response
     {
         if ($request->query->get('action') === 'export') {
             return $this->operationsExportCsv($request);
@@ -286,7 +275,7 @@ class BorrowerAccountController extends Controller
      *
      * @return array
      */
-    public function profileAction()
+    public function profileAction(): array
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $client         = $this->getClient();
@@ -306,7 +295,7 @@ class BorrowerAccountController extends Controller
      *
      * @return array
      */
-    public function contactAction(Request $request)
+    public function contactAction(Request $request): array
     {
         $company = $this->getCompany();
 
@@ -417,7 +406,7 @@ class BorrowerAccountController extends Controller
      *
      * @return StreamedResponse
      */
-    private function operationsExportCsv(Request $request)
+    private function operationsExportCsv(Request $request): StreamedResponse
     {
         $client              = $this->getClient();
         $projectsPostFunding = $this->getProjectsPostFunding();
@@ -479,7 +468,7 @@ class BorrowerAccountController extends Controller
      *
      * @return Response
      */
-    private function operationsPrint(Request $request)
+    private function operationsPrint(Request $request): Response
     {
         $filter = $request->query->get('filter');
         if (
@@ -542,7 +531,7 @@ class BorrowerAccountController extends Controller
      *
      * @return StreamedResponse
      */
-    public function exportCsvWithLenderDetailsAction($type, $projectId, $repaymentOrder)
+    public function exportCsvWithLenderDetailsAction(string $type, int $projectId, ?int $repaymentOrder): StreamedResponse
     {
         /** @var \projects $project */
         $project = $this->get('unilend.service.entity_manager')->getRepository('projects');

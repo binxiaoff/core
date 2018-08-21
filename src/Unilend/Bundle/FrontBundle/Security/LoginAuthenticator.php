@@ -137,12 +137,8 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
     /**
      * @inheritDoc
      */
-    public function getCredentials(Request $request)
+    public function getCredentials(Request $request): array
     {
-        if ($request->getPathInfo() != '/login-check') {
-            return null;
-        }
-
         $username       = $request->request->get('_username');
         $password       = $request->request->get('_password');
         $csrfToken      = $request->request->get('_csrf_token');
@@ -418,5 +414,13 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         }
 
         return $targetPath;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function supports(Request $request): bool
+    {
+        return $request->getPathInfo() == '/login-check';
     }
 }

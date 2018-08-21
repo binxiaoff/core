@@ -2,19 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
-use Symfony\Bundle\FrameworkBundle\{
-    Controller\Controller
-};
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\SponsorshipManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
