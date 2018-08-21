@@ -684,7 +684,7 @@ class dossiersController extends bootstrap
 
             $this->xerfi                       = $this->loadData('xerfi');
             $this->sectors                     = $this->loadData('company_sector')->select();
-            $this->sources                     = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
+            $this->sources                     = $this->getSourcesList();
             $this->ratings                     = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
             $this->ratings['unilend_prescore'] = $this->addUnilendPrescoring($this->projects_notes);
             $this->aCompanyProjects            = $this->companies->getProjectsBySIREN();
@@ -1410,7 +1410,7 @@ class dossiersController extends bootstrap
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
 
-        $this->sources = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
+        $this->sources = $this->getSourcesList();
     }
 
     public function _funding()
@@ -2907,5 +2907,18 @@ class dossiersController extends bootstrap
             'action' => 'Test d&#39éligibilité',
             'user'   => ''
         ];
-        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getSourcesList(): array
+    {
+        return [
+            'Commercial Courtier',
+            'Commercial Direct',
+            'Franchise',
+            'Test'
+        ];
+    }
 }
