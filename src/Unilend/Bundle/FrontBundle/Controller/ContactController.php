@@ -4,15 +4,17 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{
+    Request, Response
+};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{
+    Clients, Companies
+};
+use Unilend\Bundle\FrontBundle\Security\User\{
+    BaseUser, UserBorrower, UserLender, UserPartner
+};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
@@ -25,32 +27,12 @@ class ContactController extends Controller
      */
     public function contactAction(Request $request)
     {
-        $template = $this->get('session')->get('searchResult', ['query' => '', 'results' => '']);
-
-        $this->get('session')->remove('searchResult');
-
         /** @var BaseUser $user */
-        $user = $this->getUser();
+        $user     = $this->getUser();
+        $template = [];
 
         if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
-            /** @var \clients $client */
-            $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-            $client->get($user->getClientId());
-
-            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER]) || $user instanceof UserBorrower || $user instanceof UserPartner) {
-                /** @var \companies $company */
-                $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-                $company->get($client->id_client, 'id_client_owner');
-            }
-
-            $template['formData'] = [
-                'firstname' => $client->prenom,
-                'lastname'  => $client->nom,
-                'phone'     => $client->mobile,
-                'email'     => $client->email,
-                'company'   => isset($company) ? $company->name : '',
-                'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower ? 3 : ($user instanceof UserPartner ? 4 : ''))
-            ];
+            $template['formData'] = $this->getContactFormTemplateData($user);
         }
 
         if ($request->request->has('message')) {
@@ -64,6 +46,59 @@ class ContactController extends Controller
         return $this->render('contact/contact.html.twig', $template);
     }
 
+
+    /**
+     * @Route("/contact/search/{query}", name="contact_search_result")
+     *
+     * @return Response
+     */
+    public function contactSearchResultAction(Request $request, string $query): Response
+    {
+        /** @var BaseUser $user */
+        $user              = $this->getUser();
+        $template['query'] = $query;
+
+        if (Request::METHOD_GET === $request->getMethod()) {
+            if (null !== $query) {
+                $template['results'] = $this->getSearchResult($query, $user);
+            }
+        }
+
+        if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
+            $template['formData'] = $this->getContactFormTemplateData($user);
+        }
+
+        return $this->render('contact/contact.html.twig', $template);
+    }
+
+    /**
+     * @param BaseUser $user
+     *
+     * @return array
+     */
+    private function getContactFormTemplateData(BaseUser $user): array
+    {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var Clients $client */
+        $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
+
+        if (false === $client->isNaturalPerson() || $user instanceof UserBorrower || $user instanceof UserPartner) {
+            /** @var Companies $company */
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->getIdClient()]);
+        }
+
+        $formData = [
+            'firstname' => $client->getPrenom(),
+            'lastname'  => $client->getNom(),
+            'phone'     => $client->getMobile(),
+            'email'     => $client->getEmail(),
+            'company'   => isset($company) ? $company->getName() : '',
+            'role'      => $user instanceof UserLender ? 2 : ($user instanceof UserBorrower ? 3 : ($user instanceof UserPartner ? 4 : ''))
+        ];
+
+         return $formData;
+    }
+
     /**
      * @Route("/contact/search", name="contact_search")
      * @Method({"POST"})
@@ -75,21 +110,21 @@ class ContactController extends Controller
         return $this->redirectToRoute('contact_search_result', ['query' => urlencode($request->request->get('search'))]);
     }
 
+
     /**
-     * @Route("/contact/search/{query}", name="contact_search_result")
-     * @Method({"GET"})
+     * @param string        $query
+     * @param BaseUser|null $user
      *
-     * @param  string $query
-     * @return Response
+     * @return array
      */
-    public function resultAction($query)
+    private function getSearchResult(string $query, ?BaseUser $user): array
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');
         $results = $search->search($query);
 
         if (false === empty($results['projects'])) {
-            if (null === $this->getUser()) {
+            if (null === $user) {
                 unset($results['projects']);
             } else {
                 $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -98,7 +133,7 @@ class ContactController extends Controller
                 foreach ($results['projects'] as $index => $result) {
                     $project = $projectRepository->find($result['projectId']);
 
-                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $this->getUser())) {
+                    if (ProjectDisplayManager::VISIBILITY_FULL !== $projectDisplayManager->getVisibility($project, $user)) {
                         unset($results['projects'][$index]);
                     }
                 }
@@ -109,12 +144,7 @@ class ContactController extends Controller
             }
         }
 
-        $this->get('session')->set('searchResult',[
-            'query'   => $query,
-            'results' => $results
-        ]);
-
-        return $this->redirectToRoute('contact');
+        return $results;
     }
 
     private function contactForm($post)

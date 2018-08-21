@@ -2,15 +2,12 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{
-    EntityManager, NonUniqueResultException, NoResultException, OptimisticLockException
-};
+use Doctrine\ORM\{EntityManager, NonUniqueResultException, NoResultException, OptimisticLockException};
 use Psr\Cache\CacheException;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet, WalletBalanceHistory, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AcceptedBids, Autobid, Bids, ClientsGestionTypeNotif, Notifications, OffresBienvenuesDetails, Projects, ProjectsStatus, Sponsorship, Wallet,
+    WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
 use Unilend\Bundle\CoreBusinessBundle\Service\Product\ProductManager;
 use Unilend\librairies\CacheKeys;
@@ -94,7 +91,10 @@ class BidManager
      * @param bool         $sendNotification
      *
      * @return Bids
-     * @throws \Exception
+     * @throws BidException
+     * @throws NoResultException
+     * @throws NonUniqueResultException
+     * @throws OptimisticLockException
      */
     public function bid(Wallet $wallet, Projects $project, $amount, float $rate, ?Autobid $autoBidSetting = null, bool $sendNotification = true): Bids
     {

@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ProjectsStatus, Users, UsersHistory
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ProjectsStatus, Users, UsersHistory};
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 
 class CreateProjectsCommand extends ContainerAwareCommand
@@ -85,8 +83,8 @@ class CreateProjectsCommand extends ContainerAwareCommand
                     $activeSheet->setCellValue($columnIndex . $rowIndex, $company->getIdCompany());
                     $rowIndex++;
                 }
-                $fileInfo       = pathinfo($fileName);
-                $outputFileName = $fileInfo['filename'] . '_output_' . $now->getTimestamp() . '.xlsx';
+
+                $outputFileName = 'Creation-projets_' . (new \DateTime())->format('Ymd_His') . '.xlsx';
 
                 if (false === is_dir($outputFilePath)) {
                     $fileSystem->mkdir($outputFilePath);

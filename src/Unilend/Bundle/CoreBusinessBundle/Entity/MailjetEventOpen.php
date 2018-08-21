@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 class MailjetEventOpen
 {
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="time", type="integer", nullable=false)
      */
@@ -28,14 +28,14 @@ class MailjetEventOpen
     private $email;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="campaign_id", type="integer", nullable=false)
      */
     private $campaignId;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="contact_id", type="integer", nullable=false)
      */
@@ -49,16 +49,16 @@ class MailjetEventOpen
     private $customCampaign;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="message_id", type="integer", nullable=false)
      */
     private $messageId;
 
     /**
-     * @var integer
+     * @var int
      *
-     * @ORM\Column(name="custom_id", type="integer", nullable=false)
+     * @ORM\Column(name="custom_id", type="integer", nullable=true)
      */
     private $customId;
 
@@ -98,7 +98,7 @@ class MailjetEventOpen
     private $added;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
@@ -110,11 +110,11 @@ class MailjetEventOpen
     /**
      * Set time
      *
-     * @param integer $time
+     * @param int $time
      *
      * @return MailjetEventOpen
      */
-    public function setTime($time)
+    public function setTime(int $time): MailjetEventOpen
     {
         $this->time = $time;
 
@@ -124,9 +124,9 @@ class MailjetEventOpen
     /**
      * Get time
      *
-     * @return integer
+     * @return int
      */
-    public function getTime()
+    public function getTime(): int
     {
         return $this->time;
     }
@@ -138,7 +138,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setEmail($email)
+    public function setEmail(string $email): MailjetEventOpen
     {
         $this->email = $email;
 
@@ -150,7 +150,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }
@@ -158,11 +158,11 @@ class MailjetEventOpen
     /**
      * Set campaignId
      *
-     * @param integer $campaignId
+     * @param int $campaignId
      *
      * @return MailjetEventOpen
      */
-    public function setCampaignId($campaignId)
+    public function setCampaignId(int $campaignId): MailjetEventOpen
     {
         $this->campaignId = $campaignId;
 
@@ -172,9 +172,9 @@ class MailjetEventOpen
     /**
      * Get campaignId
      *
-     * @return integer
+     * @return int
      */
-    public function getCampaignId()
+    public function getCampaignId(): int
     {
         return $this->campaignId;
     }
@@ -182,11 +182,11 @@ class MailjetEventOpen
     /**
      * Set contactId
      *
-     * @param integer $contactId
+     * @param int $contactId
      *
      * @return MailjetEventOpen
      */
-    public function setContactId($contactId)
+    public function setContactId(int $contactId): MailjetEventOpen
     {
         $this->contactId = $contactId;
 
@@ -196,9 +196,9 @@ class MailjetEventOpen
     /**
      * Get contactId
      *
-     * @return integer
+     * @return int
      */
-    public function getContactId()
+    public function getContactId(): int
     {
         return $this->contactId;
     }
@@ -210,7 +210,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setCustomCampaign($customCampaign)
+    public function setCustomCampaign(string $customCampaign): MailjetEventOpen
     {
         $this->customCampaign = $customCampaign;
 
@@ -222,7 +222,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getCustomCampaign()
+    public function getCustomCampaign(): string
     {
         return $this->customCampaign;
     }
@@ -230,11 +230,11 @@ class MailjetEventOpen
     /**
      * Set messageId
      *
-     * @param integer $messageId
+     * @param int $messageId
      *
      * @return MailjetEventOpen
      */
-    public function setMessageId($messageId)
+    public function setMessageId(int $messageId): MailjetEventOpen
     {
         $this->messageId = $messageId;
 
@@ -244,9 +244,9 @@ class MailjetEventOpen
     /**
      * Get messageId
      *
-     * @return integer
+     * @return int
      */
-    public function getMessageId()
+    public function getMessageId(): int
     {
         return $this->messageId;
     }
@@ -254,11 +254,11 @@ class MailjetEventOpen
     /**
      * Set customId
      *
-     * @param integer $customId
+     * @param int|null $customId
      *
      * @return MailjetEventOpen
      */
-    public function setCustomId($customId)
+    public function setCustomId(?int $customId): MailjetEventOpen
     {
         $this->customId = $customId;
 
@@ -268,9 +268,9 @@ class MailjetEventOpen
     /**
      * Get customId
      *
-     * @return integer
+     * @return int|null
      */
-    public function getCustomId()
+    public function getCustomId(): ?int
     {
         return $this->customId;
     }
@@ -282,7 +282,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setPayload($payload)
+    public function setPayload(string $payload): MailjetEventOpen
     {
         $this->payload = $payload;
 
@@ -294,7 +294,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getPayload()
+    public function getPayload(): string
     {
         return $this->payload;
     }
@@ -306,7 +306,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setIp($ip)
+    public function setIp(string $ip): MailjetEventOpen
     {
         $this->ip = $ip;
 
@@ -318,7 +318,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getIp()
+    public function getIp(): string
     {
         return $this->ip;
     }
@@ -330,7 +330,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setGeo($geo)
+    public function setGeo(string $geo): MailjetEventOpen
     {
         $this->geo = $geo;
 
@@ -342,7 +342,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getGeo()
+    public function getGeo(): string
     {
         return $this->geo;
     }
@@ -354,7 +354,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setAgent($agent)
+    public function setAgent(string $agent): MailjetEventOpen
     {
         $this->agent = $agent;
 
@@ -366,7 +366,7 @@ class MailjetEventOpen
      *
      * @return string
      */
-    public function getAgent()
+    public function getAgent(): string
     {
         return $this->agent;
     }
@@ -378,7 +378,7 @@ class MailjetEventOpen
      *
      * @return MailjetEventOpen
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): MailjetEventOpen
     {
         $this->added = $added;
 
@@ -390,7 +390,7 @@ class MailjetEventOpen
      *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
@@ -398,9 +398,9 @@ class MailjetEventOpen
     /**
      * Get id
      *
-     * @return integer
+     * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
@@ -408,7 +408,7 @@ class MailjetEventOpen
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();

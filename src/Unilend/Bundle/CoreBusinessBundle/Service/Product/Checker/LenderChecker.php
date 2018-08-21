@@ -51,7 +51,7 @@ trait LenderChecker
      *
      * @return bool
      */
-    public function canStillBid(Clients $client = null, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
+    public function canStillBid(?Clients $client, Projects $project, ContractManager $contractManager, EntityManager $entityManager)
     {
         if (null === $client) {
             return false;

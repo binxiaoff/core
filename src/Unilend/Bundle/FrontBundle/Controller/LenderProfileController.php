@@ -532,7 +532,7 @@ class LenderProfileController extends Controller
             $settingType                    = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientsGestionTypeNotif')->find($typeId);
             $notificationSetting            = $notificationSettingsRepository->findOneBy([
                 'idClient' => $client->getIdClient(),
-                'idNotif'  => $settingType->getidClientGestionTypeNotif()
+                'idNotif'  => $settingType->getIdClientGestionTypeNotif()
             ]);
 
             if (null === $notificationSetting) {

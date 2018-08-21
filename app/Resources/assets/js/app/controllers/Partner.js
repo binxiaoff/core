@@ -139,34 +139,44 @@ $doc.on('change keyup', '#cost-simulator-form input, #cost-simulator-form select
       rate = rate / 100
 
       releasedFunds = amount * (1 - (fundsCommission / 100 * (1 + vatRate / 100)))
-      releasedFundsLabel.html(__.formatNumber(Math.round(releasedFunds * 100) / 100), undefined, 2)
+      releasedFunds = Math.round(releasedFunds * 100) / 100
+      releasedFundsLabel.html(__.formatNumber(releasedFunds, undefined, 2))
 
       monthlyPayment = Utility.pmt(rate / 12, duration, -amount)
-      monthlyPaymentLabel.html(__.formatNumber(Math.round(monthlyPayment * 100) / 100), undefined, 2)
+      monthlyPayment = Math.round(monthlyPayment * 100) / 100
+      monthlyPaymentLabel.html(__.formatNumber(monthlyPayment, undefined, 2))
 
       monthlyCommission = Utility.pmt(repaymentCommission / 100 / 12, duration, -amount) - Utility.pmt(0, duration, -amount)
-      monthlyCommissionLabel.html(__.formatNumber(Math.round(monthlyCommission * 100) / 100), undefined, 2)
+      monthlyCommission = Math.round(monthlyCommission * 100) / 100
+      monthlyCommissionLabel.html(__.formatNumber(monthlyCommission, undefined, 2))
 
       monthlyPaymentTotal = monthlyPayment + monthlyCommission
-      monthlyPaymentTotalLabel.html(__.formatNumber(Math.round(monthlyPaymentTotal * 100) / 100), undefined, 2)
+      monthlyPaymentTotal = Math.round(monthlyPaymentTotal * 100) / 100
+      monthlyPaymentTotalLabel.html(__.formatNumber(monthlyPaymentTotal, undefined, 2))
 
       monthlyPaymentTotalTaxesIncluded = monthlyPayment + monthlyCommission * (1 + vatRate / 100)
-      monthlyPaymentTotalTaxesIncludedLabel.html(__.formatNumber(Math.round(monthlyPaymentTotalTaxesIncluded * 100) / 100), undefined, 2)
+      monthlyPaymentTotalTaxesIncluded = Math.round(monthlyPaymentTotalTaxesIncluded * 100) / 100
+      monthlyPaymentTotalTaxesIncludedLabel.html(__.formatNumber(monthlyPaymentTotalTaxesIncluded, undefined, 2))
 
       interestsCost = monthlyPayment * duration - amount
-      interestsCostLabel.html(__.formatNumber(Math.round(interestsCost * 100) / 100), undefined, 2)
+      interestsCost = Math.round(interestsCost * 100) / 100
+      interestsCostLabel.html(__.formatNumber(interestsCost, undefined, 2))
 
       unilendFundsCommission = amount * fundsCommission / 100
-      unilendFundsCommissionLabel.html(__.formatNumber(Math.round(unilendFundsCommission * 100) / 100), undefined, 2)
+      unilendFundsCommission = Math.round(unilendFundsCommission * 100) / 100
+      unilendFundsCommissionLabel.html(__.formatNumber(unilendFundsCommission, undefined, 2))
 
       recoveredVatAmount = unilendFundsCommission * vatRate / 100
-      recoveredVatAmountLabel.html(__.formatNumber(Math.round(recoveredVatAmount * 100) / 100), undefined, 2)
+      recoveredVatAmount = Math.round(recoveredVatAmount * 100) / 100
+      recoveredVatAmountLabel.html(__.formatNumber(recoveredVatAmount, undefined, 2))
 
       interestsCommissionsCost = unilendFundsCommission + monthlyCommission * duration + interestsCost
-      interestsCommissionsCostLabel.html(__.formatNumber(Math.round(interestsCommissionsCost * 100) / 100), undefined, 2)
+      interestsCommissionsCost = Math.round(interestsCommissionsCost * 100) / 100
+      interestsCommissionsCostLabel.html(__.formatNumber(interestsCommissionsCost, undefined, 2))
 
-      totalFundingCost = monthlyPaymentTotal * duration
-      totalFundingCostLabel.html(__.formatNumber(Math.round(totalFundingCost * 100) / 100), undefined, 2)
+      totalFundingCost = monthlyPaymentTotal * duration + unilendFundsCommission
+      totalFundingCost = Math.round(totalFundingCost * 100) / 100
+      totalFundingCostLabel.html(__.formatNumber(totalFundingCost, undefined, 2))
 
       $('.simulation').show()
     }

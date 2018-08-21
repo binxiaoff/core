@@ -417,12 +417,12 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime    $date
-     * @param Projects|int $project
+     * @param \DateTimeInterface $date
+     * @param Projects|int       $project
      *
      * @return null|Echeanciers
      */
-    public function findNextPendingScheduleAfter(\DateTime $date, $project)
+    public function findNextPendingScheduleAfter(\DateTimeInterface $date, $project)
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->where('e.idProject = :project')
@@ -631,5 +631,22 @@ class EcheanciersRepository extends EntityRepository
             ->setFirstResult(0);
 
         return $queryBuilder->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * @return Echeanciers[]
+     */
+    public function findScheduledToday(): array
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->where('e.dateEcheance BETWEEN :startDate AND :endDate')
+            ->andWhere('e.status = :pendingStatus')
+            ->setParameter('startDate', new \DateTime('today midnight'))
+            ->setParameter('endDate', new \DateTime('today 23:59:59'))
+            ->setParameter('pendingStatus', Echeanciers::STATUS_PENDING)
+            ->groupBy('e.idProject, e.ordre');
+
+        return $queryBuilder->getQuery()->getResult();
     }
 }

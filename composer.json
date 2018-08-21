@@ -63,7 +63,9 @@
     "welp/mailchimp-bundle": "^1.2",
     "doctrine/doctrine-migrations-bundle": "^1.3",
     "phpoffice/phpspreadsheet": "^1.3",
-    "mpdf/mpdf": "^7.1"
+    "mpdf/mpdf": "^7.1",
+    "monext/payline-sdk": "^4.53",
+    "azuyalabs/yasumi": "^1.8"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"

@@ -142,8 +142,7 @@ class CheckCompaniesEligibilityCommand extends ContainerAwareCommand
                     $rowIndex++;
                 }
 
-                $fileInfo       = pathinfo($fileName);
-                $outputFileName = $fileInfo['filename'] . '_output_' . $now->getTimestamp() . '.xlsx';
+                $outputFileName = 'Eligibilite-siren_' . (new \DateTime())->format('Ymd_His') . '.xlsx';
 
                 if (false === is_dir($outputFilePath)) {
                     $fileSystem->mkdir($outputFilePath);

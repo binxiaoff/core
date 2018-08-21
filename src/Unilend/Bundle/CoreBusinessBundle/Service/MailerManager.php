@@ -32,8 +32,6 @@ class MailerManager
     private $oFicelle;
     /** @var \dates */
     private $oDate;
-    /** @var \jours_ouvres */
-    private $oWorkingDay;
     /** @var string */
     private $sAUrl;
     /** @var string */
@@ -80,7 +78,6 @@ class MailerManager
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
-        $this->oWorkingDay = Loader::loadLib('jours_ouvres');
 
         $this->locale = $defaultLocale;
 

@@ -4,13 +4,9 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Autobid, Clients, ClientSettingType, ClientsHistoryActions, ClientsStatus, ProjectPeriod, ProjectRateSettings, Projects, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\core\Loader;
 
@@ -196,8 +192,10 @@ class AutolendController extends Controller
         }
 
         try {
-            $wallet          = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')
+            $wallet = $this->get('doctrine.orm.entity_manager')
+                ->getRepository('UnilendCoreBusinessBundle:Wallet')
                 ->getWalletByType($client, WalletType::LENDER);
+
             $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);
 
             $autoBidSettingsManager->saveNoviceSetting($client, $autolendRateMin, $autolendAmount);
@@ -288,8 +286,9 @@ class AutolendController extends Controller
 
         foreach ($post['data'] as $setting) {
             if (
-                isset($setting['interest'], $setting['period'], $setting['evaluation'], $setting['is-active']) &&
-                null !== ($projectPeriodEntity = $projectPeriodRepository->find($setting['period']))
+                isset($setting['interest'], $setting['period'], $setting['evaluation'], $setting['is-active'])
+                && false !== filter_var($setting['period'], FILTER_VALIDATE_INT)
+                && null !== ($projectPeriodEntity = $projectPeriodRepository->find($setting['period']))
             ) {
                 $note              = constant(Projects::class . '::RISK_' . $setting['evaluation']);
                 $note              = is_float($note) ? $ficelle->formatNumber($note, 1) : $note;
@@ -299,8 +298,8 @@ class AutolendController extends Controller
                 );
 
                 if (
-                    $setting['is-active'] == Autobid::STATUS_ACTIVE &&
-                    (false === in_array($setting['evaluation'], $aRiskValues) || false === in_array($setting['period'], $autoBidPeriods))
+                    $setting['is-active'] == Autobid::STATUS_ACTIVE
+                    && (false === in_array($setting['evaluation'], $aRiskValues) || false === in_array($setting['period'], $autoBidPeriods))
                 ) {
                     $errorMsg[] = $translator->trans('autolend_error-message-expert-setting-category-non-exist', [
                         '%RISK%'   => $note,
@@ -310,7 +309,11 @@ class AutolendController extends Controller
 
                 if (
                     $setting['is-active'] == Autobid::STATUS_ACTIVE
-                    && empty($setting['interest']) || false === is_numeric($ficelle->cleanFormatedNumber($setting['interest']))
+                    && (
+                        empty($setting['interest'])
+                        || false === is_numeric($ficelle->cleanFormatedNumber($setting['interest']))
+                        || false === $autoBidSettingsManager->isRateValid($setting['interest'], $setting['evaluation'], $setting['period'])
+                    )
                 ) {
                     $projectRateRange = $autoBidSettingsManager->getRateRange($setting['evaluation'], $setting['period']);
                     $errorMsg[]       = $translator->trans('autolend_error-message-expert-setting-rate-wrong', [
@@ -329,11 +332,14 @@ class AutolendController extends Controller
         if (false === empty($errorMsg)) {
             return ['error' => $errorMsg];
         }
+
         $entityManager->getConnection()->beginTransaction();
 
         try {
-            $wallet          = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')
+            $wallet = $entityManager
+                ->getRepository('UnilendCoreBusinessBundle:Wallet')
                 ->getWalletByType($client, WalletType::LENDER);
+
             $firstActivation = $autoBidSettingsManager->isFirstAutobidActivation($wallet);
 
             foreach ($post['data'] as $setting) {
@@ -343,6 +349,7 @@ class AutolendController extends Controller
                 $autoBidSettingsManager->saveSetting($client, $setting['evaluation'], $projectPeriodRepository->find($setting['period']), $rate, $amount);
                 $autoBidSettingsManager->activateDeactivateSetting($client, $setting['evaluation'], $setting['period'], $setting['is-active']);
             }
+
             $entityManager->getConnection()->commit();
 
             try {
@@ -363,17 +370,24 @@ class AutolendController extends Controller
             try {
                 $entityManager->getConnection()->rollBack();
             } catch (\Exception $rollBackException) {
-                $logger->error(
-                    'Error while trying to rollback the transaction on autobid expert settings save. Message: ' . $rollBackException->getMessage(),
-                    ['method' => __METHOD__, 'id_client' => $client->getIdClient(), 'file' => $rollBackException->getFile(), 'line' => $rollBackException->getLine()]
-                );
+                $logger->error('Error while trying to rollback the transaction on autobid expert settings save. Message: ' . $rollBackException->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $rollBackException->getFile(),
+                    'line'      => $rollBackException->getLine()
+                ]);
             }
 
             $lastProcessedSetting = empty($setting) ? [] : $setting;
-            $logger->error(
-                'Could not save advanced autolend settings for client ' . $client->getIdClient() . '. Error: ' . $exception->getMessage(),
-                ['method' => __METHOD__, 'file' => $exception->getFile(), 'line' => $exception->getLine(), 'last_processed_setting' => $lastProcessedSetting]
-            );
+            $logger->error('Could not save advanced autolend settings for client ' . $client->getIdClient() . '. Error: ' . $exception->getMessage(), [
+                'id_client'              => $client->getIdClient(),
+                'last_processed_setting' => $lastProcessedSetting,
+                'class'                  => __CLASS__,
+                'function'               => __FUNCTION__,
+                'file'                   => $exception->getFile(),
+                'line'                   => $exception->getLine()
+            ]);
 
             return ['error' => [$translator->trans('autolend_error-message-advanced-settings-failed')]];
         }

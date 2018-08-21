@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eafe8ebf054e8b3d58acf71f92782584",
+    "content-hash": "d37202387a6e29b56a0d787128a1bbe4",
     "packages": [
         {
             "name": "alcaeus/mongo-php-adapter",
@@ -69,6 +69,59 @@
                 "mongodb"
             ],
             "time": "2017-09-24T11:32:02+00:00"
+        },
+        {
+            "name": "azuyalabs/yasumi",
+            "version": "1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/azuyalabs/yasumi.git",
+                "reference": "115a3ccd53f45294d3d5f16ca85137cc9826953b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/azuyalabs/yasumi/zipball/115a3ccd53f45294d3d5f16ca85137cc9826953b",
+                "reference": "115a3ccd53f45294d3d5f16ca85137cc9826953b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.6",
+                "fzaninotto/faker": "~1.7",
+                "mikey179/vfsstream": "~1.6",
+                "phpunit/phpunit": "~5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yasumi\\": "src/Yasumi/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sacha Telgenhof",
+                    "email": "me@sachatelgenhof.nl"
+                }
+            ],
+            "description": "Yasumi is an easy PHP Library for calculating national holidays.",
+            "keywords": [
+                "Bank",
+                "calculation",
+                "calendar",
+                "celebration",
+                "date",
+                "holiday",
+                "holidays",
+                "national",
+                "time"
+            ],
+            "time": "2018-02-21T05:23:52+00:00"
         },
         {
             "name": "beberlei/DoctrineExtensions",
@@ -3478,6 +3531,49 @@
                 "v3"
             ],
             "time": "2017-05-22T12:38:16+00:00"
+        },
+        {
+            "name": "monext/payline-sdk",
+            "version": "4.53",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PaylineByMonext/payline-php-sdk.git",
+                "reference": "bed6764e8a75068c2700dd1059e7ff4a642a081d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PaylineByMonext/payline-php-sdk/zipball/bed6764e8a75068c2700dd1059e7ff4a642a081d",
+                "reference": "bed6764e8a75068c2700dd1059e7ff4a642a081d",
+                "shasum": ""
+            },
+            "require": {
+                "monolog/monolog": "1.*",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Payline\\": "src/Payline"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien SUAREZ",
+                    "email": "fabien.suarez@payline.com",
+                    "homepage": "http://www.payline.com"
+                }
+            ],
+            "description": "Payline library for PHP",
+            "keywords": [
+                "Monext",
+                "Payline",
+                "payment"
+            ],
+            "time": "2018-01-11T11:08:20+00:00"
         },
         {
             "name": "mongodb/mongodb",
