@@ -1,15 +1,9 @@
 <?php
 
-use Box\Spout\{
-    Common\Type, Writer\WriterFactory
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
-};
+use Box\Spout\{Common\Type, Writer\WriterFactory};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientAuditer, ClientDataHistoryManager, LenderOperationsManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{ClientAuditer, ClientDataHistoryManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
 {
@@ -37,37 +31,44 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
-        if (isset($_POST['form_search_preteur'])) {
-            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale']) && empty($_POST['siren'])) {
+        if ($this->request->request->has('form_search_preteur')) {
+            $clientId    = $this->request->request->get('id');
+            $email       = $this->request->request->get('email');
+            $lastName    = $this->request->request->get('nom');
+            $firstName   = $this->request->request->get('prenom');
+            $companyName = $this->request->request->get('raison_sociale');
+            $siren       = $this->request->request->get('siren');
+
+            if (empty($clientId) && empty($lastName) && empty($email) && empty($firstName) && empty($companyName) && empty($siren)) {
                 $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
-            $email = empty($_POST['email']) ? null : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $email = empty($email) ? null : filter_var($email, FILTER_SANITIZE_EMAIL);
             if (false === $email) {
                 $_SESSION['error_search'][] = 'Format de l\'email est non valide';
             }
 
-            $clientId = empty($_POST['id']) ? null : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            $clientId = empty($clientId) ? null : filter_var($clientId, FILTER_VALIDATE_INT);
             if (false === $clientId) {
                 $_SESSION['error_search'][] = 'L\'id du client doit être numérique';
             }
 
-            $lastName = empty($_POST['nom']) ? null : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            $lastName = empty($lastName) ? null : filter_var($lastName, FILTER_SANITIZE_STRING);
             if (false === $lastName) {
                 $_SESSION['error_search'][] = 'Le format du nom n\'est pas valide';
             }
 
-            $firstName = empty($_POST['prenom']) ? null : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            $firstName = empty($firstName) ? null : filter_var($firstName, FILTER_SANITIZE_STRING);
             if (false === $firstName) {
                 $_SESSION['error_search'][] = 'Le format du prenom n\'est pas valide';
             }
 
-            $companyName = empty($_POST['raison_sociale']) ? null : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            $companyName = empty($companyName) ? null : filter_var($companyName, FILTER_SANITIZE_STRING);
             if (false === $companyName) {
                 $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
 
-            $siren = empty($_POST['siren']) ? null : trim(filter_var($_POST['siren'], FILTER_SANITIZE_STRING));
+            $siren = empty($siren) ? null : trim(filter_var($siren, FILTER_SANITIZE_STRING));
             if (false === $siren) {
                 $_SESSION['error_search'][] = 'Le format du siren n\'est pas valide';
             }
@@ -79,11 +80,22 @@ class preteursController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lPreteurs  = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
+            try {
+                $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
 
-            if (false === empty($this->lPreteurs) && false === empty($_POST['id']) && 1 == count($this->lPreteurs)) {
-                header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
-                die;
+                if (false === empty($this->lPreteurs) && false === empty($_POST['id']) && 1 == count($this->lPreteurs)) {
+                    header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
+                    die;
+                }
+            } catch (\Doctrine\DBAL\DBALException $exception) {
+                $this->get('logger')->error('Could not search for lenders using given parameters. Exception message: ' . $exception->getMessage(), [
+                    'post'          => $this->request->request->all(),
+                    'filtered_post' => ['id' => $clientId, 'email' => $email, 'nom' => $lastName, 'prenom' => $firstName, 'raison_sociale' => $companyName, 'siren' => $siren],
+                    'class'         => __CLASS__,
+                    'method'        => __METHOD__,
+                    'file'          => $exception->getFile(),
+                    'line'          => $exception->getLine()
+                ]);
             }
         } else {
             header('Location: ' . $this->lurl . '/preteurs/search');

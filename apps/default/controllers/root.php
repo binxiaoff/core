@@ -1,34 +1,15 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, ClientsStatus, Wallet
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, ClientsStatus, Wallet};
 
 class rootController extends bootstrap
 {
     public function _default()
     {
-        header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
-        $this->hideDecoration();
-        $this->setView('../root/404');
-    }
-
-    /**
-     * Pas de appel dans le log nginx , à supprimer après vérification.
-     */
-    public function _xmlAllProjects()
-    {
-        $file = $this->getParameter('path.user') . 'fichiers/045.xml';
-        if (file_exists($file)) {
-            header("Content-Type: application/xml; charset=utf-8");
-            header("Content-Disposition: inline; filename=xmlAllProjects");
-            header('Content-Length: ' . filesize($file));
-            readfile($file);
-        }
+        header('Location: /erreur404');
         exit;
     }
 
-    // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
         $this->autoFireView = false;

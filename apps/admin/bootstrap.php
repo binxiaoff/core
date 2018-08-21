@@ -1,9 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{LoginConnectionAdmin, ProjectsStatus, UserAccess, Users, Zones};
 
 class bootstrap extends Controller
 {
@@ -444,7 +442,6 @@ class bootstrap extends Controller
         $this->dates   = $this->loadLib('dates');
         $this->ficelle = $this->loadLib('ficelle');
         $this->upload  = $this->loadLib('upload');
-        $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
 
         $this->ln             = $this->loadData('translations');
         $this->settings       = $this->loadData('settings');

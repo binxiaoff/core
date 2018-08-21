@@ -2,16 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Companies, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Companies, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
@@ -19,13 +14,12 @@ use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 class ProjectsListController extends Controller
 {
     /**
-     * @Route("partenaire/emprunteurs", name="partner_projects_list")
-     * @Method("GET")
+     * @Route("partenaire/emprunteurs", name="partner_projects_list", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @return Response
      */
-    public function projectsListAction()
+    public function projectsListAction(): Response
     {
         /** @var UserPartner $user */
         $user          = $this->getUser();
@@ -68,15 +62,14 @@ class ProjectsListController extends Controller
     }
 
     /**
-     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()")
-     * @Method("POST")
+     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function projectRequestDetailsFormAction(Request $request)
+    public function projectRequestDetailsFormAction(Request $request): Response
     {
         $hash = $request->request->getAlnum('hash');
 

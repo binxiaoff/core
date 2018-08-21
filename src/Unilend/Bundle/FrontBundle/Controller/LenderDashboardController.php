@@ -2,16 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    JsonResponse, Request, Response
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType
-};
+use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, ClientsStatus, LenderStatistic, OperationType, Product, Wallet, WalletType};
 
 class LenderDashboardController extends Controller
 {

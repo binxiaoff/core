@@ -2,11 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Route, Security
-};
+use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\TaxType;
 use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
 
@@ -18,7 +17,7 @@ class SimulatorController extends Controller
      *
      * @return Response
      */
-    public function simulatorAction()
+    public function simulatorAction(): Response
     {
         /** @var UserPartner $partnerUser */
         $partnerUser             = $this->getUser();

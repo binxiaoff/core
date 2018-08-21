@@ -4,6 +4,9 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
 
 class templatesController extends bootstrap
 {
+    /** @var \templates */
+    public $templates;
+
     public function initialize()
     {
         parent::initialize();
@@ -11,121 +14,13 @@ class templatesController extends bootstrap
         $this->users->checkAccess(Zones::ZONE_LABEL_EDITION);
 
         $this->menu_admin = 'edition';
-    }
-
-    public function _add()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
-    }
-
-    public function _edit()
-    {
-        $this->hideDecoration();
-
-        $_SESSION['request_url'] = $this->url;
-
-        $this->templates = $this->loadData('templates');
-        $this->templates->get($this->params[0], 'id_template');
+        $this->templates  = $this->loadData('templates');
     }
 
     public function _default()
     {
-        $this->templates = $this->loadData('templates');
         $this->elements  = $this->loadData('elements');
-
-        $this->lTemplate = $this->templates->select('type = 0', 'name ASC');
-
-        if (isset($_POST['form_edit_template'])) {
-            $this->templates->get($this->params[0], 'id_template');
-            $this->templates->name   = $_POST['name'];
-            $this->templates->status = $_POST['status'];
-            $this->templates->type   = 0;
-            $this->templates->update();
-
-            $_SESSION['freeow']['title']   = 'Modification d\'un template';
-            $_SESSION['freeow']['message'] = 'Le template a bien &eacute;t&eacute; modifi&eacute; !';
-
-            header('Location: ' . $this->lurl . '/templates');
-            die;
-        }
-
-        if (isset($_POST['form_add_template'])) {
-            $this->templates->name   = $_POST['name'];
-            $this->templates->slug   = ($_POST['slug'] != '' ? $this->bdd->generateSlug($_POST['slug']) : $this->bdd->generateSlug($_POST['name']));
-            $this->templates->status = $_POST['status'];
-            $this->templates->type   = 0;
-            $this->templates->create();
-
-            if (false === file_exists($this->path . 'apps/default/views/templates/' . $this->templates->slug . '.php')) {
-                // Creation de la vue
-                $modifs_elements = "";
-                $modifs_elements .= "<strong>Nom du Template : " . $this->templates->name . "</strong><br /><br />\r\n\r\n";
-
-                $fp = fopen($this->path . 'apps/default/views/templates/' . $this->templates->slug . '.php', "wb");
-                fputs($fp, $modifs_elements);
-                fclose($fp);
-
-                chmod($this->path . 'apps/default/views/templates/' . $this->templates->slug . '.php', 0777);
-
-                $modifs_elements = "";
-                $modifs_elements .= "<?php\r\n";
-
-                $fp = fopen($this->path . 'apps/default/controllers/templates/' . $this->templates->slug . '.php', "wb");
-                fputs($fp, $modifs_elements);
-                fclose($fp);
-
-                chmod($this->path . 'apps/default/controllers/templates/' . $this->templates->slug . '.php', 0777);
-            }
-
-            $_SESSION['freeow']['title']   = 'Ajout d\'un template';
-            $_SESSION['freeow']['message'] = 'Le template a bien &eacute;t&eacute; ajout&eacute; !';
-
-            header('Location: ' . $this->lurl . '/templates/elements/' . $this->templates->id_template);
-            die;
-        }
-
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            switch ($this->params[0]) {
-                case 'status':
-                    $this->templates->get($this->params[1], 'id_template');
-                    $this->templates->status = ($this->params[2] == 0 ? 1 : 0);
-                    $this->templates->update();
-
-                    $_SESSION['freeow']['title']   = 'Statut d\'un template';
-                    $_SESSION['freeow']['message'] = 'Le statut du template a bien &eacute;t&eacute; modifi&eacute; !';
-
-                    header('Location: ' . $this->lurl . '/templates');
-                    die;
-                case 'affichage':
-                    $this->templates->get($this->params[1], 'id_template');
-                    $this->templates->affichage = ($this->params[2] == 0 ? 1 : 0);
-                    $this->templates->update();
-
-                    // Mise en session du message
-                    $_SESSION['freeow']['title']   = 'Affichage d\'un template';
-                    $_SESSION['freeow']['message'] = 'L\'affichage du template a bien &eacute;t&eacute; modifi&eacute; !';
-
-                    header('Location: ' . $this->lurl . '/templates');
-                    die;
-                case 'delete':
-                    $this->templates->get($this->params[1], 'id_template');
-
-                    @unlink($this->path . 'apps/default/views/templates/' . $this->templates->slug . '.php');
-                    @unlink($this->path . 'apps/default/controllers/templates/' . $this->templates->slug . '.php');
-
-                    $this->elements->delete($this->params[1], 'id_template');
-                    $this->templates->delete($this->params[1], 'id_template');
-                    $this->tree->deleteTemplate($this->params[1]);
-
-                    $_SESSION['freeow']['title']   = 'Suppression d\'un template';
-                    $_SESSION['freeow']['message'] = 'Le template a bien &eacute;t&eacute; supprim&eacute; !';
-
-                    header('Location: ' . $this->lurl . '/templates');
-                    die;
-            }
-        }
+        $this->lTemplate = $this->templates->select('', 'name ASC');
     }
 
     public function _editElement()
@@ -144,13 +39,11 @@ class templatesController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->templates = $this->loadData('templates');
         $this->templates->get($this->params[0], 'id_template');
     }
 
     public function _elements()
     {
-        $this->templates = $this->loadData('templates');
         $this->templates->get($this->params[0], 'id_template');
 
         $this->elements  = $this->loadData('elements');
