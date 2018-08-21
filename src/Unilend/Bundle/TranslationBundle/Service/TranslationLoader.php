@@ -2,27 +2,23 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
-use Symfony\Component\Translation\Exception\InvalidResourceException;
-use Symfony\Component\Translation\Exception\NotFoundResourceException;
+use Doctrine\ORM\EntityManager;
+use Symfony\Component\Translation\Exception\{InvalidResourceException, NotFoundResourceException};
 use Symfony\Component\Translation\Loader\LoaderInterface;
 use Symfony\Component\Translation\MessageCatalogue;
-use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-
+use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 
 class TranslationLoader implements LoaderInterface
 {
     const SECTION_SEPARATOR = '_';
-    /**
-     * @var \translations
-     */
+
     private $translationRepository;
     private $defaultLanguage;
 
-    public function __construct(EntityManager $entityManager, $defaultLanguage)
+    public function __construct(EntityManager $entityManager, string $defaultLanguage)
     {
-        $this->translationRepository = $entityManager->getRepository('translations');
+        $this->translationRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Translations');
         $this->defaultLanguage       = $defaultLanguage;
-
     }
 
     /**
@@ -39,11 +35,11 @@ class TranslationLoader implements LoaderInterface
      */
     public function load($resource, $locale, $domain = 'messages')
     {
-        $translations = $this->translationRepository->getAllTranslationMessages($this->defaultLanguage);
-        $catalogue    = new MessageCatalogue($this->defaultLanguage);
+        $catalogue = new MessageCatalogue($this->defaultLanguage);
 
-        foreach ($translations as $translation) {
-            $catalogue->set($translation['section'] . self::SECTION_SEPARATOR . $translation['name'], $translation['translation'], $domain);
+        /** @var Translations $translation */
+        foreach ($this->translationRepository->findBy(['locale' => $this->defaultLanguage]) as $translation) {
+            $catalogue->set($translation->getSection() . self::SECTION_SEPARATOR . $translation->getName(), $translation->getTranslation(), $domain);
         }
 
         return $catalogue;
