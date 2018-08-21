@@ -28,7 +28,8 @@ class ContactController extends Controller
     public function contactAction(Request $request)
     {
         /** @var BaseUser $user */
-        $user = $this->getUser();
+        $user     = $this->getUser();
+        $template = [];
 
         if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
             $template['formData'] = $this->getContactFormTemplateData($user);

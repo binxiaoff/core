@@ -65,7 +65,7 @@ class MailjetEventSpam
     /**
      * @var string
      *
-     * @ORM\Column(name="payload", type="string", length=255, nullable=false)
+     * @ORM\Column(name="payload", type="string", length=255, nullable=true)
      */
     private $payload;
 
@@ -264,11 +264,11 @@ class MailjetEventSpam
     /**
      * Set payload
      *
-     * @param string $payload
+     * @param string|null $payload
      *
      * @return MailjetEventSpam
      */
-    public function setPayload(string $payload): MailjetEventSpam
+    public function setPayload(?string $payload): MailjetEventSpam
     {
         $this->payload = $payload;
 
@@ -278,9 +278,9 @@ class MailjetEventSpam
     /**
      * Get payload
      *
-     * @return string
+     * @return string|null
      */
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }
