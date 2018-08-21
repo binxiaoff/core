@@ -65,7 +65,7 @@ class MailjetEventUnsub
     /**
      * @var string
      *
-     * @ORM\Column(name="payload", type="string", length=255, nullable=false)
+     * @ORM\Column(name="payload", type="string", length=255, nullable=true)
      */
     private $payload;
 
@@ -284,11 +284,11 @@ class MailjetEventUnsub
     /**
      * Set payload
      *
-     * @param string $payload
+     * @param string|null $payload
      *
      * @return MailjetEventUnsub
      */
-    public function setPayload(string $payload): MailjetEventUnsub
+    public function setPayload(?string $payload): MailjetEventUnsub
     {
         $this->payload = $payload;
 
@@ -298,9 +298,9 @@ class MailjetEventUnsub
     /**
      * Get payload
      *
-     * @return string
+     * @return string|null
      */
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }

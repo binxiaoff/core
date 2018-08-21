@@ -65,7 +65,7 @@ class MailjetEventClick
     /**
      * @var string
      *
-     * @ORM\Column(name="payload", type="string", length=255, nullable=false)
+     * @ORM\Column(name="payload", type="string", length=255, nullable=true)
      */
     private $payload;
 
@@ -265,11 +265,11 @@ class MailjetEventClick
     /**
      * Set payload
      *
-     * @param string $payload
+     * @param string|null $payload
      *
      * @return MailjetEventClick
      */
-    public function setPayload(string $payload): MailjetEventClick
+    public function setPayload(?string $payload): MailjetEventClick
     {
         $this->payload = $payload;
 
@@ -277,11 +277,11 @@ class MailjetEventClick
     }
 
     /**
-     * Get payload
+     * Get payload|null
      *
      * @return string
      */
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }
