@@ -716,7 +716,7 @@ class dossiersController extends bootstrap
                 $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
             }
 
-            if (false === in_array($this->projects->period, [0, 1000000]) && false === in_array($this->projects->period, $this->dureePossible)) {
+            if (false === empty($this->projects->period) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
                 sort($this->dureePossible);
             }
