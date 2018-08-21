@@ -2,11 +2,9 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 
 class LenderAutoEvaluationController extends Controller
 {
@@ -112,7 +110,7 @@ class LenderAutoEvaluationController extends Controller
      *
      * @return Response
      */
-    public function evaluationResultAction()
+    public function evaluationResultAction(): Response
     {
         $answers = $this->get('session')->get('answers', []);
         $this->get('session')->remove('answers');
