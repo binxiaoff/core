@@ -5,9 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\Statement;
-use Doctrine\ORM\{
-    AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException
-};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException};
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
@@ -927,11 +925,11 @@ class ClientsRepository extends EntityRepository
         ];
         $type = [
             'statusValid'            => PDO::PARAM_INT,
-            'clientStatus'           => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'clientStatus'           => Connection::PARAM_INT_ARRAY,
             'attachmentTypeIdentity' => PDO::PARAM_INT,
             'attachmentTypeAddress'  => PDO::PARAM_INT,
             'attachmentTypeRib'      => PDO::PARAM_INT,
-            'vigilanceStatus'        => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+            'vigilanceStatus'        => Connection::PARAM_INT_ARRAY,
             'lenderWallet'           => PDO::PARAM_STR,
             'clientStatusSuspended'  => PDO::PARAM_INT,
             'idUserFront'            => PDO::PARAM_INT,
@@ -983,9 +981,10 @@ class ClientsRepository extends EntityRepository
               AND TIMESTAMPDIFF(YEAR, c.naissance, CURDATE()) < " . LenderValidationManager::MAX_AGE_AUTOMATIC_VALIDATION . "
               AND last_cvsh.id_client IS NULL";
 
-        return $this->getEntityManager()
-                    ->getConnection()
-                    ->executeQuery($query, $bind, $type)
-                    ->fetchAll(\PDO::FETCH_ASSOC);
+        return $this
+                ->getEntityManager()
+                ->getConnection()
+                ->executeQuery($query, $bind, $type)
+                ->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
