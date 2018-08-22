@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyAddress, Pays};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\librairies\CacheKeys;
 
 /**
  * Class LocationManager
@@ -144,7 +145,7 @@ class LocationManager
             $countyList[$country->getIdPays()] = $country->getFr();
         }
 
-        $cachedItem->set($countyList)->expiresAfter(3600);
+        $cachedItem->set($countyList)->expiresAfter(CacheKeys::LONG_TIME);
         $this->cachePool->save($cachedItem);
 
         return $countyList;
@@ -167,7 +168,7 @@ class LocationManager
             $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
         }
 
-        $cachedItem->set($nationalityList)->expiresAfter(3600);
+        $cachedItem->set($nationalityList)->expiresAfter(CacheKeys::LONG_TIME);
         $this->cachePool->save($cachedItem);
 
         return $nationalityList;

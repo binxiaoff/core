@@ -8,6 +8,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Pays, Projects};
 use Unilend\Bundle\CoreBusinessBundle\Service\{LocationManager, Simulator\EntityManager, StatisticsManager};
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 use Unilend\core\Loader;
+use Unilend\librairies\CacheKeys;
 
 class FrontBundleExtension extends \Twig_Extension
 {
@@ -83,7 +84,7 @@ class FrontBundleExtension extends \Twig_Extension
             $settings->get($name, 'type');
             $value = $settings->value;
 
-            $cachedItem->set($value)->expiresAfter(3600);
+            $cachedItem->set($value)->expiresAfter(CacheKeys::LONG_TIME);
             $this->cachePool->save($cachedItem);
 
             return $value;
@@ -200,7 +201,7 @@ class FrontBundleExtension extends \Twig_Extension
         $dates     = Loader::loadLib('dates');
         $monthList = $dates->tableauMois['fr'];
 
-        $cachedItem->set($monthList)->expiresAfter(3600);
+        $cachedItem->set($monthList)->expiresAfter(CacheKeys::LONG_TIME);
         $this->cachePool->save($cachedItem);
 
         return $monthList;
