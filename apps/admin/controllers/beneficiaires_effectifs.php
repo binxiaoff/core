@@ -2,11 +2,7 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\AttachmentType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BeneficialOwner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyBeneficialOwnerDeclaration;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Zones;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BeneficialOwner, CompanyBeneficialOwnerDeclaration, Pays, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\BeneficialOwnerRepository;
 use Unilend\Bundle\CoreBusinessBundle\Service\BeneficialOwnerManager;
 
@@ -553,7 +549,7 @@ class beneficiaires_effectifsController extends bootstrap
         ];
 
         if ($formatForView) {
-            $countriesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2');
+            $countriesRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays');
             $birthCountry        = $countriesRepository->find($owner->getIdClient()->getIdPaysNaissance());
             $country             = $countriesRepository->find($clientAddress->getIdPaysFiscal());
 
@@ -605,7 +601,7 @@ class beneficiaires_effectifsController extends bootstrap
     {
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $country       = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($countryId);
+        $country       = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($countryId);
 
         if (null === $country) {
             return [
@@ -614,7 +610,7 @@ class beneficiaires_effectifsController extends bootstrap
             ];
         }
 
-        if (PaysV2::COUNTRY_FRANCE === $country->getIdPays() && null !== $birthPlace) {
+        if (Pays::COUNTRY_FRANCE === $country->getIdPays() && null !== $birthPlace) {
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LocationManager $locationManager */
             $locationManager = $this->get('unilend.service.location_manager');
             $city            = $locationManager->getCities($birthPlace, true);

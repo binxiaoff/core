@@ -137,7 +137,7 @@
     </div>
 
     {# Show if country changes from France #}
-    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\PaysV2::COUNTRY_FRANCE') %}in{% endif %}">
+    <div id="tax-certificate" class="row collapse {% if mainAddress.getIdCountry().getIdPays() != constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Pays::COUNTRY_FRANCE') %}in{% endif %}">
         <div class="form-field">
             <label>{% trans %} lender-profile_information-tab-fiscal-address-tax-certificate-label {% endtrans %}
                 <span class="field-required">*<span class="sr-only">{% trans %} common_mandatory-field {% endtrans %}</span></span>

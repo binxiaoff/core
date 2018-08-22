@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, CompanyStatus, ProjectsStatus
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, CompanyStatus, ProjectsStatus};
 
 class companies extends companies_crud
 {
@@ -216,7 +214,7 @@ class companies extends companies_crud
           FROM
             companies co
             LEFT JOIN company_address ca ON co.id_company = ca.id_company AND id_type = (SELECT id FROM address_type WHERE label = '" . AddressType::TYPE_MAIN_ADDRESS . "')
-            LEFT JOIN pays_v2 acountry ON (IFNULL(ca.id_country, co.id_pays) = acountry.id_pays)";
+            LEFT JOIN pays acountry ON (IFNULL(ca.id_country, co.id_pays) = acountry.id_pays)";
 
         return $this->bdd->executeQuery($query);
     }

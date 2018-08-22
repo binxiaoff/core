@@ -7,9 +7,8 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, PaysV2, ProjectRepaymentTaskLog, Projects, ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyStatus, Echeanciers, Loans, Operation, OperationSubType, OperationType, Pays, ProjectRepaymentTaskLog, Projects,
+    ProjectsStatus, Receptions, SponsorshipCampaign, UnilendStats, Wallet};
 use Unilend\librairies\CacheKeys;
 
 class OperationRepository extends EntityRepository
@@ -240,7 +239,7 @@ class OperationRepository extends EntityRepository
         $bind  = [
             'year'         => $year,
             'idWallet'     => $wallet->getId(),
-            'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
+            'eeaCountries' => Pays::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
             'year'         => \PDO::PARAM_INT,
@@ -280,7 +279,7 @@ class OperationRepository extends EntityRepository
         $bind  = [
             'year'         => $year,
             'idWallet'     => $wallet->getId(),
-            'eeaCountries' => PaysV2::EUROPEAN_ECONOMIC_AREA
+            'eeaCountries' => Pays::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
             'year'         => \PDO::PARAM_INT,
@@ -328,7 +327,7 @@ class OperationRepository extends EntityRepository
             'year'          => $year,
             'idWallet'      => $wallet->getId(),
             'taxOperations' => OperationType::TAX_TYPES_FR,
-            'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
+            'eeaCountries'  => Pays::EUROPEAN_ECONOMIC_AREA
         ];
         $types = [
             'year'          => \PDO::PARAM_INT,
@@ -348,37 +347,44 @@ class OperationRepository extends EntityRepository
      */
     public function sumRegularizedNetInterestRepaymentsNotInEeaExceptFrance(Wallet $wallet, $year)
     {
-        $query = 'SELECT
-                      SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
-                    FROM operation o_interest
-                     LEFT JOIN (SELECT 
-                                  SUM(amount) AS amount,
-                                  id_repayment_schedule
-                                 FROM operation
-                                  WHERE operation.id_wallet_debtor = :idWallet
-                                  AND operation.id_type IN (SELECT id FROM operation_type WHERE label IN (:taxOperations))
-                                  GROUP BY id_repayment_schedule) AS o_taxes ON o_interest.id_repayment_schedule = o_taxes.id_repayment_schedule
-                     LEFT JOIN (SELECT
-                                  o.id_wallet_debtor,
-                                  o.id,
-                                  (SELECT lih.id_pays
-                                   FROM lenders_imposition_history lih
-                                   WHERE id_lender = o.id_wallet_debtor AND DATE(lih.added) <= DATE(o.added)
-                                   ORDER BY lih.added DESC
-                                   LIMIT 1) AS id_pays
-                                FROM operation o
-                                  INNER JOIN operation_type ot ON o.id_type = ot.id
-                                WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '" AND o.id_wallet_debtor = :idWallet) AS tlih ON o_interest.id = tlih.id
-                    WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
-                    AND LEFT(o_interest.added, 4) = :year
-                         AND o_interest.id_wallet_debtor = :idWallet';
+        $query = '
+            SELECT SUM(IF(tlih.id_pays IN (:eeaCountries), o_interest.amount, 0)) AS interest
+            FROM operation o_interest
+            LEFT JOIN (
+              SELECT 
+                SUM(amount) AS amount,
+                id_repayment_schedule
+              FROM operation
+              WHERE operation.id_wallet_debtor = :idWallet
+                AND operation.id_type IN (SELECT id FROM operation_type WHERE label IN (:taxOperations))
+              GROUP BY id_repayment_schedule
+            ) AS o_taxes ON o_interest.id_repayment_schedule = o_taxes.id_repayment_schedule
+            LEFT JOIN (
+              SELECT
+                o.id_wallet_debtor,
+                o.id,
+                (
+                  SELECT lih.id_pays
+                  FROM lenders_imposition_history lih
+                  WHERE id_lender = o.id_wallet_debtor AND DATE(lih.added) <= DATE(o.added)
+                  ORDER BY lih.added DESC
+                  LIMIT 1
+                ) AS id_pays
+              FROM operation o
+                INNER JOIN operation_type ot ON o.id_type = ot.id
+              WHERE ot.label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '" AND o.id_wallet_debtor = :idWallet
+            ) AS tlih ON o_interest.id = tlih.id
+            WHERE o_interest.id_type = (SELECT id FROM operation_type WHERE label = "' . OperationType::GROSS_INTEREST_REPAYMENT_REGULARIZATION . '")
+              AND LEFT(o_interest.added, 4) = :year
+              AND o_interest.id_wallet_debtor = :idWallet';
 
-        $bind  = [
+        $bind = [
             'year'          => $year,
             'idWallet'      => $wallet->getId(),
             'taxOperations' => OperationType::TAX_TYPES_FR,
-            'eeaCountries'  => PaysV2::EUROPEAN_ECONOMIC_AREA
+            'eeaCountries'  => Pays::EUROPEAN_ECONOMIC_AREA
         ];
+
         $types = [
             'year'          => \PDO::PARAM_INT,
             'idWallet'      => \PDO::PARAM_INT,

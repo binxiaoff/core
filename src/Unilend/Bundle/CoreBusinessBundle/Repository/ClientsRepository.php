@@ -5,16 +5,12 @@ namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\Statement;
-use Doctrine\ORM\{
-    AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException
-};
+use Doctrine\ORM\{AbstractQuery, EntityRepository, NonUniqueResultException, NoResultException};
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, WalletType};
 
 class ClientsRepository extends EntityRepository
 {
@@ -159,7 +155,7 @@ class ClientsRepository extends EntityRepository
         $qb = $this->createQueryBuilder('c');
         $qb->select('c.idClient, ca.idPaysFiscal, p.fr as countryLabel')
            ->innerJoin('UnilendCoreBusinessBundle:ClientsAdresses', 'ca', Join::WITH, 'c.idClient = ca.idClient')
-           ->innerJoin('UnilendCoreBusinessBundle:PaysV2', 'p', Join::WITH, 'p.idPays= ca.idPaysFiscal')
+           ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays= ca.idPaysFiscal')
            ->where('p.vigilanceStatus = :vigilance_status')
            ->setParameter('vigilance_status', $vigilanceStatus)
            ->andWhere('c.added >= :added_date OR ca.updated >= :updated_date')
@@ -334,8 +330,8 @@ class ClientsRepository extends EntityRepository
             INNER JOIN wallet w FORCE INDEX (idx_id_client) ON w.id_client = c.id_client
             INNER JOIN wallet_type wt ON w.id_type = wt.id
             LEFT JOIN client_address ca ON c.id_address = ca.id
-            LEFT JOIN pays_v2 ccountry ON c.id_pays_naissance = ccountry.id_pays
-            LEFT JOIN pays_v2 acountry ON ca.id_country = acountry.id_pays
+            LEFT JOIN pays ccountry ON c.id_pays_naissance = ccountry.id_pays
+            LEFT JOIN pays acountry ON ca.id_country = acountry.id_pays
             LEFT JOIN nationalites_v2 nv2 ON c.id_nationalite = nv2.id_nationalite
             LEFT JOIN loans l ON w.id = l.id_lender and l.status = " . Loans::STATUS_ACCEPTED . "
             LEFT JOIN clients_status cs ON csh.id_status = cs.id
