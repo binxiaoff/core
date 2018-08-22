@@ -2,14 +2,13 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
-    OffresBienvenues, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Security\{BCryptPasswordEncoder, User\UserPartner};
@@ -152,7 +151,7 @@ class LenderSubscriptionController extends Controller
 
         $noUsPerson ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-        if (PaysV2::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (Pays::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -161,18 +160,18 @@ class LenderSubscriptionController extends Controller
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-nationality')));
         }
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($client->getIdPaysNaissance())) {
+        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
 
-        if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
+        if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
             $countryCheck = false;
             $form->get('client')->get('villeNaissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-place')));
         }
 
         if ($countryCheck) {
-            if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
+            if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
                 $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['insee' => $client->getInseeBirth()]);
 
                 if (null !== $cityByInsee) {
@@ -180,7 +179,7 @@ class LenderSubscriptionController extends Controller
                 }
 
             } else {
-                $country        = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($client->getIdPaysNaissance());
+                $country        = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance());
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
                 if (null !== $country && $inseeCountries->getByCountryIso(trim($country->getIso()))) {
                     $client->setInseeBirth($inseeCountries->COG);
@@ -296,7 +295,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === Pays::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password   = password_hash($client->getPassword(), PASSWORD_DEFAULT); // TODO: use the Symfony\Component\Security\Core\Encoder\UserPasswordEncoder (need TECH-108)
             $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
@@ -429,7 +428,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $countryId = $form->get('mainAddress')->get('idCountry')->getData();
-        if (false === empty($countryId) && PaysV2::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (false === empty($countryId) && Pays::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -592,7 +591,7 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $countryId !== PaysV2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $countryId !== Pays::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
@@ -623,7 +622,7 @@ class LenderSubscriptionController extends Controller
         $bic                 = $form->get('bankAccount')->get('bic')->getData();
         $bankAccountDocument = null;
 
-        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
@@ -686,7 +685,7 @@ class LenderSubscriptionController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO   => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($countryId !== PaysV2::COUNTRY_FRANCE) {
+        if ($countryId !== Pays::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())) {
@@ -799,8 +798,8 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit",
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $clientHash
      * @param Request $request
@@ -831,8 +830,8 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form",
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $clientHash
      * @param Request $request
@@ -933,8 +932,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/devenir-preteur-lp", name="lender_landing_page")
-     * @Method("GET")
+     * @Route("/devenir-preteur-lp", name="lender_landing_page", methods={"GET"})
      *
      * @return Response
      */
@@ -947,8 +945,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
-     * @Method("GET")
+     * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page", methods={"GET"})
      *
      * @param Request $request
      *
@@ -982,8 +979,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
-     * @Method("GET")
+     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only", methods={"GET"})
      *
      * @return Response
      */
@@ -997,8 +993,7 @@ class LenderSubscriptionController extends Controller
 
     /**
      * Scheme and host are absolute to make partners LPs work
-     * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form")
-     * @Method("POST")
+     * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form", methods={"POST"})
      *
      * @param Request $request
      *
@@ -1196,8 +1191,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1214,8 +1208,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1232,8 +1225,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1250,8 +1242,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age")
-     * @Method("POST")
+     * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age", methods={"POST"})
      *
      * @param Request $request
      *
@@ -1304,8 +1295,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1316,7 +1306,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
 
-            if (false === empty($get['country']) && PaysV2::COUNTRY_FRANCE != $get['country']) {
+            if (false === empty($get['country']) && Pays::COUNTRY_FRANCE != $get['country']) {
                 return $this->json(['status' => true]);
             }
 
@@ -1336,8 +1326,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1349,7 +1338,7 @@ class LenderSubscriptionController extends Controller
             $country = $request->query->get('country');
             $inseeCode = $request->query->get('insee');
 
-            if (false === empty($country) && PaysV2::COUNTRY_FRANCE != $country) {
+            if (false === empty($country) && Pays::COUNTRY_FRANCE != $country) {
                 return $this->json(['status' => true]);
             }
 

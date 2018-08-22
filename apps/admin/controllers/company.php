@@ -2,12 +2,8 @@
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, Clients, ClientsStatus, Companies, PaysV2, Zones
-};
-use Unilend\Bundle\WSClientBundle\Entity\Altares\{
-    CompanyIdentityDetail, EstablishmentIdentityDetail
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, Pays, Zones};
+use Unilend\Bundle\WSClientBundle\Entity\Altares\{CompanyIdentityDetail, EstablishmentIdentityDetail};
 
 class companyController extends bootstrap
 {
@@ -232,7 +228,7 @@ class companyController extends bootstrap
             }
             $entityManager->flush($this->company);
 
-            $addressManager->saveCompanyAddress($address, $postCode, $city, PaysV2::COUNTRY_FRANCE, $this->company, AddressType::TYPE_MAIN_ADDRESS);
+            $addressManager->saveCompanyAddress($address, $postCode, $city, Pays::COUNTRY_FRANCE, $this->company, AddressType::TYPE_MAIN_ADDRESS);
 
             if ($bankAccountDocument) {
                 $attachmentTypeRib = $entityManager->getRepository('UnilendCoreBusinessBundle:AttachmentType')->find(AttachmentType::RIB);

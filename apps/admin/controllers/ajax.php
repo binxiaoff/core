@@ -1,9 +1,7 @@
 <?php
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Bids, Clients, ClientsStatus, PaysV2, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Bids, Clients, ClientsStatus, Pays, ProjectRejectionReason, Projects, ProjectsComments, ProjectsNotes, ProjectsStatus, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -312,7 +310,7 @@ class ajaxController extends bootstrap
                             $_POST['address_etape2'],
                             $_POST['postal_etape2'],
                             $_POST['ville_etape2'],
-                            PaysV2::COUNTRY_FRANCE,
+                            Pays::COUNTRY_FRANCE,
                             $companyEntity,
                             AddressType::TYPE_MAIN_ADDRESS
                             );
@@ -323,7 +321,7 @@ class ajaxController extends bootstrap
                             $_POST['adresse_correspondance_etape2'],
                             $_POST['zip_correspondance_etape2'],
                             $_POST['city_correspondance_etape2'],
-                            PaysV2::COUNTRY_FRANCE,
+                            Pays::COUNTRY_FRANCE,
                             $companyEntity,
                             AddressType::TYPE_POSTAL_ADDRESS
                         );

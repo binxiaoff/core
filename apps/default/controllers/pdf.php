@@ -1043,8 +1043,6 @@ class pdfController extends bootstrap
         $this->projects = $this->loadData('projects');
 
         $this->projects->get($loan->getProject()->getIdProject());
-        /** @var \pays_v2 pays */
-        $this->pays = $this->loadData('pays_v2');
         /** @var \echeanciers echeanciers */
         $this->echeanciers = $this->loadData('echeanciers');
         /** @var \projects_status_history projects_status_history */

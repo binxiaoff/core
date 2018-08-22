@@ -2,25 +2,15 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{
-    Method, Route
-};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    RedirectResponse, Request, Response
-};
+use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AttachmentType, BorrowingMotive, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ProjectRequestManager, ProjectStatusManager
-};
-use Unilend\Bundle\FrontBundle\Service\{
-    DataLayerCollector
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, BorrowingMotive, Clients, Companies, Product, ProjectAbandonReason, ProjectRejectionReason, Projects, ProjectsStatus, Users};
+use Unilend\Bundle\CoreBusinessBundle\Service\{ProjectRequestManager, ProjectStatusManager};
+use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector};
 use Unilend\core\Loader;
 
 class ProjectRequestController extends Controller
@@ -48,7 +38,7 @@ class ProjectRequestController extends Controller
      *
      * @return Response
      */
-    public function indexAction($hash, Request $request)
+    public function indexAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_INDEX, $hash, $request);
 
@@ -66,7 +56,7 @@ class ProjectRequestController extends Controller
      *
      * @return Response
      */
-    public function landingPageStartAction(Request $request)
+    public function landingPageStartAction(Request $request): Response
     {
         if ($request->isMethod(Request::METHOD_GET)) {
             return $this->redirectToRoute('home_borrower', ['_fragment' => 'homeemp-section-esim']);
@@ -149,14 +139,13 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/simulateur", name="project_request_simulator_start")
-     * @Method("GET")
+     * @Route("/depot_de_dossier/simulateur", name="project_request_simulator_start", methods={"GET"})
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function simulatorStartAction(Request $request)
+    public function simulatorStartAction(Request $request): Response
     {
         if (empty($request->query->get('hash'))) {
             return $this->redirectToRoute('home_borrower');
@@ -174,9 +163,9 @@ class ProjectRequestController extends Controller
     /**
      * @param Projects $project
      *
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @return RedirectResponse
      */
-    private function start(Projects $project)
+    private function start(Projects $project): RedirectResponse
     {
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
         if ($project->getIdCompany()->getSiren()) {
@@ -201,15 +190,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function contactAction($hash, Request $request)
+    public function contactAction(string $hash, Request $request): Response
     {
         $template = [];
         $project  = $this->checkProjectHash(self::PAGE_ROUTE_CONTACT, $hash, $request);
@@ -322,15 +311,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/depot_de_dossier/etape2/{hash}", name="project_request_contact_form",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function contactFormAction($hash, Request $request)
+    public function contactFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_CONTACT, $hash, $request);
 
@@ -417,15 +406,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function financeAction($hash, Request $request)
+    public function financeAction(string $hash, Request $request): Response
     {
         $template = [];
         $project  = $this->checkProjectHash(self::PAGE_ROUTE_FINANCE, $hash, $request);
@@ -538,15 +527,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/depot_de_dossier/etape3/{hash}", name="project_request_finance_form",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function financeFormAction($hash, Request $request)
+    public function financeFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_FINANCE, $hash, $request);
 
@@ -695,15 +684,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function partnerAction($hash, Request $request)
+    public function partnerAction(string $hash, Request $request): Response
     {
         $template = [];
         $project  = $this->checkProjectHash(self::PAGE_ROUTE_PARTNER, $hash, $request);
@@ -773,15 +762,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/depot_de_dossier/partenaire/{hash}", name="project_request_partner_form",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function partnerFormAction($hash, Request $request)
+    public function partnerFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_PARTNER, $hash, $request);
 
@@ -889,15 +878,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function prospectAction($hash, Request $request)
+    public function prospectAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_PROSPECT, $hash, $request);
 
@@ -931,15 +920,14 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
-     *
+     * @Route("/depot_de_dossier/prospect/{hash}", name="project_request_prospect_form",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function prospectFormAction($hash, Request $request)
+    public function prospectFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_PROSPECT, $hash, $request);
 
@@ -991,15 +979,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function filesAction($hash, Request $request)
+    public function filesAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_FILES, $hash, $request);
 
@@ -1072,15 +1060,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/depot_de_dossier/fichiers/{hash}", name="project_request_files_form",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function filesFormAction($hash, Request $request)
+    public function filesFormAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_FILES, $hash, $request);
 
@@ -1114,15 +1102,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/fin/{hash}", name="project_request_end",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function endAction($hash, Request $request)
+    public function endAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_END, $hash, $request);
 
@@ -1185,15 +1173,15 @@ class ProjectRequestController extends Controller
     }
 
     /**
-     * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails", requirements={"hash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/depot_de_dossier/emails/{hash}", name="project_request_emails",
+     *     requirements={"hash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string  $hash
      * @param Request $request
      *
      * @return Response
      */
-    public function emailsAction($hash, Request $request)
+    public function emailsAction(string $hash, Request $request): Response
     {
         $project = $this->checkProjectHash(self::PAGE_ROUTE_EMAILS, $hash, $request);
 
@@ -1290,7 +1278,7 @@ class ProjectRequestController extends Controller
      *
      * @return Response|Projects
      */
-    private function checkProjectHash($route, $hash, Request $request)
+    private function checkProjectHash(string $route, string $hash, Request $request)
     {
         if (1 !== preg_match('/^[a-z0-9-]{32,36}$/', $hash)) {
             throw new NotFoundHttpException('Invalid project hash');
@@ -1396,7 +1384,7 @@ class ProjectRequestController extends Controller
      *
      * @return string
      */
-    private function removeEmailSuffix($email)
+    private function removeEmailSuffix(string $email): string
     {
         return preg_replace('/^(.*)-[0-9]+$/', '$1', $email);
     }
@@ -1409,7 +1397,6 @@ class ProjectRequestController extends Controller
      * @param string    $lastName
      * @param string    $position
      * @param string    $mobilePhone
-     *
      */
     private function saveContactDetails(Companies $company, string $email, string $formOfAddress, string $firstName, string $lastName, string $position, string $mobilePhone): void
     {

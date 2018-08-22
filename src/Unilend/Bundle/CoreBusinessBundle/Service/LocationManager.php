@@ -4,8 +4,9 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyAddress;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyAddress, Pays};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
+use Unilend\librairies\CacheKeys;
 
 /**
  * Class LocationManager
@@ -60,15 +61,14 @@ class LocationManager
      */
     private function getMapboxGeocoding($city, $postCode, $countryId)
     {
-        if (0 == $countryId) {
-            $countryId = 1;
+        if (empty($countryId)) {
+            $countryId = Pays::COUNTRY_FRANCE;
         }
 
-        /** @var \pays_v2 $country */
-        $country = $this->entityManagerSimulator->getRepository('pays_v2');
+        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($countryId);
 
-        if ($country->get($countryId)) {
-            $curl = curl_init('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($city . ' ' . $postCode . ' ' . $country->fr) . '.json?access_token=' . $this->mapboxToken);
+        if (null !== $country) {
+            $curl = curl_init('https://api.mapbox.com/geocoding/v5/mapbox.places/' . urlencode($city . ' ' . $postCode . ' ' . $country->getFr()) . '.json?access_token=' . $this->mapboxToken);
 
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($curl, CURLOPT_HEADER, false);
@@ -126,49 +126,52 @@ class LocationManager
         return array_values($cityList);
     }
 
-    public function getCountries()
+    /**
+     * @return array
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function getCountries(): array
     {
         $cachedItem = $this->cachePool->getItem('countryList');
 
-        if (false === $cachedItem->isHit()) {
-            /** @var \pays_v2 $countries */
-            $countries = $this->entityManagerSimulator->getRepository('pays_v2');
-            /** @var array $countyList */
-            $countyList = [];
-
-            foreach ($countries->select('', 'ordre ASC') as $country) {
-                $countyList[$country['id_pays']] = $country['fr'];
-            }
-
-            $cachedItem->set($countyList)->expiresAfter(3600);
-            $this->cachePool->save($cachedItem);
-            return $countyList;
-        } else {
+        if ($cachedItem->isHit()) {
             return $cachedItem->get();
         }
+
+        $countyList = [];
+        $countries  = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->findBy([], ['ordre' => 'ASC']);
+
+        foreach ($countries as $country) {
+            $countyList[$country->getIdPays()] = $country->getFr();
+        }
+
+        $cachedItem->set($countyList)->expiresAfter(CacheKeys::LONG_TIME);
+        $this->cachePool->save($cachedItem);
+
+        return $countyList;
     }
 
     public function getNationalities()
     {
         $cachedItem = $this->cachePool->getItem('nationalityList');
 
-        if (false === $cachedItem->isHit()) {
-
-            /** @var \nationalites_v2 $nationalities */
-            $nationalities = $this->entityManagerSimulator->getRepository('nationalites_v2');
-            /** @var array $nationalityList */
-            $nationalityList = [];
-
-            foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
-                $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
-            }
-
-            $cachedItem->set($nationalityList)->expiresAfter(3600);
-            $this->cachePool->save($cachedItem);
-            return $nationalityList;
-        } else {
+        if ($cachedItem->isHit()) {
             return $cachedItem->get();
         }
+
+        /** @var \nationalites_v2 $nationalities */
+        $nationalities = $this->entityManagerSimulator->getRepository('nationalites_v2');
+        /** @var array $nationalityList */
+        $nationalityList = [];
+
+        foreach ($nationalities->select('', 'ordre ASC') as $nationality) {
+            $nationalityList[$nationality['id_nationalite']] = $nationality['fr_f'];
+        }
+
+        $cachedItem->set($nationalityList)->expiresAfter(CacheKeys::LONG_TIME);
+        $this->cachePool->save($cachedItem);
+
+        return $nationalityList;
     }
 
     /**

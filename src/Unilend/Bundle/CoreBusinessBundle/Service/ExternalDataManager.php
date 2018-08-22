@@ -3,29 +3,17 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\{
-    EntityManager, OptimisticLockException
-};
-use Psr\Cache\{
-    CacheException, CacheItemPoolInterface
-};
+use Doctrine\ORM\{EntityManager, OptimisticLockException};
+use Psr\Cache\{CacheException, CacheItemPoolInterface};
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, PaysV2
-};
-use Unilend\Bundle\WSClientBundle\Entity\Altares\{
-    BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, CompanyRating, CompanyRatingHistory, InfolegaleExecutivePersonalChange, Pays};
+use Unilend\Bundle\WSClientBundle\Entity\Altares\{BalanceSheetListDetail, CompanyBalanceSheet, CompanyIdentityDetail, CompanyRatingDetail, FinancialSummaryListDetail};
 use Unilend\Bundle\WSClientBundle\Entity\Codinf\IncidentList;
 use Unilend\Bundle\WSClientBundle\Entity\Ellisphere\Report as EllisphereReport;
 use Unilend\Bundle\WSClientBundle\Entity\Euler\CompanyRating as EulerCompanyRating;
 use Unilend\Bundle\WSClientBundle\Entity\Infogreffe\CompanyIndebtedness;
-use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{
-    AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails
-};
-use Unilend\Bundle\WSClientBundle\Service\{
-    AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager
-};
+use Unilend\Bundle\WSClientBundle\Entity\Infolegale\{AnnouncementDetails, DirectorAnnouncement, Mandate, ScoreDetails};
+use Unilend\Bundle\WSClientBundle\Service\{AltaresManager, CodinfManager, EllisphereManager, EulerHermesManager, InfogreffeManager, InfolegaleManager};
 use Unilend\librairies\CacheKeys;
 
 class ExternalDataManager
@@ -140,7 +128,7 @@ class ExternalDataManager
                             $identity->getAddress(),
                             $identity->getPostCode(),
                             $identity->getCity(),
-                            PaysV2::COUNTRY_FRANCE,
+                            Pays::COUNTRY_FRANCE,
                             $company,
                             AddressType::TYPE_MAIN_ADDRESS
                         );

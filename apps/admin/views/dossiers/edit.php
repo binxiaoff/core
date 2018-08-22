@@ -666,7 +666,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <th><label for="duree">Durée du prêt&nbsp;*</label></th>
                             <td>
                                 <select name="duree" id="duree" class="select"<?php if ($this->projects->status >= ProjectsStatus::PREP_FUNDING) : ?> disabled<?php endif; ?>>
-                                    <option<?= (in_array($this->projects->period, [0, 1000000]) ? ' selected' : '') ?> value="0"></option>
+                                    <option<?= empty($this->projects->period) ? ' selected' : '' ?> value=""></option>
                                     <?php foreach ($this->dureePossible as $duree) : ?>
                                         <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                     <?php endforeach ?>
@@ -948,7 +948,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                             <?php
                             $blockingPublishingError = [];
 
-                            if (in_array($this->projects->period, [0, 1000000])) {
+                            if (empty($this->projects->period)) {
                                 $blockingPublishingError[] = 'Veuillez sélectionner une durée de prêt';
                             }
 
@@ -1178,7 +1178,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                         <option value=""></option>
                                         <?php foreach ($this->projectAbandonReasonList as $abandonReason) : ?>
                                             <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectAbandonReason $abandonReason */ ?>
-                                            <option value="<?= $abandonReason->getIdAbandon() ?>"><?= $abandonReason->getReason() ?></option>
+                                            <option value="<?= $abandonReason->getIdAbandon() ?>" title="<?= htmlentities($abandonReason->getDescription()) ?>" class="tooltip"><?= $abandonReason->getReason() ?></option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>

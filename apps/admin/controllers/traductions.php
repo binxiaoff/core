@@ -79,11 +79,10 @@ class traductionsController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        /** @var Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager $entityManger */
-        $entityManger    = $this->get('unilend.service.entity_manager');
-        $translations    = $entityManger->getRepository('translations');
-        $locale          = $this->getParameter('kernel.default_locale');
-        $allTranslations = $translations->getAllTranslationMessages($locale);
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository $translationRepository */
+        $translationRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Translations');
+        $locale                = $this->getParameter('kernel.default_locale');
+        $allTranslations       = $translationRepository->findBy(['locale' => $locale]);
 
         header("Pragma: no-cache");
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0, public");
@@ -95,7 +94,17 @@ class traductionsController extends bootstrap
         fputs($handle, "\xEF\xBB\xBF"); // add UTF-8 BOM in order to be compatible to Excel
         fputcsv($handle, ['Id_translation', 'locale', 'Section', 'Nom', 'Traduction', 'Date d\'ajout', 'Date de mise à jour'], ';');
 
-        foreach ($allTranslations as $singleTranslation) {
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\Translations$translation */
+        foreach ($allTranslations as $translation) {
+            $singleTranslation = [
+                $translation->getIdTranslation(),
+                $translation->getLocale(),
+                $translation->getSection(),
+                $translation->getName(),
+                $translation->getTranslation(),
+                $translation->getAdded()->format('d-m-Y'),
+                $translation->getUpdated() ? $translation->getUpdated()->format('d-m-Y') : ''
+            ];
             fputcsv($handle, $singleTranslation, ';');
         }
 

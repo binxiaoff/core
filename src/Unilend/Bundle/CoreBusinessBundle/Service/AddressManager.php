@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, PaysV2};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, ClientAddress, ClientAddressAttachment, Clients, Companies, CompanyAddress, Pays};
 
 class AddressManager
 {
@@ -39,7 +39,7 @@ class AddressManager
             throw new \InvalidArgumentException('The address ' . $type . ' does not exist');
         }
 
-        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($idCountry);
+        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($idCountry);
         if (null === $country) {
             throw new \InvalidArgumentException('The country id ' . $idCountry . ' does not exist');
         }
@@ -72,14 +72,14 @@ class AddressManager
      * @param string      $address
      * @param string      $zip
      * @param string      $city
-     * @param PaysV2      $country
+     * @param Pays        $country
      * @param AddressType $type
      *
      * @return CompanyAddress|null
      * @throws \Doctrine\ORM\NonUniqueResultException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function saveNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ?CompanyAddress
+    private function saveNonLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, Pays $country, AddressType $type): ?CompanyAddress
     {
         $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
@@ -100,13 +100,13 @@ class AddressManager
      * @param string      $address
      * @param string      $zip
      * @param string      $city
-     * @param PaysV2      $country
+     * @param Pays        $country
      * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
+    private function saveLenderCompanyAddress(Companies $company, string $address, string $zip, string $city, Pays $country, AddressType $type)
     {
         $companyAddress      = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $company->getIdAddress() : $company->getIdPostalAddress();
         $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, $type);
@@ -144,11 +144,11 @@ class AddressManager
      * @param string                       $address
      * @param string                       $zip
      * @param string                       $city
-     * @param PaysV2                       $country
+     * @param Pays                         $country
      *
      * @return bool
      */
-    private function isAddressDataDifferent($addressObject, string $address, string $zip, string $city, PaysV2 $country): bool
+    private function isAddressDataDifferent($addressObject, string $address, string $zip, string $city, Pays $country): bool
     {
         return
             $address !== $addressObject->getAddress()
@@ -162,13 +162,13 @@ class AddressManager
      * @param string      $address
      * @param string      $zip
      * @param string      $city
-     * @param PaysV2      $country
+     * @param Pays        $country
      * @param AddressType $type
      *
      * @return CompanyAddress
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createCompanyAddress(Companies $company, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): CompanyAddress
+    private function createCompanyAddress(Companies $company, string $address, string $zip, string $city, Pays $country, AddressType $type): CompanyAddress
     {
         $companyAddress = new CompanyAddress();
         $companyAddress
@@ -352,7 +352,7 @@ class AddressManager
             throw new \InvalidArgumentException('The address ' . $type . ' does not exist');
         }
 
-        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($idCountry);
+        $country = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($idCountry);
         if (null === $country) {
             throw new \InvalidArgumentException('The country id ' . $idCountry . ' does not exist');
         }
@@ -378,13 +378,13 @@ class AddressManager
      * @param string      $address
      * @param string      $zip
      * @param string      $city
-     * @param PaysV2      $country
+     * @param Pays        $country
      * @param AddressType $type
      *
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function saveLenderClientAddress(Clients $client, string $address, string $zip, string $city, PaysV2 $country, AddressType $type)
+    private function saveLenderClientAddress(Clients $client, string $address, string $zip, string $city, Pays $country, AddressType $type)
     {
         $clientAddress       = AddressType::TYPE_MAIN_ADDRESS === $type->getLabel() ? $client->getIdAddress() : $client->getIdPostalAddress();
         $lastModifiedAddress = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, $type);
@@ -418,13 +418,13 @@ class AddressManager
      * @param string      $address
      * @param string      $zip
      * @param string      $city
-     * @param PaysV2      $country
+     * @param Pays        $country
      * @param AddressType $type
      *
      * @return ClientAddress
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    private function createClientAddress(Clients $client, string $address, string $zip, string $city, PaysV2 $country, AddressType $type): ClientAddress
+    private function createClientAddress(Clients $client, string $address, string $zip, string $city, Pays $country, AddressType $type): ClientAddress
     {
         $clientAddress = new ClientAddress();
         $clientAddress

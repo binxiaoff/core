@@ -4,10 +4,9 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\{
-    Input\InputInterface, Output\OutputInterface
-};
+use Symfony\Component\Console\{Input\InputInterface, Output\OutputInterface};
 use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender;
 use Unilend\librairies\CacheKeys;
 
 class ProjectsFundingCommand extends ContainerAwareCommand
@@ -29,13 +28,14 @@ class ProjectsFundingCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-        $entityManagerSimulator  = $this->getContainer()->get('unilend.service.entity_manager');
-        $mailerManager           = $this->getContainer()->get('unilend.service.email_manager');
-        $logger                  = $this->getContainer()->get('monolog.logger.console');
-        $projectManager          = $this->getContainer()->get('unilend.service.project_manager');
-        $projectLifecycleManager = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
-        $entityManager           = $this->getContainer()->get('doctrine.orm.entity_manager');
-        $projectRepository       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
+        $entityManagerSimulator         = $this->getContainer()->get('unilend.service.entity_manager');
+        $mailerManager                  = $this->getContainer()->get('unilend.service.email_manager');
+        $acceptedBidsNotificationSender = $this->getContainer()->get(AcceptedBidAndLoanNotificationSender::class);
+        $logger                         = $this->getContainer()->get('monolog.logger.console');
+        $projectManager                 = $this->getContainer()->get('unilend.service.project_manager');
+        $projectLifecycleManager        = $this->getContainer()->get('unilend.service.project_lifecycle_manager');
+        $entityManager                  = $this->getContainer()->get('doctrine.orm.entity_manager');
+        $projectRepository              = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         /** @var \loans $loan */
         $loan = $entityManagerSimulator->getRepository('loans');
@@ -81,7 +81,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $projectLifecycleManager->saveInterestRate($project);
 
                         $mailerManager->sendFundedAndFinishedToBorrower($project);
-                        $mailerManager->sendBidAccepted($project);
+                        $acceptedBidsNotificationSender->sendBidAccepted($project);
                     } else {
                         $projectLifecycleManager->treatFundFailed($project);
                         $projectLifecycleManager->saveInterestRate($project);
