@@ -11,9 +11,9 @@ use Symfony\Component\HttpFoundation\{JsonResponse, RedirectResponse, Request, R
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, ClientsStatus, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Bids, Clients, ClientsHistoryActions, Loans, Product, Projects, ProjectsStatus, UnderlyingContract, UnderlyingContractAttributeType, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Exception\BidException;
-use Unilend\Bundle\CoreBusinessBundle\Service\{BidManager, CIPManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\LoginAuthenticator;
 use Unilend\Bundle\FrontBundle\Service\{LenderAccountDisplayManager, ProjectDisplayManager};
 use Unilend\core\Loader;
