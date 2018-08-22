@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Projects, ProjectsStatus
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Projects, ProjectsStatus};
 
 ?>
 <script>
@@ -222,7 +220,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                                 <?= $sFundingtime ?> mois
                             </option>
                         <?php endforeach; ?>
-                        <option <?= isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '' ?> value="1000000">je ne sais pas</option>
                     </select>
                 </div>
             </div>
@@ -309,7 +306,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{
                         <td><a href="<?= $this->lurl ?>/emprunteurs/edit/<?= $p['id_client_owner'] ?>"><?= $p['name'] ?></a></td>
                         <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>
                         <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                         <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
