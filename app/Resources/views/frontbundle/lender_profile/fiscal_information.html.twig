@@ -253,9 +253,9 @@ classNames: 'user-preter-profile'
                                                     </p>
                                                     <p>
                                                         {{ client.nom }} {{ client.prenom }}<br>
-                                                        {{ clientAddress.adresse_fiscal }}<br>
-                                                        {{ clientAddress.cp_fiscal }}&nbsp;{{ clientAddress.ville_fiscal }}<br>
-                                                        {{ clientAddress.id_pays_fiscal|countryLabel }}
+                                                        {{ clientAddress.getAddress() }}<br>
+                                                        {{ clientAddress.getZip() }}&nbsp;{{ clientAddress.getCity() }}<br>
+                                                        {{ clientAddress.getIdCountry().getIdPays()|countryLabel }}
                                                     </p>
                                                 </div>
                                             </div>

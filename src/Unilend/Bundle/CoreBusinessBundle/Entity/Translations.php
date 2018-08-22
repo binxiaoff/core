@@ -8,7 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
  * Translations
  *
  * @ORM\Table(name="translations", indexes={@ORM\Index(name="section", columns={"section"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\TranslationsRepository")
+ * @ORM\HasLifecycleCallbacks
  */
 class Translations
 {
@@ -17,7 +18,7 @@ class Translations
     /**
      * @var string
      *
-     * @ORM\Column(name="locale", type="string", length=5, nullable=true)
+     * @ORM\Column(name="locale", type="string", length=5, nullable=false)
      */
     private $locale;
 
@@ -31,14 +32,14 @@ class Translations
     /**
      * @var string
      *
-     * @ORM\Column(name="name", type="string", length=191, nullable=true)
+     * @ORM\Column(name="name", type="string", length=191, nullable=false)
      */
     private $name;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="translation", type="text", length=65535, nullable=true)
+     * @ORM\Column(name="translation", type="text", length=65535, nullable=false)
      */
     private $translation;
 
@@ -52,7 +53,7 @@ class Translations
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated", type="datetime", nullable=false)
+     * @ORM\Column(name="updated", type="datetime", nullable=true)
      */
     private $updated;
 
@@ -65,16 +66,12 @@ class Translations
      */
     private $idTranslation;
 
-
-
     /**
-     * Set locale
-     *
      * @param string $locale
      *
      * @return Translations
      */
-    public function setLocale($locale)
+    public function setLocale(string $locale): Translations
     {
         $this->locale = $locale;
 
@@ -82,23 +79,19 @@ class Translations
     }
 
     /**
-     * Get locale
-     *
      * @return string
      */
-    public function getLocale()
+    public function getLocale(): string
     {
         return $this->locale;
     }
 
     /**
-     * Set section
-     *
      * @param string $section
      *
      * @return Translations
      */
-    public function setSection($section)
+    public function setSection(string $section): Translations
     {
         $this->section = $section;
 
@@ -106,23 +99,19 @@ class Translations
     }
 
     /**
-     * Get section
-     *
      * @return string
      */
-    public function getSection()
+    public function getSection(): string
     {
         return $this->section;
     }
 
     /**
-     * Set name
-     *
      * @param string $name
      *
      * @return Translations
      */
-    public function setName($name)
+    public function setName(string $name): Translations
     {
         $this->name = $name;
 
@@ -130,23 +119,19 @@ class Translations
     }
 
     /**
-     * Get name
-     *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
     /**
-     * Set translation
-     *
      * @param string $translation
      *
      * @return Translations
      */
-    public function setTranslation($translation)
+    public function setTranslation(string $translation): Translations
     {
         $this->translation = $translation;
 
@@ -154,23 +139,19 @@ class Translations
     }
 
     /**
-     * Get translation
-     *
      * @return string
      */
-    public function getTranslation()
+    public function getTranslation(): string
     {
         return $this->translation;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return Translations
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): Translations
     {
         $this->added = $added;
 
@@ -178,23 +159,19 @@ class Translations
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return Translations
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated): Translations
     {
         $this->updated = $updated;
 
@@ -202,22 +179,35 @@ class Translations
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idTranslation
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdTranslation()
+    public function getIdTranslation(): int
     {
         return $this->idTranslation;
+    }
+    /**
+     * @ORM\PrePersist
+     */
+    public function setAddedValue()
+    {
+        if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
+            $this->added = new \DateTime();
+        }
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function seUpdatedValue()
+    {
+        $this->updated = new \DateTime();
     }
 }

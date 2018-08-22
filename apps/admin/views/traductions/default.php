@@ -7,7 +7,6 @@
             </a>
             <a href="<?= $this->lurl ?>/traductions/add" class="btn-primary pull-left thickbox" style="margin-left: 10px;">Ajouter une traduction</a>&nbsp;
             <a href="<?= $this->lurl ?>/traductions/export" class="btn-default pull-left" style="margin-left: 10px;">Export</a>&nbsp;&nbsp;
-            <a href="<?= $this->lurl ?>/traductions/import" class="btn-default pull-left thickbox" style="margin-left: 10px;">Import</a>
         </div>
     </div>
     <?php if (count($this->lSections) > 0) : ?>
@@ -19,7 +18,7 @@
                         <option value="">Sélectionner</option>
                         <?php foreach ($this->lSections as $section) : ?>
                             <option value="<?= $section['section'] ?>"<?= (isset($this->params[0]) && $this->params[0] == $section['section'] ? ' selected="selected"' : '') ?>>
-                                <?= $section['section'] ?>(<?= $section['COUNT(translation)'] ?>)
+                                <?= $section['section'] ?>(<?= $section['count'] ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>

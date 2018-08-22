@@ -61,10 +61,6 @@ h4 { font-size:16px; }
 ul, ol { list-style-position:outside; }
 ul p , ol p { padding:0; color:#a1a5a7; }
 
-.lt-ie10 ul p,
-.lt-ie10 ol p { display:inline; }
-
-
 input, textarea, select { font-size:14px; font-family:Arial, sans-serif; }
 input[type="submit"], button { cursor:pointer; overflow:visible; }
 fieldset { border:0 none; }

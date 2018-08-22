@@ -750,8 +750,13 @@ class UniversignManager
      */
     public function signTermsOfSale(ProjectCgv $termsOfSale): void
     {
-        if ($termsOfSale->getIdProject() && $termsOfSale->getIdProject()->getIdCommercial() && false === empty($termsOfSale->getIdProject()->getIdCommercial()->getSlack())) {
-            $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : les CGV emprunteurs sont signÃ©es.';
+        if (
+            $termsOfSale->getIdProject()
+            && $termsOfSale->getIdProject()->getIdCommercial()
+            && $termsOfSale->getIdProject()->getIdCommercial()->getIdUser() > 0
+            && false === empty($termsOfSale->getIdProject()->getIdCommercial()->getSlack())
+        ) {
+            $message = $this->slackManager->getProjectName($termsOfSale->getIdProject()) . ' : les CGV emprunteurs sont signées.';
             $this->slackManager->sendMessage($message, '@' . $termsOfSale->getIdProject()->getIdCommercial()->getSlack());
         }
     }

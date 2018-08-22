@@ -2,11 +2,8 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{JsonResponse, Request};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\RiskDataMonitoring\EulerHermesManager;
 
@@ -17,13 +14,14 @@ class RiskDataMonitoringController extends Controller
     const SUCCESS              = 'success';
 
     /**
-     * @Route("/ws/monitoring/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade_legacy")
-     * @Route("/ws/surveillance/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade")
-     * @Method("POST")
+     * @Route("/ws/monitoring/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade_legacy", methods={"POST"})
+     * @Route("/ws/surveillance/euler-hermes/grade", name="risk_data_monitoring_euler_hermes_grade", methods={"POST"})
      *
-     * @return Response
+     * @param Request $request
+     *
+     * @return JsonResponse
      */
-    public function eulerHermesGradeMonitoringAction(Request $request)
+    public function eulerHermesGradeMonitoringAction(Request $request): JsonResponse
     {
         if (true !== ($response = $this->authenticateEulerHermes($request))) {
             return $response;
@@ -59,13 +57,14 @@ class RiskDataMonitoringController extends Controller
     }
 
     /**
-     * @Route("/ws/monitoring/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end_legacy")
-     * @Route("/ws/surveillance/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end")
-     * @Method("PUT")
+     * @Route("/ws/monitoring/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end_legacy", methods={"PUT"})
+     * @Route("/ws/surveillance/euler-hermes/grade/end", name="risk_data_monitoring_euler_hermes_grade_end", methods={"PUT"})
      *
-     * @return Response
+     * @param Request $request
+     *
+     * @return JsonResponse
      */
-    public function eulerHermesGradeMonitoringEndAction(Request $request)
+    public function eulerHermesGradeMonitoringEndAction(Request $request): JsonResponse
     {
         if (true !== ($response = $this->authenticateEulerHermes($request))) {
             return $response;
@@ -103,7 +102,8 @@ class RiskDataMonitoringController extends Controller
      *
      * @return JsonResponse
      */
-    private function endpointFeedback($type, $message, $status) {
+    private function endpointFeedback(string $type, string $message, int $status): JsonResponse
+    {
 
         $response =  new JsonResponse(['type' => $type, 'message' => $message], $status);
 

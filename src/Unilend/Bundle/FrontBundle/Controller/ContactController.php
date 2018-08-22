@@ -2,19 +2,12 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies
-};
-use Unilend\Bundle\FrontBundle\Security\User\{
-    BaseUser, UserBorrower, UserLender, UserPartner
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies};
+use Unilend\Bundle\FrontBundle\Security\User\{BaseUser, UserBorrower, UserLender, UserPartner};
 use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\core\Loader;
 
@@ -23,12 +16,15 @@ class ContactController extends Controller
     /**
      * @Route("/contact", name="contact")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param Request $request
+     *
+     * @return Response
      */
-    public function contactAction(Request $request)
+    public function contactAction(Request $request): Response
     {
         /** @var BaseUser $user */
-        $user = $this->getUser();
+        $user     = $this->getUser();
+        $template = [];
 
         if ($user instanceof UserLender || $user instanceof UserBorrower || $user instanceof UserPartner) {
             $template['formData'] = $this->getContactFormTemplateData($user);
@@ -99,16 +95,15 @@ class ContactController extends Controller
     }
 
     /**
-     * @Route("/contact/search", name="contact_search")
-     * @Method({"POST"})
+     * @Route("/contact/search", name="contact_search", methods={"POST"})
+     * @param Request $request
      *
      * @return Response
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): Response
     {
         return $this->redirectToRoute('contact_search_result', ['query' => urlencode($request->request->get('search'))]);
     }
-
 
     /**
      * @param string        $query
@@ -146,7 +141,10 @@ class ContactController extends Controller
         return $results;
     }
 
-    private function contactForm($post)
+    /**
+     * @param array $post
+     */
+    private function contactForm(array $post): void
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');

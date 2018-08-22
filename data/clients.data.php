@@ -42,26 +42,6 @@ class clients extends clients_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    //TODO delete all login and check access functions no longer needed
-
-    /**
-     * @param DateTime $dateLogin
-     */
-    public function saveLogin(\DateTime $dateLogin)
-    {
-        if (false === empty($this->id_client) && is_numeric($this->id_client)){
-            $bind = ['lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'id_client' => $this->id_client];
-            $type = ['lastLogin' => \PDO::PARAM_STR, 'id_client' => \PDO::PARAM_STR];
-
-            $query =  '
-            UPDATE clients
-            SET lastlogin = :lastLogin,
-            updated = NOW()
-            WHERE id_client = :id_client';
-            $this->bdd->executeUpdate($query, $bind, $type);
-        }
-    }
-
     public function changePassword($email, $pass)
     {
         $this->bdd->query('
@@ -70,32 +50,6 @@ class clients extends clients_crud
             updated = NOW()
             WHERE email = "' . $email . '"'
         );
-    }
-
-    /**
-     * @return bool
-     * @throws Exception
-     */
-    public function checkAccess(): bool
-    {
-        if (false === isset($_SESSION['auth']) || true !== $_SESSION['auth']) {
-            return false;
-        }
-
-        if (false === isset($_SESSION['token']) || empty(trim($_SESSION['token']))) {
-            return false;
-        }
-
-        $query = '
-            SELECT COUNT(*) 
-            FROM clients c
-            INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id 
-            WHERE c.id_client = ' . intval($_SESSION['client']['id_client']) . ' 
-              AND c.password = "' . $this->bdd->escape_string($_SESSION['client']['password']) . '" 
-              AND csh.id_status IN (' . implode(',', ClientsStatus::GRANTED_LOGIN) . ')';
-        $statement = $this->bdd->query($query);
-
-        return 1 != $this->bdd->result($statement, 0);
     }
 
     /**

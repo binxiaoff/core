@@ -1,1 +1,0 @@
-<div class='logo' style="margin-left: 170px;margin-top:55px;"><img alt='logo' src='<?=$this->surl?>/styles/default/pdf/images/logo.png'></div>

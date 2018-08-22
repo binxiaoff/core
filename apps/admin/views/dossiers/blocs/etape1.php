@@ -31,7 +31,7 @@
                 <th><label for="duree_etape1">Durée du prêt</label></th>
                 <td colspan="3">
                     <select name="duree_etape1" id="duree_etape1" class="select">
-                        <option<?= (in_array($this->projects->period, [0, 1000000])) ? ' selected' : '' ?> value="0">Je ne sais pas</option>
+                        <option<?= empty($this->projects->period) ? ' selected' : '' ?> value=""></option>
                         <?php foreach ($this->dureePossible as $duree) : ?>
                             <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                         <?php endforeach ?>

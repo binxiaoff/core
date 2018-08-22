@@ -4,14 +4,10 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\{
-    Request, Response
-};
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, ClientsStatus, Wallet, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\CIPManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
@@ -47,7 +43,7 @@ class LenderCIPController extends Controller
             $template['evaluation'] = true;
         } else {
             $template['evaluation'] = true;
-            $template['advices']    = $this->getFormatedAdvice($client);
+            $template['advices']    = $this->getFormattedAdvice($client);
         }
 
         return $this->render('lender_cip/index.html.twig', $template);
@@ -84,7 +80,7 @@ class LenderCIPController extends Controller
         $lastAnswer   = $answers[$lastQuestion->type];
 
         if (null === $nextQuestion && '' !== $lastAnswer['first_answer']) {
-            $advices = $this->getFormatedAdvice($client);
+            $advices = $this->getFormattedAdvice($client);
 
             $cipManager->saveLog($evaluation, \lender_evaluation_log::EVENT_ADVICE, $advices);
 
@@ -291,7 +287,7 @@ class LenderCIPController extends Controller
         $client     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients')->findOneBy(['hash' => $clientHash]);
 
         $pdfFooter             = $this->renderView('/pdf/cip/footer.html.twig');
-        $content['advice']     = $this->getFormatedAdvice($client);
+        $content['advice']     = $this->getFormattedAdvice($client);
         $content['clientName'] = $client->getPrenom();
         $pdfContent            = $this->renderView('/pdf/cip/advice.html.twig', $content);
 
@@ -325,7 +321,7 @@ class LenderCIPController extends Controller
         $wallet   = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
         $keywords = [
             'firstName'     => $client->getPrenom(),
-            'advice'        => str_replace('h5', 'p', $this->getFormatedAdvice($client)),
+            'advice'        => str_replace('h5', 'p', $this->getFormattedAdvice($client)),
             'advicePdfLink' => $this->generateUrl('pdf_cip', ['clientHash' => $client->getHash()], UrlGeneratorInterface::ABSOLUTE_URL),
             'lenderPattern' => $wallet->getWireTransferPattern()
         ];
@@ -362,7 +358,7 @@ class LenderCIPController extends Controller
      *
      * @return string
      */
-    private function getFormatedAdvice(Clients $client): string
+    private function getFormattedAdvice(Clients $client): string
     {
         /** @var CIPManager $cipManager */
         $cipManager = $this->get('unilend.service.cip_manager');

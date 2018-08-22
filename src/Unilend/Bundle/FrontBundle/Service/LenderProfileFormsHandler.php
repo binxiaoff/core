@@ -782,15 +782,18 @@ class LenderProfileFormsHandler
         $addressForm         = $form->get($addressType);
         $bankForm            = $form->get('bankAccount');
         $modifiedAddressType = null;
+        $newAttachments      = [];
 
         // Identity
-        $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $identityAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $newAttachments      = $identityAttachments + $newAttachments;
 
         // Address
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
         if ($isAddressModified) {
             $this->checkAddressForm($addressForm, $addressType);
-            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType), $newAttachments);
+            $housingAttachments  = $this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType);
+            $newAttachments      = $housingAttachments + $newAttachments;
             $modifiedAddressType = $addressType;
         }
 
