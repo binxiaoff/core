@@ -72,6 +72,10 @@ class TranslationManager
     {
         $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
 
+        if (null === $translation) {
+            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+        }
+
         return stripcslashes($translation->getTranslation());
     }
 
@@ -80,6 +84,7 @@ class TranslationManager
      * @param string $name
      * @param string $text
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function addTranslation(string $section, string $name, string $text): void
@@ -101,11 +106,16 @@ class TranslationManager
      * @param string $section
      * @param string $name
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function deleteTranslation(string $section, string $name)
     {
         $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
+
+        if (null === $translation) {
+            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+        }
 
         $this->entityManager->remove($translation);
 
@@ -117,11 +127,16 @@ class TranslationManager
      * @param string $name
      * @param string $text
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function modifyTranslation(string $section, string $name, string $text): void
     {
         $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
+
+        if (null === $translation) {
+            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+        }
 
         $translation->setTranslation($text);
 
