@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Unilend\Bundle\FrontBundle\Twig;
 
@@ -163,6 +163,6 @@ class ClientExtension extends \Twig_Extension
         /** @var Wallet $wallet */
         $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, $walletType);
 
-        return $wallet->getAvailableBalance();
+        return (float) $wallet->getAvailableBalance();
     }
 }

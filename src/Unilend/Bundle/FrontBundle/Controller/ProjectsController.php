@@ -49,7 +49,6 @@ class ProjectsController extends Controller
      * @param                            $sortDirection
      * @param UserInterface|Clients|null $client
      *
-     * @Method("POST")
      * @return Response
      */
     public function projectsListMapListAction(int $page, string $sortType, string $sortDirection, ?UserInterface $client): array

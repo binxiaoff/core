@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
@@ -11,7 +11,7 @@ class UserChecker implements UserCheckerInterface
     /**
      * @inheritdoc
      */
-    public function checkPreAuth(UserInterface $user)
+    public function checkPreAuth(UserInterface $user): void
     {
         if (!$user instanceof Clients) {
             return;
@@ -27,7 +27,7 @@ class UserChecker implements UserCheckerInterface
     /**
      * @inheritdoc
      */
-    public function checkPostAuth(UserInterface $user)
+    public function checkPostAuth(UserInterface $user): void
     {
         // nothing to check
     }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Unilend\Bundle\FrontBundle\Twig;
 
@@ -102,9 +102,9 @@ class ProjectExtension extends \Twig_Extension
     /**
      * @param Projects $project
      *
-     * @return float|int
+     * @return float
      */
-    public function getRepaymentScheduleAmount(Projects $project)
+    public function getRepaymentScheduleAmount(Projects $project): float
     {
         $scheduledAmount           = 0;
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
@@ -113,14 +113,19 @@ class ProjectExtension extends \Twig_Extension
             $schedule = $paymentScheduleRepository->findOneBy(['idProject' => $project]);
 
             if ($schedule) {
-                $scheduledAmount = round(bcdiv($schedule->getCapital() + $schedule->getInterets() + $schedule->getCommission() + $schedule->getTva(), 100, 4), 2);
+                $scheduledAmount = round(bcdiv(strval($schedule->getCapital() + $schedule->getInterets() + $schedule->getCommission() + $schedule->getTva()), '100', 4), 2);
             }
         }
 
         return $scheduledAmount;
     }
 
-    public function getNextRepaymentScheduleAmount(Projects $project)
+    /**
+     * @param Projects $project
+     *
+     * @return \DateTime
+     */
+    public function getNextRepaymentScheduleAmount(Projects $project): \DateTime
     {
         $paymentScheduleRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
         $nextScheduledDate         = new \DateTime();
@@ -148,11 +153,6 @@ class ProjectExtension extends \Twig_Extension
     {
         $amounts = $this->projectManager->getRemainingAmounts($project);
 
-        return $amounts['capital'];
-    }
-
-    public function getProxy(Projects $project): ProjectsPouvoir
-    {
-
+        return (float) $amounts['capital'];
     }
 }
