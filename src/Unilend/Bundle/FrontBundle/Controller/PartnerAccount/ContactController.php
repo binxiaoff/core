@@ -2,12 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\PartnerContactType;
@@ -23,7 +22,7 @@ class ContactController extends Controller
      *
      * @return Response
      */
-    public function contactAction(Request $request, ?UserInterface $client)
+    public function contactAction(Request $request, ?UserInterface $client): Response
     {
         $contactForm = $this->createForm(PartnerContactType::class);
         $contactForm->handleRequest($request);

@@ -2,13 +2,11 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\Form\FormError;
-use Symfony\Component\Form\FormInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Form\{FormError, FormInterface};
+use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
@@ -24,7 +22,7 @@ class ProfileController extends Controller
      *
      * @return Response
      */
-    public function profileAction(Request $request, ?UserInterface $client)
+    public function profileAction(Request $request, ?UserInterface $client): Response
     {
         $form = $this->createForm(ClientPasswordType::class);
 

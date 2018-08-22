@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,26 +11,24 @@ use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 class SearchController extends Controller
 {
     /**
-     * @Route("/search", name="search")
-     * @Method({"POST"})
+     * @Route("/search", name="search", methods={"POST"})
      *
      * @return Response
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): Response
     {
         return empty($request->request->get('search')) ? $this->redirectToRoute('faq-preteur') : $this->redirectToRoute('search_result', ['query' => urlencode($request->request->get('search'))]);
     }
 
     /**
-     * @Route("/search/{query}", name="search_result")
-     * @Method({"GET"})
+     * @Route("/search/{query}", name="search_result", methods={"GET"})
      *
      * @param  string        $query
      * @param  UserInterface $client
      *
      * @return Response
      */
-    public function resultAction(string $query, ?UserInterface $client)
+    public function resultAction(string $query, ?UserInterface $client): Response
     {
         $query   = filter_var(urldecode($query), FILTER_SANITIZE_STRING);
         $search  = $this->get('unilend.service.search_service');

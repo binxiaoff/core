@@ -246,7 +246,7 @@ class Echeanciers
     /**
      * Get montant
      *
-     * @deprecated This column will be deleted. Use the summary of Echeanciers::$capital and Echeanciers::$interets instead
+     * @deprecated This column will be deleted. Use the sum of Echeanciers::$capital and Echeanciers::$interets instead
      *
      *
      * @return integer

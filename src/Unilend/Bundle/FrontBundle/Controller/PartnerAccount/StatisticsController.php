@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Route, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectsStatus};
 
@@ -18,7 +19,7 @@ class StatisticsController extends Controller
      *
      * @return Response
      */
-    public function statisticsAction(?UserInterface $partnerUser)
+    public function statisticsAction(?UserInterface $partnerUser): Response
     {
         $entityManager      = $this->get('doctrine.orm.entity_manager');
         $partnerManager     = $this->get('unilend.service.partner_manager');

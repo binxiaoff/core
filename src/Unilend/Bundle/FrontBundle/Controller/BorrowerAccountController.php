@@ -3,7 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Knp\Snappy\GeneratorInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Template};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response, StreamedResponse};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -41,8 +41,7 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project")
-     * @Method("POST")
+     * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project", methods={"POST"})
      *
      * @param Request                    $request
      * @param UserInterface|Clients|null $client

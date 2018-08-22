@@ -2,14 +2,14 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet,
-    WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType};
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\core\Loader;
 
@@ -285,9 +285,8 @@ class LenderWalletController extends Controller
     }
 
     /**
-     * @Route("/alimentation/apport", name="deposit_money")
+     * @Route("/alimentation/apport", name="deposit_money", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
-     * @Method("POST")
      *
      * @param Request                    $request
      * @param UserInterface|Clients|null $client

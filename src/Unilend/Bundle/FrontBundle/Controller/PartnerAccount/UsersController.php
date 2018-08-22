@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyClient, TemporaryLinksLogin, Users, WalletType};
@@ -12,8 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, CompanyCli
 class UsersController extends Controller
 {
     /**
-     * @Route("/partenaire/utilisateurs", name="partner_users")
-     * @Method("GET")
+     * @Route("/partenaire/utilisateurs", name="partner_users", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
      * @param UserInterface|Clients|null $partnerUser
@@ -49,8 +49,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("/partenaire/utilisateurs", name="partner_user_form")
-     * @Method("POST")
+     * @Route("/partenaire/utilisateurs", name="partner_user_form", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
      * @param Request $request
@@ -108,8 +107,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation")
-     * @Method("GET")
+     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
      * @param Request                    $request
@@ -117,7 +115,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function userCreationAction(Request $request, ?UserInterface $partnerUser)
+    public function userCreationAction(Request $request, ?UserInterface $partnerUser): Response
     {
         $session = $request->getSession()->get('partnerUserCreation');
         $errors  = isset($session['errors']) ? $session['errors'] : [];
@@ -144,15 +142,14 @@ class UsersController extends Controller
     }
 
     /**
-     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation_form")
-     * @Method("POST")
+     * @Route("/partenaire/utilisateurs/creation", name="partner_user_creation_form", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER_ADMIN')")
      *
      * @param Request $request
      *
      * @return Response
      */
-    public function userCreationFormAction(Request $request)
+    public function userCreationFormAction(Request $request): Response
     {
         $errors            = [];
         $entityManager     = $this->get('doctrine.orm.entity_manager');

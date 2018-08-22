@@ -2,16 +2,15 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route};
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{FileBag, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2,
-    OffresBienvenues, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
@@ -803,8 +802,8 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("GET")
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit",
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"GET"})
      *
      * @param string                     $clientHash
      * @param Request                    $request
@@ -836,8 +835,8 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form", requirements={"clientHash": "[0-9a-f-]{32,36}"})
-     * @Method("POST")
+     * @Route("/inscription_preteur/etape3/{clientHash}", name="lender_subscription_money_deposit_form",
+     *     requirements={"clientHash": "[0-9a-f-]{32,36}"}, methods={"POST"})
      *
      * @param string                     $clientHash
      * @param Request                    $request
@@ -939,8 +938,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/devenir-preteur-lp", name="lender_landing_page")
-     * @Method("GET")
+     * @Route("/devenir-preteur-lp", name="lender_landing_page", methods={"GET"})
      *
      * @return Response
      */
@@ -953,8 +951,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page")
-     * @Method("GET")
+     * @Route("/parrainage-preteur", name="lender_sponsorship_landing_page", methods={"GET"})
      *
      * @param Request $request
      *
@@ -988,8 +985,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only")
-     * @Method("GET")
+     * @Route("/devenir-preteur-lp-form", name="lender_landing_page_form_only", methods={"GET"})
      *
      * @return Response
      */
@@ -1003,8 +999,7 @@ class LenderSubscriptionController extends Controller
 
     /**
      * Scheme and host are absolute to make partners LPs work
-     * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form")
-     * @Method("POST")
+     * @Route("/devenir-preteur-lp", schemes="https", host="%url.host_default%", name="lender_landing_page_form", methods={"POST"})
      *
      * @param Request $request
      *
@@ -1198,8 +1193,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/birth_place", name="lender_subscription_ajax_birth_place", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1216,8 +1210,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/city", name="lender_subscription_ajax_city", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1234,8 +1227,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/zip", name="lender_subscription_ajax_zip", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1252,8 +1244,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age")
-     * @Method("POST")
+     * @Route("/inscription_preteur/ajax/age", name="lender_subscription_ajax_age", methods={"POST"})
      *
      * @param Request $request
      *
@@ -1306,8 +1297,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/check-city", name="lender_subscription_ajax_check_city", methods={"GET"})
      *
      * @param Request $request
      *
@@ -1338,8 +1328,7 @@ class LenderSubscriptionController extends Controller
     }
 
     /**
-     * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee")
-     * @Method("GET")
+     * @Route("/inscription_preteur/ajax/check-city-insee", name="lender_subscription_ajax_check_city_insee", methods={"GET"})
      *
      * @param Request $request
      *

@@ -2,7 +2,6 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,8 +21,10 @@ class ContactController extends Controller
      *
      * @return Response
      */
-    public function contactAction(Request $request, ?UserInterface $client)
+    public function contactAction(Request $request, ?UserInterface $client): Response
     {
+        $template = [];
+
         if ($client instanceof Clients) {
             $template['formData'] = $this->getContactFormTemplateData($client);
         }
@@ -93,16 +94,15 @@ class ContactController extends Controller
     }
 
     /**
-     * @Route("/contact/search", name="contact_search")
-     * @Method({"POST"})
+     * @Route("/contact/search", name="contact_search", methods={"POST"})
+     * @param Request $request
      *
      * @return Response
      */
-    public function searchAction(Request $request)
+    public function searchAction(Request $request): Response
     {
         return $this->redirectToRoute('contact_search_result', ['query' => urlencode($request->request->get('search'))]);
     }
-
 
     /**
      * @param  string                     $query
@@ -140,7 +140,10 @@ class ContactController extends Controller
         return $results;
     }
 
-    private function contactForm($post)
+    /**
+     * @param array $post
+     */
+    private function contactForm(array $post): void
     {
         /** @var TranslatorInterface $translator */
         $translator = $this->get('translator');

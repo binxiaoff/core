@@ -2,9 +2,10 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller\PartnerAccount;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Route, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ProjectAbandonReason, Projects, ProjectsComments, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Repository\ProjectsRepository;
@@ -13,15 +14,14 @@ use Unilend\Bundle\CoreBusinessBundle\Service\TermsOfSaleManager;
 class ProjectsListController extends Controller
 {
     /**
-     * @Route("partenaire/emprunteurs", name="partner_projects_list")
-     * @Method("GET")
+     * @Route("partenaire/emprunteurs", name="partner_projects_list", methods={"GET"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param UserInterface|Clients|null $partnerUser
      *
      * @return Response
      */
-    public function projectsListAction(?UserInterface $partnerUser)
+    public function projectsListAction(?UserInterface $partnerUser): Response
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $partnerManager = $this->get('unilend.service.partner_manager');
@@ -64,8 +64,7 @@ class ProjectsListController extends Controller
     }
 
     /**
-     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()")
-     * @Method("POST")
+     * @Route("partenaire/emprunteurs", name="partner_project_tos", condition="request.isXmlHttpRequest()", methods={"POST"})
      * @Security("has_role('ROLE_PARTNER')")
      *
      * @param Request                    $request
@@ -73,7 +72,7 @@ class ProjectsListController extends Controller
      *
      * @return Response
      */
-    public function projectRequestDetailsFormAction(Request $request, ?UserInterface $partnerUser)
+    public function projectRequestDetailsFormAction(Request $request, ?UserInterface $partnerUser): Response
     {
         $hash = $request->request->getAlnum('hash');
 

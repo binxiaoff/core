@@ -11,7 +11,7 @@
                     <option value=""></option>
                     <?php foreach ($this->rejectionReasons as $rejectionReason) : ?>
                         <?php /** @var \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectRejectionReason $rejectionReason */ ?>
-                        <option value="<?= $rejectionReason->getIdRejection() ?>"><?= $rejectionReason->getReason() ?></option>
+                        <option value="<?= $rejectionReason->getIdRejection() ?>" title="<?= htmlentities($rejectionReason->getDescription()) ?>" class="tooltip"><?= $rejectionReason->getReason() ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

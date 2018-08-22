@@ -65,7 +65,7 @@ class MailjetEventBlocked
     /**
      * @var string
      *
-     * @ORM\Column(name="payload", type="string", length=255, nullable=false)
+     * @ORM\Column(name="payload", type="string", length=255, nullable=true)
      */
     private $payload;
 
@@ -271,11 +271,11 @@ class MailjetEventBlocked
     /**
      * Set payload
      *
-     * @param string $payload
+     * @param string|null $payload
      *
      * @return MailjetEventBlocked
      */
-    public function setPayload(string $payload): MailjetEventBlocked
+    public function setPayload(?string $payload): MailjetEventBlocked
     {
         $this->payload = $payload;
 
@@ -285,9 +285,9 @@ class MailjetEventBlocked
     /**
      * Get payload
      *
-     * @return string
+     * @return string|null
      */
-    public function getPayload(): string
+    public function getPayload(): ?string
     {
         return $this->payload;
     }

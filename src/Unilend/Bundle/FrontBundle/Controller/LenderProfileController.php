@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
@@ -396,8 +396,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
-     * @Method("POST")
+     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request                    $request
@@ -678,8 +677,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/documents/submit", name="lender_completeness_submit")
-     * @Method("POST")
+     * @Route("/profile/documents/submit", name="lender_completeness_submit", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request                    $request
@@ -866,8 +864,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
-     * @Method("GET")
+     * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -886,7 +883,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/ifu", name="get_ifu")
+     * @Route("/profile/ifu", name="get_ifu", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request                    $request
@@ -1038,8 +1035,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption")
-     * @Method("POST")
+     * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request                    $request
