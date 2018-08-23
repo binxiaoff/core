@@ -664,11 +664,11 @@ class MainController extends Controller
     }
 
     /**
-     * @param string $route
+     * @param string|null $route
      *
      * @return Response
      */
-    public function footerAction(string $route): Response
+    public function footerAction(?string $route): Response
     {
         /** @var ContentManager $contentManager */
         $contentManager = $this->get('unilend.frontbundle.service.content_manager');

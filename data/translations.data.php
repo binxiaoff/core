@@ -66,4 +66,23 @@ class translations extends translations_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `translations` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
+//TODO delete after front has been migrated completely AND function no longer used anyway
+    public function selectFront($section, $id_langue)
+    {
+        if ('fr' == $id_langue) {
+            $id_langue = 'fr_FR';
+        }
+
+        $sql      = 'SELECT * FROM translations WHERE section = "' . $section . '" AND locale = "' . $id_langue . '"';
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $start                  = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "<trad onclick='openTraduc(" . $record['id_texte'] . "); return false;'>" : "");
+            $end                    = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "</trad>" : "");
+            $result[$record['name']] = $start . $record['translation'] . $end;
+        }
+
+        return $result;
+    }
 }
