@@ -113,13 +113,11 @@ class TranslationManager
     {
         $translation = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Translations')->findOneBy(['section' => $section, 'name' => $name]);
 
-        if (null === $translation) {
-            throw new \InvalidArgumentException('There is not translation for section ' . $section . ' and name ' . $name);
+        if (null !== $translation) {
+            $this->entityManager->remove($translation);
+
+            $this->entityManager->flush($translation);
         }
-
-        $this->entityManager->remove($translation);
-
-        $this->entityManager->flush($translation);
     }
 
     /**
