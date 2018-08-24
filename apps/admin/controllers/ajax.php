@@ -333,23 +333,7 @@ class ajaxController extends bootstrap
                 }
             } elseif ($_POST['etape'] == 3) {
                 if (isset($_FILES['photo_projet']) && false === empty($_FILES['photo_projet']['name'])) {
-                    $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
-                    $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
-
-                    $imagick     = new \Imagick($_FILES['photo_projet']['tmp_name']);
-                    $imageConfig = $this->getParameter('image_resize');
-
-                    if ($imagick->getImageWidth() > $imageConfig['projets']['width'] || $imagick->getImageHeight() > $imageConfig['projets']['height']) {
-                        $error = 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')';
-                    } elseif ($this->upload->doUpload('photo_projet', '', true)) {
-                        // Delete previous image of the name was different from the new one
-                        if (false === empty($project->photo_projet) && $project->photo_projet != $this->upload->getName()) {
-                            @unlink($this->path . 'public/default/images/dyn/projets/source/' . $project->photo_projet);
-                        }
-                        $project->photo_projet = $this->upload->getName();
-                    } else {
-                        $error = 'Erreur upload photo : ' . $this->upload->getErrorType();
-                    }
+                    $error = $this->uploadProjectPhoto($project);
                 }
 
                 if ($project->create_bo) {
@@ -361,15 +345,15 @@ class ajaxController extends bootstrap
                 $project->means_repayment      = $_POST['moyen_etape3'];
                 $project->update();
 
-                if (isset($error)) {
+                if (empty($error)) {
                     echo json_encode([
-                        'error'   => true,
-                        'message' => $error
+                        'success' => true
                     ]);
                     return;
                 } else {
                     echo json_encode([
-                        'success' => true
+                        'error'   => true,
+                        'message' => $error
                     ]);
                     return;
                 }
@@ -415,6 +399,52 @@ class ajaxController extends bootstrap
         }
 
         $this->sendAjaxResponse(empty($errors), null, $errors);
+    }
+
+    /**
+     * @param \projects $project
+     *
+     * @return string
+     */
+    private function uploadProjectPhoto(\projects $project): string
+    {
+        try {
+            $imagick     = new \Imagick($_FILES['photo_projet']['tmp_name']);
+            $imageConfig = $this->getParameter('image_resize');
+
+            if ($imagick->getImageWidth() > $imageConfig['projets']['width'] || $imagick->getImageHeight() > $imageConfig['projets']['height']) {
+                return 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')';
+            }
+        } catch (ImagickException $exception) {
+            $this->get('logger')->error('An ImagickException occured while checking size of project picture. Message: ' . $exception->getMessage(), [
+                'class'      => __CLASS__,
+                'function'   => __FUNCTION__,
+                'file'       => $exception->getFile(),
+                'line'       => $exception->getLine(),
+                'id_project' => $project->id_project
+            ]);
+
+            return 'Erreur upload photo';
+        }
+
+        $this->upload->setUploadDir($this->path, Projects::PROJECT_PHOTO_PATH);
+        $this->upload->setExtValide(['jpeg', 'JPEG', 'jpg', 'JPG']);
+
+        $imageName     = 'project' . $project->hash;
+        $uploadSuccess = $this->upload->doUpload('photo_projet', $imageName, true);
+
+        if (false === $uploadSuccess) {
+            return 'Erreur upload photo : ' . $this->upload->getErrorType();
+        }
+
+        if (false === empty($project->photo_projet) && $project->photo_projet != $this->upload->getName()) {
+            @unlink($this->path . Projects::PROJECT_PHOTO_PATH . $project->photo_projet);
+        }
+
+        $project->photo_projet = $this->upload->getName();
+        $project->update();
+
+        return '';
     }
 
     /**
