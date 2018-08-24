@@ -47,6 +47,8 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     const ROLE_PARTNER_ADMIN   = 'ROLE_PARTNER_ADMIN';
     const ROLE_PARTNER_USER    = 'ROLE_PARTNER_USER';
 
+    const PASSWORD_ENCODER_MD5 = 'md5';
+
     /**
      * @var string
      *
@@ -369,9 +371,9 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     private $companyClient;
 
     /**
-     * @var string|null
+     * @var bool
      */
-    private $encoderName;
+    private $userOnlyDefaultEncoder;
 
     /**
      * Clients constructor.
@@ -1650,15 +1652,12 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function getEncoderName(): ?string
     {
-        if ('default' === $this->encoderName) { // For backwards compatibility that the user who has already MD5 encoded password
-            return null;
+        if (true !== $this->userOnlyDefaultEncoder && 1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
+            return self::PASSWORD_ENCODER_MD5;
         }
 
-        if (1 === preg_match('/^[0-9a-f]{32}$/', $this->password)) {
-            return 'md5';
-        }
-
-        return null; // use the default encoder
+        // For other users, use the default encoder
+        return null;
     }
 
     /**
@@ -1741,10 +1740,10 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     * For backwards compatibility that the user who has already MD5 encoded password
+     * For backwards compatibility (for the user who has already MD5 encoded password), we force the user to use the default encoder (which is BCrypt), even though his/her encoder is MD5
      */
     public function useDefaultEncoder(): void
     {
-        $this->encoderName = 'default';
+        $this->userOnlyDefaultEncoder = true;
     }
 }

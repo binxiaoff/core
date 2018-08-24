@@ -203,9 +203,9 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         /** @var Clients $client */
         $client = $token->getUser();
 
-        // Update the password encoder if it's legacy
-        if ($client instanceof EncoderAwareInterface && (null !== $encoderName = $client->getEncoderName())) {
-            $client->useDefaultEncoder(); // force to use the default password encoder
+        // Force to use the default password encoder if it's legacy
+        if ($client instanceof EncoderAwareInterface && (Clients::PASSWORD_ENCODER_MD5 === $encoderName = $client->getEncoderName())) {
+            $client->useDefaultEncoder();
             try {
                 $client->setPassword($this->securityPasswordEncoder->encodePassword($client, $this->getCredentials($request)['password']));
             } catch (BadCredentialsException $exeption) {
