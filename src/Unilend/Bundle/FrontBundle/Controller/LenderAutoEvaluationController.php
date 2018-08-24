@@ -35,13 +35,15 @@ class LenderAutoEvaluationController extends Controller
     /**
      * @Route("/auto-evaluation/questionnaire/{step}", name="lender_auto_evaluation_survey")
      *
-     * @param int     $step
-     * @param Request $request
+     * @param string|int $step
+     * @param Request    $request
      *
      * @return Response
      */
-    public function surveyAction(int $step, Request $request): Response
+    public function surveyAction($step, Request $request): Response
     {
+        $step = (int)$step;
+
         if (empty($this->get('session')->get('answers')) && $step > 1) {
             return $this->redirectToRoute('lender_auto_evaluation_survey', ['step' => 1]);
         }
