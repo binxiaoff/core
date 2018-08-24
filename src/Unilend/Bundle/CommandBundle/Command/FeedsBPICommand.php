@@ -30,6 +30,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         $translator             = $this->getContainer()->get('translator');
         $router                 = $this->getContainer()->get('router');
         $serializer             = $this->getContainer()->get('serializer');
+        $logger                 = $this->getContainer()->get('monolog.logger.console');
         $projectRepository      = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
 
         /** @var \projects $projectData */
@@ -37,11 +38,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \bids $bids */
         $bids = $entityManagerSimulator->getRepository('bids');
         /** @var \loans $loans */
-        $loans  = $entityManagerSimulator->getRepository('loans');
-        $logger = $this->getContainer()->get('monolog.logger.console');
-
-        $hostUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-        $userPath = $this->getContainer()->getParameter('path.user');
+        $loans = $entityManagerSimulator->getRepository('loans');
 
         $projectStatuses = [
             ProjectsStatus::EN_FUNDING,
@@ -54,6 +51,8 @@ class FeedsBPICommand extends ContainerAwareCommand
             ProjectsStatus::LOSS
         ];
 
+        $hostUrl    = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+        $userPath   = $this->getContainer()->getParameter('path.user');
         $partner    = strtolower($input->getArgument('partner'));
         $products   = $entityManager->getRepository('UnilendCoreBusinessBundle:Product')->findAvailableProductsByClient();
         $productIds = array_map(function (Product $product) {
@@ -62,6 +61,7 @@ class FeedsBPICommand extends ContainerAwareCommand
 
         $projectsToSerialise = [];
         $projectList         = $projectData->selectProjectsByStatus($projectStatuses, 'AND p.display = ' . \projects::DISPLAY_PROJECT_ON, [], '', '', false, $productIds);
+
         foreach ($projectList as $item) {
             /** @var Projects $project */
             $project = $projectRepository->find($item['id_project']);
@@ -109,8 +109,8 @@ class FeedsBPICommand extends ContainerAwareCommand
                 'url'                              => $hostUrl . $router->generate('project_detail',
                         ['projectSlug' => $project->getSlug()]) . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent',
                 'url_photo'                        => $hostUrl . '/images/dyn/projets/169/' . $project->getPhotoProjet(),
-                'date_debut_collecte'              => $project->getDatePublication()->format('Y-m-d'),
-                'date_fin_collecte'                => $project->getDateRetrait()->format('Y-m-d'),
+                'date_debut_collecte'              => $project->getDatePublication() ? $project->getDatePublication()->format('Y-m-d') : '',
+                'date_fin_collecte'                => $project->getDateRetrait()? $project->getDateRetrait()->format('Y-m-d') : '',
                 'montant_recherche'                => $project->getAmount(),
                 'montant_collecte'                 => number_format($totalBids, 0, ',', ''),
                 'nb_contributeurs'                 => $loans->getNbPreteurs($project->getIdProject()),
