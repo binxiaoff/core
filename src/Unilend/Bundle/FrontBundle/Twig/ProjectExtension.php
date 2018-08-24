@@ -3,10 +3,7 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\EcheanciersEmprunteur;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsPouvoir;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{EcheanciersEmprunteur, Projects, ProjectsStatus};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AutoBidSettingsManager, ProjectManager};
 
 class ProjectExtension extends \Twig_Extension
@@ -15,6 +12,7 @@ class ProjectExtension extends \Twig_Extension
     private $entityManager;
     /** @var AutoBidSettingsManager */
     private $autoBidSettingsManager;
+    /** @var ProjectManager */
     private $projectManager;
 
     /**
@@ -28,14 +26,12 @@ class ProjectExtension extends \Twig_Extension
         $this->entityManager          = $entityManager;
         $this->autoBidSettingsManager = $autoBidSettingsManager;
         $this->projectManager         = $projectManager;
-
     }
 
     /**
      * @inheritdoc
      */
-    public
-    function getFunctions()
+    public function getFunctions()
     {
         return array(
             new \Twig_SimpleFunction('projectFundingPercentage', [$this, 'getFundingPercentage']),

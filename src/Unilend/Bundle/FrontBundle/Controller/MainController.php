@@ -466,7 +466,7 @@ class MainController extends Controller
     }
 
     /**
-     * @param null|Clients $client
+     * @param Clients|null $client
      * @param \tree        $tree
      * @param string       $lenderType
      *

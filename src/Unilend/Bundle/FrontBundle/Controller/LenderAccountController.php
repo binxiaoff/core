@@ -17,7 +17,6 @@ class LenderAccountController extends Controller
      */
     public function lenderMenuAction(string $route, ?UserInterface $client): Response
     {
-
         $template = [
             'route'              => $route,
             'isAutobidQualified' => $this->get('unilend.service.autobid_settings_manager')->isQualified($client)

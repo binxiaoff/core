@@ -2,20 +2,15 @@
 
 namespace Unilend\Bundle\FrontBundle\Twig;
 
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
-use Unilend\Bundle\CoreBusinessBundle\Entity\WalletType;
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderManager;
-use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Partner, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Service\{LenderManager, PartnerManager};
 use Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager;
 
 class ClientExtension extends \Twig_Extension
 {
-    /** @var EntityManager */
+    /** @var EntityManagerInterface */
     private $entityManager;
     /** @var LenderManager */
     private $lenderManager;
@@ -27,7 +22,6 @@ class ClientExtension extends \Twig_Extension
     private $logger;
 
     /**
-     * UserExtension constructor.
      *
      * @param EntityManagerInterface     $entityManager
      * @param LenderManager              $lenderManager
@@ -79,7 +73,7 @@ class ClientExtension extends \Twig_Extension
         } catch (\Exception $exception) {
             $userLevel = 0;
             $this->logger->error(
-                'Unable to retrieve lender diversification level', [
+                'Unable to retrieve lender diversification level. Error: ' . $exception->getMessage(), [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
@@ -108,7 +102,7 @@ class ClientExtension extends \Twig_Extension
         } catch (\Exception $exception) {
             $notifications = [];
             $this->logger->error(
-                'Unable to retrieve last lender notifications', [
+                'Unable to retrieve last lender notifications. Error: ' . $exception->getMessage(), [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
@@ -124,7 +118,7 @@ class ClientExtension extends \Twig_Extension
     /**
      * @param Clients|null $client
      *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\Partner
+     * @return Partner
      */
     public function getPartner(Clients $client): Partner
     {
@@ -132,14 +126,10 @@ class ClientExtension extends \Twig_Extension
             $partner = $this->partnerManager->getPartner($client);
         }
 
-        if (empty($partner)) {
-            $partner = $this->partnerManager->getDefaultPartner();
-        }
-
-        return $partner;
+        return $partner ?? $this->partnerManager->getDefaultPartner();
     }
 
-    /**reBusinessBundle\\Entity\\ClientsStatus::STATUS_CREATION') and app.user.notifications|length > 0 %}
+    /**
      * @param Clients|null $client
      *
      * @return float

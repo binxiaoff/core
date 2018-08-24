@@ -177,7 +177,7 @@
                                         <tr class="table-mydocuments-item list-files">
                                             <td>{{ project.getIdProject() }}</td>
                                             <td>
-                                                {% if project.getProxy() is not empty and project.getProxy().status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
+                                                {% if project.getProxy() is not empty and project.getProxy().getStatus() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
                                                     <div class="document-download">
                                                     <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-voucher-28x38.png') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
@@ -189,7 +189,7 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if project.getMandates() is not empty and project.getMandates().0.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
+                                                {% if project.getMandates() is not empty and project.getMandates()[0].getStatus() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
                                                     <div class="document-download">
                                                     <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-declaration-28x38.png') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>

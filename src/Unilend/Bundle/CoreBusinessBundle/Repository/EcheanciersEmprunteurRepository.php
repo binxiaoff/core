@@ -152,7 +152,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
     }
 
     /**
-     * @param $project
+     * @param Projects|int $project
      *
      * @return array
      * @throws \Doctrine\ORM\NoResultException

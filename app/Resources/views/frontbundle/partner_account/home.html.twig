@@ -6,11 +6,11 @@
 } %}
 
 {% block dashboardContent %}
-    {% set partner = partner(app.user) %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
                 <div class="panel">
+                    {# partner initialized in the parent template #}
                     <header class="panel-header">
                         <h3>{{ ('partner-home_title-' ~ partner.label)|trans }}</h3>
                     </header>

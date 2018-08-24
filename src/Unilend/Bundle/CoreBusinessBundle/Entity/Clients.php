@@ -1565,7 +1565,6 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     }
 
     /**
-     *
      * @return string
      */
     public function getInitials(): string
@@ -1584,7 +1583,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @return bool
      */
-    public function isGrantedLenderRead()
+    public function isGrantedLenderRead(): bool
     {
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_ACCOUNT_READ);
     }
@@ -1614,14 +1613,36 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_SPONSORSHIP);
     }
 
+    /**
+     * @return bool
+     */
     public function isValidated(): bool
     {
         return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_VALIDATED;
     }
 
+    /**
+     * @return bool
+     */
     public function isInCompleteness(): bool
     {
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), [ClientsStatus::STATUS_COMPLETENESS, ClientsStatus::STATUS_COMPLETENESS_REMINDER]);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInSubscription(): bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_CREATION;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSuspended(): bool
+    {
+        return $this->getIdClientStatusHistory()->getIdStatus()->getId() === ClientsStatus::STATUS_SUSPENDED;
     }
 
     /**
@@ -1700,7 +1721,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function getSalt(): string
     {
-        return ''; // Since we use the BCrypt password encoder, the salt will be ignore. The auto-generated one is always the best.
+        return ''; // Since we use the BCrypt password encoder, the salt will be ignored. The auto-generated one is always the best.
     }
 
     /**

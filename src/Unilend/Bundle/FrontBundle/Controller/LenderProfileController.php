@@ -351,7 +351,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @param array                 $templateData
+     * @param array   $templateData
      * @param Clients $client
      *
      * @throws \Doctrine\ORM\OptimisticLockException

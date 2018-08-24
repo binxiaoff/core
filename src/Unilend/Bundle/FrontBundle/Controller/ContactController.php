@@ -105,7 +105,7 @@ class ContactController extends Controller
     }
 
     /**
-     * @param  string                     $query
+     * @param  string       $query
      * @param  Clients|null $client
      *
      * @return array

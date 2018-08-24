@@ -6,7 +6,6 @@
 } %}
 
 {% block dashboardContent %}
-    {% set partner = partner(app.user) %}
     <section class="dashboard-tabs tabs">
         <div class="dashboard-tabs-content tab-content">
             <article class="dashboard-tab-pane">
@@ -188,7 +187,7 @@
                                         </div><!-- /.form-field -->
                                     </div>
                                 </fieldset><!-- /.form-project-details-fieldset -->
-
+                                {# partner initialized in the parent template #}
                                 <fieldset class="form-project-details-fieldset">
                                     <h4>
                                         {% trans %} partner-project-details_description-section-title {% endtrans %}

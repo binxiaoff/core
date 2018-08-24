@@ -35,8 +35,7 @@ class BorrowerAccountController extends Controller
             'pre_funding_projects'   => $projectsPreFunding,
             'funding_projects'       => $projectsFunding,
             'post_funding_projects'  => $projectsPostFunding,
-            'closing_projects'       => $request->getSession()->get('closingProjects'),
-            'autobidSettingsManager' => $this->get('unilend.service.autobid_settings_manager')
+            'closing_projects'       => $request->getSession()->get('closingProjects')
         ];
     }
 
@@ -554,14 +553,13 @@ class BorrowerAccountController extends Controller
 
     /**
      * @Route("/espace-emprunteur/securite/{securityToken}", name="borrower_account_security", requirements={"securityToken": "[0-9a-f]+"})
-     * @Template("borrower_account/security.html.twig")
      *
      * @param string  $securityToken
      * @param Request $request
      *
-     * @return array
+     * @return Response
      */
-    public function securityAction(string $securityToken, Request $request): array
+    public function securityAction(string $securityToken, Request $request): Response
     {
         /** @var \temporary_links_login $temporaryLinks */
         $temporaryLinks = $this->get('unilend.service.entity_manager')->getRepository('temporary_links_login');
@@ -631,7 +629,7 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return ['securityToken' => $securityToken, 'expired' => $isLinkExpired, 'displayForm' => $displayForm];
+        return $this->render('borrower_account/security.html.twig', ['securityToken' => $securityToken, 'expired' => $isLinkExpired, 'displayForm' => $displayForm]);
     }
 
     /**

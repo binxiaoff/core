@@ -3,11 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
-use Unilend\Bundle\CoreBusinessBundle\Entity\BankAccount;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Companies;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyClient;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Partner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{BankAccount, Clients, Companies, CompanyClient, Partner};
 
 class PartnerManager
 {

@@ -5,9 +5,7 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Companies
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
 use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
 use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager;
 

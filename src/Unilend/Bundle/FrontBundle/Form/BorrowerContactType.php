@@ -19,7 +19,6 @@ class BorrowerContactType extends AbstractType
     private $language;
 
     /**
-     * BorrowerContactType constructor.
      *
      * @param EntityManager $entityManager
      * @param TokenStorage  $tokenStorage
@@ -43,7 +42,6 @@ class BorrowerContactType extends AbstractType
         $email     = '';
 
         if ($this->borrower instanceof Clients && $this->borrower->isBorrower()) {
-
             $lastName  = $this->borrower->getNom();
             $firstName = $this->borrower->getPrenom();
 

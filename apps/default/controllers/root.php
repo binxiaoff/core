@@ -32,7 +32,7 @@ class rootController extends bootstrap
             exit;
         }
 
-        if (ClientsStatus::STATUS_TO_BE_CHECKED > $user->getIdClientStatusHistory()->getIdStatus()->getId()) {
+        if ($user->isInSubscription()) {
             header('Location: ' . $this->lurl . '/inscription-preteurs');
             exit;
         }
