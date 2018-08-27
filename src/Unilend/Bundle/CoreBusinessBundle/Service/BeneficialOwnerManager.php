@@ -128,8 +128,9 @@ class BeneficialOwnerManager
      * @param Clients|\clients   $client
      *
      * @return array
+     * @throws \Exception
      */
-    public function createProjectBeneficialOwnerDeclaration($project, $client)
+    public function createProjectBeneficialOwnerDeclaration($project, $client): array
     {
         if ($project instanceof \projects) {
             $project = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($project->id_project);
@@ -139,20 +140,31 @@ class BeneficialOwnerManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
+        $defaultReturn = [
+            'action' => 'redirect',
+            'url'    => $this->router->generate('home')
+        ];
+
         if (
             null === $project
             || null === $client
             || $project->getIdCompany()->getIdClientOwner() != $client
         ) {
-            return [
-                'action' => 'redirect',
-                'url'    => $this->router->generate('home')
-            ];
+            return $defaultReturn;
         }
 
-        $projectDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
+        $projectDeclaration = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectBeneficialOwnerUniversign')
+            ->findOneBy(['idProject' => $project, 'status' => [UniversignEntityInterface::STATUS_PENDING, UniversignEntityInterface::STATUS_SIGNED]], ['added' => 'DESC']);
+
         if (null === $projectDeclaration) {
-            $companyDeclaration = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')->findCurrentDeclarationByCompany($project->getIdCompany());
+            $companyDeclaration = $this->entityManager
+                ->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
+                ->findCurrentDeclarationByCompany($project->getIdCompany());
+
+            if (null === $companyDeclaration) {
+                return $defaultReturn;
+            }
             $projectDeclaration = $this->addProjectBeneficialOwnerDeclaration($companyDeclaration, $project);
         }
 
@@ -190,10 +202,7 @@ class BeneficialOwnerManager
             }
         }
 
-        return [
-            'action' => 'redirect',
-            'url'    => $this->router->generate('home')
-        ];
+        return $defaultReturn;
     }
 
     /**

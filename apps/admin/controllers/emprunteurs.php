@@ -1,8 +1,6 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, PaysV2, WalletType, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, ClientsStatus, Companies, CompanyStatus, Pays, WalletType, Zones};
 
 class emprunteursController extends bootstrap
 {
@@ -106,7 +104,7 @@ class emprunteursController extends bootstrap
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BorrowerManager $borrowerManager */
             $borrowerManager = $this->get('unilend.service.borrower_manager');
 
-            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => \Unilend\Bundle\CoreBusinessBundle\Entity\WalletType::BORROWER]);
+            $walletType       = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletType')->findOneBy(['label' => WalletType::BORROWER]);
             $borrowerWallet   = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->findOneBy(['idClient' => $this->clients->id_client, 'idType' => $walletType]);
 
             if ($borrowerWallet) {
@@ -184,7 +182,7 @@ class emprunteursController extends bootstrap
                         $_POST['adresse'],
                         $_POST['cp'],
                         $_POST['ville'],
-                        PaysV2::COUNTRY_FRANCE,
+                        Pays::COUNTRY_FRANCE,
                         $this->companyEntity,
                         AddressType::TYPE_MAIN_ADDRESS
                     );

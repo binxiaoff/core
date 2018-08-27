@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Backpayline, Clients, ClientsHistory, ClientsHistoryActions, ClientsStatus, Companies, NationalitesV2, OffresBienvenues, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{GoogleRecaptchaManager, NewsletterManager, SponsorshipManager};
 use Unilend\Bundle\FrontBundle\Form\{LenderSubscriptionIdentityLegalEntity, LenderSubscriptionIdentityPerson};
 use Unilend\Bundle\FrontBundle\Service\{DataLayerCollector, SourceManager};
@@ -152,7 +152,7 @@ class LenderSubscriptionController extends Controller
 
         $noUsPerson ? $client->setUsPerson(false) : $client->setUsPerson(true);
 
-        if (PaysV2::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (Pays::COUNTRY_FRANCE == $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('cpFiscal')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -161,18 +161,18 @@ class LenderSubscriptionController extends Controller
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-nationality')));
         }
-        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($client->getIdPaysNaissance())) {
+        if (null === $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance())) {
             $countryCheck = false;
             $form->get('client')->get('idNationalite')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-country')));
         }
 
-        if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
+        if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && empty($client->getInseeBirth())) {
             $countryCheck = false;
             $form->get('client')->get('villeNaissance')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-wrong-birth-place')));
         }
 
         if ($countryCheck) {
-            if (PaysV2::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
+            if (Pays::COUNTRY_FRANCE == $client->getIdPaysNaissance() && false === empty($client->getInseeBirth())) {
                 $cityByInsee = $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['insee' => $client->getInseeBirth()]);
 
                 if (null !== $cityByInsee) {
@@ -180,7 +180,7 @@ class LenderSubscriptionController extends Controller
                 }
 
             } else {
-                $country        = $entityManager->getRepository('UnilendCoreBusinessBundle:PaysV2')->find($client->getIdPaysNaissance());
+                $country        = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->find($client->getIdPaysNaissance());
                 $inseeCountries = $this->get('unilend.service.entity_manager')->getRepository('insee_pays');
                 if (null !== $country && $inseeCountries->getByCountryIso(trim($country->getIso()))) {
                     $client->setInseeBirth($inseeCountries->COG);
@@ -296,7 +296,7 @@ class LenderSubscriptionController extends Controller
         }
 
         if ($isValidCaptcha && $form->isValid()) {
-            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === PaysV2::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
+            $clientType = $form->get('mainAddress')->get('idCountry')->getData() === Pays::COUNTRY_FRANCE ? Clients::TYPE_LEGAL_ENTITY : Clients::TYPE_LEGAL_ENTITY_FOREIGNER;
             $password   = $this->get('security.password_encoder')->encodePassword($client, $client->getPassword());
             $slug       = $ficelle->generateSlug($client->getPrenom() . '-' . $client->getNom());
 
@@ -429,7 +429,7 @@ class LenderSubscriptionController extends Controller
         }
 
         $countryId = $form->get('mainAddress')->get('idCountry')->getData();
-        if (false === empty($countryId) && PaysV2::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (false === empty($countryId) && Pays::COUNTRY_FRANCE === $countryId && null === $entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('fiscalAddress')->get('zip')->addError(new FormError($translator->trans('lender-subscription_personal-information-error-fiscal-address-wrong-zip')));
         }
 
@@ -594,7 +594,7 @@ class LenderSubscriptionController extends Controller
 
         $template = [
             'client'         => $client,
-            'isLivingAbroad' => $countryId !== PaysV2::COUNTRY_FRANCE,
+            'isLivingAbroad' => $countryId !== Pays::COUNTRY_FRANCE,
             'fundsOrigin'    => $this->getFundsOrigin($client->getType()),
             'form'           => $form->createView()
         ];
@@ -625,7 +625,7 @@ class LenderSubscriptionController extends Controller
         $bic                 = $form->get('bankAccount')->get('bic')->getData();
         $bankAccountDocument = null;
 
-        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
             $form->get('bankAccount')->get('iban')->addError(new FormError($translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
 
@@ -688,7 +688,7 @@ class LenderSubscriptionController extends Controller
             AttachmentType::CNI_PASSPORTE_VERSO   => $fileBag->get('id_verso'),
             AttachmentType::JUSTIFICATIF_DOMICILE => $fileBag->get('housing-certificate'),
         ];
-        if ($countryId !== PaysV2::COUNTRY_FRANCE) {
+        if ($countryId !== Pays::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if (false === empty($form->get('housedByThirdPerson')->getData())) {
@@ -1307,7 +1307,7 @@ class LenderSubscriptionController extends Controller
         if ($request->isXmlHttpRequest()) {
             $get = $request->query->all();
 
-            if (false === empty($get['country']) && PaysV2::COUNTRY_FRANCE != $get['country']) {
+            if (false === empty($get['country']) && Pays::COUNTRY_FRANCE != $get['country']) {
                 return $this->json(['status' => true]);
             }
 
@@ -1339,7 +1339,7 @@ class LenderSubscriptionController extends Controller
             $country = $request->query->get('country');
             $inseeCode = $request->query->get('insee');
 
-            if (false === empty($country) && PaysV2::COUNTRY_FRANCE != $country) {
+            if (false === empty($country) && Pays::COUNTRY_FRANCE != $country) {
                 return $this->json(['status' => true]);
             }
 

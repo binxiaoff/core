@@ -16,7 +16,8 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
  */
 class LenderValidationManager
 {
-    const MIN_LEGAL_AGE = 18;
+    const MIN_LEGAL_AGE                = 18;
+    const MAX_AGE_AUTOMATIC_VALIDATION = 80;
 
     /** @var EntityManager */
     private $entityManager;

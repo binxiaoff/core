@@ -3,13 +3,11 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\Expr\Join;
-use Doctrine\DBAL\Connection;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Clients, Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Echeanciers, OperationType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\LenderOperationsManager;
 use Unilend\librairies\CacheKeys;
 
@@ -336,55 +334,51 @@ class WalletBalanceHistoryRepository extends EntityRepository
         SELECT
           c.id_client,
           CASE
-          WHEN c.type IN (:person)
-            THEN 1
-          WHEN c.type IN (:legalEntity)
-            THEN 2
-          ELSE "inconnu"
-          END                                                                               AS type,
+            WHEN c.type IN (:person) THEN 1
+            WHEN c.type IN (:legalEntity) THEN 2
+            ELSE "inconnu"
+          END AS type,
           (
             SELECT p.iso
             FROM lenders_imposition_history lih
-              JOIN pays_v2 p ON p.id_pays = lih.id_pays
-            WHERE lih.added <= o.added
-                  AND lih.id_lender = w.id
+              JOIN pays p ON p.id_pays = lih.id_pays
+            WHERE lih.added <= o.added AND lih.id_lender = w.id
             ORDER BY lih.added DESC
             LIMIT 1
-          )                                                                                 AS resident_fiscal,
-          CASE
-          (IFNULL(
+          ) AS resident_fiscal,
+          CASE (IFNULL(
                (SELECT id_pays
                 FROM lenders_imposition_history lih
                 WHERE lih.id_lender = w.id AND lih.added <= o.added
                 ORDER BY added DESC
                 LIMIT 1)
                , 0) IN (0, 1) AND c.type IN (:person))
-          WHEN TRUE
-            THEN 0
-          ELSE 1
-          END                                                                               AS taxed_at_source,
+            WHEN TRUE THEN 0
+            ELSE 1
+          END AS taxed_at_source,
           CASE
-          WHEN lte.year IS NULL
-            THEN 0
-          ELSE 1
-          END                                                                               AS exonere,
-          (SELECT group_concat(lte.year SEPARATOR ", ")
-           FROM lender_tax_exemption lte
-           WHERE lte.id_lender = w.id)                                                      AS annees_exoneration,
+            WHEN lte.year IS NULL THEN 0
+            ELSE 1
+          END AS exonere,
+          (
+            SELECT GROUP_CONCAT(lte.year SEPARATOR ", ")
+            FROM lender_tax_exemption lte
+            WHERE lte.id_lender = w.id
+          ) AS annees_exoneration,
           o.id_project,
           o.id_loan,
-          uc.label                                                                          AS type_contract,
+          uc.label AS type_contract,
           e.ordre,
-          REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\')                                  AS capital,
-          REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\')                                 AS interets,
+          REPLACE(ROUND(e.capital / 100, 2), \'.\', \',\') AS capital,
+          REPLACE(ROUND(e.interets / 100, 2), \'.\', \',\') AS interets,
           CASE e.status
-          WHEN :scheduleRepaid THEN \'complete\'
-          WHEN :schedulePartiallyRepaid THEN \'partielle\'
-          ELSE \'\'
-          END                                                                               AS status_echeance,
+            WHEN :scheduleRepaid THEN \'complete\'
+            WHEN :schedulePartiallyRepaid THEN \'partielle\'
+            ELSE \'\'
+          END AS status_echeance,
           e.date_echeance,
           e.date_echeance_emprunteur,
-          IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\')              AS type_remboursement,
+          IF(o.id_repayment_schedule IS NULL, \'hors échéance\', \'échéance\') AS type_remboursement,
           REPLACE(SUM(IF(ot.label = :capital, o.amount, IF(ot.label = :capitalRegularization, -o.amount, 0))), \'.\', \',\') AS capital_rembourse,
           REPLACE(SUM(IF(ot.label = :interest, o.amount, IF(ot.label = :interestRegularization, -o.amount, 0))), \'.\', \',\') AS interets_rembourse,
           o.added                                                                                     AS date_rembourse,

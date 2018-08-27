@@ -1,12 +1,9 @@
 <?php
 
-use Doctrine\ORM\{
-    EntityManager, ORMException, UnexpectedResultException
-};
+use Doctrine\ORM\{EntityManager, ORMException, UnexpectedResultException};
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, PaysV2, Product, ProjectsStatus, WalletType, Zones
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, ClientsStatus, Companies, CompanyClient, Partner, PartnerProduct, PartnerProjectAttachment, PartnerThirdParty, Pays, Product,
+    ProjectsStatus, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Service\AddressManager;
 
 class partenairesController extends bootstrap
@@ -200,7 +197,7 @@ class partenairesController extends bootstrap
                     trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
                     trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
                     trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
-                    PaysV2::COUNTRY_FRANCE,
+                    Pays::COUNTRY_FRANCE,
                     $agency,
                     AddressType::TYPE_MAIN_ADDRESS
                 );
@@ -252,7 +249,7 @@ class partenairesController extends bootstrap
                     trim($request->request->filter('address', FILTER_SANITIZE_STRING)),
                     trim($request->request->filter('postcode', FILTER_SANITIZE_STRING)),
                     trim($request->request->filter('city', FILTER_SANITIZE_STRING)),
-                    PaysV2::COUNTRY_FRANCE,
+                    Pays::COUNTRY_FRANCE,
                     $agency,
                     AddressType::TYPE_MAIN_ADDRESS
                 );

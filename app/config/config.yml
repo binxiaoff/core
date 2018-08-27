@@ -126,14 +126,14 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism:  SCRAM-SHA-1
-                authSource:     admin
+                authSource:     "%mongodb_auth_source%"
                 connect:        true
-                ssl:            true
+                ssl:            "%mongodb_ssl_connect%"
                 password:       "%mongodb_password%"
                 username:       "%mongodb_username%"
                 readPreference: secondaryPreferred
                 replicaSet:     "%mongodb_replica_set_name%"
-    default_database: 'ws_call_%kernel.environment%'
+    default_database: "%mongodb_default_database%"
     document_managers:
         default:
             auto_mapping: true
