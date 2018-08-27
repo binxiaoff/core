@@ -94,7 +94,7 @@ class lenders_imposition_history extends lenders_imposition_history_crud
           IFNULL(u.firstname, "") AS user_firstname,
           IFNULL(u.name, "") AS user_name
         FROM lenders_imposition_history lih
-          INNER JOIN pays_v2 p ON p.id_pays = lih.id_pays
+          INNER JOIN pays p ON p.id_pays = lih.id_pays
           LEFT JOIN users u ON u.id_user = lih.id_user
         WHERE lih.id_lender = :id_lender
         ORDER BY lih.added DESC

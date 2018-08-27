@@ -4,13 +4,12 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\{Method, Security};
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\{Extension\Core\Type\CheckboxType, FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, JsonResponse, RedirectResponse, Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu,
-    LenderTaxExemption, PaysV2, TaxType, Wallet, WalletBalanceHistory, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Ifu, LenderTaxExemption, Pays, TaxType, Wallet, WalletBalanceHistory, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{ClientDataHistoryManager, LocationManager, NewsletterManager};
 use Unilend\Bundle\FrontBundle\Form\ClientPasswordType;
 use Unilend\Bundle\FrontBundle\Form\LenderSubscriptionProfile\{BankAccountType, ClientEmailType, CompanyIdentityType, LegalEntityProfileType, OriginOfFundsType, PersonPhoneType, PersonProfileType,
@@ -147,7 +146,7 @@ class LenderProfileController extends Controller
                 'postalAddress' => $postalAddressForm->createView(),
                 'phone'         => $phoneForm->createView()
             ],
-            'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== PaysV2::COUNTRY_FRANCE) : false
+            'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false
         ];
 
         $setting                             = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Liste deroulante conseil externe de l\'entreprise']);
@@ -401,8 +400,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()")
-     * @Method("POST")
+     * @Route("/profile/notification", name="lender_profile_notification", condition="request.isXmlHttpRequest()", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -684,8 +682,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/documents/submit", name="lender_completeness_submit")
-     * @Method("POST")
+     * @Route("/profile/documents/submit", name="lender_completeness_submit", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -777,7 +774,7 @@ class LenderProfileController extends Controller
             return;
         }
 
-        if (false === in_array(strtoupper(substr($iban, 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+        if (false === in_array(strtoupper(substr($iban, 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
             $this->addFlash('completenessError', $translator->trans('lender-subscription_documents-iban-not-european-error-message'));
             return;
         }
@@ -822,8 +819,10 @@ class LenderProfileController extends Controller
         $addressManager = $this->get('unilend.service.address_manager');
         $addressManager->saveClientAddress($address, $zip, $city, $countryId, $client, AddressType::TYPE_MAIN_ADDRESS);
 
-        $lastModifiedAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')
+        $lastModifiedAddress = $entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ClientAddress')
             ->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+
         $addressManager->linkAttachmentToAddress($lastModifiedAddress, $document);
     }
 
@@ -870,8 +869,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip")
-     * @Method("GET")
+     * @Route("/profile/ajax/zip", name="lender_profile_ajax_zip", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -890,7 +888,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/ifu", name="get_ifu")
+     * @Route("/profile/ifu", name="get_ifu", methods={"GET"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request
@@ -1040,8 +1038,7 @@ class LenderProfileController extends Controller
     }
 
     /**
-     * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption")
-     * @Method("POST")
+     * @Route("/profile/request-tax-exemption", name="profile_fiscal_information_tax_exemption", methods={"POST"})
      * @Security("has_role('ROLE_LENDER')")
      *
      * @param Request $request

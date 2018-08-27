@@ -89,6 +89,8 @@
                                             <h3 class="h3">
                                                 {% if project.getIdBorrowingMotive() == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_FRANCHISER_CREATION') %}
                                                     {% trans %} project-request_step-1-franchiser-information-title {% endtrans %}
+                                                {% elseif project.getIdBorrowingMotive() == constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\BorrowingMotive::ID_MOTIVE_ACQUISITION_MERGER') %}
+                                                    {% trans %} project-request_step-1-franchiser-information-title {% endtrans %}
                                                 {% else %}
                                                     {% trans %} project-request_step-1-company-information-title {% endtrans %}
                                                 {% endif %}

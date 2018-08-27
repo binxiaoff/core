@@ -2,7 +2,7 @@
 
 use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, BorrowingMotive, Companies, CompanyAddress, CompanyStatus, Echeanciers, Loans, Partner, PartnerProjectAttachment, Prelevements, ProjectAbandonReason, ProjectNotification, ProjectRejectionReason, ProjectRepaymentTask, Projects, ProjectsComments, ProjectsPouvoir, ProjectsStatus, Users, UsersTypes, Virements, WalletType, Zones};
-use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectManager, ProjectRequestManager, TermsOfSaleManager, WireTransferOutManager, WorkingDaysManager};
 use Unilend\Bundle\WSClientBundle\Entity\Altares\EstablishmentIdentityDetail;
 
 class dossiersController extends bootstrap
@@ -684,7 +684,7 @@ class dossiersController extends bootstrap
 
             $this->xerfi                       = $this->loadData('xerfi');
             $this->sectors                     = $this->loadData('company_sector')->select();
-            $this->sources                     = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
+            $this->sources                     = $this->getSourcesList();
             $this->ratings                     = $this->loadRatings($this->companies, $this->projects->id_company_rating_history, $this->xerfi);
             $this->ratings['unilend_prescore'] = $this->addUnilendPrescoring($this->projects_notes);
             $this->aCompanyProjects            = $this->companies->getProjectsBySIREN();
@@ -716,7 +716,7 @@ class dossiersController extends bootstrap
                 $this->availableContracts = array_column($productManager->getAvailableContracts($product), 'label');
             }
 
-            if (false === in_array($this->projects->period, [0, 1000000]) && false === in_array($this->projects->period, $this->dureePossible)) {
+            if (false === empty($this->projects->period) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
                 sort($this->dureePossible);
             }
@@ -1410,7 +1410,7 @@ class dossiersController extends bootstrap
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
 
-        $this->sources = array_column($this->clients->select('source NOT LIKE "http%" AND source NOT IN ("", "1") GROUP BY source'), 'source');
+        $this->sources = $this->getSourcesList();
     }
 
     public function _funding()
@@ -1665,11 +1665,17 @@ class dossiersController extends bootstrap
             }
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager = $this->get('doctrine.orm.entity_manager');
-            $nextRepayment = $repaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND status = ' . Echeanciers::STATUS_PENDING . ' AND date_echeance >= "' . $this->getLimitDate(new \DateTime('today midnight'))
-                    ->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1);
+            /** @var WorkingDaysManager $workingDaysManager */
+            $workingDaysManager = $this->get(WorkingDaysManager::class);
+
+            $nextRepayment = $repaymentSchedule->select(
+                'id_project = ' . $this->projects->id_project
+                . ' AND status = ' . Echeanciers::STATUS_PENDING
+                . ' AND date_echeance >= "' . $workingDaysManager->getNextWorkingDay(new \DateTime('today midnight'), 5)->format('Y-m-d H:i:s') . '"', ' ordre ASC', 0, 1
+            );
 
             if (false === empty($nextRepayment)) {
-                $this->earlyRepaymentLimitDate    = $this->getLimitDate(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), true);
+                $this->earlyRepaymentLimitDate    = $workingDaysManager->getPreviousWorkingDay(\DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']), 5);
                 $this->nextScheduledRepaymentDate = \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance']);
                 $this->lenderOwedCapital          = $repaymentSchedule->getRemainingCapitalAtDue($this->projects->id_project, $nextRepayment[0]['ordre'] + 1);
                 $this->borrowerOwedCapital        = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')
@@ -1736,33 +1742,6 @@ class dossiersController extends bootstrap
             $this->earlyRepaymentPossible = false;
             $this->message                = '<div>Le statut du projet ne  permet pas de faire un remboursement anticipé.</div>';
         }
-    }
-
-    /**
-     * @param DateTime $date
-     * @param bool     $countDown
-     *
-     * @return DateTime
-     */
-    private function getLimitDate(\DateTime $date, $countDown = false)
-    {
-        /** @var \jours_ouvres $businessDays */
-        $businessDays = $this->loadLib('jours_ouvres');
-        $interval     = new DateInterval('P1D');
-
-        if ($countDown) {
-            $interval->invert = 1;
-        }
-        $workingDays = 1;
-
-        while ($workingDays <= 5) {
-            $date->add($interval);
-
-            if ($businessDays->isHoliday($date->getTimestamp())) {
-                $workingDays++;
-            }
-        }
-        return $date;
     }
 
     public function _send_cgv_ajax()
@@ -2928,5 +2907,18 @@ class dossiersController extends bootstrap
             'action' => 'Test d&#39éligibilité',
             'user'   => ''
         ];
-        }
+    }
+
+    /**
+     * @return array
+     */
+    private function getSourcesList(): array
+    {
+        return [
+            'Commercial Courtier',
+            'Commercial Direct',
+            'Franchise',
+            'Test'
+        ];
+    }
 }

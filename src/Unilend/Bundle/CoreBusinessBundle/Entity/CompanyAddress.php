@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * CompanyAddress
  *
- * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_v2_id_country", columns={"id_country"})})
+ * @ORM\Table(name="company_address", indexes={@ORM\Index(name="idx_company_address_id_company", columns={"id_company"}), @ORM\Index(name="idx_company_address_pays_id_country", columns={"id_country"})})
  * @ORM\HasLifecycleCallbacks
  * @ORM\Entity(repositoryClass="Unilend\Bundle\CoreBusinessBundle\Repository\CompanyAddressRepository")
  */
@@ -103,9 +103,9 @@ class CompanyAddress
     private $idCompany;
 
     /**
-     * @var PaysV2
+     * @var Pays
      *
-     * @ORM\ManyToOne(targetEntity="PaysV2")
+     * @ORM\ManyToOne(targetEntity="Pays")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="id_country", referencedColumnName="id_pays")
      * })
@@ -399,11 +399,11 @@ class CompanyAddress
     /**
      * Set idCountry
      *
-     * @param PaysV2 $idCountry
+     * @param Pays $idCountry
      *
      * @return CompanyAddress
      */
-    public function setIdCountry(PaysV2 $idCountry): CompanyAddress
+    public function setIdCountry(Pays $idCountry): CompanyAddress
     {
         $this->idCountry = $idCountry;
 
@@ -413,9 +413,9 @@ class CompanyAddress
     /**
      * Get idCountry
      *
-     * @return PaysV2
+     * @return Pays
      */
-    public function getIdCountry(): PaysV2
+    public function getIdCountry(): Pays
     {
         return $this->idCountry;
     }
@@ -423,7 +423,7 @@ class CompanyAddress
     /**
      * @ORM\PrePersist
      */
-    public function setAddedAndPendingValue()
+    public function setAddedAndPendingValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->added->getTimestamp()) {
             $this->added = new \DateTime();
@@ -437,7 +437,7 @@ class CompanyAddress
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }

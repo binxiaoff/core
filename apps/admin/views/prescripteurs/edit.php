@@ -89,7 +89,7 @@
                         <td><?= $p['siren'] ?></td>
                         <td><?= $p['name'] ?></td>
                         <td class="text-right"><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
-                        <td><?= (in_array($p['period'], [0, 1000000])) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                        <td><?= empty($p['period']) ? '' : $p['period'] . ' mois' ?></td>
                         <td><?= $p['label'] ?></td>
                         <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                         <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>

@@ -20,8 +20,8 @@ if ($borrowerReasonInput.length) {
 
   // Default labels in case can't get from DB
   var TRANS_SIREN_LABEL_DEFAULT = 'SIREN'
-  var TRANS_SIREN_LABEL_MOTIVE_9 = 'SIREN de la cible'
-  var TRANS_SIREN_LABEL_MOTIVE_8 = 'SIREN du franchiseur'
+  var TRANS_TARGET_SIREN_LABEL = 'SIREN de la cible'
+  var TRANS_FRANCHISER_SIREN_LABEL = 'SIREN du franchiseur'
 
   // Related elements
   var $borrowerSirenInput = $('input[data-borrower-siren-input]')
@@ -81,23 +81,30 @@ if ($borrowerReasonInput.length) {
     }
 
     switch (~~reasonValue) {
+      // Reprise de fonds de commerce
+      case borrowerEsim.idMotiveAcquisitionMerger:
+        $borrowerCompanyNameInput.val('')
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_FRANCHISER_SIREN_LABEL, 'targetSirenLabel'))
+        $borrowerSirenLabel.find('.field-required').show()
+        $borrowerSirenInput.attr('data-formvalidation-required', true)
+        toggleCompanyName(false, false)
+        break
+
       // Création de franchise
       case borrowerEsim.idMotiveFranchiserCreation:
         $borrowerCompanyName.show()
-        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_8, 'franchisorSirenLabel'))
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_FRANCHISER_SIREN_LABEL, 'franchisorSirenLabel'))
         $borrowerSirenLabel.find('.field-required').hide()
-        $borrowerSirenInput
-          .removeAttr('data-formvalidation-required')
+        $borrowerSirenInput.removeAttr('data-formvalidation-required')
         toggleCompanyName(true, true)
         break
 
       // Rachat de parts sociale
       case borrowerEsim.idMotiveShareBuyBack:
         $borrowerCompanyNameInput.val('')
-        $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_MOTIVE_9, 'targetSirenLabel'))
+        $borrowerSirenLabel.find('.text').text(__.__(TRANS_TARGET_SIREN_LABEL, 'targetSirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
-        $borrowerSirenInput
-          .attr('data-formvalidation-required', true)
+        $borrowerSirenInput.attr('data-formvalidation-required', true)
         toggleCompanyName(false, false)
         break
 
@@ -106,8 +113,7 @@ if ($borrowerReasonInput.length) {
         $borrowerCompanyNameInput.val('')
         $borrowerSirenLabel.find('.text').text(__.__(TRANS_SIREN_LABEL_DEFAULT, 'sirenLabel'))
         $borrowerSirenLabel.find('.field-required').show()
-        $borrowerSirenInput
-          .attr('data-formvalidation-required', true)
+        $borrowerSirenInput.attr('data-formvalidation-required', true)
         toggleCompanyName(false, false)
         break
     }

@@ -65,4 +65,9 @@ class CacheKeys
     const ALTARES_IDENTITY_ADDRESS_LOG = 'altares_identity_address_log';
 
     const GET_CLIENT_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
+
+    /**
+     * const for Duplicate Lender
+     */
+    const LENDER_DUPLICATE_NOTIFICATION = 'duplicate_notification_client';
 }

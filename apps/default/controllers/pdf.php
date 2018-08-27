@@ -2,9 +2,8 @@
 
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Clients, CompanyStatus, Elements, Loans, ProjectCgv, ProjectsStatus, UnderlyingContract, UniversignEntityInterface};
+use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager;
 
 class pdfController extends bootstrap
 {
@@ -99,11 +98,6 @@ class pdfController extends bootstrap
             case 'claims':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleClaims.css');
-                break;
-            case 'operations':
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style.css');
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style-edit.css');
-                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleOperations.css');
                 break;
             case 'dec_pret':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/declarationContratPret/print.css');
@@ -673,30 +667,27 @@ class pdfController extends bootstrap
             $lenderRepaymentSchedule = $this->loadData('echeanciers');
             /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
             $borrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-            /** @var \jours_ouvres $jo */
-            $jo = $this->loadLib('jours_ouvres');
+            /** @var ProjectRepaymentScheduleManager $projectRepaymentScheduleManager */
+            $projectRepaymentScheduleManager = $this->get(ProjectRepaymentScheduleManager::class);
 
-            $this->settings->get('Nombre jours avant remboursement pour envoyer une demande de prelevement', 'type');
-            $daysOffset        = $this->settings->value;
-            $repaymentBaseDate = date('Y-m-d H:i:00');
+            $repaymentBaseDate = new DateTime();
 
             for ($order = 1; $order <= $this->projects->period; $order++) {
                 $currentLenderRepaymentDates   = $lenderRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
                 $currentBorrowerRepaymentDates = $borrowerRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
 
-                $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
-                $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
-                $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
+                $lenderRepaymentDate   = $projectRepaymentScheduleManager->generateLenderMonthlyAmortizationDate($repaymentBaseDate, $order);
+                $borrowerRepaymentDate = $projectRepaymentScheduleManager->generateBorrowerMonthlyAmortizationDate($repaymentBaseDate, $order);
 
                 if (
-                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== substr($lenderRepaymentDate, 0, 10)
-                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)
+                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== $lenderRepaymentDate->format('Y-m-d')
+                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== $borrowerRepaymentDate->format('Y-m-d')
                 ) {
-                    $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
+                    $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate->format('Y-m-d H:i:00'), $borrowerRepaymentDate->format('Y-m-d H:i:00'));
                 }
 
-                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)) {
-                    $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
+                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== $borrowerRepaymentDate->format('Y-m-d')) {
+                    $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate->format('Y-m-d H:i:00'));
                 }
             }
         }
@@ -1052,8 +1043,6 @@ class pdfController extends bootstrap
         $this->projects = $this->loadData('projects');
 
         $this->projects->get($loan->getProject()->getIdProject());
-        /** @var \pays_v2 pays */
-        $this->pays = $this->loadData('pays_v2');
         /** @var \echeanciers echeanciers */
         $this->echeanciers = $this->loadData('echeanciers');
         /** @var \projects_status_history projects_status_history */

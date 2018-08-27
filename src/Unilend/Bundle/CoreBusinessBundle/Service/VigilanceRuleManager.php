@@ -4,13 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ClientAtypicalOperation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Operation;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\PaysV2;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Users;
-use Unilend\Bundle\CoreBusinessBundle\Entity\VigilanceRule;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientAtypicalOperation, Clients, Operation, OperationType, Pays, Users, VigilanceRule};
 
 class VigilanceRuleManager
 {
@@ -90,10 +84,10 @@ class VigilanceRuleManager
                 $this->processDepositDetection($companyRepository->getLegalEntitiesByCumulativeDepositAmount(self::VIGILANCE_CUMULATIVE_DEPOSIT_AMOUNT_LEGAL_ENTITY), $vigilanceRule, true);
                 break;
             case 'fiscal_country_risk':
-                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_MEDIUM_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
+                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(Pays::VIGILANCE_STATUS_MEDIUM_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
             case 'fiscal_country_high_risk':
-                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(PaysV2::VIGILANCE_STATUS_HIGH_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
+                $this->processClientWithFiscalCountryRisk($clientRepository->getClientsByFiscalCountryStatus(Pays::VIGILANCE_STATUS_HIGH_RISK, new \DateTime('yesterday midnight')), $vigilanceRule);
                 break;
         }
     }
