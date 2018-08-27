@@ -270,7 +270,7 @@
                         }
                     ?>
                         <tr>
-                            <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->dates->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
+                            <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
                             <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?>&nbsp;&euro;</td>
                             <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?>&nbsp;&euro;</td>
                             <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->ficelle->formatNumber($r['montant'] / 100) ?>&nbsp;&euro;</td>

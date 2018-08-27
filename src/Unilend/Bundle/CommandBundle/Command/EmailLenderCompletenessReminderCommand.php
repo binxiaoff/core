@@ -5,10 +5,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    ClientsStatus, Users
-};
-use Unilend\core\Loader;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{ClientsStatus, Users};
 
 class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
 {
@@ -38,7 +35,6 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
         $clients                       = $this->getContainer()->get('unilend.service.entity_manager')->getRepository('clients');
         $clientStatusManager           = $this->getContainer()->get('unilend.service.client_status_manager');
         $clientStatusHistoryRepository = $this->getContainer()->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:ClientsStatusHistory');
-        $this->dates                   = Loader::loadLib('dates');
 
         $firstReminderDate  = (new \DateTime(self::REMINDER_DELAY_DAYS_FIRST . ' days ago'))->setTime(0, 0, 0);
         $secondReminderDate = (new \DateTime(self::REMINDER_DELAY_DAYS_SECOND . ' days ago'))->setTime(0, 0, 0);
@@ -89,11 +85,11 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
      */
     private function sendReminderEmail(\clients $client, array $lender, string $content): void
     {
-        $timeCreate = strtotime($lender['added_status']);
-        $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
-        $keywords   = [
+        $timeCreate    = \DateTime::createFromFormat('Y-m-d H:i:s', $lender['added_status']);
+        $dateFormatter = new \IntlDateFormatter($this->getContainer()->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+        $keywords      = [
             'firstName'        => $client->prenom,
-            'modificationDate' => date('j', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
+            'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $content,
             'uploadLink'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default') . '/profile/documents',
             'lenderPattern'    => $client->getLenderPattern($client->id_client)

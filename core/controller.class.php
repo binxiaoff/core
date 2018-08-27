@@ -335,4 +335,17 @@ abstract class Controller implements ContainerAwareInterface
 
         exit;
     }
+
+    /**
+     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a  temporary solution to replace the dates::formatDate
+     *
+     * @param string $date
+     * @param string $format
+     *
+     * @return false|string
+     */
+    public function formatDate(string $date, $format = 'd/m/Y')
+    {
+        return date($format, strtotime($date));
+    }
 }

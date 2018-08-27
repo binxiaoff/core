@@ -840,10 +840,10 @@ class preteursController extends bootstrap
             $timeCreate    = $statusHistory->getAdded();
         }
 
-        $month    = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
-        $keywords = [
+        $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+        $keywords      = [
             'firstName'        => $this->clients->prenom,
-            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $_SESSION['content_email_completude'][$this->clients->id_client],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $this->clients->getLenderPattern($this->clients->id_client),
@@ -1310,12 +1310,12 @@ class preteursController extends bootstrap
      */
     private function sendCompletenessRequest(Clients $client): void
     {
-        $wallet     = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
-        $timeCreate = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
-        $month      = $this->dates->tableauMois['fr'][$timeCreate->format('n')];
-        $keywords   = [
+        $wallet        = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::LENDER);
+        $timeCreate    = empty($this->statusHistory[0]) ? $client->getAdded() : $this->statusHistory[0]->getAdded();
+        $dateFormatter = new \IntlDateFormatter($this->getParameter('locale'), \IntlDateFormatter::LONG, \IntlDateFormatter::NONE);
+        $keywords      = [
             'firstName'        => $client->getPrenom(),
-            'modificationDate' => $timeCreate->format('j') . ' ' . $month . ' ' . $timeCreate->format('Y'),
+            'modificationDate' => $dateFormatter->format($timeCreate),
             'content'          => $_SESSION['content_email_completude'][$client->getIdClient()],
             'uploadLink'       => $this->furl . '/profile/documents',
             'lenderPattern'    => $wallet->getWireTransferPattern()

@@ -551,7 +551,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                         <?php endif; ?>
                         <tr>
                             <th>Date de la demande</th>
-                            <td><?= $this->dates->formatDate($this->projects->added, 'd/m/Y H:i') ?></td>
+                            <td><?= $this->formatDate($this->projects->added, 'd/m/Y H:i') ?></td>
                         </tr>
                         <tr>
                             <th><label for="source">Source</label></th>
@@ -1011,7 +1011,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 <th><label for="date_publication">Date de publication&nbsp;*</label></th>
                                 <td>
                                     <?php if ($this->projects->status == ProjectsStatus::A_FUNDER) : ?>
-                                        <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
+                                        <input type="text" name="date_publication" id="date_publication" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>">
                                         <select name="date_publication_heure" class="selectMini" title="Heure">
                                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
                                                 <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_publication, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
@@ -1023,7 +1023,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                             <?php endfor; ?>
                                         </select>&nbsp;m
                                     <?php else : ?>
-                                        <?= $this->dates->formatDate($this->projects->date_publication, 'd/m/Y H:i') ?>
+                                        <?= $this->formatDate($this->projects->date_publication, 'd/m/Y H:i') ?>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -1031,7 +1031,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                 <th><label for="date_retrait">Date de retrait&nbsp;*</label></th>
                                 <td>
                                     <?php if ($this->projects->status == ProjectsStatus::A_FUNDER) : ?>
-                                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
+                                        <input type="text" name="date_retrait" id="date_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00 00:00:00' ? $this->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>">
                                         <select name="date_retrait_heure" class="selectMini" title="Heure">
                                             <?php for ($hour = 0; $hour < 24; $hour++) : ?>
                                                 <option value="<?= sprintf('%02d', $hour) ?>"<?= (substr($this->projects->date_retrait, 11, 2) == $hour ? ' selected' : '') ?>><?= sprintf('%02d', $hour) ?></option>
@@ -1043,7 +1043,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{AttachmentType, Companies, Project
                                             <?php endfor; ?>
                                         </select>&nbsp;m
                                     <?php else : ?>
-                                        <?= $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
+                                        <?= $this->formatDate($this->projects->date_retrait, 'd/m/Y H:i') ?>
                                         <?php if ($this->projects->status < ProjectsStatus::FUNDE) : ?>
                                             &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                         <?php endif; ?>

@@ -658,8 +658,6 @@ class ProjectsController extends Controller
             return new RedirectResponse('/');
         }
 
-        /** @var \dates $dates */
-        $dates = Loader::loadLib('dates');
         $translator = $this->get('translator');
 
         $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
@@ -675,7 +673,7 @@ class ProjectsController extends Controller
         $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
         $columnCount = 1;
         foreach ($financeData as $balanceSheet) {
-            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, $dates->formatDate($balanceSheet['closingDate'], 'd/m/Y'));
+            $oActiveSheet->setCellValueByColumnAndRow($columnCount++, $iRow, date('d/m/Y', strtotime($balanceSheet['closingDate'])));
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
         $columnCount = 1;

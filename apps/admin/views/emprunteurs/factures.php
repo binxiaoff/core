@@ -24,7 +24,7 @@
                     <?php foreach ($this->aProjectInvoices as $aProjectInvoice) : ?>
                         <tr>
                             <td><?= $aProjectInvoice['num_facture'] ?></td>
-                            <td><?= $this->dates->formatDateMysqltoFr($aProjectInvoice['date']) ?></td>
+                            <td><?= $this->formatDate($aProjectInvoice['date']) ?></td>
                             <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ht']/100) ?> € </td>
                             <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ttc']/100) ?> € </td>
                             <td align="center">
