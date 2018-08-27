@@ -345,18 +345,19 @@ class ajaxController extends bootstrap
                 $project->means_repayment      = $_POST['moyen_etape3'];
                 $project->update();
 
-                if (empty($error)) {
-                    echo json_encode([
-                        'success' => true
-                    ]);
-                    return;
-                } else {
+                if (false === empty($error)) {
                     echo json_encode([
                         'error'   => true,
                         'message' => $error
                     ]);
                     return;
                 }
+
+                echo json_encode([
+                    'success' => true
+                ]);
+                return;
+
             } elseif ($_POST['etape'] == 4.1 && $project->status <= ProjectsStatus::COMITY_REVIEW) {
                 if (false === empty($_POST['target_ratings']) && false === empty($project->id_target_company)) {
                     /** @var \company_rating_history $targetCompanyRatingHistory */
@@ -404,9 +405,9 @@ class ajaxController extends bootstrap
     /**
      * @param \projects $project
      *
-     * @return string
+     * @return string|null
      */
-    private function uploadProjectPhoto(\projects $project): string
+    private function uploadProjectPhoto(\projects $project): ?string
     {
         try {
             $imagick     = new \Imagick($_FILES['photo_projet']['tmp_name']);
@@ -416,7 +417,7 @@ class ajaxController extends bootstrap
                 return 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')';
             }
         } catch (ImagickException $exception) {
-            $this->get('logger')->error('An ImagickException occured while checking size of project picture. Message: ' . $exception->getMessage(), [
+            $this->get('logger')->error('An ImagickException occurred while checking size of project picture. Message: ' . $exception->getMessage(), [
                 'class'      => __CLASS__,
                 'function'   => __FUNCTION__,
                 'file'       => $exception->getFile(),
@@ -437,14 +438,14 @@ class ajaxController extends bootstrap
             return 'Erreur upload photo : ' . $this->upload->getErrorType();
         }
 
-        if (false === empty($project->photo_projet) && $project->photo_projet != $this->upload->getName()) {
+        if (false === empty($project->photo_projet) && $project->photo_projet !== $this->upload->getName()) {
             @unlink($this->path . Projects::PROJECT_PHOTO_PATH . $project->photo_projet);
         }
 
         $project->photo_projet = $this->upload->getName();
         $project->update();
 
-        return '';
+        return null;
     }
 
     /**
