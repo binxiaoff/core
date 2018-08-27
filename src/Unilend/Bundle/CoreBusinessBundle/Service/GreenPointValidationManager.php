@@ -4,6 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
+use JMS\Serializer\Serializer;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Attachment, AttachmentType, Clients, ClientsStatus, GreenpointAttachment, GreenpointKyc};
 use Unilend\Bundle\WSClientBundle\Entity\GreenPoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
@@ -37,9 +38,11 @@ class GreenPointValidationManager
     /** @var BankAccountManager */
     private $bankAccountManager;
     /** @var GreenPointDataManager  */
-    private $dataManager;
+    private $greenPointDataManager;
     /** @var GreenPointManager  */
-    private $wsManager;
+    private $greenPointWsManager;
+    /** @var Serializer */
+    private $serializer;
 
     /**
      * @param EntityManager         $entityManager
@@ -47,8 +50,9 @@ class GreenPointValidationManager
      * @param LoggerInterface       $logger
      * @param AddressManager        $addressManager
      * @param BankAccountManager    $bankAccountManager
-     * @param GreenPointDataManager $dataManager
-     * @param GreenPointManager     $wsManager
+     * @param GreenPointDataManager $greenPointDataManager
+     * @param GreenPointManager     $greenPointWsManager
+     * @param Serializer            $serializer
      */
     public function __construct(
         EntityManager $entityManager,
@@ -56,17 +60,55 @@ class GreenPointValidationManager
         LoggerInterface $logger,
         AddressManager $addressManager,
         BankAccountManager $bankAccountManager,
-        GreenPointDataManager $dataManager,
-        GreenPointManager $wsManager
+        GreenPointDataManager $greenPointDataManager,
+        GreenPointManager $greenPointWsManager,
+        Serializer $serializer
     )
     {
-        $this->entityManager      = $entityManager;
-        $this->attachmentManager  = $attachmentManager;
-        $this->logger             = $logger;
-        $this->addressManager     = $addressManager;
-        $this->bankAccountManager = $bankAccountManager;
-        $this->dataManager        = $dataManager;
-        $this->wsManager          = $wsManager;
+        $this->entityManager         = $entityManager;
+        $this->attachmentManager     = $attachmentManager;
+        $this->logger                = $logger;
+        $this->addressManager        = $addressManager;
+        $this->bankAccountManager    = $bankAccountManager;
+        $this->greenPointDataManager = $greenPointDataManager;
+        $this->greenPointWsManager   = $greenPointWsManager;
+        $this->serializer            = $serializer;
+    }
+
+    /**
+     * @param Attachment $attachment
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public function validateAttachement(Attachment $attachment): bool
+    {
+        if (false === $this->isEligibleForValidation($attachment)) {
+            return false;
+        }
+
+        $greenPointData = $this->greenPointDataManager->getGreenPointData($attachment);
+
+        switch ($attachment->getType()->getId()) {
+            case AttachmentType::CNI_PASSPORTE:
+            case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
+            case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
+                $response = $this->greenPointWsManager->checkIdentity($greenPointData);
+                break;
+            case AttachmentType::RIB:
+                $response = $this->greenPointWsManager->checkIban($greenPointData);
+                break;
+            case AttachmentType::JUSTIFICATIF_DOMICILE:
+            case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
+                $response = $this->greenPointWsManager->checkAddress($greenPointData);
+                break;
+            default :
+                throw new \InvalidArgumentException('Unsupported attachment type. No GreenPoint resource found');
+        }
+
+        $this->handleGreenPointResponse($response, $attachment);
+
+        return true;
     }
 
     /**
@@ -74,7 +116,7 @@ class GreenPointValidationManager
      *
      * @return bool
      */
-    public function isEligibleForValidation(Attachment $attachment): bool
+    private function isEligibleForValidation(Attachment $attachment): bool
     {
         if (false === in_array($attachment->getType()->getId(), self::ATTACHMENT_TYPE_TO_VALIDATE)) {
             return false;
@@ -111,41 +153,10 @@ class GreenPointValidationManager
         }
 
         if (null !== $attachment->getGreenpointAttachment() && null !== $attachment->getGreenpointAttachment()->getValidationStatus()) {
-           return false;
+            return false;
         }
 
         return true;
-    }
-
-    /**
-     * @param Attachment $attachment
-     *
-     * @throws \Exception
-     */
-    public function validateAttachement(Attachment $attachment)
-    {
-        $greenPointData = $this->dataManager->getGreenPointData($attachment);
-
-        switch ($attachment->getType()->getId()) {
-            case AttachmentType::CNI_PASSPORTE:
-            case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
-            case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
-                $response = $this->wsManager->checkIdentity($greenPointData);
-                break;
-            case AttachmentType::RIB:
-                $response = $this->wsManager->checkIban($greenPointData);
-                break;
-            case AttachmentType::JUSTIFICATIF_DOMICILE:
-            case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
-                $response = $this->wsManager->checkAddress($greenPointData);
-                break;
-            default :
-                throw new \InvalidArgumentException('Unsupported attachment type. No GreenPoint resource found');
-        }
-
-        $this->dataManager->createGreenPointAttachment($attachment);
-
-        $this->handleGreenPointResponse($response, $attachment);
     }
 
     /**
@@ -156,9 +167,7 @@ class GreenPointValidationManager
      */
     private function handleGreenPointResponse($response, Attachment $attachment)
     {
-        $greenPointAttachment = $this->dataManager->updateGreenPointAttachment($attachment, $response);
-
-        $this->dataManager->updateGreenPointAttachmentDetail($greenPointAttachment, $response);
+        $greenPointAttachment = $this->greenPointDataManager->updateGreenPointData($attachment, $response);
 
         if (
             $attachment->getType()->getId() === AttachmentType::RIB
@@ -178,11 +187,13 @@ class GreenPointValidationManager
     /**
      * @param Clients $client
      *
+     * @throws \Exception
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function saveClientKycStatus(Clients $client)
+    public function saveClientKycStatus(Clients $client): void
     {
-        $kycInfo = $this->wsManager->getClientKYCStatus($client);
+        $kycInfo = $this->greenPointWsManager->getClientKYCStatus($client);
 
         $clientKyc = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenPointKyc')->findOneBy(['idClient' => $client->getIdClient()]);
         if (null === $clientKyc) {
@@ -200,13 +211,30 @@ class GreenPointValidationManager
     }
 
     /**
-     * @param Identity|Rib|HousingCertificate $response
-     * @param Attachment                      $attachment
+     * @param int        $type
+     * @param array      $feedback
+     * @param Attachment $attachment
      *
      * @throws \Exception
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function handleAsynchronousFeedback($response, Attachment $attachment): void
+    public function handleAsynchronousFeedback(int $type, array $feedback, Attachment $attachment): void
     {
+        switch ($type) {
+            case GreenPointManager::TYPE_IDENTITY_DOCUMENT:
+                $response = $this->serializer->deserialize(json_encode($feedback), Identity::class, 'json');
+                break;
+            case GreenPointManager::TYPE_RIB:
+                $response = $this->serializer->deserialize(json_encode($feedback), Rib::class, 'json');
+                break;
+            case GreenPointManager::TYPE_HOUSING_CERTIFICATE:
+                $response = $this->serializer->deserialize(json_encode($feedback), HousingCertificate::class, 'json');
+                break;
+            default:
+                throw new \InvalidArgumentException('Unsupported type');
+        }
+
         $this->handleGreenPointResponse($response, $attachment);
 
         $this->saveClientKycStatus($attachment->getClient());

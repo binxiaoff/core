@@ -135,12 +135,34 @@ class GreenPointDataManager
     }
 
     /**
+     * @param Attachment                      $attachment
+     * @param Identity|Rib|HousingCertificate $response
+     *
+     * @return GreenpointAttachment
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function updateGreenPointData(Attachment $attachment, $response): GreenpointAttachment
+    {
+        $greenPointAttachment = $this->updateGreenpointAttachment($attachment, $response);
+
+        if (false === $response instanceof Identity || false === $response instanceof Rib || false === $response instanceof HousingCertificate) {
+            throw new \InvalidArgumentException('Response has not the right type.');
+        }
+
+        $this->updateGreenPointAttachmentDetail($greenPointAttachment, $response);
+
+        return $greenPointAttachment;
+    }
+
+    /**
      * @param Attachment $attachment
      *
      * @return GreenpointAttachment
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function createGreenpointAttachment(Attachment $attachment): GreenpointAttachment
+    private function createGreenpointAttachment(Attachment $attachment): GreenpointAttachment
     {
         $greenPointAttachment = new GreenpointAttachment();
         $greenPointAttachment->setIdAttachment($attachment);
@@ -156,9 +178,10 @@ class GreenPointDataManager
      * @param Identity|Rib|HousingCertificate $response
      *
      * @return GreenpointAttachment
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function updateGreenpointAttachment(Attachment $attachment, $response): GreenpointAttachment
+    private function updateGreenpointAttachment(Attachment $attachment, $response): GreenpointAttachment
     {
         $greenPointAttachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:GreenpointAttachment')->findOneBy(['idAttachment' => $attachment->getId()]);
 
@@ -183,9 +206,10 @@ class GreenPointDataManager
      * @param GreenpointAttachment            $greenPointAttachment
      * @param Identity|Rib|HousingCertificate $response
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function updateGreenPointAttachmentDetail(GreenpointAttachment $greenPointAttachment, $response): void
+    private function updateGreenPointAttachmentDetail(GreenpointAttachment $greenPointAttachment, $response): void
     {
         $greenPointAttachmentDetail = $greenPointAttachment->getGreenpointAttachmentDetail();
 
@@ -227,7 +251,7 @@ class GreenPointDataManager
             ->setIdentityIssuingCountry($identity->getIssuingCountry())
             ->setIdentityIssuingAuthority($identity->getIssuingAuthority())
             ->setIdentityExpirationDate($identity->getExpirationDate())
-            ->setIdentityBirthdate($identity->getBirthdate())
+            ->setIdentityBirthdate($identity->getBirthday())
             ->setIdentityDocumentNumber($identity->getDocumentNumber())
             ->setIdentityDocumentTypeId($identity->getType())
             ->setIdentityCivility($identity->getGender());

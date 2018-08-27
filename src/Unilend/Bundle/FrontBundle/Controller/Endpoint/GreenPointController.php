@@ -3,13 +3,11 @@
 namespace Unilend\Bundle\FrontBundle\Controller\Endpoint;
 
 use Doctrine\ORM\EntityManager;
-use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager;
-use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
 class GreenPointController extends Controller
@@ -20,15 +18,12 @@ class GreenPointController extends Controller
     private $entityManager;
     /** @var GreenPointValidationManager */
     private $validationManager;
-    /** @var Serializer */
-    private $serializer;
 
     public function __construct()
     {
         $this->logger            = $this->get('logger');
         $this->entityManager     = $this->get('doctrine.orm.entity_manager');
         $this->validationManager = $this->get(GreenPointValidationManager::class);
-        $this->serializer        = $this->get('serializer');
     }
 
     /**
@@ -49,7 +44,7 @@ class GreenPointController extends Controller
 
         $type = $request->request->getInt('type');
         if (false === in_array($type, [GreenPointManager::TYPE_IDENTITY_DOCUMENT, GreenPointManager::TYPE_RIB, GreenPointManager::TYPE_HOUSING_CERTIFICATE])) {
-            $this->logger->error(
+            $this->logger->warning(
                 'GreenPoint returned feedback for unknown type', [
                 'class'    => __CLASS__,
                 'function' => __FUNCTION__,
@@ -61,7 +56,7 @@ class GreenPointController extends Controller
 
         $attachment = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Attachment')->find($document);
         if (null === $attachment) {
-            $this->logger->error(
+            $this->logger->warning(
                 'Attachement not found', [
                 'class'         => __CLASS__,
                 'function'      => __FUNCTION__,
@@ -70,24 +65,8 @@ class GreenPointController extends Controller
             return new Response('Data incomplete. Document ID unknown', 400);
         }
 
-        $feedback = $request->request->all();
-
-        switch ($type) {
-            case GreenPointManager::TYPE_IDENTITY_DOCUMENT:
-                $response = $this->serializer->deserialize(json_encode($feedback), Identity::class, 'json');
-                break;
-            case GreenPointManager::TYPE_RIB:
-                $response = $this->serializer->deserialize(json_encode($feedback), Rib::class, 'json');
-                break;
-            case GreenPointManager::TYPE_HOUSING_CERTIFICATE:
-                $response = $this->serializer->deserialize(json_encode($feedback), HousingCertificate::class, 'json');
-                break;
-            default:
-                throw new \InvalidArgumentException('Unsupported type');
-        }
-
         try {
-            $this->validationManager->handleAsynchronousFeedback($response, $attachment);
+            $this->validationManager->handleAsynchronousFeedback($type, $request->request->all(), $attachment);
             $return = GreenPointManager::ASYNCHRONOUS_SUCCESS;
 
         } catch (\Exception $exception) {
@@ -150,6 +129,8 @@ class GreenPointController extends Controller
      */
     private function getIPAddressesInDefinedRange(int $minRange, int $maxRange, string $root)
     {
+        $allowedIp = [];
+
         for ($suffix = $minRange; $suffix <= $maxRange; $suffix++) {
             $allowedIp[] = $root . $suffix;
         }
@@ -165,6 +146,8 @@ class GreenPointController extends Controller
      */
     private function getIpAddressesOutOfRange(string $outOfRange, string $root)
     {
+        $allowedIp = [];
+
         foreach (explode(',', $outOfRange) as $suffix) {
             $allowedIp[] = $root . $suffix;
         }
