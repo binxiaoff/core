@@ -2,22 +2,22 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
+use Symfony\Component\Routing\Annotation\Route;
 
 class InvoiceController extends Controller
 {
     /**
-     * @Route("/pdf/facture_EF/{clientHash}/{idProject}", name="borrower_invoice_funds_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}"})
+     * @Route("/pdf/facture_EF/{clientHash}/{idProject}", name="borrower_invoice_funds_commission",
+     *     requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}"})
      *
      * @param string $clientHash
      * @param int    $idProject
      *
      * @return Response
      */
-    public function downloadProjectFundsCommissionAction($clientHash, $idProject)
+    public function downloadProjectFundsCommissionAction(string $clientHash, int $idProject): Response
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $invoiceManager = $this->get('unilend.service.invoice_manager');
@@ -70,7 +70,8 @@ class InvoiceController extends Controller
     }
 
     /**
-     * @Route("/pdf/facture_ER/{clientHash}/{idProject}/{order}", name="borrower_invoice_payment_commission", requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}", "order":"\d+"})
+     * @Route("/pdf/facture_ER/{clientHash}/{idProject}/{order}", name="borrower_invoice_payment_commission",
+     *     requirements={"idProject": "\d+", "clientHash": "[0-9a-f-]{32,36}", "order":"\d+"})
      *
      * @param string $clientHash
      * @param int    $idProject
@@ -78,7 +79,7 @@ class InvoiceController extends Controller
      *
      * @return Response
      */
-    public function downloadRepaymentCommissionInvoiceAction($clientHash, $idProject, $order)
+    public function downloadRepaymentCommissionInvoiceAction(string $clientHash, int $idProject, int $order): Response
     {
         $entityManager  = $this->get('doctrine.orm.entity_manager');
         $invoiceManager = $this->get('unilend.service.invoice_manager');

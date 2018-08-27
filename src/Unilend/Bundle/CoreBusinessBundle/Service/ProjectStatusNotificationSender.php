@@ -308,12 +308,20 @@ class ProjectStatusNotificationSender
      *
      * @throws \Exception
      */
-    private function sendLenderNotifications(Projects $project, int $notificationType, string $mailTypePerson, string $mailTypeLegalEntity, array $keywords = [], bool $forceNotification = false): void
+    private function sendLenderNotifications(
+        Projects $project,
+        int $notificationType,
+        string $mailTypePerson,
+        string $mailTypeLegalEntity,
+        array $keywords = [],
+        bool $forceNotification = false
+    ): void
     {
         $walletRepository                   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet');
         $operationRepository                = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $lenderRepaymentRepository          = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Echeanciers');
         $closeOutNettingRepaymentRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CloseOutNettingRepayment');
+        $loansRepository                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Loans');
 
         /** @var \notifications $notificationsData */
         $notificationsData = $this->entityManagerSimulator->getRepository('notifications');
@@ -322,16 +330,14 @@ class ProjectStatusNotificationSender
         /** @var \clients_gestion_mails_notif $clientsGestionMailsNotif */
         $clientsGestionMailsNotif = $this->entityManagerSimulator->getRepository('clients_gestion_mails_notif');
 
-        /** @var \loans $loans */
-        $loans        = $this->entityManagerSimulator->getRepository('loans');
-        $lenderLoans = $loans->getProjectLoansByLender($project->getIdProject());
+        $lenderLoans = $loansRepository->getProjectLoanDetailsForEachLender($project);
 
         if (is_array($lenderLoans)) {
             $repaymentRepository = null === $project->getCloseOutNettingDate() ? $lenderRepaymentRepository : $closeOutNettingRepaymentRepository;
 
             foreach ($lenderLoans as $loanDetails) {
                 /** @var Wallet $wallet */
-                $wallet = $walletRepository->find($loanDetails['id_lender']);
+                $wallet = $walletRepository->find($loanDetails['idLender']);
 
                 $loansAmount      = round(bcdiv($loanDetails['amount'], 100, 4), 2);
                 $allLoans         = explode(',', $loanDetails['loans']);
@@ -339,7 +345,7 @@ class ProjectStatusNotificationSender
                 $netRepayment     = $operationRepository->getNetRepaidAmountByWalletAndProject($wallet, $project);
 
                 $notificationsData->type       = $notificationType;
-                $notificationsData->id_lender  = $loanDetails['id_lender'];
+                $notificationsData->id_lender  = $loanDetails['idLender'];
                 $notificationsData->id_project = $project->getIdProject();
                 $notificationsData->amount     = bcsub($loansAmount, $netRepayment);
                 $notificationsData->id_bid     = 0;

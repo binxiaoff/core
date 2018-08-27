@@ -16,6 +16,9 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
  */
 class LenderValidationManager
 {
+    const MIN_LEGAL_AGE                = 18;
+    const MAX_AGE_AUTOMATIC_VALIDATION = 80;
+
     /** @var EntityManager */
     private $entityManager;
     /** @var ClientStatusManager */
@@ -286,5 +289,25 @@ class LenderValidationManager
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param \DateTime $birthday
+     *
+     * @return bool
+     */
+    public function validateAge(\DateTime $birthday): bool
+    {
+        $yesterday = new \DateTime('today midnight');
+
+        $birthday->setTime(0, 0);
+
+        $interval = $birthday->diff($yesterday);
+
+        if ($interval->y >= self::MIN_LEGAL_AGE) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Form\{FormError, FormInterface};
 use Symfony\Component\HttpFoundation\{File\UploadedFile, FileBag};
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, PaysV2, Users, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, BankAccount, ClientAddress, Clients, ClientsStatus, Companies, CompanyAddress, Pays, Users, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{AddressManager, AttachmentManager, BankAccountManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager};
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
@@ -321,7 +321,7 @@ class LenderProfileFormsHandler
         $zip       = $form->get('zip')->getData();
         $countryId = $form->get('idCountry')->getData();
 
-        if (PaysV2::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
+        if (Pays::COUNTRY_FRANCE == $countryId && null === $this->entityManager->getRepository('UnilendCoreBusinessBundle:Villes')->findOneBy(['cp' => $zip])) {
             $form->get('zip')->addError(new FormError($this->translator->trans('lender-profile_information-tab-fiscal-address-section-unknown-zip-code-error-message')));
         }
     }
@@ -366,7 +366,7 @@ class LenderProfileFormsHandler
         $countryId = $form->get('idCountry')->getData();
 
         $files[AttachmentType::JUSTIFICATIF_DOMICILE] = $fileBag->get('housing-certificate');
-        if ($countryId !== PaysV2::COUNTRY_FRANCE) {
+        if ($countryId !== Pays::COUNTRY_FRANCE) {
             $files[AttachmentType::JUSTIFICATIF_FISCAL] = $fileBag->get('tax-certificate');
         }
         if ($form->get('housedByThirdPerson')->getData()) {
@@ -550,7 +550,7 @@ class LenderProfileFormsHandler
      */
     private function checkBankDetailsForm(FormInterface $form): void
     {
-        if (false === in_array(strtoupper(substr($form->get('iban')->getData(), 0, 2)), PaysV2::EEA_COUNTRIES_ISO)) {
+        if (false === in_array(strtoupper(substr($form->get('iban')->getData(), 0, 2)), Pays::EEA_COUNTRIES_ISO)) {
             $form->get('iban')->addError(new FormError($this->translator->trans('lender-subscription_documents-iban-not-european-error-message')));
         }
     }
@@ -782,15 +782,18 @@ class LenderProfileFormsHandler
         $addressForm         = $form->get($addressType);
         $bankForm            = $form->get('bankAccount');
         $modifiedAddressType = null;
+        $newAttachments      = [];
 
         // Identity
-        $newAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $identityAttachments = $this->uploadPersonalIdentityDocuments($client, $unattachedClient, $clientForm, $fileBag);
+        $newAttachments      = $identityAttachments + $newAttachments;
 
         // Address
         $isAddressModified = $this->isAddressModified($addressForm, $clientAddress);
         if ($isAddressModified) {
             $this->checkAddressForm($addressForm, $addressType);
-            $newAttachments      = array_merge($this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType), $newAttachments);
+            $housingAttachments  = $this->uploadPersonAddressDocument($client, $addressForm, $fileBag, $addressType);
+            $newAttachments      = $housingAttachments + $newAttachments;
             $modifiedAddressType = $addressType;
         }
 

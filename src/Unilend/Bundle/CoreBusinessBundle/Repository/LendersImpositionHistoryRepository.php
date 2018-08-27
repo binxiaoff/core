@@ -54,7 +54,7 @@ class LendersImpositionHistoryRepository extends EntityRepository
 
         $queryBuilder = $this->createQueryBuilder('lih');
         $queryBuilder->select('p.iso')
-            ->innerJoin('UnilendCoreBusinessBundle:PaysV2', 'p', Join::WITH, 'p.idPays = lih.idPays')
+            ->innerJoin('UnilendCoreBusinessBundle:Pays', 'p', Join::WITH, 'p.idPays = lih.idPays')
             ->where('lih.idLender = :wallet')
             ->andWhere('lih.added <= :date')
             ->orderBy('lih.added', 'DESC')

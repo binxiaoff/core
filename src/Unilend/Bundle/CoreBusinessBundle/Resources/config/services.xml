@@ -109,6 +109,7 @@
             <argument type="service" id="number_formatter"/>
             <argument type="service" id="currency_formatter"/>
             <argument type="service" id="unilend.service.cip_manager"/>
+            <argument type="service" id="Unilend\Bundle\CoreBusinessBundle\Service\Repayment\ProjectRepaymentScheduleManager"/>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>
             </call>
@@ -560,5 +561,12 @@
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\NewsletterManager" autowire="true">
             <argument key="$listId">%mailchimp.list_id%</argument>
         </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\AcceptedBidAndLoanNotificationSender" autowire="true">
+            <argument key="$numberFormatter" type="service" id="number_formatter"/>
+            <argument key="$currencyFormatter" type="service" id="currency_formatter"/>
+        </service>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager" autowire="true"/>
     </services>
 </container>

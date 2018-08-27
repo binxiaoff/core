@@ -1,15 +1,9 @@
 <?php
 
-use Box\Spout\{
-    Common\Type, Writer\WriterFactory
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones
-};
+use Box\Spout\{Common\Type, Writer\WriterFactory};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Autobid, Bids, Clients, ClientsGestionNotifications, ClientsGestionTypeNotif, ClientsStatus, Companies, LenderStatistic, LenderTaxExemption, Loans, MailTemplates, OffresBienvenues, OperationType, ProjectNotification, ProjectsStatus, UsersHistory, VigilanceRule, Wallet, WalletType, Zones};
 use Unilend\Bundle\CoreBusinessBundle\Repository\LenderStatisticRepository;
-use Unilend\Bundle\CoreBusinessBundle\Service\{
-    ClientAuditer, ClientDataHistoryManager, LenderOperationsManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Service\{AttachmentManager, ClientAuditer, ClientDataHistoryManager, ClientStatusManager, LenderOperationsManager};
 
 class preteursController extends bootstrap
 {
@@ -37,37 +31,44 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
-        if (isset($_POST['form_search_preteur'])) {
-            if (empty($_POST['id']) && empty($_POST['nom']) && empty($_POST['email']) && empty($_POST['prenom']) && empty($_POST['raison_sociale']) && empty($_POST['siren'])) {
+        if ($this->request->request->has('form_search_preteur')) {
+            $clientId    = $this->request->request->get('id');
+            $email       = $this->request->request->get('email');
+            $lastName    = $this->request->request->get('nom');
+            $firstName   = $this->request->request->get('prenom');
+            $companyName = $this->request->request->get('raison_sociale');
+            $siren       = $this->request->request->get('siren');
+
+            if (empty($clientId) && empty($lastName) && empty($email) && empty($firstName) && empty($companyName) && empty($siren)) {
                 $_SESSION['error_search'][] = 'Veuillez remplir au moins un champ';
             }
 
-            $email = empty($_POST['email']) ? null : filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+            $email = empty($email) ? null : filter_var($email, FILTER_SANITIZE_EMAIL);
             if (false === $email) {
                 $_SESSION['error_search'][] = 'Format de l\'email est non valide';
             }
 
-            $clientId = empty($_POST['id']) ? null : filter_var($_POST['id'], FILTER_SANITIZE_NUMBER_INT);
+            $clientId = empty($clientId) ? null : filter_var($clientId, FILTER_VALIDATE_INT);
             if (false === $clientId) {
                 $_SESSION['error_search'][] = 'L\'id du client doit être numérique';
             }
 
-            $lastName = empty($_POST['nom']) ? null : filter_var($_POST['nom'], FILTER_SANITIZE_STRING);
+            $lastName = empty($lastName) ? null : filter_var($lastName, FILTER_SANITIZE_STRING);
             if (false === $lastName) {
                 $_SESSION['error_search'][] = 'Le format du nom n\'est pas valide';
             }
 
-            $firstName = empty($_POST['prenom']) ? null : filter_var($_POST['prenom'], FILTER_SANITIZE_STRING);
+            $firstName = empty($firstName) ? null : filter_var($firstName, FILTER_SANITIZE_STRING);
             if (false === $firstName) {
                 $_SESSION['error_search'][] = 'Le format du prenom n\'est pas valide';
             }
 
-            $companyName = empty($_POST['raison_sociale']) ? null : filter_var($_POST['raison_sociale'], FILTER_SANITIZE_STRING);
+            $companyName = empty($companyName) ? null : filter_var($companyName, FILTER_SANITIZE_STRING);
             if (false === $companyName) {
                 $_SESSION['error_search'][] = 'Le format de la raison sociale n\'est pas valide';
             }
 
-            $siren = empty($_POST['siren']) ? null : trim(filter_var($_POST['siren'], FILTER_SANITIZE_STRING));
+            $siren = empty($siren) ? null : trim(filter_var($siren, FILTER_SANITIZE_STRING));
             if (false === $siren) {
                 $_SESSION['error_search'][] = 'Le format du siren n\'est pas valide';
             }
@@ -79,11 +80,22 @@ class preteursController extends bootstrap
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Repository\ClientsRepository $clientRepository */
             $clientRepository = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Clients');
-            $this->lPreteurs  = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
+            try {
+                $this->lPreteurs = $clientRepository->findLenders($clientId, $email, $lastName, $firstName, $companyName, $siren);
 
-            if (false === empty($this->lPreteurs) && false === empty($_POST['id']) && 1 == count($this->lPreteurs)) {
-                header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
-                die;
+                if (false === empty($this->lPreteurs) && false === empty($_POST['id']) && 1 == count($this->lPreteurs)) {
+                    header('Location: ' . $this->lurl . '/preteurs/edit/' . $this->lPreteurs[0]['id_client']);
+                    die;
+                }
+            } catch (\Doctrine\DBAL\DBALException $exception) {
+                $this->get('logger')->error('Could not search for lenders using given parameters. Exception message: ' . $exception->getMessage(), [
+                    'post'          => $this->request->request->all(),
+                    'filtered_post' => ['id' => $clientId, 'email' => $email, 'nom' => $lastName, 'prenom' => $firstName, 'raison_sociale' => $companyName, 'siren' => $siren],
+                    'class'         => __CLASS__,
+                    'method'        => __METHOD__,
+                    'file'          => $exception->getFile(),
+                    'line'          => $exception->getLine()
+                ]);
             }
         } else {
             header('Location: ' . $this->lurl . '/preteurs/search');
@@ -112,8 +124,6 @@ class preteursController extends bootstrap
         $this->translator = $this->get('translator');
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
         /** @var LenderOperationsManager $lenderOperationsManager */
         $lenderOperationsManager = $this->get('unilend.service.lender_operations_manager');
         /** @var \Psr\Log\LoggerInterface $logger */
@@ -202,8 +212,10 @@ class preteursController extends bootstrap
             $this->lBids          = $bids->select('id_lender_account = ' . $wallet->getId() . ' AND status = ' . Bids::STATUS_PENDING, 'added DESC');
             $this->NbBids         = count($this->lBids);
 
-            $this->attachments     = $wallet->getIdClient()->getAttachments();
+            /** @var AttachmentManager $attachmentManager */
+            $attachmentManager     = $this->get('unilend.service.attachment_manager');
             $this->attachmentTypes = $attachmentManager->getAllTypesForLender();
+            $this->attachments     = $wallet->getIdClient()->getAttachments();
 
             $this->exemptionYears         = [];
             $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
@@ -312,28 +324,24 @@ class preteursController extends bootstrap
         $this->loadJs('default/component/add-file-input');
 
         $this->nationalites            = $this->loadData('nationalites_v2');
-        $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->settings                = $this->loadData('settings');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
-        $this->lNatio = $this->nationalites->select();
-        $this->lPays  = $this->pays->select('', 'ordre ASC');
+        $this->lNatio = $this->nationalites->select('', 'ordre ASC');
 
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager                = $this->get('doctrine.orm.entity_manager');
         $lenderTaxExemptionRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:LenderTaxExemption');
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AttachmentManager $attachmentManager */
-        $attachmentManager = $this->get('unilend.service.attachment_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
-        $clientStatusManager = $this->get('unilend.service.client_status_manager');
-        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translation_manager');
+        $this->countries = $entityManager->getRepository('UnilendCoreBusinessBundle:Pays')->findBy([], ['ordre' => 'ASC']);
+
         /** @var \Psr\Log\LoggerInterface $logger */
         $logger = $this->get('logger');
 
-        $this->completude_wording     = $translationManager->getAllTranslationsForSection('lender-completeness');
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager       = $this->get('unilend.service.translation_manager');
+        $this->completude_wording = $translationManager->getAllTranslationsForSection('lender-completeness');
 
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = json_decode($this->settings->value, true);
@@ -396,8 +404,10 @@ class preteursController extends bootstrap
                 ['added' => 'DESC', 'id' => 'DESC']
             );
 
-            $attachments     = $this->client->getAttachments();
-            $attachmentTypes = $attachmentManager->getAllTypesForLender();
+            /** @var AttachmentManager $attachmentManager */
+            $attachmentManager = $this->get('unilend.service.attachment_manager');
+            $attachments       = $this->client->getAttachments();
+            $attachmentTypes   = $attachmentManager->getAllTypesForLender();
             $this->setAttachments($attachments, $attachmentTypes);
 
             $this->currentBankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getLastModifiedBankAccount($this->client);
@@ -432,6 +442,8 @@ class preteursController extends bootstrap
             if (isset($_POST['send_completude'])) {
                 $this->sendCompletenessRequest($this->client);
 
+                /** @var ClientStatusManager $clientStatusManager */
+                $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus(
                     $this->client,
                     $this->userEntity->getIdUser(),
@@ -1491,14 +1503,14 @@ class preteursController extends bootstrap
 
         switch ($action) {
             case 'close_lender':
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_LENDER_REQUEST);
 
                 $this->sendEmailClosedAccount($client);
                 break;
             case 'close_unilend':
-                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+                /** @var ClientStatusManager $clientStatusManager */
                 $clientStatusManager = $this->get('unilend.service.client_status_manager');
                 $clientStatusManager->addClientStatus($client, $_SESSION['user']['id_user'], ClientsStatus::STATUS_CLOSED_BY_UNILEND);
                 break;
@@ -1564,7 +1576,7 @@ class preteursController extends bootstrap
             $status = $lastTwoStatus[1]->getIdStatus()->getId();
         }
 
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientStatusManager $clientStatusManager */
+        /** @var ClientStatusManager $clientStatusManager */
         $clientStatusManager = $this->get('unilend.service.client_status_manager');
         $clientStatusManager->addClientStatus($client, $this->userEntity->getIdUser(), $status, 'Compte remis en ligne par Unilend');
 

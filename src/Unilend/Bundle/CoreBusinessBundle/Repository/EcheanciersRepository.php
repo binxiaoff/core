@@ -6,15 +6,7 @@ use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-use Unilend\Bundle\CoreBusinessBundle\Entity\CompanyStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Echeanciers;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
-use Unilend\Bundle\CoreBusinessBundle\Entity\OperationType;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Projects;
-use Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus;
-use Unilend\Bundle\CoreBusinessBundle\Entity\UnilendStats;
-use Unilend\Bundle\CoreBusinessBundle\Entity\Wallet;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, CompanyStatus, Echeanciers, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
 use Unilend\librairies\CacheKeys;
@@ -417,12 +409,12 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param \DateTime    $date
-     * @param Projects|int $project
+     * @param \DateTimeInterface $date
+     * @param Projects|int       $project
      *
      * @return null|Echeanciers
      */
-    public function findNextPendingScheduleAfter(\DateTime $date, $project)
+    public function findNextPendingScheduleAfter(\DateTimeInterface $date, $project)
     {
         $queryBuilder = $this->createQueryBuilder('e');
         $queryBuilder->where('e.idProject = :project')
@@ -648,5 +640,29 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idProject, e.ordre');
 
         return $queryBuilder->getQuery()->getResult();
+    }
+
+
+    /**
+     * @param Wallet|int   $wallet
+     * @param Projects|int $project
+     * @param int          $order
+     *
+     * @return int
+     * @throws \Doctrine\ORM\NoResultException
+     */
+    public function getSumCapitalAndInterestByLenderAndProjectAndOrder($wallet, $project, int $order): int
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+        $queryBuilder
+            ->select('SUM(e.capital + e.interets)')
+            ->where('e.ordre = :order')
+            ->andWhere('e.idLender = :wallet')
+            ->andWhere('e.idProject = :project')
+            ->setParameter('order', $order)
+            ->setParameter('wallet', $wallet)
+            ->setParameter('project', $project);
+
+        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
     }
 }

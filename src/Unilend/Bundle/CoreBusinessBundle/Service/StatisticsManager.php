@@ -237,7 +237,8 @@ class StatisticsManager
         $quarterStat = new UnilendStats();
         $quarterStat
             ->setTypeStat(UnilendStats::TYPE_QUARTER_INCIDENCE_RATE)
-            ->setValue(json_encode($thirdMonthData));
+            ->setValue(json_encode($thirdMonthData))
+            ->setAdded($thirdMonth);
 
         $this->entityManager->persist($quarterStat);
         $this->entityManager->flush($quarterStat);
@@ -735,6 +736,6 @@ class StatisticsManager
             $quarterData[$stat->getAdded()->format('Y-m-d')] = json_decode($stat->getValue(), true);
         }
 
-       return $quarterData;
+        return $quarterData;
     }
 }

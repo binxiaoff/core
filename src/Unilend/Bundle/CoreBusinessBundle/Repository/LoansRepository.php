@@ -254,4 +254,27 @@ class LoansRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getArrayResult();
     }
+
+    /**
+     * @param Projects|int $project
+     *
+     * @return array
+     */
+    public function getProjectLoanDetailsForEachLender($project): array
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder
+            ->select('
+                IDENTITY(l.idLender) AS idLender,
+                SUM(l.amount) AS amount,
+                GROUP_CONCAT(l.idLoan) AS loans'
+            )
+            ->where('l.idProject = :idProject')
+            ->andWhere('l.status = :statusAccepted')
+            ->groupBy('l.idLender')
+            ->setParameter('idProject', $project)
+            ->setParameter('statusAccepted', Loans::STATUS_ACCEPTED);
+
+        return $queryBuilder->getQuery()->getArrayResult();
+    }
 }
