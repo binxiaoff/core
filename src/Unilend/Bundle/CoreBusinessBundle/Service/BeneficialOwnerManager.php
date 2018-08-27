@@ -162,7 +162,7 @@ class BeneficialOwnerManager
                 ->getRepository('UnilendCoreBusinessBundle:CompanyBeneficialOwnerDeclaration')
                 ->findCurrentDeclarationByCompany($project->getIdCompany());
 
-            if (null ===  $companyDeclaration) {
+            if (null === $companyDeclaration) {
                 return $defaultReturn;
             }
             $projectDeclaration = $this->addProjectBeneficialOwnerDeclaration($companyDeclaration, $project);
