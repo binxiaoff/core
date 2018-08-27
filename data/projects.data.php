@@ -1327,8 +1327,6 @@ class projects extends projects_crud
             ->leftJoin('p', 'projects_notes', 'pn', 'p.id_project = pn.id_project')
             ->leftJoin('p', 'project_need', 'need', 'p.id_project_need = need.id_project_need')
             ->where('p.status IN (:riskStatus)')
-            ->andWhere('co.siren != \'\'')
-            ->andWhere('co.siren IS NOT NULL')
             ->setParameter('waitingAnalystStatus', ProjectsStatus::PENDING_ANALYSIS)
             ->setParameter('riskStatus', ProjectsStatus::RISK_TEAM, Connection::PARAM_INT_ARRAY)
             ->addOrderBy('status', 'ASC')
