@@ -64,7 +64,7 @@ class ClientExtension extends \Twig_Extension
      */
     public function getLenderDiversificationLevel(?Clients $client): int
     {
-        if (! $client instanceof Clients || false === $client->isLender()) {
+        if (false === $client instanceof Clients || false === $client->isLender()) {
             return 0;
         }
 
@@ -93,7 +93,7 @@ class ClientExtension extends \Twig_Extension
      */
     public function getLenderNotifications(?Clients $client): array
     {
-        if (! $client instanceof Clients || false === $client->isLender()) {
+        if (false === $client instanceof Clients || false === $client->isLender()) {
             return [];
         }
 
@@ -136,7 +136,7 @@ class ClientExtension extends \Twig_Extension
      */
     public function getBalance(?Clients $client): float
     {
-        if (! $client instanceof Clients) {
+        if (false === $client instanceof Clients) {
             return 0;
         }
 
