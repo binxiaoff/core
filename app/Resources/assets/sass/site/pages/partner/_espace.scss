@@ -107,14 +107,15 @@
     }
   }
   &.actions {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    .btn-abandon, .btn-prospect {
+    padding: 20px;
+    .btn-alternate {
       margin-bottom: 0.5em;
+      padding: 15px 30px;
     }
     @include devices('sm', 'md', 'lg') {
-      .btn-abandon, .btn-prospect {
-        margin: 0 10px 0 0;
+      .btn-alternate {
+        margin-left: 5px;
+        margin-right: 5px;
       }
     }
   }
