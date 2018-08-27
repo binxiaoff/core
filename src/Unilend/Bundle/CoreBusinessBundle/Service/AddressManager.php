@@ -117,6 +117,10 @@ class AddressManager
             || (null !== $companyAddress && $this->isAddressDataDifferent($companyAddress, $address, $zip, $city, $country) && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
         ) {
             $newAddress = $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
+
+            if (AddressType::TYPE_MAIN_ADDRESS === $type->getLabel()) {
+                $this->addInseeToLenderAddress($newAddress);
+            }
         }
 
         if (isset($newAddress) && AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
@@ -395,6 +399,10 @@ class AddressManager
             || (null !== $clientAddress && $this->isAddressDataDifferent($clientAddress, $address, $zip, $city, $country) && null !== $lastModifiedAddress && $this->isAddressDataDifferent($lastModifiedAddress, $address, $zip, $city, $country))
         ) {
             $newAddress = $this->createClientAddress($client, $address, $zip, $city, $country, $type);
+
+            if (AddressType::TYPE_MAIN_ADDRESS === $type->getLabel()) {
+                $this->addInseeToLenderAddress($newAddress);
+            }
         }
 
         if (isset($newAddress) && AddressType::TYPE_POSTAL_ADDRESS === $type->getLabel()) {
@@ -530,9 +538,10 @@ class AddressManager
      * @param ClientAddress $address
      * @param Attachment    $attachment
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function linkAttachmentToAddress(ClientAddress $address, Attachment $attachment)
+    public function linkAttachmentToAddress(ClientAddress $address, Attachment $attachment): void
     {
         $clientAddressAttachment = new ClientAddressAttachment();
         $clientAddressAttachment
@@ -541,5 +550,31 @@ class AddressManager
 
         $this->entityManager->persist($clientAddressAttachment);
         $this->entityManager->flush($clientAddressAttachment);
+    }
+
+    /**
+     * Method to change to private once RUN-3156 is closed
+     * @param ClientAddress|CompanyAddress $address
+     *
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function addInseeToLenderAddress($address): void
+    {
+        if ($address instanceof ClientAddress && false === $address->getIdClient()->isLender()) {
+            throw new \InvalidArgumentException('Address is no lender address');
+        }
+
+        if ($address instanceof CompanyAddress && false === $address->getIdCompany()->getIdClientOwner()->isLender()) {
+            throw new \InvalidArgumentException('Address is no lender address');
+        }
+
+        if ($address->getIdCountry()->getIdPays() === Pays::COUNTRY_FRANCE || in_array($address->getIdCountry()->getIdPays(), Pays::FRANCE_DOM_TOM)) {
+            $inseeCode = $this->locationManager->getInseeCode($address->getZip(), $address->getCity());
+            $inseeCode = $inseeCode ?? null;
+
+            $address->setInsee($inseeCode);
+            $this->entityManager->flush($address);
+        }
     }
 }
