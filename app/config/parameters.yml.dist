@@ -13,6 +13,14 @@ parameters:
     database_ssl_cert:              ~
     database_ssl_ca:                ~
 
+    mongodb_server:                 "mongodb://127.0.0.1:27017"
+    mongodb_username:               "unilend"
+    mongodb_password:               "passw0rd"
+    mongodb_default_database:       "ws_call"
+    mongodb_auth_source:            "ws_call"
+    mongodb_ssl_connect:            false
+    mongodb_replica_set_name:       ~
+
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
     mailjet.api_version:            v3.1
@@ -78,11 +86,6 @@ parameters:
 
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
     dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
-
-    mongodb_server:                 mongodb://datalake-shard-00-00-lnres.mongodb.net:27017,datalake-shard-00-01-lnres.mongodb.net:27017,datalake-shard-00-02-lnres.mongodb.net:27017/ws_call_%kernel.environment%?ssl=true&replicaSet=DataLake-shard-0&authSource=admin
-    mongodb_username:               uld-mdb-admin
-    mongodb_password:               cyPKA2c0C6hq3JLp
-    mongodb_replica_set_name:       DataLake-shard-0
 
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
     locale:                         fr_FR
