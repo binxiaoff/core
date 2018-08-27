@@ -19,10 +19,10 @@ final class Version20180827120248TECH505 extends AbstractMigration
 
         $this->addSql("
             INSERT INTO translations (locale, section, name, translation, added, updated) VALUES
-              ('fr_FR', 'common', 'day', '{0,1} %count% jour|]1,Inf[  %count% jours', NOW(), NOW()),
-              ('fr_FR', 'common', 'hour', '{0,1} %count% heure|]1,Inf[  %count% heures', NOW(), NOW()),
-              ('fr_FR', 'common', 'minute', '{0,1} %count% minute|]1,Inf[  %count% minutes', NOW(), NOW()),
-              ('fr_FR', 'common', 'second', '{0,1} %count% seconde|]1,Inf[  %count% secondes', NOW(), NOW())
+              ('fr_FR', 'common', 'day', '{0,1} %count% jour|]1,Inf[ %count% jours', NOW(), NOW()),
+              ('fr_FR', 'common', 'hour', '{0,1} %count% heure|]1,Inf[ %count% heures', NOW(), NOW()),
+              ('fr_FR', 'common', 'minute', '{0,1} %count% minute|]1,Inf[ %count% minutes', NOW(), NOW()),
+              ('fr_FR', 'common', 'second', '{0,1} %count% seconde|]1,Inf[ %count% secondes', NOW(), NOW())
         ");
 
     }

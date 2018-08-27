@@ -337,7 +337,7 @@ abstract class Controller implements ContainerAwareInterface
     }
 
     /**
-     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a  temporary solution to replace the dates::formatDate
+     * Since it can be replaced by Twig filter once the template is migrated to Twig, I create it as a temporary solution to replace the dates::formatDate
      *
      * @param string $date
      * @param string $format
