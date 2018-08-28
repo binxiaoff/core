@@ -530,6 +530,8 @@ class ClientsRepository extends EntityRepository
         $query = '
             SELECT c.*, cs.label
             FROM clients c
+            INNER JOIN wallet w ON c.id_client = w.id_client
+            INNER JOIN wallet_type wt ON w.id_type = wt.id AND label = "' . WalletType::LENDER . '"
             INNER JOIN clients_status_history csh ON c.id_client_status_history = csh.id
             INNER JOIN clients_status cs ON csh.id_status = cs.id
             WHERE ' . str_repeat('REPLACE(', count($charactersToReplace)) . 'c.nom' . $replaceCharacters . ' LIKE :lastName
