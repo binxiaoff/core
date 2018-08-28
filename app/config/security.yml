@@ -15,6 +15,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         default:
+            logout_on_user_change: true
             pattern: /
             anonymous: ~
             guard:
