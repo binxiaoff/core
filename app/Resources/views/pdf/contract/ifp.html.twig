@@ -227,7 +227,6 @@
             <!-- Page Break -->
             <div class="pageBreakBefore">
                 <h3>ECHEANCIER DES REMBOURSEMENTS</h3>
-
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0">
                         <tr>
@@ -245,7 +244,7 @@
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getCapital() / 100)|localizedcurrency('EUR') }}</td>
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getInterets() / 100)|localizedcurrency('EUR') }}</td>
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getMontant() / 100)|localizedcurrency('EUR') }}</td>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ remainingCapital|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ remainingCapital|abs|localizedcurrency('EUR') }}</td>
                             </tr>
                         {% endfor %}
                     </table>

@@ -2,23 +2,26 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response};
 use Symfony\Component\Routing\Annotation\Route;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Loans;
 use Unilend\Bundle\CoreBusinessBundle\Service\Document\LoanContractGenerator;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class DocumentController extends Controller
 {
     const ERROR_CANNOT_FIND_LOAN   = 'cannot-find-loan';
     const ERROR_CANNOT_FIND_CLIENT = 'cannot-find-client';
     const ERROR_WRONG_CLIENT_HASH  = 'wrong-client-hash';
+    const ERROR_ACCESS_DENIED      = 'access-denied';
     const ERROR_EXCEPTION_OCCURRED = 'exception-occurred';
     const ERROR_UNKNOWN            = 'unknown';
 
     /**
      * @Route("/pdf/contrat/{clientHash}/{idLoan}", name="loan_contract_pdf", requirements={"clientHash": "[0-9a-f-]{32,36}", "idLoan": "\d+"})
+     * @Security("has_role('ROLE_LENDER')")
      *
      * @param string $clientHash
      * @param int    $idLoan
@@ -27,8 +30,6 @@ class DocumentController extends Controller
      */
     public function loanContractPdfAction(string $clientHash, int $idLoan): Response
     {
-        // @todo security
-
         /** @var Loans $loan */
         $loan = $this->get('doctrine.orm.entity_manager')
             ->getRepository('UnilendCoreBusinessBundle:Loans')
@@ -44,6 +45,13 @@ class DocumentController extends Controller
 
         if ($clientHash !== $loan->getIdLender()->getIdClient()->getHash()) {
             return $this->getLoanErrorResponse(self::ERROR_WRONG_CLIENT_HASH, $loan);
+        }
+
+        /** @var UserLender $user */
+        $user = $this->getUser();
+
+        if ($user->getClientId() !== $loan->getIdLender()->getIdClient()->getIdClient()) {
+            return $this->getLoanErrorResponse(self::ERROR_ACCESS_DENIED, $loan);
         }
 
         $loanContractGenerator = $this->get(LoanContractGenerator::class);
@@ -79,18 +87,21 @@ class DocumentController extends Controller
         switch ($error) {
             case self::ERROR_CANNOT_FIND_LOAN:
                 $message = 'Loan contract ' . $loan . ' could not be displayed: cannot find loan';
-                $context = [
-                    'id_loan' => $loan
-                ];
+                $context = ['id_loan' => $loan];
                 break;
             case self::ERROR_CANNOT_FIND_CLIENT:
                 $message = 'Loan contract ' . $loan->getIdLoan() . ' could not be displayed: cannot find client';
-                $context = [
-                    'id_loan' => $loan->getIdLoan()
-                ];
+                $context = ['id_loan' => $loan->getIdLoan()];
                 break;
             case self::ERROR_WRONG_CLIENT_HASH:
                 $message = 'Loan contract ' . $loan->getIdLoan() . ' could not be displayed: URL does not match client hash';
+                $context = [
+                    'id_loan'   => $loan->getIdLoan(),
+                    'id_client' => $loan->getIdLender()->getIdClient()->getIdClient()
+                ];
+                break;
+            case self::ERROR_ACCESS_DENIED:
+                $message = 'Loan contract ' . $loan->getIdLoan() . ' could not be displayed: access denied';
                 $context = [
                     'id_loan'   => $loan->getIdLoan(),
                     'id_client' => $loan->getIdLender()->getIdClient()->getIdClient()

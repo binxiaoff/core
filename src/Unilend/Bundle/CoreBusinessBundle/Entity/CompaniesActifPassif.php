@@ -590,4 +590,42 @@ class CompaniesActifPassif
     {
         return $this->idActifPassif;
     }
+
+    /**
+     * @return float
+     */
+    public function getTotalAssets(): float
+    {
+        $totalAssets =
+            bcadd(
+                bcadd(
+                    bcadd($this->creancesClients, $this->disponibilites, 4),
+                    bcadd($this->valeursMobilieresDePlacement, $this->comptesRegularisationActif, 4)
+                    , 4
+                ),
+                bcadd(
+                    bcadd($this->immobilisationsCorporelles, $this->immobilisationsIncorporelles, 4),
+                    bcadd($this->immobilisationsFinancieres, $this->stocks, 4)
+                    , 4
+                ), 4
+            );
+
+        return round($totalAssets, 2);
+
+    }
+
+    /**
+     * @return float
+     */
+    public function getTotalDebts(): float
+    {
+        $totalDebts = bcadd($this->capitauxPropres, $this->provisionsPourRisquesEtCharges, 4);
+        $totalDebts = bcadd($totalDebts, $this->amortissementSurImmo, 4);
+        $totalDebts = bcadd($totalDebts, $this->dettesFinancieres, 4);
+        $totalDebts = bcadd($totalDebts, $this->dettesFournisseurs, 4);
+        $totalDebts = bcadd($totalDebts, $this->autresDettes, 4);
+        $totalDebts = bcadd($totalDebts, $this->comptesRegularisationPassif, 4);
+
+        return round($totalDebts, 2);
+    }
 }

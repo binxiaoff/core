@@ -16,13 +16,14 @@ final class Version20180810091008TECH485 extends AbstractMigration
             ("fr_FR", "loan-contract-download", "cannot-find-loan-error-title", "Impossible de trouver le document", NOW(), NOW()),
             ("fr_FR", "loan-contract-download", "cannot-find-client-error-title", "Document invalide", NOW(), NOW()),
             ("fr_FR", "loan-contract-download", "wrong-client-hash-error-title", "Lien invalide", NOW(), NOW()),
+            ("fr_FR", "loan-contract-download", "access-denied-error-title", "Accès interdit", NOW(), NOW()),
             ("fr_FR", "loan-contract-download", "exception-occurred-error-title", "Une erreur est survenue", NOW(), NOW()),
             ("fr_FR", "loan-contract-download", "unknown-error-title", "Une erreur est survenue", NOW(), NOW())'
         );
 
         $this->addSql('UPDATE underlying_contract SET document_template = "bon_de_caisse" WHERE label = "bon_de_caisse"');
         $this->addSql('UPDATE underlying_contract SET document_template = "ifp" WHERE label = "ifp"');
-        $this->addSql('UPDATE underlying_contract SET document_template = "minibon" WHERE label = "minibon"');
+        $this->addSql('UPDATE underlying_contract SET document_template = "minibon",  block_slug = "" WHERE label = "minibon"');
     }
 
     public function down(Schema $schema) : void
@@ -33,11 +34,12 @@ final class Version20180810091008TECH485 extends AbstractMigration
         $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "cannot-find-loan-error-title"');
         $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "cannot-find-client-error-title"');
         $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "wrong-client-hash-error-title"');
+        $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "access-denied-error-title"');
         $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "exception-occurred-error-title"');
         $this->addSql('DELETE from translations WHERE section = "loan-contract-download" AND name = "unknown-error-title"');
 
         $this->addSql('UPDATE underlying_contract SET document_template = "contrat_html" WHERE label = "bon_de_caisse"');
         $this->addSql('UPDATE underlying_contract SET document_template = "contrat_ifp_html" WHERE label = "ifp"');
-        $this->addSql('UPDATE underlying_contract SET document_template = "contrat_minibon_html" WHERE label = "minibon"');
+        $this->addSql('UPDATE underlying_contract SET document_template = "contrat_minibon_html",  block_slug = "pdf-minibon" WHERE label = "minibon"');
     }
 }

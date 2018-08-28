@@ -2,13 +2,13 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service\Document;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\{EntityManager, NonUniqueResultException};
 use Knp\Snappy\Pdf;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Filesystem\Filesystem;
 use Twig\Environment;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Loans, ProjectsPouvoir, TaxType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Loans, ProjectsStatus, TaxType, UnderlyingContract};
 use Unilend\Bundle\CoreBusinessBundle\Service\LoanManager;
 
 class LoanContractGenerator implements DocumentGeneratorInterface
@@ -100,7 +100,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             $parameterType = gettype($loan);
             $parameterType = 'object' === $parameterType ? get_class($loan) : $parameterType;
 
-            throw new \Exception('Loan entity expected, got "' . $parameterType . '"');
+            throw new \InvalidArgumentException('Loan entity expected, got "' . $parameterType . '"');
         }
 
         if (null === $loan->getIdLender() || null === $loan->getIdLender()->getIdClient()) {
@@ -126,6 +126,10 @@ class LoanContractGenerator implements DocumentGeneratorInterface
     /**
      * @param Loans $loan
      *
+     * @throws NonUniqueResultException
+     * @throws \Twig_Error_Loader
+     * @throws \Twig_Error_Runtime
+     * @throws \Twig_Error_Syntax
      * @throws \Exception
      */
     public function generate($loan): void
@@ -134,17 +138,35 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             $parameterType = gettype($loan);
             $parameterType = 'object' === $parameterType ? get_class($loan) : $parameterType;
 
-            throw new \Exception('Loan entity expected, got "' . $parameterType . '"');
+            throw new \InvalidArgumentException('Loan entity expected, got "' . $parameterType . '"');
         }
 
-        $content = $this->twig->render(':pdf/contract:ifp.html.twig', [
+        $template = [
             'staticUrl' => $this->staticUrl,
             'content'   => $this->getContentData($loan),
             'loan'      => $this->getLoanData($loan),
             'borrower'  => $this->getBorrowerData($loan),
             'lender'    => $this->getLenderData($loan),
             'project'   => $loan->getProject()->getNatureProject()
-        ]);
+        ];
+
+        if (UnderlyingContract::CONTRACT_BDC === $loan->getIdTypeContract()->getLabel()) {
+            if (false === empty($loan->getProject()->getIdDernierBilan())) {
+                $annualAccountsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesBilans');
+                $lastAnnualAccounts       = $annualAccountsRepository->find($loan->getProject()->getIdDernierBilan());
+
+                if (null !== $lastAnnualAccounts) {
+                    $assetsDebtsRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompaniesActifPassif');
+
+                    $template['finance'] = [
+                        'lastAnnualAccountsDate' => $lastAnnualAccounts->getClotureExerciceFiscal()->format('d/m/Y'),
+                        'assetsDebts'            => $assetsDebtsRepository->findOneBy(['idBilan' => $lastAnnualAccounts->getIdBilan()])
+                    ];
+                }
+            }
+        }
+
+        $content = $this->twig->render('/pdf/contract/' . $loan->getIdTypeContract()->getDocumentTemplate() . '.html.twig', $template);
 
         $this->snappy->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
         $this->snappy->generateFromHtml($content, $this->getPath($loan), [], true);
@@ -169,16 +191,24 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         $repaymentAmount = bcdiv(bcadd($repaymentSchedule[0]->getCapital(), $repaymentSchedule[0]->getInterets()), 100, 5);
 
-        $proxy = $this->entityManager
-            ->getRepository('UnilendCoreBusinessBundle:ProjectsPouvoir')
-            ->findOneBy(['idProject' => $loan->getProject(), 'status' => ProjectsPouvoir::STATUS_SIGNED]);
+        $repaymentStatus = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatus')
+            ->findOneBy(['status' => ProjectsStatus::REMBOURSEMENT]);
+
+        $repaymentStatusHistory = $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:ProjectsStatusHistory')
+            ->findOneBy(
+                ['idProject' => $loan->getProject()->getIdProject(), 'idProjectStatus' => $repaymentStatus],
+                ['added' => 'ASC', 'idProjectStatusHistory' => 'ASC']
+            );
 
         $vatRate                    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:TaxType')->findOneBy(['idTaxType' => TaxType::TYPE_VAT]);
         $fundsReleaseCommissionRate = round(bcdiv($loan->getProject()->getCommissionRateFunds(), 100, 4), 2);
         $repaymentCommissionRate    = round(bcdiv($loan->getProject()->getCommissionRateRepayment(), 100, 4), 2);
         $repaymentCommission        = \repayment::getRepaymentCommission($loanAmount, $loan->getProject()->getPeriod(), $repaymentCommissionRate, $vatRate->getRate());
         $fundsReleaseCommission     = bcmul($loanAmount, $fundsReleaseCommissionRate, 5);
-        $borrowerCost               = bcadd(bcadd($repaymentCommission['commission_total'], $fundsReleaseCommission, 5), $interests, 5);
+        $borrowerFees               = bcadd($repaymentCommission['commission_total'], $fundsReleaseCommission, 5);
+        $borrowerCost               = bcadd($borrowerFees, $interests, 5);
 
         return [
             'id'                => $loan->getIdLoan(),
@@ -186,8 +216,9 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             'rate'              => $this->numberFormatter->format($loan->getRate()),
             'interests'         => $this->currencyFormatter->formatCurrency($interests, 'EUR'),
             'repaymentAmount'   => $this->currencyFormatter->formatCurrency($repaymentAmount, 'EUR'),
-            'creationDate'      => $proxy ? $proxy->getUpdated()->format('d/m/Y') : date('d/m/Y'),
+            'creationDate'      => $repaymentStatusHistory ? $repaymentStatusHistory->getAdded()->format('d/m/Y') : date('d/m/Y'),
             'lastRepaymentDate' => array_slice($repaymentSchedule, -1)[0]->getDateEcheance()->format('d/m/Y'),
+            'borrowerFees'      => $this->currencyFormatter->formatCurrency($borrowerFees, 'EUR'),
             'borrowerCost'      => $this->currencyFormatter->formatCurrency($borrowerCost, 'EUR'),
             'repaymentSchedule' => $repaymentSchedule
         ];
@@ -200,6 +231,10 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      */
     private function getContentData(Loans $loan): array
     {
+        if (empty($loan->getIdTypeContract()->getBlockSlug())) {
+            return [];
+        }
+
         $content = [];
         $block   = $this->entityManager
             ->getRepository('UnilendCoreBusinessBundle:Blocs')
@@ -248,7 +283,7 @@ class LoanContractGenerator implements DocumentGeneratorInterface
      *
      * @return array
      * @throws \Exception
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NonUniqueResultException
      */
     private function getLenderData(Loans $loan): array
     {
@@ -290,7 +325,8 @@ class LoanContractGenerator implements DocumentGeneratorInterface
             throw new \Exception('No address found for client ' . $client->getIdClient());
         }
 
-        return [
+        $lenderData = [
+            'type'      => $client->getType(),
             'firstName' => $client->getPrenom(),
             'lastName'  => $client->getNom(),
             'birthDate' => $client->getNaissance()->format('d/m/Y'),
@@ -300,5 +336,17 @@ class LoanContractGenerator implements DocumentGeneratorInterface
                 'city'    => $address->getCity()
             ]
         ];
+
+        if (false === $client->isNaturalPerson()) {
+            $lenderData['company'] = [
+                'siren'           => $company->getSiren(),
+                'name'            => $company->getName(),
+                'legalStatus'     => $company->getForme(),
+                'capitalStock'    => $this->numberFormatter->format(max($company->getCapital(), 0)),
+                'commercialCourt' => $company->getTribunalCom()
+            ];
+        }
+
+        return $lenderData;
     }
 }
