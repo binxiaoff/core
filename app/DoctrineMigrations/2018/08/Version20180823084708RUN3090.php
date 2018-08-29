@@ -26,7 +26,7 @@ CREATE TABLE close_out_netting_email_extra_content
     borrower_content MEDIUMTEXT,
     added DATETIME,
     CONSTRAINT fk_close_out_netting_email_extra_content_id_project FOREIGN KEY (id_project) REFERENCES projects (id_project) ON DELETE CASCADE ON UPDATE CASCADE,
-    UNIQUE KEY id_project_UNIQUE (id_project)
+    UNIQUE KEY unq_close_out_netting_email_extra_content_id_project (id_project)
 )
 CREATETABLE;
 
@@ -42,7 +42,6 @@ ADDCOLUMN;
 
         $this->addSql($addColumnQuery);
 
-        // No rollback query needed
         $this->addSql('UPDATE close_out_netting_payment SET lenders_notified = notified, borrower_notified = notified');
 
         $this->addSql('UPDATE mail_templates SET type = \'emprunteur-projet-recouvrement\' WHERE type = \'emprunteur-projet-statut-recouvrement\'');

@@ -543,11 +543,18 @@ class remboursementController extends bootstrap
     public function _dechoir_terme()
     {
         $projectId                = $this->request->request->getInt('project_id');
-        $includeUnilendCommission = $this->request->request->getboolean('include_unilend_commission');
+        $includeUnilendCommission = $this->request->request->getBoolean('include_unilend_commission');
         $sendLendersEmail         = $this->request->request->getBoolean('send_lenders_email');
         $sendBorrowerEmail        = $this->request->request->getBoolean('send_borrower_email');
         $lendersEmailContent      = $this->request->request->filter('lenders_email_content', null, FILTER_SANITIZE_STRING);
         $borrowerEmailContent     = $this->request->request->filter('borrower_email_content', null, FILTER_SANITIZE_STRING);
+
+        if ($lendersEmailContent) {
+            $lendersEmailContent = trim($lendersEmailContent);
+        }
+        if ($borrowerEmailContent) {
+            $borrowerEmailContent = trim($borrowerEmailContent);
+        }
 
         /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
@@ -563,14 +570,19 @@ class remboursementController extends bootstrap
                 try {
                     $projectCloseOutNettingManager->decline($project, new \DateTime(), $includeUnilendCommission, $sendLendersEmail, $sendBorrowerEmail, $lendersEmailContent, $borrowerEmailContent);
                 } catch (\Exception $exception) {
-                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
+                    $this->get('logger')->error('Error while trying to decline project ' . $project->getIdProject() . ' - Message: ' . $exception->getMessage(), [
+                        'class'    => __CLASS__,
+                        'function' => __FUNCTION__,
+                        'file'     => $exception->getFile(),
+                        'line'     => $exception->getLine(),
+                    ]);
                     $_SESSION['freeow']['title']   = 'Déchéance du terme';
-                    $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
+                    $_SESSION['freeow']['message'] = 'L\'opétation a échoué.';
                 }
             }
         }
 
-        header('Location: ' . $this->request->server->get('HTTP_REFERER'));
+        header('Location: ' . $this->url . '/remboursement/projet/' . $projectId);
         die;
     }
 

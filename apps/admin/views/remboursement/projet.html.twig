@@ -198,6 +198,7 @@
 {% endblock %}
 
 {% set companyStatusName = 'company-status_label-' ~ companyLastStatusHistory.idStatus.label|replace({'_': '-'}) %}
+{% set isCompanyInBonis = companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
 
 {% block modals %}
     <div class="modal fade in" id="modal-close-out-netting">
@@ -248,30 +249,28 @@
                             <div class="tab-pane fade fade-up" id="close-out-netting-progress-step-notification">
                                 <fieldset class="lenders">
                                     <label class="css-input switch switch-sm switch-primary">
-                                        <input type="checkbox" id="send-lenders-email" name="send_lenders_email"
-                                                {% if companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} checked {% else %} disabled readonly{% endif %}>
+                                        <input type="checkbox" id="send-lenders-email" name="send_lenders_email" {% if isCompanyInBonis %} checked{% else %} readonly{% endif %}>
                                         <span></span>&nbsp;Envoyer un mail aux prêteurs
                                     </label>
 
-                                    <div class="form-group lenders-email"{% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} disabled style="display: none;"{% endif %}>
+                                    <div class="form-group lenders-email"{% if false == isCompanyInBonis %} disabled style="display: none;"{% endif %}>
                                         <label for="lenders-email-content">Ajouter du contenu spécifique</label>
-                                        <textarea id="lenders-email-content" rows="4" class="form-control" name="lenders_email_content"></textarea>
+                                        <textarea id="lenders-email-content" rows="4" class="form-control" name="lenders_email_content"  {% if false == isCompanyInBonis %}disabled{% endif %}></textarea>
                                     </div>
                                 </fieldset>
 
                                 <fieldset class="borrower">
                                     <label class="css-input switch switch-sm switch-primary">
-                                        <input type="checkbox" id="send-borrower-email" name="send_borrower_email"
-                                                {% if companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} checked {% else %} disabled readonly{% endif %}>
+                                        <input type="checkbox" id="send-borrower-email" name="send_borrower_email" {% if isCompanyInBonis %}checked {% else %}disabled readonly{% endif %}>
                                         <span></span>&nbsp;Envoyer un mail à l'emprunteur
                                     </label>
 
-                                    <div class="form-group borrower-email"{% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} disabled style="display: none;"{% endif %}>
+                                    <div class="form-group borrower-email"{% if false == isCompanyInBonis %} disabled style="display: none;"{% endif %}>
                                         <label for="borrower-email-content">Ajouter du contenu spécifique</label>
-                                        <textarea id="borrower-email-content" rows="4" class="form-control" name="borrower_email_content"></textarea>
+                                        <textarea id="borrower-email-content" rows="4" class="form-control" name="borrower_email_content" {% if false == isCompanyInBonis %}disabled{% endif %}></textarea>
                                     </div>
                                 </fieldset>
-                                {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+                                {% if false == isCompanyInBonis %}
                                     <p class="text-muted">La socièté étant en {{ companyStatusName|trans }}, vous ne pouvez pas envoyer de mail.<p/>
                                 {% endif %}
                             </div>
@@ -281,14 +280,10 @@
                             <div class="tab-pane fade fade-up push-50" id="close-out-netting-progress-step-confirmation">
                                 <p class="alert">Cette action est irréversible.</p>
                                 <div class="form-group">
-                                    {% set selectedOptionDisplay = 'Oui' %}
-                                    {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                                        {% set selectedOptionDisplay = 'Non' %}
-                                    {% endif %}
                                     <h5 class="push">Récapitulatif de vos options</h5>
                                     <p>Inclure la commission Unilend : <span id="option-response-unilend-commission">Non</span></p>
-                                    <p>Envoyer un mail aux prêteurs : <span id="option-response-lenders-email">{{ selectedOptionDisplay }}</span></p>
-                                    <p>Envoyer un mail à l'emprunteur : <span id="option-response-borrower-email">{{ selectedOptionDisplay }}</span></p>
+                                    <p>Envoyer un mail aux prêteurs : <span id="option-response-lenders-email"> {% if isCompanyInBonis %}Oui{% else %}Non{% endif %}</span></p>
+                                    <p>Envoyer un mail à l'emprunteur : <span id="option-response-borrower-email"> {% if isCompanyInBonis %}Oui{% else %}Non{% endif %}</span></p>
                                 </div>
                             </div>
                             <!-- END Step confirmation -->
@@ -638,7 +633,7 @@
                     </div>
                 {% endif %}
             {% endif %}
-            {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+            {% if false == isCompanyInBonis %}
                 <div class="col-lg-2">
                     <div class="block">
                         <div class="block-header">
