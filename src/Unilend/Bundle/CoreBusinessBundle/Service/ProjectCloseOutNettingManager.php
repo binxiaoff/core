@@ -33,7 +33,7 @@ class ProjectCloseOutNettingManager
      *
      * @throws \Exception
      */
-    public function decline(Projects $project, \DateTime $closeOutNettingDate, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent = null, ?string $borrowerEmailContent = null): void
+    public function decline(Projects $project, \DateTime $closeOutNettingDate, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): void
     {
         if ($project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id: ' . $project->getIdProject() . ') has already been declined.');
@@ -121,7 +121,7 @@ class ProjectCloseOutNettingManager
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \Exception
      */
-    private function buildPayments(Projects $project, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent = null, ?string $borrowerEmailContent = null): void
+    private function buildPayments(Projects $project, bool $includeUnilendCommission, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): void
     {
         if (null === $project->getCloseOutNettingDate()) {
             throw new \Exception('The project (id:' . $project->getIdProject() . ' has not the close out netting date');
@@ -137,20 +137,11 @@ class ProjectCloseOutNettingManager
             $commission = 0;
         }
 
-        $extraMailContent = null;
-
-        if ($sendLendersEmail && $lendersEmailContent || $sendBorrowerEmail && $borrowerEmailContent) {
-            $extraMailContent = new CloseOutNettingEmailExtraContent();
-            $extraMailContent->setIdProject($project)
-                ->setLendersContent($lendersEmailContent)
-                ->setBorrowerContent($borrowerEmailContent);
-
-            $this->entityManager->persist($extraMailContent);
-            $this->entityManager->flush($extraMailContent);
-        }
+        $extraMailContent = $this->createCloseOutNettingEmailExtraContent($project, $sendLendersEmail, $sendBorrowerEmail, $lendersEmailContent, $borrowerEmailContent);
 
         $closeOutNettingPayment = new CloseOutNettingPayment();
-        $closeOutNettingPayment->setIdProject($project)
+        $closeOutNettingPayment
+            ->setIdProject($project)
             ->setCapital($capital)
             ->setInterest($interest)
             ->setCommissionTaxIncl($commission)
@@ -170,5 +161,38 @@ class ProjectCloseOutNettingManager
 
         $this->entityManager->persist($closeOutNettingPayment);
         $this->entityManager->flush($closeOutNettingPayment);
+    }
+
+    /**
+     * @param Projects    $project
+     * @param bool        $sendLendersEmail
+     * @param bool        $sendBorrowerEmail
+     * @param string|null $lendersEmailContent
+     * @param string|null $borrowerEmailContent
+     *
+     * @return CloseOutNettingEmailExtraContent|null
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    private function createCloseOutNettingEmailExtraContent(Projects $project, bool $sendLendersEmail, bool $sendBorrowerEmail, ?string $lendersEmailContent, ?string $borrowerEmailContent): ?CloseOutNettingEmailExtraContent
+    {
+        $extraMailContent = null;
+
+        if ($sendLendersEmail && false === empty($lendersEmailContent) || $sendBorrowerEmail && false === empty($borrowerEmailContent)) {
+            $extraMailContent = new CloseOutNettingEmailExtraContent();
+            $extraMailContent->setIdProject($project);
+
+            if (false === empty($lendersEmailContent)) {
+                $extraMailContent->setLendersContent($lendersEmailContent);
+            }
+            if (false === empty($borrowerEmailContent)) {
+                $extraMailContent->setBorrowerContent($borrowerEmailContent);
+            }
+
+            $this->entityManager->persist($extraMailContent);
+            $this->entityManager->flush($extraMailContent);
+        }
+
+        return $extraMailContent;
     }
 }

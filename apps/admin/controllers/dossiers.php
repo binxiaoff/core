@@ -1030,7 +1030,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        if ($this->request->request->getBoolean('send_email') || ProjectsStatus::LOSS == $this->request->request->getInt('problematic_status')) {
+        if ($this->request->request->getBoolean('send_email') || ProjectsStatus::LOSS === $this->request->request->getInt('problematic_status')) {
             try {
                 $projectStatusNotificationSender->sendProblemStatusNotificationsToLenders($project);
             } catch (\Exception $exception) {
@@ -2787,40 +2787,6 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->request->server->get('HTTP_REFERER'));
             die;
         }
-    }
-
-    public function _dechoir_terme()
-    {
-        $projectId                = $this->request->request->getInt('project-id');
-        $includeUnilendCommission = $this->request->request->getboolean('include-unilend-commission');
-        $sendLendersEmail         = $this->request->request->getBoolean('send-lenders-email');
-        $sendBorrowerEmail        = $this->request->request->getBoolean('send-borrower-email');
-        $lendersEmailContent      = $this->request->request->get('lenders-email-content');
-        $borrowerEmailContent     = $this->request->request->get('borrower-email-content');
-
-        /** @var BackOfficeUserManager $userManager */
-        $userManager = $this->get('unilend.service.back_office_user_manager');
-
-        if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
-            /** @var \Doctrine\ORM\EntityManager $entityManager */
-            $entityManager = $this->get('doctrine.orm.entity_manager');
-            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
-            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectCloseOutNettingManager $projectCloseOutNettingManager */
-            $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
-
-            if ($project && $projectCloseOutNettingManager->canBeDeclined($project)) {
-                try {
-                    $projectCloseOutNettingManager->decline($project, new DateTime(), $includeUnilendCommission, $sendLendersEmail, $sendBorrowerEmail, $lendersEmailContent, $borrowerEmailContent);
-                } catch (\Exception $exception) {
-                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
-                    $_SESSION['freeow']['title']   = 'Déchéance du terme';
-                    $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
-                }
-            }
-        }
-
-        header('Location: ' . $this->request->server->get('HTTP_REFERER'));
-        die;
     }
 
     public function _projets_avec_retard()

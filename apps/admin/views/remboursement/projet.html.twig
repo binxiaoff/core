@@ -105,29 +105,24 @@
         })
 
         $(document).on('change', '#include-unilend-commission', function () {
-          var responseSpan = $('#option-response-unilend-commission')
-          if (this.checked) {
-            responseSpan.html('Oui')
-          } else {
-            responseSpan.html('Non')
-          }
+          $('#option-response-unilend-commission').html(this.checked ? 'Oui' : 'Non')
         })
-        $(document).on('change', '[name="send_mail"]', function () {
-            $('#problem-mail-content').toggle()
+        $(document).on('change', '#send-problem-email', function () {
+          this.checked ? $('#problem-email-content').slideDown() : $('#problem-email-content').slideUp()
         })
-        $(document).on('change', '#email-lenders-choice', function () {
-          $('.email-lender-div').toggle()
-          $('#email-lenders-textarea').prop('disabled', function (i, value) {
+        $(document).on('change', '#send-lenders-email', function () {
+          this.checked ? $('div.lenders-email').slideDown() : $('div.lenders-email').slideUp()
+          $('#lenders-email-content').prop('disabled', function (i, value) {
             return !value
           })
-            $('#option-response-email-lender').html(this.checked ? 'Oui' : 'Non')
+          $('#option-response-lenders-email').html(this.checked ? 'Oui' : 'Non')
         })
-        $(document).on('change', '#email-borrower-choice', function () {
-          $('.email-borrower-div').toggle()
-          $('#email-borrower-textarea').prop('disabled', function (i, value) {
+        $(document).on('change', '#send-borrower-email', function () {
+          this.checked ? $('div.borrower-email').slideDown() : $('div.borrower-email').slideUp()
+          $('#borrower-email-content').prop('disabled', function (i, value) {
               return !value;
           })
-          $('#option-response-email-borrower').html(this.checked ? 'Oui' : 'Non')
+          $('#option-response-borrower-email').html(this.checked ? 'Oui' : 'Non')
         })
 
         $(document).on('click', '#close-out-netting-validation', function () {
@@ -208,8 +203,8 @@
     <div class="modal fade in" id="modal-close-out-netting">
         <div class="modal-dialog">
             <!-- Form -->
-            <form class="modal-dialog validate" action="/dossiers/dechoir_terme" method="post">
-                <input type="hidden" name="project-id" value="{{ project.idProject }}">
+            <form class="modal-dialog validate" action="/remboursement/dechoir_terme" method="post">
+                <input type="hidden" name="project_id" value="{{ project.idProject }}">
                 <div class="modal-content">
                     <div class="js-wizard-simple block">
                         <div class="block-header bg-primary">
@@ -218,81 +213,85 @@
                         <!-- Step Tabs -->
                         <ul class="nav nav-tabs nav-justified">
                             <li class="active">
-                                <a href="#close-out-netting-progress-step1" data-toggle="tab" aria-expanded="true">1. Commission</a>
+                                <a href="#close-out-netting-progress-step-commission" data-toggle="tab" aria-expanded="true">1. Commission</a>
                             </li>
                             <li class="">
-                                <a href="#close-out-netting-progress-step2" data-toggle="tab" aria-expanded="false">2. Mails & Notifications</a>
+                                <a href="#close-out-netting-progress-step-notification" data-toggle="tab" aria-expanded="false">2. Mails & Notifications</a>
                             </li>
                             <li class="">
-                                <a href="#close-out-netting-progress-step3" data-toggle="tab" aria-expanded="false">3. Confirmation</a>
+                                <a href="#close-out-netting-progress-step-confirmation" data-toggle="tab" aria-expanded="false">3. Confirmation</a>
                             </li>
                         </ul>
                         <!-- END Step Tabs -->
+
                         <!-- Steps Progress -->
                         <div class="block-content block-content-mini block-content-full border-b">
                             <div class="wizard-progress progress progress-mini remove-margin-b">
-                                <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 33%;"></div>
+                                <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="3" style="width: 33%;"></div>
                             </div>
                         </div>
                         <!-- END Steps Progress -->
 
                         <!-- Steps Content -->
                         <div class="block-content tab-content">
-                            <!-- Step 1 -->
-                            <div class="tab-pane fade fade-up push-30-t push-50 active in" id="close-out-netting-progress-step1">
+                            <!-- Step commission -->
+                            <div class="tab-pane fade fade-up push-30-t push-50 active in" id="close-out-netting-progress-step-commission">
                                 <div class="form-group">
                                     <label class="css-input switch switch-sm switch-primary">
-                                        <input type="checkbox" id="include-unilend-commission" name="include-unilend-commission"><span></span> Inclure commission Unilend
+                                        <input type="checkbox" id="include-unilend-commission" name="include_unilend_commission"><span></span> Inclure la commission Unilend
                                     </label>
                                 </div>
                             </div>
-                            <!-- END Step 1 -->
+                            <!-- END Step commission -->
 
-                            <!-- Step 2 -->
-                            <div class="tab-pane fade fade-up" id="close-out-netting-progress-step2">
-                                {% set emailCheckboxDisplay = 'checked' %}
-                                {% set emailContentDisplay = '' %}
-                                {% set selectedOptionDisplay = 'Oui' %}
+                            <!-- Step notification -->
+                            <div class="tab-pane fade fade-up" id="close-out-netting-progress-step-notification">
+                                <fieldset class="lenders">
+                                    <label class="css-input switch switch-sm switch-primary">
+                                        <input type="checkbox" id="send-lenders-email" name="send_lenders_email"
+                                                {% if companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} checked {% else %} disabled readonly{% endif %}>
+                                        <span></span>&nbsp;Envoyer un mail aux prêteurs
+                                    </label>
 
+                                    <div class="form-group lenders-email"{% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} disabled style="display: none;"{% endif %}>
+                                        <label for="lenders-email-content">Ajouter du contenu spécifique</label>
+                                        <textarea id="lenders-email-content" rows="4" class="form-control" name="lenders_email_content"></textarea>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="borrower">
+                                    <label class="css-input switch switch-sm switch-primary">
+                                        <input type="checkbox" id="send-borrower-email" name="send_borrower_email"
+                                                {% if companyLastStatusHistory.idStatus.label == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} checked {% else %} disabled readonly{% endif %}>
+                                        <span></span>&nbsp;Envoyer un mail à l'emprunteur
+                                    </label>
+
+                                    <div class="form-group borrower-email"{% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %} disabled style="display: none;"{% endif %}>
+                                        <label for="borrower-email-content">Ajouter du contenu spécifique</label>
+                                        <textarea id="borrower-email-content" rows="4" class="form-control" name="borrower_email_content"></textarea>
+                                    </div>
+                                </fieldset>
                                 {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                                    {% set emailCheckboxDisplay = 'disabled readonly' %}
-                                    {% set emailContentDisplay = 'disabled style="display: none;"' %}
-                                    {% set selectedOptionDisplay = 'Non' %}
-                                {% endif %}
-                                <!-- For lenders -->
-                                <label class="css-input switch switch-sm switch-primary">
-                                    <input type="checkbox" class="ddt-email-switch" data-recipient="lenders" id="email-lenders-choice" name="send-lenders-email" {{ emailCheckboxDisplay }}><span></span>&nbsp;{% trans %}bo-closeout-netting-popup_email-lenders-choice{% endtrans %}
-                                </label>
-                                <br>
-                                <div class="form-group email-lender-div email-div" {{ emailContentDisplay }}>
-                                    <label for="email-lenders-textarea">{% trans %}bo-closeout-netting-popup_email-lender-textarea{% endtrans %}</label>
-                                    <textarea id="email-lenders-textarea" rows="4" class="form-control" name="lenders-email-content"></textarea>
-                                </div>
-                                <!-- For borrower -->
-                                <label class="css-input switch switch-sm switch-primary">
-                                    <input type="checkbox" class="ddt-email-switch" data-recipient="borrower" id="email-borrower-choice" name="send-borrower-email" {{ emailCheckboxDisplay }}><span></span>&nbsp;{% trans %}bo-closeout-netting-popup_email-borrower-choice{% endtrans %}
-                                </label>
-                                <div class="form-group email-borrower-div email-div" {{ emailContentDisplay }}>
-                                    <label for="email-borrower-textarea">{% trans %}bo-closeout-netting-popup_email-borrower-textarea{% endtrans %}</label>
-                                    <textarea id="email-borrower-textarea" rows="4" class="form-control" name="borrower-email-content"></textarea>
-                                </div>
-                                {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
-                                    <p class="text-muted"> {% trans with {'%companyStatus%': companyStatusName|trans } %}bo-closeout-netting-popup_email-disabled-message{% endtrans %}<p/>
+                                    <p class="text-muted">La socièté étant en {{ companyStatusName|trans }}, vous ne pouvez pas envoyer de mail.<p/>
                                 {% endif %}
                             </div>
-                            <!-- END Step 2 -->
+                            <!-- END Step notification -->
 
-                            <!-- Step 3 -->
-                            <div class="tab-pane fade fade-up push-50" id="close-out-netting-progress-step3">
+                            <!-- Step confirmation -->
+                            <div class="tab-pane fade fade-up push-50" id="close-out-netting-progress-step-confirmation">
                                 <p class="alert">Cette action est irréversible.</p>
                                 <div class="form-group">
+                                    {% set selectedOptionDisplay = 'Oui' %}
+                                    {% if companyLastStatusHistory.idStatus.label != constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\CompanyStatus::STATUS_IN_BONIS') %}
+                                        {% set selectedOptionDisplay = 'Non' %}
+                                    {% endif %}
                                     <h5 class="push">Récapitulatif de vos options</h5>
-                                    <p>Inclure Commission Unilend : <span id="option-response-unilend-commission">Non</span></p>
-                                    <p>{% trans %}bo-closeout-netting-popup_email-lenders-choice{% endtrans %} : <span id="option-response-email-lender">{{ selectedOptionDisplay }}</span></p>
-                                    <p>{% trans %}bo-closeout-netting-popup_email-borrower-choice{% endtrans %} : <span id="option-response-email-borrower">{{ selectedOptionDisplay }}</span></p>
+                                    <p>Inclure la commission Unilend : <span id="option-response-unilend-commission">Non</span></p>
+                                    <p>Envoyer un mail aux prêteurs : <span id="option-response-lenders-email">{{ selectedOptionDisplay }}</span></p>
+                                    <p>Envoyer un mail à l'emprunteur : <span id="option-response-borrower-email">{{ selectedOptionDisplay }}</span></p>
                                 </div>
                             </div>
-                            <!-- END Step 3 -->
+                            <!-- END Step confirmation -->
                         </div>
                         <!-- END Steps Content -->
 
@@ -327,10 +326,10 @@
                         <div class="messages"></div>
                         <div class="form-group">
                             <label class="css-input switch switch-sm switch-primary">
-                                <input type="checkbox" name="send_email" checked><span></span>&nbsp;Envoyer un email d'information aux prêteurs
+                                <input type="checkbox" name="send_email" id="send-problem-email" checked><span></span>&nbsp;Envoyer un email d'information aux prêteurs
                             </label>
                         </div>
-                        <div class="form-group" id="problem-mail-content">
+                        <div class="form-group" id="problem-email-content">
                             <label>Contenu de l'email</label>
                             <textarea name="mail_content" class="form-control" rows="4">{{ 'projet_mail-info-passage-statut-probleme'|trans }}</textarea>
                         </div>

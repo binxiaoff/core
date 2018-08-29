@@ -5,9 +5,6 @@ namespace Application\Migrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-/**
- * Auto-generated Migration: Please modify to your needs!
- */
 final class Version20180823084708RUN3090 extends AbstractMigration
 {
     /**
@@ -18,18 +15,7 @@ final class Version20180823084708RUN3090 extends AbstractMigration
      */
     public function up(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() != "mysql");
-
-        $insertTranslationsQuery = <<<'TRANSLATIONS'
-INSERT INTO translations(locale, section, name, translation, added) VALUES
-  ('fr_FR', 'bo-closeout-netting-popup', 'email-lenders-choice', 'Envoyer un mail aux prêteurs', NOW()),
-  ('fr_FR', 'bo-closeout-netting-popup', 'email-borrower-choice', 'Envoyer un mail à l\'emprunteur', NOW()),
-  ('fr_FR', 'bo-closeout-netting-popup', 'email-lender-textarea', 'Ajouter du contenu spécifique', NOW()),
-  ('fr_FR', 'bo-closeout-netting-popup', 'email-borrower-textarea', 'Ajouter du contenu spécifique', NOW()),
-  ('fr_FR', 'bo-closeout-netting-popup', 'email-disabled-message', 'La socièté étant en %companyStatus%, vous ne pouvez pas envoyer de mail.', NOW())
-TRANSLATIONS;
-
-        $this->addSql($insertTranslationsQuery);
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql');
 
         $createTableQuery = <<<'CREATETABLE'
 CREATE TABLE close_out_netting_email_extra_content
@@ -39,7 +25,8 @@ CREATE TABLE close_out_netting_email_extra_content
     lenders_content MEDIUMTEXT,
     borrower_content MEDIUMTEXT,
     added DATETIME,
-    CONSTRAINT fk_close_out_netting_email_extra_content_id_project FOREIGN KEY (id_project) REFERENCES projects (id_project) ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT fk_close_out_netting_email_extra_content_id_project FOREIGN KEY (id_project) REFERENCES projects (id_project) ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY id_project_UNIQUE (id_project)
 )
 CREATETABLE;
 
@@ -49,7 +36,7 @@ CREATETABLE;
 ALTER TABLE close_out_netting_payment
     ADD COLUMN lenders_notified BOOLEAN NOT NULL AFTER notified,
     ADD COLUMN borrower_notified BOOLEAN NOT NULL AFTER lenders_notified,
-    ADD COLUMN id_email_content INT(11) NULL DEFAULT NULL AFTER borrower_notified,
+    ADD COLUMN id_email_content INT(11) AFTER borrower_notified,
     ADD CONSTRAINT fk_close_out_netting_payment_id_email_content FOREIGN KEY (id_email_content) REFERENCES close_out_netting_email_extra_content (id)
 ADDCOLUMN;
 
@@ -75,15 +62,7 @@ ADDCOLUMN;
      */
     public function down(Schema $schema): void
     {
-        $this->abortIf($this->connection->getDatabasePlatform()->getName() != "mysql");
-
-        $deleteTranslationsQuery = <<<'TRANSLATIONSTODELETE'
-DELETE FROM translations
- WHERE section = 'bo-closeout-netting-popup'
- AND unilend.translations.name IN ('email-lenders-choice', 'email-borrower-choice', 'email-lender-textarea', 'email-borrower-textarea', 'email-disabled-message')
-TRANSLATIONSTODELETE;
-
-        $this->addSql($deleteTranslationsQuery);
+        $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'mysql');
 
         $this->addSql('SET FOREIGN_KEY_CHECKS = 0');
 

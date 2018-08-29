@@ -35,7 +35,7 @@ class EmailCloseOutNettingNotificationCommand extends ContainerAwareCommand
                 $closeOutNettingPayment->setBorrowerNotified(true);
                 $entityManager->flush($closeOutNettingPayment);
             } catch (\Exception $exception) {
-                $this->getContainer()->get('monolog.logger.console')->error('An exception occurred while sending borrower close out netting email for the project: ' . $closeOutNettingPayment->getIdProject()->getIdProject() . '. Exception message: ' . $exception->getMessage(), [
+                $this->getContainer()->get('monolog.logger.console')->error('An exception occurred while sending borrower close out netting email for the project ' . $closeOutNettingPayment->getIdProject()->getIdProject() . '. Exception message: ' . $exception->getMessage(), [
                     'id_project' => $closeOutNettingPayment->getIdProject()->getIdProject(),
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__,
@@ -52,7 +52,7 @@ class EmailCloseOutNettingNotificationCommand extends ContainerAwareCommand
                 $closeOutNettingPayment->setLendersNotified(true);
                 $entityManager->flush($closeOutNettingPayment);
             } catch (\Exception $exception) {
-                $this->getContainer()->get('monolog.logger.console')->error('An exception occurred while sending lenders close out netting email for the project: ' . $closeOutNettingPayment->getIdProject()->getIdProject() . '. Exception message: ' . $exception->getMessage(), [
+                $this->getContainer()->get('monolog.logger.console')->error('An exception occurred while sending lenders close out netting email for the project ' . $closeOutNettingPayment->getIdProject()->getIdProject() . '. Exception message: ' . $exception->getMessage(), [
                     'id_project' => $closeOutNettingPayment->getIdProject()->getIdProject(),
                     'class'      => __CLASS__,
                     'function'   => __FUNCTION__,

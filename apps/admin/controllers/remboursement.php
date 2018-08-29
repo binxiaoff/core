@@ -2,12 +2,8 @@
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones
-};
-use Unilend\Bundle\CoreBusinessBundle\Service\Repayment\{
-    ProjectCloseOutNettingPaymentManager, ProjectPaymentManager
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{DebtCollectionFeeDetail, EcheanciersEmprunteur, ProjectRepaymentTask, Projects, ProjectsStatus, Receptions, Zones};
+use Unilend\Bundle\CoreBusinessBundle\Service\{BackOfficeUserManager, ProjectCloseOutNettingManager, Repayment\ProjectCloseOutNettingPaymentManager, Repayment\ProjectPaymentManager};
 
 class remboursementController extends bootstrap
 {
@@ -42,7 +38,7 @@ class remboursementController extends bootstrap
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\BackOfficeUserManager $userManager */
+        /** @var BackOfficeUserManager $userManager */
         $userManager = $this->get('unilend.service.back_office_user_manager');
         $session     = $this->get('session');
 
@@ -542,6 +538,40 @@ class remboursementController extends bootstrap
         }
 
         $this->sendAjaxResponse(false, $errors, ['paramètres ou requête incorrects']);
+    }
+
+    public function _dechoir_terme()
+    {
+        $projectId                = $this->request->request->getInt('project_id');
+        $includeUnilendCommission = $this->request->request->getboolean('include_unilend_commission');
+        $sendLendersEmail         = $this->request->request->getBoolean('send_lenders_email');
+        $sendBorrowerEmail        = $this->request->request->getBoolean('send_borrower_email');
+        $lendersEmailContent      = $this->request->request->filter('lenders_email_content', null, FILTER_SANITIZE_STRING);
+        $borrowerEmailContent     = $this->request->request->filter('borrower_email_content', null, FILTER_SANITIZE_STRING);
+
+        /** @var BackOfficeUserManager $userManager */
+        $userManager = $this->get('unilend.service.back_office_user_manager');
+
+        if ($userManager->isGrantedRisk($this->userEntity) && $projectId) {
+            /** @var EntityManager $entityManager */
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $project       = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            /** @var ProjectCloseOutNettingManager $projectCloseOutNettingManager */
+            $projectCloseOutNettingManager = $this->get('unilend.service.project_close_out_netting_manager');
+
+            if ($project && $projectCloseOutNettingManager->canBeDeclined($project)) {
+                try {
+                    $projectCloseOutNettingManager->decline($project, new \DateTime(), $includeUnilendCommission, $sendLendersEmail, $sendBorrowerEmail, $lendersEmailContent, $borrowerEmailContent);
+                } catch (\Exception $exception) {
+                    $this->get('logger')->error($exception->getMessage(), ['file' => $exception->getFile(), 'line' => $exception->getLine(), 'method' => __METHOD__]);
+                    $_SESSION['freeow']['title']   = 'Déchéance du terme';
+                    $_SESSION['freeow']['message'] = 'L\'opétation échouée.';
+                }
+            }
+        }
+
+        header('Location: ' . $this->request->server->get('HTTP_REFERER'));
+        die;
     }
 
     /**
