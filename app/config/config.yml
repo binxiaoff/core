@@ -37,6 +37,12 @@ framework:
     validation:
         enabled: true
 
+sensio_framework_extra:
+    router:
+        # Enabling the “sensio_framework_extra.router.annotations” configuration is deprecated
+        # It was enabled by default. And there’s a pull request to make it disabled by default.
+        annotations: false
+
 cmf_routing:
     chain:
         routers_by_id:
