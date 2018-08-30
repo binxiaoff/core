@@ -25,9 +25,7 @@ class UnilendFrontExtension extends Extension
 
         $yamlLoader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $yamlLoader->load('services.yaml');
-        $yamlLoader->load('legacy_aliases.yaml');
-        $yamlLoader->load('legacy_public.yaml');
-
+        $yamlLoader->load('legacy.yaml');
         $this->updateValidatorMappingFiles($container);
     }
 
