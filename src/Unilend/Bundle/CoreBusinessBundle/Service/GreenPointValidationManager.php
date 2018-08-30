@@ -165,7 +165,7 @@ class GreenPointValidationManager
      *
      * @throws \Exception
      */
-    private function handleGreenPointResponse($response, Attachment $attachment)
+    private function handleGreenPointResponse($response, Attachment $attachment): void
     {
         $greenPointAttachment = $this->greenPointDataManager->updateGreenPointData($attachment, $response);
 

@@ -4,7 +4,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, Clients, GreenpointAttachment, GreenpointAttachmentDetail};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, Attachment, AttachmentType, GreenpointAttachment, GreenpointAttachmentDetail};
 use Unilend\Bundle\WSClientBundle\Entity\Greenpoint\{HousingCertificate, Identity, Rib};
 use Unilend\Bundle\WSClientBundle\Service\GreenPointManager;
 
@@ -45,35 +45,33 @@ class GreenPointDataManager
             case AttachmentType::CNI_PASSPORTE:
             case AttachmentType::CNI_PASSPORT_TIERS_HEBERGEANT:
             case AttachmentType::CNI_PASSPORTE_DIRIGEANT:
-                return $this->getIdentityData($attachment->getClient(), $attachment);
+                return $this->getIdentityData($attachment);
             case AttachmentType::RIB:
-                return $this->getBankAccountData($attachment->getClient(), $attachment);
+                return $this->getBankAccountData($attachment);
             case AttachmentType::JUSTIFICATIF_DOMICILE:
             case AttachmentType::ATTESTATION_HEBERGEMENT_TIERS:
-                return $this->getAddressData($attachment->getClient(), $attachment);
+                return $this->getAddressData($attachment);
             default :
                 return [];
         }
     }
 
     /**
-     * @param Clients    $client
      * @param Attachment $attachment
      *
      * @return array
      */
-    private function getIdentityData(Clients $client, Attachment $attachment)
+    private function getIdentityData(Attachment $attachment): array
     {
-        return array_merge($this->getCommonClientData($client, $attachment), ['date_naissance' => $client->getNaissance()->format('d/m/Y')]);
+        return array_merge($this->getCommonClientData($attachment), ['date_naissance' => $attachment->getClient()->getNaissance()->format('d/m/Y')]);
     }
 
     /**
-     * @param Clients    $client
      * @param Attachment $attachment
      *
      * @return array
      */
-    private function getBankAccountData(Clients $client, Attachment $attachment)
+    private function getBankAccountData(Attachment $attachment): array
     {
         $bankAccount = $attachment->getBankAccount();
         if (null === $bankAccount) {
@@ -81,25 +79,24 @@ class GreenPointDataManager
         }
 
         return array_merge(
-            $this->getCommonClientData($client, $attachment), [
+            $this->getCommonClientData($attachment), [
             'iban' => $bankAccount->getIban(),
             'bic'  => $bankAccount->getBic()
         ]);
     }
 
     /**
-     * @param Clients    $client
      * @param Attachment $attachment
      *
      * @return array
      * @throws \Exception
      */
-    private function getAddressData(Clients $client, Attachment $attachment)
+    private function getAddressData(Attachment $attachment): array
     {
-        if ($client->isNaturalPerson()) {
-            $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
+        if ($attachment->getClient()->isNaturalPerson()) {
+            $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($attachment->getClient(), AddressType::TYPE_MAIN_ADDRESS);
         } else {
-            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+            $company = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $attachment->getClient()]);
             $address = $this->entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
         }
 
@@ -108,7 +105,7 @@ class GreenPointDataManager
         }
 
         return array_merge(
-            $this->getCommonClientData($client, $attachment), [
+            $this->getCommonClientData($attachment), [
             'adresse'     => $address->getAddress(),
             'code_postal' => $address->getZip(),
             'ville'       => $address->getCity(),
@@ -117,20 +114,19 @@ class GreenPointDataManager
     }
 
     /**
-     * @param Clients    $client
      * @param Attachment $attachment
      *
      * @return array
      */
-    private function getCommonClientData(Clients $client, Attachment $attachment): array
+    private function getCommonClientData(Attachment $attachment): array
     {
         return [
             'files'    => fopen($this->attachmentManager->getFullPath($attachment), 'r'),
-            'dossier'  => $client->getIdClient(),
+            'dossier'  => $attachment->getClient()->getIdClient(),
             'document' => $attachment->getId(),
             'detail'   => GreenPointManager::DETAIL_TRUE,
-            'nom'      => $client->getNom() . ($client->getNomUsage() ? '|' . $client->getNomUsage() : ''),
-            'prenom'   => $client->getPrenom()
+            'nom'      => $attachment->getClient()->getNom() . ($attachment->getClient()->getNomUsage() ? '|' . $attachment->getClient()->getNomUsage() : ''),
+            'prenom'   => $attachment->getClient()->getPrenom()
         ];
     }
 
@@ -144,11 +140,11 @@ class GreenPointDataManager
      */
     public function updateGreenPointData(Attachment $attachment, $response): GreenpointAttachment
     {
-        $greenPointAttachment = $this->updateGreenpointAttachment($attachment, $response);
-
-        if (false === $response instanceof Identity || false === $response instanceof Rib || false === $response instanceof HousingCertificate) {
+        if (false === $response instanceof Identity && false === $response instanceof Rib && false === $response instanceof HousingCertificate) {
             throw new \InvalidArgumentException('Response has not the right type.');
         }
+
+        $greenPointAttachment = $this->updateGreenpointAttachment($attachment, $response);
 
         $this->updateGreenPointAttachmentDetail($greenPointAttachment, $response);
 

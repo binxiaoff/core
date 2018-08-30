@@ -116,7 +116,7 @@
             <argument>%ellisphere.password%</argument>
         </service>
 
-        <service id="Unilend\Bundle\WSClientBundle\Service\GreenPointManager" class="Unilend\Bundle\WSClientBundle\Service\GreenPointManager">
+        <service id="Unilend\Bundle\WSClientBundle\Service\GreenPointManager" class="Unilend\Bundle\WSClientBundle\Service\GreenPointManager" public="false">
             <argument type="service" id="eight_points_guzzle.client.greenpoint"/>
             <argument type="service" id="logger"/>
             <argument type="service" id="unilend.service.ws_client.resource_manager"/>

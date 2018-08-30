@@ -58,8 +58,7 @@ EOF
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         /** @var Clients[] $clients */
-        $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersInStatus(GreenPointValidationManager::STATUS_TO_CHECK, true);
-
+        $clients = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->getLendersForGreenpointCheck();
         if (empty($clients)) {
             return;
         }
@@ -70,13 +69,14 @@ EOF
                     $isValidated = $this->validationManager->validateAttachement($attachment);
                 } catch (\Exception $exception) {
                     $this->logger->error(
-                        'Un error occurred during sending attachment to GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
+                        'An error occurred during sending attachment to GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),
                         'line'      => $exception->getLine(),
                         'id_client' => $client->getIdClient()
                     ]);
+                    $isValidated = false;
                 }
             }
 
@@ -85,7 +85,7 @@ EOF
                     $this->validationManager->saveClientKycStatus($client);
                 } catch (\Exception $exception) {
                     $this->logger->error(
-                        'Un error occurred during getting of KYC status from GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
+                        'An error occurred during getting of KYC status from GreenPoint - Message: ' . $exception->getMessage() . ' - Code: ' . $exception->getCode(), [
                         'class'     => __CLASS__,
                         'function'  => __FUNCTION__,
                         'file'      => $exception->getFile(),

@@ -176,7 +176,7 @@ class GreenPointManager
     {
         $wsResource = $this->resourceManager->getResource(self::RESOURCE_CHECK_KYC);
 
-        $response = $this->client->put(
+        $response = $this->client->get(
             $wsResource->getResourceName() . '/' . $client->getIdClient(), [
                 'auth'    => [$this->login, $this->password, 'basic'],
                 'dossier' => $client->getIdClient()
