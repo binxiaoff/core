@@ -8,16 +8,13 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class dashboardController extends bootstrap
 {
-    private static $saleCollapsedStatus = [
-        ProjectsStatus::POSTPONED,
-        ProjectsStatus::PENDING_ANALYSIS,
-        ProjectsStatus::ANALYSIS_REVIEW,
-        ProjectsStatus::COMITY_REVIEW,
-        ProjectsStatus::SUSPENSIVE_CONDITIONS,
-        ProjectsStatus::A_FUNDER,
-        ProjectsStatus::AUTO_BID_PLACED,
+    const SALES_MY_PROJECTS_COLLAPSED_STATUS = [
         ProjectsStatus::EN_FUNDING,
-        ProjectsStatus::BID_TERMINATED
+        ProjectsStatus::SUSPENSIVE_CONDITIONS,
+        ProjectsStatus::ANALYSIS_REVIEW,
+        ProjectsStatus::PENDING_ANALYSIS,
+        ProjectsStatus::POSTPONED,
+        ProjectsStatus::INCOMPLETE_REQUEST
     ];
 
     public function initialize()
@@ -58,12 +55,16 @@ class dashboardController extends bootstrap
             /** @var \Doctrine\ORM\EntityManager $entityManager */
             $entityManager                      = $this->get('doctrine.orm.entity_manager');
             $this->template                     = 'sale';
-            $this->userProjects                 = $this->getSaleUserProjects($user);
-            $this->teamProjects                 = $this->getSaleTeamProjects($user);
+            $this->userProjects                 = $this->getSaleUserProjects($this->userEntity);
+            $this->teamProjects                 = $this->getSaleTeamProjects($this->userEntity);
             $this->upcomingProjects             = $this->getSaleUpcomingProjects();
             $this->impossibleEvaluationProjects = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findImpossibleEvaluationProjects();
-            $this->collapsedStatus              = self::$saleCollapsedStatus;
+            $this->collapsedStatus              = self::SALES_MY_PROJECTS_COLLAPSED_STATUS;
             $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
+            $this->otherTasksProjects           = [
+                'Changement Rib en cours' => $this->getProjectsWithMandatesPendingSignature(),
+                'Transfet de fonds'       => $this->getProjectsWithFundsToRelease()
+            ];
         } else {
             header('Location: ' . $this->lurl);
             die;
@@ -75,17 +76,13 @@ class dashboardController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        /** @var \users $user */
-        $user = $this->loadData('users');
+        $userId = filter_input(INPUT_POST, 'userId', FILTER_VALIDATE_INT);
+        $user   = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Users')
+            ->find($userId);
 
-        if (($userId = filter_input(INPUT_POST, 'userId', FILTER_VALIDATE_INT)) && $user->get($userId)) {
-            $this->templateProjects = $this->getSaleUserProjects($user);
-        } else {
-            $user->get($_SESSION['user']['id_user']);
-            $this->templateProjects = $this->getSaleTeamProjects($user);
-        }
-
-        $this->collapsedStatus = self::$saleCollapsedStatus;
+        $this->templateProjects = null == $user ? $this->getSaleTeamProjects($this->userEntity) : $this->getSaleUserProjects($user);
+        $this->collapsedStatus  = ProjectsStatus::SALES_TEAM;
 
         ob_start();
         $this->fireView('saleProjects');
@@ -133,15 +130,15 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param \users $user
+     * @param Users $user
      *
      * @return array
      */
-    private function getSaleUserProjects(\users $user)
+    private function getSaleUserProjects(Users $user)
     {
-        /** @var \projects $project */
-        $project  = $this->loadData('projects');
-        $projects = $project->getSaleUserProjects($user);
+        $projects = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getSaleUserProjects($user);
 
         return [
             'count'    => count($projects),
@@ -151,15 +148,15 @@ class dashboardController extends bootstrap
     }
 
     /**
-     * @param \users $user
+     * @param Users $user
      *
      * @return array
      */
-    private function getSaleTeamProjects(\users $user)
+    private function getSaleTeamProjects(Users $user)
     {
-        /** @var \projects $project */
-        $project  = $this->loadData('projects');
-        $projects = $project->getSaleProjectsExcludingUser($user);
+        $projects = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getSaleProjectsExcludingUser($user);
 
         return [
             'count'    => count($projects),
@@ -171,11 +168,11 @@ class dashboardController extends bootstrap
     /**
      * @return array
      */
-    private function getSaleUpcomingProjects()
+    private function getSaleUpcomingProjects(): array
     {
-        /** @var \projects $project */
-        $project  = $this->loadData('projects');
-        $projects = $project->getUpcomingSaleProjects();
+        $projects = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getUpcomingSaleProjects();
 
         return [
             'count'    => count($projects),
@@ -183,6 +180,49 @@ class dashboardController extends bootstrap
             'projects' => $this->formatProjects($projects)
         ];
     }
+
+    /**
+     * @return array
+     */
+    private function getProjectsWithMandatesPendingSignature(): array
+    {
+        $pendingMandateProjects = [];
+        $projects               = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getProjectsInRepaymentWithPendingMandate();
+
+        foreach ($projects as $project) {
+            $this->addAdditionalData($project);
+            $pendingMandateProjects[] = $project;
+        }
+
+        return [
+            'count'    => count($pendingMandateProjects),
+            'projects' => $pendingMandateProjects
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    private function getProjectsWithFundsToRelease(): array
+    {
+        $fundsToReleaseProjects = [];
+        $projects               = $this->get('doctrine.orm.entity_manager')
+            ->getRepository('UnilendCoreBusinessBundle:Projects')
+            ->getProjectsWithFundsToRelease();
+
+        foreach ($projects as $project) {
+            $this->addAdditionalData($project);
+            $fundsToReleaseProjects[] = $project;
+        }
+
+        return [
+            'count'    => count($fundsToReleaseProjects),
+            'projects' => $fundsToReleaseProjects
+        ];
+    }
+
 
     /**
      * @param array $projects
@@ -202,23 +242,29 @@ class dashboardController extends bootstrap
                 ];
             }
 
-            $project['creation'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['creation']);
-
-            if (isset($project['risk_status_datetime'])) {
-                $project['risk_status_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['risk_status_datetime']);
-            }
-
-            if (isset($project['memo_datetime'])) {
-                $project['memo_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['memo_datetime']);
-            }
-
-            $project['hasMonitoringEvent'] = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($project['siren']);
+            $this->addAdditionalData($project);
 
             $formattedProjects[$project['status']]['count']++;
             $formattedProjects[$project['status']]['projects'][] = $project;
         }
 
         return $formattedProjects;
+    }
+
+    /**
+     * @param array $project
+     */
+    private function addAdditionalData(array &$project): void
+    {
+        if (isset($project['risk_status_datetime'])) {
+            $project['risk_status_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['risk_status_datetime']);
+        }
+
+        if (isset($project['memo_datetime']) && false === $project['memo_datetime'] instanceof \DateTime) {
+            $project['memo_datetime'] = \DateTime::createFromFormat('Y-m-d H:i:s', $project['memo_datetime']);
+        }
+
+        $project['hasMonitoringEvent'] = $this->get('unilend.service.risk_data_monitoring_manager')->hasMonitoringEvent($project['siren']);
     }
 
     public function _evaluate_projects()

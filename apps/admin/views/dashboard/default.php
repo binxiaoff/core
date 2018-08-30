@@ -166,34 +166,7 @@
             </table>
         </div>
     <?php endif; ?>
-    <h1>Mes projets (<?= $this->userProjects['count'] ?>)</h1>
-    <div id="user-projects">
-        <?php $this->templateProjects = $this->userProjects; ?>
-        <?php $this->fireView($this->template . 'Projects'); ?>
-    </div>
 
-    <h1<?php if ('sale' === $this->template) : ?> class="pull-left"<?php endif; ?>>
-        Mon équipe (<span id="team-projects-count"><?= $this->teamProjects['count'] ?></span>)
-    </h1>
-    <?php if ('sale' === $this->template) : ?>
-        <select id="sales-projects-selector" class="form-control input-sm pull-left" style="margin: 22px 10px 0; width: 200px;">
-            <option value="">Sélectionner</option>
-            <?php foreach ($this->salesPeople as $salesperson) : ?>
-                <option value="<?= $salesperson['id_user'] ?>"><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
-            <?php endforeach; ?>
-        </select>
-    <?php endif; ?>
-    <div id="team-projects" style="clear: both;">
-        <?php $this->templateProjects = $this->teamProjects; ?>
-        <?php $this->fireView($this->template . 'Projects'); ?>
-    </div>
-    <?php if (isset($this->upcomingProjects)) : ?>
-        <h1>À venir</h1>
-        <div id="upcoming-projects">
-            <?php $this->templateProjects = $this->upcomingProjects; ?>
-            <?php $this->fireView($this->template . 'Projects'); ?>
-        </div>
-    <?php endif; ?>
     <?php if (false === empty($this->impossibleEvaluationProjects)) : ?>
         <h1><a href="javascript:$('#impossible-evaluation-projects').slideToggle();">Évaluation impossible</a> (<?= count($this->impossibleEvaluationProjects) ?>)</h1>
         <a href="<?= $this->lurl ?>/dashboard/evaluate_projects" class="btn_link">Ré-évaluer les projets</a>
@@ -224,4 +197,95 @@
             </table>
         </div>
     <?php endif; ?>
+
+    <?php if (false === empty($this->otherTasksProjects)): ?>
+        <h1>Tâches annexes</h1>
+        <div class="other-tasks-projects">
+            <table id="other-tasks-projects-table" class="tablesorter projects" style="width: 100%">
+                <thead>
+                <tr>
+                    <th style="width:50px;"></th>
+                    <th style="width:40px">ID</th>
+                    <th>Raison sociale</th>
+                    <th style="width:70px">Montant</th>
+                    <th style="width:70px">Durée</th>
+                    <th style="width:180px">Nom dirigeant</th>
+                    <th style="width:80px">Téléphone</th>
+                    <th style="width:110px">Création</th>
+                    <th style="width:50px">Dernier<br/>mémo</th>
+                    <th style="width:50px">&nbsp;</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($this->otherTasksProjects as $taskLabel => $taskProjects) : ?>
+                    <?php if (0 < $taskProjects['count']) : ?>
+                        <tr class="status-line expand">
+                            <td colspan="10"><span class="sign"></span> <?= $taskLabel ?> (<?= $taskProjects['count'] ?>)</td>
+                        </tr>
+                        <?php $i = 0; ?>
+                        <?php foreach ($taskProjects['projects'] as $project) : ?>
+                            <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                                <td class="partner-logo">
+                                    <?php if (false === empty($project['partner_logo'])) : ?>
+                                        <img src="<?= $this->surl ?>/images/admin/partner/<?= $project['partner_logo'] ?>" alt="<?= $project['partner_logo'] ?>">
+                                    <?php endif; ?>
+                                    <?php if (true === $project['hasMonitoringEvent']) : ?>
+                                        <span class="e-change-warning"></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td data-project="<?= $project['id_project'] ?>"><?= $project['id_project'] ?></td>
+                                <td data-project="<?= $project['id_project'] ?>"><?= $project['company_name'] ?></td>
+                                <td style="text-align:right"><?= $this->ficelle->formatNumber($project['amount'], 0) ?>&nbsp;€</td>
+                                <td><?php if (false === empty($project['duration'])) : ?><?= $project['duration'] ?> mois<?php endif; ?></td>
+                                <td><?= $project['client_name'] ?></td>
+                                <td><a href="tel:0<?= $project['client_phone'] ?>"><?= $project['client_phone'] ?></a></td>
+                                <td><?= $project['creation']->format('d/m/Y - H\hi') ?></td>
+                                <?php if (empty($project['memo_content'])) : ?>
+                                    <td></td>
+                                <?php else : ?>
+                                    <td data-toggle="tooltip" class="tooltip" title="<?= (empty($project['memo_author']) ? '' : $project['memo_author'] . '<br>') . $project['memo_datetime']->format('d/m/Y - H\hi') . '<hr>' . nl2br(htmlentities($project['memo_content'], ENT_QUOTES)) ?>" style="text-align: center"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Mémo" /></td>
+                                <?php endif; ?>
+                                <td></td>
+                            </tr>
+                            <?php ++$i; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($this->upcomingProjects)) : ?>
+        <h1>À venir</h1>
+        <div id="upcoming-projects">
+            <?php $this->templateProjects = $this->upcomingProjects; ?>
+            <?php $this->fireView($this->template . 'Projects'); ?>
+        </div>
+    <?php endif; ?>
+
+    <h1>Mes projets (<?= $this->userProjects['count'] ?>)</h1>
+    <div id="user-projects">
+        <?php $this->templateProjects = $this->userProjects; ?>
+        <?php $this->collapsedStatus = \dashboardController::SALES_MY_PROJECTS_COLLAPSED_STATUS; ?>
+        <?php $this->fireView($this->template . 'Projects'); ?>
+    </div>
+
+    <h1<?php if ('sale' === $this->template) : ?> class="pull-left"<?php endif; ?>>
+        Mon équipe (<span id="team-projects-count"><?= $this->teamProjects['count'] ?></span>)
+    </h1>
+    <?php if ('sale' === $this->template) : ?>
+        <select id="sales-projects-selector" class="form-control input-sm pull-left" style="margin: 22px 10px 0; width: 200px;">
+            <option value="">Sélectionner</option>
+            <?php foreach ($this->salesPeople as $salesperson) : ?>
+                <option value="<?= $salesperson['id_user'] ?>"><?= $salesperson['firstname'] ?> <?= $salesperson['name'] ?></option>
+            <?php endforeach; ?>
+        </select>
+    <?php endif; ?>
+
+    <div id="team-projects" style="clear: both;">
+        <?php $this->templateProjects = $this->teamProjects; ?>
+        <?php $this->collapsedStatus = \Unilend\Bundle\CoreBusinessBundle\Entity\ProjectsStatus::SALES_TEAM; ?>
+        <?php $this->fireView($this->template . 'Projects'); ?>
+    </div>
 </div>
