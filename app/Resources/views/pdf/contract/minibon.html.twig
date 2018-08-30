@@ -73,7 +73,7 @@
                 <h5>Désignation du prêteur</h5>
                 <div class="list">
                     <ul>
-                        {% if lender.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_LEGAL_ENTITY'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %}
+                        {% if lender.isNaturalPerson %}
                             <li>
                                 <div class="col-long">Raison sociale</div>
                                 <div class="col-small">{{ lender.company.name }}</div>
@@ -148,7 +148,7 @@
                     <ul>
                         <li>
                             <div class="col-long">Montant total</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>&nbsp;</li>
@@ -194,7 +194,7 @@
                         <li>La signature du Minibon engage l’Emetteur, en contrepartie des sommes remises ce jour</li>
                         <li>
                             <div class="col-long">à rembourser aux Prêteurs la somme de</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>

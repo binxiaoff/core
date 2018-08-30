@@ -596,22 +596,15 @@ class CompaniesActifPassif
      */
     public function getTotalAssets(): float
     {
-        $totalAssets =
-            bcadd(
-                bcadd(
-                    bcadd($this->creancesClients, $this->disponibilites, 4),
-                    bcadd($this->valeursMobilieresDePlacement, $this->comptesRegularisationActif, 4)
-                    , 4
-                ),
-                bcadd(
-                    bcadd($this->immobilisationsCorporelles, $this->immobilisationsIncorporelles, 4),
-                    bcadd($this->immobilisationsFinancieres, $this->stocks, 4)
-                    , 4
-                ), 4
-            );
+        $totalAssets = bcadd($this->creancesClients, $this->disponibilites, 4);
+        $totalAssets = bcadd($totalAssets, $this->valeursMobilieresDePlacement, 4);
+        $totalAssets = bcadd($totalAssets, $this->comptesRegularisationActif, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsCorporelles, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsIncorporelles, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsFinancieres, 4);
+        $totalAssets = bcadd($totalAssets, $this->stocks, 4);
 
         return round($totalAssets, 2);
-
     }
 
     /**

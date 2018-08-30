@@ -61,7 +61,7 @@
                 <h5>{{ content['designation-p']|raw }}</h5>
                 <div class="list">
                     <ul>
-                        {% if lender.type in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::TYPE_PERSON_FOREIGNER')] %}
+                        {% if lender.isNaturalPerson %}
                             <li>
                                 Nom
                                 <div class="col-small">{{ lender.lastName }}</div>
@@ -127,7 +127,7 @@
                     <ul>
                         <li>
                             <div class="col-long">{{ content['montant']|raw }}</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>
@@ -153,7 +153,7 @@
                         </li>
                         <li>
                             <div class="col-long">{{ content['a-rembourser']|raw }}</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>

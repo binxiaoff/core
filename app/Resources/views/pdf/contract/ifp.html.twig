@@ -17,7 +17,7 @@
                     <ul>
                         <li>
                             <div class="col-long">Montant total emprunté :</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                             <br/>
                         </li>
@@ -166,7 +166,7 @@
                     <ul>
                         <li>
                             <div class="col-long">Montant total emprunté :</div>
-                            <div class="col-small">{{ loan.amount }}&nbsp;€</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
                             <div class="cl">&nbsp;</div>
                         </li>
                         <li>&nbsp;</li>
@@ -208,7 +208,7 @@
                         <li>Conditions de mise à disposition des fonds : {{ content['conditions-de-mise-a-disposition-des-fonds']|nl2br|raw }}</li>
                     </ul>
                     <p>{{ content['legitimite']|raw }}</p>
-                    <p>La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour, à rembourser au Prêteur la somme de {{ loan.amount }}&nbsp;€ assortie des intérêts à {{ loan.rate }}&nbsp;% selon l'échéancier annexé aux présentes.</p>
+                    <p>La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour, à rembourser au Prêteur la somme de {{ loan.formattedAmount }}&nbsp;€ assortie des intérêts à {{ loan.rate }}&nbsp;% selon l'échéancier annexé aux présentes.</p>
                 </div>
             </div>
             <div>

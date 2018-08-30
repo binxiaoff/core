@@ -212,7 +212,8 @@ class LoanContractGenerator implements DocumentGeneratorInterface
 
         return [
             'id'                => $loan->getIdLoan(),
-            'amount'            => $this->numberFormatter->format($loanAmount),
+            'amount'            => $loanAmount,
+            'formattedAmount'   => $this->numberFormatter->format($loanAmount),
             'rate'              => $this->numberFormatter->format($loan->getRate()),
             'interests'         => $this->currencyFormatter->formatCurrency($interests, 'EUR'),
             'repaymentAmount'   => $this->currencyFormatter->formatCurrency($repaymentAmount, 'EUR'),
@@ -326,11 +327,11 @@ class LoanContractGenerator implements DocumentGeneratorInterface
         }
 
         $lenderData = [
-            'type'      => $client->getType(),
-            'firstName' => $client->getPrenom(),
-            'lastName'  => $client->getNom(),
-            'birthDate' => $client->getNaissance()->format('d/m/Y'),
-            'address'   => [
+            'isNaturalPerson' => $client->isNaturalPerson(),
+            'firstName'       => $client->getPrenom(),
+            'lastName'        => $client->getNom(),
+            'birthDate'       => $client->getNaissance()->format('d/m/Y'),
+            'address'         => [
                 'address' => $address->getAddress(),
                 'zip'     => $address->getZip(),
                 'city'    => $address->getCity()
