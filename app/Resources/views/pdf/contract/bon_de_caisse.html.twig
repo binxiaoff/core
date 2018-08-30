@@ -1,0 +1,311 @@
+{% extends 'pdf/layout.html.twig' %}
+
+{% block cssFiles %}
+    <link rel="stylesheet" type="text/css" href="{{ staticUrl }}/styles/default/pdf/style.css" media="all">
+{% endblock %}
+
+{% block header %} {% endblock %}
+
+{% block content %}
+    <!-- Doc Wrapper -->
+    <div class="doc-wrapper">
+        <!-- Shell -->
+        <div class="shell">
+            <div>
+                <h3>{{ content['titre']|raw }} - #{{ loan.id }}</h3>
+                <h5>{{ content['designation']|raw }}</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            Raison sociale
+                            <div class="col-small">{{ borrower.name }}</div>
+                        </li>
+                        <li>
+                            Forme juridique
+                            <div class="col-small">{{ borrower.legalStatus }}</div>
+                        </li>
+                        <li>
+                            Capital social
+                            <div class="col-small">{{ borrower.capitalStock }}&nbsp;€</div>
+                        </li>
+                        <li>
+                            Adresse du siège social
+                            <div class="col-small">{{ borrower.address.address }}</div>
+                        </li>
+                        <li>
+                            Code postal
+                            <div class="col-small">{{ borrower.address.zip }}</div>
+                        </li>
+                        <li>
+                            Ville
+                            <div class="col-small">{{ borrower.address.city }}</div>
+                        </li>
+                        <li>
+                            Tribunal de commerce
+                            <div class="col-small">{{ borrower.commercialCourt }}</div>
+                        </li>
+                        <li>
+                            R.C.S.
+                            <div class="col-small">{{ borrower.siren }}</div>
+                        </li>
+                        <li>
+                            Activité
+                            <div class="col-small">{{ borrower.activity }}</div>
+                        </li>
+                        <li>
+                            Lieu d'exploitation
+                            <div class="col-small">{{ borrower.address.city }}</div>
+                        </li>
+                    </ul>
+                </div>
+                <h5>{{ content['designation-p']|raw }}</h5>
+                <div class="list">
+                    <ul>
+                        {% if lender.isNaturalPerson %}
+                            <li>
+                                Nom
+                                <div class="col-small">{{ lender.lastName }}</div>
+                            </li>
+                            <li>
+                                Prénom
+                                <div class="col-small">{{ lender.firstName }}</div>
+                            </li>
+                            <li>
+                                Date de naissance
+                                <div class="col-small">{{ lender.birthDate }}</div>
+                            </li>
+                            <li>
+                                Adresse
+                                <div class="col-small">{{ lender.address.address }}</div>
+                            </li>
+                            <li>
+                                Code postal
+                                <div class="col-small">{{ lender.address.zip }}</div>
+                            </li>
+                            <li>
+                                Ville
+                                <div class="col-small">{{ lender.address.city }}</div>
+                            </li>
+                        {% else %}
+                            <li>
+                                Raison sociale
+                                <div class="col-small">{{ lender.company.name }}</div>
+                            </li>
+                            <li>
+                                Forme juridique
+                                <div class="col-small">{{ lender.company.legalStatus }}</div>
+                            </li>
+                            <li>
+                                Capital social
+                                <div class="col-small">{{ lender.company.capitalStock }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                Adresse du siège social
+                                <div class="col-small">{{ lender.address.address }}</div>
+                            </li>
+                            <li>
+                                Code postal
+                                <div class="col-small">{{ lender.address.zip }}</div>
+                            </li>
+                            <li>
+                                Ville
+                                <div class="col-small">{{ lender.address.city }}</div>
+                            </li>
+                            <li>
+                                Tribunal de commerce
+                                <div class="col-small">{{ lender.company.commercialCourt }}</div>
+                            </li>
+                            <li>
+                                R.C.S.
+                                <div class="col-small">{{ lender.company.siren }}</div>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <h5>{{ content['caracteristiques']|raw }}</h5>
+                <div class="list">
+                    <ul>
+                        <li>
+                            <div class="col-long">{{ content['montant']|raw }}</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['taux-i']|raw }}</div>
+                            <div class="col-small">{{ loan.rate }}&nbsp;%</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['date-de-creation']|raw }}</div>
+                            <div class="col-small">{{ loan.creationDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['date-decheance']|raw }}</div>
+                            <div class="col-small">{{ loan.lastRepaymentDate }}</div>
+                            <div class="cl">&nbsp;</div>
+                            <br/>
+                        </li>
+                        <li>
+                            {{ content['bon-de-caisse']|raw }}<br/>
+                            {{ content['lemetteur-certifie']|raw }}<br/>
+                            {{ content['la-signature-des']|raw }}
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['a-rembourser']|raw }}</div>
+                            <div class="col-small">{{ loan.formattedAmount }}&nbsp;€</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['assortie-des-interets-a']|raw }}</div>
+                            <div class="col-small">{{ loan.rate }}&nbsp;%</div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>
+                            <div class="col-long">{{ content['selon-echeancier']|raw }}</div>
+                            <div class="cl">&nbsp;</div>
+                            <br/>
+                        </li>
+                        <li>
+                            <div class="col-long">
+                                {{ content['fait-a']|raw }} {{ loan.creationDate }}<br/>
+                                <strong>{{ content['signe-par']|raw }}</strong><br/>
+                                <strong>{{ content['represente-par']|raw }}</strong>
+                            </div>
+                            <div class="col-small"><div class="logo"></div></div>
+                            <div class="cl">&nbsp;</div>
+                        </li>
+                        <li>{{ content['le-present-bon']|raw }}</li>
+                    </ul>
+                </div>
+            </div>
+            {% if finance is defined %}
+                <div>
+                    <h3>{{ content['dernier-bilan']|raw }}</h3>
+                    <div class="list">
+                        <ul>
+                            <li>{{ content['au']|raw }} {{ finance.lastAnnualAccountsDate }}</li>
+                        </ul>
+                    </div>
+                    <h5>{{ content['actif']|raw }}</h5>
+                    <div class="list">
+                        <ul>
+                            <li>
+                                {{ content['immo-corpo']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getImmobilisationsCorporelles|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['immo-incorpo']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getImmobilisationsIncorporelles|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['immo-financieres']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getImmobilisationsFinancieres|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['stocks']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getStocks|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['creances']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getCreancesClients|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['dispo']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getDisponibilites|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['valeurs-mobilieres']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getValeursMobilieresDePlacement|localizednumber }}&nbsp;€</div>
+                            </li>
+                            {% if finance.assetsDebts.getComptesRegularisationActif > 0 %}
+                                <li>
+                                    Comptes de régularisation
+                                    <div class="col-small nowrap">{{ finance.assetsDebts.getComptesRegularisationActif|localizednumber }}&nbsp;€</div>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="total-row" style="white-space:nowrap; text-align:left;">
+                        {{ content['total-actif']|raw }} :
+                        <div style="display:inline; float: right;">{{ finance.assetsDebts.getTotalAssets|localizednumber }}&nbsp;€</div>
+                    </div>
+                    <h5>{{ content['passif']|raw }}</h5>
+                    <div class="list">
+                        <ul>
+                            <li>
+                                {{ content['capitaux']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getCapitauxPropres|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['provisions']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getProvisionsPourRisquesEtCharges|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['amortissements-sur-immo']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getAmortissementSurImmo|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['dettes-fi']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getDettesFinancieres|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['dettes-fourn']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getDettesFournisseurs|localizednumber }}&nbsp;€</div>
+                            </li>
+                            <li>
+                                {{ content['autres-dettes']|raw }}
+                                <div class="col-small">{{ finance.assetsDebts.getAutresDettes|localizednumber }}&nbsp;€</div>
+                            </li>
+                            {% if finance.assetsDebts.getComptesRegularisationPassif > 0 %}
+                                <li>
+                                    Comptes de régularisation
+                                    <div class="col-small nowrap">{{ finance.assetsDebts.getComptesRegularisationPassif|localizednumber }}&nbsp;€</div>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="total-row" style="white-space:nowrap; text-align:left;">
+                        {{ content['total-passif']|raw }} :
+                        <div style="display:inline; float: right;">{{ finance.assetsDebts.getTotalDebts|localizednumber }}&nbsp;€</div>
+                    </div>
+                    <div class="center-text">
+                        {{ content['certifie']|raw }}
+                    </div>
+                    <h3>{{ content['conditions']|raw }}</h3>
+                    <p>{{ content['conditions-contenu']|raw }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Page Break -->
+            <div class="pageBreakBefore">
+                <h3>{{ content['echeancier-remboursements']|raw }}</h3>
+                <div class="dates-table">
+                    <table width="100%" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <th valign="bottom">{{ content['date']|raw }}</th>
+                            <th valign="bottom">{{ content['capital']|raw }}</th>
+                            <th valign="bottom">{{ content['interet']|raw }}</th>
+                            <th valign="bottom">{{ content['total']|raw }}</th>
+                            <th valign="bottom">{{ content['capital-restant']|raw }}</th>
+                        </tr>
+                        {% set remainingCapital = loan.amount %}
+                        {% for repayment in loan.repaymentSchedule %}
+                            {% set remainingCapital = remainingCapital - repayment.getCapital() / 100 %}
+                            <tr>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ repayment.getDateEcheance()|date('d/m/Y') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getCapital() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getInterets() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ (repayment.getMontant() / 100)|localizedcurrency('EUR') }}</td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;">{{ remainingCapital|abs|localizedcurrency('EUR') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            <!-- End Page Break -->
+        </div>
+        <!-- End Shell -->
+    </div>
+    <!-- End Doc Wrapper -->
+{% endblock %}
