@@ -23,10 +23,10 @@ class UnilendFrontExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.xml');
-        $loader->load('form.xml');
-        $loader->load('event.xml');
+        $yamlLoader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $yamlLoader->load('services.yaml');
+        $yamlLoader->load('legacy_aliases.yaml');
+        $yamlLoader->load('legacy_public.yaml');
 
         $this->updateValidatorMappingFiles($container);
     }

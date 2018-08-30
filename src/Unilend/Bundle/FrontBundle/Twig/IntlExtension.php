@@ -1,7 +1,9 @@
 <?php
 namespace Unilend\Bundle\FrontBundle\Twig;
 
-class IntlExtension extends \Twig_Extensions_Extension_Intl
+use \Twig\Extensions\IntlExtension as BaseIntlExtension;
+
+class IntlExtension extends BaseIntlExtension
 {
     /**
      * Returns a list of filters to add to the existing list.

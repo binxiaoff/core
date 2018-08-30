@@ -44,8 +44,8 @@ cmf_routing:
             cmf_routing.dynamic_router: 100
     dynamic:
         enabled: true
-        default_controller: UnilendFrontBundle:Main:cms
-        route_provider_service_id: "unilend.frontbundle.provider.route_provider"
+        default_controller: Unilend\Bundle\FrontBundle\Controller\MainController::cmsAction
+        route_provider_service_id: Unilend\Bundle\FrontBundle\Service\RouteProvider
 
 twig:
     strict_variables: "%kernel.debug%"
@@ -241,16 +241,6 @@ unilend_translation:
     parameters:
         cache:
             path: "%kernel.cache_dir%/translations"
-
-services:
-    twig.extension.text:
-        class: Twig_Extensions_Extension_Text
-        tags:
-            - { name: twig.extension }
-    twig.extension.intl:
-        class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
-        tags:
-            - { name: twig.extension }
 
 google_tag_manager:
     enabled: true

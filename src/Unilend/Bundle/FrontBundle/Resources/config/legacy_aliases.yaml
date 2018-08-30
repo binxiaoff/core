@@ -1,0 +1,19 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    # aliases so that the old service ids can still be accessed
+    # remove these if/when you are not fetching these directly
+    # from the container via $container->get()
+    unilend.frontbundle.notification_display_manager: '@Unilend\Bundle\FrontBundle\Service\NotificationDisplayManager'
+    unilend.frontbundle.security.password_encoder: '@Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder'
+    unilend.frontbundle.security.user_provider: '@Unilend\Bundle\FrontBundle\Security\User\UserProvider' #todo: check if we can remove it after TECH-108
+    unilend.frontbundle.service.content_manager: '@Unilend\Bundle\FrontBundle\Service\ContentManager'
+    unilend.frontbundle.service.form_manager: '@Unilend\Bundle\FrontBundle\Service\FormManager'
+    unilend.frontbundle.service.lender_account_display_manager: '@Unilend\Bundle\FrontBundle\Service\LenderAccountDisplayManager'
+    unilend.frontbundle.service.project_display_manager: '@Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager'
+    unilend.frontbundle.service.source_manager: '@Unilend\Bundle\FrontBundle\Service\SourceManager'
+    unilend.frontbundle.service.testimonial_manager: '@Unilend\Bundle\FrontBundle\Service\TestimonialManager'
+    unilend.frontbundle.service.universign_manager: '@Unilend\Bundle\FrontBundle\Service\UniversignManager'

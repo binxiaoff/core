@@ -17,12 +17,10 @@ class BorrowerContactType extends AbstractType
     private $borrower;
     /** @var EntityManager */
     private $entityManager;
-    private $language;
 
-    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, $language)
+    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage)
     {
         $this->entityManager = $entityManager;
-        $this->language      = $language;
         $this->borrower      = $tokenStorage->getToken()->getUser();
     }
 

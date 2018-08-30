@@ -1,0 +1,27 @@
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $rootDir: '%kernel.root_dir%'
+
+    # makes classes in the bundle available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name (FQCN)
+    Unilend\Bundle\FrontBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/FrontBundle/*'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments *even if you don't extend any base controller class*
+    Unilend\Bundle\FrontBundle\Controller\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/FrontBundle/Controller'
+        tags: ['controller.service_arguments']
+
+    Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder:
+        $cost: '%security.bcrypt.cost%'
+
+    Unilend\Bundle\FrontBundle\Service\UniversignManager:
+        $universignURL: '%url.universign%'
+
+    Twig\Extensions\TextExtension: ~
