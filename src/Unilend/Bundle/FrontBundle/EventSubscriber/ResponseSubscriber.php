@@ -10,9 +10,7 @@ class ResponseSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents()
     {
-        return [
-            KernelEvents::RESPONSE => 'onKernelResponse'
-        ];
+        return [KernelEvents::RESPONSE => 'onKernelResponse'];
     }
 
     /**
