@@ -62,8 +62,8 @@ class dashboardController extends bootstrap
             $this->collapsedStatus              = self::SALES_MY_PROJECTS_COLLAPSED_STATUS;
             $this->salesPeople                  = $user->select('status = ' . Users::STATUS_ONLINE . ' AND id_user_type = ' . UsersTypes::TYPE_COMMERCIAL, 'firstname ASC, name ASC');
             $this->otherTasksProjects           = [
-                'Changement Rib en cours' => $this->getProjectsWithMandatesPendingSignature(),
-                'Transfet de fonds'       => $this->getProjectsWithFundsToRelease()
+                'Transfet de fonds'       => $this->getProjectsWithFundsToRelease(),
+                'Changement Rib en cours' => $this->getProjectsWithMandatesPendingSignature()
             ];
         } else {
             header('Location: ' . $this->lurl);
@@ -76,7 +76,7 @@ class dashboardController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $userId = filter_input(INPUT_POST, 'userId', FILTER_VALIDATE_INT);
+        $userId = $this->request->request->getInt('userId');
         $user   = $this->get('doctrine.orm.entity_manager')
             ->getRepository('UnilendCoreBusinessBundle:Users')
             ->find($userId);
