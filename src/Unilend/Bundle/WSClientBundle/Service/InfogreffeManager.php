@@ -138,6 +138,7 @@ class InfogreffeManager
         $callBack = $this->callHistoryManager->addResourceCallHistoryLog($wsResource, $siren, $this->saveToCache);
 
         try {
+            // todo: inject a SoapClient as dependency
             $request = $this->getXmlRequest($siren);
 
             $soapRequestString = '<?xml version="1.0" encoding="utf-8"?>

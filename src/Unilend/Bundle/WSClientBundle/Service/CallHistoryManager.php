@@ -310,6 +310,9 @@ class CallHistoryManager
         return (new \DateTime())->sub(new \DateInterval('P' . $days . 'D'));
     }
 
+    /**
+     * @required
+     */
     public function handleMongoDBLogging()
     {
         $setting = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'mongo_log']);
