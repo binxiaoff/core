@@ -6,7 +6,7 @@ use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Translation\TranslatorInterface;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{MailTemplates, Translations, UniversignEntityInterface};
 
 class TemplateMessageProvider
 {
@@ -59,11 +59,13 @@ class TemplateMessageProvider
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @required
+     *
+     * @param LoggerInterface|null $logger
      *
      * @return $this
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(?LoggerInterface $logger)
     {
         $this->logger = $logger;
         return $this;

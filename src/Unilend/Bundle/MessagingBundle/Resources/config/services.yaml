@@ -6,20 +6,12 @@ services:
         bind:
             $defaultLocale: '%locale%'
             $sharedTemporaryPath: '%path.shared_tmp%'
+            $templateMessageFQCN: 'Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage'
             $frontUrl: '%router.request_context.scheme%://%url.host_default%'
             $adminUrl: '%router.request_context.scheme%://%url.host_admin%'
 
-    # makes classes in the bundle available to be used as services
-    # nothing to exclude for front bundle
-    # this creates a service per class whose id is the fully-qualified class name (FQCN)
     Unilend\Bundle\MessagingBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/MessagingBundle/*'
-
-    Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider:
-        arguments:
-            $templateMessageFQCN: 'Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage' # string
-        calls:
-            - [setLogger, ['@?logger']]
 
     Unilend\Bundle\MessagingBundle\Event\MailjetEventListener:
         tags:
