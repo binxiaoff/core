@@ -1,0 +1,14 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $defaultLocale: '%locale%'
+
+    Unilend\Bundle\TranslationBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/TranslationBundle/*'
+
+    Unilend\Bundle\TranslationBundle\Service\TranslationLoader:
+        tags:
+        - { name: translation.loader, alias: db }
