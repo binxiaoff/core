@@ -258,28 +258,26 @@ class MainController extends Controller
      */
     public function lenderTermsOfSalesAction(string $type = ''): Response
     {
-        /** @var EntityManagerSimulator $entityManager */
-        $entityManager = $this->get('unilend.service.entity_manager');
-        /** @var \settings $settings */
-        $settings = $entityManager->getRepository('settings');
-        $settings->get('Lien conditions generales inscription preteur particulier', 'type');
+        /** @var EntityManagerSimulator $entityManagerSimulator */
+        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
+        $termsOfSaleManager     = $this->get('unilend.service.terms_of_sale_manager');
 
-        $idTree = $settings->value;
         $user   = $this->getUser();
 
         if ($user instanceof UserLender) {
             /** @var \clients $client */
-            $client = $entityManager->getRepository('clients');
+            $client = $entityManagerSimulator->getRepository('clients');
             $client->get($user->getClientId());
 
             if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $settings->get('Lien conditions generales inscription preteur societe', 'type');
-                $idTree = $settings->value;
+                $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
+            } else {
+                $idTree = $termsOfSaleManager->getCurrentVersionForPerson();
             }
         }
 
         /** @var \tree $tree */
-        $tree = $entityManager->getRepository('tree');
+        $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['id_tree' => $idTree]);
         $this->setCmsSeoData($tree);
 

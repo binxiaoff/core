@@ -277,4 +277,24 @@ class LoansRepository extends EntityRepository
 
         return $queryBuilder->getQuery()->getArrayResult();
     }
+
+    /**
+     * @param Wallet|int $wallet
+     * @param \DateTime  $date
+     *
+     * @return int|null
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getCountLoansForLenderBeforeDate($wallet, \DateTime $date): ?int
+    {
+        $queryBuilder = $this->createQueryBuilder('l');
+        $queryBuilder
+            ->select('COUNT(l.idLoan)')
+            ->where('l.idLender = :wallet')
+            ->andWhere('l.added < :date')
+            ->setParameter('wallet', $wallet)
+            ->setParameter('date', $date);
+
+        return $queryBuilder->getQuery()->getSingleScalarResult();
+    }
 }

@@ -106,20 +106,39 @@ class TermsOfSaleManager
      */
     private function getCurrentVersionId(Clients $client): int
     {
-        if (in_array($client->getType(), [Clients::TYPE_PERSON, Clients::TYPE_PERSON_FOREIGNER])) {
-            $type = 'Lien conditions generales inscription preteur particulier';
-        } else {
-            $type = 'Lien conditions generales inscription preteur societe';
+        if ($client->isNaturalPerson()) {
+            return $this->getCurrentVersionForPerson();
         }
 
-        return (int) $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings')
-            ->findOneBy(['type' => $type])
+        return $this->getCurrentVersionForLegalEntity();
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurrentVersionForPerson(): int
+    {
+        return (int) $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+            ->findOneBy(['type' => 'Lien conditions generales inscription preteur particulier'])
             ->getValue();
+    }
+
+    /**
+     * @return int
+     */
+    public function  getCurrentVersionForLegalEntity(): int
+    {
+        return (int) $this->entityManager
+            ->getRepository('UnilendCoreBusinessBundle:Settings')
+             ->findOneBy(['type' => 'Lien conditions generales inscription preteur societe'])
+             ->getValue();
     }
 
     /**
      * @param Clients $client
      *
+     * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
     public function acceptCurrentVersion(Clients $client): void
