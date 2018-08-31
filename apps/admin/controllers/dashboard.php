@@ -100,7 +100,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function getRiskUserProjects(\users $user)
+    private function getRiskUserProjects(\users $user): array
     {
         /** @var \projects $project */
         $project  = $this->loadData('projects');
@@ -117,7 +117,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function getRiskTeamProjects(\users $user)
+    private function getRiskTeamProjects(\users $user): array
     {
         /** @var \projects $project */
         $project  = $this->loadData('projects');
@@ -134,7 +134,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function getSaleUserProjects(Users $user)
+    private function getSaleUserProjects(Users $user): array
     {
         $projects = $this->get('doctrine.orm.entity_manager')
             ->getRepository('UnilendCoreBusinessBundle:Projects')
@@ -152,7 +152,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function getSaleTeamProjects(Users $user)
+    private function getSaleTeamProjects(Users $user): array
     {
         $projects = $this->get('doctrine.orm.entity_manager')
             ->getRepository('UnilendCoreBusinessBundle:Projects')
@@ -229,7 +229,7 @@ class dashboardController extends bootstrap
      *
      * @return array
      */
-    private function formatProjects(array $projects)
+    private function formatProjects(array $projects): array
     {
         $formattedProjects = [];
 
