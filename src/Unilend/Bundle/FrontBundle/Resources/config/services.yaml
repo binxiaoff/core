@@ -6,9 +6,6 @@ services:
         bind:
             $rootDir: '%kernel.root_dir%'
 
-    # makes classes in the bundle available to be used as services
-    # nothing to exclude for front bundle
-    # this creates a service per class whose id is the fully-qualified class name (FQCN)
     Unilend\Bundle\FrontBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/FrontBundle/*'
 
