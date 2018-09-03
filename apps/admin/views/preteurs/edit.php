@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
-
 ?>
 <script type="text/javascript">
     $(function() {
@@ -118,11 +116,11 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
         <div class="attention">Attention : ce compte n’est pas un compte prêteur</div>
     <?php else : ?>
         <div><?= $this->clientStatusMessage ?></div>
-        <?php if (in_array($this->client->getType(), [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) : ?>
+        <?php if ($this->client->isNaturalPerson()) : ?>
+            <h1><span class="fa fa-user-o"></span> <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h1>
+        <?php else : ?>
             <h1><span class="fa fa-briefcase"></span> <?= $this->companies->name ?></h1>
             <h2>Représentant légal : <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h2>
-        <?php else: ?>
-            <h1><span class="fa fa-user-o"></span> <?= $this->client->getPrenom() ?> <?= $this->client->getNom() ?></h1>
         <?php endif; ?>
         <div class="btnDroite">
             <a href="<?= $this->lurl ?>/preteurs/bids/<?= $this->clients->id_client ?>" class="btn-primary">Enchères</a>
