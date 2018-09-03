@@ -3,9 +3,7 @@
 namespace Unilend\Bundle\CommandBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\{
-    ContainerBuilder, Loader
-};
+use Symfony\Component\DependencyInjection\{ContainerBuilder, Loader};
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**

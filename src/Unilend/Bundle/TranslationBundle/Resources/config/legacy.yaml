@@ -1,0 +1,9 @@
+# remove these if/when you are not fetching these directly
+# from the container via $container->get()
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true
+
+    unilend.service.translation_manager: '@Unilend\Bundle\TranslationBundle\Service\TranslationManager'
