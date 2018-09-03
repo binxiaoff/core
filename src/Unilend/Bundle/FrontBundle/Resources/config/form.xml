@@ -82,5 +82,9 @@
         <service id="Unilend\Bundle\FrontBundle\Form\LenderSubscriptionIdentityLegalEntity" autowire="true">
             <tag name="form.type" />
         </service>
+
+        <service id="Unilend\Bundle\FrontBundle\Form\LenderPersonContactType" autowire="true">
+            <tag name="form.type" />
+        </service>
     </services>
 </container>
