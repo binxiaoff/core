@@ -16,7 +16,6 @@ class TranslationLoader implements LoaderInterface
     private $defaultLocale;
 
     /**
-     *
      * @param EntityManager $entityManager
      * @param string        $defaultLocale
      */
