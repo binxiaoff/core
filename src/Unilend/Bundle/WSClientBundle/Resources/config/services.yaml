@@ -74,3 +74,8 @@ services:
         $userPrefix: '%ellisphere.user_prefix%'
         $userId: '%ellisphere.user_id%'
         $password: '%ellisphere.password%'
+
+    Unilend\Bundle\WSClientBundle\Service\GreenPointManager:
+        $client: '@eight_points_guzzle.client.greenpoint'
+        $login: '%greenpoint.login%'
+        $password: '%greenpoint.password%'
