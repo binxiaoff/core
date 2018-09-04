@@ -121,7 +121,7 @@ class LenderProfileController extends Controller
                 }
             }
 
-            if ($client->isNaturalPerson() && $contactForm instanceof FormInterface) {
+            if (isset($contactForm) && $contactForm instanceof FormInterface) {
                 $contactForm->handleRequest($request);
                 if ($contactForm->isSubmitted() && $contactForm->isValid()) {
                     $isValid = $formHandler->handleContactForm($client, $unattachedClient, $contactForm);
@@ -152,7 +152,7 @@ class LenderProfileController extends Controller
             ],
             'isLivingAbroad'       => $lastModifiedMainAddress ? ($lastModifiedMainAddress->getIdCountry()->getIdPays() !== Pays::COUNTRY_FRANCE) : false
         ];
-        if ($client->isNaturalPerson() && $contactForm instanceof FormInterface) {
+        if (isset($contactForm) && $contactForm instanceof FormInterface) {
             $templateData['forms']['contact'] = $contactForm->createView();
         }
 
