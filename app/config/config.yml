@@ -37,6 +37,12 @@ framework:
     validation:
         enabled: true
 
+sensio_framework_extra:
+    router:
+        # Enabling the “sensio_framework_extra.router.annotations” configuration is deprecated
+        # It was enabled by default. And there’s a pull request to make it disabled by default.
+        annotations: false
+
 cmf_routing:
     chain:
         routers_by_id:
@@ -242,6 +248,12 @@ unilend_translation:
         cache:
             path: "%kernel.cache_dir%/translations"
 
+services:
+    # Define the memcache adaptor as the application default cache globally in order to have the right adaptor when autowiring Psr\Cache\CacheItemPoolInterface
+    # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
+    # It can be removed once TECH-333 will be done.
+    cache.app: '@memcache.default'
+
 google_tag_manager:
     enabled: true
     id: "%google.gtm_token%"
@@ -294,7 +306,6 @@ eight_points_guzzle:
             options:
                 timeout: 16
                 http_errors: false
-
         codinf:
             base_url: "%codinf.url%"
             options:
@@ -311,6 +322,12 @@ eight_points_guzzle:
         google_recaptcha:
             base_url: "%google.recaptcha_url%"
             options:
+                http_errors: false
+        greenpoint:
+            base_url: "%greenpoint.url%"
+            options:
+                headers:
+                    Accept: "application/json"
                 http_errors: false
 
 cl_slack:

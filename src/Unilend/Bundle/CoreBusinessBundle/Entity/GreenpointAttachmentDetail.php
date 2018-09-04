@@ -175,7 +175,7 @@ class GreenpointAttachmentDetail
     private $updated;
 
     /**
-     * @var integer
+     * @var int
      *
      * @ORM\Column(name="id_greenpoint_attachment_detail", type="integer")
      * @ORM\Id
@@ -193,15 +193,12 @@ class GreenpointAttachmentDetail
      */
     private $idGreenpointAttachment;
 
-
     /**
-     * Set documentType
-     *
-     * @param string $documentType
+     * @param string|null $documentType
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setDocumentType($documentType)
+    public function setDocumentType(?string $documentType): GreenpointAttachmentDetail
     {
         $this->documentType = $documentType;
 
@@ -209,23 +206,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get documentType
-     *
-     * @return string
+     * @return string|null
      */
-    public function getDocumentType()
+    public function getDocumentType(): ?string
     {
         return $this->documentType;
     }
 
     /**
-     * Set identityCivility
-     *
-     * @param string $identityCivility
+     * @param string|null $identityCivility
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityCivility($identityCivility)
+    public function setIdentityCivility(?string $identityCivility): GreenpointAttachmentDetail
     {
         $this->identityCivility = $identityCivility;
 
@@ -233,23 +226,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityCivility
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityCivility()
+    public function getIdentityCivility(): ?string
     {
         return $this->identityCivility;
     }
 
     /**
-     * Set identityName
-     *
-     * @param string $identityName
+     * @param string|null $identityName
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityName($identityName)
+    public function setIdentityName(?string $identityName): GreenpointAttachmentDetail
     {
         $this->identityName = $identityName;
 
@@ -257,23 +246,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityName
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityName()
+    public function getIdentityName(): ?string
     {
         return $this->identityName;
     }
 
     /**
-     * Set identitySurname
-     *
-     * @param string $identitySurname
+     * @param string|null $identitySurname
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentitySurname($identitySurname)
+    public function setIdentitySurname(?string $identitySurname): GreenpointAttachmentDetail
     {
         $this->identitySurname = $identitySurname;
 
@@ -281,23 +266,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identitySurname
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentitySurname()
+    public function getIdentitySurname(): ?string
     {
         return $this->identitySurname;
     }
 
     /**
-     * Set identityExpirationDate
-     *
      * @param \DateTime $identityExpirationDate
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityExpirationDate($identityExpirationDate)
+    public function setIdentityExpirationDate($identityExpirationDate): GreenpointAttachmentDetail
     {
         $this->identityExpirationDate = $identityExpirationDate;
 
@@ -305,23 +286,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityExpirationDate
-     *
      * @return \DateTime
      */
-    public function getIdentityExpirationDate()
+    public function getIdentityExpirationDate(): ?string
     {
         return $this->identityExpirationDate;
     }
 
     /**
-     * Set identityBirthdate
-     *
      * @param \DateTime $identityBirthdate
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityBirthdate($identityBirthdate)
+    public function setIdentityBirthdate($identityBirthdate): GreenpointAttachmentDetail
     {
         $this->identityBirthdate = $identityBirthdate;
 
@@ -329,23 +306,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityBirthdate
-     *
      * @return \DateTime
      */
-    public function getIdentityBirthdate()
+    public function getIdentityBirthdate(): ?string
     {
         return $this->identityBirthdate;
     }
 
     /**
-     * Set identityMrz1
-     *
-     * @param string $identityMrz1
+     * @param string|null $identityMrz1
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityMrz1($identityMrz1)
+    public function setIdentityMrz1(?string $identityMrz1): GreenpointAttachmentDetail
     {
         $this->identityMrz1 = $identityMrz1;
 
@@ -353,23 +326,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityMrz1
-     *
      * @return string
      */
-    public function getIdentityMrz1()
+    public function getIdentityMrz1(): ?string
     {
         return $this->identityMrz1;
     }
 
     /**
-     * Set identityMrz2
-     *
-     * @param string $identityMrz2
+     * @param string|null $identityMrz2
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityMrz2($identityMrz2)
+    public function setIdentityMrz2(?string $identityMrz2): GreenpointAttachmentDetail
     {
         $this->identityMrz2 = $identityMrz2;
 
@@ -377,23 +346,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityMrz2
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityMrz2()
+    public function getIdentityMrz2(): ?string
     {
         return $this->identityMrz2;
     }
 
     /**
-     * Set identityMrz3
-     *
-     * @param string $identityMrz3
+     * @param string|null $identityMrz3
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityMrz3($identityMrz3)
+    public function setIdentityMrz3(?string $identityMrz3): GreenpointAttachmentDetail
     {
         $this->identityMrz3 = $identityMrz3;
 
@@ -401,23 +366,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityMrz3
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityMrz3()
+    public function getIdentityMrz3(): ?string
     {
         return $this->identityMrz3;
     }
 
     /**
-     * Set identityNationality
-     *
-     * @param string $identityNationality
+     * @param string|null $identityNationality
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityNationality($identityNationality)
+    public function setIdentityNationality(?string $identityNationality): GreenpointAttachmentDetail
     {
         $this->identityNationality = $identityNationality;
 
@@ -425,23 +386,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityNationality
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityNationality()
+    public function getIdentityNationality(): ?string
     {
         return $this->identityNationality;
     }
 
     /**
-     * Set identityIssuingCountry
-     *
-     * @param string $identityIssuingCountry
+     * @param string|null $identityIssuingCountry
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityIssuingCountry($identityIssuingCountry)
+    public function setIdentityIssuingCountry(?string $identityIssuingCountry): GreenpointAttachmentDetail
     {
         $this->identityIssuingCountry = $identityIssuingCountry;
 
@@ -449,23 +406,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityIssuingCountry
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityIssuingCountry()
+    public function getIdentityIssuingCountry(): ?string
     {
         return $this->identityIssuingCountry;
     }
 
     /**
-     * Set identityIssuingAuthority
-     *
-     * @param string $identityIssuingAuthority
+     * @param string|null $identityIssuingAuthority
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityIssuingAuthority($identityIssuingAuthority)
+    public function setIdentityIssuingAuthority(?string $identityIssuingAuthority): GreenpointAttachmentDetail
     {
         $this->identityIssuingAuthority = $identityIssuingAuthority;
 
@@ -473,23 +426,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityIssuingAuthority
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityIssuingAuthority()
+    public function getIdentityIssuingAuthority(): ?string
     {
         return $this->identityIssuingAuthority;
     }
 
     /**
-     * Set identityDocumentNumber
-     *
-     * @param string $identityDocumentNumber
+     * @param string|null $identityDocumentNumber
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityDocumentNumber($identityDocumentNumber)
+    public function setIdentityDocumentNumber(?string $identityDocumentNumber): GreenpointAttachmentDetail
     {
         $this->identityDocumentNumber = $identityDocumentNumber;
 
@@ -497,23 +446,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityDocumentNumber
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityDocumentNumber()
+    public function getIdentityDocumentNumber(): ?string
     {
         return $this->identityDocumentNumber;
     }
 
     /**
-     * Set identityDocumentTypeId
-     *
-     * @param string $identityDocumentTypeId
+     * @param string|null $identityDocumentTypeId
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdentityDocumentTypeId($identityDocumentTypeId)
+    public function setIdentityDocumentTypeId(?string $identityDocumentTypeId): GreenpointAttachmentDetail
     {
         $this->identityDocumentTypeId = $identityDocumentTypeId;
 
@@ -521,23 +466,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get identityDocumentTypeId
-     *
-     * @return string
+     * @return string|null
      */
-    public function getIdentityDocumentTypeId()
+    public function getIdentityDocumentTypeId(): ?string
     {
         return $this->identityDocumentTypeId;
     }
 
     /**
-     * Set bankDetailsIban
-     *
-     * @param string $bankDetailsIban
+     * @param string|null $bankDetailsIban
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setBankDetailsIban($bankDetailsIban)
+    public function setBankDetailsIban(?string $bankDetailsIban): GreenpointAttachmentDetail
     {
         $this->bankDetailsIban = $bankDetailsIban;
 
@@ -545,23 +486,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get bankDetailsIban
-     *
-     * @return string
+     * @return string|null
      */
-    public function getBankDetailsIban()
+    public function getBankDetailsIban(): ?string
     {
         return $this->bankDetailsIban;
     }
 
     /**
-     * Set bankDetailsBic
-     *
-     * @param string $bankDetailsBic
+     * @param string|null $bankDetailsBic
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setBankDetailsBic($bankDetailsBic)
+    public function setBankDetailsBic(?string $bankDetailsBic): GreenpointAttachmentDetail
     {
         $this->bankDetailsBic = $bankDetailsBic;
 
@@ -569,23 +506,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get bankDetailsBic
-     *
-     * @return string
+     * @return string|null
      */
-    public function getBankDetailsBic()
+    public function getBankDetailsBic(): ?string
     {
         return $this->bankDetailsBic;
     }
 
     /**
-     * Set bankDetailsUrl
-     *
-     * @param string $bankDetailsUrl
+     * @param string|null $bankDetailsUrl
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setBankDetailsUrl($bankDetailsUrl)
+    public function setBankDetailsUrl(?string $bankDetailsUrl): GreenpointAttachmentDetail
     {
         $this->bankDetailsUrl = $bankDetailsUrl;
 
@@ -593,23 +526,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get bankDetailsUrl
-     *
-     * @return string
+     * @return string|null
      */
-    public function getBankDetailsUrl()
+    public function getBankDetailsUrl(): ?string
     {
         return $this->bankDetailsUrl;
     }
 
     /**
-     * Set addressAddress
-     *
-     * @param string $addressAddress
+     * @param string|null $addressAddress
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setAddressAddress($addressAddress)
+    public function setAddressAddress(?string $addressAddress): GreenpointAttachmentDetail
     {
         $this->addressAddress = $addressAddress;
 
@@ -617,23 +546,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get addressAddress
-     *
-     * @return string
+     * @return string|null
      */
-    public function getAddressAddress()
+    public function getAddressAddress(): ?string
     {
         return $this->addressAddress;
     }
 
     /**
-     * Set addressPostalCode
-     *
-     * @param string $addressPostalCode
+     * @param string|null $addressPostalCode
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setAddressPostalCode($addressPostalCode)
+    public function setAddressPostalCode(?string $addressPostalCode): GreenpointAttachmentDetail
     {
         $this->addressPostalCode = $addressPostalCode;
 
@@ -641,23 +566,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get addressPostalCode
-     *
-     * @return string
+     * @return string|null
      */
-    public function getAddressPostalCode()
+    public function getAddressPostalCode(): ?string
     {
         return $this->addressPostalCode;
     }
 
     /**
-     * Set addressCity
-     *
-     * @param string $addressCity
+     * @param string|null $addressCity
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setAddressCity($addressCity)
+    public function setAddressCity(?string $addressCity): GreenpointAttachmentDetail
     {
         $this->addressCity = $addressCity;
 
@@ -665,23 +586,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get addressCity
-     *
-     * @return string
+     * @return string|null
      */
-    public function getAddressCity()
+    public function getAddressCity(): ?string
     {
         return $this->addressCity;
     }
 
     /**
-     * Set addressCountry
-     *
-     * @param string $addressCountry
+     * @param string|null $addressCountry
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setAddressCountry($addressCountry)
+    public function setAddressCountry(?string $addressCountry): GreenpointAttachmentDetail
     {
         $this->addressCountry = $addressCountry;
 
@@ -689,23 +606,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get addressCountry
-     *
-     * @return string
+     * @return string|null
      */
-    public function getAddressCountry()
+    public function getAddressCountry(): ?string
     {
         return $this->addressCountry;
     }
 
     /**
-     * Set added
-     *
      * @param \DateTime $added
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setAdded($added)
+    public function setAdded(\DateTime $added): GreenpointAttachmentDetail
     {
         $this->added = $added;
 
@@ -713,23 +626,19 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get added
-     *
      * @return \DateTime
      */
-    public function getAdded()
+    public function getAdded(): \DateTime
     {
         return $this->added;
     }
 
     /**
-     * Set updated
-     *
-     * @param \DateTime $updated
+     * @param \DateTime|null $updated
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setUpdated($updated)
+    public function setUpdated(?\DateTime $updated)
     {
         $this->updated = $updated;
 
@@ -737,33 +646,27 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get updated
-     *
-     * @return \DateTime
+     * @return \DateTime|null
      */
-    public function getUpdated()
+    public function getUpdated(): ?\DateTime
     {
         return $this->updated;
     }
 
     /**
-     * Get idGreenpointAttachmentDetail
-     *
-     * @return integer
+     * @return int
      */
-    public function getIdGreenpointAttachmentDetail()
+    public function getIdGreenpointAttachmentDetail(): int
     {
         return $this->idGreenpointAttachmentDetail;
     }
 
     /**
-     * Set idGreenpointAttachment
-     *
-     * @param \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $idGreenpointAttachment
+     * @param GreenpointAttachment $idGreenpointAttachment
      *
      * @return GreenpointAttachmentDetail
      */
-    public function setIdGreenpointAttachment(\Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment $idGreenpointAttachment = null)
+    public function setIdGreenpointAttachment(GreenpointAttachment $idGreenpointAttachment): GreenpointAttachmentDetail
     {
         $this->idGreenpointAttachment = $idGreenpointAttachment;
 
@@ -771,11 +674,9 @@ class GreenpointAttachmentDetail
     }
 
     /**
-     * Get idGreenpointAttachment
-     *
-     * @return \Unilend\Bundle\CoreBusinessBundle\Entity\GreenpointAttachment
+     * @return GreenpointAttachment
      */
-    public function getIdGreenpointAttachment()
+    public function getIdGreenpointAttachment(): GreenpointAttachment
     {
         return $this->idGreenpointAttachment;
     }
@@ -783,7 +684,7 @@ class GreenpointAttachmentDetail
     /**
      * @ORM\PrePersist
      */
-    public function setAddedValue()
+    public function setAddedValue(): void
     {
         if (! $this->added instanceof \DateTime || 1 > $this->getAdded()->getTimestamp()) {
             $this->added = new \DateTime();
@@ -793,7 +694,7 @@ class GreenpointAttachmentDetail
     /**
      * @ORM\PreUpdate
      */
-    public function setUpdatedValue()
+    public function setUpdatedValue(): void
     {
         $this->updated = new \DateTime();
     }
