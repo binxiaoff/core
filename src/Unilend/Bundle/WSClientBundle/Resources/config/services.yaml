@@ -3,13 +3,12 @@ services:
         autowire: true
         autoconfigure: true
         public: false
+        bind:
+            $logger: '@monolog.logger.wsclient'
 
     Unilend\Bundle\WSClientBundle\:
         resource: '%kernel.project_dir%/src/Unilend/Bundle/WSClientBundle/*'
         exclude: '%kernel.project_dir%/src/Unilend/Bundle/WSClientBundle/Entity'
-
-    # use the dedicated log channel for WSClient bundle
-    logger: '@monolog.logger.wsclient'
 
     Unilend\Bundle\WSClientBundle\Service\CallHistoryManager:
         arguments:
