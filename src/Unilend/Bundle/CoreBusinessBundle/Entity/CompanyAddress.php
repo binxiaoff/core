@@ -46,9 +46,9 @@ class CompanyAddress
     /**
      * @var string
      *
-     * @ORM\Column(name="insee", type="string", length=16, nullable=true)
+     * @ORM\Column(name="cog", type="string", length=5, nullable=true)
      */
-    private $insee;
+    private $cog;
 
     /**
      * @var string
@@ -200,13 +200,13 @@ class CompanyAddress
     }
 
     /**
-     * @param string|null $insee
+     * @param string|null $cog
      *
      * @return CompanyAddress
      */
-    public function setInsee(?string $insee): CompanyAddress
+    public function setCog(?string $cog): CompanyAddress
     {
-        $this->insee = $insee;
+        $this->cog = $cog;
 
         return $this;
     }
@@ -214,9 +214,9 @@ class CompanyAddress
     /**
      * @return string|null
      */
-    public function getInsee(): ?string
+    public function getCog(): ?string
     {
-        return $this->insee;
+        return $this->cog;
     }
 
     /**

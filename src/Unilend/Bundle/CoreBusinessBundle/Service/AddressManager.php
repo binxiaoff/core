@@ -119,7 +119,7 @@ class AddressManager
             $newAddress = $this->createCompanyAddress($company, $address, $zip, $city, $country, $type);
 
             if (AddressType::TYPE_MAIN_ADDRESS === $type->getLabel()) {
-                $this->addInseeToLenderAddress($newAddress);
+                $this->addCogToLenderAddress($newAddress);
             }
         }
 
@@ -401,7 +401,7 @@ class AddressManager
             $newAddress = $this->createClientAddress($client, $address, $zip, $city, $country, $type);
 
             if (AddressType::TYPE_MAIN_ADDRESS === $type->getLabel()) {
-                $this->addInseeToLenderAddress($newAddress);
+                $this->addCogToLenderAddress($newAddress);
             }
         }
 
@@ -553,13 +553,13 @@ class AddressManager
     }
 
     /**
-     * Method to change to private once RUN-3156 is closed
+     * Method to change to private once RUN-3156 is closed and all French addresses have COG value
      * @param ClientAddress|CompanyAddress $address
      *
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function addInseeToLenderAddress($address): void
+    public function addCogToLenderAddress($address): void
     {
         if ($address instanceof ClientAddress && false === $address->getIdClient()->isLender()) {
             throw new \InvalidArgumentException('Address is no lender address');
@@ -571,9 +571,9 @@ class AddressManager
 
         if ($address->getIdCountry()->getIdPays() === Pays::COUNTRY_FRANCE || in_array($address->getIdCountry()->getIdPays(), Pays::FRANCE_DOM_TOM)) {
             $inseeCode = $this->locationManager->getInseeCode($address->getZip(), $address->getCity());
-            $inseeCode = $inseeCode ?? null;
+            $inseeCode = false !== $inseeCode ? $inseeCode : null;
 
-            $address->setInsee($inseeCode);
+            $address->setCog($inseeCode);
             $this->entityManager->flush($address);
         }
     }

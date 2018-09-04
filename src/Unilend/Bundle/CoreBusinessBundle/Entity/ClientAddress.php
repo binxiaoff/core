@@ -46,9 +46,9 @@ class ClientAddress
     /**
      * @var string
      *
-     * @ORM\Column(name="insee", type="string", length=16, nullable=true)
+     * @ORM\Column(name="cog", type="string", length=5, nullable=true)
      */
-    private $insee;
+    private $cog;
 
     /**
      * @var \DateTime
@@ -184,13 +184,13 @@ class ClientAddress
     }
 
     /**
-     * @param string|null $insee
+     * @param string|null $cog
      *
      * @return ClientAddress
      */
-    public function setInsee(?string $insee): ClientAddress
+    public function setCog(?string $cog): ClientAddress
     {
-        $this->insee = $insee;
+        $this->cog = $cog;
 
         return $this;
     }
@@ -198,9 +198,9 @@ class ClientAddress
     /**
      * @return string|null
      */
-    public function getInsee(): ?string
+    public function getCog(): ?string
     {
-        return $this->insee;
+        return $this->cog;
     }
 
     /**
