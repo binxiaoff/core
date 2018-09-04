@@ -14,6 +14,27 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
 {
     const PATH = 'pdf' . DIRECTORY_SEPARATOR . 'cgv_preteurs';
 
+    const LEGAL_ENTITY_PLACEHOLDERS = [
+        '[Civilite]',
+        '[Prenom]',
+        '[Nom]',
+        '[Fonction]',
+        '[Raison_sociale]',
+        '[SIREN]',
+        '[adresse_fiscale]',
+        '[date_validation_cgv]'
+    ];
+
+    const NATURAL_PERSON_PLACEHOLDERS = [
+        '[Civilite]',
+        '[Prenom]',
+        '[Nom]',
+        '[date]',
+        '[ville_naissance]',
+        '[adresse_fiscale]',
+        '[date_validation_cgv]'
+    ];
+
     /** @var EntityManager */
     private $entityManager;
     /** @var Filesystem */
@@ -277,5 +298,28 @@ class LenderTermsOfSaleGenerator implements DocumentGeneratorInterface
     private function replacePlaceHolders(array $placeholders, string $content): string
     {
         return str_replace(array_keys($placeholders), $placeholders, $content);
+    }
+
+    /**
+     * @param int    $idTree
+     * @param string $type
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getNonPersonalizedContent(int $idTree, string $type): array
+    {
+        $content = $this->getContent($idTree);
+
+        if (false === empty($type)) {
+            $replacements = explode(';', $content['contenu-variables-par-defaut-morale']);
+            $content['debtCollectionContract'] = str_replace(self::LEGAL_ENTITY_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement-personne-morale']);
+
+        } else {
+            $replacements = explode(';', $content['contenu-variables-par-defaut']);
+            $content['debtCollectionContract'] = str_replace(self::NATURAL_PERSON_PLACEHOLDERS, $replacements, $content['mandat-de-recouvrement']);
+        }
+
+        return $content;
     }
 }

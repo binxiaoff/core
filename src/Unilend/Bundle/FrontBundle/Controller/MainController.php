@@ -250,41 +250,6 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/cgv_preteurs/{type}", name="lenders_terms_of_sales", requirements={"type": "morale"})
-     *
-     * @param string $type
-     *
-     * @return Response
-     */
-    public function lenderTermsOfSalesAction(string $type = ''): Response
-    {
-        /** @var EntityManagerSimulator $entityManagerSimulator */
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        $termsOfSaleManager     = $this->get('unilend.service.terms_of_sale_manager');
-
-        $user   = $this->getUser();
-
-        if ($user instanceof UserLender) {
-            /** @var \clients $client */
-            $client = $entityManagerSimulator->getRepository('clients');
-            $client->get($user->getClientId());
-
-            if (in_array($client->type, [Clients::TYPE_LEGAL_ENTITY, Clients::TYPE_LEGAL_ENTITY_FOREIGNER])) {
-                $idTree = $termsOfSaleManager->getCurrentVersionForLegalEntity();
-            } else {
-                $idTree = $termsOfSaleManager->getCurrentVersionForPerson();
-            }
-        }
-
-        /** @var \tree $tree */
-        $tree = $entityManagerSimulator->getRepository('tree');
-        $tree->get(['id_tree' => $idTree]);
-        $this->setCmsSeoData($tree);
-
-        return $this->renderTermsOfUse($tree, $type);
-    }
-
-    /**
      * @param Request $request
      *
      * @return Response
@@ -329,7 +294,7 @@ class MainController extends Controller
         } else {
             $finalElements = $cachedItem->get();
         }
-        $this->setCmsSeoData($tree);
+        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
 
         switch ($tree->id_template) {
             case self::CMS_TEMPLATE_BIG_HEADER:
@@ -339,7 +304,7 @@ class MainController extends Controller
             case self::CMS_TEMPLATE_BORROWER_LANDING_PAGE:
                 return $this->renderBorrowerLandingPage($request, $finalElements['content'], $finalElements['complement']);
             case self::CMS_TEMPLATE_TOS:
-                return $this->renderTermsOfUse($tree);
+                return $this->redirectToRoute('lenders_terms_of_sales');
             default:
                 return new RedirectResponse('/');
         }
@@ -478,190 +443,6 @@ class MainController extends Controller
     }
 
     /**
-     * @param \tree  $tree
-     * @param string $lenderType
-     *
-     * @return Response
-     */
-    private function renderTermsOfUse(\tree $tree, string $lenderType = ''): Response
-    {
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var EntityManager $entityManager */
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        /** @var \acceptations_legal_docs $acceptedTermsOfUse */
-        $acceptedTermsOfUse = $entityManagerSimulator->getRepository('acceptations_legal_docs');
-
-        /** @var \tree_elements $treeElements */
-        $treeElements = $entityManagerSimulator->getRepository('tree_elements');
-        /** @var \elements $elements */
-        $elements = $entityManagerSimulator->getRepository('elements');
-
-        $content = [];
-        foreach ($treeElements->select('id_tree = "' . $tree->id_tree . '" AND id_langue = "fr"') as $elt) {
-            $elements->get($elt['id_element']);
-            $content[$elements->slug]                = $elt['value'];
-            $template['complement'][$elements->slug] = $elt['complement'];
-        }
-
-        $template = [
-            'main_content' => $content['contenu-cgu']
-        ];
-
-        /** @var UserLender $user */
-        $user             = $this->getUser();
-        $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-
-        if (
-            $this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
-            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
-            && null !== $client = $clientRepository->find($user->getClientId())
-        ) {
-            $dateAccept   = '';
-            $userAccepted = $acceptedTermsOfUse->select('id_client = ' . $client->getIdClient() . ' AND id_legal_doc = ' . $tree->id_tree, 'added DESC', 0, 1);
-
-            if (false === empty($userAccepted)) {
-                $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($userAccepted[0]['added']));
-            }
-            /** @var \settings $settings */
-            $settings = $entityManagerSimulator->getRepository('settings');
-            $settings->get('Date nouvelles CGV avec 2 mandats', 'type');
-            $newTermsOfServiceDate = $settings->value;
-
-            $wallet = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-
-            /** @var \loans $oLoans */
-            $loans      = $entityManagerSimulator->getRepository('loans');
-            $loansCount = $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate . '"');
-
-            if ($client->isNaturalPerson()) {
-                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret'] : $content['mandat-de-recouvrement'];
-                $this->getTOSReplacementsForPerson($client, $dateAccept, $mandateContent, $template);
-            } else {
-                $mandateContent = $loansCount > 0 ? $content['mandat-de-recouvrement-avec-pret-personne-morale'] : $content['mandat-de-recouvrement-personne-morale'];
-                $this->getTOSReplacementsForLegalEntity($client, $dateAccept, $mandateContent, $template);
-            }
-        } elseif ($lenderType !== '') {
-            $template['recovery_mandate'] = str_replace(
-                [
-                    '[Civilite]',
-                    '[Prenom]',
-                    '[Nom]',
-                    '[Fonction]',
-                    '[Raison_sociale]',
-                    '[SIREN]',
-                    '[adresse_fiscale]',
-                    '[date_validation_cgv]'
-                ],
-                explode(';', $content['contenu-variables-par-defaut-morale']),
-                $content['mandat-de-recouvrement-personne-morale']
-            );
-        } else {
-            $template['recovery_mandate'] = str_replace(
-                [
-                    '[Civilite]',
-                    '[Prenom]',
-                    '[Nom]',
-                    '[date]',
-                    '[ville_naissance]',
-                    '[adresse_fiscale]',
-                    '[date_validation_cgv]'
-                ],
-                explode(';', $content['contenu-variables-par-defaut']),
-                $content['mandat-de-recouvrement']
-            );
-        }
-
-        $cms = [
-            'title'         => $tree->title,
-            'header_image'  => $tree->img_menu,
-            'left_content'  => '',
-            'right_content' => $template
-        ];
-
-        return $this->render('cms_templates/template_cgv.html.twig', ['cms' => $cms]);
-    }
-
-    /**
-     * @param Clients $client
-     * @param string  $dateAccept
-     * @param string  $content
-     * @param array   $template
-     **/
-    private function getTOSReplacementsForPerson(Clients $client, string $dateAccept, string $content, array &$template): void
-    {
-        $entityManager = $this->get('doctrine.orm.entity_manager');
-        $clientAddress = $client->getIdAddress();
-
-        if (null === $clientAddress) {
-            try {
-                $clientAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:ClientAddress')->findLastModifiedNotArchivedAddressByType($client, AddressType::TYPE_MAIN_ADDRESS);
-            } catch (\Exception $exception) {
-                $this->get('logger')->error('An exception occurred while getting main client address for ' . $client->getIdClient() . '. Terms of Use could not be generated. Message: ' . $exception->getMessage(), [
-                    'file'      => $exception->getFile(),
-                    'line'      => $exception->getLine(),
-                    'class'     => __CLASS__,
-                    'function'  => __FUNCTION__,
-                    'id_client' => $client->getIdClient()
-                ]);
-                exit;
-            }
-        }
-
-        $keyWords = [
-            '[Civilite]'            => $client->getCivilite(),
-            '[Prenom]'              => $client->getPrenom(),
-            '[Nom]'                 => $client->getNom(),
-            '[date]'                => $client->getNaissance()->format('d/m/Y'),
-            '[ville_naissance]'     => $client->getVilleNaissance(),
-            '[adresse_fiscale]'     => null === $clientAddress ? '' : $clientAddress->getAddress() . ', ' . $clientAddress->getZip() . ', ' . $clientAddress->getCity() . ', ' . $clientAddress->getIdCountry()->getFr(),
-            '[date_validation_cgv]' => $dateAccept
-        ];
-
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
-    }
-
-    /**
-     * @param Clients $client
-     * @param string  $dateAccept
-     * @param string  $content
-     * @param array   $template
-     */
-    private function getTOSReplacementsForLegalEntity(Clients $client, string $dateAccept, string $content, array &$template): void
-    {
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
-        $companyAddress = $company->getIdAddress();
-
-        if (null === $companyAddress) {
-            try {
-                $companyAddress = $entityManager->getRepository('UnilendCoreBusinessBundle:CompanyAddress')->findLastModifiedNotArchivedAddressByType($company, AddressType::TYPE_MAIN_ADDRESS);
-            } catch (\Exception $exception) {
-                $this->get('logger')->error('An exception occurred while getting main company address for ' . $company->getIdCompany() . '. Terms of Use could not be generated. Message: ' . $exception->getMessage(), [
-                    'file'       => $exception->getFile(),
-                    'line'       => $exception->getLine(),
-                    'class'      => __CLASS__,
-                    'method'     => __FUNCTION__,
-                    'id_company' => $company->getIdCompany()
-                ]);
-                exit;
-            }
-        }
-
-        $keyWords = [
-            '[Civilite]'            => $client->getCivilite(),
-            '[Prenom]'              => $client->getPrenom(),
-            '[Nom]'                 => $client->getNom(),
-            '[Fonction]'            => $client->getFonction(),
-            '[Raison_sociale]'      => $company->getName(),
-            '[SIREN]'               => $company->getSiren(),
-            '[adresse_fiscale]'     => null === $companyAddress ? '' : $companyAddress->getAddress() . ', ' . $companyAddress->getZip() . ', ' . $companyAddress->getCity() . ', ' . $companyAddress->getIdCountry()->getFr(),
-            '[date_validation_cgv]' => $dateAccept
-        ];
-
-        $template['recovery_mandate'] = str_replace(array_keys($keyWords), array_values($keyWords), $content);
-    }
-
-    /**
      * @param string|null $route
      *
      * @return Response
@@ -731,7 +512,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'qui-sommes-nous']);
-        $this->setCmsSeoData($tree);
+        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
         $response = $this->render('static_pages/about_us.html.twig');
 
         $finalElements = [
@@ -783,7 +564,7 @@ class MainController extends Controller
             'date'  => $date->format('Y-m-d')
         ];
 
-        $this->setCmsSeoData($tree);
+        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
         $response = $this->render('static_pages/statistics.html.twig', $template);
 
         $finalElements = [
@@ -846,7 +627,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'indicateurs-de-performance']);
-        $this->setCmsSeoData($tree);
+        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
 
         $finalElements = [
             'contenu'      => $response->getContent(),
@@ -919,93 +700,6 @@ class MainController extends Controller
     }
 
     /**
-     * @Route("/cgv-popup", name="lender_tos_popup", condition="request.isXmlHttpRequest()")
-     * @Security("has_role('ROLE_LENDER')")
-     *
-     * @param Request $request
-     *
-     * @return JsonResponse|Response
-     */
-    public function lastTermsOfServiceAction(Request $request): Response
-    {
-        $entityManager          = $this->get('doctrine.orm.entity_manager');
-        $entityManagerSimulator = $this->get('unilend.service.entity_manager');
-        /** @var UserLender $user */
-        $user            = $this->getUser();
-        $client          = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($user->getClientId());
-        $tosDetails      = '';
-        $newsletterOptIn = true;
-
-        if (null !== $client) {
-            $newsletterOptIn = empty($client->getOptin1());
-
-            if ($request->isMethod(Request::METHOD_GET)) {
-                $elementSlug = 'tos-new';
-                /** @var \acceptations_legal_docs $acceptationsTos */
-                $acceptationsTos = $entityManagerSimulator->getRepository('acceptations_legal_docs');
-
-                if ($acceptationsTos->exist($client->getIdClient(), 'id_client')) {
-                    $wallet                = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->getIdClient(), WalletType::LENDER);
-                    $newTermsOfServiceDate = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Date nouvelles CGV avec 2 mandats'])->getValue();
-                    /** @var \loans $loans */
-                    $loans = $entityManagerSimulator->getRepository('loans');
-
-                    if (0 < $loans->counter('id_lender = ' . $wallet->getId() . ' AND added < "' . $newTermsOfServiceDate . '"')) {
-                        $elementSlug = 'tos-update-lended';
-                    } else {
-                        $elementSlug = 'tos-update';
-                    }
-                }
-
-                /** @var \elements $elements */
-                $elements = $entityManagerSimulator->getRepository('elements');
-
-                if ($elements->get($elementSlug, 'slug')) {
-                    /** @var \blocs_elements $blockElement */
-                    $blockElement = $entityManagerSimulator->getRepository('blocs_elements');
-
-                    if ($blockElement->get($elements->id_element, 'id_element')) {
-                        $tosDetails = $blockElement->value;
-                    } else {
-                        $this->get('logger')->error('The block element ID: ' . $elements->id_element . ' doesn\'t exist');
-                    }
-                } else {
-                    $this->get('logger')->error('The element slug: ' . $elementSlug . ' doesn\'t exist');
-                }
-            } elseif ($request->isMethod(Request::METHOD_POST)) {
-                if ('true' === $request->request->get('terms')) {
-                    try {
-                        $this->get('unilend.service.terms_of_sale_manager')->acceptCurrentVersion($client);
-                    } catch (OptimisticLockException $exception) {
-                        $this->get('logger')->error('TOS could not be accepted by lender ' . $client->getIdClient() . ' - Message: ' . $exception->getMessage(), [
-                            'id_client' => $client->getIdClient(),
-                            'class'     => __CLASS__,
-                            'function'  => __FUNCTION__,
-                            'file'      => $exception->getFile(),
-                            'line'      => $exception->getLine()
-                        ]);
-                    }
-                }
-
-                if ($newsletterOptIn) {
-                    if ('true' === $request->request->get('newsletterOptIn')) {
-                        $this->get(NewsletterManager::class)->subscribeNewsletter($client, $request->getClientIp());
-                    } else {
-                        $this->get(NewsletterManager::class)->unsubscribeNewsletter($client, $request->getClientIp());
-                    }
-                }
-
-                return $this->json([]);
-            }
-        }
-
-        return $this->render('partials/lender_tos_popup.html.twig', [
-            'tosDetails'      => $tosDetails,
-            'newsletterOptIn' => $newsletterOptIn
-        ]);
-    }
-
-    /**
      * @Route("/temoignages", name="testimonials")
      *
      * @return Response
@@ -1019,7 +713,7 @@ class MainController extends Controller
         /** @var \tree $tree */
         $tree = $entityManagerSimulator->getRepository('tree');
         $tree->get(['slug' => 'temoignages']);
-        $this->setCmsSeoData($tree);
+        $this->get('unilend.frontbundle.seo_manager')->setCmsSeoData($tree);
 
         $template['testimonialPeople'] = $testimonialService->getBorrowerBattenbergTestimonials(false);
         $response                      = $this->render('static_pages/testimonials.html.twig', $template);
@@ -1051,30 +745,5 @@ class MainController extends Controller
             ];
         }
         return $dataForTreeMap;
-    }
-
-    /**
-     * @param \tree $tree
-     */
-    private function setCmsSeoData(\tree $tree)
-    {
-        /** @var SeoPage $seoPage */
-        $seoPage = $this->get('sonata.seo.page');
-
-        if (false === empty($tree->meta_title)) {
-            $seoPage->setTitle($tree->meta_title);
-        }
-
-        if (false === empty($tree->meta_description)) {
-            $seoPage->addMeta('name', 'description', $tree->meta_description);
-        }
-
-        if (false === empty($tree->meta_keywords)) {
-            $seoPage->addMeta('name', 'keywords', $tree->meta_keywords);
-        }
-
-        if (empty($tree->indexation)) {
-            $seoPage->addMeta('name', 'robots', 'noindex');
-        }
     }
 }
