@@ -37,6 +37,12 @@ framework:
     validation:
         enabled: true
 
+sensio_framework_extra:
+    router:
+        # Enabling the “sensio_framework_extra.router.annotations” configuration is deprecated
+        # It was enabled by default. And there’s a pull request to make it disabled by default.
+        annotations: false
+
 cmf_routing:
     chain:
         routers_by_id:
@@ -126,14 +132,14 @@ doctrine_mongodb:
             server: "%mongodb_server%"
             options:
                 authMechanism:  SCRAM-SHA-1
-                authSource:     admin
+                authSource:     "%mongodb_auth_source%"
                 connect:        true
-                ssl:            true
+                ssl:            "%mongodb_ssl_connect%"
                 password:       "%mongodb_password%"
                 username:       "%mongodb_username%"
                 readPreference: secondaryPreferred
                 replicaSet:     "%mongodb_replica_set_name%"
-    default_database: 'ws_call_%kernel.environment%'
+    default_database: "%mongodb_default_database%"
     document_managers:
         default:
             auto_mapping: true
@@ -243,6 +249,10 @@ unilend_translation:
             path: "%kernel.cache_dir%/translations"
 
 services:
+    # Define the memcache adaptor as the application default cache globally in order to have the right adaptor when autowiring Psr\Cache\CacheItemPoolInterface
+    # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
+    # It can be removed once TECH-333 will be done.
+    cache.app: '@memcache.default'
     twig.extension.text:
         class: Twig_Extensions_Extension_Text
         tags:
@@ -304,7 +314,6 @@ eight_points_guzzle:
             options:
                 timeout: 16
                 http_errors: false
-
         codinf:
             base_url: "%codinf.url%"
             options:
@@ -321,6 +330,12 @@ eight_points_guzzle:
         google_recaptcha:
             base_url: "%google.recaptcha_url%"
             options:
+                http_errors: false
+        greenpoint:
+            base_url: "%greenpoint.url%"
+            options:
+                headers:
+                    Accept: "application/json"
                 http_errors: false
 
 cl_slack:

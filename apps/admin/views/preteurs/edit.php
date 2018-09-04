@@ -413,75 +413,72 @@
                 <h2>Suivi des enchères</h2>
             </div>
             <div class="col-md-6 text-right">
-
-                    <select name="annee" id="annee" class="select" style="width:95px; height: 30px">
-                        <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
-                            <option <?= (isset($this->params[1]) && $this->params[1] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
-                        <?php endfor; ?>
-                    </select>
-                    <a id="changeDate" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->params[0] ?>/2013" class="btn-primary">OK</a>
+                <select name="annee" id="annee" class="select" style="width:95px; height: 30px">
+                    <?php for ($i = date('Y'); $i >= 2008; $i--) : ?>
+                        <option <?= (isset($this->params[1]) && $this->params[1] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+                <a id="changeDate" href="<?= $this->lurl ?>/preteurs/edit/<?= $this->params[0] ?>/2013" class="btn-primary">OK</a>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
-            <?php if (count($this->lEncheres) > 0) : ?>
-            <table class="tablesorter encheres">
-                <thead>
-                    <tr>
-                        <th>Année</th>
-                        <th>Projet</th>
-                        <th>Montant prêt (€)</th>
-                        <th>Pourcentage</th>
-                        <th>Nombre de mois</th>
-                        <th>Remboursement (€)</th>
-                        <th>Contrat</th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php
-                $i = 1;
-                foreach ($this->lEncheres as $e) :
-                    $year = $this->formatDate($e['added'], 'Y');
-                    $this->projects->get($e['id_project'], 'id_project');
-                    $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
-                ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td align="center"><?= $year ?></td>
-                        <td>
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
-                        </td>
-                        <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
-                        <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                        <td align="center"><?= $this->projects->period ?></td>
-                        <td align="center"><?= $this->ficelle->formatNumber($sumMontant, 2) ?></td>
-                        <td align="center">
-                            <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $e['id_loan'] ?>">PDF</a>
-                        </td>
-                    </tr>
-                    <?php
-                    $i++;
-                endforeach; ?>
-                </tbody>
-            </table>
-            <?php if ($this->nb_lignes != '') : ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                            <input type="text" class="pagedisplay"/>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
-        <?php endif; ?>
+                <?php if (count($this->lEncheres) > 0) : ?>
+                    <table class="tablesorter encheres">
+                        <thead>
+                            <tr>
+                                <th>Année</th>
+                                <th>Projet</th>
+                                <th>Montant prêt (€)</th>
+                                <th>Pourcentage</th>
+                                <th>Nombre de mois</th>
+                                <th>Remboursement (€)</th>
+                                <th>Contrat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        $i = 1;
+                        foreach ($this->lEncheres as $e) :
+                            $year = $this->formatDate($e['added'], 'Y');
+                            $this->projects->get($e['id_project'], 'id_project');
+                            $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
+                        ?>
+                            <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
+                                <td align="center"><?= $year ?></td>
+                                <td>
+                                    <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title ?></a>
+                                </td>
+                                <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
+                                <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                <td align="center"><?= $this->projects->period ?></td>
+                                <td align="center"><?= $this->ficelle->formatNumber($sumMontant, 2) ?></td>
+                                <td align="center">
+                                    <a href="<?= $this->lurl ?>/protected/contrat/<?= $this->clients->hash ?>/<?= $e['id_loan'] ?>">PDF</a>
+                                </td>
+                            </tr>
+                            <?php $i++; ?>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php if ($this->nb_lignes != '') : ?>
+                        <table>
+                            <tr>
+                                <td id="pager">
+                                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                                    <input type="text" class="pagedisplay"/>
+                                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                                    <select class="pagesize">
+                                        <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    <?php endif; ?>
+                <?php endif; ?>
             </div>
         </div>
     <?php endif; ?>
-
 </div>

@@ -2,9 +2,9 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
+use Doctrine\ORM\EntityManager;
 use Sonata\CacheBundle\Adapter\SymfonyCache;
 use Symfony\Component\Translation\Translator;
-use Doctrine\ORM\EntityManager;
 use Unilend\Bundle\CoreBusinessBundle\Entity\Translations;
 
 class TranslationManager
@@ -17,29 +17,19 @@ class TranslationManager
     private $symfonyCache;
     /** @var string */
     private $defaultLocale;
-    /** @var string */
-    private $cacheDirectory;
 
     /**
      * @param EntityManager $entityManager
      * @param Translator    $translator
      * @param SymfonyCache  $symfonyCache
      * @param string        $defaultLocale
-     * @param string        $cacheDirectory
      */
-    public function __construct(
-        EntityManager $entityManager,
-        Translator $translator,
-        SymfonyCache $symfonyCache,
-        $defaultLocale,
-        $cacheDirectory
-    )
+    public function __construct(EntityManager $entityManager, Translator $translator, SymfonyCache $symfonyCache, string $defaultLocale)
     {
-        $this->entityManager  = $entityManager;
-        $this->translator     = $translator;
-        $this->symfonyCache   = $symfonyCache;
-        $this->defaultLocale  = $defaultLocale;
-        $this->cacheDirectory = $cacheDirectory;
+        $this->entityManager = $entityManager;
+        $this->translator    = $translator;
+        $this->symfonyCache  = $symfonyCache;
+        $this->defaultLocale = $defaultLocale;
     }
 
     /**
@@ -158,7 +148,7 @@ class TranslationManager
         foreach ($allTranslation as $domain => $translations) {
             foreach ($translations as $label => $translation) {
                 if (substr($label, 0, $length) === $section) {
-                    $translationLabelWithoutSection = substr($label, $length);
+                    $translationLabelWithoutSection                          = substr($label, $length);
                     $translationsForSection[$translationLabelWithoutSection] = $translation;
                 }
             }

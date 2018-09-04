@@ -590,4 +590,35 @@ class CompaniesActifPassif
     {
         return $this->idActifPassif;
     }
+
+    /**
+     * @return float
+     */
+    public function getTotalAssets(): float
+    {
+        $totalAssets = bcadd($this->creancesClients, $this->disponibilites, 4);
+        $totalAssets = bcadd($totalAssets, $this->valeursMobilieresDePlacement, 4);
+        $totalAssets = bcadd($totalAssets, $this->comptesRegularisationActif, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsCorporelles, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsIncorporelles, 4);
+        $totalAssets = bcadd($totalAssets, $this->immobilisationsFinancieres, 4);
+        $totalAssets = bcadd($totalAssets, $this->stocks, 4);
+
+        return round($totalAssets, 2);
+    }
+
+    /**
+     * @return float
+     */
+    public function getTotalDebts(): float
+    {
+        $totalDebts = bcadd($this->capitauxPropres, $this->provisionsPourRisquesEtCharges, 4);
+        $totalDebts = bcadd($totalDebts, $this->amortissementSurImmo, 4);
+        $totalDebts = bcadd($totalDebts, $this->dettesFinancieres, 4);
+        $totalDebts = bcadd($totalDebts, $this->dettesFournisseurs, 4);
+        $totalDebts = bcadd($totalDebts, $this->autresDettes, 4);
+        $totalDebts = bcadd($totalDebts, $this->comptesRegularisationPassif, 4);
+
+        return round($totalDebts, 2);
+    }
 }
