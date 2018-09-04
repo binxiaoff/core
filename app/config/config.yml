@@ -249,6 +249,10 @@ unilend_translation:
             path: "%kernel.cache_dir%/translations"
 
 services:
+    # Define the memcache adaptor as the application default cache globally in order to have the right adaptor when autowiring Psr\Cache\CacheItemPoolInterface
+    # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
+    # It can be removed once TECH-333 will be done.
+    cache.app: '@memcache.default'
     twig.extension.text:
         class: Twig_Extensions_Extension_Text
         tags:
