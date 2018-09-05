@@ -1,6 +1,6 @@
 security:
     encoders:
-        Unilend\Bundle\FrontBundle\Security\User\BaseUser:
+        Unilend\Bundle\CoreBusinessBundle\Entity\Clients:
             id: Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder
         md5:
             algorithm: md5
@@ -21,6 +21,7 @@ security:
             guard:
                 authenticators:
                     - Unilend\Bundle\FrontBundle\Security\LoginAuthenticator
+            user_checker: Unilend\Bundle\FrontBundle\Security\User\UserChecker
             logout:
                 path: logout
                 target: /

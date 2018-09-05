@@ -316,7 +316,7 @@ class ProjectStatusManager
                 $abandonReason    = $this->entityManager->getRepository('UnilendCoreBusinessBundle:ProjectAbandonReason')
                     ->findBy(['label' => ProjectAbandonReason::OTHER_PROJECT_OF_SAME_COMPANY_REJECTED]);
                 $previousProjects = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects')
-                    ->findBySirenAndStatus($project->getIdCompany()->getSiren(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST], $project->getAdded());
+                    ->findBySiren($project->getIdCompany()->getSiren(), [ProjectsStatus::IMPOSSIBLE_AUTO_EVALUATION, ProjectsStatus::INCOMPLETE_REQUEST, ProjectsStatus::COMPLETE_REQUEST], $project->getAdded());
 
                 foreach ($previousProjects as $previousProject) {
                     $this->abandonProject($previousProject, $abandonReason, $user);

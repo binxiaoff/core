@@ -9,66 +9,66 @@ use Symfony\Component\HttpFoundation\{RedirectResponse, Request, Response, Strea
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, ClientsStatus, EcheanciersEmprunteur, Factures, OperationSubType, OperationType, ProjectsStatus, Users, Virements, WalletType};
+use Symfony\Component\Security\Core\User\UserInterface;
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies, Factures, OperationSubType, OperationType, Projects, ProjectsStatus, Users, Virements, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
-use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 
+// Must have ROLE_BORROWER to access to these pages
 class BorrowerAccountController extends Controller
 {
     /**
      * @Route("/espace-emprunteur/projets", name="borrower_account_projects")
      * @Template("borrower_account/projects.html.twig")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return array
      */
-    public function projectsAction(Request $request): array
+    public function projectsAction(Request $request, ?UserInterface $client): array
     {
-        $projectsPreFunding  = $this->getProjectsPreFunding();
-        $projectsFunding     = $this->getProjectsFunding();
-        $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsPreFunding  = $this->getProjectsPreFunding($client);
+        $projectsFunding     = $this->getProjectsFunding($client);
+        $projectsPostFunding = $this->getProjectsPostFunding($client);
 
         return [
-            'pre_funding_projects'  => $projectsPreFunding,
-            'funding_projects'      => $projectsFunding,
-            'post_funding_projects' => $projectsPostFunding,
-            'closing_projects'      => $request->getSession()->get('closingProjects')
+            'pre_funding_projects'   => $projectsPreFunding,
+            'funding_projects'       => $projectsFunding,
+            'post_funding_projects'  => $projectsPostFunding
         ];
     }
 
     /**
      * @Route("/espace-emprunteur/cloture-projet", name="borrower_account_close_project", methods={"POST"})
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return RedirectResponse
      */
-    public function closeFundingProjectAction(Request $request): RedirectResponse
+    public function closeFundingProjectAction(Request $request, ?UserInterface $client): RedirectResponse
     {
         if ($request->request->get('project')) {
-            /** @var \projects $project */
-            $project   = $this->get('unilend.service.entity_manager')->getRepository('projects');
-            $projectId = $request->request->get('project');
+            $entityManager = $this->get('doctrine.orm.entity_manager');
+            $projectId     = $request->request->getDigits('project');
+            /** @var Projects $project */
+            $project = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->find($projectId);
+            $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
 
-            if (
-                filter_var($projectId, FILTER_VALIDATE_INT)
-                && $project->get($projectId)
-                && $project->id_company == $this->getCompany()->id_company
-            ) {
+            if ($project && $project->getIdCompany() === $company) {
                 $session = $request->getSession();
 
-                $closingProjects                       = $session->get('closingProjects', []);
-                $closingProjects[$project->id_project] = true;
+                $closingProjects                           = $session->get('closingProjects', []);
+                $closingProjects[$project->getIdProject()] = true;
 
                 $session->set('closingProjects', $closingProjects);
 
                 $closingDate = new \DateTime();
                 $closingDate->modify('+5 minutes');
 
-                $project->date_retrait = $closingDate->format('Y-m-d H:i:s');
-                $project->update();
+                $project->setDateRetrait($closingDate);
+                $entityManager->flush($project);
             }
         }
 
@@ -77,13 +77,13 @@ class BorrowerAccountController extends Controller
 
     /**
      * @Route("/espace-emprunteur/nouvelle-demande", name="borrower_account_new_demand")
-     * @Template("borrower_account/new_demand.html.twig")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
-     * @return array|Response
+     * @return Response
      */
-    public function newDemandAction(Request $request)
+    public function newDemandAction(Request $request, ?UserInterface $client): Response
     {
         $projectForm = $this->createForm(SimpleProjectType::class);
         $projectForm->handleRequest($request);
@@ -93,6 +93,7 @@ class BorrowerAccountController extends Controller
             $projectManager = $this->get('unilend.service.project_manager');
             $fMinAmount     = $projectManager->getMinProjectAmount();
             $fMaxAmount     = $projectManager->getMaxProjectAmount();
+            $entityManager  = $this->get('doctrine.orm.entity_manager');
 
             $translator = $this->get('translator');
             $error      = false;
@@ -109,15 +110,16 @@ class BorrowerAccountController extends Controller
                 $this->addFlash('error', $translator->trans('borrower-demand_message-error'));
             }
             if (false === $error) {
-                $company               = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Companies')->find($this->getCompany()->id_company);
+                $company               = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
                 $partnerManager        = $this->get('unilend.service.partner_manager');
                 $projectRequestManager = $this->get('unilend.service.project_request_manager');
 
                 $amount    = str_replace([',', ' '], ['.', ''], $formData['amount']);
-                $frontUser = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
+                $frontUser = $entityManager->getRepository('UnilendCoreBusinessBundle:Users')->find(Users::USER_ID_FRONT);
 
                 try {
-                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::COMPLETE_REQUEST, $amount, $formData['duration'], null, $formData['message']);
+                    $project = $projectRequestManager->createProjectByCompany($frontUser, $company, $partnerManager->getDefaultPartner(), ProjectsStatus::COMPLETE_REQUEST, $amount,
+                        $formData['duration'], null, $formData['message']);
                 } catch (\Exception $exception) {
                     $this->addFlash('error', $translator->trans('borrower-demand_error'));
                     $this->get('logger')->error('Project Creation failed. Exception : ' . $exception->getMessage(), [
@@ -141,64 +143,61 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return ['project_form' => $projectForm->createView()];
+        return $this->render('borrower_account/new_demand.html.twig', ['project_form' => $projectForm->createView()]);
     }
 
     /**
      * @Route("/espace-emprunteur/operations", name="borrower_account_operations")
      *
-     * @param Request $request
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
-    public function operationsAction(Request $request): Response
+    public function operationsAction(Request $request, ?UserInterface $client): Response
     {
-        if ($request->query->get('action') === 'export') {
-            return $this->operationsExportCsv($request);
-        }
-
-        if ($request->query->get('action') === 'print') {
-            return $this->operationsPrint($request);
-        }
-
-        $client              = $this->getClient();
-        $projectsPostFunding = $this->getProjectsPostFunding();
+        $projectsPostFunding = $this->getProjectsPostFunding($client);
         $projectsIds         = array_column($projectsPostFunding, 'id_project');
-        $operationTypes      = [
-            OperationType::LENDER_LOAN,
-            OperationType::BORROWER_WITHDRAW,
-            OperationSubType::BORROWER_COMMISSION_FUNDS,
-            OperationSubType::BORROWER_COMMISSION_REPAYMENT,
-            BorrowerOperationsManager::OP_BORROWER_DIRECT_DEBIT,
-            BorrowerOperationsManager::OP_WIRE_TRANSFER_IN,
-            BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
-            BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
-            BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT,
-            OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT
-        ];
+        $filter              = $request->query->get('filter');
+        $entityManager       = $this->get('doctrine.orm.entity_manager');
 
-        if ($request->isXmlHttpRequest()) {
-            $filter = $request->query->get('filter');
+        if (
+            isset($filter['start'], $filter['end'], $filter['op'])
+            && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
+            && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
+        ) {
+            $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
+            $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
+            $operation = filter_var($filter['op'], FILTER_SANITIZE_STRING);
 
-            if (
-                isset($filter['start'], $filter['end'], $filter['op'])
-                && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
-                && 1 === preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
-            ) {
-                $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-                $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-                $operation = filter_var($filter['op'], FILTER_SANITIZE_STRING);
+            if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
+                $projectsIds = [$filter['project']];
+            }
+            $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
 
-                if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
-                    $projectsIds = [$filter['project']];
-                }
-                $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
-                $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
+            $borrowerWallet     = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client, WalletType::BORROWER);
+            $borrowerOperations = $borrowerOperationsManager->getBorrowerOperations($borrowerWallet, $start, $end, $projectsIds, $operation);
 
+            if ($request->query->get('action') === 'export') {
+                return $this->operationsExportCsv($borrowerOperations);
+            }
+
+            if ($request->query->get('action') === 'print') {
+                return $this->operationsPrint($borrowerWallet, $borrowerOperations);
+            }
+
+            if ($request->isXmlHttpRequest()) {
                 return $this->json([
                     'count'         => count($borrowerOperations),
                     'html_response' => $this->render('borrower_account/operations_ajax.html.twig', ['operations' => $borrowerOperations])->getContent()
                 ]);
+            }
+        } else {
+            if ($request->query->get('action') === 'export') {
+                throw new RouteNotFoundException('Invalid operation CSV export parameters');
+            }
+            if ($request->query->get('action') === 'print') {
+                throw new RouteNotFoundException('Invalid operation PDF export parameters');
             }
         }
 
@@ -208,49 +207,26 @@ class BorrowerAccountController extends Controller
         $defaultFilterDate['end']   = $end->format('d/m/Y');
 
         /**** Document tab *********/
-
-        /** @var \projects_pouvoir $projectsPouvoir */
-        $projectsPouvoir = $this->get('unilend.service.entity_manager')->getRepository('projects_pouvoir');
-        /** @var \clients_mandats $clientsMandat */
-        $clientsMandat = $this->get('unilend.service.entity_manager')->getRepository('clients_mandats');
-
-        foreach ($projectsPostFunding as $iKey => $aProject) {
-            $pouvoir = $projectsPouvoir->select('id_project = ' . $aProject['id_project']);
-            if ($pouvoir) {
-                $projectsPostFunding[$iKey]['pouvoir'] = $pouvoir[0];
-            } else {
-                $projectsPostFunding[$iKey]['pouvoir'] = [];
-            }
-
-            $mandat = $clientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
-            if ($mandat) {
-                $projectsPostFunding[$iKey]['mandat'] = $mandat[0];
-            } else {
-                $projectsPostFunding[$iKey]['mandat'] = [];
-            }
-        }
-
         /** @var \factures $oInvoices */
-        $oInvoices       = $this->get('unilend.service.entity_manager')->getRepository('factures');
-        $company         = $this->getCompany();
-        $client          = $this->getClient();
-        $clientsInvoices = $oInvoices->select('id_company = ' . $company->id_company, 'date DESC');
+        $oInvoices = $this->get('unilend.service.entity_manager')->getRepository('factures');
+        /** @var Companies $company */
+        $company         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        $clientsInvoices = $oInvoices->select('id_company = ' . $company->getIdCompany(), 'date DESC');
 
-        foreach ($clientsInvoices as $iKey => $aInvoice) {
-            switch ($aInvoice['type_commission']) {
+        foreach ($clientsInvoices as $index => $invoice) {
+            switch ($invoice['type_commission']) {
                 case Factures::TYPE_COMMISSION_FUNDS:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_funds_commission', ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project']]);
+                    $clientsInvoices[$index]['url'] = $this->generateUrl('borrower_invoice_funds_commission', ['clientHash' => $client->getHash(), 'idProject' => $invoice['id_project']]);
                     break;
                 case Factures::TYPE_COMMISSION_REPAYMENT:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_payment_commission',
-                        ['clientHash' => $client->hash, 'idProject' => $aInvoice['id_project'], 'order' => $aInvoice['ordre']]);
+                    $clientsInvoices[$index]['url'] = $this->generateUrl('borrower_invoice_payment_commission',
+                        ['clientHash' => $client->getHash(), 'idProject' => $invoice['id_project'], 'order' => $invoice['ordre']]);
                     break;
             }
         }
 
-        $thirdPartyWireTransfersOuts = $this->get('doctrine.orm.entity_manager')
-            ->getRepository('UnilendCoreBusinessBundle:Virements')
-            ->findWireTransferToThirdParty($client->id_client, [
+        $thirdPartyWireTransfersOuts = $entityManager->getRepository('UnilendCoreBusinessBundle:Virements')
+            ->findWireTransferToThirdParty($client, [
                 Virements::STATUS_PENDING,
                 Virements::STATUS_CLIENT_VALIDATED,
                 Virements::STATUS_VALIDATED,
@@ -264,7 +240,18 @@ class BorrowerAccountController extends Controller
                 'invoices'                       => $clientsInvoices,
                 'post_funding_projects'          => $projectsPostFunding,
                 'third_party_wire_transfer_outs' => $thirdPartyWireTransfersOuts,
-                'operationTypes'                 => $operationTypes
+                'operationTypes'                 => [
+                    OperationType::LENDER_LOAN,
+                    OperationType::BORROWER_WITHDRAW,
+                    OperationSubType::BORROWER_COMMISSION_FUNDS,
+                    OperationSubType::BORROWER_COMMISSION_REPAYMENT,
+                    BorrowerOperationsManager::OP_BORROWER_DIRECT_DEBIT,
+                    BorrowerOperationsManager::OP_WIRE_TRANSFER_IN,
+                    BorrowerOperationsManager::OP_LENDER_MONTHLY_REPAYMENT,
+                    BorrowerOperationsManager::OP_LENDER_EARLY_REPAYMENT,
+                    BorrowerOperationsManager::OP_LENDER_RECOVERY_REPAYMENT,
+                    OperationType::BORROWER_PROJECT_CHARGE_REPAYMENT
+                ]
             ]
         );
     }
@@ -273,19 +260,20 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/profil", name="borrower_account_profile")
      * @Template("borrower_account/profile.html.twig")
      *
+     * @param UserInterface|Clients|null $client
+     *
      * @return array
      */
-    public function profileAction(): array
+    public function profileAction(?UserInterface $client): array
     {
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $client         = $this->getClient();
-        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client->id_client]);
-        $bankAccount    = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client->id_client);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        $bankAccount   = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
 
         return [
-            'client'         => $client,
-            'company'        => $company,
-            'bankAccount'    => $bankAccount
+            'client'      => $client,
+            'company'     => $company,
+            'bankAccount' => $bankAccount
         ];
     }
 
@@ -293,11 +281,16 @@ class BorrowerAccountController extends Controller
      * @Route("/espace-emprunteur/contact", name="borrower_account_contact")
      * @Template("borrower_account/contact.html.twig")
      *
+     * @param Request                    $request
+     * @param UserInterface|Clients|null $client
+     *
      * @return array
      */
-    public function contactAction(Request $request): array
+    public function contactAction(Request $request, ?UserInterface $client): array
     {
-        $company = $this->getCompany();
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        /** @var Companies $company */
+        $company = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
 
         $contactForm = $this->createForm(BorrowerContactType::class);
         $contactForm->handleRequest($request);
@@ -353,14 +346,14 @@ class BorrowerAccountController extends Controller
 
                     return [
                         'contact_form'  => $contactForm->createView(),
-                        'company_siren' => $company->siren,
-                        'company_name'  => $company->name
+                        'company_siren' => $company->getSiren(),
+                        'company_name'  => $company->getName()
                     ];
                 }
 
                 $keywords = [
-                    '[siren]'     => $company->siren,
-                    '[company]'   => $company->name,
+                    '[siren]'     => $company->getSiren(),
+                    '[company]'   => $company->getName(),
                     '[prenom]'    => $formData['first_name'],
                     '[nom]'       => $formData['last_name'],
                     '[email]'     => $formData['email'],
@@ -372,7 +365,7 @@ class BorrowerAccountController extends Controller
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message   = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $keywords, false);
-                $recipient = $this->get('doctrine.orm.entity_manager')->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue();
+                $recipient = $entityManager->getRepository('UnilendCoreBusinessBundle:Settings')->findOneBy(['type' => 'Adresse emprunteur'])->getValue();
                 $recipient = trim($recipient);
 
                 try {
@@ -396,41 +389,19 @@ class BorrowerAccountController extends Controller
 
         return [
             'contact_form'  => $contactForm->createView(),
-            'company_siren' => $company->siren,
-            'company_name'  => $company->name
+            'company_siren' => $company->getSiren(),
+            'company_name'  => $company->getName()
         ];
     }
 
     /**
-     * @param Request $request
+     * @param array $borrowerOperations
      *
      * @return StreamedResponse
      */
-    private function operationsExportCsv(Request $request): StreamedResponse
+    private function operationsExportCsv(array $borrowerOperations): StreamedResponse
     {
-        $client              = $this->getClient();
-        $projectsPostFunding = $this->getProjectsPostFunding();
-        $projectsIds         = array_column($projectsPostFunding, 'id_project');
-        $filter              = $request->query->get('filter');
-
-        if (
-            false === isset($filter['start'], $filter['end'], $filter['op'])
-            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
-            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
-        ) {
-            throw new RouteNotFoundException('Invalid operation CSV export parameters');
-        }
-
-        $start     = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-        $end       = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-        $operation = filter_var($filter['op'], FILTER_SANITIZE_STRING);
-
-        if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
-            $projectsIds = [$filter['project']];
-        }
-        $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
-        $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
-        $translator                = $this->get('translator');
+        $translator = $this->get('translator');
 
         $response = new StreamedResponse();
         $response->setCallback(function () use ($borrowerOperations, $translator) {
@@ -464,39 +435,15 @@ class BorrowerAccountController extends Controller
     }
 
     /**
-     * @param Request $request
+     * @param Wallet $wallet
+     * @param array  $borrowerOperations
      *
      * @return Response
      */
-    private function operationsPrint(Request $request): Response
+    private function operationsPrint(Wallet $wallet, array $borrowerOperations): Response
     {
-        $filter = $request->query->get('filter');
-        if (
-            false === isset($filter['start'], $filter['end'], $filter['op'])
-            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['start'])
-            && 1 !== preg_match('#^[0-9]{2}/[0-9]{2}/[0-9]{4}$#', $filter['end'])
-        ) {
-            throw new RouteNotFoundException('Invalid operation PDF export parameters');
-        }
-
-        $start               = \DateTime::createFromFormat('d/m/Y', $filter['start']);
-        $end                 = \DateTime::createFromFormat('d/m/Y', $filter['end']);
-        $operation           = filter_var($filter['op'], FILTER_SANITIZE_STRING);
-        $projectsPostFunding = $this->getProjectsPostFunding();
-        $projectsIds         = array_column($projectsPostFunding, 'id_project');
-
-        if ($filter['project'] !== 'all' && in_array($filter['project'], $projectsIds)) {
-            $projectsIds = [$filter['project']];
-        }
-
-        $entityManager  = $this->get('doctrine.orm.entity_manager');
-        $client         = $this->getClient();
-        $wallet         = $entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($this->getUser()->getClientId(), WalletType::BORROWER);
-        $company        = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
-
-        $fileName                  = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
-        $borrowerOperationsManager = $this->get('unilend.service.borrower_operations_manager');
-        $borrowerOperations        = $borrowerOperationsManager->getBorrowerOperations($client, $start, $end, $projectsIds, $operation);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+        $company       = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $wallet->getIdClient()]);
 
         $pdfContent = $this->renderView('pdf/borrower_operations.html.twig', [
             'operations'        => $borrowerOperations,
@@ -512,7 +459,7 @@ class BorrowerAccountController extends Controller
             $snappy->getOutputFromHtml($pdfContent),
             200, [
                 'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'operations_emprunteur_' . date('Y-m-d') . '.pdf')
             ]
         );
     }
@@ -606,7 +553,6 @@ class BorrowerAccountController extends Controller
 
     /**
      * @Route("/espace-emprunteur/securite/{securityToken}", name="borrower_account_security", requirements={"securityToken": "[0-9a-f]+"})
-     * @Template("borrower_account/security.html.twig")
      *
      * @param string  $securityToken
      * @param Request $request
@@ -635,10 +581,9 @@ class BorrowerAccountController extends Controller
 
             $entityManager = $this->get('doctrine.orm.entity_manager');
             /** @var Clients $client */
-            $client       = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
-            $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
+            $client = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($temporaryLinks->id_client);
 
-            if (false === in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+            if (false === $client->isGrantedLogin()) {
                 $displayForm = false;
                 $translator  = $this->get('translator');
                 $this->addFlash('error', $translator->trans('borrower-profile_security-offline-account'));
@@ -684,17 +629,23 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return $this->render(
-            'borrower_account/security.html.twig',
-            ['securityToken' => $securityToken, 'expired' => $isLinkExpired, 'displayForm' => $displayForm]
-        );
+        return $this->render('borrower_account/security.html.twig', [
+            'securityToken' => $securityToken,
+            'expired'       => $isLinkExpired,
+            'displayForm'   => $displayForm
+        ]);
     }
 
     /**
+     * @param Clients $client
+     *
      * @return array
      */
-    private function getProjectsPreFunding()
+    private function getProjectsPreFunding(Clients $client): array
     {
+        $entityManager = $this->get('doctrine.orm.entity_manager');
+
+        $company            = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         $statusPreFunding   = [
             ProjectsStatus::COMPLETE_REQUEST,
             ProjectsStatus::COMMERCIAL_REVIEW,
@@ -706,132 +657,39 @@ class BorrowerAccountController extends Controller
             ProjectsStatus::PREP_FUNDING,
             ProjectsStatus::A_FUNDER
         ];
-        $projectsPreFunding = $this->getCompany()->getProjectsForCompany(null, $statusPreFunding);
+        $projectsPreFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, $statusPreFunding);
 
-        foreach ($projectsPreFunding as $key => $project) {
-            switch ($project['status']) {
-                case ProjectsStatus::COMPLETE_REQUEST:
-                case ProjectsStatus::COMMERCIAL_REVIEW:
-                    $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-documents';
-                    break;
-                case ProjectsStatus::ANALYSIS_REVIEW:
-                case ProjectsStatus::COMITY_REVIEW:
-                    $projectsPreFunding[$key]['project_status_label'] = 'analyzing';
-                    break;
-                case ProjectsStatus::COMMERCIAL_REJECTION:
-                case ProjectsStatus::ANALYSIS_REJECTION:
-                case ProjectsStatus::COMITY_REJECTION:
-                    $projectsPreFunding[$key]['project_status_label'] = 'refused';
-                    break;
-                case ProjectsStatus::PREP_FUNDING:
-                case ProjectsStatus::A_FUNDER:
-                    $projectsPreFunding[$key]['project_status_label'] = 'waiting-for-being-on-line';
-                    break;
-            }
-            $predictAmountAutoBid = 0;
-            if (false === empty($project['risk']) && false === empty($project['period'])) {
-                $predictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($project['risk'], $project['period']);
-            }
-            $projectsPreFunding[$key]['predict_autobid'] = round(($predictAmountAutoBid / $project['amount']) * 100, 1);
-        }
         return $projectsPreFunding;
     }
 
     /**
+     * @param Clients $client
+     *
      * @return array
      */
-    private function getProjectsFunding(): array
+    private function getProjectsFunding(Clients $client): array
     {
-        $entityManager     = $this->get('doctrine.orm.entity_manager');
-        $bidRepository     = $entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
-        $projectRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $projectsFunding   = $this->getCompany()->getProjectsForCompany(null, [ProjectsStatus::EN_FUNDING]);
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
-        foreach ($projectsFunding as $index => $projectTable) {
-            $project                 = $projectRepository->find($projectTable['id_project']);
-            $fundingPercentage       = round((1 - ($project->getAmount() - $bidRepository->getProjectTotalAmount($project)) / $project->getAmount()) * 100, 1);
-            $projectsFunding[$index] = $projectsFunding[$index] + [
-                    'average_ir'       => round($projectRepository->getAverageInterestRate($project), 2),
-                    'funding_progress' => min(100, $fundingPercentage),
-                    'ended'            => $project->getDateRetrait()
-                ];
-        }
+        $company         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
+        $projectsFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, [ProjectsStatus::EN_FUNDING]);
 
         return $projectsFunding;
     }
 
     /**
+     * @param Clients $client
+     *
      * @return array
      */
-    private function getProjectsPostFunding(): array
+    private function getProjectsPostFunding(Clients $client): array
     {
-        $entityManager               = $this->get('doctrine.orm.entity_manager');
-        $projectRepository           = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
-        $repaymentScheduleRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur');
-        $projectManager              = $this->get('unilend.service.project_manager');
+        $entityManager = $this->get('doctrine.orm.entity_manager');
 
+        $company             = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         $statusPostFunding   = array_merge([ProjectsStatus::FUNDE, ProjectsStatus::FUNDING_KO, ProjectsStatus::PRET_REFUSE], ProjectsStatus::AFTER_REPAYMENT);
-        $projectsPostFunding = $this->getCompany()->getProjectsForCompany(null, $statusPostFunding);
-
-        foreach ($projectsPostFunding as $index => $projectTable) {
-            $project = $projectRepository->find($projectTable['id_project']);
-
-            $nextRepayment    = null;
-            $monthlyPayment   = 0;
-            $nextMaturityDate = new \DateTime();
-            $remainingAmounts = $projectManager->getRemainingAmounts($project);
-
-            if (false === in_array($project->getStatus(), [ProjectsStatus::REMBOURSEMENT_ANTICIPE, ProjectsStatus::REMBOURSE])) {
-                $nextRepayment = $repaymentScheduleRepository->findOneBy(
-                    ['idProject' => $project, 'statusEmprunteur' => EcheanciersEmprunteur::STATUS_PENDING],
-                    ['dateEcheanceEmprunteur' => 'ASC']
-                );
-
-                if ($nextRepayment instanceof EcheanciersEmprunteur) {
-                    $monthlyPayment   = bcdiv(bcadd($nextRepayment->getCapital(), bcadd($nextRepayment->getInterets(), bcadd($nextRepayment->getCommission(), $nextRepayment->getTva(), 4), 4), 4), 100, 4);
-                    $nextMaturityDate = $nextRepayment->getDateEcheanceEmprunteur();
-                }
-            }
-
-            $projectsPostFunding[$index] = $projectsPostFunding[$index] + [
-                    'average_ir'         => round($projectRepository->getAverageInterestRate($project), 2),
-                    'remaining_capital'  => $remainingAmounts['capital'],
-                    'monthly_payment'    => $monthlyPayment,
-                    'next_maturity_date' => $nextMaturityDate,
-                    'ended'              => $projectManager->getProjectEndDate($project)
-                ];
-        }
+        $projectsPostFunding = $entityManager->getRepository('UnilendCoreBusinessBundle:Projects')->findByCompany($company, $statusPostFunding);
 
         return $projectsPostFunding;
-    }
-
-    /**
-     * @return \clients
-     */
-    private function getClient()
-    {
-        /** @var UserBorrower $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \clients $client */
-        $client = $this->get('unilend.service.entity_manager')->getRepository('clients');
-        $client->get($clientId);
-
-        return $client;
-    }
-
-    /**
-     * @return \companies
-     */
-    private function getCompany()
-    {
-        /** @var UserBorrower $user */
-        $user     = $this->getUser();
-        $clientId = $user->getClientId();
-        /** @var \companies $company */
-        $company = $this->get('unilend.service.entity_manager')->getRepository('companies');
-        $company->get($clientId, 'id_client_owner');
-
-        return $company;
     }
 }

@@ -15,9 +15,9 @@ class BCryptPasswordEncoder extends BaseEncoder
      *
      * @return string
      */
-    public function encodePassword($raw, $salt)
+    public function encodePassword($raw, $salt): string
     {
-        if (false === $this->isPasswordSafe($raw)) {
+        if (false === $this->isPasswordStrongEnough($raw)) {
             throw new BadCredentialsException('Invalid password.');
         }
 
@@ -26,13 +26,12 @@ class BCryptPasswordEncoder extends BaseEncoder
 
     /**
      * Check if the password has at least PASSWORD_LENGTH_MIN chars of which contains at least one uppercase and at least one lowercase.
-     * Todo: change it back to private non static function after "TECH-108 Replace the BaseUser by clients"
      *
      * @param $raw
      *
      * @return bool
      */
-    public static function isPasswordSafe($raw)
+    private function isPasswordStrongEnough($raw): bool
     {
         $regex = '/^(?=.*[a-z])(?=.*[A-Z]).{' . self::PASSWORD_LENGTH_MIN . ',}$/';
         if (1 === preg_match($regex, $raw)) {
