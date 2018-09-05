@@ -5,7 +5,7 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\{EntityManager, ORMException};
 use Psr\Log\LoggerInterface;
 use Symfony\Component\{Asset\Packages, DependencyInjection\ContainerInterface, Translation\TranslatorInterface};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UnderlyingContract, UniversignEntityInterface, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, Clients, ClientSettingType, ClientsGestionTypeNotif, ClientsMandats, ClientsStatus, Companies, Operation, OperationSubType, ProjectCgv, Projects, ProjectsPouvoir, Settings, UniversignEntityInterface, Wallet, WalletType};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\{TemplateMessage, TemplateMessageProvider};
 use Unilend\core\Loader;
@@ -18,8 +18,6 @@ class MailerManager
     private $oLogger;
     /** @var \ficelle */
     private $oFicelle;
-    /** @var \dates */
-    private $oDate;
     /** @var string */
     private $sAUrl;
     /** @var string */
@@ -65,7 +63,6 @@ class MailerManager
         $this->settingsRepository     = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Settings');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
-        $this->oDate       = Loader::loadLib('dates');
 
         $this->locale = $defaultLocale;
 
@@ -185,27 +182,12 @@ class MailerManager
         }
 
         if ($borrower->isValidated()) {
-            $currentDate = new \DateTime();
-            $interval    = $project->getDateRetrait()->diff($currentDate);
-
-            if ($interval->m > 0) {
-                $remainingDuration = $interval->m . ' mois';
-            } elseif ($interval->d > 0) {
-                $remainingDuration = $interval->d . ' jours';
-            } elseif ($interval->h > 0 && $interval->i >= 120) {
-                $remainingDuration = $interval->h . ' heures';
-            } elseif ($interval->i > 0 && $interval->i < 120) {
-                $remainingDuration = $interval->i . ' min';
-            } else {
-                $remainingDuration = $interval->s . ' secondes';
-            }
-
             $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
             $averageInterestRate = $projectRepository->getAverageInterestRate($project);
             $keywords            = [
                 'firstName'         => $borrower->getPrenom(),
                 'averageRate'       => $this->oFicelle->formatNumber($averageInterestRate, 1),
-                'remainingDuration' => $remainingDuration,
+                'remainingDuration' => $this->diffFromNowForHumans($project->getDateRetrait()),
             ];
 
             $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $keywords);
@@ -213,7 +195,7 @@ class MailerManager
             try {
                 $message->setTo($borrower->getEmail());
                 $this->mailer->send($message);
-            } catch (\Exception $exception){
+            } catch (\Exception $exception) {
                 $this->oLogger->warning('Could not send email "emprunteur-dossier-funde". Exception: ' . $exception->getMessage(), [
                     'id_mail_template' => $message->getTemplateId(),
                     'id_client'        => $borrower->getIdClient(),
@@ -309,20 +291,7 @@ class MailerManager
     public function sendFundedToStaff(Projects $project): void
     {
         /** @var \bids $bid */
-        $bid   = $this->entityManagerSimulator->getRepository('bids');
-        $inter = $this->oDate->intervalDates(date('Y-m-d H:i:s'), $project->getDateRetrait()->format('Y-m-d H:i:s'));
-
-        if ($inter['mois'] > 0) {
-            $remainingDuration = $inter['mois'] . ' mois';
-        } elseif ($inter['jours'] > 0) {
-            $remainingDuration = $inter['jours'] . ' jours';
-        } elseif ($inter['heures'] > 0 && $inter['minutes'] >= 120) {
-            $remainingDuration = $inter['heures'] . ' heures';
-        } elseif ($inter['minutes'] > 0 && $inter['minutes'] < 120) {
-            $remainingDuration = $inter['minutes'] . ' min';
-        } else {
-            $remainingDuration = $inter['secondes'] . ' secondes';
-        }
+        $bid = $this->entityManagerSimulator->getRepository('bids');
 
         $projectRepository   = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Projects');
         $averageInterestRate = $projectRepository->getAverageInterestRate($project, false);
@@ -332,7 +301,7 @@ class MailerManager
             '$title_projet' => $project->getTitle(),
             '$nbPeteurs'    => $bid->countLendersOnProject($project->getIdProject()),
             '$tx'           => $this->oFicelle->formatNumber($averageInterestRate, 1),
-            '$periode'      => $remainingDuration
+            '$periode'      => $this->diffFromNowForHumans($project->getDateRetrait())
         ];
 
         $message   = $this->messageProvider->newMessage('notification-projet-funde-a-100', $keywords, false);
@@ -1770,5 +1739,45 @@ class MailerManager
                 );
             }
         }
+    }
+
+    /**
+     * Inspired by Carbon::diffForHumans().
+     *
+     * @param \DateTime $date
+     *
+     * @return string
+     */
+    public function diffFromNowForHumans(\DateTime $date): string
+    {
+        $duration = '';
+        $now      = new \DateTime();
+
+        $diffInterval = $now->diff($date);
+
+        $diffIntervalArray = [
+            'month'  => $diffInterval->m,
+            'day'    => $diffInterval->d,
+            'hour'   => $diffInterval->h,
+            'minute' => $diffInterval->i,
+            'second' => $diffInterval->s
+        ];
+
+        foreach ($diffIntervalArray as $unit => $count) {
+            if ($count > 0) {
+                if ('hour' === $unit && $count < 2) {
+                    $count    = $count * 60 + $diffIntervalArray['minute'];
+                    $duration = $this->translator->transChoice('common_minute', $count, ['%count%' => $count]);
+                } else {
+                    $duration = $this->translator->transChoice('common_' . $unit, $count, ['%count%' => $count]);
+                }
+
+                break;
+            }
+        }
+
+        unset($diffIntervalArray, $diffInterval);
+
+        return $duration;
     }
 }

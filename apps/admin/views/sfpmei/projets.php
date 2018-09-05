@@ -63,7 +63,7 @@
                             <td><?= $project['id_project'] ?></td>
                             <td><?= $project['siren'] ?></td>
                             <td><?= $project['name'] ?></td>
-                            <td><?= $this->dates->formatDate($project['added'], 'd/m/Y') ?></td>
+                            <td><?= $this->formatDate($project['added'], 'd/m/Y') ?></td>
                             <td><?= empty($project['amount']) ? '' : $this->ficelle->formatNumber($project['amount'], 0) . ' €' ?></td>
                             <td><?= empty($project['period']) ? '' : $project['period'] . ' mois' ?></td>
                             <td><?= $project['label'] ?></td>
