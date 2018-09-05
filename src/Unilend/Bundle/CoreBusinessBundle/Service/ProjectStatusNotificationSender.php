@@ -91,6 +91,8 @@ class ProjectStatusNotificationSender
 
         if ($closeOutNettingPayment->getIdEmailContent()) {
             $keywords['mailContent'] = $closeOutNettingPayment->getIdEmailContent()->getBorrowerContent();
+        } else {
+            $keywords['mailContent'] = '';
         }
 
         $overdueScheduleCount = $paymentSchedule->getOverdueScheduleCount($project);
@@ -262,6 +264,8 @@ class ProjectStatusNotificationSender
 
         if ($closeOutNettingPayment->getIdEmailContent()) {
             $keywords['mailContent'] = $closeOutNettingPayment->getIdEmailContent()->getLendersContent();
+        } else {
+            $keywords['mailContent'] = '';
         }
 
         $overdueRepaymentScheduleCount = $repaymentSchedule->getOverdueRepaymentCountByProject($project);
