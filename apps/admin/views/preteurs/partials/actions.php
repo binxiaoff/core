@@ -4,7 +4,6 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
 
 ?>
 <h2>Actions</h2>
-<?php $clientStatus = $this->wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId(); ?>
 <?php if (isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
     <div class="row">
         <div class="form-group col-md-6">
@@ -14,7 +13,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
     <?php unset($_SESSION['compte_valide']); ?>
 <?php endif; ?>
 
-<?php if (ClientsStatus::STATUS_VALIDATED !== $clientStatus && in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+<?php if (false === $this->wallet->getIdClient()->isValidated() && $this->wallet->getIdClient()->isGrantedLogin()) : ?>
     <?php if (1 < count($this->duplicateAccounts)) : ?>
         <?php $this->fireView('partials/duplicated_accounts_popup'); ?>
     <?php endif; ?>
@@ -32,7 +31,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
     </form>
 <?php endif; ?>
 
-<?php if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+<?php if ($this->wallet->getIdClient()->isGrantedLogin()) : ?>
     <div class="row">
         <div class="form-group col-md-6">
             <input type="button"
@@ -49,9 +48,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                    value="Clôturer le compte à la demande du prêteur">
         </div>
     </div>
-<?php endif; ?>
-
-<?php if (false === in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) : ?>
+<?php else : ?>
     <div class="row">
         <div class="form-group col-md-6">
             <input type="button"

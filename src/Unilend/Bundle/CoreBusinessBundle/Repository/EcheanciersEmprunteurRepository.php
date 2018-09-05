@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr\Join;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{CompanyStatus, Echeanciers, EcheanciersEmprunteur, Projects, ProjectsStatus, Receptions};
 
@@ -127,9 +128,9 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      * @param Projects|int   $project
      * @param \DateTime|null $date
      *
-     * @return mixed
+     * @return array
      */
-    public function getTotalOverdueAmounts($project, $date = null)
+    public function getTotalOverdueAmounts($project, ?\DateTime $date = null): array
     {
         if (null === $date) {
             $date = new \DateTime();
@@ -146,7 +147,13 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->setParameter('project', $project)
             ->setParameter('today', $date->format('Y-m-d 00:00:00'));
 
-        return $queryBuilder->getQuery()->getSingleResult();
+        try {
+            $overdueAmounts = $queryBuilder->getQuery()->getSingleResult();
+        } catch (NoResultException $exception) {
+            $overdueAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+        }
+
+        return $overdueAmounts;
     }
 
     /**
@@ -154,7 +161,7 @@ class EcheanciersEmprunteurRepository extends EntityRepository
      *
      * @return array
      */
-    public function getRemainingAmountsByProject($project)
+    public function getRemainingAmountsByProject($project): array
     {
         $queryBuilder = $this->createQueryBuilder('ee');
         $queryBuilder->select(
@@ -166,7 +173,13 @@ class EcheanciersEmprunteurRepository extends EntityRepository
             ->where('ee.idProject = :projectId')
             ->setParameter('projectId', $project);
 
-        return $queryBuilder->getQuery()->getSingleResult();
+        try {
+            $remainingAmounts = $queryBuilder->getQuery()->getSingleResult();
+        } catch (NoResultException $exception) {
+            $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+        }
+
+        return $remainingAmounts;
     }
 
     /**

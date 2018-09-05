@@ -2,12 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Doctrine\ORM\{
-    EntityManager, NonUniqueResultException, NoResultException
-};
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    Bids, CompanyStatus, Factures, Loans, Projects, TaxType, Virements
-};
+use Doctrine\ORM\{EntityManager, NonUniqueResultException, NoResultException};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Bids, CompanyStatus, Factures, Loans, Projects, TaxType, Virements};
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager as EntityManagerSimulator;
 
 class ProjectManager
@@ -311,7 +307,11 @@ class ProjectManager
     public function getRemainingAmounts(Projects $project): array
     {
         if (null === $project->getCloseOutNettingDate()) {
-            $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+            try {
+                $remainingAmounts = $this->entityManager->getRepository('UnilendCoreBusinessBundle:EcheanciersEmprunteur')->getRemainingAmountsByProject($project);
+            } catch (NoResultException $exception) {
+                $remainingAmounts = ['capital' => 0, 'interest' => 0, 'commission' => 0];
+            }
         } else {
             $remainingAmounts = $this->getCloseOutNettingRemainingAmounts($project);
         }
