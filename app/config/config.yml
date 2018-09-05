@@ -50,8 +50,8 @@ cmf_routing:
             cmf_routing.dynamic_router: 100
     dynamic:
         enabled: true
-        default_controller: UnilendFrontBundle:Main:cms
-        route_provider_service_id: "unilend.frontbundle.provider.route_provider"
+        default_controller: Unilend\Bundle\FrontBundle\Controller\MainController::cmsAction
+        route_provider_service_id: Unilend\Bundle\FrontBundle\Service\RouteProvider
 
 twig:
     strict_variables: "%kernel.debug%"
@@ -253,14 +253,6 @@ services:
     # Since we use the cache/adapter-bundle as the cache system, the configuration framework.cache.app won't work.
     # It can be removed once TECH-333 will be done.
     cache.app: '@memcache.default'
-    twig.extension.text:
-        class: Twig_Extensions_Extension_Text
-        tags:
-            - { name: twig.extension }
-    twig.extension.intl:
-        class: Unilend\Bundle\FrontBundle\Twig\IntlExtension
-        tags:
-            - { name: twig.extension }
 
 google_tag_manager:
     enabled: true

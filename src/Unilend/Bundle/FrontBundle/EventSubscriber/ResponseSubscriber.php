@@ -2,10 +2,17 @@
 
 namespace Unilend\Bundle\FrontBundle\EventSubscriber;
 
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\FilterResponseEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 
-class ResponseListener
+class ResponseSubscriber implements EventSubscriberInterface
 {
+    public static function getSubscribedEvents()
+    {
+        return [KernelEvents::RESPONSE => 'onKernelResponse'];
+    }
+
     /**
      * @param FilterResponseEvent $event
      */

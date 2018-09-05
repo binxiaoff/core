@@ -17,13 +17,10 @@ class PartnerContactType extends AbstractType
     private $user;
     /** @var EntityManager */
     private $entityManager;
-    /** @var string */
-    private $language;
 
-    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage, $language)
+    public function __construct(EntityManager $entityManager, TokenStorage $tokenStorage)
     {
         $this->entityManager = $entityManager;
-        $this->language      = $language;
         $this->user          = $tokenStorage->getToken()->getUser();
     }
 

@@ -1,0 +1,18 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+        bind:
+            $rootDir: '%kernel.root_dir%'
+
+    Unilend\Bundle\FrontBundle\:
+        resource: '%kernel.project_dir%/src/Unilend/Bundle/FrontBundle/*'
+
+    Unilend\Bundle\FrontBundle\Security\BCryptPasswordEncoder:
+        $cost: '%security.bcrypt.cost%'
+
+    Unilend\Bundle\FrontBundle\Service\UniversignManager:
+        $universignURL: '%url.universign%'
+
+    Twig\Extensions\TextExtension: ~
