@@ -511,7 +511,7 @@ class LenderSubscriptionController extends Controller
     {
         $translator    = $this->get('translator');
         $entityManager = $this->get('doctrine.orm.entity_manager');
-        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountByEmail($client->getEmail());
+        $duplicates    = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $form->get('client')->get('email')->addError(new FormError($translator->trans('lender-profile_security-identification-error-existing-email')));

@@ -204,18 +204,18 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $client = $token->getUser();
 
         // Force to use the default password encoder if it's legacy
-        if ($client instanceof EncoderAwareInterface && (Clients::PASSWORD_ENCODER_MD5 === $encoderName = $client->getEncoderName())) {
+        if ($client instanceof EncoderAwareInterface && Clients::PASSWORD_ENCODER_MD5 === $client->getEncoderName()) {
             $client->useDefaultEncoder();
             try {
                 $client->setPassword($this->securityPasswordEncoder->encodePassword($client, $this->getCredentials($request)['password']));
-            } catch (BadCredentialsException $exeption) {
+            } catch (BadCredentialsException $exception) {
                 // hack for the old password which cannot pass the security check in encodePassword()
                 $client->setPassword(password_hash($this->getCredentials($request)['password'], PASSWORD_DEFAULT));
             }
             try {
                 $this->entityManager->flush($client);
             } catch (OptimisticLockException $exception) {
-                $this->logger->warning('Cannot save the re-coded password. Error: ' . $exception->getMessage(), [
+                $this->logger->warning('Cannot save the re-encoded password. Error: ' . $exception->getMessage(), [
                     'id_client' => $client->getIdClient(),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,

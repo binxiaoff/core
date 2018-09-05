@@ -188,7 +188,7 @@ class companyController extends bootstrap
         if ($email !== $this->client->getEmail()) {
             $duplicates = $entityManager
                 ->getRepository('UnilendCoreBusinessBundle:Clients')
-                ->findGrantedLoginAccountByEmail($email);
+                ->findGrantedLoginAccountsByEmail($email);
 
             if (false === empty($duplicates)) {
                 $_SESSION['freeow']['title']   = 'Une erreur est survenue';

@@ -1559,7 +1559,7 @@ class preteursController extends bootstrap
         /** @var \Doctrine\ORM\EntityManager $entityManager */
         $entityManager    = $this->get('doctrine.orm.entity_manager');
         $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-        $duplicates       = $clientRepository->findGrantedLoginAccountByEmail($client->getEmail());
+        $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($client->getEmail());
 
         if (false === empty($duplicates)) {
             $_SESSION['freeow']['title']   = 'Statut prêteur';
@@ -1694,7 +1694,7 @@ class preteursController extends bootstrap
 
         $duplicates = $entityManager
             ->getRepository('UnilendCoreBusinessBundle:Clients')
-            ->findGrantedLoginAccountByEmail($email);
+            ->findGrantedLoginAccountsByEmail($email);
 
         if (count($duplicates) > 0) {
             $_SESSION['error_email_exist'] = 'Impossible de modifier l‘adresse email. Cette adresse est déjà utilisée par un autre compte.';

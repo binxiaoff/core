@@ -50,7 +50,7 @@ class ClientExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            new \Twig_SimpleFunction('lenderLevel', [$this, 'getLenderDiversificationLevel']),
+            new \Twig_SimpleFunction('lenderDiversificationLevel', [$this, 'getLenderDiversificationLevel']),
             new \Twig_SimpleFunction('partner', [$this, 'getPartner']),
             new \Twig_SimpleFunction('walletBalance', [$this, 'getBalance']),
             new \Twig_SimpleFunction('lenderNotifications', [$this, 'getLenderNotifications'])
@@ -93,7 +93,7 @@ class ClientExtension extends \Twig_Extension
      */
     public function getLenderNotifications(?Clients $client): array
     {
-        if (false === $client instanceof Clients || false === $client->isLender()) {
+        if (false === $client instanceof Clients) {
             return [];
         }
 
@@ -146,8 +146,18 @@ class ClientExtension extends \Twig_Extension
             $walletType = WalletType::BORROWER;
         } elseif ($client->isDebtCollector()) {
             $walletType = WalletType::DEBT_COLLECTOR;
-        } else {
+        } elseif ($client->isPartner()) {
             $walletType = WalletType::PARTNER;
+        } else {
+            $this->logger->error(
+                'Cannot get the balance of the client. Unsupported client type !', [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                ]
+            );
+
+            return 0;
         }
 
         /** @var Wallet $wallet */

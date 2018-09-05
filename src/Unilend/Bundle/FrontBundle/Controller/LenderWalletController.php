@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, ClientsStatus, Notifications, Wallet, WalletType};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{Backpayline, BankAccount, Clients, ClientsGestionMailsNotif, ClientsGestionTypeNotif, ClientsHistoryActions, Notifications, Wallet, WalletType};
 use Unilend\Bundle\FrontBundle\Form\LenderWithdrawalType;
 use Unilend\core\Loader;
 
@@ -103,7 +103,7 @@ class LenderWalletController extends Controller
      */
     public function withdrawalAction(Request $request, ?UserInterface $client): Response
     {
-        if (false === $client->isGrantedLenderWithDraw()) {
+        if (false === $client->isGrantedLenderWithdraw()) {
             return $this->redirectToRoute('lender_dashboard');
         }
 
@@ -188,99 +188,98 @@ class LenderWalletController extends Controller
         $formManager   = $this->get('unilend.frontbundle.service.form_manager');
         $wallet        = $this->getWallet($client);
 
-        if ($client instanceof Clients) {
-            /** @var BankAccount $bankAccount */
-            $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
-            $amount      = $post['amount'];
-            $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
+        /** @var BankAccount $bankAccount */
+        $bankAccount = $entityManager->getRepository('UnilendCoreBusinessBundle:BankAccount')->getClientValidatedBankAccount($client);
+        $amount      = $post['amount'];
+        $serialize   = serialize(['id_client' => $client->getIdClient(), 'montant' => $amount, 'mdp' => md5($post['password'])]);
 
-            $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
+        $formManager->saveFormSubmission($client, ClientsHistoryActions::LENDER_WITHDRAWAL, $serialize, $request->getClientIp());
 
-            $securityPasswordEncoder = $this->get('security.password_encoder');
+        $securityPasswordEncoder = $this->get('security.password_encoder');
 
-            if (false === $securityPasswordEncoder->isPasswordValid($client, $post['password'])) {
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-password'));
-            } elseif (false === is_numeric($amount) || $amount <= 0) {
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-amount'));
-            } elseif (null === $bankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-missing-bank-details'));
-            } elseif ($amount > $wallet->getAvailableBalance()) {
-                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-insufficient-balance'));
-            } else {
-                try {
-                    $unusedWelcomeOfferAmount = $this->get('unilend.service.welcome_offer_manager')->getUnusedWelcomeOfferAmount($client);
-                } catch (\Exception $exception) {
-                    $logger->error('Could not get unused welcome offer amount. Failed to handle withdrawal operation for client: ' . $client->getIdClient() . 'Error: ' . $exception->getMessage(), [
-                        'id_client' => $client->getIdClient(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
-                    ]);
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
-
-                    return;
-                }
-                $unusedSponseeRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponseeRewardAmount($client);
-                $unusedSponsorRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponsorRewardAmount($client);
-                $blockedAmount             = round(bcadd($unusedWelcomeOfferAmount, bcadd($unusedSponseeRewardAmount, $unusedSponsorRewardAmount, 4), 4), 2);
-
-                if (round(bcadd($amount, $blockedAmount, 4), 2) > $wallet->getAvailableBalance()) {
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-blocked-amount'));
-                }
-            }
-
-            if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
-                $logger->warning('Withdrawal cannot be accomplished, id_client: ' . $client->getIdClient() . ' Amount: ' . $post['amount'], [
+        if (false === $securityPasswordEncoder->isPasswordValid($client, $post['password'])) {
+            $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-password'));
+        } elseif (false === is_numeric($amount) || $amount <= 0) {
+            $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-wrong-amount'));
+        } elseif (null === $bankAccount || empty($bankAccount->getBic()) || empty($bankAccount->getIban())) {
+            $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-missing-bank-details'));
+        } elseif ($amount > $wallet->getAvailableBalance()) {
+            $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-insufficient-balance'));
+        } else {
+            try {
+                $unusedWelcomeOfferAmount = $this->get('unilend.service.welcome_offer_manager')->getUnusedWelcomeOfferAmount($client);
+            } catch (\Exception $exception) {
+                $logger->error('Could not get unused welcome offer amount. Failed to handle withdrawal operation for client: ' . $client->getIdClient() . 'Error: ' . $exception->getMessage(), [
                     'id_client' => $client->getIdClient(),
-                    'errors'    => $this->get('session')->getFlashBag()->peek('withdrawalErrors'),
                     'class'     => __CLASS__,
                     'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
                 ]);
-            } else {
-                $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
-                try {
-                    $wireTransferOut = $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount);
-                } catch (\Exception $exception) {
-                    $logger->error('Could not create bank transfer out entry. Failed to handle withdrawal operation for client: ' . $client->getIdClient() . 'Error : ' . $exception->getMessage(), [
-                        'id_client' => $client->getIdClient(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
-                    ]);
-                    $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
 
-                    return;
-                }
-                $notificationManager = $this->get('unilend.service.notification_manager');
-                $notification        = $notificationManager->createNotification(Notifications::TYPE_DEBIT, $wallet->getIdClient()->getIdClient(), null, $amount);
-
-                $withdrawalOperation  = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $wireTransferOut]);
-                $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
-                    'idOperation' => $withdrawalOperation,
-                    'idWallet'    => $wallet
-                ]);
-
-                try {
-                    $clientMailNotification = $notificationManager->createEmailNotification(ClientsGestionTypeNotif::TYPE_DEBIT, $client->getIdClient(), $notification->id_notification, $walletBalanceHistory, null, null, false, new \DateTime());
-                } catch (\Exception $exception) {
-                    $clientMailNotification = null;
-                    $logger->error('Could not create client email notification on withdrawal operation for client: ' . $client->getIdClient() . ' Error: ' . $exception->getMessage(), [
-                        'id_client' => $client->getIdClient(),
-                        'class'     => __CLASS__,
-                        'function'  => __FUNCTION__,
-                        'file'      => $exception->getFile(),
-                        'line'      => $exception->getLine()
-                    ]);
-                }
-
-                if ($clientNotification->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_DEBIT, 'immediatement') == true) {
-                    $this->sendClientWithdrawalNotification($wallet, $amount, $clientMailNotification);
-                }
-
-                $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
+                return;
             }
+            $unusedSponseeRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponseeRewardAmount($client);
+            $unusedSponsorRewardAmount = $this->get('unilend.service.sponsorship_manager')->getUnusedSponsorRewardAmount($client);
+            $blockedAmount             = round(bcadd($unusedWelcomeOfferAmount, bcadd($unusedSponseeRewardAmount, $unusedSponsorRewardAmount, 4), 4), 2);
+
+            if (round(bcadd($amount, $blockedAmount, 4), 2) > $wallet->getAvailableBalance()) {
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message-blocked-amount'));
+            }
+        }
+
+        if ($this->get('session')->getFlashBag()->has('withdrawalErrors')) {
+            $logger->warning('Withdrawal cannot be accomplished, id_client: ' . $client->getIdClient() . ' Amount: ' . $post['amount'], [
+                'id_client' => $client->getIdClient(),
+                'errors'    => $this->get('session')->getFlashBag()->peek('withdrawalErrors'),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+            ]);
+        } else {
+            $wireTransferOutManager = $this->get('unilend.service.wire_transfer_out_manager');
+            try {
+                $wireTransferOut = $wireTransferOutManager->createTransfer($wallet, $amount, $bankAccount);
+            } catch (\Exception $exception) {
+                $logger->error('Could not create bank transfer out entry. Failed to handle withdrawal operation for client: ' . $client->getIdClient() . 'Error : ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+                $this->addFlash('withdrawalErrors', $translator->trans('lender-wallet_withdrawal-error-message'));
+
+                return;
+            }
+            $notificationManager = $this->get('unilend.service.notification_manager');
+            $notification        = $notificationManager->createNotification(Notifications::TYPE_DEBIT, $wallet->getIdClient()->getIdClient(), null, $amount);
+
+            $withdrawalOperation  = $entityManager->getRepository('UnilendCoreBusinessBundle:Operation')->findOneBy(['idWireTransferOut' => $wireTransferOut]);
+            $walletBalanceHistory = $entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory')->findOneBy([
+                'idOperation' => $withdrawalOperation,
+                'idWallet'    => $wallet
+            ]);
+
+            try {
+                $clientMailNotification = $notificationManager->createEmailNotification(ClientsGestionTypeNotif::TYPE_DEBIT, $client->getIdClient(), $notification->id_notification,
+                    $walletBalanceHistory, null, null, false, new \DateTime());
+            } catch (\Exception $exception) {
+                $clientMailNotification = null;
+                $logger->error('Could not create client email notification on withdrawal operation for client: ' . $client->getIdClient() . ' Error: ' . $exception->getMessage(), [
+                    'id_client' => $client->getIdClient(),
+                    'class'     => __CLASS__,
+                    'function'  => __FUNCTION__,
+                    'file'      => $exception->getFile(),
+                    'line'      => $exception->getLine()
+                ]);
+            }
+
+            if ($clientNotification->getNotif($client->getIdClient(), ClientsGestionTypeNotif::TYPE_DEBIT, 'immediatement') == true) {
+                $this->sendClientWithdrawalNotification($wallet, $amount, $clientMailNotification);
+            }
+
+            $this->addFlash('withdrawalSuccess', $translator->trans('lender-wallet_withdrawal-success-message'));
         }
     }
 

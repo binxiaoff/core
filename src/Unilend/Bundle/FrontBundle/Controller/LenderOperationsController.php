@@ -117,14 +117,13 @@ class LenderOperationsController extends Controller
 
         return $this->json([
             'target'   => 'operations',
-            'template' => $this->render('lender_operations/my_operations.html.twig',
-                [
-                    'clientId'               => $client->getIdClient(),
-                    'hash'                   => $client->getHash(),
-                    'projectsFundedByLender' => $projectsFundedByLender,
-                    'lenderOperations'       => $lenderOperations,
-                    'currentFilters'         => $filters
-                ])->getContent()
+            'template' => $this->render('lender_operations/my_operations.html.twig', [
+                'clientId'               => $client->getIdClient(),
+                'hash'                   => $client->getHash(),
+                'projectsFundedByLender' => $projectsFundedByLender,
+                'lenderOperations'       => $lenderOperations,
+                'currentFilters'         => $filters
+            ])->getContent()
         ]);
     }
 
@@ -486,8 +485,13 @@ class LenderOperationsController extends Controller
         } catch (\Exception $exception) {
             $data = [];
             $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-            $this->get('logger')->error('Exception while getting client notifications for id_project: ' . $projectId . ' Message: ' . $exception->getMessage(),
-                ['id_client' => $client->getIdClient(), 'class' => __CLASS__, 'function' => __FUNCTION__]);
+            $this->get('logger')->error('Exception while getting client notifications for id_project ' . $projectId . '. Message: ' . $exception->getMessage(), [
+                'id_client' => $client->getIdClient(),
+                'class'     => __CLASS__,
+                'function'  => __FUNCTION__,
+                'file'      => $exception->getFile(),
+                'line'      => $exception->getLine()
+            ]);
         }
 
         return $this->json(
@@ -816,7 +820,6 @@ class LenderOperationsController extends Controller
             ]);
         }
 
-        $fileName   = 'vos_operations_' . date('Y-m-d') . '.pdf';
         $pdfContent = $this->renderView('pdf/lender_operations.html.twig', [
             'lenderOperations'  => $lenderOperations,
             'client'            => $client,
@@ -832,7 +835,7 @@ class LenderOperationsController extends Controller
             Response::HTTP_OK,
             [
                 'Content-Type'        => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="%s"', $fileName)
+                'Content-Disposition' => sprintf('attachment; filename="%s"', 'vos_operations_' . date('Y-m-d') . '.pdf')
             ]
         );
     }

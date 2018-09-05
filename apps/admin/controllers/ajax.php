@@ -270,7 +270,7 @@ class ajaxController extends bootstrap
                     $errors[] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $client->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findGrantedLoginAccountByEmail($email);
+                    $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($email);
 
                     if (false === empty($duplicates)) {
                         $errors[] = 'Cette adresse email est déjà utilisée par un autre compte';

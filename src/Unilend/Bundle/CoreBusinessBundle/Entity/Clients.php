@@ -1571,7 +1571,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
      */
     public function getInitials(): string
     {
-        return substr($this->getPrenom(), 0, 1) . substr($this->getNom(), 0, 1);
+        return mb_substr($this->getPrenom(), 0, 1) . mb_substr($this->getNom(), 0, 1);
     }
 
     /**
@@ -1602,7 +1602,7 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
     /**
      * @return bool
      */
-    public function isGrantedLenderWithDraw(): bool
+    public function isGrantedLenderWithdraw(): bool
     {
         return in_array($this->getIdClientStatusHistory()->getIdStatus()->getId(), ClientsStatus::GRANTED_LENDER_WITHDRAW);
     }
@@ -1673,16 +1673,8 @@ class Clients implements UserInterface, EquatableInterface, EncoderAwareInterfac
             return false;
         }
 
-        if ($this->getPassword() !== $user->getPassword()) {
-            if ($this->getUsername() !== $user->getUsername()) {
-                return false;
-            }
-        }
-
-        if ($this->getUsername() !== $user->getUsername()) {
-            if ($this->getPassword() !== $user->getPassword()) {
-                return false;
-            }
+        if ($this->getUsername() !== $user->getUsername() && $this->getPassword() !== $user->getPassword()) {
+            return false;
         }
 
         if (false === $user->isGrantedLogin()) {

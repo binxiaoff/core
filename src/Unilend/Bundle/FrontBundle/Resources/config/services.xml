@@ -137,10 +137,10 @@
 
         <service id="Unilend\Bundle\FrontBundle\Service\LenderProfileFormsHandler" autowire="true"/>
 
-        <service id="Unilend\Bundle\FrontBundle\Twig\ClientExtension" autowire="true" autoconfigure="true" />
+        <service id="Unilend\Bundle\FrontBundle\Twig\ClientExtension" autowire="true" autoconfigure="true"/>
 
-        <service id="Unilend\Bundle\FrontBundle\Security\User\UserChecker" autowire="true" autoconfigure="true" />
+        <service id="Unilend\Bundle\FrontBundle\Security\User\UserChecker" autowire="true" autoconfigure="true"/>
 
-        <service id="Unilend\Bundle\FrontBundle\Twig\ProjectExtension" autowire="true" autoconfigure="true" />
+        <service id="Unilend\Bundle\FrontBundle\Twig\ProjectExtension" autowire="true" autoconfigure="true"/>
 </services>
 </container>

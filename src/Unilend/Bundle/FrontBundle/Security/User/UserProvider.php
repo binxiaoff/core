@@ -61,7 +61,7 @@ class UserProvider implements UserProviderInterface
     public function loadUserByUsername($username): UserInterface
     {
         if (false !== filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountByEmail($username);
+            $users      = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->findGrantedLoginAccountsByEmail($username);
             $usersCount = count($users);
 
             if ($usersCount > 0) {
@@ -90,7 +90,7 @@ class UserProvider implements UserProviderInterface
      */
     public function refreshUser(UserInterface $user): UserInterface
     {
-        if (! $this->supportsClass(get_class($user))) {
+        if (false === $this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
         }
 
@@ -98,7 +98,8 @@ class UserProvider implements UserProviderInterface
         // might have changed without proper persistence in the database.
         // That's the case when the user has been changed by a form with
         // validation errors.
-        if (! $id = $user->getIdClient()) {
+        $id = $user->getIdClient();
+        if (empty($id)) {
             throw new \InvalidArgumentException('You cannot refresh a user ' .
                 'from the EntityUserProvider that does not contain an identifier. ' .
                 'The user object has to be serialized with its own identifier ' .

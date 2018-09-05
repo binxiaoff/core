@@ -420,7 +420,7 @@ class ProjectRequestController extends Controller
             $client->setPrenom($firstName);
         }
         if ($email) {
-            $duplicates = $clientRepository->findGrantedLoginAccountByEmail($email);
+            $duplicates = $clientRepository->findGrantedLoginAccountsByEmail($email);
 
             if (false === empty($duplicates)) {
                 if ($this->removeEmailSuffix($client->getEmail()) === $email) {

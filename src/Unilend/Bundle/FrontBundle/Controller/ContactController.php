@@ -13,11 +13,18 @@ use Unilend\core\Loader;
 
 class ContactController extends Controller
 {
+    const CONTACT_ROLE_PRESS       = 1;
+    const CONTACT_ROLE_LENDER      = 2;
+    const CONTACT_ROLE_BORROWER    = 3;
+    const CONTACT_ROLE_RECRUITMENT = 4;
+    const CONTACT_ROLE_OTHER       = 5;
+    const CONTACT_ROLE_PARTNER     = 6;
+
     /**
      * @Route("/contact", name="contact")
      *
      * @param Request                     $request
-     * @param UserInterface|Clients|unill $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
@@ -45,7 +52,7 @@ class ContactController extends Controller
      *
      * @param Request                     $request
      * @param string                      $query
-     * @param UserInterface|Clients|unill $client
+     * @param UserInterface|Clients|null $client
      *
      * @return Response
      */
@@ -87,7 +94,7 @@ class ContactController extends Controller
             'phone'     => $client->getMobile(),
             'email'     => $client->getEmail(),
             'company'   => empty($company) ? '' : $company->getName(),
-            'role'      => $client->isLender() ? 2 : ($client->isBorrower() ? 3 : ($client->isPartner() ? 4 : ''))
+            'role'      => $client->isLender() ? self::CONTACT_ROLE_LENDER : ($client->isBorrower() ? self::CONTACT_ROLE_BORROWER : ($client->isPartner() ? self::CONTACT_ROLE_PARTNER : ''))
         ];
 
         return $formData;
@@ -199,22 +206,22 @@ class ContactController extends Controller
             }
 
             switch ($post['role']) {
-                case 1:
+                case self::CONTACT_ROLE_PRESS:
                     $settingType = 'Adresse presse';
                     break;
-                case 2:
+                case self::CONTACT_ROLE_LENDER:
                     $settingType = 'Adresse preteur';
                     break;
-                case 3:
+                case self::CONTACT_ROLE_BORROWER:
                     $settingType = 'Adresse emprunteur';
                     break;
-                case 4:
+                case self::CONTACT_ROLE_RECRUITMENT:
                     $settingType = 'Adresse recrutement';
                     break;
-                case 6:
+                case self::CONTACT_ROLE_PARTNER:
                     $settingType = 'Adresse partenariat';
                     break;
-                case 5:
+                case self::CONTACT_ROLE_OTHER:
                 default:
                     $settingType = 'Adresse autre';
                     break;

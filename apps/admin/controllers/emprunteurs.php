@@ -143,7 +143,7 @@ class emprunteursController extends bootstrap
                     $_SESSION['error_email_exist'] = 'Le format de l\'adresse email est invalide';
                 } elseif (false === empty($email) && $email !== $this->clients->email) {
                     $clientRepository = $entityManager->getRepository('UnilendCoreBusinessBundle:Clients');
-                    $duplicates       = $clientRepository->findGrantedLoginAccountByEmail($email);
+                    $duplicates       = $clientRepository->findGrantedLoginAccountsByEmail($email);
 
                     if (false === empty($duplicates)) {
                         $_SESSION['error_email_exist'] = 'Cette adresse email est déjà utilisée par un autre compte';

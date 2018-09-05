@@ -14,6 +14,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, Companies, Factures, Oper
 use Unilend\Bundle\CoreBusinessBundle\Service\{BorrowerOperationsManager, ProjectStatusManager};
 use Unilend\Bundle\FrontBundle\Form\{BorrowerContactType, SimpleProjectType};
 
+// Must have ROLE_BORROWER to access to these pages
 class BorrowerAccountController extends Controller
 {
     /**
@@ -34,8 +35,7 @@ class BorrowerAccountController extends Controller
         return [
             'pre_funding_projects'   => $projectsPreFunding,
             'funding_projects'       => $projectsFunding,
-            'post_funding_projects'  => $projectsPostFunding,
-            'closing_projects'       => $request->getSession()->get('closingProjects')
+            'post_funding_projects'  => $projectsPostFunding
         ];
     }
 
@@ -213,14 +213,14 @@ class BorrowerAccountController extends Controller
         $company         = $entityManager->getRepository('UnilendCoreBusinessBundle:Companies')->findOneBy(['idClientOwner' => $client]);
         $clientsInvoices = $oInvoices->select('id_company = ' . $company->getIdCompany(), 'date DESC');
 
-        foreach ($clientsInvoices as $iKey => $aInvoice) {
-            switch ($aInvoice['type_commission']) {
+        foreach ($clientsInvoices as $index => $invoice) {
+            switch ($invoice['type_commission']) {
                 case Factures::TYPE_COMMISSION_FUNDS:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_funds_commission', ['clientHash' => $client->getHash(), 'idProject' => $aInvoice['id_project']]);
+                    $clientsInvoices[$index]['url'] = $this->generateUrl('borrower_invoice_funds_commission', ['clientHash' => $client->getHash(), 'idProject' => $invoice['id_project']]);
                     break;
                 case Factures::TYPE_COMMISSION_REPAYMENT:
-                    $clientsInvoices[$iKey]['url'] = $this->generateUrl('borrower_invoice_payment_commission',
-                        ['clientHash' => $client->getHash(), 'idProject' => $aInvoice['id_project'], 'order' => $aInvoice['ordre']]);
+                    $clientsInvoices[$index]['url'] = $this->generateUrl('borrower_invoice_payment_commission',
+                        ['clientHash' => $client->getHash(), 'idProject' => $invoice['id_project'], 'order' => $invoice['ordre']]);
                     break;
             }
         }
@@ -629,7 +629,11 @@ class BorrowerAccountController extends Controller
             }
         }
 
-        return $this->render('borrower_account/security.html.twig', ['securityToken' => $securityToken, 'expired' => $isLinkExpired, 'displayForm' => $displayForm]);
+        return $this->render('borrower_account/security.html.twig', [
+            'securityToken' => $securityToken,
+            'expired'       => $isLinkExpired,
+            'displayForm'   => $displayForm
+        ]);
     }
 
     /**

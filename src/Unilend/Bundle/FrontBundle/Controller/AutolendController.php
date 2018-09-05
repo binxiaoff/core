@@ -404,9 +404,12 @@ class AutolendController extends Controller
      */
     private function saveAutolendOff(Clients $client, AutoBidSettingsManager $autoBidSettingsManager, Request $request): string
     {
-        if (\client_settings::AUTO_BID_ON == $this->get('unilend.service.client_settings_manager')->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH)) {
+        $autoBidSwitch = $this->get('unilend.service.client_settings_manager')->getSetting($client, ClientSettingType::TYPE_AUTOBID_SWITCH);
+
+        if (\client_settings::AUTO_BID_ON == $autoBidSwitch) {
             $autoBidSettingsManager->off($client);
             $this->saveAutoBidSwitchHistory($client, \client_settings::AUTO_BID_OFF, $request);
+
             return 'update_off_success';
         }
 

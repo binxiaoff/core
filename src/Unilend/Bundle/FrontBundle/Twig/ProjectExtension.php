@@ -16,7 +16,6 @@ class ProjectExtension extends \Twig_Extension
     private $projectManager;
 
     /**
-     *
      * @param EntityManagerInterface $entityManager
      * @param AutoBidSettingsManager $autoBidSettingsManager
      * @param ProjectManager         $projectManager

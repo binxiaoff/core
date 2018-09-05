@@ -38,7 +38,7 @@ class LenderManager
      */
     public function canBid(Clients $client): bool
     {
-        return ($client->isLender() && $client->isValidated());
+        return $client->isLender() && $client->isValidated();
     }
 
     /**

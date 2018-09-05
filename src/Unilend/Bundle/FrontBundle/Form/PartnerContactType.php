@@ -32,9 +32,8 @@ class PartnerContactType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($this->user->getIdClient());
-        $phone  = $client->getTelephone();
-        $email  = $client->getEmail();
+        $phone  = $this->user->getTelephone();
+        $email  = $this->user->getEmail();
 
         $builder
             ->add('phone', TextType::class, [

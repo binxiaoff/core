@@ -815,9 +815,9 @@ class ClientsRepository extends EntityRepository
     /**
      * @param string $email
      *
-     * @return array
+     * @return Clients[]
      */
-    public function findGrantedLoginAccountByEmail(string $email): array
+    public function findGrantedLoginAccountsByEmail(string $email): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
