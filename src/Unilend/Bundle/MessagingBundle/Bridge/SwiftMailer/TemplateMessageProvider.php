@@ -78,8 +78,9 @@ class TemplateMessageProvider
      * @param bool   $wrapKeywords
      *
      * @return TemplateMessage
+     * @throws \Swift_RfcComplianceException
      */
-    public function newMessage($templateName, array $keywords = [], bool $wrapKeywords = true)
+    public function newMessage(string $templateName, array $keywords = [], bool $wrapKeywords = true)
     {
         $mailTemplate = $this->entityManager->getRepository('UnilendCoreBusinessBundle:MailTemplates')->findOneBy([
             'type'   => $templateName,

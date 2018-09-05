@@ -41,7 +41,7 @@
                                                 {% trans %} partner-project-list_prospects-table-borrower {% endtrans %}
                                             </span>
                                         </th>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-prospects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_prospects-table-submitter {% endtrans %}
@@ -80,7 +80,7 @@
                                         <tr id="prospect-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}"
                                             data-hash="{{ project.hash }}"
                                             data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
                                             {% endif %}
                                             data-sortable-motif="{{ project.motive|e('html_attr') }}"
@@ -88,7 +88,7 @@
                                             data-sortable-duration="{{ project.duration }}"
                                             data-sortable-date="{{ project.date|date('U') }}">
                                             <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                             {% endif %}
                                             <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -124,7 +124,7 @@
                                                 {% trans %} partner-project-list_incomplete-projects-table-borrower {% endtrans %}
                                             </span>
                                         </th>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-incomplete-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_incomplete-projects-table-submitter {% endtrans %}
@@ -163,7 +163,7 @@
                                         <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                             data-hash="{{ project.hash }}"
                                             data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
                                             {% endif %}
                                             data-sortable-motif="{{ project.motive|e('html_attr') }}"
@@ -171,7 +171,7 @@
                                             data-sortable-duration="{{ project.duration }}"
                                             data-sortable-date="{{ project.date|date('U') }}">
                                             <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                             {% endif %}
                                             <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -206,7 +206,7 @@
                                                 {% trans %} partner-project-list_complete-projects-table-borrower {% endtrans %}
                                             </span>
                                         </th>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-complete-projects-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_complete-projects-table-submitter {% endtrans %}
@@ -252,7 +252,7 @@
                                             data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                             data-details-tos="{{ project.tos|json_encode|escape('html_attr') }}"
                                             data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
                                             {% endif %}
                                             data-sortable-motif="{{ project.motive|e('html_attr') }}"
@@ -261,7 +261,7 @@
                                             data-sortable-date="{{ project.date|date('U') }}"
                                             data-sortable-status="{{ ('partner-project-list_status-' ~ project.status)|trans|e('html_attr') }}">
                                             <td class="table-projects-item-borrower">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                             {% endif %}
                                             <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -300,7 +300,7 @@
                                                 {% trans %} partner-project-list_abandoned-table-borrower {% endtrans %}
                                             </span>
                                         </th>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-abandoned-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_abandoned-table-submitter {% endtrans %}
@@ -344,7 +344,7 @@
                                         <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                             data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                             data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
                                             {% endif %}
                                             data-sortable-motif="{{ project.motive|e('html_attr') }}"
@@ -352,7 +352,7 @@
                                             data-sortable-duration="{{ project.duration }}"
                                             data-sortable-date="{{ project.date|date('U') }}">
                                             <td class="table-projects-item-borrower">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                             {% endif %}
                                             <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>
@@ -403,7 +403,7 @@
                                                 {% trans %} partner-project-list_rejected-table-borrower {% endtrans %}
                                             </span>
                                         </th>
-                                        {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                        {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                             <th class="table-projects-item-submitter table-sortable-column" data-sortable-by="submitter">
                                                 <span class="label" title="{{ 'partner-project-list_sr-sort-rejected-submitter'|trans|e('html_attr') }}" data-toggle="tooltip">
                                                     {% trans %} partner-project-list_rejected-table-submitter {% endtrans %}
@@ -442,7 +442,7 @@
                                         <tr id="project-{{ project.id }}" class="table-projects-item {% if loop.index is divisible by(2) %}even{% else %}odd{% endif %}{% if project.hasChanged == true %} ui-table-projects-item-changed{% endif %}"
                                             data-details="{{ project.memos|json_encode|escape('html_attr') }}"
                                             data-sortable-borrower="{{ project.name|e('html_attr') }}"
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 data-sortable-submitter="{{ project.submitter.lastName|e('html_attr') }} {{ project.submitter.firstName|e('html_attr') }}{% if project.submitter.entity|length %} - {{ project.submitter.entity|e('html_attr') }}{% endif %}"
                                             {% endif %}
                                             data-sortable-motif="{{ project.motive|e('html_attr') }}"
@@ -450,7 +450,7 @@
                                             data-sortable-duration="{{ project.duration }}"
                                             data-sortable-date="{{ project.date|date('U') }}">
                                             <td class="table-projects-item-borrower" colspan="2">{% if project.name is empty %}<em>{% trans %} partner-project-list_empty-company-name-placeholder {% endtrans %}</em>{% else %}{{ project.name }}{% endif %}</td>
-                                            {% if is_granted(constant('\\Unilend\\Bundle\\FrontBundle\\Security\\User\\UserPartner::ROLE_ADMIN')) %}
+                                            {% if is_granted(constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\Clients::ROLE_PARTNER_ADMIN')) %}
                                                 <td class="table-projects-item-submitter">{{ project.submitter.lastName }} {{ project.submitter.firstName }}{% if project.submitter.entity|length %}<br>{{ project.submitter.entity }}{% endif %}</td>
                                             {% endif %}
                                             <td class="table-projects-item-amount">{{ project.amount|localizednumber }}&nbsp;€</td>

@@ -128,10 +128,9 @@ class MailerManager
             ->findBy(['idProject' => $project], ['rate' => 'ASC', 'added' => 'ASC']);
 
         foreach ($bids as $bid) {
-            $wallet       = $bid->getIdLenderAccount();
-            $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+            $wallet = $bid->getIdLenderAccount();
 
-            if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+            if ($wallet->getIdClient()->isGrantedLogin()) {
                 $keywords = [
                     'companyName'   => $bid->getProject()->getIdCompany()->getName(),
                     'firstName'     => $wallet->getIdClient()->getPrenom(),
@@ -185,9 +184,7 @@ class MailerManager
             ]);
         }
 
-        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($borrower->isValidated()) {
             $currentDate = new \DateTime();
             $interval    = $project->getDateRetrait()->diff($currentDate);
 
@@ -368,9 +365,8 @@ class MailerManager
         $project       = $this->entityManagerSimulator->getRepository('projects');
         $bidRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Bids');
         $bid           = $bidRepository->find($notification->id_bid);
-        $clientStatus  = $bid->getIdLenderAccount()->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
 
-        if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+        if ($bid->getIdLenderAccount()->getIdClient()->isGrantedLogin()) {
             /**
              * Using the projects.data object is a workaround while projects has not been completely migrated on Doctrine Entity
              * and date_fin cannot be NULL
@@ -480,10 +476,9 @@ class MailerManager
             ]);
         }
 
-        $borrower     = $project->getIdCompany()->getIdClientOwner();
-        $clientStatus = $borrower->getIdClientStatusHistory()->getIdStatus()->getId();
+        $borrower = $project->getIdCompany()->getIdClientOwner();
 
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($borrower->isValidated()) {
             $keywords = [
                 'firstName' => $borrower->getPrenom()
             ];
@@ -567,10 +562,9 @@ class MailerManager
     public function sendFirstAutoBidActivation(\notifications $notification): void
     {
         /** @var Wallet $wallet */
-        $wallet       = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
-        $clientStatus = $wallet->getIdClient()->getIdClientStatusHistory()->getIdStatus()->getId();
+        $wallet = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->find($notification->id_lender);
 
-        if (in_array($clientStatus, ClientsStatus::GRANTED_LOGIN)) {
+        if ($wallet->getIdClient()->isGrantedLogin()) {
             $keyWords = [
                 'firstName'              => $wallet->getIdClient()->getPrenom(),
                 'autolendActivationTime' => $this->getActivationTime($wallet->getIdClient()->getIdClient())->format('G\hi'),
@@ -1755,9 +1749,7 @@ class MailerManager
             $client = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Clients')->find($client->id_client);
         }
 
-        $clientStatus = $client->getIdClientStatusHistory()->getIdStatus()->getId();
-
-        if (ClientsStatus::STATUS_VALIDATED === $clientStatus) {
+        if ($client->isValidated()) {
             /** @var \temporary_links_login $temporaryLink */
             $temporaryLink = $this->entityManagerSimulator->getRepository('temporary_links_login');
             $keywords      = [

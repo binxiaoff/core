@@ -59,17 +59,4 @@ class ClientManager
 
         return (bool) $setting;
     }
-
-    /**
-     * @param Clients $client
-     *
-     * @return string
-     */
-    public function getInitials(Clients $client): string
-    {
-        $initials = substr($client->getPrenom(), 0, 1) . substr($client->getNom(), 0, 1);
-        //TODO decide which initials to use in case of company
-
-        return $initials;
-    }
 }

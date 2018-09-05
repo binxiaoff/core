@@ -5,9 +5,8 @@ namespace Unilend\Bundle\FrontBundle\Service;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
-use Unilend\Bundle\FrontBundle\Security\User\UserLender;
-use Unilend\Bundle\FrontBundle\Security\User\UserPartner;
+use Unilend\Bundle\CoreBusinessBundle\Entity\Clients;
+use Unilend\Bundle\CoreBusinessBundle\Service\PartnerManager;
 use Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager;
 
 /**
@@ -18,23 +17,28 @@ class DataLayerCollector
     const SESSION_KEY_LENDER_CLIENT_ID   = 'datalayer_lender_client_id';
     const SESSION_KEY_BORROWER_CLIENT_ID = 'datalayer_borrower_client_id';
     const SESSION_KEY_CLIENT_EMAIL       = 'datalayer_client_email';
-    /**
-     * @var TokenStorageInterface
-     */
+
+    /** @var TokenStorageInterface */
     private $tokenStorage;
+    /** @var RequestStack */
     private $requestStack;
+    /** @var GoogleTagManager */
     private $googleTagManager;
+    /** @var PartnerManager */
+    private $partnerManager;
 
     /**
      * @param TokenStorageInterface $tokenStorage
      * @param RequestStack          $requestStack
      * @param GoogleTagManager      $googleTagManager
+     * @param PartnerManager        $partnerManager
      */
-    public function __construct(TokenStorageInterface $tokenStorage, RequestStack $requestStack, GoogleTagManager $googleTagManager)
+    public function __construct(TokenStorageInterface $tokenStorage, RequestStack $requestStack, GoogleTagManager $googleTagManager, PartnerManager $partnerManager)
     {
         $this->tokenStorage     = $tokenStorage;
         $this->requestStack     = $requestStack;
         $this->googleTagManager = $googleTagManager;
+        $this->partnerManager   = $partnerManager;
     }
 
     /**
@@ -45,20 +49,21 @@ class DataLayerCollector
         $token = $this->tokenStorage->getToken();
         if ($token) {
             $data = [];
-            $user = $token->getUser();
+            /** @var Clients $client */
+            $client = $token->getUser();
 
-            if ($user instanceof BaseUser) {
-                $data = ['uid' => md5($user->getEmail()), 'unique_id' => md5($user->getEmail())];
+            if ($client instanceof Clients) {
+                $data = ['uid' => md5($client->getEmail()), 'unique_id' => md5($client->getEmail())];
 
-                if ($user instanceof UserLender) {
-                    $data['ID_Preteur'] = $user->getClientId();
-                } elseif ($user instanceof UserPartner) {
-                    $data['ID_Partenaire'] = $user->getPartner()->getId();
-                    $data['ID_Client']     = $user->getClientId();
-                    $data['Organisation']  = $user->getCompany()->getName();
-                    $data['Role']          = in_array(UserPartner::ROLE_ADMIN, $user->getRoles()) ? 'Administrateur' : 'Collaborateur';
+                if ($client->isLender()) {
+                    $data['ID_Preteur'] = $client->getIdClient();
+                } elseif ($partner = $this->partnerManager->getPartner($client)) {
+                    $data['ID_Partenaire'] = $partner->getId();
+                    $data['ID_Client']     = $client->getIdClient();
+                    $data['Organisation']  = $client->getCompanyClient()->getIdCompany()->getName();
+                    $data['Role']          = in_array(Clients::ROLE_PARTNER_ADMIN, $client->getRoles()) ? 'Administrateur' : 'Collaborateur';
                 } else {
-                    $data['ID_Emprunteur'] = $user->getClientId();
+                    $data['ID_Emprunteur'] = $client->getIdClient();
                 }
             } else {
                 $session = $this->requestStack->getCurrentRequest()->getSession();

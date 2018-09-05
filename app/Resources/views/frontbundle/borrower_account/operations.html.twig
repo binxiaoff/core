@@ -175,11 +175,11 @@
                                 <tbody>
                                     {% for project in post_funding_projects %}
                                         <tr class="table-mydocuments-item list-files">
-                                            <td>{{ project.id_project }}</td>
+                                            <td>{{ project.getIdProject() }}</td>
                                             <td>
-                                                {% if project.pouvoir is not empty and project.pouvoir.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
+                                                {% if project.getProxy() is not empty and project.getProxy().getStatus() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
                                                     <div class="document-download">
-                                                    <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
+                                                    <a href="/pdf/pouvoir/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-voucher-28x38.png') }}" alt="{% trans %} borrower-document_contracts-proxy-download-link-placeholder {% endtrans %}"/>
                                                         {% trans %} borrower-document_contracts-proxy-download-link {% endtrans %}
                                                     </a>
@@ -189,9 +189,9 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                {% if project.mandat is not empty and project.mandat.status == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
+                                                {% if project.getMandates() is not empty and project.getMandates()[0].getStatus() == constant('Unilend\\Bundle\\CoreBusinessBundle\\Entity\\UniversignEntityInterface::STATUS_SIGNED') %}
                                                     <div class="document-download">
-                                                    <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.id_project }}" target="_blank">
+                                                    <a href="/pdf/mandat/{{ app.user.hash }}/{{ project.getIdProject() }}" target="_blank">
                                                         <img class="document-download" src="{{ siteurlmedia('dashboard/file-declaration-28x38.png') }}" alt="{% trans %} borrower-document_contracts-mandate-download-link-placeholder {% endtrans %}"/>
                                                         {% trans %} borrower-document_contracts-mandate-download-link {% endtrans %}
                                                     </a>
