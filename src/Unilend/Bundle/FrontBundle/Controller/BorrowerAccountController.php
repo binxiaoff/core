@@ -591,13 +591,12 @@ class BorrowerAccountController extends Controller
                 $translator = $this->get('translator');
                 $formData   = $request->request->get('borrower_security', []);
                 $error      = false;
-                $borrower   = $this->get('unilend.frontbundle.security.user_provider')->loadUserByUsername($client->getEmail());
 
                 try {
                     if (empty($formData['password'])) {
                         throw new \Exception('password empty');
                     }
-                    $password = $this->get('security.password_encoder')->encodePassword($borrower, $formData['password']);
+                    $password = $this->get('security.password_encoder')->encodePassword($client, $formData['password']);
                 } catch (\Exception $exception) {
                     $error = true;
                     $this->addFlash('error', $translator->trans('common-validator_password-invalid'));
