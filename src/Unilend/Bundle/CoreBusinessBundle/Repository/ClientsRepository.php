@@ -11,7 +11,7 @@ use Doctrine\ORM\Query\ResultSetMapping;
 use Doctrine\ORM\UnexpectedResultException;
 use PDO;
 use Unilend\Bundle\CoreBusinessBundle\Entity\{AddressType, AttachmentType, Clients, ClientsStatus, Companies, CompanyClient, Loans, OperationType, GreenpointAttachment, Pays, Users, VigilanceRule, WalletType};
-use Unilend\Bundle\CoreBusinessBundle\Service\LenderValidationManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\{GreenPointValidationManager, LenderValidationManager};
 
 class ClientsRepository extends EntityRepository
 {
@@ -167,12 +167,9 @@ class ClientsRepository extends EntityRepository
     }
 
     /**
-     * @param array $status
-     * @param bool  $excludeUsPerson
-     *
-     * @return Clients[]
+     * @return array
      */
-    public function getLendersInStatus(array $status, bool $excludeUsPerson): array
+    public function getLendersForGreenpointCheck(): array
     {
         $queryBuilder = $this->createQueryBuilder('c');
         $queryBuilder
@@ -181,12 +178,9 @@ class ClientsRepository extends EntityRepository
             ->innerJoin('UnilendCoreBusinessBundle:ClientsStatusHistory', 'csh', Join::WITH, 'c.idClientStatusHistory = csh.id')
             ->where('csh.idStatus IN (:status)')
             ->andWhere('wt.label = :lender')
-            ->setParameter('status', $status, Connection::PARAM_INT_ARRAY)
+            ->andWhere('c.usPerson IS NULL OR c.usPerson = 0')
+            ->setParameter('status', GreenPointValidationManager::STATUS_TO_CHECK, Connection::PARAM_INT_ARRAY)
             ->setParameter('lender', WalletType::LENDER);
-
-        if ($excludeUsPerson) {
-            $queryBuilder->andWhere('c.usPerson IS NULL OR c.usPerson = 0');
-        }
 
         return $queryBuilder->getQuery()->getResult();
     }

@@ -17,7 +17,7 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
     <?php if (1 < count($this->duplicateAccounts)) : ?>
         <?php $this->fireView('partials/duplicated_accounts_popup'); ?>
     <?php endif; ?>
-    <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur">
+    <form method="post" action="<?= $this->lurl ?>/preteurs/valider_preteur" class="lender-validation-form">
         <div class="row">
             <div class="form-group col-md-6">
                 <?php if (1 < count($this->duplicateAccounts)) : ?>
@@ -57,4 +57,48 @@ use Unilend\Bundle\CoreBusinessBundle\Entity\ClientsStatus;
                    value="Réactiver le compte à son précédent statut">
         </div>
     </div>
+<?php endif; ?>
+
+<?php if ($this->vigilanceStatus['checkOnValidation']) : ?>
+    <div style="display: none">
+        <div id="vigilance-check-popup" style="padding: 20px 20px 0 20px">
+            <h1><?= $this->vigilanceStatus['message'] ?></h1>
+            <p>Avez-vous effectué les contrôles complémentaires en lien avec le statut de vigilance du client avant de valider son inscription&nbsp;?</p>
+            <div style="text-align: right">
+                <button class="btn-default vigilance-check-cancel">Non</button>
+                <button class="btn-default vigilance-check-confirm">Oui</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function () {
+            var $validationForm,
+                $vigilanceCheckConfirmed = false
+
+            $('.lender-validation-form').on('submit', function (event) {
+                if ($vigilanceCheckConfirmed) {
+                    return
+                }
+
+                event.preventDefault()
+
+                $validationForm = $(this)
+
+                $.colorbox({
+                    inline: true,
+                    href: $('#vigilance-check-popup')
+                })
+            })
+
+            $(document).on('click', '.vigilance-check-cancel', function () {
+                $.colorbox.close()
+            })
+
+            $(document).on('click', '.vigilance-check-confirm', function () {
+                $vigilanceCheckConfirmed = true
+                $validationForm.submit()
+            })
+        })
+    </script>
 <?php endif; ?>

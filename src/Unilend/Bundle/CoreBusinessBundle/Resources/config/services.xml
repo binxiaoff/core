@@ -568,5 +568,9 @@
         </service>
 
         <service id="Unilend\Bundle\CoreBusinessBundle\Service\WorkingDaysManager" autowire="true"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\GreenPointDataManager" autowire="true" public="false"/>
+
+        <service id="Unilend\Bundle\CoreBusinessBundle\Service\GreenPointValidationManager" autowire="true"/>
     </services>
 </container>
