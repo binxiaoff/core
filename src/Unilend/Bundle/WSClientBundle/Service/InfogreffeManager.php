@@ -139,6 +139,7 @@ class InfogreffeManager
 
         try {
             // todo: inject a SoapClient as dependency
+            // Mesbah : When I implemented this manager, I tried to use \SoapClient as I did for Altares, but it didn't work with Infogref API, this is why I used a basic curl to send the request.
             $request = $this->getXmlRequest($siren);
 
             $soapRequestString = '<?xml version="1.0" encoding="utf-8"?>
