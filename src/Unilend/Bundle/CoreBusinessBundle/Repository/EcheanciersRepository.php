@@ -2,10 +2,8 @@
 
 namespace Unilend\Bundle\CoreBusinessBundle\Repository;
 
-use Doctrine\DBAL\Cache\QueryCacheProfile;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\DBAL\{Cache\QueryCacheProfile, Connection};
+use Doctrine\ORM\{EntityRepository, NoResultException, Query\Expr\Join};
 use Unilend\Bundle\CoreBusinessBundle\Entity\{Clients, CompanyStatus, Echeanciers, Loans, OperationType, Projects, ProjectsStatus, UnilendStats, Wallet};
 use Unilend\Bundle\CoreBusinessBundle\Service\TaxManager;
 use Unilend\Bundle\FrontBundle\Controller\LenderDashboardController;
@@ -582,9 +580,10 @@ class EcheanciersRepository extends EntityRepository
     }
 
     /**
-     * @param Projects|integer $project
+     * @param $project
      *
      * @return int
+     * @throws \Doctrine\ORM\NonUniqueResultException
      */
     public function getOverdueRepaymentCountByProject($project)
     {
@@ -599,7 +598,11 @@ class EcheanciersRepository extends EntityRepository
             ->groupBy('e.idProject, e.idLender')
             ->setMaxResults(1);
 
-        return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+        try {
+            return (int) $queryBuilder->getQuery()->getSingleScalarResult();
+        } catch (NoResultException $exception) {
+            return 0;
+        }
     }
 
     /**

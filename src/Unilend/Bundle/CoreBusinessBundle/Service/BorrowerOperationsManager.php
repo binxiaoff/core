@@ -5,18 +5,16 @@ namespace Unilend\Bundle\CoreBusinessBundle\Service;
 use Doctrine\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Translation\Translator;
-use Unilend\Bundle\CoreBusinessBundle\Entity\{
-    OperationSubType, OperationType, Receptions, TaxType, WalletType
-};
+use Unilend\Bundle\CoreBusinessBundle\Entity\{OperationSubType, OperationType, Receptions, TaxType, Wallet};
 
 class BorrowerOperationsManager
 {
-    const OP_PROJECT_CHARGE_REPAYMENT       = 'project-charge-repayment';
-    const OP_LENDER_MONTHLY_REPAYMENT       = 'lender-monthly-repayment';
-    const OP_LENDER_EARLY_REPAYMENT         = 'lender-early-repayment';
-    const OP_LENDER_RECOVERY_REPAYMENT      = 'lender-recovery-repayment';
-    const OP_BORROWER_DIRECT_DEBIT          = 'monthly-payment-direct-debit';
-    const OP_WIRE_TRANSFER_IN               = 'wire-transfer-in';
+    const OP_PROJECT_CHARGE_REPAYMENT  = 'project-charge-repayment';
+    const OP_LENDER_MONTHLY_REPAYMENT  = 'lender-monthly-repayment';
+    const OP_LENDER_EARLY_REPAYMENT    = 'lender-early-repayment';
+    const OP_LENDER_RECOVERY_REPAYMENT = 'lender-recovery-repayment';
+    const OP_BORROWER_DIRECT_DEBIT     = 'monthly-payment-direct-debit';
+    const OP_WIRE_TRANSFER_IN          = 'wire-transfer-in';
 
     /** @var EntityManager */
     private $entityManager;
@@ -40,7 +38,7 @@ class BorrowerOperationsManager
     }
 
     /**
-     * @param \clients  $client
+     * @param Wallet    $wallet
      * @param \DateTime $start
      * @param \DateTime $end
      * @param array     $projectsIds
@@ -49,9 +47,8 @@ class BorrowerOperationsManager
      * @return array
      * @throws \Exception
      */
-    public function getBorrowerOperations(\clients $client, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
+    public function getBorrowerOperations(Wallet $wallet, \DateTime $start, \DateTime $end, array $projectsIds = [], $borrowerOperationType = 'all')
     {
-        $wallet                         = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Wallet')->getWalletByType($client->id_client, WalletType::BORROWER);
         $walletBalanceHistoryRepository = $this->entityManager->getRepository('UnilendCoreBusinessBundle:WalletBalanceHistory');
         $operationRepository            = $this->entityManager->getRepository('UnilendCoreBusinessBundle:Operation');
         $walletHistory                  = $walletBalanceHistoryRepository->getBorrowerWalletOperations($wallet, $start, $end, $projectsIds);

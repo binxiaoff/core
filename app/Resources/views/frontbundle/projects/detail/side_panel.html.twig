@@ -75,7 +75,7 @@
                 <p>{% trans %} project-detail_side-bar-project-closing-pending {% endtrans %}</p>
                 {% include 'projects/detail/login_form.html.twig' %}
             {% elseif is_granted('IS_AUTHENTICATED_FULLY') %}
-                {% if is_granted('ROLE_LENDER') and app.user.getClientStatus() < constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ClientsStatus::STATUS_VALIDATED') %}
+                {% if is_granted('ROLE_LENDER') and false == app.user.isValidated() and false == app.user.isSuspended() %}
                     <p>{% trans %} project-detail_side-bar-completeness-message {% endtrans %}</p>
                 {% elseif conditions.canBid %}
                     {% if isLenderEligible is defined and isLenderEligible == false %}

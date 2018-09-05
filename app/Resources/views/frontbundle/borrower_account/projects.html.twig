@@ -45,15 +45,26 @@
                                     </thead>
                                         <tbody>
                                         {% for project in pre_funding_projects %}
+                                            {% if project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMPLETE_REQUEST'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REVIEW')] %}
+                                                {% set project_status_label = 'waiting-for-documents' %}
+                                            {% elseif project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::ANALYSIS_REVIEW'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMITY_REVIEW')] %}
+                                                {% set project_status_label = 'analyzing' %}
+                                            {% elseif project.getStatus() in [constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMMERCIAL_REJECTION'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::ANALYSIS_REJECTION'), constant('\\Unilend\\Bundle\\CoreBusinessBundle\\Entity\\ProjectsStatus::COMITY_REJECTION')] %}
+                                                {% set project_status_label = 'refused' %}
+                                            {% else %}
+                                                {# PREP_FUNDING and A_FUNDER #}
+                                                {% set project_status_label = 'waiting-for-being-on-line' %}
+                                            {% endif %}
+                                            {% set predictAutoBid = projectPredictedAutoBidPercentage(project) %}
                                             <tr>
-                                                <td>{{ project.id_project }}</td>
-                                                <td>{{ project.nature_project }}</td>
-                                                <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%' : project.period} %} common_month {% endtranschoice %}</td>
-                                                <td>{{ ('borrower-projects_' ~ project.project_status_label)|trans }}</td>
-                                                <td>{% if project.predict_autobid > 0 %} {{ project.predict_autobid|localizednumber }}&nbsp;% {% endif %}</td>
+                                                <td>{{ project.getIdProject() }}</td>
+                                                <td>{{ project.getNatureProject() }}</td>
+                                                <td>{{ project.getAmount()|localizednumber }}&nbsp;€<br>{% transchoice project.getPeriod() with {'%count%' : project.getPeriod()} %} common_month {% endtranschoice %}</td>
+                                                <td>{{ ('borrower-projects_' ~ project_status_label)|trans }}</td>
+                                                <td>{% if predictAutoBid > 0 %} {{ predictAutoBid|localizednumber }}&nbsp;% {% endif %}</td>
                                                 <td class="center">
-                                                    {% if project.hash %}
-                                                        <a href="{{ path('project_request_files', {'hash' : project.hash}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
+                                                    {% if project.getHash() %}
+                                                        <a href="{{ path('project_request_files', {'hash' : project.getHash()}) }}" class="ui-has-tooltip" data-original-title="{% trans %} borrower-projects_add-documents-icon {% endtrans %}"><span class="icon fa-file-u16"></span></a>
                                                     {% endif %}
                                                 </td>
                                             </tr>
@@ -96,35 +107,37 @@
                                     </thead>
                                     <tbody>
                                         {% for project in funding_projects %}
+                                            {% set fundingProgress = projectFundingPercentage(project) %}
+                                            {% set averageInterestRate = projectAverageInterestRate(project) %}
                                             <tr>
-                                                <td>{{ project.id_project }}</td>
-                                                <td>{{ project.nature_project }}</td>
-                                                <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%' : project.period} %} common_month {% endtranschoice %}</td>
-                                                <td>{{ project.ended|localizeddate('short', 'none')}}</td>
-                                                <td>{{ project.funding_progress|localizednumber }}&nbsp;%</td>
-                                                <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
+                                                <td>{{ project.getIdProject() }}</td>
+                                                <td>{{ project.getNatureProject() }}</td>
+                                                <td>{{ project.getAmount()|localizednumber }}&nbsp;€<br>{% transchoice project.getPeriod() with {'%count%' : project.getPeriod()} %} common_month {% endtranschoice %}</td>
+                                                <td>{{ projectEnded(project)|localizeddate('short', 'none')}}</td>
+                                                <td>{{ fundingProgress|localizednumber }}&nbsp;%</td>
+                                                <td>{{ averageInterestRate|localizednumber }}&nbsp;%</td>
                                                 <td>
-                                                    {% if project.funding_progress >= 100 and app.session.get('closingProjects')[project.id_project] is not defined %}
-                                                        <a href="javascript:;" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}" data-modal-toggle="#close-funding-project-{{ project.id_project }}">
+                                                    {% if fundingProgress >= 100 and app.session.get('closingProjects')[project.getIdProject()] is not defined %}
+                                                        <a href="javascript:;" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-stop-tooltip'|trans|escape('html_attr') }}" data-modal-toggle="#close-funding-project-{{ project.getIdProject() }}">
                                                             <span class="icon fa-close-u32"></span>
                                                         </a>
                                                         <div style="display:none">
-                                                            <div id="close-funding-project-{{ project.id_project }}" data-modal>
+                                                            <div id="close-funding-project-{{ project.getIdProject() }}" data-modal>
                                                                 <form action="{{ path('borrower_account_close_project') }}" method="post">
                                                                     <header class="modal-header">
                                                                         <h2>{{ 'borrower-projects_early-closing-lightbox-title'|trans }}</h2>
                                                                     </header>
                                                                     <div class="modal-body">
-                                                                        <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : project.average_ir|localizednumber})|raw }}</p>
+                                                                        <p>{{ 'borrower-projects_early-closing-lightbox-content'|trans({'%currentRate%' : averageInterestRate|localizednumber})|raw }}</p>
                                                                     </div>
                                                                     <footer class="modal-footer">
                                                                         <a href="javascript:;" class="btn-default" data-modal-doactionclose>{{ 'borrower-projects_early-closing-lightbox-cancel-button'|trans }}</a>
-                                                                        <button type="submit" name="project" value="{{ project.id_project }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
+                                                                        <button type="submit" name="project" value="{{ project.getIdProject() }}" class="btn-primary">{{ 'borrower-projects_early-closing-lightbox-confirm-button'|trans }}</button>
                                                                     </footer>
                                                                 </form>
                                                             </div>
                                                         </div>
-                                                    {% elseif project.funding_progress >= 100  %}
+                                                    {% elseif fundingProgress >= 100  %}
                                                         <a class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_early-closing-processing-tooltip'|trans|escape('html_attr') }}">
                                                             <span class="icon fa-refresh"></span>
                                                         </a>
@@ -175,15 +188,15 @@
                                 <tbody>
                                     {% for project in post_funding_projects %}
                                         <tr>
-                                            <td>{{ project.id_project }}</td>
-                                            <td>{{ project.nature_project }}</td>
-                                            <td>{{ project.amount|localizednumber }}&nbsp;€<br>{% transchoice project.period with {'%count%': project.period} %} common_month {% endtranschoice %}</td>
-                                            <td>{{ project.ended|localizeddate('short', 'none')}}</td>
-                                            <td>{{ project.monthly_payment|localizedcurrency('EUR') }}</td>
-                                            <td>{{ project.average_ir|localizednumber }}&nbsp;%</td>
-                                            <td>{{ project.remaining_capital|localizedcurrency('EUR') }}</td>
-                                            <td>{{ project.next_maturity_date|localizeddate('short', 'none') }}</td>
-                                            <td><a href="{{ path('project_detail', {'projectSlug' : project.slug }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
+                                            <td>{{ project.getIdProject() }}</td>
+                                            <td>{{ project.getNatureProject() }}</td>
+                                            <td>{{ project.getAmount()|localizednumber }}&nbsp;€<br>{% transchoice project.getPeriod() with {'%count%': project.getPeriod()} %} common_month {% endtranschoice %}</td>
+                                            <td>{{ projectEnded(project)|localizeddate('short', 'none')}}</td>
+                                            <td>{{ projectRepaymentScheduleAmount(project)|localizedcurrency('EUR') }}</td>
+                                            <td>{{ projectAverageInterestRate(project)|localizednumber }}&nbsp;%</td>
+                                            <td>{{ projectRemainingCapital(project)|localizedcurrency('EUR') }}</td>
+                                            <td>{{ projectNextRepaymentScheduleAmount(project)|localizeddate('short', 'none') }}</td>
+                                            <td><a href="{{ path('project_detail', {'projectSlug' : project.getSlug() }) }}" class="ui-has-tooltip" data-original-title="{{ 'borrower-projects_project-detail-link-icon'|trans }}"><span class="icon fa-eye-u16"></span></a></td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>

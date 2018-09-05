@@ -19,18 +19,15 @@ class GreenPointController extends Controller
     /** @var GreenPointValidationManager */
     private $validationManager;
 
-    public function __construct()
-    {
-        $this->logger            = $this->get('logger');
-        $this->entityManager     = $this->get('doctrine.orm.entity_manager');
-        $this->validationManager = $this->get(GreenPointValidationManager::class);
-    }
-
     /**
      * @Route("/ws/kyc", name="greenpoint_asynchronous_feedback", methods={"POST"})
      */
     public function greenPointAsynchronousFeedbackAction(Request $request): Response
     {
+        $this->logger            = $this->get('logger');
+        $this->entityManager     = $this->get('doctrine.orm.entity_manager');
+        $this->validationManager = $this->get(GreenPointValidationManager::class);
+
         if (true !== ($response = $this->checkIp($request))) {
             return $response;
         }
