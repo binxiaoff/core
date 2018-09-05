@@ -3,12 +3,12 @@
 namespace Unilend\Bundle\CommandBundle\Event;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Event\{
-    ConsoleCommandEvent, ConsoleTerminateEvent
-};
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\{ConsoleCommandEvent, ConsoleTerminateEvent};
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class ConsoleEventListener
+class ConsoleEventSubscriber implements EventSubscriberInterface
 {
     /** @var LoggerInterface */
     private $logger;
@@ -25,6 +25,14 @@ class ConsoleEventListener
     {
         $this->logger    = $logger;
         $this->stopwatch = $stopwatch;
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            ConsoleEvents::COMMAND   => 'onCommandStart',
+            ConsoleEvents::TERMINATE => 'onCommandEnd'
+        ];
     }
 
     /**
